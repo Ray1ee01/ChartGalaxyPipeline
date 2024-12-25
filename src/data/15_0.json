@@ -1,0 +1,122 @@
+{
+    "meta_data": {
+        "x_type": "temporal",
+        "y_type": "numerical",
+        "x_label": "year",
+        "y_label": "SUM(round)",
+        "x_axis": "year",
+        "y_axis": "SUM(round)",
+        "source": "formula_1_races",
+        "chart_type": "line",
+        "description": "group by year",
+        "title": "Formula 1 Races",
+        "caption": "The chart likely shows the total number of rounds (races) in Formula 1 over the years.",
+        "topic_icon": "car/1986911.png",
+        "x_icon": null,
+        "x_axis_icon": null,
+        "y_icon": null,
+        "y_axis_icon": null,
+        "x_color": [
+            255,
+            255,
+            0
+        ],
+        "y_color": [
+            255,
+            255,
+            0
+        ],
+        "topic_color": [
+            255,
+            255,
+            0
+        ]
+    },
+    "data": [
+        {
+            "x_data": "1950",
+            "y_data": 28,
+            "x_data_icon": "motorcycle/364611.png",
+            "color": [
+                255,
+                255,
+                0
+            ]
+        },
+        {
+            "x_data": "1951",
+            "y_data": 36,
+            "x_data_icon": "motorcycle/364611.png",
+            "color": [
+                255,
+                255,
+                0
+            ]
+        },
+        {
+            "x_data": "1952",
+            "y_data": 36,
+            "x_data_icon": "motorcycle/364611.png",
+            "color": [
+                255,
+                255,
+                0
+            ]
+        }
+    ],
+    "input_styles": {
+        "titleStyles": {
+            "textStyles": {
+                "textColor": [
+                    255,
+                    255,
+                    0
+                ],
+                "textSize": "22px",
+                "textAlign": "middle",
+                "textFont": "Lucida Sans Unicode"
+            },
+            "iconStyles": {
+                "layout": "left",
+                "align": "middle",
+                "sizeRatio": 0.19621881344057704
+            }
+        },
+        "captionStyles": {
+            "textStyles": {
+                "textColor": [
+                    255,
+                    255,
+                    0
+                ],
+                "textSize": "18px",
+                "textAlign": "middle",
+                "textFont": "Lucida Sans Unicode"
+            }
+        },
+        "topicIconStyles": {
+            "textStyles": {
+                "textColor": [
+                    255,
+                    255,
+                    0
+                ],
+                "textSize": "18px",
+                "textAlign": "end",
+                "textFont": "Lucida Sans Unicode"
+            },
+            "iconStyles": {
+                "layout": "bottom",
+                "align": "middle",
+                "sizeRatio": 1.5438301143252295,
+                "icon": "car/1986911.png"
+            }
+        },
+        "markStyles": {
+            "attachStyles": {
+                "attachMethod": "attach",
+                "attachSizeRatio": 1.0
+            }
+        }
+    }
+}
