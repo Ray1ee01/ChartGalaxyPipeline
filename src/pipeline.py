@@ -21,7 +21,7 @@ class Pipeline:
             svg = self.chart_generator.generate(processed_data)
             
             # 步骤3：SVG后处理
-            final_svg = self.svg_processor.process(svg)
+            final_svg = self.svg_processor.process(svg, debug=False)
             
             return final_svg
             

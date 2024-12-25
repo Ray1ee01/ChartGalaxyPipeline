@@ -16,7 +16,6 @@ class NodeBridge:
         # 清理临时文件
         os.remove(tmp_input)
         
-        print("return result.stdout", result.stdout)
 
         if result.returncode != 0:
             raise Exception(f"Node.js执行错误: {result.stderr}")

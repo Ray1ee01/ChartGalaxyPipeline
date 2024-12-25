@@ -16,9 +16,9 @@ def main():
     )
 
     # 执行pipeline
-    input_file = os.path.join(data_dir, 'test.json')
+    input_file = os.path.join(data_dir, 'test_1.json')
     result = pipeline.execute(input_file)
-    print(result)
+    # print(result)
 
     # 保存结果
     with open(os.path.join(output_dir, 'output.svg'), "w") as f:
