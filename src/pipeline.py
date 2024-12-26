@@ -18,10 +18,10 @@ class Pipeline:
             processed_data = self.data_processor.process(input_data)
             
             # 步骤2：生成图表
-            svg = self.chart_generator.generate(processed_data)
+            svg, additional_configs = self.chart_generator.generate(processed_data)
             
             # 步骤3：SVG后处理
-            final_svg = self.svg_processor.process(svg, debug=False)
+            final_svg = self.svg_processor.process(svg, additional_configs, debug=False)
             
             return final_svg
             

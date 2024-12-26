@@ -1,4 +1,6 @@
-module.exports = function(data, options = {}) {
+const sharp = require('sharp');
+
+module.exports = async function(data, options = {}) {
   // 默认配置
   const defaultOptions = {
     background: "#ffffff",
@@ -37,11 +39,24 @@ module.exports = function(data, options = {}) {
       align: "left",
       baseline: "middle",
       dx: 5
+    },
+  };
+
+  // 使用深度合并来确保所有嵌套属性都被正确合并
+  const deepMerge = (target, source) => {
+    for (const key in source) {
+      if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
+        target[key] = target[key] || {};
+        deepMerge(target[key], source[key]);
+      } else {
+        target[key] = source[key];
+      }
     }
+    return target;
   };
 
   // 合并用户选项和默认选项
-  const finalOptions = { ...defaultOptions, ...options };
+  const finalOptions = deepMerge(JSON.parse(JSON.stringify(defaultOptions)), options);
 
   const spec = {
     "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -134,7 +149,9 @@ module.exports = function(data, options = {}) {
           sort: null,
           axis: {
             domain: true,
-            ticks: false,
+            ticks: true,
+            // 设置tick的color
+            tickColor: '#000000',
             labelBaseline: "middle",
             labelAlign: finalOptions.yAxis.labelAlign,
             labelPadding: finalOptions.yAxis.labelPadding,
@@ -164,6 +181,72 @@ module.exports = function(data, options = {}) {
     });
   }
 
+  // // 在 spec.layer 数组中添加图标图层
+  // if (finalOptions.iconAttachConfig.method === "juxtaposition" && 
+  //     finalOptions.iconAttachConfig.attachTo === "y-axis" &&
+  //     finalOptions.iconAttachConfig.iconUrls.length > 0) {
+    
+  //   const iconMapping = {};
+  //   const iconSizes = {};
+    
+  //   // 直接为每个类别设置图标映射和固定的宽高比
+  //   data.forEach((item, index) => {
+  //     const iconUrl = finalOptions.iconAttachConfig.iconUrls[index];
+  //     // console.log(item)
+  //     if (iconUrl) {
+  //       iconMapping[item.category] = iconUrl;
+  //       iconSizes[item.category] = { aspectRatio: 1.0 }; // 假设所有图标都是正方形
+  //     }
+  //   });
+
+  //   // 计算图标的基准大小
+  //   const sizeRatio = finalOptions.iconAttachConfig.attachToMark?.sizeRatio ?? 0.9;
+    
+  //   // 添加图标图层，使用band比例来设置尺寸
+  //   spec.layer.push({
+  //     "mark": {
+  //       "type": "image",
+  //       "baseline": "middle",
+  //       "align": "right",
+  //       // "height": { band: finalOptions.markHeight * sizeRatio },
+  //       // "width": 
+  //       // "height": 20,
+  //       "width": 20,
+  //       "aspect": true
+  //     },
+  //     "encoding": {
+  //       "y": {
+  //         "field": "category",
+  //         "type": "ordinal",
+  //         "sort": null
+  //       },
+  //       "x": {
+  //         "value": -finalOptions.iconAttachConfig.attachToAxis.padding
+  //       },
+  //       "url": {
+  //         "field": "flag",
+  //         "type": "nominal",
+  //       },
+  //     }
+  //   });
+
+  //   // 调整y轴的标签位置，使用最大图标宽度
+  //   const maxIconWidth = Math.max(
+  //     ...Object.values(iconSizes).map(({ aspectRatio }) => 
+  //       20
+  //     )
+  //   );
+
+  //   spec.layer.forEach(layer => {
+  //     if (layer.encoding && layer.encoding.y && layer.encoding.y.axis) {
+  //       layer.encoding.y.axis.labelPadding = 
+  //         finalOptions.yAxis.labelPadding + 
+  //         maxIconWidth + 
+  //         finalOptions.iconAttachConfig.attachToAxis.padding;
+  //     }
+  //   });
+  // }
+
   return spec;
 };
 
@@ -172,27 +255,36 @@ const vegaLite = require('vega-lite');
 const fs = require('fs');
 const getSpec = require('./vega_spec');
 
-// 读取输入数据
-const inputFile = process.argv[2];
-const inputData = JSON.parse(fs.readFileSync(inputFile, 'utf8'));
+// 修改为异步执行
+async function main() {
+  // 读取输入数据
+  const inputFile = process.argv[2];
+  const inputJson = JSON.parse(fs.readFileSync(inputFile, 'utf8'));
+  const inputData = inputJson.data;
+  const inputOptions = inputJson.options;
 
-// 生成规范
-const spec = getSpec(inputData);
+  // 等待spec生成完成
+  const spec = await getSpec(inputData, inputOptions);
 
-// 编译规范
-const vegaSpec = vegaLite.compile(spec).spec;
+  // 编译规范
+  const vegaSpec = vegaLite.compile(spec).spec;
 
-// 创建新的View
-const view = new vega.View(vega.parse(vegaSpec))
-  .renderer('none');  // 使用无头渲染器
-  // .initialize();
+  // 创建新的View
+  const view = new vega.View(vega.parse(vegaSpec))
+    .renderer('none');  // 使用无头渲染器
 
-// 导出SVG
-view.toSVG()
-  .then(svg => {
-    console.log(svg);  // 输出SVG到标准输出
-  })
-  .catch(err => {
+  // 导出SVG
+  try {
+    const svg = await view.toSVG();
+    console.log(svg);
+  } catch (err) {
     console.error(err);
     process.exit(1);
-  });
+  }
+}
+
+// 执行主函数
+main().catch(err => {
+  console.error(err);
+  process.exit(1);
+});

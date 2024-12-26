@@ -7,6 +7,26 @@ import math
 from ..utils.node_bridge import NodeBridge
 import os
 import json
+import base64
+import requests
+from urllib.parse import urlparse
+import mimetypes
+
+default_additional_configs = {
+    "iconAttachConfig": {
+        "method": "juxtaposition",
+        "attachTo": "mark",
+        "iconUrls": [],
+        "attachToMark": {
+            "sizeRatio": 1,
+            "padding": 0,
+            "relative": ["start", "inner"] # 相对于mark的位置 可能的取值有 ["start", "inner"], ["end", "inner"], ["end", "outer"], ["middle", "inner"]
+        },
+        "attachToAxis": {
+            "padding": 0
+        }
+    }
+}
 
 class SVGOptimizer(SVGProcessor):
     def __init__(self):
@@ -16,7 +36,7 @@ class SVGOptimizer(SVGProcessor):
         # 构建measure_text.js的路径
         self.measure_script_path = os.path.join(current_dir, 'svg_processor_modules', 'text_tool', 'measure_text.js')
 
-    def process(self, svg: str, debug: bool = False) -> Union[dict, str]:
+    def process(self, svg: str, additional_configs: Dict, debug: bool = False) -> Union[dict, str]:
         """处理SVG并返回带有边界框信息的树结构或调试SVG
         
         Args:
@@ -32,20 +52,60 @@ class SVGOptimizer(SVGProcessor):
         # 压缩空白
         svg = re.sub(r'\s+', ' ', svg)
         
-        if debug:
-            return self.debug_draw_bbox(svg)
+        configs = {**default_additional_configs, **additional_configs}
+        # if debug:
+        # return self.debug_draw_bbox(svg)
         
         tree = self.parseTree(svg)
         self._addBBoxToTree(tree)
         axes = self._findAxes(tree)
+        marks = self._findMarks(tree)
 
-        # 获取X轴和Y轴
-        x_axis = axes['x_axis']
-        y_axis = axes['y_axis']
-        print("x_axis", x_axis)
-        print("y_axis", y_axis)
+        # print(marks)
+        # 处理icon附加
+        if additional_configs.get("iconAttachConfig"):
+            self._processIconAttachment(tree, additional_configs["iconAttachConfig"], axes, marks)
 
-        return svg
+        # 将处理后的树结构转换回SVG字符串
+        return self._treeToSVG(tree)
+
+    def _treeToSVG(self, node: dict) -> str:
+        """将树结构转换回SVG字符串
+        
+        Args:
+            node: 树节点
+            
+        Returns:
+            str: SVG字符串
+        """
+        # 获取标签名
+        tag = node['tag']
+        
+        # 构建属性字符串
+        attrs = []
+        for key, value in node.get('attributes', {}).items():
+            # 处理特殊字符
+            value = str(value).replace('"', '&quot;')
+            attrs.append(f'{key}="{value}"')
+        attrs_str = ' '.join(attrs)
+        
+        # 处理文本内容
+        text_content = node.get('text', '')
+        
+        # 处理子节点
+        children_content = []
+        for child in node.get('children', []):
+            children_content.append(self._treeToSVG(child))
+        children_str = '\n'.join(children_content)
+        
+        # 构建完整的标签
+        if children_content or text_content:
+            # 如果有子节点或文本内容，使用开闭标签
+            content = text_content + '\n' + children_str if text_content else children_str
+            return f"<{tag} {attrs_str}>{content}</{tag}>"
+        else:
+            # 如果是空标签，使用自闭合形式
+            return f"<{tag} {attrs_str}/>"
 
     def _addBBoxToTree(self, node: dict, parent_transform: List[float] = None) -> None:
         """递归地为树中的每个节点添加边界框
@@ -54,10 +114,6 @@ class SVGOptimizer(SVGProcessor):
             node: 当前节点
             parent_transform: 父节点的变换矩阵
         """
-        # print("node['tag']", node['tag'])
-        # print("node['attributes']", node['attributes'])
-        # print("node['class']", node.get('class'))
-        # print("node['id']", node.get('id'))
         # 获取当前节点的变换
         current_transform = None
         if 'attributes' in node and 'transform' in node['attributes']:
@@ -234,7 +290,7 @@ class SVGOptimizer(SVGProcessor):
         )
 
     def _applyTransform(self, minX: float, minY: float, maxX: float, maxY: float, matrix: List[float]) -> Dict[str, float]:
-        """应用变换到边界框的所有四个角点"""
+        """应用变换到边界框的四个角点"""
         # 计算所有四个角点的变换后坐标
         nx1, ny1 = self._applyMatrix(minX, minY, matrix)  # 左上
         nx2, ny2 = self._applyMatrix(maxX, maxY, matrix)  # 右下
@@ -377,7 +433,7 @@ class SVGOptimizer(SVGProcessor):
             }
 
     def _parseLength(self, value: str, font_size: float = None) -> float:
-        """解析带单位的长度值"""
+        """解析单位的长度值"""
         if not value:
             return 0
         
@@ -561,6 +617,13 @@ class SVGOptimizer(SVGProcessor):
         y1 = float(attrs.get('y1', 0))
         x2 = float(attrs.get('x2', 0))
         y2 = float(attrs.get('y2', 0))
+        stroke_width = float(attrs.get('stroke-width', 1))
+        if x1==x2:
+            x1 -= stroke_width / 2
+            x2 += stroke_width / 2
+        if y1==y2:
+            y1 -= stroke_width / 2
+            y2 += stroke_width / 2
         
         transform = attrs.get('transform')
         if transform:
@@ -614,7 +677,7 @@ class SVGOptimizer(SVGProcessor):
         for node_info in leaf_bboxes:
             bbox = node_info['bbox']
             tag = node_info['tag']
-            if tag != 'path':
+            if tag != 'text':
                 continue
             debug_group += f'''
                 <rect 
@@ -683,15 +746,33 @@ class SVGOptimizer(SVGProcessor):
         ]
         
     def _findAxes(self, node: dict) -> Dict[str, dict]:
-        """查找SVG中的X轴和Y轴组
+        """查找SVG中的轴及其组件
         
-        Args:
-            node: SVG节点树
-            
         Returns:
-            Dict[str, dict]: 包含 'x_axis' 和 'y_axis' 的字典
+            Dict: 包含轴及其组件信息的字典
         """
-        axes = {'x_axis': None, 'y_axis': None}
+        axes = {
+            'x_axis': {'main': None, 'ticks': None, 'labels': None, 'domain': None},
+            'y_axis': {'main': None, 'ticks': None, 'labels': None, 'domain': None}
+        }
+        
+        def search_axis_components(node, axis_info):
+            """搜索轴的组件"""
+            if not node.get('children'):
+                return
+            
+            for child in node['children']:
+                class_attr = child.get('attributes', {}).get('class', '')
+                
+                if 'mark-rule role-axis-tick' in class_attr:
+                    axis_info['ticks'] = child
+                elif 'mark-text role-axis-label' in class_attr:
+                    axis_info['labels'] = child
+                elif 'mark-rule role-axis-domain' in class_attr:
+                    axis_info['domain'] = child
+                
+                # 递归搜索
+                search_axis_components(child, axis_info)
         
         def search_axes(node):
             if node.get('tag') == 'g' and \
@@ -700,9 +781,11 @@ class SVGOptimizer(SVGProcessor):
                 
                 aria_label = node.get('attributes', {}).get('aria-label', '')
                 if 'X-axis' in aria_label:
-                    axes['x_axis'] = node
+                    axes['x_axis']['main'] = node
+                    search_axis_components(node, axes['x_axis'])
                 elif 'Y-axis' in aria_label:
-                    axes['y_axis'] = node
+                    axes['y_axis']['main'] = node
+                    search_axis_components(node, axes['y_axis'])
             
             # 递归搜索子节点
             for child in node.get('children', []):
@@ -711,3 +794,480 @@ class SVGOptimizer(SVGProcessor):
         search_axes(node)
         return axes
         
+    def _findMarks(self, node: dict) -> List[dict]:
+        """查找SVG中的marks组
+        
+        Returns:
+            List[dict]: 包含所有找到的marks组的列表
+        """
+        marks = {
+            'rect_marks': None,
+            'annotation_marks': None,
+            'other_marks': []
+        }
+        
+        def search_marks(node):
+            if node.get('tag') == 'g' and \
+               node.get('attributes', {}).get('role') == 'graphics-object' and \
+               node.get('attributes', {}).get('aria-roledescription', '').endswith('mark container'):
+                
+                # 检查是否是矩形标记组
+                if 'rect' in node.get('attributes', {}).get('aria-roledescription', '').lower():
+                    marks['rect_marks'] = node
+                elif 'text' in node.get('attributes', {}).get('aria-roledescription', '').lower():
+                    marks['annotation_marks'] = node
+                else:
+                    marks['other_marks'].append(node)
+            
+            # 递归搜索子节点
+            for child in node.get('children', []):
+                search_marks(child)
+        
+        search_marks(node)
+        return marks
+        
+    def _processIconAttachment(self, tree: dict, icon_config: dict, axes: dict, marks: dict) -> None:
+        """处理图标附加到图表的逻辑"""
+        if icon_config["method"] != "juxtaposition":
+            return
+        
+        if icon_config["attachTo"] == "y-axis":
+            y_axis = axes["y_axis"]
+            if not y_axis['main']:
+                return
+            
+            # 获取y轴标签信息
+            labels_info = self._getAxisLabelsInfo(y_axis['labels'])
+            if not labels_info:
+                return
+            
+            # 获取必要的边界框信息
+            axis_bbox = y_axis['main'].get("bbox", {})
+            domain_bbox = y_axis['domain'].get("bbox", {}) if y_axis['domain'] else None
+            ticks_bbox = y_axis['ticks'].get("bbox", {}) if y_axis['ticks'] else None
+            
+            if not axis_bbox or not domain_bbox or not ticks_bbox:
+                return
+            
+            # 判断标签相对于轴的方向
+            labels_direction = self._determineLabelsDirection(labels_info, domain_bbox)
+            
+            # 计算图标位置和大小
+            icon_positions = self._calculateIconPositions(
+                labels_info,
+                domain_bbox,
+                labels_direction,
+                icon_config,
+                ticks_bbox
+            )
+            
+            # 添加图标到SVG
+            self._addIconsToSVG(tree, icon_positions, icon_config["iconUrls"])
+        elif icon_config["attachTo"] == "mark":
+            if not marks.get('rect_marks'):
+                return
+            
+            # 获取mark的方向和参考大小
+            mark_orientation = self._determineMarkOrientation(marks['rect_marks'])
+            reference_size = self._getMarkReferenceSize(marks['rect_marks'], mark_orientation)
+            
+            # 计算图标位置
+            icon_positions = self._calculateMarkIconPositions(
+                marks['rect_marks'],
+                marks['annotation_marks'],
+                mark_orientation,
+                reference_size,
+                icon_config
+            )
+            # 添加图标到SVG
+            self._addIconsToSVG(tree, icon_positions, icon_config["iconUrls"])
+
+    def _getAxisLabelsInfo(self, labels_group: dict) -> List[Dict]:
+        """获取轴标签信息"""
+        labels_info = []
+        
+        if not labels_group or 'children' not in labels_group:
+            return labels_info
+        
+        for child in labels_group['children']:
+            if child['tag'] == 'text' and 'bbox' in child:
+                labels_info.append({
+                    'node': child,
+                    'text': child.get('text', ''),
+                    'bbox': child['bbox'],
+                    'original_x': float(child['attributes'].get('x', 0)),
+                    'original_y': float(child['attributes'].get('y', 0))
+                })
+        
+        return labels_info
+
+    def _determineLabelsDirection(self, labels_info: List[Dict], domain_bbox: Dict) -> str:
+        """确定标签相对于轴的方向"""
+        if not labels_info:
+            return "right"
+        
+        # 获取第一个标签的位置
+        first_label = labels_info[0]
+        domain_center_x = (domain_bbox['minX'] + domain_bbox['maxX']) / 2
+        
+        # 如果标签在轴的左边
+        if first_label['bbox']['maxX'] < domain_center_x:
+            return "left"
+        # 如果标签在轴的右边
+        else:
+            return "right"
+
+    def _calculateIconPositions(self, labels_info: List[Dict], domain_bbox: Dict, 
+                              labels_direction: str, icon_config: Dict, ticks_bbox: Dict) -> List[Dict]:
+        """计算图标的位置和大小
+        
+        Args:
+            labels_info: 标签信息列表
+            domain_bbox: 轴域的边界框
+            labels_direction: 标签方向
+            icon_config: 图标配置
+            ticks_bbox: 刻度线的边界框
+        """
+        icon_positions = []
+        
+        # 获取配置参数
+        size_ratio = icon_config.get("attachToAxis", {}).get("sizeRatio", 2)
+        padding = icon_config.get("attachToAxis", {}).get("padding", 0)
+        
+        # 确定轴的位置（使用刻度线或轴域的最小x坐标）
+        axis_x = min(domain_bbox['minX'], ticks_bbox['minX'])
+        
+        for label in labels_info:
+            # 计算图标高度（基于标签高度）
+            icon_height = (label['bbox']['maxY'] - label['bbox']['minY']) * size_ratio
+            # 保持图标的宽高比为1:1
+            icon_width = icon_height
+            
+            # 计算图标的y位置（垂直居中对齐标签）
+            icon_y = (label['bbox']['minY'] + label['bbox']['maxY'] - icon_height) / 2
+            
+            # 从右向左布局：轴位置 <- padding <- 图标 <- padding <- 标签
+            icon_x = axis_x - padding - icon_width
+            
+            # 计算标签需要移动的距离，使用boundingbox的绝对坐标
+            original_x = label['bbox']['maxX']
+            target_x = icon_x - padding
+            dx = target_x - original_x
+            
+            # 通过transform调整标签位置
+            current_transform = label['node']['attributes'].get('transform', '')
+            new_transform = f'translate({dx},0)'
+            if current_transform:
+                # 如果已经有transform，添加到现有transform后面
+                new_transform = f'{current_transform} {new_transform}'
+            label['node']['attributes']['transform'] = new_transform
+            
+            icon_positions.append({
+                'x': icon_x,
+                'y': icon_y,
+                'width': icon_width,
+                'height': icon_height,
+                'label': label
+            })
+        
+        return icon_positions
+
+    def _addIconsToSVG(self, tree: dict, icon_positions: List[Dict], icon_urls: List[str]) -> None:
+        """将图标添加到SVG中，支持URL和base64编码"""
+        # 确保有足够的图标URL
+        if not icon_urls or not icon_positions:
+            return
+        
+        # 创建一个新的组来容纳所有图标
+        icons_group = {
+            'tag': 'g',
+            'attributes': {
+                'class': 'icon-attachments'
+            },
+            'children': []
+        }
+        
+        # 为每个位置添加图标
+        for i, position in enumerate(icon_positions):
+            if i >= len(icon_urls):
+                break
+            
+            # 获取base64编码的图片数据
+            image_data = self._getImageAsBase64(icon_urls[i])
+            if not image_data:
+                continue
+            
+            icon = {
+                'tag': 'image',
+                'attributes': {
+                    'x': str(position['x']),
+                    'y': str(position['y']),
+                    'width': str(position['width']),
+                    'height': str(position['height']),
+                    'href': f"data:{image_data}",
+                    'preserveAspectRatio': 'none'
+                }
+            }
+            icons_group['children'].append(icon)
+        
+        # 将图标组添加到SVG树中
+        if 'children' not in tree:
+            tree['children'] = []
+        tree['children'].append(icons_group)
+
+    def _getImageAsBase64(self, image_url: str) -> Optional[str]:
+        """将图片转换为base64编码
+        
+        Args:
+            image_url: 图片URL或本地文件路径
+        
+        Returns:
+            Optional[str]: base64编码的图片数据，包含MIME类型
+        """
+        try:
+            # 检查是否已经是base64编码
+            if image_url.startswith('data:'):
+                return image_url
+            
+            # 判断是URL还是本地文件
+            parsed = urlparse(image_url)
+            is_url = bool(parsed.scheme and parsed.netloc)
+            
+            # 获取图片数据
+            if is_url:
+                response = requests.get(image_url)
+                image_data = response.content
+                # 从URL或Content-Type获取MIME类型
+                content_type = response.headers.get('content-type')
+                if not content_type:
+                    content_type = mimetypes.guess_type(image_url)[0] or 'image/png'
+            else:
+                # 处理本地文件
+                with open(image_url, 'rb') as f:
+                    image_data = f.read()
+                content_type = mimetypes.guess_type(image_url)[0] or 'image/png'
+            
+            # 转换为base64
+            base64_data = base64.b64encode(image_data).decode('utf-8')
+            return f"{content_type};base64,{base64_data}"
+            
+        except Exception as e:
+            print(f"Error processing image {image_url}: {str(e)}")
+            return None
+
+    def _determineMarkOrientation(self, mark_group: dict) -> str:
+        """确定mark的朝向
+        
+        Args:
+            mark_group: mark组节点
+        
+        Returns:
+            str: 'left', 'right', 'up', 或 'down'
+        """
+        if not mark_group.get('children'):
+            return 'right'  # 默认朝向
+        
+        # 收集所有矩形的位置信息
+        rects = []
+        for child in mark_group['children']:
+            if child['tag'] == 'rect' and 'bbox' in child:
+                bbox = child['bbox']
+                center_x = (bbox['minX'] + bbox['maxX']) / 2
+                center_y = (bbox['minY'] + bbox['maxY']) / 2
+                rects.append({
+                    'center_x': center_x,
+                    'center_y': center_y,
+                    'width': bbox['maxX'] - bbox['minX'],
+                    'height': bbox['maxY'] - bbox['minY']
+                })
+        
+        if len(rects) < 2:
+            return 'right'  # 如果只有一个矩形，默认朝向
+        
+        # 计算相邻矩形之间的位置关系
+        dx = rects[1]['center_x'] - rects[0]['center_x']
+        dy = rects[1]['center_y'] - rects[0]['center_y']
+        
+        # 判断主要变化方向
+        if abs(dx) > abs(dy):
+            # 水平排列
+            return 'right' if dx > 0 else 'left'
+        else:
+            # 垂直排列
+            return 'down' if dy > 0 else 'up'
+
+    def _getMarkReferenceSize(self, mark_group: dict, orientation: str) -> float:
+        """获取mark的参考大小
+        
+        Args:
+            mark_group: mark组节点
+            orientation: mark的朝向
+        
+        Returns:
+            float: 参考大小
+        """
+        if not mark_group.get('children'):
+            return 0
+        
+        # 收集所有矩形的相关尺寸
+        sizes = []
+        for child in mark_group['children']:
+            if child['tag'] == 'path' and 'bbox' in child:
+                bbox = child['bbox']
+                if orientation == 'right' or orientation == 'left':
+                    sizes.append(bbox['maxY'] - bbox['minY'])  # 使用高度
+                else:
+                    sizes.append(bbox['maxX'] - bbox['minX'])  # 使用宽度
+        # 返回平均大小
+        return sum(sizes) / len(sizes) if sizes else 0
+
+    def _calculateMarkIconPositions(self, mark_group: dict, annotation_group: dict, orientation: str, 
+                              reference_size: float, icon_config: dict) -> List[Dict]:
+        """计算mark图标的位置"""
+        icon_positions = []
+        
+        # 获取配置
+        size_ratio = icon_config.get("attachToMark", {}).get("sizeRatio", 1)
+        padding = icon_config.get("attachToMark", {}).get("padding", 0)
+        relative = icon_config.get("attachToMark", {}).get("relative", ["start", "inner"])
+        
+        # 计算图标大小
+        icon_size = reference_size * size_ratio
+        
+        # 如果是end且outer，需要调整文本位置
+        need_adjust_text = relative == ["end", "outer"]
+        
+        # 获取文本标注组
+
+        # 获取所有需要处理的矩形
+        rect_nodes = [child for child in mark_group.get('children', []) 
+                    if child['tag'] == 'path' and 'bbox' in child]
+        
+        # 同时遍历矩形和对应的文本
+        for i, rect in enumerate(rect_nodes):
+            bbox = rect['bbox']
+            position = self._calculateSingleMarkIconPosition(
+                bbox,
+                orientation,
+                icon_size,
+                padding,
+                relative
+            )
+            
+            if position:
+                icon_positions.append(position)
+                
+                # 调整对应的文本位置
+                if need_adjust_text and annotation_group and i < len(annotation_group.get('children', [])):
+                    text = annotation_group['children'][i]
+                    self._adjustAnnotationText(
+                        text,
+                        orientation,
+                        icon_size,
+                        padding
+                    )
+        
+        return icon_positions
+
+    def _adjustAnnotationText(self, text: Dict, orientation: str, 
+                         icon_size: float, padding: float):
+        """调整标注文本的位置
+        
+        Args:
+            text: 文本节点
+            orientation: mark的朝向
+            icon_size: 图标大小
+            padding: 内边距
+        """
+        # 计算需要移动的距离
+        if orientation in ['left', 'right']:
+            # 水平方向需要水平移动
+            dx = icon_size + padding
+            dy = 0
+        else:
+            # 垂直方向需要垂直移动
+            dx = 0
+            dy = icon_size + padding
+            
+        # 根据朝向确定移动方向
+        if orientation == 'left':
+            dx = -dx
+        elif orientation == 'up':
+            dy = -dy
+            
+        # 添加或更新transform
+        current_transform = text['attributes'].get('transform', '')
+        new_transform = f'translate({dx},{dy})'
+        if current_transform:
+            new_transform = f'{current_transform} {new_transform}'
+        text['attributes']['transform'] = new_transform
+
+    def _calculateSingleMarkIconPosition(self, bbox: Dict, orientation: str,
+                                       icon_size: float, padding: float,
+                                       relative: List[str]) -> Dict:
+        """计算单个mark的图标位置
+        
+        Args:
+            bbox: mark的边界框
+            orientation: mark的朝向 ('left', 'right', 'up', 'down')
+            icon_size: 图标大小
+            padding: 内边距
+            relative: 相对位置配置 ["start"/"end"/"middle", "inner"/"outer"]
+        
+        Returns:
+            Dict: 图标位置信息
+        """
+        position_type, inner_outer = relative
+        
+        # 水平/垂直中心位置
+        center_x = (bbox['minX'] + bbox['maxX']) / 2
+        center_y = (bbox['minY'] + bbox['maxY']) / 2
+        
+        # 根据朝向确定start和end的实际含义
+        if orientation in ['left', 'right']:
+            # 水平方向的mark
+            y = center_y - icon_size / 2  # 垂直居中
+            
+            if orientation == 'right':
+                # 朝右时，start是左侧，end是右侧
+                if position_type == "start":
+                    x = bbox['minX'] + (padding if inner_outer == "inner" else -icon_size - padding)
+                elif position_type == "end":
+                    x = bbox['maxX'] - (icon_size + padding if inner_outer == "inner" else -padding)
+                else:  # middle
+                    x = center_x - icon_size / 2
+            else:  # left
+                # 朝左时，start是右侧，end是左侧
+                if position_type == "start":
+                    x = bbox['maxX'] - (icon_size + padding if inner_outer == "inner" else -padding)
+                elif position_type == "end":
+                    x = bbox['minX'] + (padding if inner_outer == "inner" else -icon_size - padding)
+                else:  # middle
+                    x = center_x - icon_size / 2
+        else:
+            # 垂直方向的mark
+            x = center_x - icon_size / 2  # 水平居中
+            
+            if orientation == 'down':
+                # 朝下时，start是上侧，end是下侧
+                if position_type == "start":
+                    y = bbox['minY'] + (padding if inner_outer == "inner" else -icon_size - padding)
+                elif position_type == "end":
+                    y = bbox['maxY'] - (icon_size + padding if inner_outer == "inner" else -padding)
+                else:  # middle
+                    y = center_y - icon_size / 2
+            else:  # up
+                # 朝上时，start是下侧，end是上侧
+                if position_type == "start":
+                    y = bbox['maxY'] - (icon_size + padding if inner_outer == "inner" else -padding)
+                elif position_type == "end":
+                    y = bbox['minY'] + (padding if inner_outer == "inner" else -icon_size - padding)
+                else:  # middle
+                    y = center_y - icon_size / 2
+            
+        return {
+            'x': x,
+            'y': y,
+            'width': icon_size,
+            'height': icon_size
+        }
