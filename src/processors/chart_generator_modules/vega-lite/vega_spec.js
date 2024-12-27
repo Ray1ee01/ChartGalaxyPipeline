@@ -11,7 +11,9 @@ module.exports = async function(data, options = {}) {
     titleAnchor: "start",
     subtitleColor: "#808080",
     markType: "bar",
-    markColor: "#63989a",
+    // markColor: "#63989a",
+    
+    markColor: "#4f9a9a",
     markHeight: 0.75,
     showTooltip: true,
     xAxis: {
@@ -40,6 +42,35 @@ module.exports = async function(data, options = {}) {
       baseline: "middle",
       dx: 5
     },
+    iconAttachConfig: {
+      method: "replacement",
+      replaceMultiple: true,
+      iconUrls: [
+        "/data1/liduan/generation/chart/chart_pipeline/testicon/robot.png",
+        "/data1/liduan/generation/chart/chart_pipeline/testicon/robot.png",
+        "/data1/liduan/generation/chart/chart_pipeline/testicon/robot.png",
+        "/data1/liduan/generation/chart/chart_pipeline/testicon/robot.png",
+        "/data1/liduan/generation/chart/chart_pipeline/testicon/robot.png",
+        "/data1/liduan/generation/chart/chart_pipeline/testicon/robot.png",
+        "/data1/liduan/generation/chart/chart_pipeline/testicon/robot.png",
+        "/data1/liduan/generation/chart/chart_pipeline/testicon/robot.png",
+        "/data1/liduan/generation/chart/chart_pipeline/testicon/robot.png",
+        "/data1/liduan/generation/chart/chart_pipeline/testicon/robot.png",
+        "/data1/liduan/generation/chart/chart_pipeline/testicon/robot.png",
+        "/data1/liduan/generation/chart/chart_pipeline/testicon/robot.png",
+        "/data1/liduan/generation/chart/chart_pipeline/testicon/robot.png",
+        "/data1/liduan/generation/chart/chart_pipeline/testicon/robot.png",
+        "/data1/liduan/generation/chart/chart_pipeline/testicon/robot.png",
+      ],
+      // attachToMark: {
+      //   sizeRatio: 0.9,
+      //   padding: 0,
+      //   relative: ["end", "outer"]
+      // },
+      // attachToAxis: {
+      //   padding: 0
+      // }
+    }
   };
 
   // 使用深度合并来确保所有嵌套属性都被正确合并
@@ -58,7 +89,9 @@ module.exports = async function(data, options = {}) {
   // 合并用户选项和默认选项
   const finalOptions = deepMerge(JSON.parse(JSON.stringify(defaultOptions)), options);
 
-  const spec = {
+
+
+  let spec = {
     "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
     "background": finalOptions.background,
     "config": {
@@ -69,19 +102,75 @@ module.exports = async function(data, options = {}) {
     }
   };
 
-  // 添加标题配置
-  if (finalOptions.title) {
-    spec.title = {
-      text: Array.isArray(finalOptions.title) ? finalOptions.title : [finalOptions.title],
-      subtitle: Array.isArray(finalOptions.subtitle) ? finalOptions.subtitle : [finalOptions.subtitle],
-      fontSize: finalOptions.titleFontSize,
-      subtitleFontSize: finalOptions.subtitleFontSize,
-      anchor: finalOptions.titleAnchor,
-      subtitleColor: finalOptions.subtitleColor
+  if (finalOptions.iconAttachConfig.method === "replacement" && finalOptions.iconAttachConfig.replaceMultiple) {
+    let max_data_value = Math.max(...data.map(item => item.value));
+    let min_data_value = Math.min(...data.map(item => item.value));
+    let ratio = max_data_value / min_data_value;
+    let unit = 0;
+    if (ratio < 10 && ratio > 5) {
+      unit = min_data_value;
+    } else if (ratio < 5 && ratio > 2) {
+      unit = min_data_value / 2;
+    } else if (ratio < 2 && ratio > 1) {
+      unit = min_data_value / 5;
+    } else {
+      unit = min_data_value;
+    }
+
+    // 转换数据为点图格式
+    const newData = [];
+    data.forEach((item, index) => {
+      // 对每个数据点创建多个记录用于堆叠
+      for (let i = 0; i < item.value/unit; i++) {
+        newData.push({
+          category: item.category,
+          value: 1,  // 每个点的值都是1，用于计数
+          flag: item.flag
+        });
+      }
+    });
+    data = newData;
+    spec.data.values = data;
+
+    // 修改图表配置
+    spec.transform = [{
+      "window": [{"op": "rank", "as": "id"}],
+      "groupby": ["category"]
+    }];
+
+    spec.mark = {
+      type: "image",
+      opacity: 1,
+      size: 200,
+    };
+
+    // 修改编码配置
+    spec.encoding = {
+      x: {
+        field: "category",
+        type: "ordinal",
+        // title: finalOptions.xTitle,
+        // axis: {
+        //   labels: finalOptions.xAxis.showLabels,
+        //   grid: finalOptions.xAxis.showGrid,
+        //   ticks: finalOptions.xAxis.showTicks,
+        //   domain: finalOptions.xAxis.showDomain
+        // }
+      },
+      y: {
+        field: "id",
+        type: "ordinal",
+        axis: null,
+        sort: "descending"
+      },
+      url: {
+        field: "flag",
+        type: "nominal"
+      }
     };
   }
-
-  // 图表主体配置
+  else{
+    // 图表主体配置
   spec.mark = {
     type: finalOptions.markType,
     color: finalOptions.markColor,
@@ -115,10 +204,10 @@ module.exports = async function(data, options = {}) {
         labelPadding: finalOptions.yAxis.labelPadding,
         domainColor: finalOptions.yAxis.domainColor,
         zindex: 1,
-        domainWidth: finalOptions.yAxis.domainWidth
+          domainWidth: finalOptions.yAxis.domainWidth
+        }
       }
-    }
-  };
+    };
 
   // 使用图层来组合条形图和文本
   spec.layer = [
@@ -179,6 +268,19 @@ module.exports = async function(data, options = {}) {
         "text": {"field": "value", "type": "quantitative"}
       }
     });
+  }
+}
+
+  // 添加标题配置
+  if (finalOptions.title) {
+    spec.title = {
+      text: Array.isArray(finalOptions.title) ? finalOptions.title : [finalOptions.title],
+      subtitle: Array.isArray(finalOptions.subtitle) ? finalOptions.subtitle : [finalOptions.subtitle],
+      fontSize: finalOptions.titleFontSize,
+      subtitleFontSize: finalOptions.subtitleFontSize,
+      anchor: finalOptions.titleAnchor,
+      subtitleColor: finalOptions.subtitleColor
+    };
   }
 
   // // 在 spec.layer 数组中添加图标图层

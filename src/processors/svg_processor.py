@@ -15,7 +15,7 @@ import mimetypes
 default_additional_configs = {
     "iconAttachConfig": {
         "method": "juxtaposition",
-        "attachTo": "mark",
+        "attachTo": "y-axis",
         "iconUrls": [],
         "attachToMark": {
             "sizeRatio": 1,
@@ -24,6 +24,86 @@ default_additional_configs = {
         },
         "attachToAxis": {
             "padding": 0
+        }
+    },
+    "titleConfig": {
+        "title": {
+            "text": ["The Countries With The Highest","Density Of Robot Workers"],
+            "fontSize": 12,
+            "fontFamily": "sans-serif",
+            "fontWeight": "bold",
+            "color": "#000000",
+            "textAnchor": "left",
+        },
+        "subtitle": {
+            "text": ["Installed industrial robots per 10,000 employees in","the manufacturing industry in 2019*"],
+            "fontSize": 12,
+            "fontFamily": "sans-serif",
+            "fontWeight": "normal",
+            "color": "#808080",
+            "textAnchor": "left"
+        }
+    },
+    "topicIconConfig": {
+        "iconUrl": "/data1/liduan/generation/chart/chart_pipeline/testicon/robotarm.png"
+    },
+    "floatIconConfig": {
+        "iconUrl": "/data1/liduan/generation/chart/chart_pipeline/testicon/robotarm.png",
+        "size": 50,  # 图标大小
+        "padding": 10,  # 与其他元素的最小间距
+        "preferredArea": "bottom-right"  # 优先查找区域: top-right, top-left, bottom-right, bottom-left
+    },
+    # there are three elements to be layout: chart, title->{title, subtitle} and topicIcon
+    "layoutConfig": {
+        # first the global layout is defined by a layout tree, and nodes in the same level are specified by layout rules
+        "layoutTree": {
+            "tag": "root",
+            "layoutRules": {
+                "layoutType": "vertical",
+                "padding": 10,
+                "verticalAlign": "middle", # middle, top, bottom
+                "horizontalAlign": "middle" # middle, left, right
+            },
+            "children": [
+                {
+                    "tag": "chart",
+                    "children": []
+                },
+                {
+                    "tag": "global_title_group",
+                    "layoutRules": {
+                        "layoutType": "horizontal",
+                        "padding": 0,
+                        "verticalAlign": "top", # top, middle, bottom
+                        "horizontalAlign": "middle" # left, middle, right
+                    },
+                    "children": [
+                        {
+                            "tag": "title_group",
+                            "layoutRules": {
+                                "layoutType": "vertical",
+                                "padding": 10,
+                                "verticalAlign": "middle", # top, middle, bottom
+                                "horizontalAlign": "left" # left, middle, right
+                            },
+                            "children": [
+                                {
+                                    "tag": "title_text",
+                                    "children": []
+                                },
+                                {
+                                    "tag": "subtitle_text",
+                                    "children": []
+                                }
+                            ]
+                        },
+                        # {
+                        #     "tag": "topic_icon",
+                        #     "children": []
+                        # }
+                    ]
+                },
+            ]
         }
     }
 }
@@ -37,36 +117,50 @@ class SVGOptimizer(SVGProcessor):
         self.measure_script_path = os.path.join(current_dir, 'svg_processor_modules', 'text_tool', 'measure_text.js')
 
     def process(self, svg: str, additional_configs: Dict, debug: bool = False) -> Union[dict, str]:
-        """处理SVG并返回带有边界框信息的树结构或调试SVG
+        """处理SVG
         
         Args:
-            svg: 输入的SVG字符串
-            debug: 是否返回带有边界框可视化的SVG
+            svg: SVG字符串
+            additional_configs: 额外的配置信息
+            debug: 是否返回中间结果用于调试
         
         Returns:
-            Union[dict, str]: 如果debug为True，返回带有边界框的SVG字符串；
-                             否则返回带有边界框信息的树结构
+            Union[dict, str]: 如果debug为True，返回处理后的树结构；否则返回处理后的SVG字符串
         """
-        # 移除注释
-        svg = re.sub(r'<!--.*?-->', '', svg, flags=re.DOTALL)
-        # 压缩空白
-        svg = re.sub(r'\s+', ' ', svg)
+        # 丢弃svg中所有tag为rect且fill为#ffffff的rect
+        svg = re.sub(r'<rect[^>]*fill="#ffffff"[^>]*>', '', svg)
         
-        configs = {**default_additional_configs, **additional_configs}
-        # if debug:
-        # return self.debug_draw_bbox(svg)
-        
+        return svg
+        # 解析SVG为树结构
         tree = self.parseTree(svg)
+        if not tree:
+            return svg
+        
+        # 添加边界框信息
         self._addBBoxToTree(tree)
+        
+        # 查找坐标轴和marks
         axes = self._findAxes(tree)
         marks = self._findMarks(tree)
-
-        # print(marks)
+        total_configs = {**default_additional_configs, **additional_configs}
+        
         # 处理icon附加
-        if additional_configs.get("iconAttachConfig"):
-            self._processIconAttachment(tree, additional_configs["iconAttachConfig"], axes, marks)
-
-        # 将处理后的树结构转换回SVG字符串
+        if total_configs.get("iconAttachConfig"):
+            self._processIconAttachment(tree, total_configs["iconAttachConfig"], axes, marks)
+        
+        
+        # 处理整体布局（包括标题、副标题、主题图标等）
+        if any(key in total_configs for key in ['titleConfig', 'topicIconConfig', 'layoutConfig']):
+            self._processLayout(tree, total_configs)
+        
+        # 添加浮动图标
+        if total_configs.get("floatIconConfig"):
+            self._processFloatIcon(tree, total_configs["floatIconConfig"])
+        
+        # print(tree)
+        # 返回结果
+        if debug:
+            return tree
         return self._treeToSVG(tree)
 
     def _treeToSVG(self, node: dict) -> str:
@@ -466,8 +560,10 @@ class SVGOptimizer(SVGProcessor):
         
         # 使用_parseLength处理font-size
         raw_font_size = attrs.get('font-size')
-        if raw_font_size:
+        if raw_font_size and type(raw_font_size) == str:
             font_size = self._parseLength(raw_font_size)
+        elif raw_font_size and (type(raw_font_size) == int or type(raw_font_size) == float):
+            font_size = raw_font_size
         else:
             font_size = parent_font_size if parent_font_size else 16
         
@@ -858,7 +954,42 @@ class SVGOptimizer(SVGProcessor):
                 domain_bbox,
                 labels_direction,
                 icon_config,
-                ticks_bbox
+                ticks_bbox,
+                "y"  # 添加轴方向参数
+            )
+            
+            # 添加图标到SVG
+            self._addIconsToSVG(tree, icon_positions, icon_config["iconUrls"])
+        
+        elif icon_config["attachTo"] == "x-axis":
+            x_axis = axes["x_axis"]
+            if not x_axis['main']:
+                return
+            
+            # 获取x轴标签信息
+            labels_info = self._getAxisLabelsInfo(x_axis['labels'])
+            if not labels_info:
+                return
+            
+            # 获取必要的边界框信息
+            axis_bbox = x_axis['main'].get("bbox", {})
+            domain_bbox = x_axis['domain'].get("bbox", {}) if x_axis['domain'] else None
+            ticks_bbox = x_axis['ticks'].get("bbox", {}) if x_axis['ticks'] else None
+            
+            if not axis_bbox or not domain_bbox or not ticks_bbox:
+                return
+            
+            # 判断标签���对于轴的方向
+            labels_direction = self._determineLabelsDirection(labels_info, domain_bbox)
+            
+            # 计算图标位置和大小
+            icon_positions = self._calculateIconPositions(
+                labels_info,
+                domain_bbox,
+                labels_direction,
+                icon_config,
+                ticks_bbox,
+                "x"  # 添加轴方向参数
             )
             
             # 添加图标到SVG
@@ -918,7 +1049,8 @@ class SVGOptimizer(SVGProcessor):
             return "right"
 
     def _calculateIconPositions(self, labels_info: List[Dict], domain_bbox: Dict, 
-                              labels_direction: str, icon_config: Dict, ticks_bbox: Dict) -> List[Dict]:
+                              labels_direction: str, icon_config: Dict, ticks_bbox: Dict,
+                              axis_type: str) -> List[Dict]:
         """计算图标的位置和大小
         
         Args:
@@ -927,6 +1059,7 @@ class SVGOptimizer(SVGProcessor):
             labels_direction: 标签方向
             icon_config: 图标配置
             ticks_bbox: 刻度线的边界框
+            axis_type: 轴类型 ('x' 或 'y')
         """
         icon_positions = []
         
@@ -934,41 +1067,70 @@ class SVGOptimizer(SVGProcessor):
         size_ratio = icon_config.get("attachToAxis", {}).get("sizeRatio", 2)
         padding = icon_config.get("attachToAxis", {}).get("padding", 0)
         
-        # 确定轴的位置（使用刻度线或轴域的最小x坐标）
-        axis_x = min(domain_bbox['minX'], ticks_bbox['minX'])
+        if axis_type == "y":
+            # Y轴的处理逻辑（保持原有逻辑）
+            axis_x = min(domain_bbox['minX'], ticks_bbox['minX'])
+            
+            for label in labels_info:
+                icon_height = (label['bbox']['maxY'] - label['bbox']['minY']) * size_ratio
+                icon_width = icon_height
+                
+                icon_y = (label['bbox']['minY'] + label['bbox']['maxY'] - icon_height) / 2
+                icon_x = axis_x - padding - icon_width
+                
+                original_x = label['bbox']['maxX']
+                target_x = icon_x - padding
+                dx = target_x - original_x
+                
+                current_transform = label['node']['attributes'].get('transform', '')
+                new_transform = f'translate({dx},0)'
+                if current_transform:
+                    new_transform = f'{current_transform} {new_transform}'
+                label['node']['attributes']['transform'] = new_transform
+                
+                icon_positions.append({
+                    'x': icon_x,
+                    'y': icon_y,
+                    'width': icon_width,
+                    'height': icon_height,
+                    'label': label
+                })
         
-        for label in labels_info:
-            # 计算图标高度（基于标签高度）
-            icon_height = (label['bbox']['maxY'] - label['bbox']['minY']) * size_ratio
-            # 保持图标的宽高比为1:1
-            icon_width = icon_height
+        else:  # axis_type == "x"
+            # X轴的处理逻辑
+            axis_y = max(domain_bbox['maxY'], ticks_bbox['maxY'])
             
-            # 计算图标的y位置（垂直居中对齐标签）
-            icon_y = (label['bbox']['minY'] + label['bbox']['maxY'] - icon_height) / 2
-            
-            # 从右向左布局：轴位置 <- padding <- 图标 <- padding <- 标签
-            icon_x = axis_x - padding - icon_width
-            
-            # 计算标签需要移动的距离，使用boundingbox的绝对坐标
-            original_x = label['bbox']['maxX']
-            target_x = icon_x - padding
-            dx = target_x - original_x
-            
-            # 通过transform调整标签位置
-            current_transform = label['node']['attributes'].get('transform', '')
-            new_transform = f'translate({dx},0)'
-            if current_transform:
-                # 如果已经有transform，添加到现有transform后面
-                new_transform = f'{current_transform} {new_transform}'
-            label['node']['attributes']['transform'] = new_transform
-            
-            icon_positions.append({
-                'x': icon_x,
-                'y': icon_y,
-                'width': icon_width,
-                'height': icon_height,
-                'label': label
-            })
+            for label in labels_info:
+                # 计算图标宽度（基于标签宽度）
+                icon_width = (label['bbox']['maxX'] - label['bbox']['minX']) * size_ratio
+                # 保持图标的宽高比为1:1
+                icon_height = icon_width
+                
+                # 计算图标的x位置（水平居中对齐标签）
+                icon_x = (label['bbox']['minX'] + label['bbox']['maxX'] - icon_width) / 2
+                
+                # 从上到下布局：标签 -> padding -> 图标
+                icon_y = axis_y + padding
+                
+                # 计算标签需要移动的距离
+                original_y = label['bbox']['minY']
+                target_y = icon_y - padding - label['bbox']['height']
+                dy = target_y - original_y
+                
+                # 通过transform调整标签位置
+                current_transform = label['node']['attributes'].get('transform', '')
+                new_transform = f'translate(0,{dy})'
+                if current_transform:
+                    new_transform = f'{current_transform} {new_transform}'
+                label['node']['attributes']['transform'] = new_transform
+                
+                icon_positions.append({
+                    'x': icon_x,
+                    'y': icon_y,
+                    'width': icon_width,
+                    'height': icon_height,
+                    'label': label
+                })
         
         return icon_positions
 
@@ -1005,7 +1167,7 @@ class SVGOptimizer(SVGProcessor):
                     'width': str(position['width']),
                     'height': str(position['height']),
                     'href': f"data:{image_data}",
-                    'preserveAspectRatio': 'none'
+                    'preserveAspectRatio': 'xMidYMid meet'
                 }
             }
             icons_group['children'].append(icon)
@@ -1088,7 +1250,7 @@ class SVGOptimizer(SVGProcessor):
         dx = rects[1]['center_x'] - rects[0]['center_x']
         dy = rects[1]['center_y'] - rects[0]['center_y']
         
-        # 判断主要变化方向
+        # 判断���要变化方���
         if abs(dx) > abs(dy):
             # 水平排列
             return 'right' if dx > 0 else 'left'
@@ -1271,3 +1433,658 @@ class SVGOptimizer(SVGProcessor):
             'width': icon_size,
             'height': icon_size
         }
+
+    def _processLayout(self, tree: dict, configs: Dict) -> None:
+        """处理整体布局
+        
+        Args:
+            tree: SVG树结构
+            configs: 配置信息
+        """
+        # 1. 首先创建所有需要的元素
+        chart_group = self._createChartGroup(tree)
+        title_group = self._createTitleGroup(configs.get('titleConfig', {}))
+        topic_icon = self._createTopicIcon(configs.get('topicIconConfig', {}))
+        
+        # 2. 按照布局树组织元素
+        layout_tree = configs.get('layoutConfig', {}).get('layoutTree', {})
+        # 把 layout_tree 的 children中的tag为'chart'的元素替换为chart_group
+        for index, child in enumerate(layout_tree['children']):
+            if child['tag'] == 'chart':
+                layout_tree['children'][index] = chart_group
+        # 把layout_tree中的tag为'title_group'的元素替换为title_group
+        def replace_title_group(node):
+            if node['tag'] == 'title_group':
+                node['tag'] = 'g'
+                node['attributes'] = {'class': 'title-group'}
+                node['children'] = title_group['children']
+                return
+            for child in node.get('children', []):
+                replace_title_group(child)
+        replace_title_group(layout_tree)
+        
+        # 把layout_tree中tag为'topic_icon'的元素替换为topic_icon
+        def replace_topic_icon(node):
+            if node['tag'] == 'topic_icon':
+                node['tag'] = 'image'
+                node['attributes'] = topic_icon['attributes']
+                node['children'] = []
+                node['bbox'] = topic_icon['bbox']
+                return
+            for child in node.get('children', []):
+                replace_topic_icon(child)
+        replace_topic_icon(layout_tree)
+            
+        # 把layout_tree中tag为'global_title_group'的元素的tag替换为'g',增加attributes为{'class': 'global-title-group'}
+        for child in layout_tree['children']:
+            if child['tag'] == 'global_title_group':
+                child['tag'] = 'g'
+                child['attributes'] = {'class': 'global-title-group'}
+                
+        # for child in layout_tree['children']:
+        #     print(child)
+        # 创建新的根组
+        new_root = {
+            'tag': 'g',
+            'attributes': {'class': 'root-group'},
+            'children': []
+        }
+        
+        # 3. 递归构建布局
+        self._buildLayout(layout_tree, {
+            'chart': chart_group,
+            'title_text_group': title_group,
+            'topic_icon': topic_icon
+        }, new_root)
+        
+        # 4. 替换原始内容
+        tree['children'] = [new_root]
+
+    def _createChartGroup(self, tree: dict) -> dict:
+        """将原始图表内容打包到一个组中"""
+        return {
+            'tag': 'g',
+            'attributes': {'class': 'chart-group'},
+            'children': tree.get('children', []).copy(),
+            'bbox': tree.get('bbox', {}),
+        }
+
+    def _createTitleGroup(self, title_config: Dict) -> dict:
+        """创建标题组（包含主标题和副标题组）
+        
+        Args:
+            title_config: 标题配置信息
+        """
+        title_group = {
+            'tag': 'g',
+            'attributes': {'class': 'title-group'},
+            'children': [],
+            'bbox': {'minX': 0, 'minY': 0, 'maxX': 0, 'maxY': 0}
+        }
+        
+        # 分别创建主标题和副标题组
+        title_text_group = self._createTitleTextGroup(title_config.get('title', {}))
+        subtitle_text_group = self._createSubtitleTextGroup(title_config.get('subtitle', {}))
+        
+        # 将两个组添加到标题组中
+        if title_text_group:
+            title_group['children'].append(title_text_group)
+        if subtitle_text_group:
+            title_group['children'].append(subtitle_text_group)
+        
+        return title_group
+
+    def _createTitleTextGroup(self, title_config: Dict) -> Optional[dict]:
+        """创建主标题组，支持多行文本
+        
+        Args:
+            title_config: 主标题配置信息
+        """
+        text_content = title_config.get('text')
+        if not text_content:
+            return None
+        
+        # 将文本内容统一转换为列表形式
+        text_lines = text_content if isinstance(text_content, list) else [text_content]
+        
+        # 获取配置参数
+        font_size = title_config.get('fontSize', 16)
+        line_height = title_config.get('lineHeight', 1.5)  # 默认行高为字体大小的1.2倍
+        text_anchor = title_config.get('textAnchor', 'middle')
+        
+        # 计算每行文本的度量和总体尺寸
+        line_metrics = []
+        total_height = 0
+        max_width = 0
+        
+        for line in text_lines:
+            metrics = self._measureText(line, font_size, text_anchor)
+            line_metrics.append(metrics)
+            max_width = max(max_width, metrics['width'])
+            if total_height > 0:
+                total_height += (line_height - 1) * font_size  # 添加行间距
+            total_height += metrics['height']
+        
+        # 创建标题组
+        title_group = {
+            'tag': 'g',
+            'attributes': {'class': 'title-text-group'},
+            'children': [],
+            'bbox': {
+                'minX': -max_width / 2 if text_anchor == 'middle' else 0,  # 默认居中对齐
+                'minY': 0,
+                'maxX': max_width / 2 if text_anchor == 'middle' else max_width,
+                'maxY': total_height
+            }
+        }
+        
+        # 创建每行文本元素
+        current_y = 0
+        for i, (line, metrics) in enumerate(zip(text_lines, line_metrics)):
+            # 计算当前行的y位置（考虑行高）
+            if i > 0:
+                current_y += font_size * line_height
+            
+            # 创建文本元素
+            line_text = {
+                'tag': 'text',
+                'attributes': {
+                    'class': 'chart-title-line',
+                    'x': self._getTextXPosition(text_anchor, metrics['width']),
+                    'y': str(current_y + metrics['ascent']),  # 基线对齐
+                    'text-anchor': text_anchor,
+                    'font-family': title_config.get('fontFamily', 'sans-serif'),
+                    # 'font-size': font_size,
+                    'font-size': 20,
+                    'font-weight': title_config.get('fontWeight', 'bolder'),
+                    'fill': title_config.get('color', '#000000')
+                },
+                'text': line
+            }
+            
+            title_group['children'].append(line_text)
+        
+        return title_group
+
+    def _getTextXPosition(self, text_anchor: str, width: float) -> str:
+        """根据文本对齐方式计算x位置
+        
+        Args:
+            text_anchor: 文本对齐方式
+            width: 文本宽度
+        
+        Returns:
+            str: x位置值
+        """
+        if text_anchor == 'start':
+            return '0'
+        elif text_anchor == 'end':
+            return str(width)
+        else:  # middle
+            return '0'
+
+    def _createSubtitleTextGroup(self, subtitle_config: Dict) -> Optional[dict]:
+        """创建副标题组，支持多行文本
+        
+        Args:
+            subtitle_config: 副标题配置信息
+        """
+        text_content = subtitle_config.get('text')
+        if not text_content:
+            return None
+        
+        # 将文本内容统一转换为列表形式
+        text_lines = text_content if isinstance(text_content, list) else [text_content]
+        
+        # 获取配置参数
+        font_size = subtitle_config.get('fontSize', 10)
+        line_height = subtitle_config.get('lineHeight', 1.2)  # 默认行高为字��大小的1.2倍
+        text_anchor = subtitle_config.get('textAnchor', 'middle')
+        
+        # 计算每行文本的度量和总体尺寸
+        line_metrics = []
+        total_height = 0
+        max_width = 0
+        
+        for line in text_lines:
+            metrics = self._measureText(line, font_size, text_anchor)
+            line_metrics.append(metrics)
+            max_width = max(max_width, metrics['width'])
+            if total_height > 0:
+                total_height += (line_height - 1) * font_size  # 添加行间距
+            total_height += metrics['height']
+        
+        # 创建副标题组
+        subtitle_group = {
+            'tag': 'g',
+            'attributes': {'class': 'subtitle-text-group'},
+            'children': [],
+            'bbox': {
+                'minX': -max_width / 2 if text_anchor == 'middle' else 0,  # 默认居中对齐
+                'minY': 0,
+                'maxX': max_width / 2 if text_anchor == 'middle' else max_width,
+                'maxY': total_height
+            }
+        }
+        
+        # 创建每行文本元素
+        current_y = 0
+        for i, (line, metrics) in enumerate(zip(text_lines, line_metrics)):
+            # 计算当前行的y位置（考虑行高）
+            if i > 0:
+                current_y += font_size * line_height
+            
+            # 创建文本元素
+            line_text = {
+                'tag': 'text',
+                'attributes': {
+                    'class': 'chart-subtitle-line',
+                    'x': self._getTextXPosition(text_anchor, metrics['width']),
+                    'y': str(current_y + metrics['ascent']),  # 基线对齐
+                    'text-anchor': text_anchor,
+                    'font-family': subtitle_config.get('fontFamily', 'sans-serif'),
+                    'font-size': font_size,
+                    'font-weight': subtitle_config.get('fontWeight', 'normal'),
+                    'fill': subtitle_config.get('color', '#808080')  # 副标题默认使用灰色
+                },
+                'text': line
+            }
+            
+            subtitle_group['children'].append(line_text)
+        
+        return subtitle_group
+
+    def _createTopicIcon(self, icon_config: Dict) -> dict:
+        """创建主题图标
+        
+        Args:
+            icon_config: 图标配置信息
+        """
+        if not icon_config.get('iconUrl'):
+            return None
+        
+        # 获取图标的base64数据
+        image_data = self._getImageAsBase64(icon_config['iconUrl'])
+        if not image_data:
+            return None
+        
+        return {
+            'tag': 'image',
+            'attributes': {
+                'class': 'topic-icon',
+                'href': f"data:{image_data}",
+                'preserveAspectRatio': 'xMidYMid meet',
+                'width': 75,
+                'height': 75,
+            },
+            'bbox': {
+                'minX': 0,
+                'minY': 0,
+                'maxX': 75,
+                'maxY': 75
+            }
+        }
+
+    def _buildLayout(self, layout_node: Dict, element_map: Dict, parent_node: Dict) -> None:
+        """递归构建布局结构
+        
+        Args:
+            layout_node: 布局树节点
+            element_map: 元素映射
+            parent_node: 父节点
+        """
+        tag = layout_node.get('tag')
+        layout_rules = layout_node.get('layoutRules', {})
+        
+        # 创建当前层级的组
+        current_group = {
+            'tag': 'g',
+            'attributes': {'class': f'{tag}-group'},
+            'children': []
+        }
+        if layout_node.get('attributes',{}).get('class'):
+            current_group['attributes']['class'] = layout_node.get('attributes').get('class')
+        
+        # 处理子节点
+        children = layout_node.get('children', [])
+        for child in children:
+            child_tag = child.get('tag')
+            child_class = child.get('attributes', {}).get('class')
+            if child_class == 'chart-group' and child_tag == 'g':
+                current_group['children'].append(child)
+            # elif child_tag in element_map and element_map[child_tag]:
+            elif child.get("children") and len(child["children"])>0:
+                # 递归处理子布局
+                self._buildLayout(child, element_map, current_group)
+            else:
+                current_group['children'].append(child)
+        
+        # 应用布局规则
+        if layout_rules:
+            self._applyLayoutRules(current_group, layout_rules)
+        # 将当前组添加到父节点
+        parent_node['children'].append(current_group)
+
+    def _applyLayoutRules(self, group: Dict, rules: Dict) -> None:
+        """应用布局规则
+        
+        Args:
+            group: 要应用规则的组
+            rules: 布局规则
+        """
+        if not group['children']:
+            return
+        
+        layout_type = rules.get('layoutType', 'vertical')
+        padding = rules.get('padding', 10)
+        vertical_align = rules.get('verticalAlign', 'middle')
+        horizontal_align = rules.get('horizontalAlign', 'middle')
+        
+        # 计算所有子元素的边界框
+        for child in group['children']:
+            if 'bbox' not in child:
+                self._addBBoxToTree(child)
+        
+
+        # # 获取组的总边界
+        # group_bbox = self._calculateGroupBBox(group['children'])
+        # print(group.get('attributes').get('class'))
+        # print(group_bbox)
+        group_bbox = {'minX': 0, 'minY': 0, 'maxX': 0, 'maxY': 0, 'width': 0, 'height': 0}
+        # 获取所有子元素的边界框
+        for child in group['children']:
+            print(child.get('attributes'), child.get('bbox'))
+        
+        max_width = max(child['bbox']['maxX']-child['bbox']['minX'] for child in group['children'])
+        max_height = max(child['bbox']['maxY']-child['bbox']['minY'] for child in group['children'])
+        
+        # 根据布局类型排列元素
+        current_pos = 0
+        # 对group['children']进行排序，保证title在chart-group之前
+        group['children'] = sorted(group['children'], key=lambda x: x.get('attributes', {}).get('class') == 'chart-group')
+        # 对group['children']进行排序，保证topic_icon在最后面
+        group['children'] = sorted(group['children'], key=lambda x: x.get('attributes', {}).get('class') != 'topic-icon')
+        for i, child in enumerate(group['children']):
+            if layout_type == 'vertical':
+                # 垂直布局
+                if i > 0:
+                    current_pos += padding
+                # 计算水平对齐位置
+                if horizontal_align == 'middle':
+                    new_maxX = (child['bbox']['maxX'] - child['bbox']['minX']) / 2
+                    dx = new_maxX - child['bbox']['maxX']
+                elif horizontal_align == 'right':
+                    new_maxX = max_width
+                    dx = new_maxX - child['bbox']['maxX']
+                else:  # left
+                    new_minX = 0
+                    dx = new_minX - child['bbox']['minX']
+                    
+                # # 设置变换
+                # transform = f'translate({dx},{current_pos})'
+                # child['attributes']['transform'] = transform
+                # 更新child的transform
+                # 获取当前的transform
+                current_transform = child.get('attributes', {}).get('transform')
+                 
+                if current_transform:
+                    transform = f"{current_transform} translate({dx},{current_pos - child['bbox']['minY']})"
+                    child['attributes']['transform'] = transform
+                else:
+                    child['attributes']['transform'] = f"translate({dx},{current_pos - child['bbox']['minY']})"
+                # 更新位置
+                current_pos += child['bbox']['maxY'] - child['bbox']['minY']
+                
+                # 更新group_bbox
+                group_bbox['minY'] = 0
+                group_bbox['maxY'] = current_pos
+                group_bbox['height'] = current_pos
+                if layout_type == 'vertical':
+                    if horizontal_align == 'middle':
+                        group_bbox['maxX'] = max(group_bbox['maxX'], (child['bbox']['maxX']-child['bbox']['minX'])/2)
+                        group_bbox['minX'] = -group_bbox['maxX']
+                        group_bbox['width'] = group_bbox['maxX'] - group_bbox['minX']
+                    elif horizontal_align == 'right':
+                        group_bbox['maxX'] = 0
+                        group_bbox['minX'] = min(group_bbox['minX'], -(child['bbox']['maxX']-child['bbox']['minX']))
+                    else:
+                        group_bbox['maxX'] = max(group_bbox['maxX'], (child['bbox']['maxX']-child['bbox']['minX']))
+                        group_bbox['minX'] = 0
+                        group_bbox['width'] = group_bbox['maxX'] - group_bbox['minX']
+                
+            else:  # horizontal
+                # 水平布局
+                if i > 0:
+                    current_pos += padding
+                
+                # 计算垂直对齐位置
+                if vertical_align == 'middle':
+                    new_maxY = (max_height - (child['bbox']['maxY'] - child['bbox']['minY'])) / 2
+                    dy = new_maxY - child['bbox']['maxY']
+                elif vertical_align == 'bottom':
+                    new_maxY = max_height - (child['bbox']['maxY'] - child['bbox']['minY'])
+                    dy = new_maxY - child['bbox']['maxY']
+                else:  # top
+                    new_minY = child['bbox']['minY']
+                    dy = -new_minY
+                    
+                # 更新child的transform
+                current_transform = child.get('attributes', {}).get('transform')
+                if current_transform:
+                    transform = f'{current_transform} translate({current_pos},{dy})'
+                    child['attributes']['transform'] = transform
+                else:
+                    child['attributes']['transform'] = f'translate({current_pos},{dy})'
+                
+                # 更新位置
+                current_pos += child['bbox']['maxX'] - child['bbox']['minX']
+                
+                # 更新group_bbox
+                group_bbox['minX'] = 0
+                group_bbox['maxX'] = current_pos
+                group_bbox['width'] = current_pos
+                if layout_type == 'horizontal':
+                    if vertical_align == 'middle':
+                        group_bbox['maxY'] = max(group_bbox['maxY'], (child['bbox']['maxY']-child['bbox']['minY'])/2)
+                        group_bbox['minY'] = -group_bbox['maxY']
+                        group_bbox['height'] = group_bbox['maxY'] - group_bbox['minY']
+                    elif vertical_align == 'bottom':
+                        group_bbox['maxY'] = 0
+                        group_bbox['minY'] = min(group_bbox['minY'], -(child['bbox']['maxY']-child['bbox']['minY']))
+                    else:
+                        group_bbox['maxY'] = max(group_bbox['maxY'], (child['bbox']['maxY']-child['bbox']['minY']))
+                        group_bbox['minY'] = 0
+                        group_bbox['height'] = group_bbox['maxY'] - group_bbox['minY']
+        
+
+    def _calculateGroupBBox(self, children: List[Dict]) -> Dict:
+        """计算组的总边界框
+        
+        Args:
+            children: 子元素列表
+        
+        Returns:
+            Dict: 边界框信息
+        """
+        if not children:
+            return {'minX': 0, 'minY': 0, 'maxX': 0, 'maxY': 0, 'width': 0, 'height': 0}
+        # for child in children:
+        #     print(child['tag'], child.get('attributes'), child.get('bbox'))
+        minX = min(child['bbox']['minX'] for child in children)
+        minY = min(child['bbox']['minY'] for child in children)
+        maxX = max(child['bbox']['maxX'] for child in children)
+        maxY = max(child['bbox']['maxY'] for child in children)
+        
+        return {
+            'minX': minX,
+            'minY': minY,
+            'maxX': maxX,
+            'maxY': maxY,
+            'width': maxX - minX,
+            'height': maxY - minY
+        }
+
+    def _getBBoxImage(self, node: Dict) -> Dict[str, float]:
+        """获取图片元素的边界框
+        
+        Args:
+            node: 图片节点
+            
+        Returns:
+            Dict[str, float]: 包含minX, minY, maxX, maxY的边界框字典
+        """
+        attrs = node['attributes']
+        x = float(attrs.get('x', 0))
+        y = float(attrs.get('y', 0))
+        width = float(attrs.get('width', 0))
+        height = float(attrs.get('height', 0))
+        
+        # 创建基本边界框
+        bbox = {
+            'minX': x,
+            'minY': y,
+            'maxX': x + width,
+            'maxY': y + height
+        }
+        
+        # 处理transform变换
+        transform = attrs.get('transform')
+        if transform:
+            matrix = self._parseTransform(transform)
+            if isinstance(matrix, list) and len(matrix) == 2:
+                # 如果是两个矩阵，进行两次变换
+                bbox = self._applyTransform(bbox['minX'], bbox['minY'], bbox['maxX'], bbox['maxY'], matrix[0])
+                bbox = self._applyTransform(bbox['minX'], bbox['minY'], bbox['maxX'], bbox['maxY'], matrix[1])
+            else:
+                bbox = self._applyTransform(bbox['minX'], bbox['minY'], bbox['maxX'], bbox['maxY'], matrix)
+        
+        return bbox
+
+    def _findEmptySpace(self, tree: dict, icon_size: float, padding: float, preferred_area: str) -> Optional[Dict]:
+        """寻找图表中的空白区域
+        
+        Args:
+            tree: SVG树结构
+            icon_size: 图标大小
+            padding: 间距
+            preferred_area: 优先查找区域
+        
+        Returns:
+            Optional[Dict]: 找到的空白区域位置,包含x和y坐标
+        """
+        # 获取图表的整体边界
+        chart_bbox = tree.get('bbox', {})
+        if not chart_bbox:
+            return None
+            
+        # 收集所有元素的边界框
+        element_boxes = []
+        def collect_boxes(node):
+            if 'bbox' in node:
+                element_boxes.append(node['bbox'])
+            for child in node.get('children', []):
+                collect_boxes(child)
+        
+        collect_boxes(tree)
+        
+        # 定义候选位置
+        candidates = []
+        chart_width = chart_bbox['maxX'] - chart_bbox['minX']
+        chart_height = chart_bbox['maxY'] - chart_bbox['minY']
+        
+        # 根据preferred_area确定搜索顺序
+        if preferred_area == 'top-right':
+            candidates = [
+                (chart_bbox['maxX'] - icon_size - padding, chart_bbox['minY'] + padding),  # 右上
+                (chart_bbox['minX'] + padding, chart_bbox['minY'] + padding),  # 左上
+                (chart_bbox['maxX'] - icon_size - padding, chart_bbox['maxY'] - icon_size - padding),  # 右下
+                (chart_bbox['minX'] + padding, chart_bbox['maxY'] - icon_size - padding)  # 左下
+            ]
+        elif preferred_area == 'top-left':
+            candidates = [
+                (chart_bbox['minX'] + padding, chart_bbox['minY'] + padding),  # 左上
+                (chart_bbox['maxX'] - icon_size - padding, chart_bbox['minY'] + padding),  # 右上
+                (chart_bbox['minX'] + padding, chart_bbox['maxY'] - icon_size - padding),  # 左下
+                (chart_bbox['maxX'] - icon_size - padding, chart_bbox['maxY'] - icon_size - padding)  # 右下
+            ]
+        # ... 可以添加其他方向的搜索顺序
+        
+        # 检查每个候选位置是否有足够的空间
+        for x, y in candidates:
+            icon_bbox = {
+                'minX': x - padding,
+                'minY': y - padding,
+                'maxX': x + icon_size + padding,
+                'maxY': y + icon_size + padding
+            }
+            
+            # 检查是否与任何现有元素重叠
+            has_overlap = False
+            for box in element_boxes:
+                if self._checkOverlap(icon_bbox, box):
+                    has_overlap = True
+                    break
+            
+            if not has_overlap:
+                return {'x': x, 'y': y}
+        
+        return None
+
+    def _checkOverlap(self, box1: Dict, box2: Dict) -> bool:
+        """检查两个边界框是否重叠
+        
+        Args:
+            box1: 第一个边界框
+            box2: 第二个边界框
+        
+        Returns:
+            bool: 是否重叠
+        """
+        return not (box1['maxX'] < box2['minX'] or
+                   box1['minX'] > box2['maxX'] or
+                   box1['maxY'] < box2['minY'] or
+                   box1['minY'] > box2['maxY'])
+
+    def _processFloatIcon(self, tree: dict, float_config: Dict) -> None:
+        """处理浮动图标
+        
+        Args:
+            tree: SVG树结构
+            float_config: 浮动图标配置
+        """
+        if not float_config or not float_config.get('iconUrl'):
+            return
+            
+        # 获取图标的base64数据
+        image_data = self._getImageAsBase64(float_config['iconUrl'])
+        if not image_data:
+            return
+            
+        # 寻找空白区域
+        icon_size = float_config.get('size', 50)
+        padding = float_config.get('padding', 10)
+        preferred_area = float_config.get('preferredArea', 'top-right')
+        
+        position = self._findEmptySpace(tree, icon_size, padding, preferred_area)
+        position = {'x': 100, 'y': 100}
+        # if not position:
+            # return
+            
+        # 创建图标元素
+        float_icon = {
+            'tag': 'image',
+            'attributes': {
+                'class': 'float-icon',
+                'x': str(position['x']),
+                'y': str(position['y']),
+                'width': str(icon_size),
+                'height': str(icon_size),
+                'href': f"data:{image_data}",
+                'preserveAspectRatio': 'xMidYMid meet'
+            }
+        }
+        
+        # 将图标添加到SVG中
+        if 'children' not in tree:
+            tree['children'] = []
+        tree['children'].append(float_icon)
