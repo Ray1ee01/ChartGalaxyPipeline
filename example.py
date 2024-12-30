@@ -16,7 +16,7 @@ def main():
     )
 
     # 执行pipeline
-    input_file = os.path.join(data_dir, 'test_3.json')
+    input_file = os.path.join(data_dir, 'test_2.json')
     result = pipeline.execute(input_file)
     # print(result)
 

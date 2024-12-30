@@ -130,7 +130,7 @@ class SVGOptimizer(SVGProcessor):
         # 丢弃svg中所有tag为rect且fill为#ffffff的rect
         svg = re.sub(r'<rect[^>]*fill="#ffffff"[^>]*>', '', svg)
         
-        return svg
+        # return svg
         # 解析SVG为树结构
         tree = self.parseTree(svg)
         if not tree:
