@@ -11,6 +11,7 @@ import base64
 import requests
 from urllib.parse import urlparse
 import mimetypes
+from .svg_processor_modules.vegalite_parser import VegaLiteParser
 
 default_additional_configs = {
     "iconAttachConfig": {
@@ -130,38 +131,43 @@ class SVGOptimizer(SVGProcessor):
         # 丢弃svg中所有tag为rect且fill为#ffffff的rect
         svg = re.sub(r'<rect[^>]*fill="#ffffff"[^>]*>', '', svg)
         
-        # return svg
-        # 解析SVG为树结构
-        tree = self.parseTree(svg)
-        if not tree:
-            return svg
         
-        # 添加边界框信息
-        self._addBBoxToTree(tree)
+        parser = VegaLiteParser(svg)
+        parsed_svg = parser.parse()
         
-        # 查找坐标轴和marks
-        axes = self._findAxes(tree)
-        marks = self._findMarks(tree)
-        total_configs = {**default_additional_configs, **additional_configs}
+        return parsed_svg
+        # # return svg
+        # # 解析SVG为树结构
+        # tree = self.parseTree(svg)
+        # if not tree:
+        #     return svg
         
-        # 处理icon附加
-        if total_configs.get("iconAttachConfig"):
-            self._processIconAttachment(tree, total_configs["iconAttachConfig"], axes, marks)
+        # # 添加边界框信息
+        # self._addBBoxToTree(tree)
+        
+        # # 查找坐标轴和marks
+        # axes = self._findAxes(tree)
+        # marks = self._findMarks(tree)
+        # total_configs = {**default_additional_configs, **additional_configs}
+        
+        # # 处理icon附加
+        # if total_configs.get("iconAttachConfig"):
+        #     self._processIconAttachment(tree, total_configs["iconAttachConfig"], axes, marks)
         
         
-        # 处理整体布局（包括标题、副标题、主题图标等）
-        if any(key in total_configs for key in ['titleConfig', 'topicIconConfig', 'layoutConfig']):
-            self._processLayout(tree, total_configs)
+        # # 处理整体布局（包括标题、副标题、主题图标等）
+        # if any(key in total_configs for key in ['titleConfig', 'topicIconConfig', 'layoutConfig']):
+        #     self._processLayout(tree, total_configs)
         
-        # 添加浮动图标
-        if total_configs.get("floatIconConfig"):
-            self._processFloatIcon(tree, total_configs["floatIconConfig"])
+        # # 添加浮动图标
+        # if total_configs.get("floatIconConfig"):
+        #     self._processFloatIcon(tree, total_configs["floatIconConfig"])
         
-        # print(tree)
-        # 返回结果
-        if debug:
-            return tree
-        return self._treeToSVG(tree)
+        # # print(tree)
+        # # 返回结果
+        # if debug:
+        #     return tree
+        # return self._treeToSVG(tree)
 
     def _treeToSVG(self, node: dict) -> str:
         """将树结构转换回SVG字符串
@@ -1896,7 +1902,6 @@ class SVGOptimizer(SVGProcessor):
                         group_bbox['minY'] = 0
                         group_bbox['height'] = group_bbox['maxY'] - group_bbox['minY']
         
-
     def _calculateGroupBBox(self, children: List[Dict]) -> Dict:
         """计算组的总边界框
         
