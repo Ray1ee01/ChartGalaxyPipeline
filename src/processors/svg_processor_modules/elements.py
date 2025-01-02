@@ -1,7 +1,16 @@
-from abc import ABC, abstractmethod
+
 from dataclasses import dataclass
 from typing import List, Optional, Dict, Tuple
 from ...utils.node_bridge import NodeBridge
+import re
+import math
+from abc import ABC, abstractmethod
+import os
+import json
+import base64
+import requests
+import mimetypes
+from urllib.parse import urlparse
 
 node_bridge = NodeBridge()
 
@@ -58,9 +67,20 @@ class LayoutElement(ABC):
     def bounding_box(self) -> Optional[BoundingBox]:
         return self._bounding_box
     
+    def update_pos(self, old_min_x: float, old_min_y: float):
+        if 'x' in self.attributes:
+            self.attributes['x'] += self._bounding_box.minx - old_min_x
+        else:
+            self.attributes['x'] = self._bounding_box.minx - old_min_x
+        if 'y' in self.attributes:
+            self.attributes['y'] += self._bounding_box.miny - old_min_y
+        else:
+            self.attributes['y'] = self._bounding_box.miny - old_min_y
+            
     @property
-    def get_transform_matrix(self) -> Optional[List[float]]:
+    def get_transform_matrix(self) -> List[float]:
         """解析transform属性"""
+        # print("self.attributes", self.attributes)
         transform = self.attributes.get('transform', '')
         if not transform:
             return [1, 0, 0, 1, 0, 0]
@@ -129,8 +149,57 @@ class LayoutElement(ABC):
                 matrix[1] = -sin
                 matrix[2] = sin
                 matrix[3] = cos
-
         return matrix
+    
+    def _apply_transform(self, minX: float, minY: float, maxX: float, maxY: float, matrix: List[float]) -> Dict[str, float]:
+        """应用变换矩阵到边界框的四个角点
+        
+        Args:
+            minX: 边界框左上角x坐标
+            minY: 边界框左上角y坐标 
+            maxX: 边界框右下角x坐标
+            maxY: 边界框右下角y坐标
+            matrix: 变换矩阵 [a, b, c, d, e, f]
+        
+        Returns:
+            Dict[str, float]: 变换后的边界框
+        """
+        # 计算四个角点变换后的坐标
+        nx1, ny1 = self._apply_matrix(minX, minY, matrix)  # 左上
+        nx2, ny2 = self._apply_matrix(maxX, maxY, matrix)  # 右下
+        nx3, ny3 = self._apply_matrix(minX, maxY, matrix)  # 左下
+        nx4, ny4 = self._apply_matrix(maxX, minY, matrix)  # 右上
+        
+        # 找出变换后的最小和最大坐标
+        new_min_x = min(nx1, nx2, nx3, nx4)
+        new_min_y = min(ny1, ny2, ny3, ny4)
+        new_max_x = max(nx1, nx2, nx3, nx4)
+        new_max_y = max(ny1, ny2, ny3, ny4)
+        
+        # return {
+        #     'minX': new_min_x,
+        #     'minY': new_min_y,
+        #     'maxX': new_max_x,
+        #     'maxY': new_max_y
+        # }
+        return BoundingBox(new_max_x - new_min_x, new_max_y - new_min_y, new_min_x, new_max_x, new_min_y, new_max_y)
+    
+    def _apply_matrix(self, x: float, y: float, matrix: List[float]) -> Tuple[float, float]:
+        """应用变换矩阵到单个坐标点
+        
+        Args:
+            x: 点的x坐标
+            y: 点的y坐标
+            matrix: 变换矩阵 [a, b, c, d, e, f]
+        
+        Returns:
+            Tuple[float, float]: 变换后的坐标点(x, y)
+        """
+        
+        return (
+            matrix[0] * (x + matrix[4]) + matrix[2] * (y + matrix[5]),
+            matrix[1] * (x + matrix[4]) + matrix[3] * (y + matrix[5])
+        )
     
     @bounding_box.setter
     def bounding_box(self, value: BoundingBox):
@@ -206,14 +275,22 @@ class GroupElement(LayoutElement):
         self.layout_strategy = None  # 可以是垂直布局、水平布局等
         self.tag = 'g'
     
-    def get_bounding_box(self) -> Dict[str, float]:
+    def update_pos(self, old_min_x: float, old_min_y: float):
+        current_transform = self.attributes.get('transform', '')
+        new_transform = f"translate({self._bounding_box.minx - old_min_x}, {self._bounding_box.miny - old_min_y})"
+        if current_transform:
+            self.attributes['transform'] = f"{current_transform} {new_transform}"
+        else:
+            self.attributes['transform'] = new_transform
+    
+    def get_bounding_box(self) -> BoundingBox:
         """获取组元素的边界框
         
         Returns:
-            Dict[str, float]: 包含minX, minY, maxX, maxY的边界框字典
+            BoundingBox: 包含minX, minY, maxX, maxY的边界框
         """
         # 获取当前组的变换矩阵
-        transform = self.get_transform_matrix()
+        transform = self.get_transform_matrix
         
         # 获取所有子元素的边界框
         child_bboxes = []
@@ -253,55 +330,7 @@ class GroupElement(LayoutElement):
         maxY = max(bbox.maxy for bbox in child_bboxes)
         
         return BoundingBox(maxX - minX, maxY - minY, minX, maxX, minY, maxY)
-    
-    def _apply_transform(self, minX: float, minY: float, maxX: float, maxY: float, matrix: List[float]) -> Dict[str, float]:
-        """应用变换矩阵到边界框的四个角点
         
-        Args:
-            minX: 边界框左上角x坐标
-            minY: 边界框左上角y坐标 
-            maxX: 边界框右下角x坐标
-            maxY: 边界框右下角y坐标
-            matrix: 变换矩阵 [a, b, c, d, e, f]
-        
-        Returns:
-            Dict[str, float]: 变换后的边界框
-        """
-        # 计算四个角点变换后的坐标
-        nx1, ny1 = self._apply_matrix(minX, minY, matrix)  # 左上
-        nx2, ny2 = self._apply_matrix(maxX, maxY, matrix)  # 右下
-        nx3, ny3 = self._apply_matrix(minX, maxY, matrix)  # 左下
-        nx4, ny4 = self._apply_matrix(maxX, minY, matrix)  # 右上
-        
-        # 找出变换后的最小和最大坐标
-        new_min_x = min(nx1, nx2, nx3, nx4)
-        new_min_y = min(ny1, ny2, ny3, ny4)
-        new_max_x = max(nx1, nx2, nx3, nx4)
-        new_max_y = max(ny1, ny2, ny3, ny4)
-        
-        return {
-            'minX': new_min_x,
-            'minY': new_min_y,
-            'maxX': new_max_x,
-            'maxY': new_max_y
-        }
-    
-    def _apply_matrix(self, x: float, y: float, matrix: List[float]) -> Tuple[float, float]:
-        """应用变换矩阵到单个坐标点
-        
-        Args:
-            x: 点的x坐标
-            y: 点的y坐标
-            matrix: 变换矩阵 [a, b, c, d, e, f]
-        
-        Returns:
-            Tuple[float, float]: 变换后的坐标点(x, y)
-        """
-        return (
-            matrix[0] * (x + matrix[4]) + matrix[2] * (y + matrix[5]),
-            matrix[1] * (x + matrix[4]) + matrix[3] * (y + matrix[5])
-        )
-    
     def layout(self, children: List[LayoutElement]) -> None:
         """布局子元素"""
         if self.layout_strategy:
@@ -329,25 +358,68 @@ class Image(AtomElement):
         self.base64 = base64
         self.tag = 'image'
     
+    @staticmethod
+    def _getImageAsBase64(image_url: str) -> Optional[str]:
+        """将图片转换为base64编码
+        
+        Args:
+            image_url: 图片URL或本地文件路径
+        
+        Returns:
+            Optional[str]: base64编码的图片数据，包含MIME类型
+        """
+        try:
+            # 检查是否已经是base64编码
+            if image_url.startswith('data:'):
+                return image_url
+            
+            # 判断是URL还是本地文件
+            parsed = urlparse(image_url)
+            is_url = bool(parsed.scheme and parsed.netloc)
+            
+            # 获取图片数据
+            if is_url:
+                response = requests.get(image_url)
+                image_data = response.content
+                # 从URL或Content-Type获取MIME类型
+                content_type = response.headers.get('content-type')
+                if not content_type:
+                    content_type = mimetypes.guess_type(image_url)[0] or 'image/png'
+            else:
+                # 处理本地文件
+                with open(image_url, 'rb') as f:
+                    image_data = f.read()
+                content_type = mimetypes.guess_type(image_url)[0] or 'image/png'
+            
+            # 转换为base64
+            base64_data = base64.b64encode(image_data).decode('utf-8')
+            return f"{content_type};base64,{base64_data}"
+            
+        except Exception as e:
+            print(f"Error processing image {image_url}: {str(e)}")
+            return None
+    
     def get_bounding_box(self) -> BoundingBox:
-        transform = self.get_transform_matrix()
+        transform = self.get_transform_matrix
         x = float(self.attributes.get('x', 0))
         y = float(self.attributes.get('y', 0))
         width = float(self.attributes.get('width', 0))
         height = float(self.attributes.get('height', 0))
-        
+        min_x = x
+        min_y = y
+        max_x = x + width
+        max_y = y + height
         if transform:
-            matrix = self._parse_transform(transform)
-            if isinstance(matrix, list) and len(matrix) == 2:
+            if isinstance(transform, list) and len(transform) == 2:
                 # 如果是两个矩阵,进行两次变换
-                bbox1 = self._apply_transform(x, y, width, height, matrix[0])
-                bbox2 = self._apply_transform(bbox1.maxx, bbox1.maxy, width, height, matrix[1])
+                bbox1 = self._apply_transform(min_x, min_y, max_x, max_y, transform[0])
+                bbox2 = self._apply_transform(bbox1.minx, bbox1.miny, bbox1.maxx, bbox1.maxy, transform[1])
                 return BoundingBox(bbox2.maxx - bbox2.minx, bbox2.maxy - bbox2.miny, bbox2.minx, bbox2.maxx, bbox2.miny, bbox2.maxy)
             else:
-                bbox = self._apply_transform(x, y, width, height, matrix)
+                bbox = self._apply_transform(min_x, min_y, max_x, max_y, transform)
                 return BoundingBox(bbox.maxx - bbox.minx, bbox.maxy - bbox.miny, bbox.minx, bbox.maxx, bbox.miny, bbox.maxy)
         else:
-            return BoundingBox(width, height, x, x + width, y, y + height)
+            return BoundingBox(max_x - min_x, max_y - min_y, min_x, max_x, min_y, max_y)
     
     def _dump_extra_info(self) -> List[str]:
         return [f"Base64: {self.base64[:30]}..." if self.base64 else "Base64: <empty>"]
@@ -359,7 +431,8 @@ class Text(AtomElement):
         self.content = content
         self.tag = 'text'
     
-    def _measure_text(self, text: str, font_size: float, anchor: str = 'left top') -> Dict[str, float]:
+    @staticmethod
+    def _measure_text(text: str, font_size: float, anchor: str = 'left top') -> Dict[str, float]:
         """使用Node.js的TextToSVG库测量文本尺寸"""
         try:
             data = {
@@ -384,15 +457,33 @@ class Text(AtomElement):
                 'descent': 0
             }
     
+    def update_pos(self, old_min_x: float, old_min_y: float):
+        # print("old_min_x", old_min_x, "old_min_y", old_min_y)
+        # print("self._bounding_box.minx", self._bounding_box.minx, "self._bounding_box.miny", self._bounding_box.miny)
+        if 'x' in self.attributes:
+            self.attributes['x'] += self._bounding_box.minx - old_min_x
+        else:
+            self.attributes['x'] = self._bounding_box.minx - old_min_x
+        if 'y' in self.attributes:
+            self.attributes['y'] += self._bounding_box.miny - old_min_y
+        else:
+            self.attributes['y'] = self._bounding_box.miny - old_min_y
+            
     
     def get_bounding_box(self) -> BoundingBox:
-        transform = self.get_transform_matrix()
+        transform = self.get_transform_matrix
         text = self.content
+        # if len(text) <= 2:
+        #     text = "Lj"
+        # else:
+        #     text = text[:-2] + "ly"
+        # print(self.attributes)
         x = float(self.attributes.get('x', 0))
         y = float(self.attributes.get('y', 0))
         dx = float(self.attributes.get('dx', 0))
         dy = float(self.attributes.get('dy', 0))
-        font_size = float(self.attributes.get('font-size', 16))
+        # font_size = float(self.attributes.get('font-size', 16))
+        raw_font_size = self.attributes.get('font-size')
         text_anchor = self.attributes.get('text-anchor', 'start')
         
         if raw_font_size and type(raw_font_size) == str:
@@ -402,22 +493,35 @@ class Text(AtomElement):
         else:
             font_size = parent_font_size if parent_font_size else 16
         
-        metrics = self._measure_text(text, font_size)
+        # print(text, font_size, text_anchor)
+        metrics = self._measure_text(text, font_size, text_anchor)
         width = metrics['width']
         height = metrics['height']
         
+        if text_anchor == 'middle':
+            x -= width / 2
+        elif text_anchor == 'end':
+            x -= width
+            
+        x += dx
+        y += dy - metrics['ascent']
+        
+        min_x = x
+        min_y = y
+        max_x = x + width
+        max_y = y + height
+        
         if transform:
-            matrix = self._parse_transform(transform)
-            if isinstance(matrix, list) and len(matrix) == 2:
+            if isinstance(transform, list) and len(transform) == 2:
                 # 如果是两个矩阵,进行两次变换
-                bbox1 = self._apply_transform(x, y, width, height, matrix[0])
-                bbox2 = self._apply_transform(bbox1.maxx, bbox1.maxy, width, height, matrix[1])
+                bbox1 = self._apply_transform(min_x, min_y, max_x, max_y, transform[0])
+                bbox2 = self._apply_transform(bbox1.minx, bbox1.miny, bbox1.maxx, bbox1.maxy, transform[1])
                 return BoundingBox(bbox2.maxx - bbox2.minx, bbox2.maxy - bbox2.miny, bbox2.minx, bbox2.maxx, bbox2.miny, bbox2.maxy)
             else:
-                bbox = self._apply_transform(x, y, width, height, matrix)
+                bbox = self._apply_transform(min_x, min_y, max_x, max_y, transform)
                 return BoundingBox(bbox.maxx - bbox.minx, bbox.maxy - bbox.miny, bbox.minx, bbox.maxx, bbox.miny, bbox.maxy)
         else:
-            return BoundingBox(width, height, x, x + width, y, y + height)
+            return BoundingBox(max_x - min_x, max_y - min_y, min_x, max_x, min_y, max_y)
         
     
     def _parse_length(self, value: str) -> float:
@@ -457,7 +561,7 @@ class Rect(Graphical):
         self.tag = 'rect'
     
     def get_bounding_box(self) -> BoundingBox:
-        transform = self.get_transform_matrix()
+        transform = self.get_transform_matrix
         x = float(self.attributes.get('x', 0))
         y = float(self.attributes.get('y', 0))
         width = float(self.attributes.get('width', 0))
@@ -490,7 +594,7 @@ class Line(Graphical):
         self.tag = 'line'
         
     def get_bounding_box(self) -> BoundingBox:
-        transform = self.get_transform_matrix()
+        transform = self.get_transform_matrix
         x1 = float(self.attributes.get('x1', 0))
         y1 = float(self.attributes.get('y1', 0))
         x2 = float(self.attributes.get('x2', 0))
@@ -597,14 +701,13 @@ class Path(Graphical):
                 current_y = points[-1]
         
         # 处理变换
-        transform = attrs.get('transform')
+        transform = self.get_transform_matrix
         if transform:
-            matrix = self._parse_transform(transform)
-            if isinstance(matrix, list) and len(matrix) == 2:
-                bbox = self._apply_transform(minX, minY, maxX, maxY, matrix[0])
-                bbox = self._apply_transform(bbox.maxx, bbox.maxy, maxX, maxY, matrix[1])
+            if isinstance(transform, list) and len(transform) == 2:
+                bbox = self._apply_transform(minX, minY, maxX, maxY, transform[0])
+                bbox = self._apply_transform(bbox.maxx, bbox.maxy, maxX, maxY, transform[1])
                 return BoundingBox(bbox.maxx - bbox.minx, bbox.maxy - bbox.miny, bbox.minx, bbox.maxx, bbox.miny, bbox.maxy)
-            bbox = self._apply_transform(minX, minY, maxX, maxY, matrix)
+            bbox = self._apply_transform(minX, minY, maxX, maxY, transform)
             return BoundingBox(bbox.maxx - bbox.minx, bbox.maxy - bbox.miny, bbox.minx, bbox.maxx, bbox.miny, bbox.maxy)
         
         return BoundingBox(maxX - minX, maxY - minY, minX, maxX, minY, maxY)
@@ -622,16 +725,15 @@ class Circle(Graphical):
         self.r = r
         self.tag = 'circle'
     def get_bounding_box(self) -> BoundingBox:
-        transform = self.get_transform_matrix()
+        transform = self.get_transform_matrix
         cx = float(self.attributes.get('cx', 0))
         cy = float(self.attributes.get('cy', 0))
         r = float(self.attributes.get('r', 0))
         
         if transform:
-            matrix = self._parse_transform(transform)
-            if isinstance(matrix, list) and len(matrix) == 2:
-                bbox = self._apply_transform(cx - r, cy - r, cx + r, cy + r, matrix[0])
-                bbox = self._apply_transform(bbox.maxx, bbox.maxy, cx + r, cy + r, matrix[1])
+            if isinstance(transform, list) and len(transform) == 2:
+                bbox = self._apply_transform(cx - r, cy - r, cx + r, cy + r, transform[0])
+                bbox = self._apply_transform(bbox.maxx, bbox.maxy, cx + r, cy + r, transform[1])
                 return BoundingBox(bbox.maxx - bbox.minx, bbox.maxy - bbox.miny, bbox.minx, bbox.maxx, bbox.miny, bbox.maxy)
             bbox = self._apply_transform(cx - r, cy - r, cx + r, cy + r, matrix)
             return BoundingBox(bbox.maxx - bbox.minx, bbox.maxy - bbox.miny, bbox.minx, bbox.maxx, bbox.miny, bbox.maxy)

@@ -12,6 +12,9 @@ import requests
 from urllib.parse import urlparse
 import mimetypes
 from .svg_processor_modules.vegalite_parser import VegaLiteParser
+from .svg_processor_modules.layout_processor import LayoutProcessor
+from .svg_processor_modules.tree_converter import SVGTreeConverter
+from .svg_processor_modules.elements import *
 
 default_additional_configs = {
     "iconAttachConfig": {
@@ -133,9 +136,45 @@ class SVGOptimizer(SVGProcessor):
         
         
         parser = VegaLiteParser(svg)
-        parsed_svg = parser.parse()
+        parsed_svg, flattened_elements_tree, layout_graph = parser.parse()
         
-        return parsed_svg
+        layout_processor = LayoutProcessor(flattened_elements_tree, layout_graph)
+        element_tree = layout_processor.process()
+        
+        # element_list = SVGTreeConverter.flatten_tree(element_tree)
+        # root_element = GroupElement()
+        # root_element.children = element_list
+        # rects = []
+        # for element in root_element.children:
+        #     bounding_box = element.get_bounding_box()
+        #     rect = Rect()
+        #     rect.attributes = {
+        #         "stroke": "red",
+        #         "stroke-width": 1,
+        #         "fill": "none",
+        #         "x": bounding_box.minx,
+        #         "y": bounding_box.miny,
+        #         "width": bounding_box.maxx - bounding_box.minx,
+        #         "height": bounding_box.maxy - bounding_box.miny,
+        #     }
+        #     rects.append(rect)
+        # for rect in rects:
+        #     root_element.children.append(rect)
+        # element_tree = root_element
+        
+        attrs_list = []
+        parser.svg_root['attributes']['width'] = 1000
+        parser.svg_root['attributes']['height'] = 1000
+        parser.svg_root['attributes']['viewBox'] = "0 0 1000 1000"
+        for key, value in parser.svg_root['attributes'].items():
+            attrs_list.append(f'{key}="{value}"')
+        attrs_str = ' '.join(attrs_list)
+        svg_left = f"<svg {attrs_str} xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">"
+        svg_right = f"</svg>"
+        element_tree.attributes['transform'] = "translate(100,100)"
+        svg_str = SVGTreeConverter.element_tree_to_svg(element_tree)
+        svg_str = svg_left + svg_str + svg_right
+        return svg_str
         # # return svg
         # # 解析SVG为树结构
         # tree = self.parseTree(svg)
