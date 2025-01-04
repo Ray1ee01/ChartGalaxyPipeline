@@ -133,6 +133,7 @@ class SVGOptimizer(SVGProcessor):
         """
         # 丢弃svg中所有tag为rect且fill为#ffffff的rect
         svg = re.sub(r'<rect[^>]*fill="#ffffff"[^>]*>', '', svg)
+        return svg
         
         
         parser = VegaLiteParser(svg)
@@ -1489,7 +1490,7 @@ class SVGOptimizer(SVGProcessor):
         # 1. 首先创建所有需要的元素
         chart_group = self._createChartGroup(tree)
         title_group = self._createTitleGroup(configs.get('titleConfig', {}))
-        topic_icon = self._createTopicIcon(con figs.get('topicIconConfig', {}))
+        topic_icon = self._createTopicIcon(configs.get('topicIconConfig', {}))
         
         # 2. 按照布局树组织元素
         layout_tree = configs.get('layoutConfig', {}).get('layoutTree', {})

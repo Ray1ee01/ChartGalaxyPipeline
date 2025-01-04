@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List
+from ..template.template import ChartTemplate
 
 class DataProcessor(ABC):
     @abstractmethod
@@ -8,7 +9,7 @@ class DataProcessor(ABC):
 
 class ChartGenerator(ABC):
     @abstractmethod
-    def generate(self, data: List[Dict]) -> str:
+    def generate(self, data: List[Dict], template: ChartTemplate=None) -> str:
         pass
 
 class SVGProcessor(ABC):
