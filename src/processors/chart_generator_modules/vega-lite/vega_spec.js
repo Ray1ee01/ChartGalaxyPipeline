@@ -62,14 +62,6 @@ module.exports = async function(data, options = {}) {
         "/data1/liduan/generation/chart/chart_pipeline/testicon/robot.png",
         "/data1/liduan/generation/chart/chart_pipeline/testicon/robot.png",
       ],
-      // attachToMark: {
-      //   sizeRatio: 0.9,
-      //   padding: 0,
-      //   relative: ["end", "outer"]
-      // },
-      // attachToAxis: {
-      //   padding: 0
-      // }
     }
   };
 

@@ -31,57 +31,57 @@ subtitle_config = {
     "textAnchor": "middle"
 }
 
-# layout_tree = {
-#     "tag": "g",
-#     "layoutStrategy": {
-#         "name": "vertical",
-#         "padding": 10,
-#         "direction": "down"
-#     },
-#     "children": [
-#         {
-#             "tag": "g",
-#             "id": "global_title_group",
-#             "layoutStrategy": {
-#                 "name": "horizontal",
-#                 "padding": 0,
-#                 "direction": "right",
-#             },
-#             "children": [
-#                 {
-#                     "tag": "g",
-#                     "id": "title_group",
-#                     "layoutStrategy": {
-#                         "name": "vertical",
-#                         "padding": 10,
-#                         "direction": "down",
-#                         "alignment": ["left","left"]
-#                     },
-#                     "children": [
-#                         {
-#                             "tag": "g",
-#                             "id": "title_text",
-#                             "children": []
-#                         },
-#                         {
-#                             "tag": "g",
-#                             "id": "subtitle_text",
-#                             "children": []
-#                         }
-#                     ]
-#                 },
-#                 {
-#                     "tag": "image",
-#                     "id": "topic_icon",
-#                 }
-#             ]
-#         },
-#         {
-#             "tag": "g",
-#             "id": "chart",
-#         },
-#     ]
-# }
+layout_tree = {
+    "tag": "g",
+    "layoutStrategy": {
+        "name": "vertical",
+        "padding": 10,
+        "direction": "down"
+    },
+    "children": [
+        {
+            "tag": "g",
+            "id": "global_title_group",
+            "layoutStrategy": {
+                "name": "horizontal",
+                "padding": 0,
+                "direction": "right",
+            },
+            "children": [
+                {
+                    "tag": "g",
+                    "id": "title_group",
+                    "layoutStrategy": {
+                        "name": "vertical",
+                        "padding": 10,
+                        "direction": "down",
+                        "alignment": ["left","left"]
+                    },
+                    "children": [
+                        {
+                            "tag": "g",
+                            "id": "title_text",
+                            "children": []
+                        },
+                        {
+                            "tag": "g",
+                            "id": "subtitle_text",
+                            "children": []
+                        }
+                    ]
+                },
+                {
+                    "tag": "image",
+                    "id": "topic_icon",
+                }
+            ]
+        },
+        {
+            "tag": "g",
+            "id": "chart",
+        },
+    ]
+}
 
 # layout_tree = {
 #     "tag": "g",

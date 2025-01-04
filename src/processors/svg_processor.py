@@ -1489,7 +1489,7 @@ class SVGOptimizer(SVGProcessor):
         # 1. 首先创建所有需要的元素
         chart_group = self._createChartGroup(tree)
         title_group = self._createTitleGroup(configs.get('titleConfig', {}))
-        topic_icon = self._createTopicIcon(configs.get('topicIconConfig', {}))
+        topic_icon = self._createTopicIcon(con figs.get('topicIconConfig', {}))
         
         # 2. 按照布局树组织元素
         layout_tree = configs.get('layoutConfig', {}).get('layoutTree', {})
