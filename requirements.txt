@@ -1,1 +1,13 @@
 pandas>=1.3.0
+IPython
+pyecharts
+snapshot_selenium
+imgkit
+networkx
+matplotlib
+openai
+serpapi
+
+clip
+torch
+faiss
