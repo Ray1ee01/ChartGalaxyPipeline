@@ -359,8 +359,9 @@ async function main() {
   // const inputOptions = inputJson.options;
 
   // 等待spec生成完成
-  const spec = inputSpec;
-
+  let spec = inputSpec;
+  spec.background = null;
+  spec.view = null;
   // 编译规范
   const vegaSpec = vegaLite.compile(spec).spec;
 

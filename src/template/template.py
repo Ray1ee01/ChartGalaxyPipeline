@@ -1,6 +1,7 @@
 import os
 import json
-
+from ..processors.svg_processor_modules.elements import *
+from ..processors.svg_processor_modules.layout import *
 
 class FontTemplate:
     def __init__(self):
@@ -159,8 +160,17 @@ class BarChartTemplate(ChartTemplate):
     def create_template(self):
         self.x_axis = AxisTemplate()
         self.y_axis = AxisTemplate()
+        
         self.mark = BarTemplate()
+        
         self.color_encoding = ColorEncodingTemplate()
+        
+        # set default value
+        self.x_axis.field = "category"
+        self.x_axis.field_type = "nominal"
+        
+        self.y_axis.field = "value"
+        self.y_axis.field_type = "quantitative"
         
     def dump(self):
         return {
@@ -168,4 +178,117 @@ class BarChartTemplate(ChartTemplate):
             "y_axis": self.y_axis.dump(),
             "mark": self.mark.dump(),
             "color_encoding": self.color_encoding.dump()
-        }   
+        }
+
+
+# layout_tree = {
+#     "tag": "g",
+#     "layoutStrategy": {
+#         "name": "vertical",
+#         "padding": 10,
+#         "direction": "down"
+#     },
+#     "children": [
+#         {
+#             "tag": "g",
+#             "id": "global_title_group",
+#             "layoutStrategy": {
+#                 "name": "horizontal",
+#                 "padding": 0,
+#                 "direction": "right",
+#             },
+#             "children": [
+#                 {
+#                     "tag": "g",
+#                     "id": "title_group",
+#                     "layoutStrategy": {
+#                         "name": "vertical",
+#                         "padding": 10,
+#                         "direction": "down",
+#                         "alignment": ["left","left"]
+#                     },
+#                     "children": [
+#                         {
+#                             "tag": "g",
+#                             "id": "title_text",
+#                             "children": []
+#                         },
+#                         {
+#                             "tag": "g",
+#                             "id": "subtitle_text",
+#                             "children": []
+#                         }
+#                     ]
+#                 },
+#                 {
+#                     "tag": "image",
+#                     "id": "topic_icon",
+#                 }
+#             ]
+#         },
+#         {
+#             "tag": "g",
+#             "id": "chart",
+#         },
+#     ]
+# }
+
+
+class LayoutTemplate:
+    def __init__(self):
+        self.root = GroupElement()
+        self.root.children = []
+        # self.build_template_from_tree(layout_tree)
+
+    def build_template_from_tree(self, tree: dict):
+        if tree['tag'] == 'g':
+            group = GroupElement()
+            group.id = tree.get('id', None)
+            group.children = []
+            layout_strategy_dict = tree.get('layoutStrategy', None)
+            if layout_strategy_dict is not None:
+                if layout_strategy_dict['name'] == 'vertical':
+                    group.layout_strategy = VerticalLayoutStrategy()
+                elif layout_strategy_dict['name'] == 'horizontal':
+                    group.layout_strategy = HorizontalLayoutStrategy()
+                else:
+                    group.layout_strategy = VerticalLayoutStrategy()
+                if layout_strategy_dict.get('direction', None) is not None:
+                    group.layout_strategy.direction = layout_strategy_dict['direction']
+                if layout_strategy_dict.get('padding', None) is not None:
+                    group.layout_strategy.padding = layout_strategy_dict['padding']
+                if layout_strategy_dict.get('offset', None) is not None:
+                    group.layout_strategy.offset = layout_strategy_dict['offset']
+                if layout_strategy_dict.get('alignment', None) is not None:
+                    group.layout_strategy.alignment = layout_strategy_dict['alignment']
+                if layout_strategy_dict.get('overlap', None) is not None:
+                    group.layout_strategy.overlap = layout_strategy_dict['overlap']
+            for child in tree.get('children', []):
+                group.children.append(self.build_template_from_tree(child))
+            return group
+        elif tree['tag'] == 'image':
+            image = Image()
+            image.id = tree.get('id', None)
+            return image
+        elif tree['tag'] == 'text':
+            text = Text()
+            text.id = tree.get('id', None)
+            return text
+        elif tree['tag'] == 'rect':
+            rect = Rect()
+            rect.id = tree.get('id', None)
+            return rect
+        elif tree['tag'] == 'line':
+            line = Line()
+            line.id = tree.get('id', None)
+            return line
+        elif tree['tag'] == 'path':
+            path = Path()
+            path.id = tree.get('id', None)
+            return path
+        elif tree['tag'] == 'circle':
+            circle = Circle()
+            circle.id = tree.get('id', None)
+            return circle
+        else:
+            return None

@@ -61,6 +61,11 @@ class VegaLiteParser():
         
         # flattened_elements_tree = SVGTreeConverter.partial_flatten_tree(elements_tree, group_to_flatten)
         flattened_elements_tree, top_level_groups = SVGTreeConverter.move_groups_to_top(elements_tree, group_to_flatten)
+        # 移除tree中所有class为background的元素
+
+            
+        flattened_elements_tree = SVGTreeConverter.remove_elements_by_class(flattened_elements_tree, 'background')
+        
         
         mark_group = top_level_groups['mark_group']
         x_axis_label_group = top_level_groups['x_axis_label_group']
@@ -70,111 +75,111 @@ class VegaLiteParser():
         
         layout_graph = LayoutGraph()
         
-        for mark in mark_group:
-            new_rect = Rect()
-            boundingbox = mark.get_bounding_box()
-            mark._bounding_box = boundingbox
-            new_rect.attributes = {
-                "stroke": "red",
-                "stroke-width": 1,
-                "fill": "none",
-                "x": boundingbox.minx,
-                "y": boundingbox.miny,
-                "width": boundingbox.maxx - boundingbox.minx,
-                "height": boundingbox.maxy - boundingbox.miny,
-            }
-            # flattened_elements_tree.children.append(new_rect)
+        # for mark in mark_group:
+        #     new_rect = Rect()
+        #     boundingbox = mark.get_bounding_box()
+        #     mark._bounding_box = boundingbox
+        #     new_rect.attributes = {
+        #         "stroke": "red",
+        #         "stroke-width": 1,
+        #         "fill": "none",
+        #         "x": boundingbox.minx,
+        #         "y": boundingbox.miny,
+        #         "width": boundingbox.maxx - boundingbox.minx,
+        #         "height": boundingbox.maxy - boundingbox.miny,
+        #     }
+        #     # flattened_elements_tree.children.append(new_rect)
             
-            layout_graph.add_node(Node(mark))
+        #     layout_graph.add_node(Node(mark))
         
-        for label in x_axis_label_group:
-            new_rect = Rect()
-            boundingbox = label.get_bounding_box()
-            label._bounding_box = boundingbox
-            new_rect.attributes = {
-                "stroke": "red",
-                "stroke-width": 1,
-                "fill": "none",
-                "x": boundingbox.minx,
-                "y": boundingbox.miny,
-                "width": boundingbox.maxx - boundingbox.minx,
-                "height": boundingbox.maxy - boundingbox.miny,
-            }
-            # flattened_elements_tree.children.append(new_rect)
+        # for label in x_axis_label_group:
+        #     new_rect = Rect()
+        #     boundingbox = label.get_bounding_box()
+        #     label._bounding_box = boundingbox
+        #     new_rect.attributes = {
+        #         "stroke": "red",
+        #         "stroke-width": 1,
+        #         "fill": "none",
+        #         "x": boundingbox.minx,
+        #         "y": boundingbox.miny,
+        #         "width": boundingbox.maxx - boundingbox.minx,
+        #         "height": boundingbox.maxy - boundingbox.miny,
+        #     }
+        #     # flattened_elements_tree.children.append(new_rect)
         
-        for label in y_axis_label_group:
-            new_rect = Rect()
-            boundingbox = label.get_bounding_box()
-            label._bounding_box = boundingbox
-            new_rect.attributes = {
-                "stroke": "red",
-                "stroke-width": 1,
-                "fill": "none",
-                "x": boundingbox.minx,
-                "y": boundingbox.miny,
-                "width": boundingbox.maxx - boundingbox.minx,
-                "height": boundingbox.maxy - boundingbox.miny,
-            }
-            # flattened_elements_tree.children.append(new_rect)
-            layout_graph.add_node(Node(label))
+        # for label in y_axis_label_group:
+        #     new_rect = Rect()
+        #     boundingbox = label.get_bounding_box()
+        #     label._bounding_box = boundingbox
+        #     new_rect.attributes = {
+        #         "stroke": "red",
+        #         "stroke-width": 1,
+        #         "fill": "none",
+        #         "x": boundingbox.minx,
+        #         "y": boundingbox.miny,
+        #         "width": boundingbox.maxx - boundingbox.minx,
+        #         "height": boundingbox.maxy - boundingbox.miny,
+        #     }
+        #     # flattened_elements_tree.children.append(new_rect)
+        #     layout_graph.add_node(Node(label))
             
-        for mark in mark_annotation_group:
-            new_rect = Rect()
-            boundingbox = mark.get_bounding_box()
-            mark._bounding_box = boundingbox
-            new_rect.attributes = {
-                "stroke": "red",
-                "stroke-width": 1,
-                "fill": "none",
-                "x": boundingbox.minx,
-                "y": boundingbox.miny,
-                "width": boundingbox.maxx - boundingbox.minx,
-                "height": boundingbox.maxy - boundingbox.miny,
-            }
-            # flattened_elements_tree.children.append(new_rect)
-            layout_graph.add_node(Node(mark))
+        # for mark in mark_annotation_group:
+        #     new_rect = Rect()
+        #     boundingbox = mark.get_bounding_box()
+        #     mark._bounding_box = boundingbox
+        #     new_rect.attributes = {
+        #         "stroke": "red",
+        #         "stroke-width": 1,
+        #         "fill": "none",
+        #         "x": boundingbox.minx,
+        #         "y": boundingbox.miny,
+        #         "width": boundingbox.maxx - boundingbox.minx,
+        #         "height": boundingbox.maxy - boundingbox.miny,
+        #     }
+        #     # flattened_elements_tree.children.append(new_rect)
+        #     layout_graph.add_node(Node(mark))
             
-        orientation = parse_chart_orientation(mark_group)
+        # orientation = parse_chart_orientation(mark_group)
         
-        for i in range(len(mark_group)):
-            layout_strategy_1 = parse_layout_strategy(mark_group[i], mark_annotation_group[i],'horizontal')
-            layout_strategy_2 = parse_layout_strategy(mark_group[i], y_axis_label_group[i], 'horizontal')
-            layout_strategy_2.padding = 3
-            layout_graph.add_edge_by_value(mark_annotation_group[i], mark_group[i], layout_strategy_1)
-            layout_graph.add_edge_by_value(y_axis_label_group[i], mark_group[i], layout_strategy_2)
+        # for i in range(len(mark_group)):
+        #     layout_strategy_1 = parse_layout_strategy(mark_group[i], mark_annotation_group[i],'horizontal')
+        #     layout_strategy_2 = parse_layout_strategy(mark_group[i], y_axis_label_group[i], 'horizontal')
+        #     layout_strategy_2.padding = 3
+        #     layout_graph.add_edge_by_value(mark_annotation_group[i], mark_group[i], layout_strategy_1)
+        #     layout_graph.add_edge_by_value(y_axis_label_group[i], mark_group[i], layout_strategy_2)
         
-        for i in range(len(images_urls)):
-            base64_image = Image._getImageAsBase64(images_urls[i])
-            image_element = Image(base64_image)
-            image_element.attributes = {
-                "xlink:href": f"data:{base64_image}",
-                "width": 15,
-                "height": 15,
-            }
-            boundingbox = image_element.get_bounding_box()
-            image_element._bounding_box = boundingbox
+        # for i in range(len(images_urls)):
+        #     base64_image = Image._getImageAsBase64(images_urls[i])
+        #     image_element = Image(base64_image)
+        #     image_element.attributes = {
+        #         "xlink:href": f"data:{base64_image}",
+        #         "width": 15,
+        #         "height": 15,
+        #     }
+        #     boundingbox = image_element.get_bounding_box()
+        #     image_element._bounding_box = boundingbox
             
-            # layout_graph.add_node(Node(image_element))
-            layout_strategy = HorizontalLayoutStrategy()
-            layout_strategy.direction = 'right'
-            layout_strategy.padding = 3
-            layout_graph.add_node_with_edges(image_element, y_axis_label_group[i], layout_strategy)
-            node = layout_graph.node_map[image_element]
-            old_node_min_x = float(node.value._bounding_box.minx)
-            old_node_min_y = float(node.value._bounding_box.miny)
-            for next, next_layout_strategy in zip(node.nexts, node.nexts_edges):
-                next_layout_strategy.layout(next.value, node.value)
-                node.value.update_pos(old_node_min_x, old_node_min_y)
-                # print("node", node.value.tag, node.value._bounding_box)
-                # print("next", next.value.tag, next.value._bounding_box)
-            for prev, prev_layout_strategy in zip(node.prevs, node.prevs_edges):
-                # print("prev", prev.value.tag, prev.value._bounding_box)
-                old_prev_min_x = float(prev.value._bounding_box.minx)
-                old_prev_min_y = float(prev.value._bounding_box.miny)
-                prev_layout_strategy.layout(node.value, prev.value)
-                prev.value.update_pos(old_prev_min_x, old_prev_min_y)
-                # print("node", node.value.tag, node.value._bounding_box)
-            flattened_elements_tree.children.append(image_element)
+        #     # layout_graph.add_node(Node(image_element))
+        #     layout_strategy = HorizontalLayoutStrategy()
+        #     layout_strategy.direction = 'right'
+        #     layout_strategy.padding = 3
+        #     layout_graph.add_node_with_edges(image_element, y_axis_label_group[i], layout_strategy)
+        #     node = layout_graph.node_map[image_element]
+        #     old_node_min_x = float(node.value._bounding_box.minx)
+        #     old_node_min_y = float(node.value._bounding_box.miny)
+        #     for next, next_layout_strategy in zip(node.nexts, node.nexts_edges):
+        #         next_layout_strategy.layout(next.value, node.value)
+        #         node.value.update_pos(old_node_min_x, old_node_min_y)
+        #         # print("node", node.value.tag, node.value._bounding_box)
+        #         # print("next", next.value.tag, next.value._bounding_box)
+        #     for prev, prev_layout_strategy in zip(node.prevs, node.prevs_edges):
+        #         # print("prev", prev.value.tag, prev.value._bounding_box)
+        #         old_prev_min_x = float(prev.value._bounding_box.minx)
+        #         old_prev_min_y = float(prev.value._bounding_box.miny)
+        #         prev_layout_strategy.layout(node.value, prev.value)
+        #         prev.value.update_pos(old_prev_min_x, old_prev_min_y)
+        #         # print("node", node.value.tag, node.value._bounding_box)
+        #     flattened_elements_tree.children.append(image_element)
 
         # layout_graph.visualize()
         # print(flattened_elements_tree.dump())

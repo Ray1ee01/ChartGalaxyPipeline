@@ -17,8 +17,9 @@ class LayoutStrategy(ABC):
             'alignment': self.alignment,
             'direction': self.direction
         }
+    
 
-        
+
 
 class VerticalLayoutStrategy(LayoutStrategy):
     """垂直布局策略"""
@@ -28,6 +29,8 @@ class VerticalLayoutStrategy(LayoutStrategy):
         self.alignment = alignment
         self.direction = direction
         self.name = 'vertical'
+        self.overlap = False
+        
     def layout(self, reference_element: LayoutElement, layout_element: LayoutElement) -> None:
         reference_element_bounding_box = reference_element._bounding_box
         layout_element_bounding_box = layout_element._bounding_box
@@ -66,7 +69,104 @@ class VerticalLayoutStrategy(LayoutStrategy):
         layout_element._bounding_box.miny += move_y
         layout_element._bounding_box.maxy += move_y
         
+        if layout_element.tag=='g':
+            for child in layout_element.children:
+                if child._bounding_box is None:
+                    child._bounding_box = child.get_bounding_box()
+                child._bounding_box.minx += move_x
+                child._bounding_box.maxx += move_x
+                child._bounding_box.miny += move_y
+                child._bounding_box.maxy += move_y
+            
         
+        if self.overlap and (reference_element.tag == 'g' or layout_element.tag == 'g'):
+            # print('move_x: ', move_x, 'move_y: ', move_y)
+            
+            reference_element_valid_bounding_boxes = []
+            layout_element_valid_bounding_boxes = []
+            
+            # 获取参考元素的有效边界框
+            if reference_element.tag == 'g':
+                reference_element_valid_bounding_boxes = reference_element.get_children_boundingboxes()
+            else:
+                reference_element_valid_bounding_boxes = [reference_element._bounding_box]
+                
+            # 获取布局元素的有效边界框
+            if layout_element.tag == 'g':
+                layout_element_valid_bounding_boxes = layout_element.get_children_boundingboxes()
+            else:
+                layout_element_valid_bounding_boxes = [layout_element._bounding_box]
+            
+            def has_overlap(move_distance: float) -> bool:
+                """检查给定移动距离是否会导致重叠"""
+                # 保存原始值
+                original_values = []
+                for layout_box in layout_element_valid_bounding_boxes:
+                    original_values.append((layout_box.miny, layout_box.maxy))
+                    
+                # 临时移动边界框进行检查
+                for layout_box in layout_element_valid_bounding_boxes:
+                    if self.direction == 'up':
+                        layout_box.miny += move_distance
+                        layout_box.maxy += move_distance
+                    else:
+                        layout_box.miny -= move_distance
+                        layout_box.maxy -= move_distance
+                        
+                # 检查是否重叠
+                has_overlap = False
+                for ref_box in reference_element_valid_bounding_boxes:
+                    for layout_box in layout_element_valid_bounding_boxes:
+                        if layout_box.is_overlapping(ref_box):
+                            print('overlap')
+                            has_overlap = True
+                            break
+                    if has_overlap:
+                        break
+                        
+                # 恢复原始值
+                for layout_box, (orig_miny, orig_maxy) in zip(layout_element_valid_bounding_boxes, original_values):
+                    layout_box.miny = orig_miny
+                    layout_box.maxy = orig_maxy
+                    
+                return has_overlap
+            
+            # 二分查找最优移动距离
+            if self.direction == 'up':
+                left = 0  # 最小移动距离
+                right = reference_element._bounding_box.miny - layout_element._bounding_box.miny  # 最大移动距离
+                best_move = 0
+                
+                while left <= right:
+                    mid = (left + right) / 2
+                    if has_overlap():
+                        left = mid + 0.1  # 增加一个小的步长
+                        best_move = mid
+                    else:
+                        right = mid - 0.1
+                print('best_move: ', best_move)
+                if best_move > 0:
+                    layout_element._bounding_box.miny += best_move
+                    layout_element._bounding_box.maxy += best_move
+                    
+            else:  # direction == 'down'
+                left = 0  # 最小移动距离
+                right = layout_element._bounding_box.maxy - reference_element._bounding_box.maxy  # 最大移动距离
+                best_move = 0
+                old_layout_element_bounding_box_miny = layout_element._bounding_box.miny
+                old_layout_element_bounding_box_maxy = layout_element._bounding_box.maxy
+                
+                while left <= right:
+                    mid = (left + right) / 2
+                    if has_overlap(mid):
+                        right = mid - 0.1
+                    else:
+                        left = mid + 0.1
+                        best_move = mid
+                if best_move > 0:
+                    layout_element._bounding_box.miny = old_layout_element_bounding_box_miny - best_move
+                    layout_element._bounding_box.maxy = old_layout_element_bounding_box_maxy - best_move
+
 class HorizontalLayoutStrategy(LayoutStrategy):
     """水平布局策略"""
     def __init__(self, alignment: list[str] = ['middle', 'middle'], direction: str = 'right', padding: float = 0, offset: float = 0):
@@ -75,6 +175,7 @@ class HorizontalLayoutStrategy(LayoutStrategy):
         self.alignment = alignment
         self.direction = direction
         self.name = 'horizontal'
+        self.overlap = False
         
     def layout(self, reference_element: LayoutElement, layout_element: LayoutElement) -> None:
         reference_element_bounding_box = reference_element._bounding_box
@@ -112,18 +213,103 @@ class HorizontalLayoutStrategy(LayoutStrategy):
         layout_element._bounding_box.maxx += move_x
         layout_element._bounding_box.miny += move_y
         layout_element._bounding_box.maxy += move_y
-
+        
+        if layout_element.tag=='g':
+            for child in layout_element.children:
+                child._bounding_box.minx += move_x
+                child._bounding_box.maxx += move_x
+                child._bounding_box.miny += move_y
+                child._bounding_box.maxy += move_y
+        
+        if self.overlap and (reference_element.tag == 'g' or layout_element.tag == 'g'):
+            reference_element_valid_bounding_boxes = []
+            layout_element_valid_bounding_boxes = []
+            
+            # 获取参考元素的有效边界框
+            if reference_element.tag == 'g':
+                reference_element_valid_bounding_boxes = reference_element.get_children_boundingboxes()
+            else:
+                reference_element_valid_bounding_boxes = [reference_element._bounding_box]
+                
+            # 获取布局元素的有效边界框
+            if layout_element.tag == 'g':
+                layout_element_valid_bounding_boxes = layout_element.get_children_boundingboxes()
+            else:
+                layout_element_valid_bounding_boxes = [layout_element._bounding_box]
+            
+            def has_overlap(move_distance: float) -> bool:
+                """检查给定移动距离是否会导致重叠"""
+                # 保存原始值
+                original_values = []
+                for layout_box in layout_element_valid_bounding_boxes:
+                    original_values.append((layout_box.minx, layout_box.maxx))
+                    
+                # 临时移动边界框进行检查
+                for layout_box in layout_element_valid_bounding_boxes:
+                    if self.direction == 'left':
+                        layout_box.minx += move_distance
+                        layout_box.maxx += move_distance
+                    else:
+                        layout_box.minx -= move_distance
+                        layout_box.maxx -= move_distance
+                        
+                # 检查是否重叠
+                has_overlap = False
+                for ref_box in reference_element_valid_bounding_boxes:
+                    for layout_box in layout_element_valid_bounding_boxes:
+                        if layout_box.is_overlapping(ref_box):
+                            has_overlap = True
+                            break
+                    if has_overlap:
+                        break
+                        
+                # 恢复原始值
+                for layout_box, (orig_minx, orig_maxx) in zip(layout_element_valid_bounding_boxes, original_values):
+                    layout_box.minx = orig_minx
+                    layout_box.maxx = orig_maxx
+                    
+                return has_overlap
+            
+            # 二分查找最优移动距离
+            if self.direction == 'left':
+                left = 0  # 最小移动距离
+                right = reference_element._bounding_box.minx - layout_element._bounding_box.minx  # 最大移动距离
+                best_move = 0
+                old_layout_element_bounding_box_minx = layout_element._bounding_box.minx
+                old_layout_element_bounding_box_maxx = layout_element._bounding_box.maxx
+                
+                while left <= right:
+                    mid = (left + right) / 2
+                    if has_overlap(mid):
+                        left = mid + 0.1
+                    else:
+                        right = mid - 0.1
+                        best_move = mid
+                
+                if best_move > 0:
+                    layout_element._bounding_box.minx = old_layout_element_bounding_box_minx + best_move
+                    layout_element._bounding_box.maxx = old_layout_element_bounding_box_maxx + best_move
+                    
+            else:  # direction == 'right'
+                left = 0  # 最小移动距离
+                right = layout_element._bounding_box.maxx - reference_element._bounding_box.maxx  # 最大移动距离
+                best_move = 0
+                old_layout_element_bounding_box_minx = layout_element._bounding_box.minx
+                old_layout_element_bounding_box_maxx = layout_element._bounding_box.maxx
+                
+                while left <= right:
+                    mid = (left + right) / 2
+                    if has_overlap(mid):
+                        left = mid + 0.1
+                    else:
+                        right = mid - 0.1
+                        best_move = mid
+                
+                if best_move > 0:
+                    layout_element._bounding_box.minx = old_layout_element_bounding_box_minx - best_move
+                    layout_element._bounding_box.maxx = old_layout_element_bounding_box_maxx - best_move
 
 def parse_layout_strategy(reference_element: LayoutElement, layout_element: LayoutElement, layout_strategy: str = 'none') -> None:
-    # 根据两个元素的相对位置，确定其目前使用的布局策略
-    # 如果给定了布局策略，则需要计算出对应的参数，即padding, offset, alignment, direction
-    # if layout_strategy == 'vertical':
-    #     layout_strategy = VerticalLayoutStrategy()
-    # elif layout_strategy == 'horizontal':
-    #     layout_strategy = HorizontalLayoutStrategy()
-    # else:
-    #     # TODO：如果给定的布局策略是none，则需要计算出两个元素的相对位置，并确定其使用的布局策略
-    #     return None
     
     # 计算布局策略的参数
     # 在初步情况下，可以alignment都是["middle", "middle"]
@@ -230,6 +416,28 @@ class Node:
         self.nexts = []
         self.nexts_edges = []
 
+class Edge:
+    def __init__(self, source: Node, target: Node, value: LayoutStrategy):
+        self.source = source
+        self.target = target
+        self.value = value
+        
+    def __str__(self):
+        return f"Edge(source={self.source.value.tag}, target={self.target.value.tag}, value={self.value.name})"
+    
+    def process_layout(self):
+        old_node_min_x = float(self.target.value._bounding_box.minx)
+        old_node_min_y = float(self.target.value._bounding_box.miny)
+        self.value.layout(self.source.value, self.target.value)
+        self.target.value.update_pos(old_node_min_x, old_node_min_y)
+        
+    def dump(self):
+        return {
+            'source': self.source.value.tag,
+            'target': self.target.value.tag,
+            'value': self.value.dump
+        }
+        
 class LayoutGraph:
     def __init__(self):
         self.nodes = []
@@ -241,9 +449,9 @@ class LayoutGraph:
     
     def add_edge(self, source: Node, target: Node, value: LayoutStrategy):
         source.nexts.append(target)
-        source.nexts_edges.append(value)
+        source.nexts_edges.append(Edge(source, target, value))
         target.prevs.append(source)
-        target.prevs_edges.append(value)
+        target.prevs_edges.append(Edge(source, target, value))
     
     def remove_edge(self, source: Node, target: Node):
         source_idx = source.nexts.index(target)
@@ -259,17 +467,20 @@ class LayoutGraph:
         self.add_edge(source_node, target_node, value)
     
     def add_node_with_edges(self, source: LayoutElement, target: LayoutElement, value: LayoutStrategy):
-        self.add_node(Node(source))
+        if source not in self.node_map:
+            self.add_node(Node(source))
+        if target not in self.node_map:
+            self.add_node(Node(target))
         source_node = self.node_map[source]
         target_node = self.node_map[target]
         flip = False
         for prev, prev_value in zip(target_node.prevs, target_node.prevs_edges):
-            if prev_value.name == value.name and prev_value.direction == value.direction:
+            if prev_value.value.name == value.name and prev_value.value.direction == value.direction:
                 # 把关系转移到prev到node之间
                 self.add_edge(prev, source_node, prev_value)
                 self.remove_edge(prev, target_node)
         for next, next_value in zip(target_node.nexts, target_node.nexts_edges):
-            if next_value.name == value.name and next_value.direction != value.direction:
+            if next_value.value.name == value.name and next_value.value.direction != value.direction:
                 # 把关系转移到node到next之间
                 self.add_edge(source_node, next, next_value)
                 self.remove_edge(target_node, next)
@@ -277,10 +488,10 @@ class LayoutGraph:
         if not flip:
             self.add_edge_by_value(source, target, value)
         else:
-            if value.direction == 'left' or value.direction == 'right':
-                value.direction = 'right' if value.direction == 'left' else 'left'
+            if value.value.direction == 'left' or value.value.direction == 'right':
+                value.value.direction = 'right' if value.value.direction == 'left' else 'left'
             else:
-                value.direction = 'down' if value.direction == 'up' else 'up'
+                value.value.direction = 'down' if value.value.direction == 'up' else 'up'
             self.add_edge_by_value(target, source, value)
     def visualize(self):
         """可视化图结构"""
@@ -340,10 +551,6 @@ class LayoutGraph:
         plt.axis('off')
         plt.savefig("layout_graph.png")
         
-        # print("G.nodes:", G.nodes)
-        # print("G.edges:", G.edges)
-        # print("G.edge_labels:", edge_labels)
-        # print("G.pos:", pos)
         # # 确保图形完全渲染
         # plt.tight_layout()
                 

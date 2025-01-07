@@ -17,15 +17,19 @@ class Pipeline:
         try:
             # 步骤1：数据处理
             processed_data = self.data_processor.process(input_data)
+            # print('processed_data: ', processed_data)
             
             chart_type = 'BarChart'
             # 步骤2：生成图表
             chart_template_factory = ChartTemplateFactory()
             chart_template = chart_template_factory.create_template(chart_type)
-            print(chart_template.dump())
-            return ""
-            svg, additional_configs = self.chart_generator.generate(processed_data)
-            
+            # print(chart_template.dump())
+            # return ""
+            svg, additional_configs = self.chart_generator.generate(processed_data['data'], chart_template)
+            additional_configs["layout_tree"] = processed_data['layout_tree']
+            # print('svg: ', svg)
+            # return svg
+            # return ""
             # 步骤3：SVG后处理
             final_svg = self.svg_processor.process(svg, additional_configs, debug=False)
             
