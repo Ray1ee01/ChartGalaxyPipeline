@@ -10,6 +10,7 @@ def main():
     input_data = dataset.get_object(0, 0)
     data_processor = VizNetDataProcessor()
     processed_data = data_processor.process(input_data)
+    print(processed_data)
 
 if __name__ == "__main__":
     main()

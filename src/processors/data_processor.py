@@ -99,7 +99,7 @@ class VizNetDataProcessor(DataProcessor):
             icon_pool = get_icon_pool(json_file, meta)
             icon_pools.append(icon_pool)
 
-        embed()
+        # embed()
 
         # TODO how to save and return
         # df: total tabular data
