@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Awesome-pyecharts</title>
+                <script type="text/javascript" src="https://assets.pyecharts.org/assets/v5/echarts.min.js"></script>
+
+</head>
+<body >
+    <div id="b65b2181223d4ee5968933a0a5ffecfe" class="chart-container" style="width:900px; height:500px; "></div>
+    <script>
+        var chart_b65b2181223d4ee5968933a0a5ffecfe = echarts.init(
+            document.getElementById('b65b2181223d4ee5968933a0a5ffecfe'), 'white', {renderer: 'canvas'});
+        var option_b65b2181223d4ee5968933a0a5ffecfe = {
+    "animation": true,
+    "animationThreshold": 2000,
+    "animationDuration": 1000,
+    "animationEasing": "cubicOut",
+    "animationDelay": 0,
+    "animationDurationUpdate": 300,
+    "animationEasingUpdate": "cubicOut",
+    "animationDelayUpdate": 0,
+    "aria": {
+        "enabled": false
+    },
+    "color": [
+        "#5470c6",
+        "#91cc75",
+        "#fac858",
+        "#ee6666",
+        "#73c0de",
+        "#3ba272",
+        "#fc8452",
+        "#9a60b4",
+        "#ea7ccc"
+    ],
+    "series": [
+        {
+            "type": "line",
+            "connectNulls": false,
+            "xAxisIndex": 0,
+            "yAxisIndex": 0,
+            "symbolSize": 4,
+            "showSymbol": true,
+            "smooth": false,
+            "clip": true,
+            "step": false,
+            "stackStrategy": "samesign",
+            "data": [
+                [
+                    "1901~1912",
+                    43
+                ],
+                [
+                    "1913~1924",
+                    29
+                ],
+                [
+                    "1925~1936",
+                    45
+                ],
+                [
+                    "1937~1948",
+                    38
+                ],
+                [
+                    "1949~1960",
+                    63
+                ],
+                [
+                    "1961~1972",
+                    77
+                ],
+                [
+                    "1973~1984",
+                    93
+                ],
+                [
+                    "1985~1996",
+                    93
+                ],
+                [
+                    "1997~2008",
+                    108
+                ],
+                [
+                    "2009~2020",
+                    111
+                ],
+                [
+                    "2021~2023",
+                    28
+                ]
+            ],
+            "hoverAnimation": true,
+            "label": {
+                "show": false,
+                "margin": 8,
+                "valueAnimation": false
+            },
+            "logBase": 10,
+            "seriesLayoutBy": "column",
+            "lineStyle": {
+                "show": true,
+                "width": 1,
+                "opacity": 1,
+                "curveness": 0,
+                "type": "solid"
+            },
+            "areaStyle": {
+                "opacity": 0
+            },
+            "zlevel": 0,
+            "z": 0
+        }
+    ],
+    "legend": [
+        {
+            "data": [
+                ""
+            ],
+            "selected": {},
+            "show": false,
+            "padding": 5,
+            "itemGap": 10,
+            "itemWidth": 25,
+            "itemHeight": 14,
+            "textStyle": {
+                "fontSize": 22
+            },
+            "backgroundColor": "transparent",
+            "borderColor": "#ccc",
+            "borderRadius": 0,
+            "pageButtonItemGap": 5,
+            "pageButtonPosition": "end",
+            "pageFormatter": "{current}/{total}",
+            "pageIconColor": "#2f4554",
+            "pageIconInactiveColor": "#aaa",
+            "pageIconSize": 15,
+            "animationDurationUpdate": 800,
+            "selector": false,
+            "selectorPosition": "auto",
+            "selectorItemGap": 7,
+            "selectorButtonGap": 10
+        }
+    ],
+    "tooltip": {
+        "show": true,
+        "trigger": "item",
+        "triggerOn": "mousemove|click",
+        "axisPointer": {
+            "type": "line"
+        },
+        "showContent": true,
+        "alwaysShowContent": false,
+        "showDelay": 0,
+        "hideDelay": 100,
+        "enterable": false,
+        "confine": false,
+        "appendToBody": false,
+        "transitionDuration": 0.4,
+        "textStyle": {
+            "fontSize": 14
+        },
+        "borderWidth": 0,
+        "padding": 5,
+        "order": "seriesAsc"
+    },
+    "xAxis": [
+        {
+            "name": "year/(YEAR)",
+            "show": true,
+            "scale": false,
+            "nameLocation": "end",
+            "nameGap": 15,
+            "nameTextStyle": {
+                "fontSize": 22
+            },
+            "gridIndex": 0,
+            "axisLabel": {
+                "show": true,
+                "margin": 8,
+                "fontSize": 22,
+                "valueAnimation": false
+            },
+            "inverse": false,
+            "offset": 0,
+            "splitNumber": 5,
+            "minInterval": 0,
+            "splitLine": {
+                "show": true,
+                "lineStyle": {
+                    "show": true,
+                    "width": 1,
+                    "opacity": 1,
+                    "curveness": 0,
+                    "type": "solid"
+                }
+            },
+            "animation": true,
+            "animationThreshold": 2000,
+            "animationDuration": 1000,
+            "animationEasing": "cubicOut",
+            "animationDelay": 0,
+            "animationDurationUpdate": 300,
+            "animationEasingUpdate": "cubicOut",
+            "animationDelayUpdate": 0,
+            "data": [
+                "1901~1912",
+                "1913~1924",
+                "1925~1936",
+                "1937~1948",
+                "1949~1960",
+                "1961~1972",
+                "1973~1984",
+                "1985~1996",
+                "1997~2008",
+                "2009~2020",
+                "2021~2023"
+            ]
+        }
+    ],
+    "yAxis": [
+        {
+            "name": "CNT(year)",
+            "show": true,
+            "scale": false,
+            "nameLocation": "end",
+            "nameGap": 15,
+            "nameTextStyle": {
+                "fontSize": 22
+            },
+            "gridIndex": 0,
+            "axisLabel": {
+                "show": true,
+                "margin": 8,
+                "fontSize": 22,
+                "valueAnimation": false
+            },
+            "inverse": false,
+            "offset": 0,
+            "splitNumber": 5,
+            "minInterval": 0,
+            "splitLine": {
+                "show": true,
+                "lineStyle": {
+                    "show": true,
+                    "width": 1,
+                    "opacity": 1,
+                    "curveness": 0,
+                    "type": "solid"
+                }
+            },
+            "animation": true,
+            "animationThreshold": 2000,
+            "animationDuration": 1000,
+            "animationEasing": "cubicOut",
+            "animationDelay": 0,
+            "animationDurationUpdate": 300,
+            "animationEasingUpdate": "cubicOut",
+            "animationDelayUpdate": 0
+        }
+    ],
+    "title": [
+        {
+            "show": true,
+            "target": "blank",
+            "subtext": "Operation: bin year by year",
+            "subtarget": "blank",
+            "left": "center",
+            "top": "5%",
+            "padding": 5,
+            "itemGap": 10,
+            "textAlign": "auto",
+            "textVerticalAlign": "auto",
+            "triggerEvent": false,
+            "textStyle": {
+                "fontSize": 22
+            },
+            "subtextStyle": {
+                "fontWeight": "bold",
+                "fontSize": 24
+            }
+        }
+    ],
+    "toolbox": {
+        "show": true,
+        "orient": "horizontal",
+        "itemSize": 17,
+        "itemGap": 5,
+        "left": "75%",
+        "right": "20%",
+        "feature": {
+            "dataZoom": {
+                "show": true,
+                "title": {
+                    "zoom": "Zoom In/Out",
+                    "back": "Reset Zoom"
+                }
+            },
+            "dataView": {
+                "show": true,
+                "title": "Data View",
+                "lang": [
+                    "Data View",
+                    "Close",
+                    "Refresh"
+                ]
+            },
+            "magicType": {
+                "type": [
+                    "line",
+                    "bar",
+                    "stack"
+                ],
+                "title": {
+                    "line": "Switch to Line Chart",
+                    "bar": "Switch to Bar Chart",
+                    "stack": "Switch to Stacked Chart",
+                    "tiled": "Switch to Tiled Chart"
+                }
+            },
+            "saveAsImage": {
+                "show": true,
+                "title": "Save"
+            }
+        }
+    },
+    "grid": [
+        {
+            "show": false,
+            "zlevel": 0,
+            "z": 2,
+            "left": "20%",
+            "top": "25%",
+            "right": "20%",
+            "bottom": "20%",
+            "containLabel": false,
+            "backgroundColor": "transparent",
+            "borderColor": "#ccc",
+            "borderWidth": 1,
+            "shadowOffsetX": 0,
+            "shadowOffsetY": 0
+        }
+    ]
+};
+        chart_b65b2181223d4ee5968933a0a5ffecfe.setOption(option_b65b2181223d4ee5968933a0a5ffecfe);
+    </script>
+</body>
+</html>
