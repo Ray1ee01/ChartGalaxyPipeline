@@ -11,13 +11,9 @@ from .data_enricher_modules.data_clean import clean_df
 from .data_enricher_modules.HAI_extract import extract_chart
 from .data_enricher_modules.topic_generate import check_topic_and_caption
 from .data_enricher_modules.image_search import search_image
-<<<<<<< HEAD
-# from .data_enricher_modules.icon_selection import get_icon_pool
 from .style_design_modules.infographic_retrieve import InfographicRetriever
 from .style_design_modules.infographic_palette import get_palette
-=======
 from .data_enricher_modules.icon_selection import get_icon_pool, CLIPMatcher
->>>>>>> 7cf43e628721159f78b4f23651c767a81250fc81
 
 data_save_dir = './src/data'
 cache_dir = './src/cache'
