@@ -1,7 +1,8 @@
 from serpapi import GoogleSearch
 import pickle
+import os
 
-search_cache_path = '/data1/jiashu/ChartPipeline/search_cache'
+search_cache_path = './src/cache/search_cache'
 
 def search_image(query):
     file_name = query.replace(' ', '_') + '.pkl'

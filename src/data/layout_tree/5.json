@@ -1,0 +1,54 @@
+{
+    "layout_tree":{
+        "tag": "g",
+        "layoutStrategy": {
+            "name": "vertical",
+            "padding": 5,
+            "direction": "down",
+            "overlap": true,
+            "alignment": ["left", "left"]
+        },
+        "children": [
+            {
+                "tag": "g",
+                "id": "group_1",
+                "layoutStrategy": {
+                    "name": "vertical",
+                    "padding": 5,
+                    "direction": "down",
+                    "overlap": false,
+                    "alignment": ["left", "left"]
+                },
+                "children": [
+                    {
+                        "tag": "g",
+                        "id": "title",
+                        "children": []
+                    },
+                    {
+                        "tag": "g",
+                        "id": "subtitle",
+                        "children": []
+                    }
+                ]
+            },
+            {
+                "tag": "g",
+                "id": "chart",
+                "children": []
+            }
+        ]
+    },
+    "chart_config": {
+        "orientation": "vertical",
+        "sort": {
+            "ascending": false
+        }
+    },
+    "title_config":{
+        "max_width_ratio": 0.75
+    },
+    "subtitle_config":{
+        "max_width_ratio": 0.75
+    }
+}

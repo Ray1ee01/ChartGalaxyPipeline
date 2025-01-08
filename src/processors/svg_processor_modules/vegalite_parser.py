@@ -23,8 +23,9 @@ images_urls = [
 ]
 
 class VegaLiteParser():
-    def __init__(self, svg: str):
+    def __init__(self, svg: str, additional_configs: Dict):
         self.svg = svg
+        self.additional_configs = additional_configs
         self.mark_group = None
         self.mark_annotation_group = None
         self.x_axis_group = None
@@ -52,8 +53,8 @@ class VegaLiteParser():
         group_to_flatten = {
             'mark_group': self.mark_group,
             'mark_annotation_group': self.mark_annotation_group,
-            # 'x_axis_group': self.x_axis_group,
-            # 'y_axis_group': self.y_axis_group,
+            'x_axis_group': self.x_axis_group,
+            'y_axis_group': self.y_axis_group,
             'x_axis_label_group': self.x_axis_label_group,
             'y_axis_label_group': self.y_axis_label_group,
         }
@@ -61,6 +62,11 @@ class VegaLiteParser():
         
         # flattened_elements_tree = SVGTreeConverter.partial_flatten_tree(elements_tree, group_to_flatten)
         flattened_elements_tree, top_level_groups = SVGTreeConverter.move_groups_to_top(elements_tree, group_to_flatten)
+        # 移除tree中所有class为background的元素
+
+            
+        flattened_elements_tree = SVGTreeConverter.remove_elements_by_class(flattened_elements_tree, 'background')
+        flattened_elements_tree = SVGTreeConverter.remove_elements_by_class(flattened_elements_tree, 'foreground')
         
         mark_group = top_level_groups['mark_group']
         x_axis_label_group = top_level_groups['x_axis_label_group']
@@ -70,111 +76,131 @@ class VegaLiteParser():
         
         layout_graph = LayoutGraph()
         
-        for mark in mark_group:
-            new_rect = Rect()
-            boundingbox = mark.get_bounding_box()
-            mark._bounding_box = boundingbox
-            new_rect.attributes = {
-                "stroke": "red",
-                "stroke-width": 1,
-                "fill": "none",
-                "x": boundingbox.minx,
-                "y": boundingbox.miny,
-                "width": boundingbox.maxx - boundingbox.minx,
-                "height": boundingbox.maxy - boundingbox.miny,
-            }
-            # flattened_elements_tree.children.append(new_rect)
             
-            layout_graph.add_node(Node(mark))
+        orientation = self.additional_configs['chart_template'].mark.orientation
+        direction = ""
+        if orientation == "horizontal":
+            axis_orientation = self.additional_configs['chart_template'].y_axis.orientation
+        else:
+            #交换 y_axis_label_group 和 x_axis_label_group
+            y_axis_label_group = self.x_axis_label_group
+            x_axis_label_group = self.y_axis_label_group
+            axis_orientation = self.additional_configs['chart_template'].x_axis.orientation
         
-        for label in x_axis_label_group:
-            new_rect = Rect()
-            boundingbox = label.get_bounding_box()
-            label._bounding_box = boundingbox
-            new_rect.attributes = {
-                "stroke": "red",
-                "stroke-width": 1,
-                "fill": "none",
-                "x": boundingbox.minx,
-                "y": boundingbox.miny,
-                "width": boundingbox.maxx - boundingbox.minx,
-                "height": boundingbox.maxy - boundingbox.miny,
-            }
-            # flattened_elements_tree.children.append(new_rect)
+        if axis_orientation == "left":
+            direction = "right"
+        elif axis_orientation == "right":
+            direction = "left"
+        elif axis_orientation == "top":
+            direction = "down"
+        else:
+            direction = "up"
         
-        for label in y_axis_label_group:
-            new_rect = Rect()
-            boundingbox = label.get_bounding_box()
-            label._bounding_box = boundingbox
-            new_rect.attributes = {
-                "stroke": "red",
-                "stroke-width": 1,
-                "fill": "none",
-                "x": boundingbox.minx,
-                "y": boundingbox.miny,
-                "width": boundingbox.maxx - boundingbox.minx,
-                "height": boundingbox.maxy - boundingbox.miny,
-            }
-            # flattened_elements_tree.children.append(new_rect)
-            layout_graph.add_node(Node(label))
-            
-        for mark in mark_annotation_group:
-            new_rect = Rect()
-            boundingbox = mark.get_bounding_box()
-            mark._bounding_box = boundingbox
-            new_rect.attributes = {
-                "stroke": "red",
-                "stroke-width": 1,
-                "fill": "none",
-                "x": boundingbox.minx,
-                "y": boundingbox.miny,
-                "width": boundingbox.maxx - boundingbox.minx,
-                "height": boundingbox.maxy - boundingbox.miny,
-            }
-            # flattened_elements_tree.children.append(new_rect)
-            layout_graph.add_node(Node(mark))
-            
-        orientation = parse_chart_orientation(mark_group)
+        sequence = self.additional_configs['chart_template']['sequence']
+        relative_to_mark = self.additional_configs['chart_template']['relative_to_mark']
         
+        # build inital layout graph
         for i in range(len(mark_group)):
-            layout_strategy_1 = parse_layout_strategy(mark_group[i], mark_annotation_group[i],'horizontal')
-            layout_strategy_2 = parse_layout_strategy(mark_group[i], y_axis_label_group[i], 'horizontal')
-            layout_strategy_2.padding = 3
-            layout_graph.add_edge_by_value(mark_annotation_group[i], mark_group[i], layout_strategy_1)
-            layout_graph.add_edge_by_value(y_axis_label_group[i], mark_group[i], layout_strategy_2)
+            if "mark_annotation" in sequence:
+                layout_strategy_1 = parse_layout_strategy(mark_group[i], mark_annotation_group[i],orientation)
+                layout_strategy_2 = parse_layout_strategy(mark_group[i], y_axis_label_group[i], orientation)
+                layout_graph.add_edge_by_value(mark_annotation_group[i], mark_group[i], layout_strategy_1)
+                layout_graph.add_edge_by_value(y_axis_label_group[i], mark_group[i], layout_strategy_2)
+            else:
+                layout_strategy_1 = parse_layout_strategy(mark_group[i], mark_annotation_group[i],orientation)
+                layout_graph.add_edge_by_value(mark_annotation_group[i], mark_group[i], layout_strategy_1)
         
-        for i in range(len(images_urls)):
-            base64_image = Image._getImageAsBase64(images_urls[i])
+        image_urls = self.additional_configs['x_data_multi_url']
+        
+        for i in range(len(image_urls)):
+            base64_image = Image._getImageAsBase64(image_urls[i])
             image_element = Image(base64_image)
+            original_width = image_element.original_width
+            original_height = image_element.original_height
+            aspect_ratio = original_width / original_height
+            # 计算新的width和height
+            if orientation == "horizontal":
+                height = mark_group[i].get_bounding_box().height
+                width = height * aspect_ratio
+            else:
+                width = mark_group[i].get_bounding_box().width
+                height = width / aspect_ratio
             image_element.attributes = {
                 "xlink:href": f"data:{base64_image}",
-                "width": 15,
-                "height": 15,
+                "width": width,
+                "height": height,
             }
             boundingbox = image_element.get_bounding_box()
             image_element._bounding_box = boundingbox
             
-            # layout_graph.add_node(Node(image_element))
-            layout_strategy = HorizontalLayoutStrategy()
-            layout_strategy.direction = 'right'
-            layout_strategy.padding = 3
-            layout_graph.add_node_with_edges(image_element, y_axis_label_group[i], layout_strategy)
-            node = layout_graph.node_map[image_element]
-            old_node_min_x = float(node.value._bounding_box.minx)
-            old_node_min_y = float(node.value._bounding_box.miny)
-            for next, next_layout_strategy in zip(node.nexts, node.nexts_edges):
-                next_layout_strategy.layout(next.value, node.value)
-                node.value.update_pos(old_node_min_x, old_node_min_y)
-                # print("node", node.value.tag, node.value._bounding_box)
-                # print("next", next.value.tag, next.value._bounding_box)
-            for prev, prev_layout_strategy in zip(node.prevs, node.prevs_edges):
-                # print("prev", prev.value.tag, prev.value._bounding_box)
-                old_prev_min_x = float(prev.value._bounding_box.minx)
-                old_prev_min_y = float(prev.value._bounding_box.miny)
-                prev_layout_strategy.layout(node.value, prev.value)
-                prev.value.update_pos(old_prev_min_x, old_prev_min_y)
-                # print("node", node.value.tag, node.value._bounding_box)
-            flattened_elements_tree.children.append(image_element)
+            if orientation == "horizontal":
+                if relative_to_mark and relative_to_mark[0] == "inside":
+                    layout_strategy = InnerHorizontalLayoutStrategy()
+                    if relative_to_mark[1] == "start" and direction == "right":
+                        layout_strategy.direction = 'left'
+                    elif relative_to_mark[1] == "end" and direction == "right":
+                        layout_strategy.direction = 'right'
+                    elif relative_to_mark[1] == "start" and direction == "left":
+                        layout_strategy.direction = 'left'
+                    elif relative_to_mark[1] == "end" and direction == "left":
+                        layout_strategy.direction = 'right'
+                    elif relative_to_mark[1] == "middle":
+                        layout_strategy = MiddleHorizontalLayoutStrategy()
+                else:
+                    layout_strategy = HorizontalLayoutStrategy()
+            else:
+                if relative_to_mark and relative_to_mark[0] == "inside":
+                    layout_strategy = InnerVerticalLayoutStrategy()
+                    if relative_to_mark[1] == "start" and direction == "down":
+                        layout_strategy.direction = 'up'
+                    elif relative_to_mark[1] == "end" and direction == "down":
+                        layout_strategy.direction = 'down'
+                    elif relative_to_mark[1] == "start" and direction == "up":
+                        layout_strategy.direction = 'up'
+                    elif relative_to_mark[1] == "end" and direction == "up":
+                        layout_strategy.direction = 'down'
+                    elif relative_to_mark[1] == "middle":
+                        layout_strategy = MiddleVerticalLayoutStrategy()
+                else:
+                    layout_strategy = VerticalLayoutStrategy()
+            
+            # 如果在sequence里,"axis_label"在"mark_annotation"之前
+            if "axis_label" in sequence and "mark_annotation" in sequence and sequence.index("axis_label") < sequence.index("mark_annotation") and not relative_to_mark[0] == "inside":
+                # layout_strategy.direction与direction相反，如果direction是right，则layout_strategy.direction是left
+                if direction == "right":
+                    layout_strategy.direction = "left"
+                elif direction == "left":
+                    layout_strategy.direction = "right"
+                elif direction == "down":
+                    layout_strategy.direction = "up"
+                else:
+                    layout_strategy.direction = "down"
+                layout_graph.add_node_with_edges(image_element, y_axis_label_group[i], layout_strategy)
+                node = layout_graph.node_map[image_element]
+                old_node_min_x = float(node.value._bounding_box.minx)
+                old_node_min_y = float(node.value._bounding_box.miny)
+                for next, next_layout_strategy in zip(node.nexts, node.nexts_edges):
+                    next_layout_strategy.layout(next.value, node.value)
+                    node.value.update_pos(old_node_min_x, old_node_min_y)
+                for prev, prev_layout_strategy in zip(node.prevs, node.prevs_edges):
+                    old_prev_min_x = float(prev.value._bounding_box.minx)
+                    old_prev_min_y = float(prev.value._bounding_box.miny)
+                    prev_layout_strategy.layout(node.value, prev.value)
+                    prev.value.update_pos(old_prev_min_x, old_prev_min_y)
+                flattened_elements_tree.children.append(image_element)
+            elif "axis_label" in sequence and "mark_annotation" in sequence and sequence.index("axis_label") < sequence.index("mark_annotation") and relative_to_mark[0] == "inside" and relative_to_mark[1] == "start":
+                layout_graph.add_node_with_edges(y_axis_label_group[i], image_element, layout_strategy)
+            # 如果在sequence里,"axis_label"在"mark_annotation"之后
+            elif "axis_label" in sequence and "mark_annotation" in sequence and sequence.index("axis_label") > sequence.index("mark_annotation"):
+                layout_graph.add_node_with_edges(y_axis_label_group[i], image_element, layout_strategy)
+                node = layout_graph.node_map[y_axis_label_group[i]]
+                old_node_min_x = float(node.value._bounding_box.minx)
+                old_node_min_y = float(node.value._bounding_box.miny)
+                for next, next_layout_strategy in zip(node.nexts, node.nexts_edges):
+                    next_layout_strategy.layout(next.value, node.value)
+                    node.value.update_pos(old_node_min_x, old_node_min_y)
+                flattened_elements_tree.children.append(image_element)
+            # 如果
 
         # layout_graph.visualize()
         # print(flattened_elements_tree.dump())

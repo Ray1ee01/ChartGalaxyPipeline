@@ -134,8 +134,8 @@ class SVGTreeConverter:
         for key, value in element_tree.attributes.items():
             attrs_list.append(f'{key}="{value}"')
         # 如果是GroupElement，则添加transform属性
-        if isinstance(element_tree, GroupElement):
-            attrs_list.append(f'transform="translate({element_tree.attributes.get("x", 0)},{element_tree.attributes.get("y", 0)})"')
+        # if isinstance(element_tree, GroupElement):
+        #     attrs_list.append(f'transform="translate({element_tree.attributes.get("x", 0)},{element_tree.attributes.get("y", 0)})"')
             
         attrs_str = ' '.join(attrs_list)
         
@@ -317,7 +317,7 @@ class SVGTreeConverter:
         top_level_groups = {}
         for key, value in groups_to_move.items():
             top_level_groups[key] = []
-        
+
         
         def process_node(node, parent_transform='', parent_attributes=None):
             if parent_attributes is None:
@@ -353,15 +353,23 @@ class SVGTreeConverter:
                     # 更新transform
                     if final_transform:
                         child_transform = child_copy.attributes.get('transform', '')
+                        # print('child_transform: ', child_transform)
+                        # print('final_transform: ', final_transform)
                         if child_transform:
-                            # 解析transform类型和值
-                            final_type = final_transform.split('(')[0].strip()
-                            child_type = child_transform.split('(')[0].strip()
+                            # 获取第一个变换
+                            final_transforms = final_transform.split(' ')
+                            child_transforms = child_transform.split(' ')
+                            
+                            final_first = final_transforms[0]
+                            child_first = child_transforms[0]
+                            
+                            final_type = final_first.split('(')[0].strip()
+                            child_type = child_first.split('(')[0].strip()
                             
                             if final_type == child_type:
-                                # 如果是相同类型的transform,则合并值
-                                final_values = final_transform.split('(')[1].rstrip(')').split(',')
-                                child_values = child_transform.split('(')[1].rstrip(')').split(',')
+                                # 如果第一个变换类型相同,则合并值
+                                final_values = final_first.split('(')[1].rstrip(')').split(',')
+                                child_values = child_first.split('(')[1].rstrip(')').split(',')
                                 
                                 # 转换为float并相加
                                 merged_values = []
@@ -370,10 +378,20 @@ class SVGTreeConverter:
                                     child_val = float(child_values[i])
                                     merged_values.append(str(final_val + child_val))
                                     
-                                # 构建新的transform
-                                child_copy.attributes['transform'] = f"{final_type}({','.join(merged_values)})"
+                                # 构建新的transform,保留其他变换
+                                merged_first = f"{final_type}({','.join(merged_values)})"
+                                remaining_child = ' '.join(child_transforms[1:])
+                                remaining_final = ' '.join(final_transforms[1:])
+                                
+                                transforms = [merged_first]
+                                if remaining_final:
+                                    transforms.append(remaining_final)
+                                if remaining_child:
+                                    transforms.append(remaining_child)
+                                    
+                                child_copy.attributes['transform'] = ' '.join(transforms)
                             else:
-                                # 如果是不同类型的transform,则串联
+                                # 如果类型不同,则串联所有变换
                                 child_copy.attributes['transform'] = f"{final_transform} {child_transform}"
                         else:
                             child_copy.attributes['transform'] = final_transform
@@ -445,3 +463,21 @@ class SVGTreeConverter:
         root.children.extend(top_level_elements)
         
         return root, top_level_groups
+
+    
+            
+    @staticmethod
+    def remove_elements_by_class(tree, class_name):
+        # 如果当前节点有class属性且包含目标class,返回None表示移除该节点
+        if 'class' in tree.attributes and class_name in tree.attributes['class']:
+            return None
+        
+        # 如果有子节点,递归处理每个子节点
+        if hasattr(tree, 'children'):
+            # 过滤掉返回None的子节点
+            tree.children = [
+                child for child in tree.children 
+                if (result := SVGTreeConverter.remove_elements_by_class(child, class_name)) is not None
+            ]
+            return tree
+        return tree

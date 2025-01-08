@@ -1,0 +1,27 @@
+{
+    "layout_tree":{
+        "tag": "g",
+        "layoutStrategy": {
+            "name": "vertical",
+            "padding": 5,
+            "direction": "down",
+            "overlap": false
+        },
+        "children": [
+            {
+                "tag": "image",
+                "id": "topic_icon"
+            },
+            {
+                "tag": "g",
+                "id": "title",
+                "children": []
+            },
+            {
+                "tag": "g",
+                "id": "chart",
+                "children": []
+            }
+        ]
+    }
+}

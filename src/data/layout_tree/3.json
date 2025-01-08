@@ -1,0 +1,28 @@
+{
+    "layout_tree":{
+        "tag": "g",
+        "layoutStrategy": {
+            "name": "vertical",
+            "padding": 5,
+            "direction": "down",
+            "overlap": false
+        },
+        "children": [
+            {
+                "tag": "g",
+                "id": "title",
+                "children": []
+            },
+            {
+                "tag": "g",
+                "id": "subtitle",
+                "children": []
+            },
+            {
+                "tag": "g",
+                "id": "chart",
+                "children": []
+            }
+        ]
+    }
+}

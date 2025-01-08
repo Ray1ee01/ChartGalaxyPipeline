@@ -1,4 +1,3 @@
-
 from dataclasses import dataclass
 from typing import List, Optional, Dict, Tuple
 from ...utils.node_bridge import NodeBridge
@@ -24,6 +23,8 @@ class BoundingBox:
     miny: float
     maxy: float
     
+    # 添加
+    
     @property
     def relative_position(self) -> dict:
         """在group内的相对坐标"""
@@ -47,7 +48,28 @@ class BoundingBox:
             'miny': self.miny,
             'maxy': self.maxy
         }
-
+        
+    def is_overlapping(self, other: 'BoundingBox') -> bool:
+        """判断两个边界框是否重叠
+        
+        Args:
+            other: 另一个边界框
+            
+        Returns:
+            bool: 是否重叠
+        """
+        # 检查x轴是否重叠
+        x_overlap = not (self.maxx < other.minx or self.minx > other.maxx)
+        # 检查y轴是否重叠  
+        y_overlap = not (self.maxy < other.miny or self.miny > other.maxy)
+        
+        # 两个轴都重叠时,边界框重叠
+        return x_overlap and y_overlap
+    
+    def dump(self) -> str:
+        """输出边界框信息"""
+        return f"BoundingBox(width={self.width:.2f}, height={self.height:.2f}, minx={self.minx:.2f}, maxx={self.maxx:.2f}, miny={self.miny:.2f}, maxy={self.maxy:.2f})"
+    
 @dataclass
 class Padding:
     """内边距类"""
@@ -59,6 +81,7 @@ class Padding:
 class LayoutElement(ABC):
     """布局元素基类"""
     def __init__(self):
+        self.id = None
         self._bounding_box: Optional[BoundingBox] = None
         self._padding: Padding = Padding()
         self.attributes: dict = {}  # 添加 attributes 属性
@@ -79,77 +102,79 @@ class LayoutElement(ABC):
             
     @property
     def get_transform_matrix(self) -> List[float]:
-        """解析transform属性"""
-        # print("self.attributes", self.attributes)
+        """解析transform属性,返回标准SVG变换矩阵
+        
+        Returns:
+            List[float]: 变换矩阵 [a, b, c, d, e, f]
+            表示矩阵:
+            | a c e |
+            | b d f |
+            | 0 0 1 |
+        """
         transform = self.attributes.get('transform', '')
         if not transform:
             return [1, 0, 0, 1, 0, 0]
 
         # 初始变换矩阵
         matrix = [1, 0, 0, 1, 0, 0]
-        matrix2 = [1, 0, 0, 1, 0, 0]
 
-        # 匹配所有translate和rotate
-        translate_matches = list(re.finditer(r'translate\(([^,]+),?([^)]+)?\)', transform))
-        rotate_match = re.search(r'rotate\(([^,]+)(?:,\s*([^,]+),\s*([^,]+))?\)', transform)
+        # 匹配所有transform命令
+        transform_pattern = r'(translate|rotate)\(([-\d\s,.]+)\)'
+        transforms = re.finditer(transform_pattern, transform)
 
-        # 处理多个translate
-        if len(translate_matches) > 1:
-            for match in translate_matches:
-                tx = float(match.group(1))
-                ty = float(match.group(2)) if match.group(2) else 0
-                if rotate_match:
-                    matrix2[4] += tx
-                    matrix2[5] += ty
-                else:
-                    matrix[4] += tx
-                    matrix[5] += ty
-        else:
-            # 处理单个translate
-            translate_match = re.search(r'translate\(([^,]+),?([^)]+)?\)', transform)
-            if translate_match:
-                tx = float(translate_match.group(1))
-                ty = float(translate_match.group(2)) if translate_match.group(2) else 0
-                if rotate_match:
-                    # 检查旋转中心点
-                    cx = float(rotate_match.group(2)) if rotate_match.group(2) else 0
-                    cy = float(rotate_match.group(3)) if rotate_match.group(3) else 0
-                    if cx != 0 or cy != 0:
-                        matrix2[4] += tx
-                        matrix2[5] += ty
-                    else:
-                        matrix[4] += tx
-                        matrix[5] += ty
-                else:
-                    matrix[4] += tx
-                    matrix[5] += ty
-
-        # 处理rotate
-        if rotate_match:
-            angle = -float(rotate_match.group(1)) * (math.pi / 180)
-            cos = math.cos(angle)
-            sin = math.sin(angle)
+        for t in transforms:
+            command = t.group(1)
+            params = [float(p) for p in t.group(2).replace(' ', '').split(',') if p]
             
-            # 检查旋转中心点
-            cx = float(rotate_match.group(2)) if rotate_match.group(2) and not math.isnan(float(rotate_match.group(2))) else 0
-            cy = float(rotate_match.group(3)) if rotate_match.group(3) and not math.isnan(float(rotate_match.group(3))) else 0
+            if command == 'translate':
+                tx = params[0]
+                ty = params[1] if len(params) > 1 else 0
+                # 平移矩阵与当前矩阵相乘
+                translate_matrix = [1, 0, 0, 1, tx, ty]
+                matrix = self._multiply_matrices(matrix, translate_matrix)
+                
+            elif command == 'rotate':
+                angle = params[0] * (math.pi / 180)  # 转换为弧度
+                cos_a = math.cos(angle)
+                sin_a = math.sin(angle)
+                
+                if len(params) == 3:  # 带中心点的旋转
+                    cx, cy = params[1], params[2]
+                    # 1. 平移到原点
+                    translate1 = [1, 0, 0, 1, -cx, -cy]
+                    # 2. 旋转
+                    rotate = [cos_a, sin_a, -sin_a, cos_a, 0, 0]
+                    # 3. 平移回原位置
+                    translate2 = [1, 0, 0, 1, cx, cy]
+                    
+                    # 按顺序应用变换: matrix * translate1 * rotate * translate2
+                    matrix = self._multiply_matrices(matrix, translate1)
+                    matrix = self._multiply_matrices(matrix, rotate)
+                    matrix = self._multiply_matrices(matrix, translate2)
+                else:  # 普通旋转
+                    rotate = [cos_a, sin_a, -sin_a, cos_a, 0, 0]
+                    matrix = self._multiply_matrices(matrix, rotate)
 
-            if cx != 0 or cy != 0:
-                matrix[0] = cos
-                matrix[1] = -sin
-                matrix[2] = sin
-                matrix[3] = cos
-                matrix[4] -= cx
-                matrix[5] -= cy
-                matrix2[4] += cx
-                matrix2[5] += cy
-                return [matrix, matrix2]
-            else:
-                matrix[0] = cos
-                matrix[1] = -sin
-                matrix[2] = sin
-                matrix[3] = cos
         return matrix
+    
+    def _multiply_matrices(self, m1: List[float], m2: List[float]) -> List[float]:
+        """矩阵乘法
+        
+        Args:
+            m1: 第一个矩阵 [a1, b1, c1, d1, e1, f1]
+            m2: 第二个矩阵 [a2, b2, c2, d2, e2, f2]
+        
+        Returns:
+            List[float]: 结果矩阵 [a, b, c, d, e, f]
+        """
+        return [
+            m1[0] * m2[0] + m1[2] * m2[1],          # a
+            m1[1] * m2[0] + m1[3] * m2[1],          # b
+            m1[0] * m2[2] + m1[2] * m2[3],          # c
+            m1[1] * m2[2] + m1[3] * m2[3],          # d
+            m1[0] * m2[4] + m1[2] * m2[5] + m1[4],  # e
+            m1[1] * m2[4] + m1[3] * m2[5] + m1[5]   # f
+        ]
     
     def _apply_transform(self, minX: float, minY: float, maxX: float, maxY: float, matrix: List[float]) -> Dict[str, float]:
         """应用变换矩阵到边界框的四个角点
@@ -197,8 +222,8 @@ class LayoutElement(ABC):
         """
         
         return (
-            matrix[0] * (x + matrix[4]) + matrix[2] * (y + matrix[5]),
-            matrix[1] * (x + matrix[4]) + matrix[3] * (y + matrix[5])
+            matrix[0] * x + matrix[2] * y + matrix[4],
+            matrix[1] * x + matrix[3] * y + matrix[5]
         )
     
     @bounding_box.setter
@@ -227,6 +252,10 @@ class LayoutElement(ABC):
         
         # 基本信息
         info = [f"{prefix}{class_name}:"]
+        
+        # id
+        if self.id:
+            info.append(f"{prefix}  id: {self.id}")
         
         # 边界框信息
         if self._bounding_box:
@@ -330,7 +359,20 @@ class GroupElement(LayoutElement):
         maxY = max(bbox.maxy for bbox in child_bboxes)
         
         return BoundingBox(maxX - minX, maxY - minY, minX, maxX, minY, maxY)
-        
+    
+    def get_children_boundingboxes(self) -> List[BoundingBox]:
+        """获取所有子元素的边界框"""
+        children_boundingboxes = []
+        for child in self.children:
+            if child._bounding_box:
+               children_boundingboxes.append(child._bounding_box)
+            else:
+                child._bounding_box = child.get_bounding_box()
+                children_boundingboxes.append(child._bounding_box)
+        # 加上self._bounding_box的minx, miny作为偏移量
+        # children_boundingboxes = [BoundingBox(bbox.width, bbox.height, bbox.minx + self._bounding_box.minx, bbox.maxx + self._bounding_box.minx, bbox.miny + self._bounding_box.miny, bbox.maxy + self._bounding_box.miny) for bbox in children_boundingboxes]
+        return children_boundingboxes
+    
     def layout(self, children: List[LayoutElement]) -> None:
         """布局子元素"""
         if self.layout_strategy:
@@ -353,10 +395,12 @@ class AtomElement(LayoutElement):
 
 class Image(AtomElement):
     """图片元素"""
-    def __init__(self, base64: str):
+    def __init__(self, base64: str=None):
         super().__init__()
         self.base64 = base64
         self.tag = 'image'
+        self.original_width = 0
+        self.original_height = 0
     
     @staticmethod
     def _getImageAsBase64(image_url: str) -> Optional[str]:
@@ -366,7 +410,7 @@ class Image(AtomElement):
             image_url: 图片URL或本地文件路径
         
         Returns:
-            Optional[str]: base64编码的图片数据，包含MIME类型
+            Tuple[Optional[str], int, int]: base64编码的图片数据(包含MIME类型)、原始宽度、原始高度
         """
         try:
             # 检查是否已经是base64编码
@@ -391,6 +435,14 @@ class Image(AtomElement):
                     image_data = f.read()
                 content_type = mimetypes.guess_type(image_url)[0] or 'image/png'
             
+            # 获取图片尺寸
+            from PIL import Image as PILImage
+            from io import BytesIO
+            img = PILImage.open(BytesIO(image_data))
+            width, height = img.size
+            self.original_width = width
+            self.original_height = height
+            
             # 转换为base64
             base64_data = base64.b64encode(image_data).decode('utf-8')
             return f"{content_type};base64,{base64_data}"
@@ -403,8 +455,8 @@ class Image(AtomElement):
         transform = self.get_transform_matrix
         x = float(self.attributes.get('x', 0))
         y = float(self.attributes.get('y', 0))
-        width = float(self.attributes.get('width', 0))
-        height = float(self.attributes.get('height', 0))
+        width = float(self.attributes.get('width', 50))
+        height = float(self.attributes.get('height', 50))
         min_x = x
         min_y = y
         max_x = x + width
@@ -426,7 +478,7 @@ class Image(AtomElement):
 
 class Text(AtomElement):
     """文本元素"""
-    def __init__(self, content: str):
+    def __init__(self, content: str=None):
         super().__init__()
         self.content = content
         self.tag = 'text'
@@ -440,6 +492,7 @@ class Text(AtomElement):
                 'fontSize': font_size,
                 'anchor': anchor
             }
+            # print('data: ', data)
             measure_script_path = os.path.join(os.path.dirname(__file__), 'text_tool', 'measure_text.js')
             result = node_bridge.execute_node_script(
                 measure_script_path,
@@ -458,8 +511,6 @@ class Text(AtomElement):
             }
     
     def update_pos(self, old_min_x: float, old_min_y: float):
-        # print("old_min_x", old_min_x, "old_min_y", old_min_y)
-        # print("self._bounding_box.minx", self._bounding_box.minx, "self._bounding_box.miny", self._bounding_box.miny)
         if 'x' in self.attributes:
             self.attributes['x'] += self._bounding_box.minx - old_min_x
         else:
@@ -477,7 +528,6 @@ class Text(AtomElement):
         #     text = "Lj"
         # else:
         #     text = text[:-2] + "ly"
-        # print(self.attributes)
         x = float(self.attributes.get('x', 0))
         y = float(self.attributes.get('y', 0))
         dx = float(self.attributes.get('dx', 0))
@@ -493,7 +543,6 @@ class Text(AtomElement):
         else:
             font_size = parent_font_size if parent_font_size else 16
         
-        # print(text, font_size, text_anchor)
         metrics = self._measure_text(text, font_size, text_anchor)
         width = metrics['width']
         height = metrics['height']
@@ -510,6 +559,8 @@ class Text(AtomElement):
         min_y = y
         max_x = x + width
         max_y = y + height
+        # print('text: ', self.content)
+        # print('bounding_box: ', height, width)
         
         if transform:
             if isinstance(transform, list) and len(transform) == 2:

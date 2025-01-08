@@ -15,6 +15,7 @@ from .svg_processor_modules.vegalite_parser import VegaLiteParser
 from .svg_processor_modules.layout_processor import LayoutProcessor
 from .svg_processor_modules.tree_converter import SVGTreeConverter
 from .svg_processor_modules.elements import *
+from ..template.template import LayoutTemplate
 
 default_additional_configs = {
     "iconAttachConfig": {
@@ -133,35 +134,52 @@ class SVGOptimizer(SVGProcessor):
         """
         # 丢弃svg中所有tag为rect且fill为#ffffff的rect
         svg = re.sub(r'<rect[^>]*fill="#ffffff"[^>]*>', '', svg)
-        return svg
-        
-        
-        parser = VegaLiteParser(svg)
+        # return svg
+        # print('additional_configs: ', additional_configs)
+        parser = VegaLiteParser(svg, additional_configs)
         parsed_svg, flattened_elements_tree, layout_graph = parser.parse()
         
-        layout_processor = LayoutProcessor(flattened_elements_tree, layout_graph)
+        if additional_configs.get('title_config').get('max_width_ratio'):
+            additional_configs['title_config']['max_width'] = flattened_elements_tree.get_bounding_box().width * additional_configs['title_config']['max_width_ratio']
+        else:
+            additional_configs['title_config']['max_width'] = flattened_elements_tree.get_bounding_box().width
+        if additional_configs.get('subtitle_config').get('max_width_ratio'):
+            additional_configs['subtitle_config']['max_width'] = flattened_elements_tree.get_bounding_box().width * additional_configs['subtitle_config']['max_width_ratio']
+        else:
+            additional_configs['subtitle_config']['max_width'] = flattened_elements_tree.get_bounding_box().width
+        # layout_template = LayoutTemplate()
+        # # print('additional_configs["layout_tree"]: ', additional_configs["layout_tree"])
+        # layout_template.root = layout_template.build_template_from_tree(additional_configs["layout_tree"])
+        layout_template = additional_configs['layout_template']
+        layout_processor = LayoutProcessor(flattened_elements_tree, layout_graph, layout_template, additional_configs)
         element_tree = layout_processor.process()
         
-        # element_list = SVGTreeConverter.flatten_tree(element_tree)
-        # root_element = GroupElement()
-        # root_element.children = element_list
-        # rects = []
-        # for element in root_element.children:
-        #     bounding_box = element.get_bounding_box()
-        #     rect = Rect()
-        #     rect.attributes = {
-        #         "stroke": "red",
-        #         "stroke-width": 1,
-        #         "fill": "none",
-        #         "x": bounding_box.minx,
-        #         "y": bounding_box.miny,
-        #         "width": bounding_box.maxx - bounding_box.minx,
-        #         "height": bounding_box.maxy - bounding_box.miny,
-        #     }
-        #     rects.append(rect)
+
+        element_list = SVGTreeConverter.flatten_tree(element_tree)
+        # element_list = SVGTreeConverter.flatten_tree(flattened_elements_tree)
+        root_element = GroupElement()
+        root_element.children = element_list
+        rects = []
+        for element in root_element.children:
+            # if not element.tag == 'text':
+            #     continue
+            # print('element: ', element.content, element._bounding_box)
+            bounding_box = element.get_bounding_box()
+            # print('bounding_box: ', bounding_box)
+            rect = Rect()
+            rect.attributes = {
+                "stroke": "red",
+                "stroke-width": 1,
+                "fill": "none",
+                "x": bounding_box.minx,
+                "y": bounding_box.miny,
+                "width": bounding_box.maxx - bounding_box.minx,
+                "height": bounding_box.maxy - bounding_box.miny,
+            }
+            rects.append(rect)
         # for rect in rects:
-        #     root_element.children.append(rect)
-        # element_tree = root_element
+            # root_element.children.append(rect)
+        element_tree = root_element
         
         attrs_list = []
         parser.svg_root['attributes']['width'] = 1000
@@ -172,7 +190,7 @@ class SVGOptimizer(SVGProcessor):
         attrs_str = ' '.join(attrs_list)
         svg_left = f"<svg {attrs_str} xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">"
         svg_right = f"</svg>"
-        element_tree.attributes['transform'] = "translate(100,100)"
+        element_tree.attributes['transform'] = "translate(300,100)"
         svg_str = SVGTreeConverter.element_tree_to_svg(element_tree)
         svg_str = svg_left + svg_str + svg_right
         return svg_str
@@ -1837,9 +1855,9 @@ class SVGOptimizer(SVGProcessor):
         # print(group.get('attributes').get('class'))
         # print(group_bbox)
         group_bbox = {'minX': 0, 'minY': 0, 'maxX': 0, 'maxY': 0, 'width': 0, 'height': 0}
-        # 获取所有子元素的边界框
-        for child in group['children']:
-            print(child.get('attributes'), child.get('bbox'))
+        # # 获取所有子元素的边界框
+        # for child in group['children']:
+        #     print(child.get('attributes'), child.get('bbox'))
         
         max_width = max(child['bbox']['maxX']-child['bbox']['minX'] for child in group['children'])
         max_height = max(child['bbox']['maxY']-child['bbox']['minY'] for child in group['children'])
