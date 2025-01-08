@@ -5,14 +5,24 @@ import numpy as np
 import os
 from IPython import embed
 import shutil
+import json
 from .data_enricher_modules.data_clean import clean_df
 from .data_enricher_modules.HAI_extract import extract_chart
 from .data_enricher_modules.topic_generate import check_topic_and_caption
 from .data_enricher_modules.image_search import search_image
-from .data_enricher_modules.icon_selection import get_icon_pool
+# from .data_enricher_modules.icon_selection import get_icon_pool
+from .style_design_modules.infographic_retrieve import InfographicRetriever
+from .style_design_modules.infographic_palette import get_palette
 
 data_save_dir = './src/data'
 cache_dir = './src/cache'
+library_path = './src/processors/style_design_modules/all_seeds.json'
+model_path = '/data1/jiashu/models/models--sentence-transformers--all-MiniLM-L6-v2/snapshots/fa97f6e7cb1a59073dff9e6b13e2715cf7475ac9'
+infographic_retriever = InfographicRetriever(library_path, model_path)
+image_root = '/data3/yukai/datasets/infographic_data/check_202501022351'
+with open('./src/processors/style_design_modules/image_paths.json') as f:
+    image_paths = json.load(f)
+default_image_path = '/data1/jiashu/ChartPipeline/src/processors/style_design_modules/default.png'
 
 class CSVDataProcessor(DataProcessor):
     def process(self, raw_data: str) -> List[Dict]:
@@ -89,17 +99,15 @@ class VizNetDataProcessor(DataProcessor):
             data_facts.append(data_fact)
         
         # 5. get topic relevant images
-        topic_images_query = search_image(meta['topic'])
-        # if need more images, search for meta['keywords']
+        # topic_images_query = search_image(meta['topic'])
+        # # if need more images, search for meta['keywords']
 
-        # 6. get chart relevant icons
-        icon_pools = []
-        for i, chart in enumerate(res):
-            json_file = os.path.join(json_path, '{}.json'.format(i))
-            icon_pool = get_icon_pool(json_file, meta)
-            icon_pools.append(icon_pool)
-
-        embed()
+        # # 6. get chart relevant icons
+        # icon_pools = []
+        # for i, chart in enumerate(res):
+        #     json_file = os.path.join(json_path, '{}.json'.format(i))
+        #     icon_pool = get_icon_pool(json_file, meta)
+        #     icon_pools.append(icon_pool)
 
         # TODO how to save and return
         # df: total tabular data
@@ -108,4 +116,30 @@ class VizNetDataProcessor(DataProcessor):
         # data_facts: trend, top, bottom
         # topic_images_query: images (all share)
         # icon_pools: icons
+
+        # 7. get relevant infographics/images
+        prompts = ' '.join([meta['topic'], ' '.join(meta['keywords'])])
+        infographics = infographic_retriever.retrieve_similar_entries(prompts, top_k=10)
+        info_path = os.path.join(cache_dir, 'infographics')
+        shutil.rmtree(info_path, ignore_errors=True)
+        os.makedirs(info_path)
+        # check if the image exists, if exists, copy to the folder
+        sel_image_path = None
+        for i, info in enumerate(infographics):
+            if info in image_paths:
+                img_path = os.path.join(image_root, image_paths[info])
+                sel_image_path = os.path.join(info_path, info)
+                shutil.copy(img_path, sel_image_path)
+                break
+            else:
+                print('Image not found: {}'.format(info))
+        if sel_image_path is None:
+            sel_image_path = default_image_path
+        # print(sel_image_path)
+        
+        # 8. get color palette from the image
+        palettes = get_palette(5, True, sel_image_path)
+
+        embed()
+
         pass

@@ -72,7 +72,7 @@ def get_results(response):
     if match:
         return {
             'topic': match.group(1).strip(),
-            'keywords': match.group(2).split(',').strip(),
+            'keywords': match.group(2).strip().split(','),
             'title': match.group(3).strip(),
             'caption': match.group(4).strip()
         }
