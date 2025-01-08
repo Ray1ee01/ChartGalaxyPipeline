@@ -51,8 +51,40 @@ class VegaLiteGenerator(ChartGenerator):
             mark_specification["strokeOpacity"] = self.template.mark.stroke_color_style.opacity
             mark_specification["strokeWidth"] = self.template.mark.stroke_style.stroke_width
         
-        specification["mark"] = mark_specification
         
+        
+        annotation_specification = {
+            "mark": {
+                "type": "text",
+            },
+            "encoding": {
+                "text": {
+                    "field": self.template.y_axis.field,
+                    "type": self.template.y_axis.field_type
+                }
+            }
+        }
+        if self.template.mark.orientation == "horizontal":
+            if self.template.x_axis.orientation == "left":
+                annotation_specification["mark"]["align"] = "start"
+                annotation_specification["mark"]["dx"] = 5
+            else:
+                annotation_specification["mark"]["align"] = "end"
+                annotation_specification["mark"]["dx"] = -5
+        else:
+            if self.template.y_axis.orientation == "top":
+                annotation_specification["mark"]["dy"] = 5
+            else:
+                annotation_specification["mark"]["dy"] = -5
+        
+        if self.template.has_annotation:
+            specification["layer"] = [
+                {"mark": mark_specification},
+                annotation_specification
+            ]
+        else:
+            specification["mark"] = mark_specification
+
         # 编码配置
         encoding = {}
         
@@ -61,8 +93,9 @@ class VegaLiteGenerator(ChartGenerator):
             x_encoding = {
                 "field": self.template.x_axis.field,
                 "type": self.template.x_axis.field_type,
-                "axis": {}
+                "axis": {"orient": "top", "grid": False, "maxExtent": None},
             }
+            
             
             axis_config = x_encoding["axis"]
             if self.template.x_axis.has_domain is not None:
@@ -95,6 +128,9 @@ class VegaLiteGenerator(ChartGenerator):
                 axis_config["tickColor"] = self.template.x_axis.tick_color_style.color
             if self.template.x_axis.tick_stroke_style.stroke_width is not None:
                 axis_config["tickWidth"] = self.template.x_axis.tick_stroke_style.stroke_width
+            if self.template.x_axis.orientation is not None:
+                axis_config["orient"] = self.template.x_axis.orientation
+                
                 
             encoding["x"] = x_encoding
 
@@ -103,7 +139,7 @@ class VegaLiteGenerator(ChartGenerator):
             y_encoding = {
                 "field": self.template.y_axis.field,
                 "type": self.template.y_axis.field_type,
-                "axis": {}
+                "axis": {"grid": False, "maxExtent": None}
             }
             
             axis_config = y_encoding["axis"]
@@ -137,7 +173,8 @@ class VegaLiteGenerator(ChartGenerator):
                 axis_config["tickColor"] = self.template.y_axis.tick_color_style.color
             if self.template.y_axis.tick_stroke_style.stroke_width is not None:
                 axis_config["tickWidth"] = self.template.y_axis.tick_stroke_style.stroke_width
-                
+            if self.template.y_axis.orientation is not None:
+                axis_config["orient"] = self.template.y_axis.orientation
             encoding["y"] = y_encoding
 
         # 颜色编码配置
@@ -157,15 +194,49 @@ class VegaLiteGenerator(ChartGenerator):
                 
             encoding["color"] = color_encoding
         
+        
+        # print('orientation: ', self.template.mark.orientation)
+        if self.template.mark.orientation == "horizontal":
+            # 交换encoding中的x和y
+            encoding["x"], encoding["y"] = encoding["y"], encoding["x"]
+        
+        if self.template.sort:
+            print('sort: ', self.template.sort)
+            sort_config = {
+                "by": self.template.sort["by"],
+                "ascending": self.template.sort["ascending"]
+            }
+            if sort_config["by"] == "x":
+                encoding["y"]["sort"] = "-x" if sort_config["ascending"] else "x"
+            else:
+                encoding["x"]["sort"] = "-y" if sort_config["ascending"] else "y"
         specification["encoding"] = encoding
         
         return specification
 
-    def generate(self, data: List[Dict], template: ChartTemplate) -> Tuple[str, Dict, Dict]:
-        self.data = data
+    def generate(self, data: dict, template: ChartTemplate) -> Tuple[str, Dict, Dict]:
+        # 获取原始数据
+        raw_data = data['data']
+        self.meta_data = data['meta_data']
+        
+        # 转换数据格式
+        x_label = self.meta_data['x_label']
+        y_label = self.meta_data['y_label']
+        x_type = self.meta_data['x_type']
+        y_type = self.meta_data['y_type']
+        transformed_data = []
+        for item in raw_data:
+            transformed_data.append({
+                x_label: item['x_data'],
+                y_label: item['y_data']
+            })
+        
+        
+        self.data = transformed_data
         self.template = template
+
         spec = self.template_to_spec()
-        # print('spec: ', spec)
+        print('spec: ', spec)
         result = NodeBridge.execute_node_script(self.script_path, {
             "spec": spec,
         })

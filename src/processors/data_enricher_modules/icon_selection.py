@@ -139,7 +139,7 @@ class Semantics:
             # self.icon_dist.append(1-D[0])
             all_icon.update(I)
         self.icon_positions = matcher.get_icon(list(all_icon))
-        print(len(all_icon), len(self.icon_positions))
+        # print(len(all_icon), len(self.icon_positions))
         # exit()
 
         file2idx = {}
@@ -150,8 +150,20 @@ class Semantics:
             for i in range(len(icon_set)):
                 icon_set[i] = file2idx[self.icon_positions[icon_set[i]][1]]
             
-def get_icon_pool(json_file, meta_data):
-    matcher = CLIPMatcher()
-    semantics = Semantics(json_file, meta_data, topk)
+def get_icon_pool(json_file, meta_data, matcher=None):
+    if matcher is None:
+        # time_start = time.time()
+        matcher = CLIPMatcher()
+        # time_end = time.time()
+        # print('time cost for CLIPMatcher: ', time_end - time_start)
+    
+    # time_start = time.time()
+    semantics = Semantics(json_file, meta_data, topk=20)
+    # time_end = time.time()
+    # print('time cost for Semantics: ', time_end - time_start)
+    
+    # time_start = time.time()
     semantics.prepare_sets(matcher)
+    # time_end = time.time()
+    # print('time cost for prepare_sets: ', time_end - time_start)
     return semantics

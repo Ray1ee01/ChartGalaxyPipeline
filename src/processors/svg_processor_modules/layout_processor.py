@@ -16,11 +16,11 @@ topic_icon2_config = {
 }
 title_config = {
     "text": ["The Countries With The Highest","Density Of Robot Workers"],
-    "fontSize": 20,
+    "fontSize": 16,
     "fontFamily": "sans-serif",
     "fontWeight": "bold",
     "color": "#000000",
-    "textAnchor": "middle",
+    "textAnchor": "start"
 }
 subtitle_config = {
     "text": ["Installed industrial robots per 10,000 employees in ", "the manufacturing industry in 2019*"],
@@ -28,7 +28,7 @@ subtitle_config = {
     "fontFamily": "sans-serif",
     "fontWeight": "normal",
     "color": "#808080",
-    "textAnchor": "middle"
+    "textAnchor": "start"
 }
 
 layout_tree = {
@@ -225,11 +225,27 @@ layout_tree = {
 
 
 class LayoutProcessor:
-    def __init__(self, element_tree: LayoutElement, layout_graph: LayoutGraph, layout_template: LayoutTemplate):
+    def __init__(self, element_tree: LayoutElement, layout_graph: LayoutGraph, layout_template: LayoutTemplate, additional_configs: dict):
         self.element_tree = element_tree
         self.layout_graph = layout_graph
         self.layout_template = layout_template
+        self.title_config = title_config
+        self.subtitle_config = subtitle_config
+        self.topic_icon_config = topic_icon_config
+        # 如果additional_configs中存在title_config, 则使用additional_configs中的title_config
+        if 'title_config' in additional_configs:
+            # update title_config
+            self.title_config.update(additional_configs['title_config'])
+        # 如果additional_configs中存在subtitle_config, 则使用additional_configs中的subtitle_config
+        if 'subtitle_config' in additional_configs:
+            # update subtitle_config
+            self.subtitle_config.update(additional_configs['subtitle_config'])
         
+        if 'topic_icon_config' in additional_configs:
+            self.topic_icon_config.update(additional_configs['topic_icon_config'])
+        
+        if 'topic_icon_url' in additional_configs:
+            self.topic_icon_config['iconUrl'] = additional_configs['topic_icon_url']
         # self.chart_element = GroupElement()
         # self.chart_element.children.append(self.element_tree)
         self.chart_element = self.element_tree
@@ -260,10 +276,10 @@ class LayoutProcessor:
     def process_layout_template(self, element: LayoutElement):
         if element.tag == 'g':
             if element.id == 'title':
-                self._createTitleTextElement(title_config, element)
+                self._createTitleTextElement(self.title_config, element)
                 element._bounding_box = element.get_bounding_box()
             elif element.id == 'subtitle':
-                self._createSubtitleTextElement(subtitle_config, element)
+                self._createSubtitleTextElement(self.subtitle_config, element)
                 element._bounding_box = element.get_bounding_box()
             elif element.id == 'chart':
                 # element = self.chart_element
@@ -271,8 +287,35 @@ class LayoutProcessor:
                 element.attributes = self.chart_element.attributes
                 element._bounding_box = element.get_bounding_box()
             else:
-                for child in element.children:
+                topic_icon_idx = -1
+                boundingboxes = []
+                for idx, child in enumerate(element.children):
                     self.process_layout_template(child)
+                    if child.id == 'topic_icon':
+                        topic_icon_idx = idx
+                    boundingboxes.append(child._bounding_box)
+                print("topic_icon_idx", topic_icon_idx)
+                if topic_icon_idx != -1:
+                    max_height = 0
+                    max_width = 0
+                    for boundingbox in boundingboxes:
+                        if boundingbox.height > max_height:
+                            max_height = boundingbox.height
+                        if boundingbox.width > max_width:
+                            max_width = boundingbox.width
+                    topic_icon_height = max_height * self.topic_icon_config.get('relative_height_ratio', 0)
+                    print("self.topic_icon_config", self.topic_icon_config)
+                    print("max_height", max_height)
+                    if topic_icon_height > 0:
+                        original_height = boundingboxes[topic_icon_idx].height
+                        original_width = boundingboxes[topic_icon_idx].width
+                        aspect_ratio = original_width / original_height
+                        topic_icon_height = max_height * self.topic_icon_config.get('relative_height_ratio', 0)
+                        topic_icon_width = topic_icon_height * aspect_ratio
+                        element.children[topic_icon_idx].attributes['height'] = topic_icon_height
+                        element.children[topic_icon_idx].attributes['width'] = topic_icon_width
+                        element.children[topic_icon_idx]._bounding_box = element.children[topic_icon_idx].get_bounding_box()
+                        print("topic_icon_boundingbox", element.children[topic_icon_idx]._bounding_box)
                 for i in range(1, len(element.children)):
                     self.layout_graph.add_node_with_edges(element.children[i-1], element.children[i], element.layout_strategy)
                     node_map = self.layout_graph.node_map
@@ -282,7 +325,8 @@ class LayoutProcessor:
         elif element.tag == 'image':
             id = element.id
             if id == 'topic_icon':
-                self._createTopicIconElement(topic_icon_config, element)
+                self._createTopicIconElement(self.topic_icon_config, element)
+                
         
     def process_node(self, tree: dict):
         # 自顶向下递归地创建layout element, 并应用布局
@@ -348,13 +392,36 @@ class LayoutProcessor:
         if not text_content:
             return None
         
-        # 将文本内容统一转换为列表形式
-        text_lines = text_content if isinstance(text_content, list) else [text_content]
-        
         # 获取配置参数
         font_size = title_config.get('fontSize', 16)
         line_height = title_config.get('lineHeight', 1.5)  # 默认行高为字体大小的1.2倍
         text_anchor = title_config.get('textAnchor', 'middle')
+        max_width = title_config.get('max_width', float('inf'))
+        
+        # 将文本内容统一转换为列表形式
+        if isinstance(text_content, list):
+            text_lines = text_content
+        else:
+            # 如果渲染宽度超过max_width,按空格分词并重组文本行
+            words = text_content.split()
+            text_lines = []
+            current_line = []
+            current_width = 0
+            
+            for word in words:
+                word_metrics = Text._measure_text(word + ' ', font_size, text_anchor)
+                word_width = word_metrics['width']
+                
+                if current_width + word_width <= max_width:
+                    current_line.append(word)
+                    current_width += word_width
+                else:
+                    text_lines.append(' '.join(current_line))
+                    current_line = [word]
+                    current_width = word_width
+            
+            if current_line:
+                text_lines.append(' '.join(current_line))
         
         # 计算每行文本的度量和总体尺寸
         line_metrics = []
@@ -431,17 +498,42 @@ class LayoutProcessor:
         if not text_content:
             return None
         
-        # 将文本内容统一转换为列表形式
-        text_lines = text_content if isinstance(text_content, list) else [text_content]
-            
-        text_anchor = subtitle_config.get('align', 'middle')
-        font_size = subtitle_config.get('fontSize', 16)
-        line_height = subtitle_config.get('lineHeight', 1.2)
+        # 获取配置参数
+        font_size = subtitle_config.get('fontSize', 12)
+        line_height = subtitle_config.get('lineHeight', 1.5)
+        text_anchor = subtitle_config.get('textAnchor', 'middle')
+        max_width = subtitle_config.get('max_width', float('inf'))
         
-        # 计算每行文本的度量
+        # 将文本内容统一转换为列表形式
+        if isinstance(text_content, list):
+            text_lines = text_content
+        else:
+            # 如果渲染宽度超过max_width,按空格分词并重组文本行
+            words = text_content.split()
+            text_lines = []
+            current_line = []
+            current_width = 0
+            
+            for word in words:
+                word_metrics = Text._measure_text(word + ' ', font_size, text_anchor)
+                word_width = word_metrics['width']
+                
+                if current_width + word_width <= max_width:
+                    current_line.append(word)
+                    current_width += word_width
+                else:
+                    text_lines.append(' '.join(current_line))
+                    current_line = [word]
+                    current_width = word_width
+            
+            if current_line:
+                text_lines.append(' '.join(current_line))
+        
+        # 计算每行文本的度量和总体尺寸
         line_metrics = []
-        max_width = 0
         total_height = 0
+        max_width = 0
+        
         for line in text_lines:
             metrics = Text._measure_text(line, font_size, text_anchor)
             line_metrics.append(metrics)
@@ -465,14 +557,14 @@ class LayoutProcessor:
                 'font-family': subtitle_config.get('fontFamily', 'sans-serif'),
                 'font-size': font_size,
                 'font-weight': subtitle_config.get('fontWeight', 'normal'),
-                'fill': subtitle_config.get('color', '#6E6E6E')
+                'fill': subtitle_config.get('color', '#808080')
             }
             text_element = Text(line)
             text_element.attributes = attributes
             boundingbox = text_element.get_bounding_box()
             text_element._bounding_box = boundingbox
             text_elements.append(text_element)
-        
+
         for text_element in text_elements:
             self.layout_graph.add_node(Node(text_element))
         
@@ -521,8 +613,8 @@ class LayoutProcessor:
             'class': 'topic-icon',
             'xlink:href': f"data:{image_data}",
             'preserveAspectRatio': 'xMidYMid meet',
-            'width': 300,
-            'height': 300,
+            'width': element.attributes.get('width', 50),
+            'height': element.attributes.get('height', 50),
         }
         boundingbox = element.get_bounding_box()
         element._bounding_box = boundingbox

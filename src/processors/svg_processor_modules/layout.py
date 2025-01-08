@@ -96,6 +96,12 @@ class VerticalLayoutStrategy(LayoutStrategy):
                 layout_element_valid_bounding_boxes = layout_element.get_children_boundingboxes()
             else:
                 layout_element_valid_bounding_boxes = [layout_element._bounding_box]
+            if reference_element.tag == 'g' and reference_element.id == 'chart':
+                for child in reference_element.children:
+                    print('child: ', child.tag, child.id, child._bounding_box)
+            
+            # print('layout_element_valid_bounding_boxes: ', layout_element_valid_bounding_boxes)
+            # print('reference_element_valid_bounding_boxes: ', reference_element_valid_bounding_boxes)
             
             def has_overlap(move_distance: float) -> bool:
                 """检查给定移动距离是否会导致重叠"""
@@ -118,8 +124,10 @@ class VerticalLayoutStrategy(LayoutStrategy):
                 for ref_box in reference_element_valid_bounding_boxes:
                     for layout_box in layout_element_valid_bounding_boxes:
                         if layout_box.is_overlapping(ref_box):
-                            print('overlap')
                             has_overlap = True
+                            print('overlap')
+                            # print('ref_box: ', ref_box)
+                            # print('layout_box: ', layout_box)
                             break
                     if has_overlap:
                         break
@@ -158,11 +166,14 @@ class VerticalLayoutStrategy(LayoutStrategy):
                 
                 while left <= right:
                     mid = (left + right) / 2
+                    print('mid: ', mid)
                     if has_overlap(mid):
+                        print('overlap')
                         right = mid - 0.1
                     else:
                         left = mid + 0.1
                         best_move = mid
+                print('best_move: ', best_move)
                 if best_move > 0:
                     layout_element._bounding_box.miny = old_layout_element_bounding_box_miny - best_move
                     layout_element._bounding_box.maxy = old_layout_element_bounding_box_maxy - best_move
@@ -197,16 +208,16 @@ class HorizontalLayoutStrategy(LayoutStrategy):
             
         if self.alignment[0] == 'middle':
             baseline_y = (reference_element_bounding_box.maxy + reference_element_bounding_box.miny) / 2
-        elif self.alignment[0] == "left":
+        elif self.alignment[0] == "top":
             baseline_y = reference_element_bounding_box.miny
-        elif self.alignment[0] == "right":
+        elif self.alignment[0] == "bottom":
             baseline_y = reference_element_bounding_box.maxy
 
         if self.alignment[1] == 'middle':
             move_y = baseline_y - (layout_element_bounding_box.maxy + layout_element_bounding_box.miny) / 2 + self.offset
-        elif self.alignment[1] == "left":
+        elif self.alignment[1] == "top":
             move_y = baseline_y - layout_element_bounding_box.miny + self.offset
-        elif self.alignment[1] == "right":
+        elif self.alignment[1] == "bottom":
             move_y = baseline_y - layout_element_bounding_box.maxy + self.offset
 
         layout_element._bounding_box.minx += move_x
@@ -308,6 +319,42 @@ class HorizontalLayoutStrategy(LayoutStrategy):
                 if best_move > 0:
                     layout_element._bounding_box.minx = old_layout_element_bounding_box_minx - best_move
                     layout_element._bounding_box.maxx = old_layout_element_bounding_box_maxx - best_move
+
+class InnerHorizontalLayoutStrategy(HorizontalLayoutStrategy):
+    """内部水平布局策略"""
+    def __init__(self, alignment: list[str] = ['middle', 'middle'], direction: str = 'right', padding: float = 0, offset: float = 0):
+        super().__init__(alignment, direction, padding, offset)
+
+    def layout(self, reference_element: LayoutElement, layout_element: LayoutElement) -> None:
+        self.padding = -layout_element.get_bounding_box().width - self.padding
+        super().layout(reference_element, layout_element)
+
+class InnerVerticalLayoutStrategy(VerticalLayoutStrategy):
+    """内部垂直布局策略"""
+    def __init__(self, alignment: list[str] = ['middle', 'middle'], direction: str = 'right', padding: float = 0, offset: float = 0):
+        super().__init__(alignment, direction, padding, offset)
+
+    def layout(self, reference_element: LayoutElement, layout_element: LayoutElement) -> None:
+        self.padding = -layout_element.get_bounding_box().height - self.padding
+        super().layout(reference_element, layout_element)
+
+class MiddleHorizontalLayoutStrategy(HorizontalLayoutStrategy):
+    """中间水平布局策略"""
+    def __init__(self, alignment: list[str] = ['middle', 'middle'], direction: str = 'right', padding: float = 0, offset: float = 0):
+        super().__init__(alignment, direction, padding, offset)
+
+    def layout(self, reference_element: LayoutElement, layout_element: LayoutElement) -> None:
+        self.padding = -layout_element.get_bounding_box().width/2 - reference_element.get_bounding_box().width/2 - self.padding
+        super().layout(reference_element, layout_element)
+
+class MiddleVerticalLayoutStrategy(VerticalLayoutStrategy):
+    """中间垂直布局策略"""
+    def __init__(self, alignment: list[str] = ['middle', 'middle'], direction: str = 'right', padding: float = 0, offset: float = 0):
+        super().__init__(alignment, direction, padding, offset)
+
+    def layout(self, reference_element: LayoutElement, layout_element: LayoutElement) -> None:
+        self.padding = -layout_element.get_bounding_box().height/2 - reference_element.get_bounding_box().height/2 - self.padding
+        super().layout(reference_element, layout_element)
 
 def parse_layout_strategy(reference_element: LayoutElement, layout_element: LayoutElement, layout_strategy: str = 'none') -> None:
     

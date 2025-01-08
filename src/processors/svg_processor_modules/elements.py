@@ -364,7 +364,11 @@ class GroupElement(LayoutElement):
         """获取所有子元素的边界框"""
         children_boundingboxes = []
         for child in self.children:
-            children_boundingboxes.append(child._bounding_box)
+            if child._bounding_box:
+               children_boundingboxes.append(child._bounding_box)
+            else:
+                child._bounding_box = child.get_bounding_box()
+                children_boundingboxes.append(child._bounding_box)
         # 加上self._bounding_box的minx, miny作为偏移量
         # children_boundingboxes = [BoundingBox(bbox.width, bbox.height, bbox.minx + self._bounding_box.minx, bbox.maxx + self._bounding_box.minx, bbox.miny + self._bounding_box.miny, bbox.maxy + self._bounding_box.miny) for bbox in children_boundingboxes]
         return children_boundingboxes
@@ -395,6 +399,8 @@ class Image(AtomElement):
         super().__init__()
         self.base64 = base64
         self.tag = 'image'
+        self.original_width = 0
+        self.original_height = 0
     
     @staticmethod
     def _getImageAsBase64(image_url: str) -> Optional[str]:
@@ -404,7 +410,7 @@ class Image(AtomElement):
             image_url: 图片URL或本地文件路径
         
         Returns:
-            Optional[str]: base64编码的图片数据，包含MIME类型
+            Tuple[Optional[str], int, int]: base64编码的图片数据(包含MIME类型)、原始宽度、原始高度
         """
         try:
             # 检查是否已经是base64编码
@@ -429,6 +435,14 @@ class Image(AtomElement):
                     image_data = f.read()
                 content_type = mimetypes.guess_type(image_url)[0] or 'image/png'
             
+            # 获取图片尺寸
+            from PIL import Image as PILImage
+            from io import BytesIO
+            img = PILImage.open(BytesIO(image_data))
+            width, height = img.size
+            self.original_width = width
+            self.original_height = height
+            
             # 转换为base64
             base64_data = base64.b64encode(image_data).decode('utf-8')
             return f"{content_type};base64,{base64_data}"
@@ -441,8 +455,8 @@ class Image(AtomElement):
         transform = self.get_transform_matrix
         x = float(self.attributes.get('x', 0))
         y = float(self.attributes.get('y', 0))
-        width = float(self.attributes.get('width', 0))
-        height = float(self.attributes.get('height', 0))
+        width = float(self.attributes.get('width', 50))
+        height = float(self.attributes.get('height', 50))
         min_x = x
         min_y = y
         max_x = x + width
@@ -478,6 +492,7 @@ class Text(AtomElement):
                 'fontSize': font_size,
                 'anchor': anchor
             }
+            # print('data: ', data)
             measure_script_path = os.path.join(os.path.dirname(__file__), 'text_tool', 'measure_text.js')
             result = node_bridge.execute_node_script(
                 measure_script_path,

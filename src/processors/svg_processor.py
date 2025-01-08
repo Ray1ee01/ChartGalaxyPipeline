@@ -136,17 +136,27 @@ class SVGOptimizer(SVGProcessor):
         svg = re.sub(r'<rect[^>]*fill="#ffffff"[^>]*>', '', svg)
         # return svg
         # print('additional_configs: ', additional_configs)
-        parser = VegaLiteParser(svg)
+        parser = VegaLiteParser(svg, additional_configs)
         parsed_svg, flattened_elements_tree, layout_graph = parser.parse()
         
+        if additional_configs.get('title_config').get('max_width_ratio'):
+            additional_configs['title_config']['max_width'] = flattened_elements_tree.get_bounding_box().width * additional_configs['title_config']['max_width_ratio']
+        else:
+            additional_configs['title_config']['max_width'] = flattened_elements_tree.get_bounding_box().width
+        if additional_configs.get('subtitle_config').get('max_width_ratio'):
+            additional_configs['subtitle_config']['max_width'] = flattened_elements_tree.get_bounding_box().width * additional_configs['subtitle_config']['max_width_ratio']
+        else:
+            additional_configs['subtitle_config']['max_width'] = flattened_elements_tree.get_bounding_box().width
         # layout_template = LayoutTemplate()
+        # # print('additional_configs["layout_tree"]: ', additional_configs["layout_tree"])
         # layout_template.root = layout_template.build_template_from_tree(additional_configs["layout_tree"])
-        # layout_processor = LayoutProcessor(flattened_elements_tree, layout_graph, layout_template)
-        # element_tree = layout_processor.process()
+        layout_template = additional_configs['layout_template']
+        layout_processor = LayoutProcessor(flattened_elements_tree, layout_graph, layout_template, additional_configs)
+        element_tree = layout_processor.process()
         
 
-        # element_list = SVGTreeConverter.flatten_tree(element_tree)
-        element_list = SVGTreeConverter.flatten_tree(flattened_elements_tree)
+        element_list = SVGTreeConverter.flatten_tree(element_tree)
+        # element_list = SVGTreeConverter.flatten_tree(flattened_elements_tree)
         root_element = GroupElement()
         root_element.children = element_list
         rects = []
@@ -167,8 +177,8 @@ class SVGOptimizer(SVGProcessor):
                 "height": bounding_box.maxy - bounding_box.miny,
             }
             rects.append(rect)
-        for rect in rects:
-            root_element.children.append(rect)
+        # for rect in rects:
+            # root_element.children.append(rect)
         element_tree = root_element
         
         attrs_list = []
@@ -180,7 +190,7 @@ class SVGOptimizer(SVGProcessor):
         attrs_str = ' '.join(attrs_list)
         svg_left = f"<svg {attrs_str} xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">"
         svg_right = f"</svg>"
-        element_tree.attributes['transform'] = "translate(100,100)"
+        element_tree.attributes['transform'] = "translate(300,100)"
         svg_str = SVGTreeConverter.element_tree_to_svg(element_tree)
         svg_str = svg_left + svg_str + svg_right
         return svg_str

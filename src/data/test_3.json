@@ -1,0 +1,32 @@
+{   
+    "data": [
+        { "category": "South Korea", "value": 855, "flag": "/data1/liduan/generation/chart/chart_pipeline/testicon/robot.png" },
+        { "category": "Japan", "value": 364, "flag": "/data1/liduan/generation/chart/chart_pipeline/testicon/robot.png" },
+        { "category": "Germany", "value": 346, "flag": "/data1/liduan/generation/chart/chart_pipeline/testicon/robot.png" },
+        { "category": "Sweden", "value": 277, "flag": "/data1/liduan/generation/chart/chart_pipeline/testicon/robot.png" },
+        { "category": "United States", "value": 228, "flag": "/data1/liduan/generation/chart/chart_pipeline/testicon/robot.png" },
+        { "category": "Italy", "value": 212, "flag": "/data1/liduan/generation/chart/chart_pipeline/testicon/robot.png" },
+        { "category": "Belgium/Luxembourg", "value": 211, "flag": "/data1/liduan/generation/chart/chart_pipeline/testicon/robot.png" },
+        { "category": "Spain", "value": 191, "flag": "/data1/liduan/generation/chart/chart_pipeline/testicon/robot.png" },
+        { "category": "China", "value": 187, "flag": "/data1/liduan/generation/chart/chart_pipeline/testicon/robot.png" },
+        { "category": "France", "value": 177, "flag": "/data1/liduan/generation/chart/chart_pipeline/testicon/robot.png" },
+        { "category": "Canada", "value": 165, "flag": "/data1/liduan/generation/chart/chart_pipeline/testicon/robot.png" },
+        { "category": "Switzerland", "value": 161, "flag": "/data1/liduan/generation/chart/chart_pipeline/testicon/robot.png" }
+    ],
+    "options": {
+        "iconAttachConfig": {
+            "method": "replacement",
+            "replaceMultiple": true,
+            "iconUrls": ["/data1/liduan/generation/chart/chart_pipeline/testicon/jp.png", "/data1/liduan/generation/chart/chart_pipeline/testicon/kr.png"],
+            "attachToMark": {
+                "sizeRatio": 0.9,
+                "padding": 0,
+                "relative": ["end", "outer"]
+            },
+            "attachToAxis": {
+                "padding": 0
+            }
+        }
+    }
+}
+

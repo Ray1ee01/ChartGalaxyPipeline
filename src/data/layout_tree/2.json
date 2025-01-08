@@ -1,0 +1,65 @@
+{
+    "layout_tree":{
+        "tag": "g",
+        "layoutStrategy": {
+            "name": "vertical",
+            "padding": 5,
+            "direction": "down",
+            "overlap": false,
+            "alignment": ["left", "left"]
+        },
+        "children": [
+            {
+                "tag": "g",
+                "id": "group_1",
+                "layoutStrategy": {
+                    "name": "vertical",
+                    "padding": 5,
+                    "direction": "down",
+                    "overlap": false,
+                    "alignment": ["left", "left"]
+                },
+                "children": [
+                    {
+                        "tag": "g",
+                        "id": "title",
+                        "children": []
+                    },
+                    {
+                        "tag": "g",
+                        "id": "subtitle",
+                        "children": []
+                    }
+                ]
+            },
+            {
+                "tag": "g",
+                "id": "group_2",
+                "layoutStrategy": {
+                    "name": "vertical",
+                    "padding": 5,
+                    "direction": "down",
+                    "overlap": true,
+                    "alignment": ["right", "right"]
+                },
+                "children": [
+                    {
+                        "tag": "g",
+                        "id": "chart",
+                        "children": []
+                    },
+                    {
+                        "tag": "image",
+                        "id": "topic_icon"
+                    }
+                ]
+            }
+        ]
+    },
+    "chart_config": {
+        "orientation": "horizontal",
+        "sort": {
+            "ascending": true
+        }
+    }
+}

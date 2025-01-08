@@ -68,11 +68,12 @@ def ask(prompt):
 
 answer_pattern = re.compile(r"\*\*Topic\*\*: (.+)\n\*\*Keywords\*\*: (.+)\n\*\*Title\*\*: (.+)\n\*\*Description\*\*: (.+)")
 def get_results(response):
+    # print(response)
     match = answer_pattern.match(response)
     if match:
         return {
             'topic': match.group(1).strip(),
-            'keywords': match.group(2).split(',').strip(),
+            'keywords': [keyword.strip() for keyword in match.group(2).strip().split(',')],
             'title': match.group(3).strip(),
             'caption': match.group(4).strip()
         }
@@ -95,5 +96,5 @@ def check_topic_and_caption(df, meta_data):
         return None
     # print(response)
     # print(wwxxhh) 1015
-    print(results, caption_size)
+    # print(results, caption_size)
     return results

@@ -1,0 +1,68 @@
+{
+    "layout_tree":{
+        "tag": "g",
+        "layoutStrategy": {
+            "name": "vertical",
+            "padding": 5,
+            "direction": "down",
+            "overlap": false,
+            "alignment": ["middle", "middle"]
+        },
+        "children": [
+            {
+                "tag": "g",
+                "id": "group_1",
+                "layoutStrategy": {
+                    "name": "horizontal",
+                    "padding": 5,
+                    "direction": "right",
+                    "overlap": false,
+                    "alignment": ["top", "top"]
+                },
+                "children": [
+                    {
+                        "tag": "g",
+                        "id": "group_2",
+                        "layoutStrategy": {
+                            "name": "vertical",
+                            "padding": 5,
+                            "direction": "down",
+                            "overlap": false,
+                            "alignment": ["left", "left"]
+                        },
+                        "children": [
+                            {
+                                "tag": "g",
+                                "id": "title",
+                                "children": []
+                            },
+                            {
+                                "tag": "g",
+                                "id": "subtitle",
+                                "children": []
+                            }
+                        ]
+                    },
+                    {
+                        "tag": "image",
+                        "id": "topic_icon"
+                    }
+                ]
+            },
+            {
+                "tag": "g",
+                "id": "chart",
+                "children": []
+            }
+        ]
+    },
+    "title_config": {
+        "max_width_ratio": 0.8
+    },
+    "subtitle_config": {
+        "max_width_ratio": 0.8
+    },
+    "topic_icon_config": {
+        "relative_height_ratio": 0.8
+    }
+}
