@@ -70,7 +70,7 @@ class VegaLiteParser():
         flattened_elements_tree = SVGTreeConverter.remove_elements_by_class(flattened_elements_tree, 'foreground')
         
         
-        print("top_level_groups['y_axis_group']: ", top_level_groups['y_axis_group'])
+        # print("top_level_groups['y_axis_group']: ", top_level_groups['y_axis_group'])
         mark_group = top_level_groups['mark_group']
         # x_axis_label_group = top_level_groups['x_axis_label_group']
         # y_axis_label_group = top_level_groups['y_axis_label_group']
@@ -105,9 +105,9 @@ class VegaLiteParser():
         sequence = self.additional_configs['chart_composition']['sequence']
         relative_to_mark = self.additional_configs['chart_composition']['relative_to_mark']
         
-        print("mark_group: ", mark_group)
-        print("mark_annotation_group: ", mark_annotation_group)
-        print("y_axis_label_group: ", y_axis_label_group)
+        # print("mark_group: ", mark_group)
+        # print("mark_annotation_group: ", mark_annotation_group)
+        # print("y_axis_label_group: ", y_axis_label_group)
         # build inital layout graph
         for i in range(len(mark_group)):
             if "mark_annotation" in sequence:
@@ -193,14 +193,14 @@ class VegaLiteParser():
                     layout_strategy.direction = "down"
                 layout_graph.add_node_with_edges(y_axis_label_group[i], image_element, layout_strategy)
                 node = layout_graph.node_map[image_element]
-                print("node: ", node.value.tag, node.value._bounding_box)
+                # print("node: ", node.value.tag, node.value._bounding_box)
                 for next, next_layout_strategy in zip(node.nexts, node.nexts_edges):
-                    print("next_layout_strategy: ", next_layout_strategy.value.name, next_layout_strategy.value.direction, next_layout_strategy.value.padding, next_layout_strategy.value.offset, next_layout_strategy.value.alignment)
-                    print("next: ", next.value.tag, next.value._bounding_box)
+                    # print("next_layout_strategy: ", next_layout_strategy.value.name, next_layout_strategy.value.direction, next_layout_strategy.value.padding, next_layout_strategy.value.offset, next_layout_strategy.value.alignment)
+                    # print("next: ", next.value.tag, next.value._bounding_box)
                     next_layout_strategy.process_layout()
                 for prev, prev_layout_strategy in zip(node.prevs, node.prevs_edges):
-                    print("prev_layout_strategy: ", prev_layout_strategy.value.name, prev_layout_strategy.value.direction, prev_layout_strategy.value.padding, prev_layout_strategy.value.offset, prev_layout_strategy.value.alignment)
-                    print("prev: ", prev.value.tag, prev.value._bounding_box)
+                    # print("prev_layout_strategy: ", prev_layout_strategy.value.name, prev_layout_strategy.value.direction, prev_layout_strategy.value.padding, prev_layout_strategy.value.offset, prev_layout_strategy.value.alignment)
+                    # print("prev: ", prev.value.tag, prev.value._bounding_box)
                     prev_layout_strategy.process_layout()
                 flattened_elements_tree.children.append(image_element)
             elif "axis_label" in sequence and "x_multiple_icon" in sequence and sequence.index("axis_label") > sequence.index("x_multiple_icon"):

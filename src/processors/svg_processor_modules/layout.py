@@ -96,9 +96,9 @@ class VerticalLayoutStrategy(LayoutStrategy):
                 layout_element_valid_bounding_boxes = layout_element.get_children_boundingboxes()
             else:
                 layout_element_valid_bounding_boxes = [layout_element._bounding_box]
-            if reference_element.tag == 'g' and reference_element.id == 'chart':
-                for child in reference_element.children:
-                    print('child: ', child.tag, child.id, child._bounding_box)
+            # if reference_element.tag == 'g' and reference_element.id == 'chart':
+            #     for child in reference_element.children:
+            #         print('child: ', child.tag, child.id, child._bounding_box)
             
             # print('layout_element_valid_bounding_boxes: ', layout_element_valid_bounding_boxes)
             # print('reference_element_valid_bounding_boxes: ', reference_element_valid_bounding_boxes)
@@ -125,7 +125,7 @@ class VerticalLayoutStrategy(LayoutStrategy):
                     for layout_box in layout_element_valid_bounding_boxes:
                         if layout_box.is_overlapping(ref_box):
                             has_overlap = True
-                            print('overlap')
+                            # print('overlap')
                             # print('ref_box: ', ref_box)
                             # print('layout_box: ', layout_box)
                             break
@@ -152,7 +152,7 @@ class VerticalLayoutStrategy(LayoutStrategy):
                         best_move = mid
                     else:
                         right = mid - 0.1
-                print('best_move: ', best_move)
+                # print('best_move: ', best_move)
                 if best_move > 0:
                     layout_element._bounding_box.miny += best_move
                     layout_element._bounding_box.maxy += best_move
@@ -166,14 +166,14 @@ class VerticalLayoutStrategy(LayoutStrategy):
                 
                 while left <= right:
                     mid = (left + right) / 2
-                    print('mid: ', mid)
+                    # print('mid: ', mid)
                     if has_overlap(mid):
-                        print('overlap')
+                        # print('overlap')
                         right = mid - 0.1
                     else:
                         left = mid + 0.1
                         best_move = mid
-                print('best_move: ', best_move)
+                # print('best_move: ', best_move)
                 if best_move > 0:
                     layout_element._bounding_box.miny = old_layout_element_bounding_box_miny - best_move
                     layout_element._bounding_box.maxy = old_layout_element_bounding_box_maxy - best_move

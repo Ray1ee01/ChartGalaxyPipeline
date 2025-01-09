@@ -7,14 +7,14 @@ from .tree_converter import SVGTreeConverter
 from .elements import *
 from .layout import *
 from ...template.template import *
-topic_icon_config = {
+default_topic_icon_config = {
     "iconUrl": "/data1/liduan/generation/chart/chart_pipeline/testicon/robotarm2.png"
 }
 
-topic_icon2_config = {
+default_topic_icon2_config = {
     "iconUrl": "/data1/liduan/generation/chart/chart_pipeline/testicon/robotarm2.png"
 }
-title_config = {
+default_title_config = {
     "text": ["The Countries With The Highest","Density Of Robot Workers"],
     "fontSize": 16,
     "fontFamily": "sans-serif",
@@ -22,7 +22,7 @@ title_config = {
     "color": "#000000",
     "textAnchor": "start"
 }
-subtitle_config = {
+default_subtitle_config = {
     "text": ["Installed industrial robots per 10,000 employees in ", "the manufacturing industry in 2019*"],
     "fontSize": 12,
     "fontFamily": "sans-serif",
@@ -229,9 +229,9 @@ class LayoutProcessor:
         self.element_tree = element_tree
         self.layout_graph = layout_graph
         self.layout_template = layout_template
-        self.title_config = title_config
-        self.subtitle_config = subtitle_config
-        self.topic_icon_config = topic_icon_config
+        self.title_config = default_title_config
+        self.subtitle_config = default_subtitle_config
+        self.topic_icon_config = default_topic_icon_config
         # 如果additional_configs中存在title_config, 则使用additional_configs中的title_config
         if 'title_config' in additional_configs:
             # update title_config
@@ -274,9 +274,10 @@ class LayoutProcessor:
         return ret_layout_strategy
     
     def process_layout_template(self, element: LayoutElement):
-        print("element: ", element.tag, element.id)
+        # print("element: ", element.tag, element.id)
         if element.tag == 'g':
             if element.id == 'title':
+                print("title_config: ", self.title_config)
                 self._createTitleTextElement(self.title_config, element)
                 element._bounding_box = element.get_bounding_box()
             elif element.id == 'subtitle':
@@ -451,7 +452,7 @@ class LayoutProcessor:
                 'y': 0,
                 'text-anchor': text_anchor,
                 'font-family': title_config.get('fontFamily', 'sans-serif'),
-                'font-size': 20,
+                'font-size': font_size,
                 'font-weight': title_config.get('fontWeight', 'bolder'),
                 'fill': title_config.get('color', '#000000')
             }
@@ -465,8 +466,8 @@ class LayoutProcessor:
         for i in range(1, len(text_elements)):
             layout_strategy = VerticalLayoutStrategy()
             layout_strategy.alignment = ["left","left"]
-            layout_direction = "down"
-            layout_padding = 0
+            layout_strategy.direction = "down"
+            layout_strategy.padding = title_config.get('linePadding', 3)
             node_map = self.layout_graph.node_map
             self.layout_graph.add_edge(node_map[text_elements[i-1]], node_map[text_elements[i]], layout_strategy)
             old_node_min_x = float(node_map[text_elements[i]].value._bounding_box.minx)
@@ -572,8 +573,8 @@ class LayoutProcessor:
         for i in range(1, len(text_elements)):
             layout_strategy = VerticalLayoutStrategy()
             layout_strategy.alignment = ["left","left"]
-            layout_direction = "down"
-            layout_padding = 0
+            layout_strategy.direction = "down"
+            layout_strategy.padding = subtitle_config.get('linePadding', 3)
             node_map = self.layout_graph.node_map
             self.layout_graph.add_edge(node_map[text_elements[i-1]], node_map[text_elements[i]], layout_strategy)
             old_node_min_x = float(node_map[text_elements[i]].value._bounding_box.minx)

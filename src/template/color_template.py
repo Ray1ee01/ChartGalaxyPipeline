@@ -23,7 +23,7 @@ class ColorDesign:
 
     def get_color(self, type, number):
         if type == 'background':
-            return [random_hex() for _ in range(number)]
+            return [rgb_to_hex(240,240,240) for _ in range(number)]
         if type == 'text':
             return [rgb_to_hex(0, 0, 0) for _ in range(number)]
         if type == 'marks':

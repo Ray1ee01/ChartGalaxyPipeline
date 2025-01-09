@@ -8,6 +8,7 @@ from src.processors.data_processor import VizNetDataProcessor
 
 # data_dir = os.path.join(os.path.dirname(__file__),'src', 'data')
 output_dir = os.path.join(os.path.dirname(__file__),'src', 'output')
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 def main():
     import argparse
