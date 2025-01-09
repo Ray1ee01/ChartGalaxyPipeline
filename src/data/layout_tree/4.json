@@ -25,5 +25,11 @@
                 "children": []
             }
         ]
+    },
+    "title_config": {
+        "textAnchor": "start"
+    },
+    "subtitle_config": {
+        "textAnchor": "start"
     }
 }

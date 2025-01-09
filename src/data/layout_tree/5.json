@@ -46,9 +46,11 @@
         }
     },
     "title_config":{
-        "max_width_ratio": 0.75
+        "max_width_ratio": 0.75,
+        "textAnchor": "start"
     },
     "subtitle_config":{
-        "max_width_ratio": 0.75
+        "max_width_ratio": 0.75,
+        "textAnchor": "start"
     }
 }

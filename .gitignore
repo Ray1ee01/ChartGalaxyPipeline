@@ -5,3 +5,4 @@ data/
 __pycache__/
 **/__pycache__/*
 search_cache/
+basnet_best_train_gdi.pth

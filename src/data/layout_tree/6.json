@@ -57,10 +57,12 @@
         ]
     },
     "title_config": {
-        "max_width_ratio": 0.8
+        "max_width_ratio": 0.8,
+        "textAnchor": "start"
     },
     "subtitle_config": {
-        "max_width_ratio": 0.8
+        "max_width_ratio": 0.8,
+        "textAnchor": "start"
     },
     "topic_icon_config": {
         "relative_height_ratio": 0.8

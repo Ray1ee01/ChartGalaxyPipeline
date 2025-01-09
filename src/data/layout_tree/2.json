@@ -61,5 +61,11 @@
         "sort": {
             "ascending": true
         }
+    },
+    "title_config": {
+        "textAnchor": "start"
+    },
+    "subtitle_config": {
+        "textAnchor": "start"
     }
 }
