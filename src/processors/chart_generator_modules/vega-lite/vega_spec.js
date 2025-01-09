@@ -365,9 +365,11 @@ async function main() {
   // 编译规范
   const vegaSpec = vegaLite.compile(spec).spec;
 
+  // console.log(JSON.stringify(vegaSpec, null, 2));
   // 创建新的View
   const view = new vega.View(vega.parse(vegaSpec))
-    .renderer('none');  // 使用无头渲染器
+    .renderer('svg')
+    .initialize();  // 使用无头渲染器
 
   // 导出SVG
   try {

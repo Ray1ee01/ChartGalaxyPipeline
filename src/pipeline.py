@@ -74,6 +74,8 @@ class Pipeline:
             # 步骤2：生成图表
             svg, additional_configs = self.chart_generator.generate(processed_data, chart_template)
             
+            # return svg
+            
             
             # 配置额外信息
             additional_configs.update({

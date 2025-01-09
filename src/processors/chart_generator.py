@@ -93,7 +93,7 @@ class VegaLiteGenerator(ChartGenerator):
             x_encoding = {
                 "field": self.template.x_axis.field,
                 "type": self.template.x_axis.field_type,
-                "axis": {"orient": "top", "grid": False, "maxExtent": None},
+                "axis": {"orient": "top", "grid": False, "maxExtent": 100, "labelLimit": 100},
             }
             
             
@@ -139,7 +139,7 @@ class VegaLiteGenerator(ChartGenerator):
             y_encoding = {
                 "field": self.template.y_axis.field,
                 "type": self.template.y_axis.field_type,
-                "axis": {"grid": False, "maxExtent": None}
+                "axis": {"grid": False, "maxExtent": 100, "labelLimit": 100}
             }
             
             axis_config = y_encoding["axis"]
