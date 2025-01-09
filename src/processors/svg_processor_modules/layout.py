@@ -23,7 +23,7 @@ class LayoutStrategy(ABC):
 
 class VerticalLayoutStrategy(LayoutStrategy):
     """垂直布局策略"""
-    def __init__(self, alignment: list[str] = ['middle', 'middle'], direction: str = 'down', padding: float = 0, offset: float = 0):
+    def __init__(self, alignment: list[str] = ['middle', 'middle'], direction: str = 'down', padding: float = 5, offset: float = 0):
         self.padding = padding
         self.offset = offset
         self.alignment = alignment
@@ -180,7 +180,7 @@ class VerticalLayoutStrategy(LayoutStrategy):
 
 class HorizontalLayoutStrategy(LayoutStrategy):
     """水平布局策略"""
-    def __init__(self, alignment: list[str] = ['middle', 'middle'], direction: str = 'right', padding: float = 0, offset: float = 0):
+    def __init__(self, alignment: list[str] = ['middle', 'middle'], direction: str = 'right', padding: float = 5, offset: float = 0):
         self.padding = padding
         self.offset = offset
         self.alignment = alignment
@@ -322,7 +322,7 @@ class HorizontalLayoutStrategy(LayoutStrategy):
 
 class InnerHorizontalLayoutStrategy(HorizontalLayoutStrategy):
     """内部水平布局策略"""
-    def __init__(self, alignment: list[str] = ['middle', 'middle'], direction: str = 'right', padding: float = 0, offset: float = 0):
+    def __init__(self, alignment: list[str] = ['middle', 'middle'], direction: str = 'right', padding: float = 5, offset: float = 0):
         super().__init__(alignment, direction, padding, offset)
 
     def layout(self, reference_element: LayoutElement, layout_element: LayoutElement) -> None:
@@ -331,7 +331,7 @@ class InnerHorizontalLayoutStrategy(HorizontalLayoutStrategy):
 
 class InnerVerticalLayoutStrategy(VerticalLayoutStrategy):
     """内部垂直布局策略"""
-    def __init__(self, alignment: list[str] = ['middle', 'middle'], direction: str = 'right', padding: float = 0, offset: float = 0):
+    def __init__(self, alignment: list[str] = ['middle', 'middle'], direction: str = 'right', padding: float = 5, offset: float = 0):
         super().__init__(alignment, direction, padding, offset)
 
     def layout(self, reference_element: LayoutElement, layout_element: LayoutElement) -> None:
@@ -340,7 +340,7 @@ class InnerVerticalLayoutStrategy(VerticalLayoutStrategy):
 
 class MiddleHorizontalLayoutStrategy(HorizontalLayoutStrategy):
     """中间水平布局策略"""
-    def __init__(self, alignment: list[str] = ['middle', 'middle'], direction: str = 'right', padding: float = 0, offset: float = 0):
+    def __init__(self, alignment: list[str] = ['middle', 'middle'], direction: str = 'right', padding: float = 5, offset: float = 0):
         super().__init__(alignment, direction, padding, offset)
 
     def layout(self, reference_element: LayoutElement, layout_element: LayoutElement) -> None:
@@ -349,14 +349,19 @@ class MiddleHorizontalLayoutStrategy(HorizontalLayoutStrategy):
 
 class MiddleVerticalLayoutStrategy(VerticalLayoutStrategy):
     """中间垂直布局策略"""
-    def __init__(self, alignment: list[str] = ['middle', 'middle'], direction: str = 'right', padding: float = 0, offset: float = 0):
+    def __init__(self, alignment: list[str] = ['middle', 'middle'], direction: str = 'right', padding: float = 5, offset: float = 0):
         super().__init__(alignment, direction, padding, offset)
 
     def layout(self, reference_element: LayoutElement, layout_element: LayoutElement) -> None:
         self.padding = -layout_element.get_bounding_box().height/2 - reference_element.get_bounding_box().height/2 - self.padding
         super().layout(reference_element, layout_element)
+        
 
 def parse_layout_strategy(reference_element: LayoutElement, layout_element: LayoutElement, layout_strategy: str = 'none') -> None:
+    if reference_element._bounding_box == None:
+        reference_element._bounding_box = reference_element.get_bounding_box()
+    if layout_element._bounding_box == None:
+        layout_element._bounding_box = layout_element.get_bounding_box()
     
     # 计算布局策略的参数
     # 在初步情况下，可以alignment都是["middle", "middle"]
@@ -473,10 +478,10 @@ class Edge:
         return f"Edge(source={self.source.value.tag}, target={self.target.value.tag}, value={self.value.name})"
     
     def process_layout(self):
-        old_node_min_x = float(self.target.value._bounding_box.minx)
-        old_node_min_y = float(self.target.value._bounding_box.miny)
-        self.value.layout(self.source.value, self.target.value)
-        self.target.value.update_pos(old_node_min_x, old_node_min_y)
+        old_node_min_x = float(self.source.value._bounding_box.minx)
+        old_node_min_y = float(self.source.value._bounding_box.miny)
+        self.value.layout(self.target.value, self.source.value)
+        self.source.value.update_pos(old_node_min_x, old_node_min_y)
         
     def dump(self):
         return {
@@ -509,6 +514,10 @@ class LayoutGraph:
         target.prevs_edges.pop(target_idx)
     
     def add_edge_by_value(self, source: LayoutElement, target: LayoutElement, value: LayoutStrategy):
+        if source not in self.node_map:
+            self.add_node(Node(source))
+        if target not in self.node_map:
+            self.add_node(Node(target))
         source_node = self.node_map[source]
         target_node = self.node_map[target]
         self.add_edge(source_node, target_node, value)
@@ -520,26 +529,37 @@ class LayoutGraph:
             self.add_node(Node(target))
         source_node = self.node_map[source]
         target_node = self.node_map[target]
-        flip = False
-        for prev, prev_value in zip(target_node.prevs, target_node.prevs_edges):
-            if prev_value.value.name == value.name and prev_value.value.direction == value.direction:
-                # 把关系转移到prev到node之间
-                self.add_edge(prev, source_node, prev_value)
-                self.remove_edge(prev, target_node)
-        for next, next_value in zip(target_node.nexts, target_node.nexts_edges):
-            if next_value.value.name == value.name and next_value.value.direction != value.direction:
-                # 把关系转移到node到next之间
-                self.add_edge(source_node, next, next_value)
-                self.remove_edge(target_node, next)
-                flip = True
-        if not flip:
-            self.add_edge_by_value(source, target, value)
-        else:
-            if value.value.direction == 'left' or value.value.direction == 'right':
-                value.value.direction = 'right' if value.value.direction == 'left' else 'left'
-            else:
-                value.value.direction = 'down' if value.value.direction == 'up' else 'up'
-            self.add_edge_by_value(target, source, value)
+        if target_node.nexts == [] and target_node.prevs == []:
+            for next, next_value in zip(source_node.nexts, source_node.nexts_edges):
+                if next_value.value.name == value.name and next_value.value.direction == value.direction:
+                    self.add_edge(target_node, next, next_value.value)
+                    self.remove_edge(source_node, next)
+                    break
+        self.add_edge_by_value(source, target, value)
+            
+            
+        # flip = False
+        # for prev, prev_value in zip(target_node.prevs, target_node.prevs_edges):
+        #     if prev_value.value.name == value.name and prev_value.value.direction == value.direction:
+        #         # 把关系转移到prev到node之间
+        #         self.add_edge(prev, source_node, prev_value.value)
+        #         self.remove_edge(prev, target_node)
+        # for next, next_value in zip(target_node.nexts, target_node.nexts_edges):
+        #     if next_value.value.name == value.name and next_value.value.direction != value.direction:
+        #         print("next_value: ", next_value.value.name, next_value.value.direction, next_value.value.padding, next_value.value.offset, next_value.value.alignment)
+        #         print("value: ", value.name, value.direction, value.padding, value.offset, value.alignment)
+        #         # 把关系转移到node到next之间
+        #         self.add_edge(source_node, next, next_value.value)
+        #         self.remove_edge(target_node, next)
+        #         flip = True
+        # if not flip:
+        #     self.add_edge_by_value(source, target, value)
+        # else:
+        #     if value.direction == 'left' or value.direction == 'right':
+        #         value.direction = 'right' if value.direction == 'left' else 'left'
+        #     else:
+        #         value.direction = 'down' if value.direction == 'up' else 'up'
+        #     self.add_edge_by_value(target, source, value)
     def visualize(self):
         """可视化图结构"""
         try:

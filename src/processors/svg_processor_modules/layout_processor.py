@@ -274,6 +274,7 @@ class LayoutProcessor:
         return ret_layout_strategy
     
     def process_layout_template(self, element: LayoutElement):
+        print("element: ", element.tag, element.id)
         if element.tag == 'g':
             if element.id == 'title':
                 self._createTitleTextElement(self.title_config, element)
@@ -317,9 +318,9 @@ class LayoutProcessor:
                         element.children[topic_icon_idx]._bounding_box = element.children[topic_icon_idx].get_bounding_box()
                         print("topic_icon_boundingbox", element.children[topic_icon_idx]._bounding_box)
                 for i in range(1, len(element.children)):
-                    self.layout_graph.add_node_with_edges(element.children[i-1], element.children[i], element.layout_strategy)
+                    self.layout_graph.add_node_with_edges(element.children[i], element.children[i-1], element.layout_strategy)
                     node_map = self.layout_graph.node_map
-                    for edge in node_map[element.children[i-1]].nexts_edges:
+                    for edge in node_map[element.children[i-1]].prevs_edges:
                         edge.process_layout()
                 element._bounding_box = element.get_bounding_box()
         elif element.tag == 'image':

@@ -370,7 +370,7 @@ class TemplateFactory:
                 chart_template.has_annotation = True
         
         # 构建布局树
-        layout_template.build_template_from_tree(layout_tree)
+        layout_template.root = layout_template.build_template_from_tree(layout_tree)
         
         # 应用约束
         layout_template.apply_constraints(chart_template)
@@ -414,7 +414,7 @@ class TemplateFactory:
                 chart_template.has_annotation = True
         
         # 构建布局树
-        layout_template.build_template_from_tree(layout_tree)
+        layout_template.root = layout_template.build_template_from_tree(layout_tree)
         
         # 应用约束
         layout_template.apply_constraints(chart_template)

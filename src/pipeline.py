@@ -23,7 +23,7 @@ class Pipeline:
             # 从布局树文件随机选择一个配置文件
             import random
             # layout_file_idx = random.randint(1, 8)
-            layout_file_idx = 6
+            layout_file_idx = 7
             with open(f'/data1/liduan/generation/chart/chart_pipeline/src/data/layout_tree/{layout_file_idx}.json', 'r') as f:
                 layout_config = json.load(f)
             chart_image_idx = 1
@@ -84,7 +84,7 @@ class Pipeline:
                 "x_label_icon_url": processed_data['icons']['x_label'][0],
                 "y_label_icon_url": processed_data['icons']['y_label'][0],
                 'x_data_single_url': processed_data['icons']['x_data_single'][0],
-                "x_data_multi_url": [icon[0] for icon in processed_data['icons']['x_data_multi']],
+                "x_data_multi_url": [icon[i] for i, icon in enumerate(processed_data['icons']['x_data_multi'])],
                 "layout_template": layout_template,
                 "chart_composition": chart_image_config,
                 "chart_template": chart_template

@@ -99,7 +99,7 @@ class LayoutElement(ABC):
             self.attributes['y'] += self._bounding_box.miny - old_min_y
         else:
             self.attributes['y'] = self._bounding_box.miny - old_min_y
-            
+        print("self.tag: ", self.tag, "self.attributes['x']: ", self.attributes['x'], "self.attributes['y']: ", self.attributes['y'])
     @property
     def get_transform_matrix(self) -> List[float]:
         """解析transform属性,返回标准SVG变换矩阵
@@ -434,15 +434,7 @@ class Image(AtomElement):
                 with open(image_url, 'rb') as f:
                     image_data = f.read()
                 content_type = mimetypes.guess_type(image_url)[0] or 'image/png'
-            
-            # 获取图片尺寸
-            from PIL import Image as PILImage
-            from io import BytesIO
-            img = PILImage.open(BytesIO(image_data))
-            width, height = img.size
-            self.original_width = width
-            self.original_height = height
-            
+                        
             # 转换为base64
             base64_data = base64.b64encode(image_data).decode('utf-8')
             return f"{content_type};base64,{base64_data}"
@@ -451,6 +443,42 @@ class Image(AtomElement):
             print(f"Error processing image {image_url}: {str(e)}")
             return None
     
+    @staticmethod
+    def get_image_size(image_url: str) -> Tuple[int, int]:
+        """获取图片尺寸"""
+        try:
+            # 检查是否已经是base64编码
+            if image_url.startswith('data:'):
+                return image_url
+            
+            # 判断是URL还是本地文件
+            parsed = urlparse(image_url)
+            is_url = bool(parsed.scheme and parsed.netloc)
+            
+            # 获取图片数据
+            if is_url:
+                response = requests.get(image_url)
+                image_data = response.content
+                # 从URL或Content-Type获取MIME类型
+                content_type = response.headers.get('content-type')
+                if not content_type:
+                    content_type = mimetypes.guess_type(image_url)[0] or 'image/png'
+            else:
+                # 处理本地文件
+                with open(image_url, 'rb') as f:
+                    image_data = f.read()
+                content_type = mimetypes.guess_type(image_url)[0] or 'image/png'
+            
+            # 获取图片尺寸
+            from PIL import Image as PILImage
+            from io import BytesIO
+            img = PILImage.open(BytesIO(image_data))
+            width, height = img.size
+            return width, height
+        except Exception as e:
+            print(f"Error processing image {image_url}: {str(e)}")
+            return None
+        
     def get_bounding_box(self) -> BoundingBox:
         transform = self.get_transform_matrix
         x = float(self.attributes.get('x', 0))
