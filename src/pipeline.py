@@ -31,7 +31,7 @@ class Pipeline:
             with open(f'/data1/liduan/generation/chart/chart_pipeline/src/data/chart_image/{chart_image_idx}.json', 'r') as f:
                 chart_image_config = json.load(f)
             
-            color_template = ColorDesign(None)
+            color_template = ColorDesign(processed_data['palettes'])
             
             layout_tree = layout_config['layout_tree']
             chart_config = layout_config.get('chart_config', {})
