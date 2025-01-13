@@ -83,6 +83,7 @@ class ColorDesign:
             rgb_cp.sort(key=lambda x: ciede2000(x, bcg_rgb))
             # self.main_color = random.choice(rgb_cp)
             self.main_color = rgb_cp[-1]
+            self.bcg_color = bcg_rgb
             print(self.main_color)
             dist_color_2_black = ciede2000(self.main_color, black)
             dist_color_2_white = ciede2000(self.main_color, white)
@@ -96,13 +97,15 @@ class ColorDesign:
         self.basic_colors = [black, white, gray]
 
 
-    def get_color(self, type, number, seed_text = 0, seed_mark = 0, seed_axis = 0, seed_embellishment = 0):
+    def get_color(self, type, number, seed_text = 0, seed_mark = 0, seed_axis = 0, seed_embellishment = 0, reverse = False):
         if type == 'background':
             return [self.pool['bcg'] for _ in range(number)]
 
         if self.mode == 'monochromatic': 
             if type == 'text':
                 seed = seed_text % 5
+                if reverse:
+                    seed = -1 - seed_text % 2
                 if seed == 0: # all same color
                     return [rgb_to_hex(*self.main_color) for _ in range(number)]
                 if seed == 1: # all black/white
@@ -129,6 +132,15 @@ class ColorDesign:
                     for i in range(1, number):
                         res.append(other_color)
                     return [rgb_to_hex(*color) for color in res]
+                if seed == -1:
+                    if self.lightness == 'dark':
+                        value = rgb_to_hex(*self.basic_colors[0])
+                        return [value for _ in range(number)]
+                    value = rgb_to_hex(*self.basic_colors[1])
+                    return [value for _ in range(number)]
+                if seed == -2:
+                    value = rgb_to_hex(*self.bcg_color)
+                    return [value for _ in range(number)]
                     
             if type == 'marks':
                 seed = seed_mark % 6
