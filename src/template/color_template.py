@@ -3,9 +3,9 @@ import colour
 import numpy as np
 
 def rgb_to_hex(r, g, b):
-    r = max(0, min(r, 255))
-    g = max(0, min(g, 255))  
-    b = max(0, min(b, 255))
+    r = max(0, min(int(r), 255))
+    g = max(0, min(int(g), 255))  
+    b = max(0, min(int(b), 255))
     return '#{:02x}{:02x}{:02x}'.format(r, g, b)
 
 def hex_to_rgb(hex):
