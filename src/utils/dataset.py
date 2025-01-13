@@ -1,4 +1,4 @@
-import os, json
+import os, json, tqdm
 
 class VizNET:
     def __init__(self):
@@ -24,7 +24,21 @@ class VizNET:
                         print('json error:', e)
         return json_objects
 
+    def get_file_length(self, index):
+        json_file = self.json_files[index]
+        with open(json_file, 'r', encoding='utf-8', errors='ignore') as file:
+            return len(file.readlines())
+
     def get_object(self, file_index, object_index):
         json_objects = self.get_file(file_index)
         assert object_index < len(json_objects)
         return json_objects[object_index]
+
+
+if __name__ == '__main__':
+    dataset = VizNET()
+    number = len(dataset.json_files)
+    total_number = 0
+    for i in tqdm.tqdm(range(number)):
+        total_number += dataset.get_file_length(i)
+    print('total number of objects:', total_number)
