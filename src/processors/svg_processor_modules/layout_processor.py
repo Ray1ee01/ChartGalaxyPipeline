@@ -6,7 +6,9 @@ import math
 from .tree_converter import SVGTreeConverter
 from .elements import *
 from .layout import *
+from openai import OpenAI
 from ...template.template import *
+
 default_topic_icon_config = {
     "iconUrl": "/data1/liduan/generation/chart/chart_pipeline/testicon/robotarm2.png"
 }
@@ -400,6 +402,8 @@ class LayoutProcessor:
         text_anchor = title_config.get('textAnchor', 'middle')
         max_width = title_config.get('max_width', float('inf'))
         
+        test_text_lines = self._autolinebreak(text_content, max_width)
+        print("test_text_lines: ", test_text_lines)
         # 将文本内容统一转换为列表形式
         if isinstance(text_content, list):
             text_lines = text_content
@@ -622,3 +626,53 @@ class LayoutProcessor:
         }
         boundingbox = element.get_bounding_box()
         element._bounding_box = boundingbox
+
+    def _autolinebreak(self, text: str, max_lines: int=-1) -> list[str]:
+        
+        """自动换行: 调用openai的api"""
+        prompt = """
+        任务描述： 请根据以下规则，将给定的文本重新排版并插入换行符 \n,以实现符合语义和美观的换行效果:
+
+        换行规则：
+        优先在短语边界处换行（如介词短语、动词短语之间）。
+        如果存在标点符号（如逗号、句号、冒号等），优先在标点符号后换行。
+        每行的字符数尽量接近 X 个字符（例如 20 个字符），但不得强行切割单词或破坏语义。
+        避免单词被分割(如“in-formation”)，也不要让标点符号单独位于新行开头。
+        如果一行文字超出限制，请在符合规则的位置插入换行符 \n。
+
+        输入格式：
+        {text}
+
+        输出格式： 将结果文字按照规则换行，输出带换行符的文本，例如：
+        Line 1 of text\n
+        Line 2 of text\n
+        Line 3 of text
+
+        输入示例：
+        Designing Infographics with Effective Layouts for Better Visual Communication
+
+        输出示例：
+        Designing Infographics\n
+        with Effective Layouts\n
+        for Better Visual\n
+        Communication"""
+        
+        client = OpenAI(
+            api_key="sk-yIje25vOt9QiTmKG4325C0A803A8400e973dEe4dC10e94C6",
+            base_url="https://aihubmix.com/v1"
+        )  # 初始化OpenAI客户端
+        response = self.client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": prompt},
+                    ]
+                }
+            ],
+            max_tokens=300
+        )
+        result = response.choices[0].message.content
+        print(result)
+        return result.split('\n')
