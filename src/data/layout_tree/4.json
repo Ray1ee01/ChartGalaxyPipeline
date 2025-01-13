@@ -5,7 +5,7 @@
             "name": "vertical",
             "padding": 5,
             "direction": "down",
-            "overlap": true,
+            "overlap": false,
             "alignment": ["left", "left"]
         },
         "children": [

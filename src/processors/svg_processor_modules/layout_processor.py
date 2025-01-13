@@ -451,10 +451,11 @@ class LayoutProcessor:
                 'x': 0,
                 'y': 0,
                 'text-anchor': text_anchor,
-                'font-family': title_config.get('fontFamily', 'sans-serif'),
+                'font-family': title_config.get('font', 'sans-serif'),
                 'font-size': font_size,
                 'font-weight': title_config.get('fontWeight', 'bolder'),
-                'fill': title_config.get('color', '#000000')
+                'fill': title_config.get('color', '#000000'),
+                'letter-spacing': title_config.get('letterSpacing', 0)
             }
             text_element = Text(line)
             text_element.attributes = attributes
@@ -501,7 +502,7 @@ class LayoutProcessor:
             return None
         
         # 获取配置参数
-        font_size = subtitle_config.get('fontSize', 12)
+        font_size = subtitle_config.get('fontSize', 16)
         line_height = subtitle_config.get('lineHeight', 1.5)
         text_anchor = subtitle_config.get('textAnchor', 'middle')
         max_width = subtitle_config.get('max_width', float('inf'))
@@ -556,10 +557,11 @@ class LayoutProcessor:
                 'x': 0,
                 'y': 0,
                 'text-anchor': text_anchor,
-                'font-family': subtitle_config.get('fontFamily', 'sans-serif'),
+                'font-family': subtitle_config.get('font', 'sans-serif'),
                 'font-size': font_size,
-                'font-weight': subtitle_config.get('fontWeight', 'normal'),
-                'fill': subtitle_config.get('color', '#808080')
+                'font-weight': subtitle_config.get('fontWeight', 400),
+                'fill': subtitle_config.get('color', '#808080'),
+                'letter-spacing': subtitle_config.get('letterSpacing', 0)
             }
             text_element = Text(line)
             text_element.attributes = attributes

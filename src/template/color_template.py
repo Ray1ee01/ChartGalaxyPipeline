@@ -120,7 +120,7 @@ class ColorDesign:
                         res += [self.extend_color_in_c[-1] for _ in range(number - len(res))]
                     return [rgb_to_hex(*color) for color in res]
                 if seed == 4:
-                    res = [self,main_color]
+                    res = [self.main_color]
                     other_color = None
                     if self.lightness == 'dark':
                         other_color = self.basic_colors[1]

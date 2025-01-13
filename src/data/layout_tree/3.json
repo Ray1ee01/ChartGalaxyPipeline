@@ -7,6 +7,10 @@
             "direction": "down",
             "overlap": false
         },
+        "sizeConstraint": {
+            "reference": "chart",
+            "max_width": 100
+        },
         "children": [
             {
                 "tag": "g",

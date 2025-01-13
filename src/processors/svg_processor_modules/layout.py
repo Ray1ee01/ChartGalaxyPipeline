@@ -220,10 +220,17 @@ class HorizontalLayoutStrategy(LayoutStrategy):
         elif self.alignment[1] == "bottom":
             move_y = baseline_y - layout_element_bounding_box.maxy + self.offset
 
+
         layout_element._bounding_box.minx += move_x
         layout_element._bounding_box.maxx += move_x
         layout_element._bounding_box.miny += move_y
         layout_element._bounding_box.maxy += move_y
+        
+        # print("alignment: ", self.alignment)
+        # print("direction: ", self.direction)
+        # print("layout_element: ", layout_element._bounding_box)
+        # print("reference_element: ", reference_element._bounding_box)
+
         
         if layout_element.tag=='g':
             for child in layout_element.children:
@@ -366,8 +373,11 @@ def parse_layout_strategy(reference_element: LayoutElement, layout_element: Layo
     # 计算布局策略的参数
     # 在初步情况下，可以alignment都是["middle", "middle"]
     alignment = ["middle", "middle"]
+    # print("reference_element: ", reference_element._bounding_box)
+    # print("layout_element: ", layout_element._bounding_box)
+    # print("layout_strategy: ", layout_strategy)
     if layout_strategy == 'vertical':
-        if reference_element._bounding_box.miny > layout_element._bounding_box.maxy:
+        if reference_element._bounding_box.miny > layout_element._bounding_box.miny:
             layout_strategy = VerticalLayoutStrategy(alignment=alignment, direction='up')
             # 计算padding和offset
             padding = reference_element._bounding_box.miny - layout_element._bounding_box.maxy
@@ -375,7 +385,8 @@ def parse_layout_strategy(reference_element: LayoutElement, layout_element: Layo
             reference_middle_x = (reference_element._bounding_box.maxx + reference_element._bounding_box.minx) / 2
             layout_element_middle_x = (layout_element._bounding_box.maxx + layout_element._bounding_box.minx) / 2
             offset = layout_element_middle_x - reference_middle_x
-        elif reference_element._bounding_box.maxy < layout_element._bounding_box.miny:
+        # elif reference_element._bounding_box.maxy < layout_element._bounding_box.maxy:
+        else:
             layout_strategy = VerticalLayoutStrategy(alignment=alignment, direction='down')
             # 计算padding和offset
             padding = reference_element._bounding_box.maxy - layout_element._bounding_box.miny
@@ -384,7 +395,7 @@ def parse_layout_strategy(reference_element: LayoutElement, layout_element: Layo
             layout_element_middle_x = (layout_element._bounding_box.maxx + layout_element._bounding_box.minx) / 2
             offset = layout_element_middle_x - reference_middle_x
     elif layout_strategy == 'horizontal':
-        if reference_element._bounding_box.minx > layout_element._bounding_box.maxx:
+        if reference_element._bounding_box.minx > layout_element._bounding_box.minx:
             layout_strategy = HorizontalLayoutStrategy(alignment=alignment, direction='left')
             # 计算padding和offset
             padding = reference_element._bounding_box.minx - layout_element._bounding_box.maxx
@@ -392,7 +403,7 @@ def parse_layout_strategy(reference_element: LayoutElement, layout_element: Layo
             reference_middle_y = (reference_element._bounding_box.maxy + reference_element._bounding_box.miny) / 2
             layout_element_middle_y = (layout_element._bounding_box.maxy + layout_element._bounding_box.miny) / 2
             offset = layout_element_middle_y - reference_middle_y
-        elif reference_element._bounding_box.maxx < layout_element._bounding_box.minx:
+        else:
             layout_strategy = HorizontalLayoutStrategy(alignment=alignment, direction='right')
             # 计算padding和offset
             padding = layout_element._bounding_box.minx - reference_element._bounding_box.maxx

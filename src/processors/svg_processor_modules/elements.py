@@ -119,7 +119,7 @@ class LayoutElement(ABC):
         matrix = [1, 0, 0, 1, 0, 0]
 
         # 匹配所有transform命令
-        transform_pattern = r'(translate|rotate)\(([-\d\s,.]+)\)'
+        transform_pattern = r'(translate|rotate|scale)\(([-\d\s,.]+)\)'
         transforms = re.finditer(transform_pattern, transform)
 
         for t in transforms:
@@ -154,6 +154,13 @@ class LayoutElement(ABC):
                 else:  # 普通旋转
                     rotate = [cos_a, sin_a, -sin_a, cos_a, 0, 0]
                     matrix = self._multiply_matrices(matrix, rotate)
+                    
+            elif command == 'scale':
+                sx = params[0]
+                sy = params[1] if len(params) > 1 else sx
+                # 缩放矩阵与当前矩阵相乘
+                scale_matrix = [sx, 0, 0, sy, 0, 0]
+                matrix = self._multiply_matrices(matrix, scale_matrix)
 
         return matrix
     

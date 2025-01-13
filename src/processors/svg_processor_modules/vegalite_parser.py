@@ -6,21 +6,7 @@ import math
 from .tree_converter import SVGTreeConverter
 from .elements import *
 from .layout import *
-
-images_urls = [
-    "/data1/liduan/generation/chart/chart_pipeline/testicon/kr.png", 
-    "/data1/liduan/generation/chart/chart_pipeline/testicon/jp.png",
-    "/data1/liduan/generation/chart/chart_pipeline/testicon/de.png",
-    "/data1/liduan/generation/chart/chart_pipeline/testicon/se.png",
-    "/data1/liduan/generation/chart/chart_pipeline/testicon/us.png",
-    "/data1/liduan/generation/chart/chart_pipeline/testicon/it.png",
-    "/data1/liduan/generation/chart/chart_pipeline/testicon/be.png",
-    "/data1/liduan/generation/chart/chart_pipeline/testicon/es.png",
-    "/data1/liduan/generation/chart/chart_pipeline/testicon/cn.png",
-    "/data1/liduan/generation/chart/chart_pipeline/testicon/fr.png",
-    "/data1/liduan/generation/chart/chart_pipeline/testicon/ca.png",
-    "/data1/liduan/generation/chart/chart_pipeline/testicon/ch.png"
-]
+import random
 
 class VegaLiteParser():
     def __init__(self, svg: str, additional_configs: Dict):
@@ -55,10 +41,7 @@ class VegaLiteParser():
             'mark_annotation_group': self.mark_annotation_group,
             'x_axis_group': self.x_axis_group,
             'y_axis_group': self.y_axis_group,
-            # 'x_axis_label_group': self.x_axis_label_group,
-            # 'y_axis_label_group': self.y_axis_label_group,
         }
-        # elements_list = SVGTreeConverter.flatten_tree(elements_tree)
         
         # flattened_elements_tree = SVGTreeConverter.partial_flatten_tree(elements_tree, group_to_flatten)
         flattened_elements_tree, top_level_groups = SVGTreeConverter.move_groups_to_top(elements_tree, group_to_flatten)
@@ -89,8 +72,9 @@ class VegaLiteParser():
             axis_orientation = self.additional_configs['chart_template'].x_axis.orientation
         else:
             #交换 y_axis_label_group 和 x_axis_label_group
-            y_axis_label_group = self.x_axis_label_group
-            x_axis_label_group = self.y_axis_label_group
+            # y_axis_label_group = x_axis_label_group
+            # x_axis_label_group = y_axis_label_group
+            x_axis_label_group, y_axis_label_group = y_axis_label_group, x_axis_label_group
             axis_orientation = self.additional_configs['chart_template'].y_axis.orientation
         
         if axis_orientation == "left":
@@ -124,7 +108,12 @@ class VegaLiteParser():
                 layout_strategy_1 = parse_layout_strategy(mark_group[i], mark_annotation_group[i],orientation)
                 layout_graph.add_edge_by_value(mark_annotation_group[i], mark_group[i], layout_strategy_1)
         
-        image_urls = self.additional_configs['x_data_multi_url']
+        # 从single和multi中随机取一个
+        icon_type = random.choice(["single", "multi"])
+        if icon_type == "multi":
+            image_urls = self.additional_configs['x_data_multi_url']
+        else:
+            image_urls = [self.additional_configs['x_data_single_url']*len(mark_group)]
         # image_urls = []
         for i in range(len(image_urls)):
             base64_image = Image._getImageAsBase64(image_urls[i])
@@ -136,10 +125,10 @@ class VegaLiteParser():
             
             # 计算新的width和height
             if orientation == "horizontal":
-                height = mark_group[i].get_bounding_box().height
+                height = mark_group[i].get_bounding_box().height * 1.1
                 width = height * aspect_ratio
             else:
-                width = mark_group[i].get_bounding_box().width
+                width = mark_group[i].get_bounding_box().width * 1.1
                 height = width / aspect_ratio
             image_element.attributes = {
                 "xlink:href": f"data:{base64_image}",
@@ -269,14 +258,20 @@ class VegaLiteParser():
                 flattened_elements_tree.children.append(image_element)
             # 如果在sequence里,"x_multiple_icon"在"mark_annotation"之前，且在"mark"之后
             elif "x_multiple_icon" in sequence and "mark_annotation" in sequence and sequence.index("x_multiple_icon") < sequence.index("mark_annotation") and sequence.index("x_multiple_icon") > sequence.index("mark") and relative_to_mark[0] == "inside":
-                if direction == "right":
-                    layout_strategy.direction = "left"
-                elif direction == "left":
-                    layout_strategy.direction = "right"
-                elif direction == "down":
-                    layout_strategy.direction = "up"
+                if relative_to_mark[1] == "start":
+                    if direction == "right":
+                        layout_strategy.direction = "left"
+                    elif direction == "left":
+                        layout_strategy.direction = "right"
+                    elif direction == "down":
+                        layout_strategy.direction = "up"
+                    else:
+                        layout_strategy.direction = "down"
                 else:
-                    layout_strategy.direction = "down"
+                    layout_strategy.direction = direction
+                # print("direction: ", direction)
+                # print("relative_to_mark: ", relative_to_mark)
+                # print("layout_strategy.direction: ", layout_strategy.direction)
                 layout_graph.add_node_with_edges(image_element, mark_group[i], layout_strategy)
                 node = layout_graph.node_map[image_element]
                 # old_node_min_x = float(node.value._bounding_box.minx)

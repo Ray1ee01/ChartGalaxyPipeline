@@ -8,6 +8,10 @@
             "overlap": false,
             "alignment": ["left", "left"]
         },
+        "sizeConstraint": {
+            "reference": "chart",
+            "max_width": 100
+        },
         "children": [
             {
                 "tag": "g",
@@ -18,6 +22,10 @@
                     "direction": "down",
                     "overlap": false,
                     "alignment": ["left", "left"]
+                },
+                "sizeConstraint": {
+                    "reference": "title",
+                    "max_width": 100
                 },
                 "children": [
                     {

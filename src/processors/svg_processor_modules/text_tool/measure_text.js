@@ -15,6 +15,8 @@ let measure_text = text;
 measure_text = measure_text.replace(/\s/g, 'w');
 // replace '/' with 'o'
 measure_text = measure_text.replace(/\//g, 'o');
+// replace '.' with 'o'
+measure_text = measure_text.replace(/\./g, 'o');
 
 // 测量文本
 const metrics = textToSVG.getMetrics(measure_text, {

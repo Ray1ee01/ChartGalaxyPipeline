@@ -3,6 +3,7 @@ from ..interfaces.base import ChartGenerator
 from ..utils.node_bridge import NodeBridge
 from ..template.template import ChartTemplate
 import os
+import random
 from typing import Tuple
 
 
@@ -52,7 +53,7 @@ class VegaLiteGenerator(ChartGenerator):
             mark_specification["strokeWidth"] = self.template.mark.stroke_style.stroke_width
         
         
-        
+        # TODO configure color
         annotation_specification = {
             "mark": {
                 "type": "text",
@@ -65,17 +66,34 @@ class VegaLiteGenerator(ChartGenerator):
             }
         }
         if self.template.mark.orientation == "horizontal":
-            if self.template.x_axis.orientation == "left":
+            # 从inner和outer之间随机取一个值
+            side = random.choice(["inner", "outer"])
+            # side = "inner"
+            if self.template.x_axis.orientation == "left" and side == "outer":
                 annotation_specification["mark"]["align"] = "start"
                 annotation_specification["mark"]["dx"] = 5
-            else:
+            elif self.template.x_axis.orientation == "left" and side == "inner":
                 annotation_specification["mark"]["align"] = "end"
                 annotation_specification["mark"]["dx"] = -5
-        else:
-            if self.template.y_axis.orientation == "top":
-                annotation_specification["mark"]["dy"] = 5
+            elif self.template.x_axis.orientation == "right" and side == "outer":
+                annotation_specification["mark"]["align"] = "end"
+                annotation_specification["mark"]["dx"] = -5
             else:
+                annotation_specification["mark"]["align"] = "start"
+                annotation_specification["mark"]["dx"] = 5
+        else:
+            if self.template.y_axis.orientation == "top" and side == "outer":
+                annotation_specification["mark"]["baseline"] = "top"
+                annotation_specification["mark"]["dy"] = 5
+            elif self.template.y_axis.orientation == "top" and side == "inner":
+                annotation_specification["mark"]["baseline"] = "bottom"
                 annotation_specification["mark"]["dy"] = -5
+            elif self.template.y_axis.orientation == "bottom" and side == "outer":
+                annotation_specification["mark"]["baseline"] = "bottom"
+                annotation_specification["mark"]["dy"] = -5
+            else:
+                annotation_specification["mark"]["baseline"] = "top"
+                annotation_specification["mark"]["dy"] = 5
         
         if self.template.has_annotation:
             specification["layer"] = [
@@ -93,7 +111,9 @@ class VegaLiteGenerator(ChartGenerator):
             x_encoding = {
                 "field": self.template.x_axis.field,
                 "type": self.template.x_axis.field_type,
-                "axis": {"orient": "top", "grid": False, "maxExtent": 100, "labelLimit": 100},
+                "axis": {"orient": "top", "grid": False
+                        #  , "maxExtent": 100, "labelLimit": 100
+                        }
             }
             
             
@@ -139,7 +159,8 @@ class VegaLiteGenerator(ChartGenerator):
             y_encoding = {
                 "field": self.template.y_axis.field,
                 "type": self.template.y_axis.field_type,
-                "axis": {"grid": False, "maxExtent": 100, "labelLimit": 100}
+                "axis": {"grid": False
+                        }
             }
             
             axis_config = y_encoding["axis"]

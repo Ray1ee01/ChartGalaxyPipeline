@@ -4,18 +4,8 @@ from ..processors.svg_processor_modules.elements import *
 from ..processors.svg_processor_modules.layout import *
 from typing import List
 from .color_template import ColorDesign
+import random
 
-class FontTemplate:
-    def __init__(self):
-        self.font = None
-        self.font_size = None
-        self.font_weight = None
-    def dump(self):
-        return {
-            "font": self.font,
-            "fontSize": self.font_size,
-            "fontWeight": self.font_weight
-        }
 
 class ColorTemplate:
     def __init__(self):
@@ -46,7 +36,9 @@ class AxisTemplate:
         # 样式属性
         ## domain 样式
         self.has_domain = True
-        stroke_color = color_template.get_color('axis', 1)
+        # 从1到100之间随机取一个值
+        seed_axis = random.randint(1, 100)
+        stroke_color = color_template.get_color('axis', 1, seed_axis=seed_axis)
         self.domain_color_style = ColorTemplate()
         self.domain_color_style.color = stroke_color
         self.domain_stroke_style = StrokeTemplate()
@@ -55,7 +47,8 @@ class AxisTemplate:
         self.has_label = True
         self.label_color_style = ColorTemplate()
         self.label_color_style.color = stroke_color
-        self.label_font_style = FontTemplate()
+        # self.label_font_style = FontTemplate()
+        self.label_font_style = LabelFontTemplate()
         
         ## tick 样式
         self.has_tick = True
@@ -68,7 +61,8 @@ class AxisTemplate:
         self.title_text = None
         self.title_color_style = ColorTemplate()
         self.title_color_style.color = stroke_color
-        self.title_font_style = FontTemplate()
+        # self.title_font_style = FontTemplate()
+        self.title_font_style = LabelFontTemplate()
         ## grid 样式: 暂时不支持
     def dump(self):
         return {
@@ -103,6 +97,8 @@ class MarkTemplate:
         # 基本属性
         self.mark_type = None # 标记类型
         
+        seed_mark = random.randint(1, 100)
+        # mark_color = color_template.get_color('marks', 1, seed_mark=seed_mark)
         mark_color = color_template.get_color('marks', 1)
         
         # 样式属性
@@ -422,3 +418,96 @@ class TemplateFactory:
         layout_template.apply_constraints(chart_template)
         
         return chart_template, layout_template
+
+class FontTemplate:
+    def __init__(self):
+        self.font = None
+        self.font_size = None
+        self.font_weight = None
+        self.line_height = None
+        self.letter_spacing = None
+    def dump(self):
+        return {
+            "font": self.font,
+            "fontSize": self.font_size,
+            "fontWeight": self.font_weight,
+            "lineHeight": self.line_height,
+            "letterSpacing": self.letter_spacing
+        }
+
+
+class TitleFontTemplate(FontTemplate):
+    """用于标题的字体模板"""
+    def __init__(self):
+        super().__init__()
+        self.font = "sans-serif"
+        self.font_size = 22
+        self.font_weight = 400
+        self.line_height = 28
+        self.letter_spacing = 0
+    def large(self):
+        self.font_size = 22
+        self.font_weight = 400
+        self.line_height = 28
+        self.letter_spacing = 0
+    def middle(self):
+        self.font_size = 16
+        self.font_weight = 500
+        self.line_height = 24
+        self.letter_spacing = 0.15
+    def small(self):
+        self.font_size = 14
+        self.font_weight = 500
+        self.line_height = 20
+        self.letter_spacing = 0.1
+
+class BodyFontTemplate(FontTemplate):
+    """用于正文的字体模板"""
+    def __init__(self):
+        super().__init__()
+        self.font = "sans-serif"
+        self.font_size = 16
+        self.font_weight = 400
+        self.line_height = 24
+        self.letter_spacing = 0.5
+    def large(self):
+        self.font_size = 16
+        self.font_weight = 400
+        self.line_height = 24
+        self.letter_spacing = 0.5
+    def middle(self):
+        self.font_size = 14
+        self.font_weight = 400
+        self.line_height = 20
+        self.letter_spacing = 0.25
+    def small(self):
+        self.font_size = 12
+        self.font_weight = 400
+        self.line_height = 16
+        self.letter_spacing = 0.4
+
+class LabelFontTemplate(FontTemplate):
+    """用于标签的字体模板"""
+    def __init__(self):
+        super().__init__()
+        self.font = "sans-serif"
+        self.font_size = 14
+        self.font_weight = 500
+        self.line_height = 20
+        self.letter_spacing = 0.1
+    def large(self):
+        self.font_size = 14
+        self.font_weight = 500
+        self.line_height = 20
+        self.letter_spacing = 0.1
+    def middle(self):
+        self.font_size = 12
+        self.font_weight = 500
+        self.line_height = 16
+        self.letter_spacing = 0.25
+    def small(self):
+        self.font_size = 10
+        self.font_weight = 500
+        self.line_height = 12
+        self.letter_spacing = 0.4
+

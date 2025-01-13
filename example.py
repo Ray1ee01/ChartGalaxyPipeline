@@ -7,7 +7,7 @@ from src.utils.dataset import VizNET
 from src.processors.data_processor import VizNetDataProcessor
 
 # data_dir = os.path.join(os.path.dirname(__file__),'src', 'data')
-output_dir = os.path.join(os.path.dirname(__file__),'src', 'output')
+output_dir = os.path.join(os.path.dirname(__file__),'src', 'output2')
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 def main():
