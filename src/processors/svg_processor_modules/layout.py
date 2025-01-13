@@ -33,8 +33,11 @@ class WidthHeightConstraint(SizeConstraint):
         if (not scale_x == 1.0) or (not scale_y == 1.0):
             # print("reference_element.tag: ", reference_element.tag)
             # print("layout_element.tag: ", layout_element.tag)
-            layout_element.update_scale(scale_x, scale_y)
+            scale = layout_element.update_scale(scale_x, scale_y)
             layout_element._bounding_box = layout_element.get_bounding_box()
+            return scale
+        else:
+            return 1.0
         
         
 class LayoutStrategy(ABC):
@@ -526,11 +529,15 @@ class Edge:
     def process_layout(self):
         old_node_min_x = float(self.source.value._bounding_box.minx)
         old_node_min_y = float(self.source.value._bounding_box.miny)
+        # print("source.value: ", self.source.value.dump())
+        # print("target.value: ", self.target.value.dump())
+        # print("self.value: ", self.value.name, self.value.direction, self.value.padding, self.value.offset, self.value.alignment)
         if isinstance(self.value, LayoutStrategy):
             self.value.layout(self.target.value, self.source.value)
             self.source.value.update_pos(old_node_min_x, old_node_min_y)
         elif isinstance(self.value, SizeConstraint):
-            self.value.rescale(self.target.value, self.source.value)
+            scale = self.value.rescale(self.target.value, self.source.value)
+            return scale
         
     def dump(self):
         return {

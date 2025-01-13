@@ -318,13 +318,28 @@ class LayoutProcessor:
                         element.children[topic_icon_idx]._bounding_box = element.children[topic_icon_idx].get_bounding_box()
                 if element.size_constraint is not None:
                     reference_element = element.get_element_by_id(element.reference_id)
+                    scales = []
                     for child in element.children:
-                        print("child: ", child.id, element.reference_id)
-                        print("size_constraint: ", element.size_constraint)
                         if not element.reference_id == child.id:
+                            print("child: ", child.id, element.reference_id)
+                            print("size_constraint: ", element.size_constraint)
                             self.constraint_graph.add_node_with_edges(child, reference_element, element.size_constraint)
                             for edge in self.constraint_graph.node_map[child].nexts_edges:
-                                edge.process_layout()
+                                scale = edge.process_layout()
+                                scales.append(scale)
+                    min_scale = min(scales)
+                    max_scale = max(scales)
+                    chart_scale = 1
+                    if max_scale >= 1 and min_scale >= 1:
+                        chart_scale = max_scale
+                    elif max_scale < 1 and min_scale < 1:
+                        chart_scale = min_scale
+                    elif max_scale > 1 and min_scale < 1:
+                        chart_scale = (max_scale + min_scale) / 2
+                    if element.reference_id == 'chart':
+                        self.rescale_text_in_chart(chart_scale)
+                    
+                            
                 for i in range(1, len(element.children)):
                     self.layout_graph.add_node_with_edges(element.children[i], element.children[i-1], element.layout_strategy)
                     node_map = self.layout_graph.node_map
@@ -388,6 +403,7 @@ class LayoutProcessor:
             """
             title_text_group = GroupElement()
             self._createTitleTextElement(title_config, title_text_group)
+            self.subtitle_config['max_width'] = title_text_group.get_bounding_box().width *1.2
             return title_text_group
 
     def _createTitleTextElement(self, title_config: Dict, element: LayoutElement):
@@ -513,6 +529,10 @@ class LayoutProcessor:
         line_height = subtitle_config.get('lineHeight', 1.5)
         text_anchor = subtitle_config.get('textAnchor', 'middle')
         max_width = subtitle_config.get('max_width', float('inf'))
+        # max_lines = subtitle_config.get('max_lines', 4)
+        
+        # text_lines = self._autolinebreak(text_content, max_lines)
+        # print("test_text_lines: ", text_lines)
         
         # 将文本内容统一转换为列表形式
         if isinstance(text_content, list):
@@ -538,7 +558,10 @@ class LayoutProcessor:
             
             if current_line:
                 text_lines.append(' '.join(current_line))
-        
+        n_lines = len(text_lines)
+        print("n_lines: ", n_lines)
+        text_lines = self._autolinebreak(text_content, n_lines, n_lines)
+        print("test_text_lines: ", text_lines)
         # 计算每行文本的度量和总体尺寸
         line_metrics = []
         total_height = 0
@@ -583,7 +606,7 @@ class LayoutProcessor:
             layout_strategy = VerticalLayoutStrategy()
             layout_strategy.alignment = ["left","left"]
             layout_strategy.direction = "down"
-            layout_strategy.padding = subtitle_config.get('linePadding', 3)
+            layout_strategy.padding = subtitle_config.get('linePadding', 0)
             node_map = self.layout_graph.node_map
             self.layout_graph.add_edge(node_map[text_elements[i-1]], node_map[text_elements[i]], layout_strategy)
             old_node_min_x = float(node_map[text_elements[i]].value._bounding_box.minx)
@@ -630,7 +653,7 @@ class LayoutProcessor:
         boundingbox = element.get_bounding_box()
         element._bounding_box = boundingbox
 
-    def _autolinebreak(self, text: str, max_lines: int=2) -> list[str]:
+    def _autolinebreak(self, text: str, max_lines: int=2, n_lines = 0) -> list[str]:
         """自动换行: 调用openai的api"""
         # prompt = f"""
         # 任务描述： 请根据以下规则，将给定的文本重新排版并插入换行符 \n,以实现符合语义和美观的换行效果:
@@ -698,6 +721,8 @@ class LayoutProcessor:
 
             Please format the text according to the rules above and return the line-broken result.
             Note: be careful with the total number of lines must not exceed {max_lines if max_lines > 0 else "unlimited"}"""
+        if not n_lines == 0:
+            prompt += f"Note: the total number of lines must be {n_lines}."
         
         client = OpenAI(
             api_key="sk-yIje25vOt9QiTmKG4325C0A803A8400e973dEe4dC10e94C6",
@@ -719,3 +744,14 @@ class LayoutProcessor:
         # 移除每行末尾的空白字符
         result = [line.rstrip() for line in result]
         return result
+    
+    def rescale_text_in_chart(self, scale: float):
+        # 遍历 self.chart_element的子树中的所有元素
+        def _rescale_text(element: LayoutElement):
+            if element.tag == 'text':
+                element.update_scale(scale, scale)
+            elif element.tag == 'g':
+                for child in element.children:
+                    _rescale_text(child)
+        _rescale_text(self.chart_element)
+        self.chart_element._bounding_box = self.chart_element.get_bounding_box()

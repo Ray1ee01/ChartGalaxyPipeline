@@ -26,12 +26,13 @@ class Pipeline:
             # 从布局树文件随机选择一个配置文件
             import random
             # layout_file_idx = random.randint(1, 13)
-            layout_file_idx = 1
+            # layout_file_idx = random.randint(1, 6)
+            layout_file_idx = 6
             # layout_file_idx = 2
             with open(f'/data1/liduan/generation/chart/chart_pipeline/src/data/layout_tree/{layout_file_idx}.json', 'r') as f:
                 layout_config = json.load(f)
             # chart_image_idx = random.randint(1, 7)
-            chart_image_idx = 1
+            chart_image_idx = 2
             with open(f'/data1/liduan/generation/chart/chart_pipeline/src/data/chart_image/{chart_image_idx}.json', 'r') as f:
                 chart_image_config = json.load(f)
             
@@ -114,7 +115,8 @@ class Pipeline:
             subtitle_font_template = BodyFontTemplate()
             subtitle_font_template.middle()
             subtitle_config['fontSize'] = subtitle_font_template.font_size
-            subtitle_config['linePadding'] = subtitle_font_template.line_height-subtitle_font_template.font_size
+            # subtitle_config['linePadding'] = subtitle_font_template.line_height-subtitle_font_template.font_size
+            subtitle_config['linePadding'] = 0
             subtitle_config['letterSpacing'] = subtitle_font_template.letter_spacing
             subtitle_config['fontWeight'] = subtitle_font_template.font_weight
             subtitle_config['font'] = subtitle_font_template.font
@@ -147,7 +149,7 @@ class Pipeline:
             # print("additional_configs['title_config']", additional_configs['title_config'])
             seed_text = random.randint(1, 100)
             # 配置颜色
-            title_color,subtitle_color = color_template.get_color('text', 2, seed_text=seed_text)
+            title_color,subtitle_color = color_template.get_color('text', 2)
             additional_configs['title_config']['color'] = title_color
             additional_configs['subtitle_config']['color'] = subtitle_color
             additional_configs['background_config']['color'] = color_template.get_color('background', 1)[0]

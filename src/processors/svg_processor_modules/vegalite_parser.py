@@ -55,10 +55,12 @@ class VegaLiteParser():
         
         # print("top_level_groups['y_axis_group']: ", top_level_groups['y_axis_group'])
         mark_group = top_level_groups['mark_group']
+        x_axis_group = top_level_groups['x_axis_group']
+        y_axis_group = top_level_groups['y_axis_group']
         # x_axis_label_group = top_level_groups['x_axis_label_group']
         # y_axis_label_group = top_level_groups['y_axis_label_group']
         x_axis_label_group = [element for element in top_level_groups['x_axis_group'] if element.tag == 'text']
-        y_axis_label_group = [element for element in top_level_groups['y_axis_group'] if element.tag == 'text']
+        y_axis_label_group = [element for element in top_level_groups['y_axis_group'] if element.tag == 'text' and "role-axis-label" in element.attributes.get('class', '')]
         mark_annotation_group = top_level_groups['mark_annotation_group']
         # debug: add rect to flattened_elements_tree
         
@@ -67,7 +69,6 @@ class VegaLiteParser():
             
         orientation = self.additional_configs['chart_template'].mark.orientation
         direction = ""
-        print("orientation: ", orientation)
         if orientation == "horizontal":
             axis_orientation = self.additional_configs['chart_template'].x_axis.orientation
         else:
@@ -75,6 +76,7 @@ class VegaLiteParser():
             # y_axis_label_group = x_axis_label_group
             # x_axis_label_group = y_axis_label_group
             x_axis_label_group, y_axis_label_group = y_axis_label_group, x_axis_label_group
+            x_axis_group, y_axis_group = y_axis_group, x_axis_group
             axis_orientation = self.additional_configs['chart_template'].y_axis.orientation
         
         if axis_orientation == "left":
@@ -108,12 +110,41 @@ class VegaLiteParser():
                 layout_strategy_1 = parse_layout_strategy(mark_group[i], mark_annotation_group[i],orientation)
                 layout_graph.add_edge_by_value(mark_annotation_group[i], mark_group[i], layout_strategy_1)
         
+        temporal_group_element = GroupElement()
+        temporal_group_element.tag = "g"
+        temporal_group_element.id = "temporal_group"
+        temporal_group_element.children = y_axis_label_group
+        temporal_group_element._bounding_box = temporal_group_element.get_bounding_box()
+        
+        # y_axis_title_element = 
+        # 从y_axis_group中找到title对应的element
+        for element in y_axis_group:
+            if element.tag == "text":
+                # 如果class attribute中有"role-axis-title"
+                if "role-axis-title" in element.attributes.get('class', ''):
+                    y_axis_title_element = element
+                    break
+        layout_strategy_3 = parse_layout_strategy(temporal_group_element, y_axis_title_element, orientation)
+        layout_graph.add_edge_by_value(y_axis_title_element, temporal_group_element, layout_strategy_3)
+        print("layout_strategy_3: ", layout_strategy_3.name, layout_strategy_3.direction, layout_strategy_3.padding, layout_strategy_3.offset, layout_strategy_3.alignment)
+        # 把 paading的绝对值改成5，保证正负和之前不变
+        if layout_strategy_3.padding < 0:
+            layout_strategy_3.padding = -5
+        else:
+            layout_strategy_3.padding = 5
+        nodemap = layout_graph.node_map
+        node = nodemap[y_axis_title_element]
+        temporal_edge = node.nexts_edges[0]
+        print("group.bounding_box: ", temporal_group_element._bounding_box)
+        print("y_axis_title_element.bounding_box: ", y_axis_title_element._bounding_box)
+        
         # 从single和multi中随机取一个
         icon_type = random.choice(["single", "multi"])
         if icon_type == "multi":
             image_urls = self.additional_configs['x_data_multi_url']
         else:
-            image_urls = [self.additional_configs['x_data_single_url']*len(mark_group)]
+            image_urls = [self.additional_configs['x_data_single_url']]*len(mark_group)
+        print("image_urls: ", image_urls)
         # image_urls = []
         for i in range(len(image_urls)):
             base64_image = Image._getImageAsBase64(image_urls[i])
@@ -282,6 +313,10 @@ class VegaLiteParser():
             else:
                 # 报错
                 raise ValueError(f"不支持的sequence: {sequence}")
+            
+        temporal_group_element._bounding_box = temporal_group_element.get_bounding_box()
+        temporal_edge.process_layout()
+        
         # layout_graph.visualize()
         # print(flattened_elements_tree.dump())
         # 将Elements树转换为SVG字符串

@@ -65,21 +65,33 @@ class VegaLiteGenerator(ChartGenerator):
                 }
             }
         }
+        text_config = annotation_specification["mark"]
+        if self.template.mark.annotation_font_style.font is not None:
+            text_config["font"] = self.template.mark.annotation_font_style.font
+        if self.template.mark.annotation_font_style.font_size is not None:
+            text_config["fontSize"] = self.template.mark.annotation_font_style.font_size
+        if self.template.mark.annotation_font_style.font_weight is not None:
+            text_config["fontWeight"] = self.template.mark.annotation_font_style.font_weight
+        # if self.template.mark.annotation_font_style.letter_spacing is not None:
+        #     text_config["letterSpacing"] = self.template.mark.annotation_font_style.letter_spacing
+        if self.template.mark.annotation_color_style.color is not None:
+            text_config["fill"] = self.template.mark.annotation_color_style.color
+        
         if self.template.mark.orientation == "horizontal":
-            # 从inner和outer之间随机取一个值
-            side = random.choice(["inner", "outer"])
-            # side = "inner"
+            # side = self.template.mark.annotation_side
+            # print('side: ', side)
+            side = "inner"
             if self.template.x_axis.orientation == "left" and side == "outer":
-                annotation_specification["mark"]["align"] = "start"
+                annotation_specification["mark"]["align"] = "left"
                 annotation_specification["mark"]["dx"] = 5
             elif self.template.x_axis.orientation == "left" and side == "inner":
-                annotation_specification["mark"]["align"] = "end"
+                annotation_specification["mark"]["align"] = "right"
                 annotation_specification["mark"]["dx"] = -5
             elif self.template.x_axis.orientation == "right" and side == "outer":
-                annotation_specification["mark"]["align"] = "end"
+                annotation_specification["mark"]["align"] = "right"
                 annotation_specification["mark"]["dx"] = -5
             else:
-                annotation_specification["mark"]["align"] = "start"
+                annotation_specification["mark"]["align"] = "left"
                 annotation_specification["mark"]["dx"] = 5
         else:
             if self.template.y_axis.orientation == "top" and side == "outer":

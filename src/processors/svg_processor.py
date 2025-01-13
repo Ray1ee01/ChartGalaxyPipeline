@@ -140,7 +140,7 @@ class SVGOptimizer(SVGProcessor):
         parsed_svg, flattened_elements_tree, layout_graph = parser.parse()
         # element_tree = flattened_elements_tree
 
-        # return parsed_svg
+        # # return parsed_svg
         
         if additional_configs.get('title_config').get('max_width_ratio'):
             additional_configs['title_config']['max_width'] = flattened_elements_tree.get_bounding_box().width * additional_configs['title_config']['max_width_ratio']

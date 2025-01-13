@@ -15,11 +15,23 @@
             {
                 "tag": "g",
                 "id": "title",
+                "layoutStrategy": {
+                    "name": "vertical",
+                    "padding": 0,
+                    "direction": "down",
+                    "overlap": false
+                },
                 "children": []
             },
             {
                 "tag": "g",
                 "id": "subtitle",
+                "layoutStrategy": {
+                    "name": "vertical",
+                    "padding": 0,
+                    "direction": "down",
+                    "overlap": false
+                },
                 "children": []
             },
             {

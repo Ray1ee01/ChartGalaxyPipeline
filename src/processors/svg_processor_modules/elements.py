@@ -111,6 +111,7 @@ class LayoutElement(ABC):
             self.attributes['transform'] = f"{current_transform} {new_transform}"
         else:
             self.attributes['transform'] = new_transform
+        return scale
     
     @property
     def get_transform_matrix(self) -> List[float]:
@@ -329,7 +330,7 @@ class GroupElement(LayoutElement):
         current_transform = self.attributes.get('transform', '')
         new_transform = f"translate({self._bounding_box.minx - old_min_x}, {self._bounding_box.miny - old_min_y})"
         if current_transform:
-            self.attributes['transform'] = f"{current_transform} {new_transform}"
+            self.attributes['transform'] = f"{new_transform} {current_transform}"
         else:
             self.attributes['transform'] = new_transform
     
@@ -569,15 +570,39 @@ class Text(AtomElement):
             }
     
     def update_pos(self, old_min_x: float, old_min_y: float):
-        if 'x' in self.attributes:
-            self.attributes['x'] += self._bounding_box.minx - old_min_x
+        current_transform = self.attributes.get('transform', '')
+        new_transform = f"translate({self._bounding_box.minx - old_min_x}, {self._bounding_box.miny - old_min_y})"
+        if current_transform:
+            self.attributes['transform'] = f"{new_transform} {current_transform} "
         else:
-            self.attributes['x'] = self._bounding_box.minx - old_min_x
-        if 'y' in self.attributes:
-            self.attributes['y'] += self._bounding_box.miny - old_min_y
+            self.attributes['transform'] = new_transform
+        # if 'x' in self.attributes:
+        #     self.attributes['x'] += self._bounding_box.minx - old_min_x
+        # else:
+        #     self.attributes['x'] = self._bounding_box.minx - old_min_x
+        # if 'y' in self.attributes:
+        #     self.attributes['y'] += self._bounding_box.miny - old_min_y
+        # else:
+        #     self.attributes['y'] = self._bounding_box.miny - old_min_y
+    def update_scale(self, scale_x: float, scale_y: float):
+        old_bounding_box = self.get_bounding_box()
+        if scale_x >= 1 and scale_y >= 1:
+            scale = max(scale_x, scale_y)
         else:
-            self.attributes['y'] = self._bounding_box.miny - old_min_y
-    
+            scale = min(scale_x, scale_y)
+        new_transform = f"scale({scale})"
+        current_transform = self.attributes.get('transform', '')
+        if current_transform:
+            self.attributes['transform'] = f"{current_transform} {new_transform}"
+        else:
+            self.attributes['transform'] = new_transform
+        new_bounding_box = self.get_bounding_box()
+        # 通过添加translate使得新的bounding box与旧的bounding box的中心重合
+        translate_x = (old_bounding_box.minx + old_bounding_box.maxx) / 2 - (new_bounding_box.minx + new_bounding_box.maxx) / 2
+        translate_y = (old_bounding_box.miny + old_bounding_box.maxy) / 2 - (new_bounding_box.miny + new_bounding_box.maxy) / 2
+        self.attributes['transform'] = f"translate({translate_x}, {translate_y}) {self.attributes['transform']}"
+        
+        return scale
     
     def get_bounding_box(self) -> BoundingBox:
         transform = self.get_transform_matrix
@@ -593,7 +618,6 @@ class Text(AtomElement):
         # font_size = float(self.attributes.get('font-size', 16))
         raw_font_size = self.attributes.get('font-size')
         text_anchor = self.attributes.get('text-anchor', 'start')
-        
         if raw_font_size and type(raw_font_size) == str:
             font_size = self._parse_length(raw_font_size)
         elif raw_font_size and (type(raw_font_size) == int or type(raw_font_size) == float):
