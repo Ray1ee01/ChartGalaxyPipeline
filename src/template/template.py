@@ -226,6 +226,8 @@ class LayoutTemplate:
             group = GroupElement()
             group.id = layout_tree.get('id', None)
             group.children = []
+            for child in layout_tree.get('children', []):
+                group.children.append(self.build_template_from_tree(child))
             layout_strategy_dict = layout_tree.get('layoutStrategy', None)
             if layout_strategy_dict is not None:
                 if layout_strategy_dict['name'] == 'vertical':
@@ -244,8 +246,21 @@ class LayoutTemplate:
                     group.layout_strategy.alignment = layout_strategy_dict['alignment']
                 if layout_strategy_dict.get('overlap', None) is not None:
                     group.layout_strategy.overlap = layout_strategy_dict['overlap']
-            for child in layout_tree.get('children', []):
-                group.children.append(self.build_template_from_tree(child))
+
+            size_constraint_dict = layout_tree.get('sizeConstraint', None)
+            if size_constraint_dict is not None:
+                group.size_constraint = WidthHeightConstraint()
+                reference_id = size_constraint_dict['reference']
+                reference_element = group.get_element_by_id(reference_id)
+                if size_constraint_dict.get('max_width', None) is not None:
+                    group.size_constraint.max_width_ratio = size_constraint_dict['max_width']
+                if size_constraint_dict.get('max_height', None) is not None:
+                    group.size_constraint.max_height_ratio = size_constraint_dict['max_height']
+                if size_constraint_dict.get('min_width', None) is not None:
+                    group.size_constraint.min_width_ratio = size_constraint_dict['min_width']
+                if size_constraint_dict.get('min_height', None) is not None:
+                    group.size_constraint.min_height_ratio = size_constraint_dict['min_height']
+                group.reference_id = reference_id
             return group
         elif layout_tree['tag'] == 'rect':
             rect = Rect()

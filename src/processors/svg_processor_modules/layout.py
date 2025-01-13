@@ -1,7 +1,42 @@
 from abc import ABC, abstractmethod
-from typing import List
+from typing import List, Union
 from .elements import LayoutElement, GroupElement
 
+class SizeConstraint(ABC):
+    """尺寸约束基类"""
+    # @abstractmethod
+    # def get_scale(self, reference_element: LayoutElement, layout_element: LayoutElement) -> List[float]:
+    #     pass
+
+class WidthHeightConstraint(SizeConstraint):
+    """宽度高度约束"""
+    def __init__(self, max_width_ratio: float=None, max_height_ratio: float=None, min_width_ratio: float=None, min_height_ratio: float=None):
+        self.max_width_ratio = max_width_ratio
+        self.max_height_ratio = max_height_ratio
+        self.min_width_ratio = min_width_ratio
+        self.min_height_ratio = min_height_ratio
+        
+    def rescale(self, reference_element: LayoutElement, layout_element: LayoutElement) -> None:
+        reference_element_bounding_box = reference_element._bounding_box
+        layout_element_bounding_box = layout_element._bounding_box
+        print("reference_element_bounding_box: ", reference_element_bounding_box)
+        print("layout_element_bounding_box: ", layout_element_bounding_box)
+        if self.max_width_ratio is not None:
+            scale_x = min(self.max_width_ratio, reference_element_bounding_box.width / layout_element_bounding_box.width)
+        else:
+            scale_x = 1.0
+            
+        if self.max_height_ratio is not None:
+            scale_y = min(self.max_height_ratio, reference_element_bounding_box.height / layout_element_bounding_box.height)
+        else:
+            scale_y = 1.0
+        if (not scale_x == 1.0) or (not scale_y == 1.0):
+            # print("reference_element.tag: ", reference_element.tag)
+            # print("layout_element.tag: ", layout_element.tag)
+            layout_element.update_scale(scale_x, scale_y)
+            layout_element._bounding_box = layout_element.get_bounding_box()
+        
+        
 class LayoutStrategy(ABC):
     """布局策略基类"""
     @abstractmethod
@@ -480,7 +515,7 @@ class Node:
         self.nexts_edges = []
 
 class Edge:
-    def __init__(self, source: Node, target: Node, value: LayoutStrategy):
+    def __init__(self, source: Node, target: Node, value: Union[LayoutStrategy, SizeConstraint]):
         self.source = source
         self.target = target
         self.value = value
@@ -491,8 +526,11 @@ class Edge:
     def process_layout(self):
         old_node_min_x = float(self.source.value._bounding_box.minx)
         old_node_min_y = float(self.source.value._bounding_box.miny)
-        self.value.layout(self.target.value, self.source.value)
-        self.source.value.update_pos(old_node_min_x, old_node_min_y)
+        if isinstance(self.value, LayoutStrategy):
+            self.value.layout(self.target.value, self.source.value)
+            self.source.value.update_pos(old_node_min_x, old_node_min_y)
+        elif isinstance(self.value, SizeConstraint):
+            self.value.rescale(self.target.value, self.source.value)
         
     def dump(self):
         return {
@@ -510,7 +548,7 @@ class LayoutGraph:
         self.nodes.append(node)
         self.node_map[node.value] = node
     
-    def add_edge(self, source: Node, target: Node, value: LayoutStrategy):
+    def add_edge(self, source: Node, target: Node, value: Union[LayoutStrategy, SizeConstraint]):
         source.nexts.append(target)
         source.nexts_edges.append(Edge(source, target, value))
         target.prevs.append(source)
@@ -524,7 +562,7 @@ class LayoutGraph:
         target.prevs.pop(target_idx)
         target.prevs_edges.pop(target_idx)
     
-    def add_edge_by_value(self, source: LayoutElement, target: LayoutElement, value: LayoutStrategy):
+    def add_edge_by_value(self, source: LayoutElement, target: LayoutElement, value: Union[LayoutStrategy, SizeConstraint]):
         if source not in self.node_map:
             self.add_node(Node(source))
         if target not in self.node_map:
@@ -533,7 +571,7 @@ class LayoutGraph:
         target_node = self.node_map[target]
         self.add_edge(source_node, target_node, value)
     
-    def add_node_with_edges(self, source: LayoutElement, target: LayoutElement, value: LayoutStrategy):
+    def add_node_with_edges(self, source: LayoutElement, target: LayoutElement, value: Union[LayoutStrategy, SizeConstraint]):
         if source not in self.node_map:
             self.add_node(Node(source))
         if target not in self.node_map:
@@ -548,29 +586,7 @@ class LayoutGraph:
                     break
         self.add_edge_by_value(source, target, value)
             
-            
-        # flip = False
-        # for prev, prev_value in zip(target_node.prevs, target_node.prevs_edges):
-        #     if prev_value.value.name == value.name and prev_value.value.direction == value.direction:
-        #         # 把关系转移到prev到node之间
-        #         self.add_edge(prev, source_node, prev_value.value)
-        #         self.remove_edge(prev, target_node)
-        # for next, next_value in zip(target_node.nexts, target_node.nexts_edges):
-        #     if next_value.value.name == value.name and next_value.value.direction != value.direction:
-        #         print("next_value: ", next_value.value.name, next_value.value.direction, next_value.value.padding, next_value.value.offset, next_value.value.alignment)
-        #         print("value: ", value.name, value.direction, value.padding, value.offset, value.alignment)
-        #         # 把关系转移到node到next之间
-        #         self.add_edge(source_node, next, next_value.value)
-        #         self.remove_edge(target_node, next)
-        #         flip = True
-        # if not flip:
-        #     self.add_edge_by_value(source, target, value)
-        # else:
-        #     if value.direction == 'left' or value.direction == 'right':
-        #         value.direction = 'right' if value.direction == 'left' else 'left'
-        #     else:
-        #         value.direction = 'down' if value.direction == 'up' else 'up'
-        #     self.add_edge_by_value(target, source, value)
+        
     def visualize(self):
         """可视化图结构"""
         try:

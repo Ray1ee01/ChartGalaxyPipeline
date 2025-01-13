@@ -26,7 +26,7 @@ class Pipeline:
             # 从布局树文件随机选择一个配置文件
             import random
             # layout_file_idx = random.randint(1, 13)
-            layout_file_idx = 3
+            layout_file_idx = 1
             # layout_file_idx = 2
             with open(f'/data1/liduan/generation/chart/chart_pipeline/src/data/layout_tree/{layout_file_idx}.json', 'r') as f:
                 layout_config = json.load(f)
@@ -144,7 +144,7 @@ class Pipeline:
             additional_configs['subtitle_config'].update(subtitle_config)
             additional_configs['topic_icon_config'].update(topic_icon_config)
 
-            print("additional_configs['title_config']", additional_configs['title_config'])
+            # print("additional_configs['title_config']", additional_configs['title_config'])
             seed_text = random.randint(1, 100)
             # 配置颜色
             title_color,subtitle_color = color_template.get_color('text', 2, seed_text=seed_text)

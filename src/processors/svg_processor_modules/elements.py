@@ -99,7 +99,19 @@ class LayoutElement(ABC):
             self.attributes['y'] += self._bounding_box.miny - old_min_y
         else:
             self.attributes['y'] = self._bounding_box.miny - old_min_y
-        print("self.tag: ", self.tag, "self.attributes['x']: ", self.attributes['x'], "self.attributes['y']: ", self.attributes['y'])
+        # print("self.tag: ", self.tag, "self.attributes['x']: ", self.attributes['x'], "self.attributes['y']: ", self.attributes['y'])
+    def update_scale(self, scale_x: float, scale_y: float):
+        current_transform = self.attributes.get('transform', '')
+        if scale_x >= 1 and scale_y >= 1:
+            scale = max(scale_x, scale_y)
+        else:
+            scale = min(scale_x, scale_y)
+        new_transform = f"scale({scale})"
+        if current_transform:
+            self.attributes['transform'] = f"{current_transform} {new_transform}"
+        else:
+            self.attributes['transform'] = new_transform
+    
     @property
     def get_transform_matrix(self) -> List[float]:
         """解析transform属性,返回标准SVG变换矩阵
@@ -309,7 +321,9 @@ class GroupElement(LayoutElement):
         super().__init__()
         self.children: List[LayoutElement] = []
         self.layout_strategy = None  # 可以是垂直布局、水平布局等
+        self.size_constraint = None
         self.tag = 'g'
+        self.reference_id = None
     
     def update_pos(self, old_min_x: float, old_min_y: float):
         current_transform = self.attributes.get('transform', '')
@@ -318,6 +332,14 @@ class GroupElement(LayoutElement):
             self.attributes['transform'] = f"{current_transform} {new_transform}"
         else:
             self.attributes['transform'] = new_transform
+    
+    
+    def get_element_by_id(self, id: str) -> LayoutElement:
+        for child in self.children:
+            if child.id == id:
+                return child
+        return None
+
     
     def get_bounding_box(self) -> BoundingBox:
         """获取组元素的边界框
@@ -507,7 +529,8 @@ class Image(AtomElement):
                 return BoundingBox(bbox.maxx - bbox.minx, bbox.maxy - bbox.miny, bbox.minx, bbox.maxx, bbox.miny, bbox.maxy)
         else:
             return BoundingBox(max_x - min_x, max_y - min_y, min_x, max_x, min_y, max_y)
-    
+
+            
     def _dump_extra_info(self) -> List[str]:
         return [f"Base64: {self.base64[:30]}..." if self.base64 else "Base64: <empty>"]
 
@@ -554,7 +577,7 @@ class Text(AtomElement):
             self.attributes['y'] += self._bounding_box.miny - old_min_y
         else:
             self.attributes['y'] = self._bounding_box.miny - old_min_y
-            
+    
     
     def get_bounding_box(self) -> BoundingBox:
         transform = self.get_transform_matrix

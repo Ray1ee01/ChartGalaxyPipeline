@@ -230,6 +230,7 @@ class LayoutProcessor:
     def __init__(self, element_tree: LayoutElement, layout_graph: LayoutGraph, layout_template: LayoutTemplate, additional_configs: dict):
         self.element_tree = element_tree
         self.layout_graph = layout_graph
+        self.constraint_graph = LayoutGraph()
         self.layout_template = layout_template
         self.title_config = default_title_config
         self.subtitle_config = default_subtitle_config
@@ -279,7 +280,6 @@ class LayoutProcessor:
         # print("element: ", element.tag, element.id)
         if element.tag == 'g':
             if element.id == 'title':
-                print("title_config: ", self.title_config)
                 self._createTitleTextElement(self.title_config, element)
                 element._bounding_box = element.get_bounding_box()
             elif element.id == 'subtitle':
@@ -298,7 +298,6 @@ class LayoutProcessor:
                     if child.id == 'topic_icon':
                         topic_icon_idx = idx
                     boundingboxes.append(child._bounding_box)
-                print("topic_icon_idx", topic_icon_idx)
                 if topic_icon_idx != -1:
                     max_height = 0
                     max_width = 0
@@ -308,8 +307,6 @@ class LayoutProcessor:
                         if boundingbox.width > max_width:
                             max_width = boundingbox.width
                     topic_icon_height = max_height * self.topic_icon_config.get('relative_height_ratio', 0)
-                    print("self.topic_icon_config", self.topic_icon_config)
-                    print("max_height", max_height)
                     if topic_icon_height > 0:
                         original_height = boundingboxes[topic_icon_idx].height
                         original_width = boundingboxes[topic_icon_idx].width
@@ -319,7 +316,15 @@ class LayoutProcessor:
                         element.children[topic_icon_idx].attributes['height'] = topic_icon_height
                         element.children[topic_icon_idx].attributes['width'] = topic_icon_width
                         element.children[topic_icon_idx]._bounding_box = element.children[topic_icon_idx].get_bounding_box()
-                        print("topic_icon_boundingbox", element.children[topic_icon_idx]._bounding_box)
+                if element.size_constraint is not None:
+                    reference_element = element.get_element_by_id(element.reference_id)
+                    for child in element.children:
+                        print("child: ", child.id, element.reference_id)
+                        print("size_constraint: ", element.size_constraint)
+                        if not element.reference_id == child.id:
+                            self.constraint_graph.add_node_with_edges(child, reference_element, element.size_constraint)
+                            for edge in self.constraint_graph.node_map[child].nexts_edges:
+                                edge.process_layout()
                 for i in range(1, len(element.children)):
                     self.layout_graph.add_node_with_edges(element.children[i], element.children[i-1], element.layout_strategy)
                     node_map = self.layout_graph.node_map
@@ -401,33 +406,35 @@ class LayoutProcessor:
         line_height = title_config.get('lineHeight', 1.5)  # 默认行高为字体大小的1.2倍
         text_anchor = title_config.get('textAnchor', 'middle')
         max_width = title_config.get('max_width', float('inf'))
+        max_lines = title_config.get('max_lines', 1)
+        # text_lines = [text_content]
+        text_lines = self._autolinebreak(text_content, max_lines)
+        print("test_text_lines: ", text_lines)
         
-        test_text_lines = self._autolinebreak(text_content, max_width)
-        print("test_text_lines: ", test_text_lines)
-        # 将文本内容统一转换为列表形式
-        if isinstance(text_content, list):
-            text_lines = text_content
-        else:
-            # 如果渲染宽度超过max_width,按空格分词并重组文本行
-            words = text_content.split()
-            text_lines = []
-            current_line = []
-            current_width = 0
+        # # 将文本内容统一转换为列表形式
+        # if isinstance(text_content, list):
+        #     text_lines = text_content
+        # else:
+        #     # 如果渲染宽度超过max_width,按空格分词并重组文本行
+        #     words = text_content.split()
+        #     text_lines = []
+        #     current_line = []
+        #     current_width = 0
             
-            for word in words:
-                word_metrics = Text._measure_text(word + ' ', font_size, text_anchor)
-                word_width = word_metrics['width']
+        #     for word in words:
+        #         word_metrics = Text._measure_text(word + ' ', font_size, text_anchor)
+        #         word_width = word_metrics['width']
                 
-                if current_width + word_width <= max_width:
-                    current_line.append(word)
-                    current_width += word_width
-                else:
-                    text_lines.append(' '.join(current_line))
-                    current_line = [word]
-                    current_width = word_width
+        #         if current_width + word_width <= max_width:
+        #             current_line.append(word)
+        #             current_width += word_width
+        #         else:
+        #             text_lines.append(' '.join(current_line))
+        #             current_line = [word]
+        #             current_width = word_width
             
-            if current_line:
-                text_lines.append(' '.join(current_line))
+        #     if current_line:
+        #         text_lines.append(' '.join(current_line))
         
         # 计算每行文本的度量和总体尺寸
         line_metrics = []
@@ -466,21 +473,17 @@ class LayoutProcessor:
             boundingbox = text_element.get_bounding_box()
             text_element._bounding_box = boundingbox
             text_elements.append(text_element)
-        for text_element in text_elements:
-            self.layout_graph.add_node(Node(text_element))
-        for i in range(1, len(text_elements)):
-            layout_strategy = VerticalLayoutStrategy()
-            layout_strategy.alignment = ["left","left"]
-            layout_strategy.direction = "down"
-            layout_strategy.padding = title_config.get('linePadding', 3)
-            node_map = self.layout_graph.node_map
-            self.layout_graph.add_edge(node_map[text_elements[i-1]], node_map[text_elements[i]], layout_strategy)
-            old_node_min_x = float(node_map[text_elements[i]].value._bounding_box.minx)
-            old_node_min_y = float(node_map[text_elements[i]].value._bounding_box.miny)
-            layout_strategy.layout(node_map[text_elements[i-1]].value, node_map[text_elements[i]].value)
-            node_map[text_elements[i]].value.update_pos(old_node_min_x, old_node_min_y)
-    
         element.children = text_elements
+        # for text_element in text_elements:
+        #     self.layout_graph.add_node(Node(text_element))
+        for i in range(1, len(text_elements)):
+            node_map = self.layout_graph.node_map
+            self.layout_graph.add_edge_by_value(text_elements[i], text_elements[i-1], element.layout_strategy)
+            for edge in node_map[text_elements[i]].nexts_edges:
+                edge.process_layout()
+            # layout_strategy.layout(node_map[text_elements[i-1]].value, node_map[text_elements[i]].value)
+            # node_map[text_elements[i]].value.update_pos(old_node_min_x, old_node_min_y)
+    
         boundingbox = element.get_bounding_box()
         element._bounding_box = boundingbox
 
@@ -627,41 +630,80 @@ class LayoutProcessor:
         boundingbox = element.get_bounding_box()
         element._bounding_box = boundingbox
 
-    def _autolinebreak(self, text: str, max_lines: int=-1) -> list[str]:
-        
+    def _autolinebreak(self, text: str, max_lines: int=2) -> list[str]:
         """自动换行: 调用openai的api"""
-        prompt = """
-        任务描述： 请根据以下规则，将给定的文本重新排版并插入换行符 \n,以实现符合语义和美观的换行效果:
+        # prompt = f"""
+        # 任务描述： 请根据以下规则，将给定的文本重新排版并插入换行符 \n,以实现符合语义和美观的换行效果:
 
-        换行规则：
-        优先在短语边界处换行（如介词短语、动词短语之间）。
-        如果存在标点符号（如逗号、句号、冒号等），优先在标点符号后换行。
-        每行的字符数尽量接近 X 个字符（例如 20 个字符），但不得强行切割单词或破坏语义。
-        避免单词被分割(如“in-formation”)，也不要让标点符号单独位于新行开头。
-        如果一行文字超出限制，请在符合规则的位置插入换行符 \n。
+        # 换行规则：
+        # 1. 优先在短语边界处换行（如介词短语、动词短语之间）。
+        # 2. 如果存在标点符号（如逗号、句号、冒号等），优先在标点符号后换行。
+        # 3. 每行的字符数尽量接近 X 个字符（例如 20 个字符），但不得强行切割单词或破坏语义。
+        # 4. 避免单词被分割(如"in-formation")，也不要让标点符号单独位于新行开头。
+        # 5. 如果一行文字超出限制，请在符合规则的位置换行。
+        # 6. 最终输出的行数不得超过 {max_lines if max_lines > 0 else "无限制"} 行。如果有行数限制，需要适当调整每行长度以确保内容在指定行数内完整展示。
 
-        输入格式：
-        {text}
+        # 输入格式：
+        # {text}
 
-        输出格式： 将结果文字按照规则换行，输出带换行符的文本，例如：
-        Line 1 of text\n
-        Line 2 of text\n
-        Line 3 of text
+        # 输出格式： 将结果文字按照规则换行，输出换行后的文本，例如：
+        # Line 1 of text
+        # Line 2 of text
+        # Line 3 of text
 
-        输入示例：
-        Designing Infographics with Effective Layouts for Better Visual Communication
+        # 输入示例：
+        # Designing Infographics with Effective Layouts for Better Visual Communication
 
-        输出示例：
-        Designing Infographics\n
-        with Effective Layouts\n
-        for Better Visual\n
-        Communication"""
+        # 输出示例：
+        # Designing Infographics
+        # with Effective Layouts
+        # for Better Visual
+        # Communication
+        
+        # 输入:
+        # {text}
+        
+        # 请按照规则进行换行，并输出换行后的文本
+        # """
+        
+        prompt = f"""
+            Task Description:
+            Please reformat the given text and insert line breaks (\n) according to the following rules to ensure both semantic clarity and visual balance.
+
+            Line Break Rules:
+
+            Prioritize line breaks at phrase boundaries (e.g., prepositional phrases or verb phrases).
+            If punctuation marks (e.g., commas, periods, colons) are present, prioritize line breaks after the punctuation.
+            Each line should be close to X characters (e.g., 20 characters), but avoid breaking words or disrupting sentence semantics.
+            Do not split words (e.g., avoid breaking "in-formation" across two lines), and avoid placing punctuation marks alone at the start of a new line.
+            If a line exceeds the character limit, break it at the nearest valid position according to the above rules.
+            The total number of lines must not exceed {max_lines if max_lines > 0 else "unlimited"}. If there is a line limit, adjust line lengths accordingly to fit the content within the specified number of lines.
+            Input Format:
+            {text}
+
+            Output Format:
+            The text should be formatted with line breaks inserted according to the rules above. Output the result with each line separated by \n. For example:
+            Line 1 of text
+            Line 2 of text
+
+            Input Example:
+            Designing Infographics with Effective Layouts for Better Visual Communication
+
+            Output Example:
+            Designing Infographics with Effective Layouts
+            for Better Visual Communication
+
+            Input:
+            {text}
+
+            Please format the text according to the rules above and return the line-broken result.
+            Note: be careful with the total number of lines must not exceed {max_lines if max_lines > 0 else "unlimited"}"""
         
         client = OpenAI(
             api_key="sk-yIje25vOt9QiTmKG4325C0A803A8400e973dEe4dC10e94C6",
             base_url="https://aihubmix.com/v1"
         )  # 初始化OpenAI客户端
-        response = self.client.chat.completions.create(
+        response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
                 {
@@ -673,6 +715,7 @@ class LayoutProcessor:
             ],
             max_tokens=300
         )
-        result = response.choices[0].message.content
-        print(result)
-        return result.split('\n')
+        result = response.choices[0].message.content.split('\n')
+        # 移除每行末尾的空白字符
+        result = [line.rstrip() for line in result]
+        return result

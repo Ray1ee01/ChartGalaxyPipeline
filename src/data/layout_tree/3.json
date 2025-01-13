@@ -9,7 +9,7 @@
         },
         "sizeConstraint": {
             "reference": "chart",
-            "max_width": 100
+            "max_width": 1
         },
         "children": [
             {
