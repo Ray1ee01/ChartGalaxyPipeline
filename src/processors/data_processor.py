@@ -121,6 +121,9 @@ class VizNetDataProcessor(DataProcessor):
         matcher = CLIPMatcher()  # 只创建一次CLIPMatcher实例
         icon_pools = []
         for i, chart in enumerate(res):
+            if i <= len(res) - 2:
+                icon_pools.append(None)
+                continue
             json_file = os.path.join(json_path, '{}.json'.format(i))
             icon_pool = get_icon_pool(json_file, meta, matcher=matcher)  # 传入已创建的matcher实例
             icon_pools.append(icon_pool)
@@ -136,7 +139,13 @@ class VizNetDataProcessor(DataProcessor):
         # data_facts: trend, top, bottom
         # topic_images_query: images (all share)
         # icon_pools: icons
-
+        available_indexes = []
+        for i, chart in enumerate(res):
+            if chart['meta_data']['chart_type'] == 'bar':
+                available_indexes.append(i)
+        available_index = available_indexes[-1]
+        available_index = -1
+        print("available_index: ", available_index)
         # 7. get relevant infographics/images
         prompts = ' '.join([meta['topic'], ' '.join(meta['keywords'])])
         infographics = infographic_retriever.retrieve_similar_entries(prompts, top_k=10)
@@ -158,12 +167,12 @@ class VizNetDataProcessor(DataProcessor):
         # print(sel_image_path)
         
         # 8. get color palette from the image TODO color range
-        palettes = get_palette(5, True, sel_image_path)
+        palettes = get_palette(7, True, sel_image_path)
 
         result = {}
         result['meta_data'] = meta.copy()
-        result['meta_data'].update(res[-1]['meta_data'])
-        result['data'] = res[-1]['data']
+        result['meta_data'].update(res[available_index]['meta_data'])
+        result['data'] = res[available_index]['data']
         # print(len(result['data']))
         result['data_facts'] = data_facts
         # result['topic_images_urls'] = [v['original'] for v in topic_images_query['images_results'][:10]]
@@ -174,7 +183,7 @@ class VizNetDataProcessor(DataProcessor):
         # result['icons']['y_label'] = icon_pools[2]
         # result['icons']['x_data_single'] = icon_pools[3]
         # result['icons']['x_data_multi'] = icon_pools[3:]
-        icon_semantic = icon_pools[-1]
+        icon_semantic = icon_pools[available_index]
         candidate_icons = icon_semantic.icon_pool
         topic_icon_pool = candidate_icons[0]
         x_label_icon_pool = candidate_icons[1]
@@ -191,5 +200,6 @@ class VizNetDataProcessor(DataProcessor):
         for i, icon_pool in enumerate(x_data_multi_icon_pool):
             result['icons']['x_data_multi'].append([os.path.join(icon_root, icon_positions[v][0], icon_positions[v][1]) for v in icon_pool])
         
+        result['palettes'] = palettes
         return result
     

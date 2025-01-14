@@ -19,8 +19,8 @@ fout.close()
 fout = open(FLAGS.env_output_file, "w")
 fout.close()
 
-np.random.seed(15)
-random.seed(15)
+# np.random.seed(15)
+# random.seed(15)
 
 # Creating training directory if it does not exist
 if not os.path.exists(FLAGS.interact_data_dir):

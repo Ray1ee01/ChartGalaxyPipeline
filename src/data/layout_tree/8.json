@@ -23,5 +23,11 @@
                 "children": []
             }
         ]
+    },
+    "title_config": {
+        "textAnchor": "middle"
+    },
+    "subtitle_config": {
+        "textAnchor": "middle"
     }
 }

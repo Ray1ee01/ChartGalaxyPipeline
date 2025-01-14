@@ -1,7 +1,43 @@
 from abc import ABC, abstractmethod
-from typing import List
+from typing import List, Union
 from .elements import LayoutElement, GroupElement
 
+class SizeConstraint(ABC):
+    """尺寸约束基类"""
+    # @abstractmethod
+    # def get_scale(self, reference_element: LayoutElement, layout_element: LayoutElement) -> List[float]:
+    #     pass
+
+class WidthHeightConstraint(SizeConstraint):
+    """宽度高度约束"""
+    def __init__(self, max_width_ratio: float=None, max_height_ratio: float=None, min_width_ratio: float=None, min_height_ratio: float=None):
+        self.max_width_ratio = max_width_ratio
+        self.max_height_ratio = max_height_ratio
+        self.min_width_ratio = min_width_ratio
+        self.min_height_ratio = min_height_ratio
+        
+    def rescale(self, reference_element: LayoutElement, layout_element: LayoutElement) -> None:
+        reference_element_bounding_box = reference_element.get_bounding_box()
+        layout_element_bounding_box = layout_element.get_bounding_box()
+        if self.max_width_ratio is not None:
+            scale_x = min(self.max_width_ratio, reference_element_bounding_box.width / layout_element_bounding_box.width)
+        else:
+            scale_x = 1.0
+            
+        if self.max_height_ratio is not None:
+            scale_y = min(self.max_height_ratio, reference_element_bounding_box.height / layout_element_bounding_box.height)
+        else:
+            scale_y = 1.0
+        if (not scale_x == 1.0) or (not scale_y == 1.0):
+            # print("reference_element.tag: ", reference_element.tag)
+            # print("layout_element.tag: ", layout_element.tag)
+            scale = layout_element.update_scale(scale_x, scale_y)
+            layout_element._bounding_box = layout_element.get_bounding_box()
+            return scale
+        else:
+            return 1.0
+        
+        
 class LayoutStrategy(ABC):
     """布局策略基类"""
     @abstractmethod
@@ -23,7 +59,7 @@ class LayoutStrategy(ABC):
 
 class VerticalLayoutStrategy(LayoutStrategy):
     """垂直布局策略"""
-    def __init__(self, alignment: list[str] = ['middle', 'middle'], direction: str = 'down', padding: float = 0, offset: float = 0):
+    def __init__(self, alignment: list[str] = ['middle', 'middle'], direction: str = 'down', padding: float = 5, offset: float = 0):
         self.padding = padding
         self.offset = offset
         self.alignment = alignment
@@ -96,9 +132,9 @@ class VerticalLayoutStrategy(LayoutStrategy):
                 layout_element_valid_bounding_boxes = layout_element.get_children_boundingboxes()
             else:
                 layout_element_valid_bounding_boxes = [layout_element._bounding_box]
-            if reference_element.tag == 'g' and reference_element.id == 'chart':
-                for child in reference_element.children:
-                    print('child: ', child.tag, child.id, child._bounding_box)
+            # if reference_element.tag == 'g' and reference_element.id == 'chart':
+            #     for child in reference_element.children:
+            #         print('child: ', child.tag, child.id, child._bounding_box)
             
             # print('layout_element_valid_bounding_boxes: ', layout_element_valid_bounding_boxes)
             # print('reference_element_valid_bounding_boxes: ', reference_element_valid_bounding_boxes)
@@ -125,7 +161,7 @@ class VerticalLayoutStrategy(LayoutStrategy):
                     for layout_box in layout_element_valid_bounding_boxes:
                         if layout_box.is_overlapping(ref_box):
                             has_overlap = True
-                            print('overlap')
+                            # print('overlap')
                             # print('ref_box: ', ref_box)
                             # print('layout_box: ', layout_box)
                             break
@@ -147,12 +183,12 @@ class VerticalLayoutStrategy(LayoutStrategy):
                 
                 while left <= right:
                     mid = (left + right) / 2
-                    if has_overlap():
+                    if has_overlap(mid):
                         left = mid + 0.1  # 增加一个小的步长
                         best_move = mid
                     else:
                         right = mid - 0.1
-                print('best_move: ', best_move)
+                # print('best_move: ', best_move)
                 if best_move > 0:
                     layout_element._bounding_box.miny += best_move
                     layout_element._bounding_box.maxy += best_move
@@ -166,21 +202,21 @@ class VerticalLayoutStrategy(LayoutStrategy):
                 
                 while left <= right:
                     mid = (left + right) / 2
-                    print('mid: ', mid)
+                    # print('mid: ', mid)
                     if has_overlap(mid):
-                        print('overlap')
+                        # print('overlap')
                         right = mid - 0.1
                     else:
                         left = mid + 0.1
                         best_move = mid
-                print('best_move: ', best_move)
+                # print('best_move: ', best_move)
                 if best_move > 0:
                     layout_element._bounding_box.miny = old_layout_element_bounding_box_miny - best_move
                     layout_element._bounding_box.maxy = old_layout_element_bounding_box_maxy - best_move
 
 class HorizontalLayoutStrategy(LayoutStrategy):
     """水平布局策略"""
-    def __init__(self, alignment: list[str] = ['middle', 'middle'], direction: str = 'right', padding: float = 0, offset: float = 0):
+    def __init__(self, alignment: list[str] = ['middle', 'middle'], direction: str = 'right', padding: float = 5, offset: float = 0):
         self.padding = padding
         self.offset = offset
         self.alignment = alignment
@@ -220,10 +256,17 @@ class HorizontalLayoutStrategy(LayoutStrategy):
         elif self.alignment[1] == "bottom":
             move_y = baseline_y - layout_element_bounding_box.maxy + self.offset
 
+
         layout_element._bounding_box.minx += move_x
         layout_element._bounding_box.maxx += move_x
         layout_element._bounding_box.miny += move_y
         layout_element._bounding_box.maxy += move_y
+        
+        # print("alignment: ", self.alignment)
+        # print("direction: ", self.direction)
+        # print("layout_element: ", layout_element._bounding_box)
+        # print("reference_element: ", reference_element._bounding_box)
+
         
         if layout_element.tag=='g':
             for child in layout_element.children:
@@ -322,7 +365,7 @@ class HorizontalLayoutStrategy(LayoutStrategy):
 
 class InnerHorizontalLayoutStrategy(HorizontalLayoutStrategy):
     """内部水平布局策略"""
-    def __init__(self, alignment: list[str] = ['middle', 'middle'], direction: str = 'right', padding: float = 0, offset: float = 0):
+    def __init__(self, alignment: list[str] = ['middle', 'middle'], direction: str = 'right', padding: float = 5, offset: float = 0):
         super().__init__(alignment, direction, padding, offset)
 
     def layout(self, reference_element: LayoutElement, layout_element: LayoutElement) -> None:
@@ -331,7 +374,7 @@ class InnerHorizontalLayoutStrategy(HorizontalLayoutStrategy):
 
 class InnerVerticalLayoutStrategy(VerticalLayoutStrategy):
     """内部垂直布局策略"""
-    def __init__(self, alignment: list[str] = ['middle', 'middle'], direction: str = 'right', padding: float = 0, offset: float = 0):
+    def __init__(self, alignment: list[str] = ['middle', 'middle'], direction: str = 'right', padding: float = 5, offset: float = 0):
         super().__init__(alignment, direction, padding, offset)
 
     def layout(self, reference_element: LayoutElement, layout_element: LayoutElement) -> None:
@@ -340,7 +383,7 @@ class InnerVerticalLayoutStrategy(VerticalLayoutStrategy):
 
 class MiddleHorizontalLayoutStrategy(HorizontalLayoutStrategy):
     """中间水平布局策略"""
-    def __init__(self, alignment: list[str] = ['middle', 'middle'], direction: str = 'right', padding: float = 0, offset: float = 0):
+    def __init__(self, alignment: list[str] = ['middle', 'middle'], direction: str = 'right', padding: float = 5, offset: float = 0):
         super().__init__(alignment, direction, padding, offset)
 
     def layout(self, reference_element: LayoutElement, layout_element: LayoutElement) -> None:
@@ -349,20 +392,28 @@ class MiddleHorizontalLayoutStrategy(HorizontalLayoutStrategy):
 
 class MiddleVerticalLayoutStrategy(VerticalLayoutStrategy):
     """中间垂直布局策略"""
-    def __init__(self, alignment: list[str] = ['middle', 'middle'], direction: str = 'right', padding: float = 0, offset: float = 0):
+    def __init__(self, alignment: list[str] = ['middle', 'middle'], direction: str = 'right', padding: float = 5, offset: float = 0):
         super().__init__(alignment, direction, padding, offset)
 
     def layout(self, reference_element: LayoutElement, layout_element: LayoutElement) -> None:
         self.padding = -layout_element.get_bounding_box().height/2 - reference_element.get_bounding_box().height/2 - self.padding
         super().layout(reference_element, layout_element)
+        
 
 def parse_layout_strategy(reference_element: LayoutElement, layout_element: LayoutElement, layout_strategy: str = 'none') -> None:
+    if reference_element._bounding_box == None:
+        reference_element._bounding_box = reference_element.get_bounding_box()
+    if layout_element._bounding_box == None:
+        layout_element._bounding_box = layout_element.get_bounding_box()
     
     # 计算布局策略的参数
     # 在初步情况下，可以alignment都是["middle", "middle"]
     alignment = ["middle", "middle"]
+    # print("reference_element: ", reference_element._bounding_box)
+    # print("layout_element: ", layout_element._bounding_box)
+    # print("layout_strategy: ", layout_strategy)
     if layout_strategy == 'vertical':
-        if reference_element._bounding_box.miny > layout_element._bounding_box.maxy:
+        if reference_element._bounding_box.miny > layout_element._bounding_box.miny:
             layout_strategy = VerticalLayoutStrategy(alignment=alignment, direction='up')
             # 计算padding和offset
             padding = reference_element._bounding_box.miny - layout_element._bounding_box.maxy
@@ -370,16 +421,17 @@ def parse_layout_strategy(reference_element: LayoutElement, layout_element: Layo
             reference_middle_x = (reference_element._bounding_box.maxx + reference_element._bounding_box.minx) / 2
             layout_element_middle_x = (layout_element._bounding_box.maxx + layout_element._bounding_box.minx) / 2
             offset = layout_element_middle_x - reference_middle_x
-        elif reference_element._bounding_box.maxy < layout_element._bounding_box.miny:
+        # elif reference_element._bounding_box.maxy < layout_element._bounding_box.maxy:
+        else:
             layout_strategy = VerticalLayoutStrategy(alignment=alignment, direction='down')
             # 计算padding和offset
-            padding = reference_element._bounding_box.maxy - layout_element._bounding_box.miny
+            padding = layout_element._bounding_box.miny - reference_element._bounding_box.maxy
             offset = 0
             reference_middle_x = (reference_element._bounding_box.maxx + reference_element._bounding_box.minx) / 2
             layout_element_middle_x = (layout_element._bounding_box.maxx + layout_element._bounding_box.minx) / 2
             offset = layout_element_middle_x - reference_middle_x
     elif layout_strategy == 'horizontal':
-        if reference_element._bounding_box.minx > layout_element._bounding_box.maxx:
+        if reference_element._bounding_box.minx > layout_element._bounding_box.minx:
             layout_strategy = HorizontalLayoutStrategy(alignment=alignment, direction='left')
             # 计算padding和offset
             padding = reference_element._bounding_box.minx - layout_element._bounding_box.maxx
@@ -387,7 +439,7 @@ def parse_layout_strategy(reference_element: LayoutElement, layout_element: Layo
             reference_middle_y = (reference_element._bounding_box.maxy + reference_element._bounding_box.miny) / 2
             layout_element_middle_y = (layout_element._bounding_box.maxy + layout_element._bounding_box.miny) / 2
             offset = layout_element_middle_y - reference_middle_y
-        elif reference_element._bounding_box.maxx < layout_element._bounding_box.minx:
+        else:
             layout_strategy = HorizontalLayoutStrategy(alignment=alignment, direction='right')
             # 计算padding和offset
             padding = layout_element._bounding_box.minx - reference_element._bounding_box.maxx
@@ -464,7 +516,8 @@ class Node:
         self.nexts_edges = []
 
 class Edge:
-    def __init__(self, source: Node, target: Node, value: LayoutStrategy):
+    # layout的是source. target是reference
+    def __init__(self, source: Node, target: Node, value: Union[LayoutStrategy, SizeConstraint]):
         self.source = source
         self.target = target
         self.value = value
@@ -475,8 +528,12 @@ class Edge:
     def process_layout(self):
         old_node_min_x = float(self.target.value._bounding_box.minx)
         old_node_min_y = float(self.target.value._bounding_box.miny)
-        self.value.layout(self.source.value, self.target.value)
-        self.target.value.update_pos(old_node_min_x, old_node_min_y)
+        if isinstance(self.value, LayoutStrategy):
+            self.value.layout(self.source.value, self.target.value)
+            self.target.value.update_pos(old_node_min_x, old_node_min_y)
+        elif isinstance(self.value, SizeConstraint):
+            scale = self.value.rescale(self.source.value, self.target.value)
+            return scale
         
     def dump(self):
         return {
@@ -494,7 +551,7 @@ class LayoutGraph:
         self.nodes.append(node)
         self.node_map[node.value] = node
     
-    def add_edge(self, source: Node, target: Node, value: LayoutStrategy):
+    def add_edge(self, source: Node, target: Node, value: Union[LayoutStrategy, SizeConstraint]):
         source.nexts.append(target)
         source.nexts_edges.append(Edge(source, target, value))
         target.prevs.append(source)
@@ -508,38 +565,38 @@ class LayoutGraph:
         target.prevs.pop(target_idx)
         target.prevs_edges.pop(target_idx)
     
-    def add_edge_by_value(self, source: LayoutElement, target: LayoutElement, value: LayoutStrategy):
-        source_node = self.node_map[source]
-        target_node = self.node_map[target]
-        self.add_edge(source_node, target_node, value)
-    
-    def add_node_with_edges(self, source: LayoutElement, target: LayoutElement, value: LayoutStrategy):
+    def add_edge_by_value(self, source: LayoutElement, target: LayoutElement, value: Union[LayoutStrategy, SizeConstraint]):
         if source not in self.node_map:
             self.add_node(Node(source))
         if target not in self.node_map:
             self.add_node(Node(target))
         source_node = self.node_map[source]
         target_node = self.node_map[target]
-        flip = False
-        for prev, prev_value in zip(target_node.prevs, target_node.prevs_edges):
-            if prev_value.value.name == value.name and prev_value.value.direction == value.direction:
-                # 把关系转移到prev到node之间
-                self.add_edge(prev, source_node, prev_value)
-                self.remove_edge(prev, target_node)
-        for next, next_value in zip(target_node.nexts, target_node.nexts_edges):
-            if next_value.value.name == value.name and next_value.value.direction != value.direction:
-                # 把关系转移到node到next之间
-                self.add_edge(source_node, next, next_value)
-                self.remove_edge(target_node, next)
-                flip = True
-        if not flip:
-            self.add_edge_by_value(source, target, value)
-        else:
-            if value.value.direction == 'left' or value.value.direction == 'right':
-                value.value.direction = 'right' if value.value.direction == 'left' else 'left'
-            else:
-                value.value.direction = 'down' if value.value.direction == 'up' else 'up'
-            self.add_edge_by_value(target, source, value)
+        self.add_edge(source_node, target_node, value)
+    
+    def add_node_with_edges(self, source: LayoutElement, target: LayoutElement, value: Union[LayoutStrategy, SizeConstraint]):
+        if source not in self.node_map:
+            self.add_node(Node(source))
+        if target not in self.node_map:
+            self.add_node(Node(target))
+        source_node = self.node_map[source]
+        target_node = self.node_map[target]
+        if isinstance(value, LayoutStrategy):
+            if target_node.nexts == [] and target_node.prevs == []:
+                for next, next_value in zip(source_node.nexts, source_node.nexts_edges):
+                    if next_value.value.name == value.name and next_value.value.direction == value.direction:
+                        self.add_edge(target_node, next, next_value.value)
+                        self.remove_edge(source_node, next)
+                        break
+            elif source_node.nexts == [] and source_node.prevs == []:
+                for prev, prev_value in zip(target_node.prevs, target_node.prevs_edges):
+                    if prev_value.value.name == value.name and prev_value.value.direction == value.direction:
+                        self.add_edge(prev, source_node, prev_value.value)
+                        self.remove_edge(prev, target_node)
+                        break
+        self.add_edge_by_value(source, target, value)
+            
+        
     def visualize(self):
         """可视化图结构"""
         try:

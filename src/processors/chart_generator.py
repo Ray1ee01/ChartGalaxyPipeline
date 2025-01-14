@@ -3,6 +3,7 @@ from ..interfaces.base import ChartGenerator
 from ..utils.node_bridge import NodeBridge
 from ..template.template import ChartTemplate
 import os
+import random
 from typing import Tuple
 
 
@@ -52,7 +53,7 @@ class VegaLiteGenerator(ChartGenerator):
             mark_specification["strokeWidth"] = self.template.mark.stroke_style.stroke_width
         
         
-        
+        # TODO configure color
         annotation_specification = {
             "mark": {
                 "type": "text",
@@ -64,27 +65,52 @@ class VegaLiteGenerator(ChartGenerator):
                 }
             }
         }
-        if self.template.mark.orientation == "horizontal":
-            if self.template.x_axis.orientation == "left":
-                annotation_specification["mark"]["align"] = "start"
-                annotation_specification["mark"]["dx"] = 5
-            else:
-                annotation_specification["mark"]["align"] = "end"
-                annotation_specification["mark"]["dx"] = -5
-        else:
-            if self.template.y_axis.orientation == "top":
-                annotation_specification["mark"]["dy"] = 5
-            else:
-                annotation_specification["mark"]["dy"] = -5
+        text_config = annotation_specification["mark"]
+        if self.template.mark.annotation_font_style.font is not None:
+            text_config["font"] = self.template.mark.annotation_font_style.font
+        if self.template.mark.annotation_font_style.font_size is not None:
+            text_config["fontSize"] = self.template.mark.annotation_font_style.font_size
+        if self.template.mark.annotation_font_style.font_weight is not None:
+            text_config["fontWeight"] = self.template.mark.annotation_font_style.font_weight
+        # if self.template.mark.annotation_font_style.letter_spacing is not None:
+        #     text_config["letterSpacing"] = self.template.mark.annotation_font_style.letter_spacing
+        if self.template.mark.annotation_color_style.color is not None:
+            text_config["fill"] = self.template.mark.annotation_color_style.color
         
-        if self.template.has_annotation:
-            specification["layer"] = [
-                {"mark": mark_specification},
-                annotation_specification
-            ]
+        if self.template.mark.orientation == "horizontal":
+            side = self.template.mark.annotation_side
+            print('side: ', side)
+            print('self.template.x_axis.orientation: ', self.template.x_axis.orientation)
+            # side = "inner"
+            if self.template.x_axis.orientation == "left" and side == "outer":
+                annotation_specification["mark"]["align"] = "left"
+                annotation_specification["mark"]["dx"] = 5
+            elif self.template.x_axis.orientation == "left" and side == "inner":
+                annotation_specification["mark"]["align"] = "right"
+                annotation_specification["mark"]["dx"] = -5
+            elif self.template.x_axis.orientation == "right" and side == "outer":
+                annotation_specification["mark"]["align"] = "right"
+                annotation_specification["mark"]["dx"] = -5
+            else:
+                annotation_specification["mark"]["align"] = "left"
+                annotation_specification["mark"]["dx"] = 5
         else:
-            specification["mark"] = mark_specification
-
+            side = self.template.mark.annotation_side
+            print('side: ', side)
+            print('self.template.x_axis.orientation: ', self.template.x_axis.orientation)
+            if self.template.x_axis.orientation == "top" and side == "outer":
+                annotation_specification["mark"]["baseline"] = "top"
+                annotation_specification["mark"]["dy"] = 5
+            elif self.template.x_axis.orientation == "top" and side == "inner":
+                annotation_specification["mark"]["baseline"] = "bottom"
+                annotation_specification["mark"]["dy"] = -5
+            elif self.template.x_axis.orientation == "bottom" and side == "outer":
+                annotation_specification["mark"]["baseline"] = "bottom"
+                annotation_specification["mark"]["dy"] = -5
+            else:
+                annotation_specification["mark"]["baseline"] = "top"
+                annotation_specification["mark"]["dy"] = 5
+        
         # 编码配置
         encoding = {}
         
@@ -93,7 +119,9 @@ class VegaLiteGenerator(ChartGenerator):
             x_encoding = {
                 "field": self.template.x_axis.field,
                 "type": self.template.x_axis.field_type,
-                "axis": {"orient": "top", "grid": False, "maxExtent": None},
+                "axis": {"orient": "top", "grid": False
+                        #  , "maxExtent": 100, "labelLimit": 100
+                        }
             }
             
             
@@ -139,7 +167,8 @@ class VegaLiteGenerator(ChartGenerator):
             y_encoding = {
                 "field": self.template.y_axis.field,
                 "type": self.template.y_axis.field_type,
-                "axis": {"grid": False, "maxExtent": None}
+                "axis": {"grid": False
+                        }
             }
             
             axis_config = y_encoding["axis"]
@@ -212,6 +241,14 @@ class VegaLiteGenerator(ChartGenerator):
                 encoding["x"]["sort"] = "-y" if sort_config["ascending"] else "y"
         specification["encoding"] = encoding
         
+        if self.template.has_annotation:
+            specification["layer"] = [
+                {"mark": mark_specification, "encoding": encoding},
+                annotation_specification
+            ]
+        else:
+            specification["mark"] = mark_specification
+        
         return specification
 
     def generate(self, data: dict, template: ChartTemplate) -> Tuple[str, Dict, Dict]:
@@ -236,7 +273,7 @@ class VegaLiteGenerator(ChartGenerator):
         self.template = template
 
         spec = self.template_to_spec()
-        print('spec: ', spec)
+        # print('spec: ', spec)
         result = NodeBridge.execute_node_script(self.script_path, {
             "spec": spec,
         })

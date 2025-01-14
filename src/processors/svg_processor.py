@@ -102,10 +102,6 @@ default_additional_configs = {
                                 }
                             ]
                         },
-                        # {
-                        #     "tag": "topic_icon",
-                        #     "children": []
-                        # }
                     ]
                 },
             ]
@@ -138,6 +134,12 @@ class SVGOptimizer(SVGProcessor):
         # print('additional_configs: ', additional_configs)
         parser = VegaLiteParser(svg, additional_configs)
         parsed_svg, flattened_elements_tree, layout_graph = parser.parse()
+        # flattened_elements_tree._bounding_box = flattened_elements_tree.get_bounding_box()
+        # print(flattened_elements_tree.dump())
+        
+        # element_tree = flattened_elements_tree
+
+        # # return parsed_svg
         
         if additional_configs.get('title_config').get('max_width_ratio'):
             additional_configs['title_config']['max_width'] = flattened_elements_tree.get_bounding_box().width * additional_configs['title_config']['max_width_ratio']
@@ -178,7 +180,7 @@ class SVGOptimizer(SVGProcessor):
             }
             rects.append(rect)
         # for rect in rects:
-            # root_element.children.append(rect)
+        #     root_element.children.append(rect)
         element_tree = root_element
         
         attrs_list = []
@@ -192,6 +194,8 @@ class SVGOptimizer(SVGProcessor):
         svg_right = f"</svg>"
         element_tree.attributes['transform'] = "translate(300,100)"
         svg_str = SVGTreeConverter.element_tree_to_svg(element_tree)
+        background_color = additional_configs['background_config']['color']
+        svg_str = f"<rect width=\"100%\" height=\"100%\" fill=\"{background_color}\"/>\n" + svg_str
         svg_str = svg_left + svg_str + svg_right
         return svg_str
         # # return svg

@@ -1,7 +1,7 @@
 import pickle
 import pandas as pd
 import random
-random.seed(15)
+# random.seed(15)
 from tools import Chart
 
 

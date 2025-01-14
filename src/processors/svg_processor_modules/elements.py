@@ -99,7 +99,20 @@ class LayoutElement(ABC):
             self.attributes['y'] += self._bounding_box.miny - old_min_y
         else:
             self.attributes['y'] = self._bounding_box.miny - old_min_y
-            
+        # print("self.tag: ", self.tag, "self.attributes['x']: ", self.attributes['x'], "self.attributes['y']: ", self.attributes['y'])
+    def update_scale(self, scale_x: float, scale_y: float):
+        current_transform = self.attributes.get('transform', '')
+        if scale_x >= 1 and scale_y >= 1:
+            scale = max(scale_x, scale_y)
+        else:
+            scale = min(scale_x, scale_y)
+        new_transform = f"scale({scale})"
+        if current_transform:
+            self.attributes['transform'] = f"{new_transform} {current_transform}"
+        else:
+            self.attributes['transform'] = new_transform
+        return scale
+    
     @property
     def get_transform_matrix(self) -> List[float]:
         """解析transform属性,返回标准SVG变换矩阵
@@ -119,7 +132,7 @@ class LayoutElement(ABC):
         matrix = [1, 0, 0, 1, 0, 0]
 
         # 匹配所有transform命令
-        transform_pattern = r'(translate|rotate)\(([-\d\s,.]+)\)'
+        transform_pattern = r'(translate|rotate|scale)\(([-\d\s,.]+)\)'
         transforms = re.finditer(transform_pattern, transform)
 
         for t in transforms:
@@ -154,6 +167,13 @@ class LayoutElement(ABC):
                 else:  # 普通旋转
                     rotate = [cos_a, sin_a, -sin_a, cos_a, 0, 0]
                     matrix = self._multiply_matrices(matrix, rotate)
+                    
+            elif command == 'scale':
+                sx = params[0]
+                sy = params[1] if len(params) > 1 else sx
+                # 缩放矩阵与当前矩阵相乘
+                scale_matrix = [sx, 0, 0, sy, 0, 0]
+                matrix = self._multiply_matrices(matrix, scale_matrix)
 
         return matrix
     
@@ -302,15 +322,25 @@ class GroupElement(LayoutElement):
         super().__init__()
         self.children: List[LayoutElement] = []
         self.layout_strategy = None  # 可以是垂直布局、水平布局等
+        self.size_constraint = None
         self.tag = 'g'
+        self.reference_id = None
     
     def update_pos(self, old_min_x: float, old_min_y: float):
         current_transform = self.attributes.get('transform', '')
         new_transform = f"translate({self._bounding_box.minx - old_min_x}, {self._bounding_box.miny - old_min_y})"
         if current_transform:
-            self.attributes['transform'] = f"{current_transform} {new_transform}"
+            self.attributes['transform'] = f"{new_transform} {current_transform}"
         else:
             self.attributes['transform'] = new_transform
+    
+    
+    def get_element_by_id(self, id: str) -> LayoutElement:
+        for child in self.children:
+            if child.id == id:
+                return child
+        return None
+
     
     def get_bounding_box(self) -> BoundingBox:
         """获取组元素的边界框
@@ -325,7 +355,8 @@ class GroupElement(LayoutElement):
         child_bboxes = []
         for child in self.children:
             child_bbox = child.get_bounding_box()
-            if child_bbox:
+            child._bounding_box = child_bbox
+            if child_bbox and child_bbox.width > 0 and child_bbox.height > 0:
                 if transform:
                     if isinstance(transform, list) and len(transform) == 2:
                         # 如果是两个矩阵,进行两次变换
@@ -434,15 +465,7 @@ class Image(AtomElement):
                 with open(image_url, 'rb') as f:
                     image_data = f.read()
                 content_type = mimetypes.guess_type(image_url)[0] or 'image/png'
-            
-            # 获取图片尺寸
-            from PIL import Image as PILImage
-            from io import BytesIO
-            img = PILImage.open(BytesIO(image_data))
-            width, height = img.size
-            self.original_width = width
-            self.original_height = height
-            
+                        
             # 转换为base64
             base64_data = base64.b64encode(image_data).decode('utf-8')
             return f"{content_type};base64,{base64_data}"
@@ -451,6 +474,42 @@ class Image(AtomElement):
             print(f"Error processing image {image_url}: {str(e)}")
             return None
     
+    @staticmethod
+    def get_image_size(image_url: str) -> Tuple[int, int]:
+        """获取图片尺寸"""
+        try:
+            # 检查是否已经是base64编码
+            if image_url.startswith('data:'):
+                return image_url
+            
+            # 判断是URL还是本地文件
+            parsed = urlparse(image_url)
+            is_url = bool(parsed.scheme and parsed.netloc)
+            
+            # 获取图片数据
+            if is_url:
+                response = requests.get(image_url)
+                image_data = response.content
+                # 从URL或Content-Type获取MIME类型
+                content_type = response.headers.get('content-type')
+                if not content_type:
+                    content_type = mimetypes.guess_type(image_url)[0] or 'image/png'
+            else:
+                # 处理本地文件
+                with open(image_url, 'rb') as f:
+                    image_data = f.read()
+                content_type = mimetypes.guess_type(image_url)[0] or 'image/png'
+            
+            # 获取图片尺寸
+            from PIL import Image as PILImage
+            from io import BytesIO
+            img = PILImage.open(BytesIO(image_data))
+            width, height = img.size
+            return width, height
+        except Exception as e:
+            print(f"Error processing image {image_url}: {str(e)}")
+            return None
+        
     def get_bounding_box(self) -> BoundingBox:
         transform = self.get_transform_matrix
         x = float(self.attributes.get('x', 0))
@@ -472,7 +531,8 @@ class Image(AtomElement):
                 return BoundingBox(bbox.maxx - bbox.minx, bbox.maxy - bbox.miny, bbox.minx, bbox.maxx, bbox.miny, bbox.maxy)
         else:
             return BoundingBox(max_x - min_x, max_y - min_y, min_x, max_x, min_y, max_y)
-    
+
+            
     def _dump_extra_info(self) -> List[str]:
         return [f"Base64: {self.base64[:30]}..." if self.base64 else "Base64: <empty>"]
 
@@ -511,15 +571,39 @@ class Text(AtomElement):
             }
     
     def update_pos(self, old_min_x: float, old_min_y: float):
-        if 'x' in self.attributes:
-            self.attributes['x'] += self._bounding_box.minx - old_min_x
+        current_transform = self.attributes.get('transform', '')
+        new_transform = f"translate({self._bounding_box.minx - old_min_x}, {self._bounding_box.miny - old_min_y})"
+        if current_transform:
+            self.attributes['transform'] = f"{new_transform} {current_transform} "
         else:
-            self.attributes['x'] = self._bounding_box.minx - old_min_x
-        if 'y' in self.attributes:
-            self.attributes['y'] += self._bounding_box.miny - old_min_y
+            self.attributes['transform'] = new_transform
+        # if 'x' in self.attributes:
+        #     self.attributes['x'] += self._bounding_box.minx - old_min_x
+        # else:
+        #     self.attributes['x'] = self._bounding_box.minx - old_min_x
+        # if 'y' in self.attributes:
+        #     self.attributes['y'] += self._bounding_box.miny - old_min_y
+        # else:
+        #     self.attributes['y'] = self._bounding_box.miny - old_min_y
+    def update_scale(self, scale_x: float, scale_y: float):
+        old_bounding_box = self.get_bounding_box()
+        if scale_x >= 1 and scale_y >= 1:
+            scale = max(scale_x, scale_y)
         else:
-            self.attributes['y'] = self._bounding_box.miny - old_min_y
-            
+            scale = min(scale_x, scale_y)
+        new_transform = f"scale({scale})"
+        current_transform = self.attributes.get('transform', '')
+        if current_transform:
+            self.attributes['transform'] = f"{new_transform} {current_transform}"
+        else:
+            self.attributes['transform'] = new_transform
+        new_bounding_box = self.get_bounding_box()
+        # 通过添加translate使得新的bounding box与旧的bounding box的中心重合
+        translate_x = (old_bounding_box.minx + old_bounding_box.maxx) / 2 - (new_bounding_box.minx + new_bounding_box.maxx) / 2
+        translate_y = (old_bounding_box.miny + old_bounding_box.maxy) / 2 - (new_bounding_box.miny + new_bounding_box.maxy) / 2
+        self.attributes['transform'] = f"translate({translate_x}, {translate_y}) {self.attributes['transform']}"
+        
+        return scale
     
     def get_bounding_box(self) -> BoundingBox:
         transform = self.get_transform_matrix
@@ -535,7 +619,6 @@ class Text(AtomElement):
         # font_size = float(self.attributes.get('font-size', 16))
         raw_font_size = self.attributes.get('font-size')
         text_anchor = self.attributes.get('text-anchor', 'start')
-        
         if raw_font_size and type(raw_font_size) == str:
             font_size = self._parse_length(raw_font_size)
         elif raw_font_size and (type(raw_font_size) == int or type(raw_font_size) == float):
@@ -574,6 +657,29 @@ class Text(AtomElement):
         else:
             return BoundingBox(max_x - min_x, max_y - min_y, min_x, max_x, min_y, max_y)
         
+    def rotate_to_fit(self, direction: str = 'top'):
+        old_bounding_box = self.get_bounding_box()
+        # 先rotate270度
+        new_transform = f"rotate(270)"
+        current_transform = self.attributes.get('transform', '')
+        if current_transform:
+            self.attributes['transform'] = f"{new_transform} {current_transform}"
+        else:
+            self.attributes['transform'] = new_transform
+        new_bounding_box = self.get_bounding_box()
+        # 通过添加translate使得新的bounding box与旧的bounding box的中心重合
+        if direction == 'top':
+            baseline_y = old_bounding_box.miny
+            baseline_x = (old_bounding_box.minx+old_bounding_box.maxx)/2
+            translate_y = baseline_y - new_bounding_box.miny
+            translate_x = baseline_x - (new_bounding_box.minx+new_bounding_box.maxx)/2
+            self.attributes['transform'] = f"translate({translate_x}, {translate_y}) {self.attributes['transform']}"
+        elif direction == 'bottom':
+            baseline_y = old_bounding_box.maxy
+            baseline_x = (old_bounding_box.minx+old_bounding_box.maxx)/2
+            translate_y = baseline_y - new_bounding_box.maxy
+            translate_x = baseline_x - new_bounding_box.minx
+            self.attributes['transform'] = f"translate({translate_x}, {translate_y}) {self.attributes['transform']}"
     
     def _parse_length(self, value: str) -> float:
         """解析单位的长度值"""

@@ -3,18 +3,9 @@ import json
 from ..processors.svg_processor_modules.elements import *
 from ..processors.svg_processor_modules.layout import *
 from typing import List
-
-class FontTemplate:
-    def __init__(self):
-        self.font = None
-        self.font_size = None
-        self.font_weight = None
-    def dump(self):
-        return {
-            "font": self.font,
-            "fontSize": self.font_size,
-            "fontWeight": self.font_weight
-        }
+from .color_template import ColorDesign
+import random
+import copy
 
 class ColorTemplate:
     def __init__(self):
@@ -35,7 +26,7 @@ class StrokeTemplate:
         }
 
 class AxisTemplate:
-    def __init__(self):
+    def __init__(self, color_template: ColorDesign=None):
         # 基本属性
         self.type = None # 轴类型
         self.orientation = None # 轴方向
@@ -45,25 +36,36 @@ class AxisTemplate:
         # 样式属性
         ## domain 样式
         self.has_domain = True
+        # 从1到100之间随机取一个值
+        seed_axis = random.randint(1, 100)
+        stroke_color = color_template.get_color('axis', 1, seed_axis=seed_axis)
         self.domain_color_style = ColorTemplate()
+        self.domain_color_style.color = stroke_color
         self.domain_stroke_style = StrokeTemplate()
         
         ## label 样式
         self.has_label = True
         self.label_color_style = ColorTemplate()
-        self.label_font_style = FontTemplate()
+        self.label_color_style.color = stroke_color
+        # self.label_font_style = FontTemplate()
+        self.label_font_style = LabelFontTemplate()
         
         ## tick 样式
         self.has_tick = True
         self.tick_color_style = ColorTemplate()
+        self.tick_color_style.color = stroke_color
         self.tick_stroke_style = StrokeTemplate()
         
         ## title 样式
         self.has_title = True
         self.title_text = None
         self.title_color_style = ColorTemplate()
-        self.title_font_style = FontTemplate()
+        self.title_color_style.color = stroke_color
+        # self.title_font_style = FontTemplate()
+        self.title_font_style = LabelFontTemplate()
         ## grid 样式: 暂时不支持
+    def copy(self):
+        return copy.deepcopy(self)
     def dump(self):
         return {
             "type": self.type,
@@ -79,7 +81,7 @@ class AxisTemplate:
         }
         
 class ColorEncodingTemplate:
-    def __init__(self):
+    def __init__(self, color_template: ColorDesign=None):
         self.field = None
         self.field_type = None
         self.domain = None
@@ -93,15 +95,37 @@ class ColorEncodingTemplate:
         }
 
 class MarkTemplate:
-    def __init__(self):
+    def __init__(self, color_template: ColorDesign=None):
         # 基本属性
         self.mark_type = None # 标记类型
         
+        seed_mark = random.randint(1, 100)
+        # print("seed_mark: ", seed_mark)
+        # seed_mark = 1
+        mark_color = color_template.get_color('marks', 1, seed_mark=seed_mark)[0]
+        print("mark_color: ", mark_color)
+        # mark_color = color_template.get_color('marks', 1)
+        
         # 样式属性
         self.fill_color_style = ColorTemplate()
+        self.fill_color_style.color = mark_color
         self.stroke_color_style = ColorTemplate()
+        self.stroke_color_style.color = mark_color
         
         self.stroke_style = StrokeTemplate()
+        
+        self.annotation_font_style = LabelFontTemplate()
+        self.annotation_color_style = ColorTemplate()
+        self.annotation_side = None
+        # 从inner和outer之间随机取一个值
+        self.annotation_side = random.choice(["inner", "outer"])
+        print("self.annotation_side: ", self.annotation_side)
+        
+        if self.annotation_side == "inner":
+            seed_text = random.randint(1, 100)
+            self.annotation_color_style.color = color_template.get_color('text', 1, seed_text=seed_text, reverse=True)
+        else:
+            self.annotation_color_style.color = mark_color
         
     def dump(self):
         return {
@@ -112,8 +136,8 @@ class MarkTemplate:
         }
 
 class BarTemplate(MarkTemplate):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, color_template: ColorDesign=None):
+        super().__init__(color_template)
         self.type = "bar"
         self.height = None
         self.width = None
@@ -136,16 +160,6 @@ class BarTemplate(MarkTemplate):
         }
 
 
-class ChartTemplateFactory:
-    def __init__(self):
-        self.chart_type = None
-        self.template = None
-    
-    def create_template(self, chart_type: str, meta_data: dict=None):
-        self.chart_type = chart_type
-        self.template = eval(f"{chart_type}Template()")
-        self.template.create_template(meta_data)
-        return self.template
     
 ## TODO现在还没支持annotation
 class ChartTemplate:
@@ -230,6 +244,8 @@ class LayoutTemplate:
             group = GroupElement()
             group.id = layout_tree.get('id', None)
             group.children = []
+            for child in layout_tree.get('children', []):
+                group.children.append(self.build_template_from_tree(child))
             layout_strategy_dict = layout_tree.get('layoutStrategy', None)
             if layout_strategy_dict is not None:
                 if layout_strategy_dict['name'] == 'vertical':
@@ -248,8 +264,21 @@ class LayoutTemplate:
                     group.layout_strategy.alignment = layout_strategy_dict['alignment']
                 if layout_strategy_dict.get('overlap', None) is not None:
                     group.layout_strategy.overlap = layout_strategy_dict['overlap']
-            for child in layout_tree.get('children', []):
-                group.children.append(self.build_template_from_tree(child))
+
+            size_constraint_dict = layout_tree.get('sizeConstraint', None)
+            if size_constraint_dict is not None:
+                group.size_constraint = WidthHeightConstraint()
+                reference_id = size_constraint_dict['reference']
+                reference_element = group.get_element_by_id(reference_id)
+                if size_constraint_dict.get('max_width', None) is not None:
+                    group.size_constraint.max_width_ratio = size_constraint_dict['max_width']
+                if size_constraint_dict.get('max_height', None) is not None:
+                    group.size_constraint.max_height_ratio = size_constraint_dict['max_height']
+                if size_constraint_dict.get('min_width', None) is not None:
+                    group.size_constraint.min_width_ratio = size_constraint_dict['min_width']
+                if size_constraint_dict.get('min_height', None) is not None:
+                    group.size_constraint.min_height_ratio = size_constraint_dict['min_height']
+                group.reference_id = reference_id
             return group
         elif layout_tree['tag'] == 'rect':
             rect = Rect()
@@ -288,13 +317,13 @@ class BarChartTemplate(ChartTemplate):
         self.chart_type = "bar"
         self.sort = None
     
-    def create_template(self, meta_data: dict=None):
-        self.x_axis = AxisTemplate()
-        self.y_axis = AxisTemplate()
+    def create_template(self, meta_data: dict=None, color_template: ColorDesign=None):
+        self.x_axis = AxisTemplate(color_template)
+        self.y_axis = self.x_axis.copy()
         
-        self.mark = BarTemplate()
+        self.mark = BarTemplate(color_template)
         
-        self.color_encoding = ColorEncodingTemplate()
+        self.color_encoding = ColorEncodingTemplate(color_template)
         
 
         if meta_data is None:
@@ -341,7 +370,8 @@ class TemplateFactory:
         meta_data: dict,
         layout_tree: dict,
         chart_composition: dict = None,
-        sort_config: dict = None  # {"by": "y", "ascending": True}
+        sort_config: dict = None,  # {"by": "y", "ascending": True}
+        color_template: ColorDesign = None
     ):
         """创建垂直柱状图模板
         
@@ -350,7 +380,7 @@ class TemplateFactory:
             sort_config (dict, optional): 排序配置，包含 by ("x"/"y") 和 ascending
         """
         chart_template = BarChartTemplate()
-        chart_template.create_template(meta_data)
+        chart_template.create_template(meta_data, color_template)
         layout_template = LayoutTemplate()
         
         # 添加方向约束
@@ -370,7 +400,7 @@ class TemplateFactory:
                 chart_template.has_annotation = True
         
         # 构建布局树
-        layout_template.build_template_from_tree(layout_tree)
+        layout_template.root = layout_template.build_template_from_tree(layout_tree)
         
         # 应用约束
         layout_template.apply_constraints(chart_template)
@@ -385,7 +415,8 @@ class TemplateFactory:
         meta_data: dict,
         layout_tree: dict,
         chart_composition: dict = None,
-        sort_config: dict = None  # {"by": "y", "ascending": True}
+        sort_config: dict = None,  # {"by": "y", "ascending": True}
+        color_template: ColorDesign = None
     ):
         """创建水平柱状图模板
         
@@ -394,7 +425,7 @@ class TemplateFactory:
             sort_config (dict, optional): 排序配置，包含 by ("x"/"y") 和 ascending
         """
         chart_template = BarChartTemplate()
-        chart_template.create_template(meta_data)
+        chart_template.create_template(meta_data, color_template)
         layout_template = LayoutTemplate()
         
         # 添加方向约束
@@ -414,9 +445,102 @@ class TemplateFactory:
                 chart_template.has_annotation = True
         
         # 构建布局树
-        layout_template.build_template_from_tree(layout_tree)
+        layout_template.root = layout_template.build_template_from_tree(layout_tree)
         
         # 应用约束
         layout_template.apply_constraints(chart_template)
         
         return chart_template, layout_template
+
+class FontTemplate:
+    def __init__(self):
+        self.font = None
+        self.font_size = None
+        self.font_weight = None
+        self.line_height = None
+        self.letter_spacing = None
+    def dump(self):
+        return {
+            "font": self.font,
+            "fontSize": self.font_size,
+            "fontWeight": self.font_weight,
+            "lineHeight": self.line_height,
+            "letterSpacing": self.letter_spacing
+        }
+
+
+class TitleFontTemplate(FontTemplate):
+    """用于标题的字体模板"""
+    def __init__(self):
+        super().__init__()
+        self.font = "sans-serif"
+        self.font_size = 22
+        self.font_weight = 500
+        self.line_height = 28
+        self.letter_spacing = 0
+    def large(self):
+        self.font_size = 22
+        self.font_weight = 600
+        self.line_height = 28
+        self.letter_spacing = 0
+    def middle(self):
+        self.font_size = 16
+        self.font_weight = 600
+        self.line_height = 24
+        self.letter_spacing = 0.15
+    def small(self):
+        self.font_size = 14
+        self.font_weight = 600
+        self.line_height = 20
+        self.letter_spacing = 0.1
+
+class BodyFontTemplate(FontTemplate):
+    """用于正文的字体模板"""
+    def __init__(self):
+        super().__init__()
+        self.font = "sans-serif"
+        self.font_size = 16
+        self.font_weight = 400
+        self.line_height = 24
+        self.letter_spacing = 0.5
+    def large(self):
+        self.font_size = 16
+        self.font_weight = 400
+        self.line_height = 24
+        self.letter_spacing = 0.5
+    def middle(self):
+        self.font_size = 14
+        self.font_weight = 400
+        self.line_height = 20
+        self.letter_spacing = 0.25
+    def small(self):
+        self.font_size = 12
+        self.font_weight = 400
+        self.line_height = 16
+        self.letter_spacing = 0.4
+
+class LabelFontTemplate(FontTemplate):
+    """用于标签的字体模板"""
+    def __init__(self):
+        super().__init__()
+        self.font = "sans-serif"
+        self.font_size = 14
+        self.font_weight = 500
+        self.line_height = 20
+        self.letter_spacing = 0.1
+    def large(self):
+        self.font_size = 14
+        self.font_weight = 500
+        self.line_height = 20
+        self.letter_spacing = 0.1
+    def middle(self):
+        self.font_size = 12
+        self.font_weight = 500
+        self.line_height = 16
+        self.letter_spacing = 0.25
+    def small(self):
+        self.font_size = 10
+        self.font_weight = 500
+        self.line_height = 12
+        self.letter_spacing = 0.4
+

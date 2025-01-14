@@ -8,6 +8,10 @@
             "overlap": false,
             "alignment": ["middle", "middle"]
         },
+        "sizeConstraint": {
+            "reference": "chart",
+            "max_width": 1
+        },
         "children": [
             {
                 "tag": "g",
@@ -18,6 +22,10 @@
                     "direction": "right",
                     "overlap": false,
                     "alignment": ["top", "top"]
+                },
+                "sizeConstraint": {
+                    "reference": "group_2",
+                    "max_height": 1
                 },
                 "children": [
                     {
@@ -34,11 +42,25 @@
                             {
                                 "tag": "g",
                                 "id": "title",
+                                "layoutStrategy": {
+                                    "name": "vertical",
+                                    "padding": 0,
+                                    "direction": "down",
+                                    "overlap": false,
+                                    "alignment": ["left", "left"]
+                                },
                                 "children": []
                             },
                             {
                                 "tag": "g",
                                 "id": "subtitle",
+                                "layoutStrategy": {
+                                    "name": "vertical",
+                                    "padding": 0,
+                                    "direction": "down",
+                                    "overlap": false,
+                                    "alignment": ["left", "left"]
+                                },
                                 "children": []
                             }
                         ]
@@ -57,10 +79,12 @@
         ]
     },
     "title_config": {
-        "max_width_ratio": 0.8
+        "max_width_ratio": 0.8,
+        "textAnchor": "start"
     },
     "subtitle_config": {
-        "max_width_ratio": 0.8
+        "max_width_ratio": 0.8,
+        "textAnchor": "start"
     },
     "topic_icon_config": {
         "relative_height_ratio": 0.8

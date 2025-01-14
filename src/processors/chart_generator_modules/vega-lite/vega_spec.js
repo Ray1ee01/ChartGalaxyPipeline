@@ -363,11 +363,25 @@ async function main() {
   spec.background = null;
   spec.view = null;
   // 编译规范
-  const vegaSpec = vegaLite.compile(spec).spec;
+  let vegaSpec = vegaLite.compile(spec).spec;
 
+  try{
+    // 把vegaSpec["scale"]中的所有字典的"paddingOuter"设置为和"paddingInner"相同
+    for (let scale of vegaSpec["scales"]){
+      if (scale["paddingInner"] !== undefined){
+        scale["paddingOuter"] = scale["paddingInner"];
+      }
+    }
+  }
+  catch(e){
+    console.log(e);
+  }
+
+  // console.log(JSON.stringify(vegaSpec, null, 2));
   // 创建新的View
   const view = new vega.View(vega.parse(vegaSpec))
-    .renderer('none');  // 使用无头渲染器
+  .renderer('svg')
+  .initialize();  // 使用无头渲染器
 
   // 导出SVG
   try {

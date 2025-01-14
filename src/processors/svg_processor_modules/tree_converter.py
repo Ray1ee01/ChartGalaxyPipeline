@@ -295,14 +295,14 @@ class SVGTreeConverter:
     
     @staticmethod
     def move_groups_to_top(tree: LayoutElement, groups_to_move: Dict[str, LayoutElement]) -> LayoutElement:
-        """将指定的group元素的子节点移动到树的顶层，并累加transform属性
+        """将指定的group元素的子树完全展开并移动到树的顶层，并累加transform属性
         
         Args:
             tree: 原始元素树
             groups_to_move: 需要移动到顶层的group元素字典
             
         Returns:
-            处理后的元素树
+            处理后的元素树和顶层分组的字典
         """
         if not tree:
             return None
@@ -318,6 +318,49 @@ class SVGTreeConverter:
         for key, value in groups_to_move.items():
             top_level_groups[key] = []
 
+        def flatten_group(node, parent_transform='', parent_attributes=None):
+            """递归展开group节点的子树"""
+            if parent_attributes is None:
+                parent_attributes = {}
+                
+            flattened = []
+            current_transform = node.attributes.get('transform', '')
+            current_attributes = node.attributes.copy()
+            
+            # 合并transform
+            final_transform = ''
+            if parent_transform and current_transform:
+                final_transform = f"{parent_transform} {current_transform}"
+            elif parent_transform:
+                final_transform = parent_transform
+            elif current_transform:
+                final_transform = current_transform
+                
+            # 合并属性
+            merged_attributes = parent_attributes.copy()
+            merged_attributes.update(current_attributes)
+            
+            for child in node.children:
+                if isinstance(child, GroupElement):
+                    # 递归展开子group
+                    flattened.extend(flatten_group(child, final_transform, merged_attributes))
+                else:
+                    # 处理叶子节点
+                    child_copy = copy.deepcopy(child)
+                    # 更新属性
+                    for key, value in merged_attributes.items():
+                        if key not in child_copy.attributes and key != 'transform':
+                            child_copy.attributes[key] = value
+                    # 更新transform
+                    if final_transform:
+                        child_transform = child_copy.attributes.get('transform', '')
+                        if child_transform:
+                            child_copy.attributes['transform'] = f"{final_transform} {child_transform}"
+                        else:
+                            child_copy.attributes['transform'] = final_transform
+                    flattened.append(child_copy)
+            
+            return flattened
         
         def process_node(node, parent_transform='', parent_attributes=None):
             if parent_attributes is None:
@@ -325,8 +368,18 @@ class SVGTreeConverter:
                 
             if node in groups_to_move.values():
                 group_key = list(groups_to_move.keys())[list(groups_to_move.values()).index(node)]
+                # 完全展开该group的子树
+                flattened_children = flatten_group(node, parent_transform, parent_attributes)
+                top_level_elements.extend(flattened_children)
+                top_level_groups[group_key].extend(flattened_children)
+                return None
                 
-                # 获取当前group的transform和其他属性
+            elif isinstance(node, GroupElement):
+                # 处理普通group节点
+                new_group = GroupElement()
+                new_group.attributes = node.attributes.copy()
+                new_group.children = []
+                
                 current_transform = node.attributes.get('transform', '')
                 current_attributes = node.attributes.copy()
                 
@@ -338,120 +391,22 @@ class SVGTreeConverter:
                     final_transform = parent_transform
                 elif current_transform:
                     final_transform = current_transform
-                    
-                # 合并其他属性
-                merged_attributes = parent_attributes.copy()
-                merged_attributes.update(current_attributes)
                 
-                # 处理子元素，应用累加的transform和属性
-                for child in node.children:
-                    child_copy = copy.deepcopy(child)
-                    # 更新属性
-                    for key, value in merged_attributes.items():
-                        if key not in child_copy.attributes and key != 'transform':
-                            child_copy.attributes[key] = value
-                    # 更新transform
-                    if final_transform:
-                        child_transform = child_copy.attributes.get('transform', '')
-                        # print('child_transform: ', child_transform)
-                        # print('final_transform: ', final_transform)
-                        if child_transform:
-                            # 获取第一个变换
-                            final_transforms = final_transform.split(' ')
-                            child_transforms = child_transform.split(' ')
-                            
-                            final_first = final_transforms[0]
-                            child_first = child_transforms[0]
-                            
-                            final_type = final_first.split('(')[0].strip()
-                            child_type = child_first.split('(')[0].strip()
-                            
-                            if final_type == child_type:
-                                # 如果第一个变换类型相同,则合并值
-                                final_values = final_first.split('(')[1].rstrip(')').split(',')
-                                child_values = child_first.split('(')[1].rstrip(')').split(',')
-                                
-                                # 转换为float并相加
-                                merged_values = []
-                                for i in range(len(final_values)):
-                                    final_val = float(final_values[i])
-                                    child_val = float(child_values[i])
-                                    merged_values.append(str(final_val + child_val))
-                                    
-                                # 构建新的transform,保留其他变换
-                                merged_first = f"{final_type}({','.join(merged_values)})"
-                                remaining_child = ' '.join(child_transforms[1:])
-                                remaining_final = ' '.join(final_transforms[1:])
-                                
-                                transforms = [merged_first]
-                                if remaining_final:
-                                    transforms.append(remaining_final)
-                                if remaining_child:
-                                    transforms.append(remaining_child)
-                                    
-                                child_copy.attributes['transform'] = ' '.join(transforms)
-                            else:
-                                # 如果类型不同,则串联所有变换
-                                child_copy.attributes['transform'] = f"{final_transform} {child_transform}"
-                        else:
-                            child_copy.attributes['transform'] = final_transform
-                    top_level_elements.append(child_copy)
-                    top_level_groups[group_key].append(child_copy)
-                return None
-                
-            elif isinstance(node, GroupElement):
-                # 处理普通group节点，不累加transform
-                new_group = GroupElement()
-                new_group.attributes = node.attributes.copy()
-                new_group.children = []
-                
-                current_attributes = node.attributes.copy()
+                # 合并属性
                 final_attributes = current_attributes.copy()
                 for key, value in parent_attributes.items():
                     if key not in current_attributes and key != 'transform':
                         final_attributes[key] = value
                 
-                # 对子节点递归处理，传递当前group的transform
-                current_transform = node.attributes.get('transform', '')
+                # 处理子节点
                 for child in node.children:
-                    # processed_child = process_node(child, current_transform if current_transform else parent_transform, parent_attributes)
-                    transform_to_process = ""
-                    # 合并transform
-                    final_transform = ''
-                    if parent_transform and current_transform:
-                        # 解析transform类型和值
-                        parent_type = parent_transform.split('(')[0].strip()
-                        current_type = current_transform.split('(')[0].strip()
-                        
-                        if parent_type == current_type:
-                            # 如果是相同类型的transform,则合并值
-                            parent_values = parent_transform.split('(')[1].rstrip(')').split(',')
-                            current_values = current_transform.split('(')[1].rstrip(')').split(',')
-                            
-                            # 转换为float并相加
-                            merged_values = []
-                            for i in range(len(parent_values)):
-                                parent_val = float(parent_values[i])
-                                current_val = float(current_values[i])
-                                merged_values.append(str(parent_val + current_val))
-                                
-                            # 构建新的transform
-                            final_transform = f"{parent_type}({','.join(merged_values)})"
-                        else:
-                            # 如果是不同类型的transform,则串联
-                            final_transform = f"{parent_transform} {current_transform}"
-                    elif parent_transform:
-                        final_transform = parent_transform
-                    elif current_transform:
-                        final_transform = current_transform
-                    
-                    processed_child = process_node(child, final_transform, parent_attributes)
+                    processed_child = process_node(child, final_transform, final_attributes)
                     if processed_child:
                         new_group.children.append(processed_child)
                         
                 return new_group if new_group.children else None
             else:
-                # 处理非group节点，保持原样
+                # 处理非group节点
                 return copy.deepcopy(node)
         
         # 处理整个树

@@ -1,9 +1,13 @@
 from typing import Any
 import json
 from .interfaces.base import DataProcessor, ChartGenerator, SVGProcessor
-from .template.template import TemplateFactory
-
-
+from .template.template import *
+from .template.color_template import ColorDesign
+from .template.font_template import FontDesign
+from .template.gpt_chart_parser import ChartDesign
+import shutil
+import random
+import time
 class Pipeline:
     def __init__(
         self,
@@ -15,20 +19,28 @@ class Pipeline:
         self.chart_generator = chart_generator
         self.svg_processor = svg_processor
 
-    def execute(self, input_data: Any) -> str:
+    def execute(self, input_data: Any, layout_file_idx: int = 1, chart_image_idx: int = 1) -> str:
         try:
+            time_start = time.time()
             # 步骤1：数据处理
             processed_data = self.data_processor.process(input_data)
+            time_end = time.time()
+            print("data_processor time: ", time_end - time_start)
             
             # 从布局树文件随机选择一个配置文件
-            import random
-            # layout_file_idx = random.randint(1, 8)
-            layout_file_idx = 6
+            time_start = time.time()
+            # layout_file_idx = random.randint(1, 13)
+            # layout_file_idx = random.randint(1, 6)
+            # layout_file_idx = 6
+            # layout_file_idx = 6
             with open(f'/data1/liduan/generation/chart/chart_pipeline/src/data/layout_tree/{layout_file_idx}.json', 'r') as f:
                 layout_config = json.load(f)
-            chart_image_idx = 1
+            # chart_image_idx = random.randint(1, 7)
+            # chart_image_idx = 7
             with open(f'/data1/liduan/generation/chart/chart_pipeline/src/data/chart_image/{chart_image_idx}.json', 'r') as f:
                 chart_image_config = json.load(f)
+            
+            color_template = ColorDesign(processed_data['palettes'])
             
             layout_tree = layout_config['layout_tree']
             chart_config = layout_config.get('chart_config', {})
@@ -59,32 +71,76 @@ class Pipeline:
                         meta_data=processed_data['meta_data'],
                         layout_tree=layout_tree,
                         chart_composition=chart_image_config,
-                        sort_config=sort_config
+                        sort_config=sort_config,
+                        color_template=color_template
                     )
                 else:
                     chart_template, layout_template = TemplateFactory.create_vertical_bar_chart_template(
                         meta_data=processed_data['meta_data'],
                         layout_tree=layout_tree,
                         chart_composition=chart_image_config,
-                        sort_config=sort_config
+                        sort_config=sort_config,
+                        color_template=color_template
                     )
+                
+                with open(f'/data1/liduan/generation/chart/chart_pipeline/src/data/layout_tree/template_image_mapping.json', 'r') as f:
+                    template_image_mapping = json.load(f)
+                image_list = template_image_mapping[f'{layout_file_idx}.json']
+                selected_image = random.choice(image_list)
+                # 获取柱子宽度比例
+                chart_design = ChartDesign()
+                chart_design.image_path = selected_image
+                bar_ratio = chart_design.get_bar_ratio()
+                print("bar_ratio: ", bar_ratio)
+                if is_horizontal:
+                    chart_template.mark.height = bar_ratio['bar_band_ratio']
+                else:
+                    chart_template.mark.width = bar_ratio['bar_band_ratio']
+                # 把selected_image保存到cache中
+                selected_image_name = selected_image.split('/')[-1]
+                with open(f"/data1/liduan/generation/chart/chart_pipeline/src/cache/layout_template/{selected_image_name}", 'wb') as f:
+                    shutil.copy(selected_image, f.name)
             else:
                 raise ValueError(f"不支持的图表类型: {processed_data['meta_data']['chart_type']}")
 
+            title_font_template = TitleFontTemplate()
+            title_font_template.large()
+            title_config['fontSize'] = title_font_template.font_size
+            title_config['linePadding'] = title_font_template.line_height-title_font_template.font_size
+            title_config['letterSpacing'] = title_font_template.letter_spacing
+            title_config['fontWeight'] = title_font_template.font_weight
+            title_config['font'] = title_font_template.font
+            
+            subtitle_font_template = BodyFontTemplate()
+            subtitle_font_template.middle()
+            subtitle_config['fontSize'] = subtitle_font_template.font_size
+            # subtitle_config['linePadding'] = subtitle_font_template.line_height-subtitle_font_template.font_size
+            subtitle_config['linePadding'] = 0
+            subtitle_config['letterSpacing'] = subtitle_font_template.letter_spacing
+            subtitle_config['fontWeight'] = subtitle_font_template.font_weight
+            subtitle_config['font'] = subtitle_font_template.font
+            
             # 步骤2：生成图表
             svg, additional_configs = self.chart_generator.generate(processed_data, chart_template)
+            time_end = time.time()
+            print("chart_generator time: ", time_end - time_start)
             
+            # return svg
+            
+            
+            time_start = time.time()
             
             # 配置额外信息
             additional_configs.update({
                 "title_config": {"text": processed_data['meta_data']['title']},
                 "subtitle_config": {"text": processed_data['meta_data']['caption']},
                 "topic_icon_config": {},
+                "background_config": {},
                 "topic_icon_url": processed_data['icons']['topic'][0],
                 "x_label_icon_url": processed_data['icons']['x_label'][0],
                 "y_label_icon_url": processed_data['icons']['y_label'][0],
                 'x_data_single_url': processed_data['icons']['x_data_single'][0],
-                "x_data_multi_url": [icon[0] for icon in processed_data['icons']['x_data_multi']],
+                "x_data_multi_url": [icon[i] for i, icon in enumerate(processed_data['icons']['x_data_multi'])],
                 "layout_template": layout_template,
                 "chart_composition": chart_image_config,
                 "chart_template": chart_template
@@ -93,8 +149,17 @@ class Pipeline:
             additional_configs['subtitle_config'].update(subtitle_config)
             additional_configs['topic_icon_config'].update(topic_icon_config)
 
+            # print("additional_configs['title_config']", additional_configs['title_config'])
+            seed_text = random.randint(1, 100)
+            # 配置颜色
+            title_color,subtitle_color = color_template.get_color('text', 2)
+            additional_configs['title_config']['color'] = title_color
+            additional_configs['subtitle_config']['color'] = subtitle_color
+            additional_configs['background_config']['color'] = color_template.get_color('background', 1)[0]
             # 步骤3：SVG后处理
             final_svg = self.svg_processor.process(svg, additional_configs, debug=False)
+            time_end = time.time()
+            print("svg_processor time: ", time_end - time_start)
             
             return final_svg
             

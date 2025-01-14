@@ -7,10 +7,20 @@
             "direction": "down",
             "overlap": false
         },
+        "sizeConstraint": {
+            "reference": "chart",
+            "max_width": 1
+        },
         "children": [
             {
                 "tag": "g",
                 "id": "title",
+                "layoutStrategy": {
+                    "name": "vertical",
+                    "padding": 5,
+                    "direction": "down",
+                    "overlap": false
+                },
                 "children": []
             },
             {
@@ -19,5 +29,11 @@
                 "children": []
             }
         ]
+    },
+    "title_config": {
+        "textAnchor": "middle"
+    },
+    "subtitle_config": {
+        "textAnchor": "middle"
     }
 }

@@ -12,8 +12,8 @@ from tensorflow.python.ops import variable_scope
 from user_model.utils import gen_batched_data, compute_acc
 from user_model.utils import FLAGS, PAD_ID, UNK_ID, GO_ID, EOS_ID, _START_VOCAB
 
-np.random.seed(15)
-random.seed(15)
+# np.random.seed(15)
+# random.seed(15)
 
 class EnvModel(object):
     def __init__(self,

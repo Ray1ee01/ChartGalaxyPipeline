@@ -12,8 +12,8 @@ import pandas as pd
 from .tools.state import State
 from copy import deepcopy
 
-np.random.seed(15)
-random.seed(15)
+# np.random.seed(15)
+# random.seed(15)
 
 # from user_model.test_env_model import get_config_score
 # from user_model.vega_zero_trans import vega_zero_trans_config

@@ -15,21 +15,21 @@ os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 model_names = sorted(name for name in models.__dict__
                      if name.islower() and not name.startswith("__"))
 
-parser = argparse.ArgumentParser(description='PyTorch SPixelNet inference on a folder of imgs',
-                                 formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+# parser = argparse.ArgumentParser(description='PyTorch SPixelNet inference on a folder of imgs',
+#                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-parser.add_argument('--data_dir', metavar='DIR', default='./imgs/inputs', help='path to images folder')
-parser.add_argument('--data_suffix', default='jpg', help='suffix of the testing image')
-parser.add_argument('--pretrained', metavar='PTH', help='path to pre-trained sal_model',
-                    default='./pretrain_ckpt/SpixelNet_bsd_ckpt.tar')
-parser.add_argument('--output', metavar='DIR', default='./imgs', help='path to output folder')
+# parser.add_argument('--data_dir', metavar='DIR', default='./imgs/inputs', help='path to images folder')
+# parser.add_argument('--data_suffix', default='jpg', help='suffix of the testing image')
+# parser.add_argument('--pretrained', metavar='PTH', help='path to pre-trained sal_model',
+#                     default='./pretrain_ckpt/SpixelNet_bsd_ckpt.tar')
+# parser.add_argument('--output', metavar='DIR', default='./imgs', help='path to output folder')
 
-parser.add_argument('--downsize', default=16, type=float, help='superpixel grid cell, must be same as training setting')
+# parser.add_argument('--downsize', default=16, type=float, help='superpixel grid cell, must be same as training setting')
 
-parser.add_argument('-nw', '--num_threads', default=1, type=int, help='num_threads')
-parser.add_argument('-b', '--batch-size', default=1, type=int, metavar='N', help='mini-batch size')
+# parser.add_argument('-nw', '--num_threads', default=1, type=int, help='num_threads')
+# parser.add_argument('-b', '--batch-size', default=1, type=int, metavar='N', help='mini-batch size')
 
-args = parser.parse_args()
+# args = parser.parse_args()
 
 def label2rgb(label_field, image, kind='mix', bg_label=-1, bg_color=0):
     # std_list = list()
@@ -67,7 +67,7 @@ def load_model(model_dir):
     # print("=> using pre-trained sal_model '{}'".format(network_data['arch']))
     model = models.__dict__[network_data['arch']](data=network_data)
     model.eval()
-    args.arch = network_data['arch']
+    # args.arch = network_data['arch']
     cudnn.benchmark = True
 
     return model
