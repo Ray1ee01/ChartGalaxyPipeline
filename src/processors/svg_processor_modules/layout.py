@@ -183,7 +183,7 @@ class VerticalLayoutStrategy(LayoutStrategy):
                 
                 while left <= right:
                     mid = (left + right) / 2
-                    if has_overlap():
+                    if has_overlap(mid):
                         left = mid + 0.1  # 增加一个小的步长
                         best_move = mid
                     else:

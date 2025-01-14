@@ -5,7 +5,7 @@ from ..processors.svg_processor_modules.layout import *
 from typing import List
 from .color_template import ColorDesign
 import random
-
+import copy
 
 class ColorTemplate:
     def __init__(self):
@@ -64,6 +64,8 @@ class AxisTemplate:
         # self.title_font_style = FontTemplate()
         self.title_font_style = LabelFontTemplate()
         ## grid 样式: 暂时不支持
+    def copy(self):
+        return copy.deepcopy(self)
     def dump(self):
         return {
             "type": self.type,
@@ -97,9 +99,9 @@ class MarkTemplate:
         # 基本属性
         self.mark_type = None # 标记类型
         
-        # seed_mark = random.randint(1, 100)
+        seed_mark = random.randint(1, 100)
         # print("seed_mark: ", seed_mark)
-        seed_mark = 1
+        # seed_mark = 1
         mark_color = color_template.get_color('marks', 1, seed_mark=seed_mark)[0]
         print("mark_color: ", mark_color)
         # mark_color = color_template.get_color('marks', 1)
@@ -317,7 +319,7 @@ class BarChartTemplate(ChartTemplate):
     
     def create_template(self, meta_data: dict=None, color_template: ColorDesign=None):
         self.x_axis = AxisTemplate(color_template)
-        self.y_axis = AxisTemplate(color_template)
+        self.y_axis = self.x_axis.copy()
         
         self.mark = BarTemplate(color_template)
         

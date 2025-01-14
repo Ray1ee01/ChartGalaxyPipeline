@@ -10,7 +10,7 @@ import random
 # data_dir = os.path.join(os.path.dirname(__file__),'src', 'data')
 output_dir = os.path.join(os.path.dirname(__file__),'src', 'output2')
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
-random.seed(15)
+# random.seed(15)
 
 
 def main():
@@ -20,6 +20,8 @@ def main():
     parser = argparse.ArgumentParser(description='生成图表')
     parser.add_argument('-d', '--dataset_idx', type=int, default=0, help='数据集索引')
     parser.add_argument('-c', '--chart_idx', type=int, default=1, help='图表索引')
+    # parser.add_argument('-l', '--layout_file_idx', type=int, default=1, help='布局文件索引')
+    # parser.add_argument('-i', '--chart_image_idx', type=int, default=1, help='图表图片索引')
     args = parser.parse_args()
 
     # 创建pipeline
@@ -29,12 +31,16 @@ def main():
         svg_processor=SVGOptimizer()
     )
 
+    
+    layout_file_idx = random.randint(1, 6)
+    chart_image_idx = random.randint(1, 7)
+
     dataset = VizNET()
     input_data = dataset.get_object(args.dataset_idx, args.chart_idx)
-    result = pipeline.execute(input_data)
+    result = pipeline.execute(input_data, layout_file_idx, chart_image_idx)
 
     # 保存结果,文件名包含索引信息
-    output_filename = f'output_d{args.dataset_idx}_c{args.chart_idx}.svg'
+    output_filename = f'output_d{args.dataset_idx}_c{args.chart_idx}_l{layout_file_idx}_i{chart_image_idx}.svg'
     with open(os.path.join(output_dir, output_filename), "w") as f:
         f.write(result)
 

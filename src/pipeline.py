@@ -19,7 +19,7 @@ class Pipeline:
         self.chart_generator = chart_generator
         self.svg_processor = svg_processor
 
-    def execute(self, input_data: Any) -> str:
+    def execute(self, input_data: Any, layout_file_idx: int = 1, chart_image_idx: int = 1) -> str:
         try:
             time_start = time.time()
             # 步骤1：数据处理
@@ -29,15 +29,14 @@ class Pipeline:
             
             # 从布局树文件随机选择一个配置文件
             time_start = time.time()
-            import random
             # layout_file_idx = random.randint(1, 13)
-            layout_file_idx = random.randint(1, 6)
+            # layout_file_idx = random.randint(1, 6)
             # layout_file_idx = 6
-            layout_file_idx = 6
+            # layout_file_idx = 6
             with open(f'/data1/liduan/generation/chart/chart_pipeline/src/data/layout_tree/{layout_file_idx}.json', 'r') as f:
                 layout_config = json.load(f)
-            chart_image_idx = random.randint(1, 7)
-            chart_image_idx = 7
+            # chart_image_idx = random.randint(1, 7)
+            # chart_image_idx = 7
             with open(f'/data1/liduan/generation/chart/chart_pipeline/src/data/chart_image/{chart_image_idx}.json', 'r') as f:
                 chart_image_config = json.load(f)
             
@@ -57,7 +56,6 @@ class Pipeline:
                 else:
                     is_horizontal = chart_config['orientation'] == 'horizontal'
                 
-                is_horizontal = True
                 # 只有在chart_config中指定了sort时才配置排序
                 sort_config = None
                 if 'sort' in chart_config:
@@ -105,13 +103,8 @@ class Pipeline:
             else:
                 raise ValueError(f"不支持的图表类型: {processed_data['meta_data']['chart_type']}")
 
-            # font_design = FontDesign()
-            # font_design.image_path = selected_image
-            # font_sizes = font_design.get_font()
             title_font_template = TitleFontTemplate()
             title_font_template.large()
-            # chart_template.x_axis.label_font_style.font_size = font_sizes['axis_label']
-            # chart_template.y_axis.label_font_style.font_size = font_sizes['axis_label']
             title_config['fontSize'] = title_font_template.font_size
             title_config['linePadding'] = title_font_template.line_height-title_font_template.font_size
             title_config['letterSpacing'] = title_font_template.letter_spacing

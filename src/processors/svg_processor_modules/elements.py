@@ -657,6 +657,29 @@ class Text(AtomElement):
         else:
             return BoundingBox(max_x - min_x, max_y - min_y, min_x, max_x, min_y, max_y)
         
+    def rotate_to_fit(self, direction: str = 'top'):
+        old_bounding_box = self.get_bounding_box()
+        # 先rotate270度
+        new_transform = f"rotate(270)"
+        current_transform = self.attributes.get('transform', '')
+        if current_transform:
+            self.attributes['transform'] = f"{new_transform} {current_transform}"
+        else:
+            self.attributes['transform'] = new_transform
+        new_bounding_box = self.get_bounding_box()
+        # 通过添加translate使得新的bounding box与旧的bounding box的中心重合
+        if direction == 'top':
+            baseline_y = old_bounding_box.miny
+            baseline_x = (old_bounding_box.minx+old_bounding_box.maxx)/2
+            translate_y = baseline_y - new_bounding_box.miny
+            translate_x = baseline_x - (new_bounding_box.minx+new_bounding_box.maxx)/2
+            self.attributes['transform'] = f"translate({translate_x}, {translate_y}) {self.attributes['transform']}"
+        elif direction == 'bottom':
+            baseline_y = old_bounding_box.maxy
+            baseline_x = (old_bounding_box.minx+old_bounding_box.maxx)/2
+            translate_y = baseline_y - new_bounding_box.maxy
+            translate_x = baseline_x - new_bounding_box.minx
+            self.attributes['transform'] = f"translate({translate_x}, {translate_y}) {self.attributes['transform']}"
     
     def _parse_length(self, value: str) -> float:
         """解析单位的长度值"""

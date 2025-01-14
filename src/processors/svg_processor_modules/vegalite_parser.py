@@ -97,6 +97,7 @@ class VegaLiteParser():
         # build inital layout graph
         for i in range(len(mark_group)):
             if "mark_annotation" in sequence:
+                
                 mark_group[i]._bounding_box = mark_group[i].get_bounding_box()
                 mark_annotation_group[i]._bounding_box = mark_annotation_group[i].get_bounding_box()
                 y_axis_label_group[i]._bounding_box = y_axis_label_group[i].get_bounding_box()
@@ -145,7 +146,7 @@ class VegaLiteParser():
         else:
             image_urls = [self.additional_configs['x_data_single_url']]*len(mark_group)
         print("image_urls: ", image_urls)
-        image_urls = []
+        # image_urls = []
         for i in range(len(image_urls)):
             base64_image = Image._getImageAsBase64(image_urls[i])
             image_element = Image(base64_image)
