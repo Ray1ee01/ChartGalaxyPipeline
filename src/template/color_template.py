@@ -44,6 +44,9 @@ def rgb2hcl(r, g, b):
     lch = colour.Lab_to_LCHab(lab)
     return lch
 
+def norm255rgb(rgb):
+    return [int(max(min(x*255, 255),0)) for x in rgb]
+
 def extend_color_in_l(rgb):
     lch = rgb2hcl(*rgb)
     res = []
@@ -52,7 +55,7 @@ def extend_color_in_l(rgb):
         lab = colour.LCHab_to_Lab(lch)
         xyz = colour.Lab_to_XYZ(lab)
         rgb = colour.XYZ_to_sRGB(xyz)
-        res.append(rgb)
+        res.append(norm255rgb(rgb))
     return res
 
 def extend_color_in_c(rgb):
@@ -63,7 +66,7 @@ def extend_color_in_c(rgb):
         lab = colour.LCHab_to_Lab(lch)
         xyz = colour.Lab_to_XYZ(lab)
         rgb = colour.XYZ_to_sRGB(xyz)
-        res.append(rgb)
+        res.append(norm255rgb(rgb))
     return res
 
 def delta_h(h1, h2):
@@ -157,7 +160,7 @@ class ColorDesign:
                     return [rgb_to_hex(*color) for color in res]
                 if seed == 3: # extend in chroma
                     res = self.extend_colors2[:number]
-                    if len(res) < number:_
+                    if len(res) < number:
                         res += [self.extend_colors2[-1] for _ in range(number - len(res))]
                     return [rgb_to_hex(*color) for color in res]
                 if seed == 4: # main color + other black/white
