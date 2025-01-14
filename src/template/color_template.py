@@ -79,7 +79,7 @@ def delta_h(h1, h2):
         dh = 360 - dh
     return dh
     
-
+text_types = ['title', 'caption']
 class ColorDesign:
     def __init__(self, image_palette, mode='monochromatic'):
         self.pool = image_palette
@@ -171,12 +171,22 @@ class ColorDesign:
                 self.lightness = 'black'
 
         if mode == 'polychromatic':
-            pass
+            rgb_cp = self.rgb_pool.copy()
+            bcg = image_palette['bcg']
+            bcg_rgb = hex_to_rgb(bcg)
+            rgb_cp = [rgb for rgb in rgb_cp if ciede2000(rgb, bcg_rgb) > 10]
+            self.rgb_pool_hex = [rgb_to_hex(*rgb) for rgb in rgb_cp]
+            self.bcg_color = hex_to_rgb(self.pool['bcg'])
+            if ciede2000(self.bcg_color, black) > ciede2000(self.bcg_color, white):
+                self.lightness = 'light'
+            else:
+                self.lightness = 'dark
+
         self.basic_colors = [black, white, gray]
         self.basic_colors_hex = [rgb_to_hex(*color) for color in self.basic_colors]
 
 
-    def get_color(self, type, number, seed_color = 0, seed_middle_color = 0, \
+    def get_color(self, type, number, group = 1, seed_color = 0, seed_middle_color = 0, \
             seed_text = 0, seed_mark = 0, seed_axis = 0, seed_embellishment = 0, reverse = False):
         if type == 'background':
             return [self.pool['bcg'] for _ in range(number)]
@@ -304,7 +314,14 @@ class ColorDesign:
                 inside_color = self.basic_colors_hex[1]
 
             if type == 'text':
-                text_seed = seed_text % 14 if not reverse else -1 - seed_text % 2
+                type_num = 4
+                if number > 2:
+                    type_num = 10
+                if number > 3:
+                    type_num = 12
+                if number > 4:
+                    type_num = 13
+                text_seed = (seed_text % type_num) + 1 if not reverse else -1 - seed_text % 2
                 if text_seed == 1: # all black/white
                     return [other_color for _ in range(number)]
                 if text_seed == 2: # title black/white，others gray
@@ -374,7 +391,10 @@ class ColorDesign:
                 return [other_color for _ in range(number)]
 
             if type == 'marks':
-                mark_seed = seed_mark % 7
+                type_num = 2
+                if number > 2:
+                    type_num = 6
+                mark_seed = (seed_mark % type_num) + 1
                 if mark_seed == 1:
                     return [self.basic_colors_hex[2] for _ in range(number)]
                 if mark_seed == 2 and number == 2:
@@ -410,7 +430,31 @@ class ColorDesign:
                 res = [main_color1_hex, main_color2_hex, middle_color]
                 return res
 
-        pass
+        if mode == 'polychromatic':
+            other_color = None
+            inside_color = None
+            if self.lightness == 'dark':
+                other_color = self.basic_colors_hex[1]
+                inside_color = self.basic_colors_hex[0]
+            else:
+                other_color = self.basic_colors_hex[0]
+                inside_color = self.basic_colors_hex[1]
+            if type == 'text':
+                if reverse:
+                    return [inside_color for _ in range(number)]
+                return [other_color for _ in range(number)]
+            if type == 'marks':
+                seed = seed_mark % 2
+                if seed == 0:
+                    return [self.basic_colors_hex[2] for _ in range(number)]
+                return self.rgb_pool_hex[:number] + [self.basic_colors_hex[2] for _ in range(number - len(self.rgb_pool_hex))]  
+            if type == 'axis':
+                seed = seed_axis % 2
+                if seed == 0:
+                    return [self.basic_colors_hex[2] for _ in range(number)]
+                return [other_color for _ in range(number)]
+            if type == 'embellishment':
+                return self.rgb_pool_hex[:number]
 
 
 if __name__ == "__main__":
