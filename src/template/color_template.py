@@ -157,11 +157,11 @@ class ColorDesign:
                     return [rgb_to_hex(*color) for color in res]
                 if seed == 3: # extend in chroma
                     res = self.extend_colors2[:number]
-                    if len(res) < number:_
+                    if len(res) < number:
                         res += [self.extend_colors2[-1] for _ in range(number - len(res))]
                     return [rgb_to_hex(*color) for color in res]
                 if seed == 4: # main color + other black/white
-                    res = [self,main_color]
+                    res = [self.main_color]
                     other_color = None
                     if self.lightness == 'dark':
                         other_color = self.basic_colors[1]
@@ -184,6 +184,7 @@ class ColorDesign:
                 seed = seed_mark % 6
                 # use extend color in l or c
                 if seed == 1 and len(self.extend_colors1) >= number:
+                    print("extend_colors1: ", self.extend_colors1)
                     return [rgb_to_hex(*color) for color in self.extend_colors1[:number]]
                 if seed == 2 and len(self.extend_colors1) >= number:
                     return [rgb_to_hex(*color) for color in self.extend_colors1[-number:]]

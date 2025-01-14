@@ -97,9 +97,11 @@ class MarkTemplate:
         # 基本属性
         self.mark_type = None # 标记类型
         
-        seed_mark = random.randint(1, 100)
-        print("seed_mark: ", seed_mark)
-        mark_color = color_template.get_color('marks', 1, seed_mark=seed_mark)
+        # seed_mark = random.randint(1, 100)
+        # print("seed_mark: ", seed_mark)
+        seed_mark = 1
+        mark_color = color_template.get_color('marks', 1, seed_mark=seed_mark)[0]
+        print("mark_color: ", mark_color)
         # mark_color = color_template.get_color('marks', 1)
         
         # 样式属性
