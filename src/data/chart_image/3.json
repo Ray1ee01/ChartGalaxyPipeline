@@ -1,0 +1,5 @@
+
+{
+    "sequence": [ "axis_label", "x_multiple_icon", "mark", "mark_annotation"],
+    "relative_to_mark": ["inside","start"]
+}
