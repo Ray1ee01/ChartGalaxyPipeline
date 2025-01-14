@@ -17,10 +17,8 @@ class WidthHeightConstraint(SizeConstraint):
         self.min_height_ratio = min_height_ratio
         
     def rescale(self, reference_element: LayoutElement, layout_element: LayoutElement) -> None:
-        reference_element_bounding_box = reference_element._bounding_box
-        layout_element_bounding_box = layout_element._bounding_box
-        print("reference_element_bounding_box: ", reference_element_bounding_box)
-        print("layout_element_bounding_box: ", layout_element_bounding_box)
+        reference_element_bounding_box = reference_element.get_bounding_box()
+        layout_element_bounding_box = layout_element.get_bounding_box()
         if self.max_width_ratio is not None:
             scale_x = min(self.max_width_ratio, reference_element_bounding_box.width / layout_element_bounding_box.width)
         else:
@@ -427,7 +425,7 @@ def parse_layout_strategy(reference_element: LayoutElement, layout_element: Layo
         else:
             layout_strategy = VerticalLayoutStrategy(alignment=alignment, direction='down')
             # 计算padding和offset
-            padding = reference_element._bounding_box.maxy - layout_element._bounding_box.miny
+            padding = layout_element._bounding_box.miny - reference_element._bounding_box.maxy
             offset = 0
             reference_middle_x = (reference_element._bounding_box.maxx + reference_element._bounding_box.minx) / 2
             layout_element_middle_x = (layout_element._bounding_box.maxx + layout_element._bounding_box.minx) / 2
@@ -518,6 +516,7 @@ class Node:
         self.nexts_edges = []
 
 class Edge:
+    # layout的是source. target是reference
     def __init__(self, source: Node, target: Node, value: Union[LayoutStrategy, SizeConstraint]):
         self.source = source
         self.target = target
@@ -527,16 +526,13 @@ class Edge:
         return f"Edge(source={self.source.value.tag}, target={self.target.value.tag}, value={self.value.name})"
     
     def process_layout(self):
-        old_node_min_x = float(self.source.value._bounding_box.minx)
-        old_node_min_y = float(self.source.value._bounding_box.miny)
-        # print("source.value: ", self.source.value.dump())
-        # print("target.value: ", self.target.value.dump())
-        # print("self.value: ", self.value.name, self.value.direction, self.value.padding, self.value.offset, self.value.alignment)
+        old_node_min_x = float(self.target.value._bounding_box.minx)
+        old_node_min_y = float(self.target.value._bounding_box.miny)
         if isinstance(self.value, LayoutStrategy):
-            self.value.layout(self.target.value, self.source.value)
-            self.source.value.update_pos(old_node_min_x, old_node_min_y)
+            self.value.layout(self.source.value, self.target.value)
+            self.target.value.update_pos(old_node_min_x, old_node_min_y)
         elif isinstance(self.value, SizeConstraint):
-            scale = self.value.rescale(self.target.value, self.source.value)
+            scale = self.value.rescale(self.source.value, self.target.value)
             return scale
         
     def dump(self):
@@ -585,12 +581,19 @@ class LayoutGraph:
             self.add_node(Node(target))
         source_node = self.node_map[source]
         target_node = self.node_map[target]
-        if target_node.nexts == [] and target_node.prevs == []:
-            for next, next_value in zip(source_node.nexts, source_node.nexts_edges):
-                if next_value.value.name == value.name and next_value.value.direction == value.direction:
-                    self.add_edge(target_node, next, next_value.value)
-                    self.remove_edge(source_node, next)
-                    break
+        if isinstance(value, LayoutStrategy):
+            if target_node.nexts == [] and target_node.prevs == []:
+                for next, next_value in zip(source_node.nexts, source_node.nexts_edges):
+                    if next_value.value.name == value.name and next_value.value.direction == value.direction:
+                        self.add_edge(target_node, next, next_value.value)
+                        self.remove_edge(source_node, next)
+                        break
+            elif source_node.nexts == [] and source_node.prevs == []:
+                for prev, prev_value in zip(target_node.prevs, target_node.prevs_edges):
+                    if prev_value.value.name == value.name and prev_value.value.direction == value.direction:
+                        self.add_edge(prev, source_node, prev_value.value)
+                        self.remove_edge(prev, target_node)
+                        break
         self.add_edge_by_value(source, target, value)
             
         

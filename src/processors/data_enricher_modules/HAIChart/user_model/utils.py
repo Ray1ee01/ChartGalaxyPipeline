@@ -5,7 +5,7 @@ import numpy as np
 import os
 import copy
 import sys
-np.random.seed(15)
+# np.random.seed(15)
 
 tf.app.flags.DEFINE_integer("units", 512, "Size of each model layer.")
 tf.app.flags.DEFINE_integer("symbols", 40000, "Size of item list.")

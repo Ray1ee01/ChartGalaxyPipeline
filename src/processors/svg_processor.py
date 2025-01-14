@@ -102,10 +102,6 @@ default_additional_configs = {
                                 }
                             ]
                         },
-                        # {
-                        #     "tag": "topic_icon",
-                        #     "children": []
-                        # }
                     ]
                 },
             ]
@@ -138,6 +134,9 @@ class SVGOptimizer(SVGProcessor):
         # print('additional_configs: ', additional_configs)
         parser = VegaLiteParser(svg, additional_configs)
         parsed_svg, flattened_elements_tree, layout_graph = parser.parse()
+        # flattened_elements_tree._bounding_box = flattened_elements_tree.get_bounding_box()
+        # print(flattened_elements_tree.dump())
+        
         # element_tree = flattened_elements_tree
 
         # # return parsed_svg

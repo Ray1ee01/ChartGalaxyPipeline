@@ -121,6 +121,8 @@ class VizNetDataProcessor(DataProcessor):
         matcher = CLIPMatcher()  # 只创建一次CLIPMatcher实例
         icon_pools = []
         for i, chart in enumerate(res):
+            if i <= len(res) - 2:
+                continue
             json_file = os.path.join(json_path, '{}.json'.format(i))
             icon_pool = get_icon_pool(json_file, meta, matcher=matcher)  # 传入已创建的matcher实例
             icon_pools.append(icon_pool)

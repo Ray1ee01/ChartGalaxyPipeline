@@ -98,6 +98,7 @@ class MarkTemplate:
         self.mark_type = None # 标记类型
         
         seed_mark = random.randint(1, 100)
+        print("seed_mark: ", seed_mark)
         mark_color = color_template.get_color('marks', 1, seed_mark=seed_mark)
         # mark_color = color_template.get_color('marks', 1)
         
@@ -114,6 +115,8 @@ class MarkTemplate:
         self.annotation_side = None
         # 从inner和outer之间随机取一个值
         self.annotation_side = random.choice(["inner", "outer"])
+        print("self.annotation_side: ", self.annotation_side)
+        
         if self.annotation_side == "inner":
             seed_text = random.randint(1, 100)
             self.annotation_color_style.color = color_template.get_color('text', 1, seed_text=seed_text, reverse=True)
@@ -468,22 +471,22 @@ class TitleFontTemplate(FontTemplate):
         super().__init__()
         self.font = "sans-serif"
         self.font_size = 22
-        self.font_weight = 400
+        self.font_weight = 500
         self.line_height = 28
         self.letter_spacing = 0
     def large(self):
         self.font_size = 22
-        self.font_weight = 400
+        self.font_weight = 600
         self.line_height = 28
         self.letter_spacing = 0
     def middle(self):
         self.font_size = 16
-        self.font_weight = 500
+        self.font_weight = 600
         self.line_height = 24
         self.letter_spacing = 0.15
     def small(self):
         self.font_size = 14
-        self.font_weight = 500
+        self.font_weight = 600
         self.line_height = 20
         self.letter_spacing = 0.1
 

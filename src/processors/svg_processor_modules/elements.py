@@ -108,7 +108,7 @@ class LayoutElement(ABC):
             scale = min(scale_x, scale_y)
         new_transform = f"scale({scale})"
         if current_transform:
-            self.attributes['transform'] = f"{current_transform} {new_transform}"
+            self.attributes['transform'] = f"{new_transform} {current_transform}"
         else:
             self.attributes['transform'] = new_transform
         return scale
@@ -355,7 +355,8 @@ class GroupElement(LayoutElement):
         child_bboxes = []
         for child in self.children:
             child_bbox = child.get_bounding_box()
-            if child_bbox:
+            child._bounding_box = child_bbox
+            if child_bbox and child_bbox.width > 0 and child_bbox.height > 0:
                 if transform:
                     if isinstance(transform, list) and len(transform) == 2:
                         # 如果是两个矩阵,进行两次变换
@@ -593,7 +594,7 @@ class Text(AtomElement):
         new_transform = f"scale({scale})"
         current_transform = self.attributes.get('transform', '')
         if current_transform:
-            self.attributes['transform'] = f"{current_transform} {new_transform}"
+            self.attributes['transform'] = f"{new_transform} {current_transform}"
         else:
             self.attributes['transform'] = new_transform
         new_bounding_box = self.get_bounding_box()

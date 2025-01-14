@@ -5,10 +5,13 @@ from src.processors.svg_processor import SVGOptimizer
 import os
 from src.utils.dataset import VizNET
 from src.processors.data_processor import VizNetDataProcessor
+import random
 
 # data_dir = os.path.join(os.path.dirname(__file__),'src', 'data')
 output_dir = os.path.join(os.path.dirname(__file__),'src', 'output2')
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
+random.seed(15)
+
 
 def main():
     import argparse

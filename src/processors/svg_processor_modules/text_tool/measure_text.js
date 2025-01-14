@@ -12,7 +12,7 @@ const { text, fontSize, anchor = 'left top'} = inputData;
 
 let measure_text = text;
 // replace space with 'o'
-measure_text = measure_text.replace(/\s/g, 'w');
+measure_text = measure_text.replace(/\s/g, 'o');
 // replace '/' with 'o'
 measure_text = measure_text.replace(/\//g, 'o');
 // replace '.' with 'o'

@@ -59,7 +59,7 @@ class VegaLiteParser():
         y_axis_group = top_level_groups['y_axis_group']
         # x_axis_label_group = top_level_groups['x_axis_label_group']
         # y_axis_label_group = top_level_groups['y_axis_label_group']
-        x_axis_label_group = [element for element in top_level_groups['x_axis_group'] if element.tag == 'text']
+        x_axis_label_group = [element for element in top_level_groups['x_axis_group'] if element.tag == 'text' and "role-axis-label" in element.attributes.get('class', '')]
         y_axis_label_group = [element for element in top_level_groups['y_axis_group'] if element.tag == 'text' and "role-axis-label" in element.attributes.get('class', '')]
         mark_annotation_group = top_level_groups['mark_annotation_group']
         # debug: add rect to flattened_elements_tree
@@ -77,7 +77,7 @@ class VegaLiteParser():
             # x_axis_label_group = y_axis_label_group
             x_axis_label_group, y_axis_label_group = y_axis_label_group, x_axis_label_group
             x_axis_group, y_axis_group = y_axis_group, x_axis_group
-            axis_orientation = self.additional_configs['chart_template'].y_axis.orientation
+            axis_orientation = self.additional_configs['chart_template'].x_axis.orientation
         
         if axis_orientation == "left":
             direction = "right"
@@ -102,13 +102,13 @@ class VegaLiteParser():
                 y_axis_label_group[i]._bounding_box = y_axis_label_group[i].get_bounding_box()
                 layout_strategy_1 = parse_layout_strategy(mark_group[i], mark_annotation_group[i], orientation)
                 layout_strategy_2 = parse_layout_strategy(mark_group[i], y_axis_label_group[i], orientation)
-                layout_graph.add_edge_by_value(mark_annotation_group[i], mark_group[i], layout_strategy_1)
-                layout_graph.add_edge_by_value(y_axis_label_group[i], mark_group[i], layout_strategy_2)
+                layout_graph.add_edge_by_value(mark_group[i], mark_annotation_group[i], layout_strategy_1)
+                layout_graph.add_edge_by_value(mark_group[i], y_axis_label_group[i], layout_strategy_2)
             else:
                 mark_group[i]._bounding_box = mark_group[i].get_bounding_box()
                 mark_annotation_group[i]._bounding_box = mark_annotation_group[i].get_bounding_box()
                 layout_strategy_1 = parse_layout_strategy(mark_group[i], mark_annotation_group[i],orientation)
-                layout_graph.add_edge_by_value(mark_annotation_group[i], mark_group[i], layout_strategy_1)
+                layout_graph.add_edge_by_value(mark_group[i], mark_annotation_group[i], layout_strategy_1)
         
         temporal_group_element = GroupElement()
         temporal_group_element.tag = "g"
@@ -125,7 +125,7 @@ class VegaLiteParser():
                     y_axis_title_element = element
                     break
         layout_strategy_3 = parse_layout_strategy(temporal_group_element, y_axis_title_element, orientation)
-        layout_graph.add_edge_by_value(y_axis_title_element, temporal_group_element, layout_strategy_3)
+        layout_graph.add_edge_by_value(temporal_group_element, y_axis_title_element, layout_strategy_3)
         print("layout_strategy_3: ", layout_strategy_3.name, layout_strategy_3.direction, layout_strategy_3.padding, layout_strategy_3.offset, layout_strategy_3.alignment)
         # 把 paading的绝对值改成5，保证正负和之前不变
         if layout_strategy_3.padding < 0:
@@ -134,7 +134,7 @@ class VegaLiteParser():
             layout_strategy_3.padding = 5
         nodemap = layout_graph.node_map
         node = nodemap[y_axis_title_element]
-        temporal_edge = node.nexts_edges[0]
+        temporal_edge = node.prevs_edges[0]
         print("group.bounding_box: ", temporal_group_element._bounding_box)
         print("y_axis_title_element.bounding_box: ", y_axis_title_element._bounding_box)
         
@@ -145,7 +145,7 @@ class VegaLiteParser():
         else:
             image_urls = [self.additional_configs['x_data_single_url']]*len(mark_group)
         print("image_urls: ", image_urls)
-        # image_urls = []
+        image_urls = []
         for i in range(len(image_urls)):
             base64_image = Image._getImageAsBase64(image_urls[i])
             image_element = Image(base64_image)
@@ -202,28 +202,9 @@ class VegaLiteParser():
             
             # 如果在sequence里,"axis_label"在"x_multiple_icon"之前
             if "axis_label" in sequence and "x_multiple_icon" in sequence and sequence.index("axis_label") < sequence.index("x_multiple_icon") and not relative_to_mark[0] == "inside" and sequence.index("x_multiple_icon") < sequence.index("mark"):
+                print("chart-image-template: 2")
+                print("direction: ", direction)
                 # layout_strategy.direction与direction相反，如果direction是right，则layout_strategy.direction是left
-                if direction == "right":
-                    layout_strategy.direction = "left"
-                elif direction == "left":
-                    layout_strategy.direction = "right"
-                elif direction == "down":
-                    layout_strategy.direction = "up"
-                else:
-                    layout_strategy.direction = "down"
-                layout_graph.add_node_with_edges(y_axis_label_group[i], image_element, layout_strategy)
-                node = layout_graph.node_map[image_element]
-                # print("node: ", node.value.tag, node.value._bounding_box)
-                for next, next_layout_strategy in zip(node.nexts, node.nexts_edges):
-                    # print("next_layout_strategy: ", next_layout_strategy.value.name, next_layout_strategy.value.direction, next_layout_strategy.value.padding, next_layout_strategy.value.offset, next_layout_strategy.value.alignment)
-                    # print("next: ", next.value.tag, next.value._bounding_box)
-                    next_layout_strategy.process_layout()
-                for prev, prev_layout_strategy in zip(node.prevs, node.prevs_edges):
-                    # print("prev_layout_strategy: ", prev_layout_strategy.value.name, prev_layout_strategy.value.direction, prev_layout_strategy.value.padding, prev_layout_strategy.value.offset, prev_layout_strategy.value.alignment)
-                    # print("prev: ", prev.value.tag, prev.value._bounding_box)
-                    prev_layout_strategy.process_layout()
-                flattened_elements_tree.children.append(image_element)
-            elif "axis_label" in sequence and "x_multiple_icon" in sequence and sequence.index("axis_label") > sequence.index("x_multiple_icon"):
                 if direction == "right":
                     layout_strategy.direction = "left"
                 elif direction == "left":
@@ -234,13 +215,19 @@ class VegaLiteParser():
                     layout_strategy.direction = "down"
                 layout_graph.add_node_with_edges(image_element, y_axis_label_group[i], layout_strategy)
                 node = layout_graph.node_map[image_element]
-                # old_node_min_x = float(node.value._bounding_box.minx)
-                # old_node_min_y = float(node.value._bounding_box.miny)
+                print("node: ", node.value.tag, node.value._bounding_box)
+                for prev, prev_layout_strategy in zip(node.prevs, node.prevs_edges):
+                    print("prev_layout_strategy: ", prev_layout_strategy.value.name, prev_layout_strategy.value.direction, prev_layout_strategy.value.padding, prev_layout_strategy.value.offset, prev_layout_strategy.value.alignment)
+                    print("prev: ", prev.value.tag, prev.value._bounding_box)
+                    prev_layout_strategy.process_layout()
                 for next, next_layout_strategy in zip(node.nexts, node.nexts_edges):
+                    print("next_layout_strategy: ", next_layout_strategy.value.name, next_layout_strategy.value.direction, next_layout_strategy.value.padding, next_layout_strategy.value.offset, next_layout_strategy.value.alignment)
+                    print("next: ", next.value.tag, next.value._bounding_box)
                     next_layout_strategy.process_layout()
+
                 flattened_elements_tree.children.append(image_element)
-                
-            elif "axis_label" in sequence and "x_multiple_icon" in sequence and sequence.index("axis_label") < sequence.index("x_multiple_icon") and relative_to_mark[0] == "inside" and relative_to_mark[1] == "start":
+            elif "axis_label" in sequence and "x_multiple_icon" in sequence and sequence.index("axis_label") > sequence.index("x_multiple_icon"):
+                print("chart-image-template: 1")
                 if direction == "right":
                     layout_strategy.direction = "left"
                 elif direction == "left":
@@ -249,27 +236,40 @@ class VegaLiteParser():
                     layout_strategy.direction = "up"
                 else:
                     layout_strategy.direction = "down"
-                layout_graph.add_node_with_edges(image_element, mark_group[i], layout_strategy)
+                layout_graph.add_node_with_edges(y_axis_label_group[i], image_element, layout_strategy)
                 node = layout_graph.node_map[image_element]
-                # old_node_min_x = float(node.value._bounding_box.minx)
-                # old_node_min_y = float(node.value._bounding_box.miny)
-                for next, next_layout_strategy in zip(node.nexts, node.nexts_edges):
-                    next_layout_strategy.process_layout()
+                for prev, prev_layout_strategy in zip(node.prevs, node.prevs_edges):
+                    prev_layout_strategy.process_layout()
+                flattened_elements_tree.children.append(image_element)
+                
+            elif "axis_label" in sequence and "x_multiple_icon" in sequence and sequence.index("axis_label") < sequence.index("x_multiple_icon") and relative_to_mark[0] == "inside" and relative_to_mark[1] == "start":
+                print("chart-image-template: 3")
+                if direction == "right":
+                    layout_strategy.direction = "left"
+                elif direction == "left":
+                    layout_strategy.direction = "right"
+                elif direction == "down":
+                    layout_strategy.direction = "up"
+                else:
+                    layout_strategy.direction = "down"
+                layout_graph.add_node_with_edges(mark_group[i], image_element, layout_strategy)
+                node = layout_graph.node_map[image_element]
+                for prev, prev_layout_strategy in zip(node.prevs, node.prevs_edges):
+                    prev_layout_strategy.process_layout()
                 flattened_elements_tree.children.append(image_element)
             # 如果在sequence里,"x_multiple_icon"在"mark_annotation"之后
             elif "x_multiple_icon" in sequence and "mark_annotation" in sequence and sequence.index("x_multiple_icon") > sequence.index("mark_annotation"):
+                print("chart-image-template: 7")
                 layout_strategy.direction = direction
                     
-                layout_graph.add_node_with_edges(image_element, mark_annotation_group[i], layout_strategy)
+                layout_graph.add_node_with_edges(mark_annotation_group[i], image_element, layout_strategy)
                 node = layout_graph.node_map[image_element]
-                # old_node_min_x = float(node.value._bounding_box.minx)
-                # old_node_min_y = float(node.value._bounding_box.miny)
-                for next, next_layout_strategy in zip(node.nexts, node.nexts_edges):
-                    next_layout_strategy.process_layout()
+                for prev, prev_layout_strategy in zip(node.prevs, node.prevs_edges):
+                    prev_layout_strategy.process_layout()
                 flattened_elements_tree.children.append(image_element)
             # 如果在sequence里,"x_multiple_icon"在"mark_annotation"之前，且在"mark"之后
             elif "x_multiple_icon" in sequence and "mark_annotation" in sequence and sequence.index("x_multiple_icon") < sequence.index("mark_annotation") and sequence.index("x_multiple_icon") > sequence.index("mark") and not relative_to_mark[0] == "inside":
-                # if direction == "right":
+                print("chart-image-template: 6")
                 #     layout_strategy.direction = "left"
                 # elif direction == "left":
                 #     layout_strategy.direction = "right"
@@ -278,17 +278,16 @@ class VegaLiteParser():
                 # else:
                 #     layout_strategy.direction = "down"
                 layout_strategy.direction = direction
-                layout_graph.add_node_with_edges(mark_annotation_group[i], image_element, layout_strategy)
+                layout_graph.add_node_with_edges(image_element, mark_annotation_group[i], layout_strategy)
                 node = layout_graph.node_map[image_element]
-                # old_node_min_x = float(node.value._bounding_box.minx)
-                # old_node_min_y = float(node.value._bounding_box.miny)
-                for next, next_layout_strategy in zip(node.nexts, node.nexts_edges):
-                    next_layout_strategy.process_layout()
                 for prev, prev_layout_strategy in zip(node.prevs, node.prevs_edges):
                     prev_layout_strategy.process_layout()
+                for next, next_layout_strategy in zip(node.nexts, node.nexts_edges):
+                    next_layout_strategy.process_layout()
                 flattened_elements_tree.children.append(image_element)
             # 如果在sequence里,"x_multiple_icon"在"mark_annotation"之前，且在"mark"之后
             elif "x_multiple_icon" in sequence and "mark_annotation" in sequence and sequence.index("x_multiple_icon") < sequence.index("mark_annotation") and sequence.index("x_multiple_icon") > sequence.index("mark") and relative_to_mark[0] == "inside":
+                print("chart-image-template: 4 or 5")
                 if relative_to_mark[1] == "start":
                     if direction == "right":
                         layout_strategy.direction = "left"
@@ -303,12 +302,10 @@ class VegaLiteParser():
                 # print("direction: ", direction)
                 # print("relative_to_mark: ", relative_to_mark)
                 # print("layout_strategy.direction: ", layout_strategy.direction)
-                layout_graph.add_node_with_edges(image_element, mark_group[i], layout_strategy)
+                layout_graph.add_node_with_edges(mark_group[i], image_element, layout_strategy)
                 node = layout_graph.node_map[image_element]
-                # old_node_min_x = float(node.value._bounding_box.minx)
-                # old_node_min_y = float(node.value._bounding_box.miny)
-                for next, next_layout_strategy in zip(node.nexts, node.nexts_edges):
-                    next_layout_strategy.process_layout()
+                for prev, prev_layout_strategy in zip(node.prevs, node.prevs_edges):
+                    prev_layout_strategy.process_layout()
                 flattened_elements_tree.children.append(image_element)
             else:
                 # 报错

@@ -7,6 +7,7 @@ from .template.font_template import FontDesign
 from .template.gpt_chart_parser import ChartDesign
 import shutil
 import random
+import time
 class Pipeline:
     def __init__(
         self,
@@ -20,19 +21,23 @@ class Pipeline:
 
     def execute(self, input_data: Any) -> str:
         try:
+            time_start = time.time()
             # 步骤1：数据处理
             processed_data = self.data_processor.process(input_data)
+            time_end = time.time()
+            print("data_processor time: ", time_end - time_start)
             
             # 从布局树文件随机选择一个配置文件
+            time_start = time.time()
             import random
             # layout_file_idx = random.randint(1, 13)
-            # layout_file_idx = random.randint(1, 6)
+            layout_file_idx = random.randint(1, 6)
+            # layout_file_idx = 6
             layout_file_idx = 6
-            # layout_file_idx = 2
             with open(f'/data1/liduan/generation/chart/chart_pipeline/src/data/layout_tree/{layout_file_idx}.json', 'r') as f:
                 layout_config = json.load(f)
-            # chart_image_idx = random.randint(1, 7)
-            chart_image_idx = 2
+            chart_image_idx = random.randint(1, 7)
+            chart_image_idx = 7
             with open(f'/data1/liduan/generation/chart/chart_pipeline/src/data/chart_image/{chart_image_idx}.json', 'r') as f:
                 chart_image_config = json.load(f)
             
@@ -52,6 +57,7 @@ class Pipeline:
                 else:
                     is_horizontal = chart_config['orientation'] == 'horizontal'
                 
+                is_horizontal = True
                 # 只有在chart_config中指定了sort时才配置排序
                 sort_config = None
                 if 'sort' in chart_config:
@@ -123,9 +129,13 @@ class Pipeline:
             
             # 步骤2：生成图表
             svg, additional_configs = self.chart_generator.generate(processed_data, chart_template)
+            time_end = time.time()
+            print("chart_generator time: ", time_end - time_start)
             
             # return svg
             
+            
+            time_start = time.time()
             
             # 配置额外信息
             additional_configs.update({
@@ -155,6 +165,8 @@ class Pipeline:
             additional_configs['background_config']['color'] = color_template.get_color('background', 1)[0]
             # 步骤3：SVG后处理
             final_svg = self.svg_processor.process(svg, additional_configs, debug=False)
+            time_end = time.time()
+            print("svg_processor time: ", time_end - time_start)
             
             return final_svg
             

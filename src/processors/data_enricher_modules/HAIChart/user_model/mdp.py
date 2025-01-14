@@ -7,8 +7,8 @@ from utils import gen_batched_data, FLAGS, _START_VOCAB
 import os
 import tensorflow as tf
 
-np.random.seed(15)
-random.seed(15)
+# np.random.seed(15)
+# random.seed(15)
 
 def aid2index(aid):
     if type(aid) == int:

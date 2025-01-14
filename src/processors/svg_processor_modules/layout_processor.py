@@ -33,199 +33,6 @@ default_subtitle_config = {
     "textAnchor": "start"
 }
 
-layout_tree = {
-    "tag": "g",
-    "layoutStrategy": {
-        "name": "vertical",
-        "padding": 10,
-        "direction": "down"
-    },
-    "children": [
-        {
-            "tag": "g",
-            "id": "global_title_group",
-            "layoutStrategy": {
-                "name": "horizontal",
-                "padding": 0,
-                "direction": "right",
-            },
-            "children": [
-                {
-                    "tag": "g",
-                    "id": "title_group",
-                    "layoutStrategy": {
-                        "name": "vertical",
-                        "padding": 10,
-                        "direction": "down",
-                        "alignment": ["left","left"]
-                    },
-                    "children": [
-                        {
-                            "tag": "g",
-                            "id": "title_text",
-                            "children": []
-                        },
-                        {
-                            "tag": "g",
-                            "id": "subtitle_text",
-                            "children": []
-                        }
-                    ]
-                },
-                {
-                    "tag": "image",
-                    "id": "topic_icon",
-                }
-            ]
-        },
-        {
-            "tag": "g",
-            "id": "chart",
-        },
-    ]
-}
-
-layout_tree = {
-    "tag": "g",
-    "layoutStrategy": {
-        "name": "vertical",
-        "padding": 5,
-        "direction": "down"
-    },
-    "children": [
-        # {
-        #     "tag":"image",
-        #     "id": "topic_icon",
-        # },
-        {
-            "tag": "g",
-            "id": "title_text",
-            "children": []
-        },
-        {
-            "tag": "g",
-            "id": "subtitle_text",
-            "children": []
-        },
-        {
-            "tag": "g",
-            "id": "chart",
-        },
-    ]
-}
-
-# layout_tree = {
-#     "tag": "g",
-#     "layoutStrategy": {
-#         "name": "vertical",
-#         "padding": 10,
-#         "direction": "down"
-#     },
-#     "children": [
-#         {
-#             "tag": "g",
-#             "id": "global_title_group",
-#             "layoutStrategy": {
-#                 "name": "vertical",
-#                 "padding": 5,
-#                 "direction": "down",
-#                 "alignment": ["middle","middle"]
-#             },
-#             "children": [
-#                 {
-#                     "tag": "g",
-#                     "id": "title_group",
-#                     "layoutStrategy": {
-#                         "name": "horizontal",
-#                         "padding": 10,
-#                         "direction": "right",
-#                         "alignment": ["middle","middle"]
-#                     },
-#                     "children": [
-#                         {
-#                             "tag": "image",
-#                             "id": "topic_icon",
-#                         },
-#                         {
-#                             "tag": "g",
-#                             "id": "title_text",
-#                             "children": []
-#                         },
-#                         {
-#                             "tag": "image",
-#                             "id": "topic_icon2",
-#                         },
-
-#                     ]
-#                 },
-#                 {
-#                     "tag": "g",
-#                     "id": "subtitle_text",
-#                     "children": []
-#                 }
-#             ]
-#         },
-#         {
-#             "tag": "g",
-#             "id": "chart",
-#         },
-#     ]
-# }
-
-layout_tree = {
-    "tag": "g",
-    "layoutStrategy": {
-        "name": "horizontal",
-        "padding": 10,
-        "direction": "right"
-    },
-    "children": [
-        {
-            "tag": "g",
-            "id": "global_title_group",
-            "layoutStrategy": {
-                "name": "vertical",
-                "padding": 10,
-                "direction": "down",
-                "alignment": ["middle","middle"]
-            },
-            "children": [
-                {
-                    "tag": "g",
-                    "id": "title_group",
-                    "layoutStrategy": {
-                        "name": "vertical",
-                        "padding": 10,
-                        "direction": "down",
-                        "alignment": ["left","left"]
-                    },
-                    "children": [
-                        {
-                            "tag": "g",
-                            "id": "title_text",
-                            "children": []
-                        },
-                    ]
-                },
-                {
-                    "tag": "g",
-                    "id": "chart",
-                },
-                {
-                    "tag": "g",
-                    "id": "subtitle_text",
-                    "children": []
-                }
-            ]
-        },
-        {
-            "tag": "image",
-            "id": "topic_icon"
-        },
-    ]
-}
-
-
 class LayoutProcessor:
     def __init__(self, element_tree: LayoutElement, layout_graph: LayoutGraph, layout_template: LayoutTemplate, additional_configs: dict):
         self.element_tree = element_tree
@@ -252,6 +59,7 @@ class LayoutProcessor:
         # self.chart_element = GroupElement()
         # self.chart_element.children.append(self.element_tree)
         self.chart_element = self.element_tree
+        # self.chart_element._bounding_box = self.chart_element.get_bounding_box()
         self.element_id_map = {}
         self.element_id_map['chart'] = self.chart_element
         
@@ -290,6 +98,7 @@ class LayoutProcessor:
                 element.children = self.chart_element.children
                 element.attributes = self.chart_element.attributes
                 element._bounding_box = element.get_bounding_box()
+                print("chart boundingbox: ", element._bounding_box)
             else:
                 topic_icon_idx = -1
                 boundingboxes = []
@@ -323,8 +132,8 @@ class LayoutProcessor:
                         if not element.reference_id == child.id:
                             print("child: ", child.id, element.reference_id)
                             print("size_constraint: ", element.size_constraint)
-                            self.constraint_graph.add_node_with_edges(child, reference_element, element.size_constraint)
-                            for edge in self.constraint_graph.node_map[child].nexts_edges:
+                            self.constraint_graph.add_node_with_edges(reference_element, child, element.size_constraint)
+                            for edge in self.constraint_graph.node_map[child].prevs_edges:
                                 scale = edge.process_layout()
                                 scales.append(scale)
                     min_scale = min(scales)
@@ -338,12 +147,10 @@ class LayoutProcessor:
                         chart_scale = (max_scale + min_scale) / 2
                     if element.reference_id == 'chart':
                         self.rescale_text_in_chart(chart_scale)
-                    
-                            
                 for i in range(1, len(element.children)):
-                    self.layout_graph.add_node_with_edges(element.children[i], element.children[i-1], element.layout_strategy)
+                    self.layout_graph.add_node_with_edges(element.children[i-1], element.children[i], element.layout_strategy)
                     node_map = self.layout_graph.node_map
-                    for edge in node_map[element.children[i-1]].prevs_edges:
+                    for edge in node_map[element.children[i]].prevs_edges:
                         edge.process_layout()
                 element._bounding_box = element.get_bounding_box()
         elif element.tag == 'image':
@@ -403,7 +210,7 @@ class LayoutProcessor:
             """
             title_text_group = GroupElement()
             self._createTitleTextElement(title_config, title_text_group)
-            self.subtitle_config['max_width'] = title_text_group.get_bounding_box().width *1.2
+            # self.subtitle_config['max_width'] = title_text_group.get_bounding_box().width *1.2
             return title_text_group
 
     def _createTitleTextElement(self, title_config: Dict, element: LayoutElement):
@@ -465,6 +272,7 @@ class LayoutProcessor:
                 total_height += (line_height - 1) * font_size  # 添加行间距
             total_height += metrics['height']
 
+        max_width = 0
         # 创建每行文本元素
         text_elements = []
         current_y = 0
@@ -488,14 +296,18 @@ class LayoutProcessor:
             text_element.attributes = attributes
             boundingbox = text_element.get_bounding_box()
             text_element._bounding_box = boundingbox
+            print("text_element: ", text_element.content)
+            print("text boundingbox: ", boundingbox)
+            max_width = max(max_width, boundingbox.width)
             text_elements.append(text_element)
+        self.subtitle_config['max_width'] = max_width
         element.children = text_elements
         # for text_element in text_elements:
         #     self.layout_graph.add_node(Node(text_element))
         for i in range(1, len(text_elements)):
             node_map = self.layout_graph.node_map
-            self.layout_graph.add_edge_by_value(text_elements[i], text_elements[i-1], element.layout_strategy)
-            for edge in node_map[text_elements[i]].nexts_edges:
+            self.layout_graph.add_edge_by_value(text_elements[i-1], text_elements[i], element.layout_strategy)
+            for edge in node_map[text_elements[i]].prevs_edges:
                 edge.process_layout()
             # layout_strategy.layout(node_map[text_elements[i-1]].value, node_map[text_elements[i]].value)
             # node_map[text_elements[i]].value.update_pos(old_node_min_x, old_node_min_y)
@@ -529,6 +341,9 @@ class LayoutProcessor:
         line_height = subtitle_config.get('lineHeight', 1.5)
         text_anchor = subtitle_config.get('textAnchor', 'middle')
         max_width = subtitle_config.get('max_width', float('inf'))
+        print("subtitle_config: ", subtitle_config)
+        print('max_width: ', max_width)
+        
         # max_lines = subtitle_config.get('max_lines', 4)
         
         # text_lines = self._autolinebreak(text_content, max_lines)
@@ -560,8 +375,8 @@ class LayoutProcessor:
                 text_lines.append(' '.join(current_line))
         n_lines = len(text_lines)
         print("n_lines: ", n_lines)
-        text_lines = self._autolinebreak(text_content, n_lines, n_lines)
-        print("test_text_lines: ", text_lines)
+        # text_lines = self._autolinebreak(text_content, n_lines, n_lines)
+        # print("test_text_lines: ", text_lines)
         # 计算每行文本的度量和总体尺寸
         line_metrics = []
         total_height = 0
@@ -599,22 +414,27 @@ class LayoutProcessor:
             text_element._bounding_box = boundingbox
             text_elements.append(text_element)
 
-        for text_element in text_elements:
-            self.layout_graph.add_node(Node(text_element))
+        # for text_element in text_elements:
+        #     self.layout_graph.add_node(Node(text_element))
         
-        for i in range(1, len(text_elements)):
-            layout_strategy = VerticalLayoutStrategy()
-            layout_strategy.alignment = ["left","left"]
-            layout_strategy.direction = "down"
-            layout_strategy.padding = subtitle_config.get('linePadding', 0)
-            node_map = self.layout_graph.node_map
-            self.layout_graph.add_edge(node_map[text_elements[i-1]], node_map[text_elements[i]], layout_strategy)
-            old_node_min_x = float(node_map[text_elements[i]].value._bounding_box.minx)
-            old_node_min_y = float(node_map[text_elements[i]].value._bounding_box.miny)
-            layout_strategy.layout(node_map[text_elements[i-1]].value, node_map[text_elements[i]].value)
-            node_map[text_elements[i]].value.update_pos(old_node_min_x, old_node_min_y)
+        # for i in range(1, len(text_elements)):
+        #     layout_strategy = VerticalLayoutStrategy()
+        #     layout_strategy.alignment = ["left","left"]
+        #     layout_strategy.direction = "down"
+        #     layout_strategy.padding = subtitle_config.get('linePadding', 0)
+        #     node_map = self.layout_graph.node_map
+        #     self.layout_graph.add_edge(node_map[text_elements[i-1]], node_map[text_elements[i]], layout_strategy)
+        #     old_node_min_x = float(node_map[text_elements[i]].value._bounding_box.minx)
+        #     old_node_min_y = float(node_map[text_elements[i]].value._bounding_box.miny)
+        #     layout_strategy.layout(node_map[text_elements[i-1]].value, node_map[text_elements[i]].value)
+        #     node_map[text_elements[i]].value.update_pos(old_node_min_x, old_node_min_y)
 
         element.children = text_elements
+        for i in range(1, len(text_elements)):
+            node_map = self.layout_graph.node_map
+            self.layout_graph.add_edge_by_value(text_elements[i-1], text_elements[i], element.layout_strategy)
+            for edge in node_map[text_elements[i]].prevs_edges:
+                edge.process_layout()
         boundingbox = element.get_bounding_box()
         element._bounding_box = boundingbox
 
