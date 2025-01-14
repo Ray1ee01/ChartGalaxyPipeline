@@ -91,7 +91,13 @@ def extract_chart(file_path, target_path, item_range = (5, 20)):
                 x_data = [x_data_cp]
                 y_data = [y_data_cp]
 
-        if len(y_data) == 1 and all([y_data[0][0] == y for y in y_data[0]]):
+        # add filter for y_data
+        if len(y_data) == 1: # no group
+            if all([y_data[0][0] == y for y in y_data[0]]): # all same data
+                continue    
+            if sum([y == 0 for y in y_data[0]]) > len(y_data[0]) / 2: # more than 50% zero
+                continue
+        else: # group TODO
             continue
 
         res = package(x_type, x_label, y_type, y_label, x_data, y_data, source_file, chart_type, description)
