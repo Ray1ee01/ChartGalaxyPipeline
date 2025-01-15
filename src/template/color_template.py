@@ -180,7 +180,7 @@ class ColorDesign:
             if ciede2000(self.bcg_color, black) > ciede2000(self.bcg_color, white):
                 self.lightness = 'light'
             else:
-                self.lightness = 'dark
+                self.lightness = 'dark'
 
         self.basic_colors = [black, white, gray]
         self.basic_colors_hex = [rgb_to_hex(*color) for color in self.basic_colors]

@@ -569,7 +569,8 @@ class LayoutProcessor:
         # 遍历 self.chart_element的子树中的所有元素
         def _rescale_text(element: LayoutElement):
             if element.tag == 'text':
-                element.update_scale(scale, scale)
+                # element.update_scale(scale, scale)
+                element.scale_to_fit(scale)
             elif element.tag == 'g':
                 for child in element.children:
                     _rescale_text(child)

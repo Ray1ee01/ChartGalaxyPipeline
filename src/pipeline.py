@@ -57,6 +57,7 @@ class Pipeline:
                     is_horizontal = chart_config['orientation'] == 'horizontal'
                 
                 # 只有在chart_config中指定了sort时才配置排序
+                # is_horizontal = False
                 sort_config = None
                 if 'sort' in chart_config:
                     sort_config = {

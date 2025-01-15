@@ -8,7 +8,7 @@ from src.processors.data_processor import VizNetDataProcessor
 import random
 
 # data_dir = os.path.join(os.path.dirname(__file__),'src', 'data')
-output_dir = os.path.join(os.path.dirname(__file__),'src', 'output2')
+output_dir = os.path.join(os.path.dirname(__file__),'src', 'output4')
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 # random.seed(15)
 
@@ -34,6 +34,9 @@ def main():
     
     layout_file_idx = random.randint(1, 6)
     chart_image_idx = random.randint(1, 7)
+    # chart_image_idx = 6
+    # layout_file_idx = 1
+    # chart_image_idx = 2
 
     dataset = VizNET()
     input_data = dataset.get_object(args.dataset_idx, args.chart_idx)

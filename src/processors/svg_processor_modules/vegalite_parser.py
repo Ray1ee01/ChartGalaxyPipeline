@@ -95,9 +95,26 @@ class VegaLiteParser():
         # print("mark_annotation_group: ", mark_annotation_group)
         # print("y_axis_label_group: ", y_axis_label_group)
         # build inital layout graph
+        if "mark_annotation" in sequence:
+            if direction == "up" or direction == "down":
+                min_mark_width = max([mark.get_bounding_box().width for mark in mark_group])
+                max_annotation_width = max([mark_annotation.get_bounding_box().width for mark_annotation in mark_annotation_group])
+                if min_mark_width < max_annotation_width:
+                    for i in range(len(mark_annotation_group)):
+                        if direction == "up":
+                            if self.additional_configs['chart_template'].mark.annotation_side == "inner":
+                                mark_annotation_group[i].rotate_to_fit("top")
+                            else:
+                                mark_annotation_group[i].rotate_to_fit("bottom")
+                        else:
+                            if self.additional_configs['chart_template'].mark.annotation_side == "inner":
+                                mark_annotation_group[i].rotate_to_fit("bottom")
+                            else:
+                                mark_annotation_group[i].rotate_to_fit("top")
+            
+            
         for i in range(len(mark_group)):
             if "mark_annotation" in sequence:
-                
                 mark_group[i]._bounding_box = mark_group[i].get_bounding_box()
                 mark_annotation_group[i]._bounding_box = mark_annotation_group[i].get_bounding_box()
                 y_axis_label_group[i]._bounding_box = y_axis_label_group[i].get_bounding_box()
@@ -145,7 +162,7 @@ class VegaLiteParser():
             image_urls = self.additional_configs['x_data_multi_url']
         else:
             image_urls = [self.additional_configs['x_data_single_url']]*len(mark_group)
-        print("image_urls: ", image_urls)
+        # print("image_urls: ", image_urls)
         # image_urls = []
         for i in range(len(image_urls)):
             base64_image = Image._getImageAsBase64(image_urls[i])
@@ -271,13 +288,6 @@ class VegaLiteParser():
             # 如果在sequence里,"x_multiple_icon"在"mark_annotation"之前，且在"mark"之后
             elif "x_multiple_icon" in sequence and "mark_annotation" in sequence and sequence.index("x_multiple_icon") < sequence.index("mark_annotation") and sequence.index("x_multiple_icon") > sequence.index("mark") and not relative_to_mark[0] == "inside":
                 print("chart-image-template: 6")
-                #     layout_strategy.direction = "left"
-                # elif direction == "left":
-                #     layout_strategy.direction = "right"
-                # elif direction == "down":
-                #     layout_strategy.direction = "up"
-                # else:
-                #     layout_strategy.direction = "down"
                 layout_strategy.direction = direction
                 layout_graph.add_node_with_edges(image_element, mark_annotation_group[i], layout_strategy)
                 node = layout_graph.node_map[image_element]
@@ -300,9 +310,6 @@ class VegaLiteParser():
                         layout_strategy.direction = "down"
                 else:
                     layout_strategy.direction = direction
-                # print("direction: ", direction)
-                # print("relative_to_mark: ", relative_to_mark)
-                # print("layout_strategy.direction: ", layout_strategy.direction)
                 layout_graph.add_node_with_edges(mark_group[i], image_element, layout_strategy)
                 node = layout_graph.node_map[image_element]
                 for prev, prev_layout_strategy in zip(node.prevs, node.prevs_edges):

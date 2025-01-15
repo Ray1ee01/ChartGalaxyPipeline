@@ -1,10 +1,4 @@
 {
-    "sequence": [
-        "title",
-        "subtitle",
-        "chart",
-        "topic_icon"
-    ],
     "layout_tree":{
         "tag": "g",
         "layoutStrategy": {
@@ -15,8 +9,9 @@
             "alignment": ["left", "left"]
         },
         "sizeConstraint": {
-            "reference": "chart",
-            "max_width": 1
+            "reference": "group_2",
+            "max_width": 1,
+            "min_width": 0.8
         },
         "children": [
             {

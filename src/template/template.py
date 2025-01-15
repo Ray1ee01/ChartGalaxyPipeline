@@ -119,7 +119,8 @@ class MarkTemplate:
         self.annotation_side = None
         # 从inner和outer之间随机取一个值
         self.annotation_side = random.choice(["inner", "outer"])
-        print("self.annotation_side: ", self.annotation_side)
+        # print("self.annotation_side: ", self.annotation_side)
+        # self.annotation_side = "outer"
         
         if self.annotation_side == "inner":
             seed_text = random.randint(1, 100)
