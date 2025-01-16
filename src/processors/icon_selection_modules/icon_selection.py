@@ -305,20 +305,43 @@ class IconSelector:
         '''
         if topic_color:
             topic_color = [hex_to_lab(color) for color in topic_color]
+        self.pool = pool
         self.sa = SimulatedAnnealing(pool, topic_color = topic_color)
         self.spe_mode = spe_mode 
 
-    def select(self, sequence1, sequence2):
+    def select(self, sequence1, sequence2, cache_path='/data1/jiashu/ChartPipeline/src/cache'):
         '''
         sequence1: list of total template sequence
         sequence2: list of chart sequence
         '''
         icon_mode = []
+        res = None
         if 'topic_icon' in sequence1:
             icon_mode.append(0)
         if 'x_single_icon' in sequence2:
             icon_mode.append(3)
         if 'x_multiple_icon' in sequence2:
-            icon_mode.append(4)
-        # TODO
+            res = []
+            if self.spe_mode == 'flag':
+                flag_icons = FlagIcons()
+                image_path = os.path.join(cache_path, 'icons')
+                if not os.path.exists(image_path):
+                    os.makedirs(image_path)
+                for i in range(len(self.pool.chart_data['data'])):
+                    text = self.pool.chart_data['data'][i]['x_data']
+                    file_path = flag_icons.search_and_save(text, image_path, 600, 600)
+                    res.append(file_path)
+            elif self.spe_mode == 'logo':
+                logo_icons = LogoIcons()
+                image_path = os.path.join(cache_path, 'icons')
+                if not os.path.exists(image_path):
+                    os.makedirs(image_path)
+                for i in range(len(self.pool.chart_data['data'])):
+                    text = self.pool.chart_data['data'][i]['x_data']
+                    file_path = logo_icons.search_and_save(text, image_path, 600, 600) # TODO size
+                    res.append(file_path)
+            else:
+                icon_mode.append(4)
+        if res:
+            return self.sa.run(icon_mode), res
         return self.sa.run(icon_mode)

@@ -11,7 +11,7 @@ class SpecificIcons(ABC):
         pass
 
     @abstractmethod
-    def search_and_save(self, text: str, output_path: str, width: int, height: int) -> None:
+    def search_and_save(self, text: str, output_path: str, width: int, height: int) -> str:
         pass
 
 flag_path = '/data1/jiashu/data/flag_icons'
@@ -64,11 +64,14 @@ class FlagIcons(SpecificIcons):
         best_match_index = self.__find_best_match(text_embedding)
         return self.country_data[best_match_index]
 
-    def search_and_save(self, text: str, output_path: str, width: int, height: int):
+    def search_and_save(self, text: str, output_path: str, width: int, height: int) --> str:
         result = self.search(text)
         image = result['flag_1x1'] if width == height else result['flag_4x3']
+        file_name = image.split('/')[-1]
         svg_path = os.path.join(flag_path, image)
-        svg_to_png(svg_path, output_path, width, height)
+        output_file = os.path.join(flag_path, file_name)
+        svg_to_png(svg_path, output_file, width, height)
+        return output_file
 
 class logo_icons(SpecificIcons):
     def __init__(self):
@@ -96,11 +99,13 @@ class logo_icons(SpecificIcons):
         best_match_index = self.__find_best_match(text_embedding)
         return self.logo_names[best_match_index]
 
-    def search_and_save(self, text: str, output_path: str, width: int, height: int):
+    def search_and_save(self, text: str, output_path: str, width: int, height: int) -> str:
         result = self.search(text)
         image = result + '.svg'
         svg_path = os.path.join(logo_path, image)
-        svg_to_png(svg_path, output_path, width, height)
+        output_file = os.path.join(output_path, image)
+        svg_to_png(svg_path, output_file, width, height)
+        return output_file
 
 if __name__ == '__main__':
     flag_icons = FlagIcons()
