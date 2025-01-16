@@ -34,7 +34,7 @@ def main():
         chart_generator=VegaLiteGenerator(),
         svg_processor=SVGOptimizer()
     )
-    input_data = 'bar_1'
+    input_data = 'bar_22'
 
     
     # layout_file_idx = random.randint(1, 6)
@@ -43,7 +43,8 @@ def main():
     layout_file_idx = 2
     chart_image_idx = 2
     chart_component_idx = 2
-    color_mode = 'polychromatic'
+    # color_mode = 'polychromatic'
+    color_mode = 'monochromatic'
     # layout_file_idxs = [1, 2, 3, 4, 5, 6]
     # chart_image_idxs = [1, 2, 3, 4, 5, 6, 7]
     # chart_component_idxs = [1, 2]
