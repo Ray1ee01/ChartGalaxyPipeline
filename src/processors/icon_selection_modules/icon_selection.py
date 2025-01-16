@@ -4,6 +4,7 @@ import random
 from ..data_enricher_modules.icon_selection import Semantics, CLIPMatcher
 import numpy as np
 from scipy.spatial import KDTree
+from .search_specific_icons import FlagIcons, LogoIcons
 
 raw_images_path = '/data1/liduan/generation/chart/iconset/colored_icons_final'
 feature_root = '/data1/liduan/jiashu/icon_cleaner/final_feat'
@@ -294,9 +295,9 @@ def hex_to_lab(hex):
     xyz = colour.sRGB_to_XYZ(rgb)
     lab = colour.XYZ_to_Lab(xyz)
     return lab
-    
+
 class IconSelector:
-    def __init__(self, pool, topic_color = None, x_label = None):
+    def __init__(self, pool, topic_color = None, spe_mode = None): #'flag' or 'logo'
         '''
         pool: icon pool (class Semantics)
         topic_color: topic color (None or list of hex color)
@@ -304,21 +305,43 @@ class IconSelector:
         '''
         if topic_color:
             topic_color = [hex_to_lab(color) for color in topic_color]
-        self.sa = SimulatedAnnealing(pool, topic_color = topic_color, min_search_num=100)
-        self.x_label = x_label
+        self.pool = pool
+        self.sa = SimulatedAnnealing(pool, topic_color = topic_color)
+        self.spe_mode = spe_mode 
 
-    def select(self, sequence1, sequence2):
+    def select(self, sequence1, sequence2, cache_path='/data1/jiashu/ChartPipeline/src/cache'):
         '''
         sequence1: list of total template sequence
         sequence2: list of chart sequence
         '''
         icon_mode = []
+        res = None
         if 'topic_icon' in sequence1:
             icon_mode.append(0)
         if 'x_single_icon' in sequence2:
             icon_mode.append(3)
         if 'x_multiple_icon' in sequence2:
-            icon_mode.append(4)
-        print(icon_mode)
-        # TODO
+            res = []
+            if self.spe_mode == 'flag':
+                flag_icons = FlagIcons()
+                image_path = os.path.join(cache_path, 'icons')
+                if not os.path.exists(image_path):
+                    os.makedirs(image_path)
+                for i in range(len(self.pool.chart_data['data'])):
+                    text = self.pool.chart_data['data'][i]['x_data']
+                    file_path = flag_icons.search_and_save(text, image_path, 600, 600)
+                    res.append(file_path)
+            elif self.spe_mode == 'logo':
+                logo_icons = LogoIcons()
+                image_path = os.path.join(cache_path, 'icons')
+                if not os.path.exists(image_path):
+                    os.makedirs(image_path)
+                for i in range(len(self.pool.chart_data['data'])):
+                    text = self.pool.chart_data['data'][i]['x_data']
+                    file_path = logo_icons.search_and_save(text, image_path, 600, 600) # TODO size
+                    res.append(file_path)
+            else:
+                icon_mode.append(4)
+        if res:
+            return self.sa.run(icon_mode), res
         return self.sa.run(icon_mode)
