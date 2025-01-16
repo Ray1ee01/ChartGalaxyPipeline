@@ -304,7 +304,7 @@ class IconSelector:
         '''
         if topic_color:
             topic_color = [hex_to_lab(color) for color in topic_color]
-        self.sa = SimulatedAnnealing(pool, topic_color = topic_color)
+        self.sa = SimulatedAnnealing(pool, topic_color = topic_color, min_search_num=100)
         self.x_label = x_label
 
     def select(self, sequence1, sequence2):

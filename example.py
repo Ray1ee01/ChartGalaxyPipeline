@@ -34,6 +34,7 @@ def main():
         chart_generator=VegaLiteGenerator(),
         svg_processor=SVGOptimizer()
     )
+    input_data = 'bar_1'
 
     
     # layout_file_idx = random.randint(1, 6)
@@ -41,15 +42,28 @@ def main():
     # chart_image_idx = 6
     layout_file_idx = 2
     chart_image_idx = 2
+    chart_component_idx = 2
+    color_mode = 'polychromatic'
+    # layout_file_idxs = [1, 2, 3, 4, 5, 6]
+    # chart_image_idxs = [1, 2, 3, 4, 5, 6, 7]
+    # chart_component_idxs = [1, 2]
+    # color_modes = ['monochromatic', 'complementary', 'analogous', 'polychromatic']
+    # for layout_file_idx in layout_file_idxs:
+    #     for chart_image_idx in chart_image_idxs:
+    #         for chart_component_idx in chart_component_idxs:
+    #             for color_mode in color_modes:
+    #                 result = pipeline.execute(input_data, layout_file_idx, chart_image_idx, chart_component_idx, color_mode)
+    #                 output_filename = f'output_d{args.dataset_idx}_c{args.chart_idx}_l{layout_file_idx}_i{chart_image_idx}_c{chart_component_idx}_m{color_mode}.svg'
+    #                 with open(os.path.join(output_dir, output_filename), "w") as f:
+    #                     f.write(result)
 
-    # dataset = VizNET()
-    # input_data = dataset.get_object(args.dataset_idx, args.chart_idx)
-    # input_data = '1_1'
-    input_data = 'bar_1'
-    result = pipeline.execute(input_data, layout_file_idx, chart_image_idx)
-
+    # # dataset = VizNET()
+    # # input_data = dataset.get_object(args.dataset_idx, args.chart_idx)
+    # # input_data = '1_1'
+    # result = pipeline.execute(input_data, layout_file_idx, chart_image_idx)
+    result = pipeline.execute(input_data, layout_file_idx, chart_image_idx, chart_component_idx, color_mode)
     # 保存结果,文件名包含索引信息
-    output_filename = f'output_d{args.dataset_idx}_c{args.chart_idx}_l{layout_file_idx}_i{chart_image_idx}.svg'
+    output_filename = f'output_d{args.dataset_idx}_c{args.chart_idx}_l{layout_file_idx}_i{chart_image_idx}_c{chart_component_idx}_m{color_mode}.svg'
     with open(os.path.join(output_dir, output_filename), "w") as f:
         f.write(result)
 

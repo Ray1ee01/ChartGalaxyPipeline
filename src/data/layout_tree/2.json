@@ -14,7 +14,7 @@
         "sizeConstraint": {
             "reference": "group_2",
             "max_width": 1,
-            "min_width": 0.8
+            "min_width": 0.9
         },
         "children": [
             {

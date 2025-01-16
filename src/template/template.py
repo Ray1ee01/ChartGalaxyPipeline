@@ -81,11 +81,19 @@ class AxisTemplate:
         }
         
 class ColorEncodingTemplate:
-    def __init__(self, color_template: ColorDesign=None):
+    def __init__(self, color_template: ColorDesign=None, meta_data: dict=None, data: list=None):
         self.field = None
         self.field_type = None
         self.domain = None
         self.range = None
+        if color_template is not None and not color_template.mode == 'monochromatic':
+            if data is not None:
+                self.domain = list(set([row['x_data'] for row in data]))
+                self.field = meta_data['x_label']
+            # seed_mark = random.randint(1, 100)
+            seed_mark = 1
+            colors = color_template.get_color('marks', len(self.domain), seed_mark=seed_mark)
+            self.range = colors
     def dump(self):
         return {
             "field": self.field,
@@ -99,13 +107,11 @@ class MarkTemplate:
         # 基本属性
         self.mark_type = None # 标记类型
         
-        seed_mark = random.randint(1, 100)
-        # print("seed_mark: ", seed_mark)
-        # seed_mark = 1
-        mark_color = color_template.get_color('marks', 1, seed_mark=seed_mark)[0]
-        print("mark_color: ", mark_color)
-        # mark_color = color_template.get_color('marks', 1)
-        
+        mark_color = None
+        if color_template is not None and color_template.mode == 'monochromatic':
+            seed_mark = random.randint(1, 100)
+            mark_color = color_template.get_color('marks', 1, seed_mark=seed_mark)[0]
+
         # 样式属性
         self.fill_color_style = ColorTemplate()
         self.fill_color_style.color = mark_color
@@ -186,7 +192,10 @@ class VerticalBarChartConstraint(LayoutConstraint):
             raise ValueError("不兼容的图表类型")
         chart_template.mark.orientation = "vertical"
         chart_template.x_axis.orientation = "bottom"
+        chart_template.x_axis.field_type = "nominal"
         chart_template.y_axis.orientation = "left"
+        chart_template.y_axis.field_type = "quantitative"
+        
 
 class HorizontalBarChartConstraint(LayoutConstraint):
     """水平柱状图的布局约束"""
@@ -198,7 +207,9 @@ class HorizontalBarChartConstraint(LayoutConstraint):
             raise ValueError("不兼容的图表类型")
         chart_template.mark.orientation = "horizontal"
         chart_template.x_axis.orientation = "left"
+        chart_template.x_axis.field_type = "nominal"
         chart_template.y_axis.orientation = "top"
+        chart_template.y_axis.field_type = "quantitative"
 
 class SortConstraint(LayoutConstraint):
     """排序约束"""
@@ -318,13 +329,13 @@ class BarChartTemplate(ChartTemplate):
         self.chart_type = "bar"
         self.sort = None
     
-    def create_template(self, meta_data: dict=None, color_template: ColorDesign=None):
+    def create_template(self, data: list, meta_data: dict=None, color_template: ColorDesign=None):
         self.x_axis = AxisTemplate(color_template)
         self.y_axis = self.x_axis.copy()
         
         self.mark = BarTemplate(color_template)
         
-        self.color_encoding = ColorEncodingTemplate(color_template)
+        self.color_encoding = ColorEncodingTemplate(color_template, meta_data, data)
         
 
         if meta_data is None:
@@ -368,11 +379,13 @@ class BarChartTemplate(ChartTemplate):
 class TemplateFactory:
     @staticmethod
     def create_vertical_bar_chart_template(
+        data: list,
         meta_data: dict,
         layout_tree: dict,
         chart_composition: dict = None,
         sort_config: dict = None,  # {"by": "y", "ascending": True}
-        color_template: ColorDesign = None
+        color_template: ColorDesign = None,
+        chart_component: dict = None
     ):
         """创建垂直柱状图模板
         
@@ -381,7 +394,7 @@ class TemplateFactory:
             sort_config (dict, optional): 排序配置，包含 by ("x"/"y") 和 ascending
         """
         chart_template = BarChartTemplate()
-        chart_template.create_template(meta_data, color_template)
+        chart_template.create_template(data, meta_data, color_template)
         layout_template = LayoutTemplate()
         
         # 添加方向约束
@@ -405,19 +418,25 @@ class TemplateFactory:
         
         # 应用约束
         layout_template.apply_constraints(chart_template)
-        
-            
-            
-        
+        print("chart_component: ", chart_component)
+        if chart_component:
+            chart_template.x_axis.has_domain = chart_component.get('x_axis', {}).get('has_domain', True)
+            chart_template.x_axis.has_label = chart_component.get('x_axis', {}).get('has_label', True)
+            chart_template.x_axis.has_tick = chart_component.get('x_axis', {}).get('has_tick', True)
+            chart_template.y_axis.has_domain = chart_component.get('y_axis', {}).get('has_domain', True)
+            chart_template.y_axis.has_tick = chart_component.get('y_axis', {}).get('has_tick', True)
+            chart_template.y_axis.has_label = chart_component.get('y_axis', {}).get('has_label', True)
         return chart_template, layout_template
     
     @staticmethod
     def create_horizontal_bar_chart_template(
+        data: list,
         meta_data: dict,
         layout_tree: dict,
         chart_composition: dict = None,
         sort_config: dict = None,  # {"by": "y", "ascending": True}
-        color_template: ColorDesign = None
+        color_template: ColorDesign = None,
+        chart_component: dict = None
     ):
         """创建水平柱状图模板
         
@@ -426,7 +445,7 @@ class TemplateFactory:
             sort_config (dict, optional): 排序配置，包含 by ("x"/"y") 和 ascending
         """
         chart_template = BarChartTemplate()
-        chart_template.create_template(meta_data, color_template)
+        chart_template.create_template(data, meta_data, color_template)
         layout_template = LayoutTemplate()
         
         # 添加方向约束
@@ -451,6 +470,13 @@ class TemplateFactory:
         # 应用约束
         layout_template.apply_constraints(chart_template)
         
+        if chart_component:
+            chart_template.x_axis.has_domain = chart_component.get('x_axis', {}).get('has_domain', True)
+            chart_template.x_axis.has_tick = chart_component.get('x_axis', {}).get('has_tick', True)
+            chart_template.x_axis.has_label = chart_component.get('x_axis', {}).get('has_label', True)
+            chart_template.y_axis.has_domain = chart_component.get('y_axis', {}).get('has_domain', True)
+            chart_template.y_axis.has_tick = chart_component.get('y_axis', {}).get('has_tick', True)
+            chart_template.y_axis.has_label = chart_component.get('y_axis', {}).get('has_label', True)
         return chart_template, layout_template
 
 class FontTemplate:

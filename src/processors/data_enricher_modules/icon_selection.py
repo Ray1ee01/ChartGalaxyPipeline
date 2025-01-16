@@ -171,6 +171,7 @@ def get_icon_pool_old(json_file, meta_data, matcher=None):
 def get_icon_pool(chart_data, topic_data, matcher=None):
     if matcher is None:
         matcher = CLIPMatcher()
-    semantics = Semantics(chart_data, topic_data, topk=20)
+    topk = max(20, len(chart_data['data'])*2)
+    semantics = Semantics(chart_data, topic_data, topk=topk)
     semantics.prepare_sets(matcher)
     return semantics

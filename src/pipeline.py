@@ -8,6 +8,8 @@ from .template.gpt_chart_parser import ChartDesign
 import shutil
 import random
 import time
+
+
 class Pipeline:
     def __init__(
         self,
@@ -19,7 +21,7 @@ class Pipeline:
         self.chart_generator = chart_generator
         self.svg_processor = svg_processor
 
-    def execute(self, input_data: Any, layout_file_idx: int = 1, chart_image_idx: int = 1) -> str:
+    def execute(self, input_data: Any, layout_file_idx: int = 1, chart_image_idx: int = 1, chart_component_idx: int = 1, color_mode: str = 'monochromatic') -> str:
         try:
             # layout_file_idx = random.randint(1, 13)
             # layout_file_idx = random.randint(1, 6)
@@ -32,6 +34,10 @@ class Pipeline:
             with open(f'/data1/liduan/generation/chart/chart_pipeline/src/data/chart_image/{chart_image_idx}.json', 'r') as f:
                 chart_image_config = json.load(f)
             
+            # chart_component_idx = random.randint(1, 2)
+            with open(f'/data1/liduan/generation/chart/chart_pipeline/src/data/chart_component/{chart_component_idx}.json', 'r') as f:
+                chart_component_config = json.load(f)
+            
             time_start = time.time()
             # 步骤1：数据处理
             processed_data = self.data_processor.process(input_data, layout_config['sequence'], chart_image_config['sequence'])
@@ -41,8 +47,7 @@ class Pipeline:
             # 从布局树文件随机选择一个配置文件
             time_start = time.time()
 
-            
-            color_template = ColorDesign(processed_data['palettes'])
+            color_template = ColorDesign(processed_data['palettes'], mode=color_mode)
             
             layout_tree = layout_config['layout_tree']
             chart_config = layout_config.get('chart_config', {})
@@ -52,7 +57,6 @@ class Pipeline:
             # 创建模板
             if processed_data['meta_data']['chart_type'] == 'bar':
                 # 如果没有指定orientation,随机选择
-                import random
                 if 'orientation' not in chart_config:
                     is_horizontal = random.choice([True, False])
                 else:
@@ -71,19 +75,23 @@ class Pipeline:
                 # 使用新的工厂方法创建模板
                 if is_horizontal:
                     chart_template, layout_template = TemplateFactory.create_horizontal_bar_chart_template(
+                        data=processed_data['data'],
                         meta_data=processed_data['meta_data'],
                         layout_tree=layout_tree,
                         chart_composition=chart_image_config,
                         sort_config=sort_config,
-                        color_template=color_template
+                        color_template=color_template,
+                        chart_component=chart_component_config
                     )
                 else:
                     chart_template, layout_template = TemplateFactory.create_vertical_bar_chart_template(
+                        data=processed_data['data'],
                         meta_data=processed_data['meta_data'],
                         layout_tree=layout_tree,
                         chart_composition=chart_image_config,
                         sort_config=sort_config,
-                        color_template=color_template
+                        color_template=color_template,
+                        chart_component=chart_component_config
                     )
                 
                 with open(f'/data1/liduan/generation/chart/chart_pipeline/src/data/layout_tree/template_image_mapping.json', 'r') as f:
@@ -128,7 +136,7 @@ class Pipeline:
             time_end = time.time()
             print("chart_generator time: ", time_end - time_start)
             
-            # return svg
+            # return svg    
             
             
             time_start = time.time()
@@ -139,7 +147,7 @@ class Pipeline:
                 "subtitle_config": {"text": processed_data['meta_data']['caption']},
                 "topic_icon_config": {},
                 "background_config": {},
-                "topic_icon_url": processed_data['icons']['topic'][0],
+                "topic_icon_url": processed_data['icons']['topic'][0] if len(processed_data['icons']['topic']) > 0 else None,
                 # "x_label_icon_url": processed_data['icons']['x_label'][0],
                 # "y_label_icon_url": processed_data['icons']['y_label'][0],
                 'x_data_single_url': processed_data['icons']['x_data_single'][0] if len(processed_data['icons']['x_data_single']) > 0 else None,

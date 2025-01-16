@@ -164,6 +164,7 @@ class Chart2TableDataProcessor(DataProcessor):
         result['meta_data'] = meta_data.copy()
         result['meta_data'].update(chart_data['meta_data'])
         result['meta_data'].update(topic_data)
+        result['meta_data']['chart_type'] = 'bar'
         result['data'] = chart_data['data']
         result['data_facts'] = data_fact
         result['icons'] = {}

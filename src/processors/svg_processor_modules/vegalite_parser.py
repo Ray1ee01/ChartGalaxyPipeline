@@ -92,7 +92,7 @@ class VegaLiteParser():
         relative_to_mark = self.additional_configs['chart_composition']['relative_to_mark']
         
         print("mark_group: ", mark_group)
-        # print("mark_annotation_group: ", mark_annotation_group)
+        print("mark_annotation_group: ", mark_annotation_group)
         # print("y_axis_label_group: ", y_axis_label_group)
         # build inital layout graph
         if "mark_annotation" in sequence:
@@ -219,8 +219,8 @@ class VegaLiteParser():
             
             # 如果在sequence里,"axis_label"在"x_multiple_icon"之前
             if "axis_label" in sequence and "x_multiple_icon" in sequence and sequence.index("axis_label") < sequence.index("x_multiple_icon") and not relative_to_mark[0] == "inside" and sequence.index("x_multiple_icon") < sequence.index("mark"):
-                print("chart-image-template: 2")
-                print("direction: ", direction)
+                # print("chart-image-template: 2")
+                # print("direction: ", direction)
                 # layout_strategy.direction与direction相反，如果direction是right，则layout_strategy.direction是left
                 if direction == "right":
                     layout_strategy.direction = "left"
@@ -232,14 +232,14 @@ class VegaLiteParser():
                     layout_strategy.direction = "down"
                 layout_graph.add_node_with_edges(image_element, y_axis_label_group[i], layout_strategy)
                 node = layout_graph.node_map[image_element]
-                print("node: ", node.value.tag, node.value._bounding_box)
+                # print("node: ", node.value.tag, node.value._bounding_box)
                 for prev, prev_layout_strategy in zip(node.prevs, node.prevs_edges):
-                    print("prev_layout_strategy: ", prev_layout_strategy.value.name, prev_layout_strategy.value.direction, prev_layout_strategy.value.padding, prev_layout_strategy.value.offset, prev_layout_strategy.value.alignment)
-                    print("prev: ", prev.value.tag, prev.value._bounding_box)
+                    # print("prev_layout_strategy: ", prev_layout_strategy.value.name, prev_layout_strategy.value.direction, prev_layout_strategy.value.padding, prev_layout_strategy.value.offset, prev_layout_strategy.value.alignment)
+                    # print("prev: ", prev.value.tag, prev.value._bounding_box)
                     prev_layout_strategy.process_layout()
                 for next, next_layout_strategy in zip(node.nexts, node.nexts_edges):
-                    print("next_layout_strategy: ", next_layout_strategy.value.name, next_layout_strategy.value.direction, next_layout_strategy.value.padding, next_layout_strategy.value.offset, next_layout_strategy.value.alignment)
-                    print("next: ", next.value.tag, next.value._bounding_box)
+                    # print("next_layout_strategy: ", next_layout_strategy.value.name, next_layout_strategy.value.direction, next_layout_strategy.value.padding, next_layout_strategy.value.offset, next_layout_strategy.value.alignment)
+                    # print("next: ", next.value.tag, next.value._bounding_box)
                     next_layout_strategy.process_layout()
 
                 flattened_elements_tree.children.append(image_element)
@@ -338,12 +338,14 @@ class VegaLiteParser():
     
     def if_mark_group(self, group: LayoutElement) -> bool:
         return group.tag == 'g' and \
+            'role-mark' in group.attributes.get('class', '') and \
             'graphics-object' in group.attributes.get('role', '') and \
             'mark container' in group.attributes.get('aria-roledescription', '') and \
             'text' not in group.attributes.get('aria-roledescription', '')
 
     def if_mark_annotation_group(self, group: LayoutElement) -> bool:
         return group.tag == 'g' and \
+            'role-mark' in group.attributes.get('class', '') and \
             'graphics-object' in group.attributes.get('role', '') and \
             'mark container' in group.attributes.get('aria-roledescription', '') and \
             'text' in group.attributes.get('aria-roledescription', '')
