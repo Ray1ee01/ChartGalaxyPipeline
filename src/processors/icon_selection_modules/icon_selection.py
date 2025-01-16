@@ -4,6 +4,7 @@ import random
 from ..data_enricher_modules.icon_selection import Semantics, CLIPMatcher
 import numpy as np
 from scipy.spatial import KDTree
+from .search_specific_icons import FlagIcons, LogoIcons
 
 raw_images_path = '/data1/liduan/generation/chart/iconset/colored_icons_final'
 feature_root = '/data1/liduan/jiashu/icon_cleaner/final_feat'
@@ -294,9 +295,9 @@ def hex_to_lab(hex):
     xyz = colour.sRGB_to_XYZ(rgb)
     lab = colour.XYZ_to_Lab(xyz)
     return lab
-    
+
 class IconSelector:
-    def __init__(self, pool, topic_color = None, x_label = None):
+    def __init__(self, pool, topic_color = None, spe_mode = None): #'flag' or 'logo'
         '''
         pool: icon pool (class Semantics)
         topic_color: topic color (None or list of hex color)
@@ -305,7 +306,7 @@ class IconSelector:
         if topic_color:
             topic_color = [hex_to_lab(color) for color in topic_color]
         self.sa = SimulatedAnnealing(pool, topic_color = topic_color)
-        self.x_label = x_label
+        self.spe_mode = spe_mode 
 
     def select(self, sequence1, sequence2):
         '''
