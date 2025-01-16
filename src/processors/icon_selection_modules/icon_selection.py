@@ -319,5 +319,6 @@ class IconSelector:
             icon_mode.append(3)
         if 'x_multiple_icon' in sequence2:
             icon_mode.append(4)
+        # print(icon_mode)
         # TODO
         return self.sa.run(icon_mode)

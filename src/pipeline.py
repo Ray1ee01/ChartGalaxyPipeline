@@ -21,14 +21,6 @@ class Pipeline:
 
     def execute(self, input_data: Any, layout_file_idx: int = 1, chart_image_idx: int = 1) -> str:
         try:
-            time_start = time.time()
-            # 步骤1：数据处理
-            processed_data = self.data_processor.process(input_data)
-            time_end = time.time()
-            print("data_processor time: ", time_end - time_start)
-            
-            # 从布局树文件随机选择一个配置文件
-            time_start = time.time()
             # layout_file_idx = random.randint(1, 13)
             # layout_file_idx = random.randint(1, 6)
             # layout_file_idx = 6
@@ -39,6 +31,16 @@ class Pipeline:
             # chart_image_idx = 7
             with open(f'/data1/liduan/generation/chart/chart_pipeline/src/data/chart_image/{chart_image_idx}.json', 'r') as f:
                 chart_image_config = json.load(f)
+            
+            time_start = time.time()
+            # 步骤1：数据处理
+            processed_data = self.data_processor.process(input_data, layout_config['sequence'], chart_image_config['sequence'])
+            time_end = time.time()
+            print("data_processor time: ", time_end - time_start)
+            
+            # 从布局树文件随机选择一个配置文件
+            time_start = time.time()
+
             
             color_template = ColorDesign(processed_data['palettes'])
             
@@ -138,10 +140,11 @@ class Pipeline:
                 "topic_icon_config": {},
                 "background_config": {},
                 "topic_icon_url": processed_data['icons']['topic'][0],
-                "x_label_icon_url": processed_data['icons']['x_label'][0],
-                "y_label_icon_url": processed_data['icons']['y_label'][0],
-                'x_data_single_url': processed_data['icons']['x_data_single'][0],
-                "x_data_multi_url": [icon[i] for i, icon in enumerate(processed_data['icons']['x_data_multi'])],
+                # "x_label_icon_url": processed_data['icons']['x_label'][0],
+                # "y_label_icon_url": processed_data['icons']['y_label'][0],
+                'x_data_single_url': processed_data['icons']['x_data_single'][0] if len(processed_data['icons']['x_data_single']) > 0 else None,
+                # "x_data_multi_url": [icon[i] for i, icon in enumerate(processed_data['icons']['x_data_multi'])],
+                "x_data_multi_url": processed_data['icons']['x_data_multi'],
                 "layout_template": layout_template,
                 "chart_composition": chart_image_config,
                 "chart_template": chart_template

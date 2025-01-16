@@ -157,7 +157,8 @@ class VegaLiteParser():
         print("y_axis_title_element.bounding_box: ", y_axis_title_element._bounding_box)
         
         # 从single和multi中随机取一个
-        icon_type = random.choice(["single", "multi"])
+        # icon_type = random.choice(["single", "multi"])
+        icon_type = "multi"
         if icon_type == "multi":
             image_urls = self.additional_configs['x_data_multi_url']
         else:

@@ -32,14 +32,15 @@ def main():
     )
 
     
-    layout_file_idx = random.randint(1, 6)
-    chart_image_idx = random.randint(1, 7)
+    # layout_file_idx = random.randint(1, 6)
+    # chart_image_idx = random.randint(1, 7)
     # chart_image_idx = 6
-    # layout_file_idx = 1
-    # chart_image_idx = 2
+    layout_file_idx = 2
+    chart_image_idx = 2
 
-    dataset = VizNET()
-    input_data = dataset.get_object(args.dataset_idx, args.chart_idx)
+    # dataset = VizNET()
+    # input_data = dataset.get_object(args.dataset_idx, args.chart_idx)
+    input_data = '1_1'
     result = pipeline.execute(input_data, layout_file_idx, chart_image_idx)
 
     # 保存结果,文件名包含索引信息
