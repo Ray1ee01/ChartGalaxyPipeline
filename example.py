@@ -1,10 +1,9 @@
 from src.pipeline import Pipeline
-from src.processors.data_processor import JSONDataProcessor
 from src.processors.chart_generator import VegaLiteGenerator
 from src.processors.svg_processor import SVGOptimizer
 import os
 from src.utils.dataset import VizNET
-from src.processors.data_processor import VizNetDataProcessor
+from src.processors.data_processor import *
 import random
 
 # data_dir = os.path.join(os.path.dirname(__file__),'src', 'data')
@@ -24,9 +23,14 @@ def main():
     # parser.add_argument('-i', '--chart_image_idx', type=int, default=1, help='图表图片索引')
     args = parser.parse_args()
 
-    # 创建pipeline
+    # # 创建pipeline
+    # pipeline = Pipeline(
+    #     data_processor=VizNetDataProcessor(),
+    #     chart_generator=VegaLiteGenerator(),
+    #     svg_processor=SVGOptimizer()
+    # )
     pipeline = Pipeline(
-        data_processor=VizNetDataProcessor(),
+        data_processor=Chart2TableDataProcessor(),
         chart_generator=VegaLiteGenerator(),
         svg_processor=SVGOptimizer()
     )
@@ -40,7 +44,8 @@ def main():
 
     # dataset = VizNET()
     # input_data = dataset.get_object(args.dataset_idx, args.chart_idx)
-    input_data = '1_1'
+    # input_data = '1_1'
+    input_data = 'bar_1'
     result = pipeline.execute(input_data, layout_file_idx, chart_image_idx)
 
     # 保存结果,文件名包含索引信息

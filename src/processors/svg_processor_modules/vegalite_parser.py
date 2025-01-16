@@ -91,7 +91,7 @@ class VegaLiteParser():
         sequence = self.additional_configs['chart_composition']['sequence']
         relative_to_mark = self.additional_configs['chart_composition']['relative_to_mark']
         
-        # print("mark_group: ", mark_group)
+        print("mark_group: ", mark_group)
         # print("mark_annotation_group: ", mark_annotation_group)
         # print("y_axis_label_group: ", y_axis_label_group)
         # build inital layout graph
@@ -144,7 +144,7 @@ class VegaLiteParser():
                     break
         layout_strategy_3 = parse_layout_strategy(temporal_group_element, y_axis_title_element, orientation)
         layout_graph.add_edge_by_value(temporal_group_element, y_axis_title_element, layout_strategy_3)
-        print("layout_strategy_3: ", layout_strategy_3.name, layout_strategy_3.direction, layout_strategy_3.padding, layout_strategy_3.offset, layout_strategy_3.alignment)
+        # print("layout_strategy_3: ", layout_strategy_3.name, layout_strategy_3.direction, layout_strategy_3.padding, layout_strategy_3.offset, layout_strategy_3.alignment)
         # 把 paading的绝对值改成5，保证正负和之前不变
         if layout_strategy_3.padding < 0:
             layout_strategy_3.padding = -5
@@ -153,8 +153,6 @@ class VegaLiteParser():
         nodemap = layout_graph.node_map
         node = nodemap[y_axis_title_element]
         temporal_edge = node.prevs_edges[0]
-        print("group.bounding_box: ", temporal_group_element._bounding_box)
-        print("y_axis_title_element.bounding_box: ", y_axis_title_element._bounding_box)
         
         # 从single和multi中随机取一个
         # icon_type = random.choice(["single", "multi"])
