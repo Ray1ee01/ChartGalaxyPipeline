@@ -52,9 +52,9 @@ class CLIPMatcher:
 
 
 class Semantics:
-    def __init__(self, json_file, meta_data, topk=20):
-        self.chart_data = load_json(json_file)
-        self.topic_data = meta_data
+    def __init__(self, chart_data, topic_data, topk=20):
+        self.chart_data = chart_data
+        self.topic_data = topic_data
         self.icon_cts = []
         self.icon_semantics = []
         self.topk = topk
@@ -168,9 +168,9 @@ def get_icon_pool_old(json_file, meta_data, matcher=None):
     return semantics
 
 
-def get_icon_pool(data, meta_data, matcher=None):
+def get_icon_pool(chart_data, topic_data, matcher=None):
     if matcher is None:
         matcher = CLIPMatcher()
-    semantics = Semantics(data, meta_data, topk=20)
+    semantics = Semantics(chart_data, topic_data, topk=20)
     semantics.prepare_sets(matcher)
     return semantics

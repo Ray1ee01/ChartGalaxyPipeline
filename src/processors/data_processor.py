@@ -73,12 +73,16 @@ class VizNetDataProcessor(DataProcessor):
         #     'textBeforeTable': raw_meta_data['textBeforeTable'],
         #     'textAfterTable': raw_meta_data['textAfterTable'],
         # }
-        meta = check_topic_and_caption(df, meta_data) 
+        topic_data = check_topic_and_caption(df, meta_data) 
         time_end = time.time()
         print('time cost for check_topic_and_caption: ', time_end - time_start)
-
+        
         time_start = time.time()
         
+        chart_data = {
+            "data": data,
+            "meta_data": meta_data,
+        }
         
         # # 4. get data facts
         data_facts = []
@@ -125,7 +129,7 @@ class VizNetDataProcessor(DataProcessor):
         matcher = CLIPMatcher()  # 只创建一次CLIPMatcher实例
         # json_file = os.path.join(json_path, '0.json'.)
         icon_pools = []
-        
+        icon_pools.append(get_icon_pool(chart_data, topic_data, matcher))
         # for i, chart in enumerate(res):
         #     if i <= len(res) - 2:
         #         icon_pools.append(None)
