@@ -8,6 +8,18 @@ client = OpenAI(
     base_url="https://aihubmix.com/v1"
 )
 
+def dict_to_yaml_string(meta_data):
+    yaml_str = ''
+    for key, value in meta_data.items():
+        yaml_str += f'- {key}: {value}\n'
+    return yaml_str
+
+    # - Page Title: {meta_data['pageTitle']}
+    # - Title: {meta_data['title']}
+    # - URL: {meta_data['url']}
+    # - Text Before Table: {meta_data['textBeforeTable']}
+    # - Text After Table: {meta_data['textAfterTable']}
+
 def generate_chart_description(df, meta_data, caption_size=30):
     prompt = f"""
     Given the following chart data and context, generate a relevant topic, some key words of the topic, a concise title, and an objective description.
@@ -16,11 +28,7 @@ def generate_chart_description(df, meta_data, caption_size=30):
     {df.head()}
 
     Context:
-    - Page Title: {meta_data['pageTitle']}
-    - Title: {meta_data['title']}
-    - URL: {meta_data['url']}
-    - Text Before Table: {meta_data['textBeforeTable']}
-    - Text After Table: {meta_data['textAfterTable']}
+    {dict_to_yaml_string(meta_data)}
     
     Requirements:
     1. Topic: Generate a concise topic that summarizes the main theme or insight from the data.
