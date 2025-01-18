@@ -16,6 +16,7 @@ from .svg_processor_modules.layout_processor import LayoutProcessor
 from .svg_processor_modules.tree_converter import SVGTreeConverter
 from .svg_processor_modules.elements import *
 from ..template.template import LayoutTemplate
+import time
 
 default_additional_configs = {
     "iconAttachConfig": {
@@ -132,8 +133,11 @@ class SVGOptimizer(SVGProcessor):
         svg = re.sub(r'<rect[^>]*fill="#ffffff"[^>]*>', '', svg)
         # return svg
         # print('additional_configs: ', additional_configs)
+        time_start = time.time()
         parser = VegaLiteParser(svg, additional_configs)
         parsed_svg, flattened_elements_tree, layout_graph = parser.parse()
+        time_end = time.time()
+        print(f'parser time cost: {time_end - time_start}s')
         # flattened_elements_tree._bounding_box = flattened_elements_tree.get_bounding_box()
         # print(flattened_elements_tree.dump())
         
@@ -154,7 +158,10 @@ class SVGOptimizer(SVGProcessor):
         # layout_template.root = layout_template.build_template_from_tree(additional_configs["layout_tree"])
         layout_template = additional_configs['layout_template']
         layout_processor = LayoutProcessor(flattened_elements_tree, layout_graph, layout_template, additional_configs)
+        time_start = time.time()
         element_tree = layout_processor.process()
+        time_end = time.time()
+        print(f'layout_processor time cost: {time_end - time_start}s')
         
 
         element_list = SVGTreeConverter.flatten_tree(element_tree)

@@ -87,7 +87,10 @@ def get_results(response):
         }
     return None
 
-available_caption_sizes = [10, 20, 30, 40, 50]
+# available_caption_sizes = [10, 20, 30, 40, 50]
+# available_caption_sizes = [10, 20, 30]
+available_caption_sizes = [10, 20]
+
 def check_topic_and_caption(df, meta_data):
     caption_size = random.choice(available_caption_sizes)
     prompt = generate_chart_description(df, meta_data, caption_size)

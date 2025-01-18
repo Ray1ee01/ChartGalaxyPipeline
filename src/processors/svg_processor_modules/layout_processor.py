@@ -157,7 +157,8 @@ class LayoutProcessor:
             id = element.id
             if id == 'topic_icon':
                 self._createTopicIconElement(self.topic_icon_config, element)
-                
+        elif element.tag == 'rect' and element.id == 'embellish_0':
+            self._createRectElement({},element)
         
     def process_node(self, tree: dict):
         # 自顶向下递归地创建layout element, 并应用布局
@@ -198,9 +199,16 @@ class LayoutProcessor:
             topic_icon2 = self._createTopicIcon2(topic_icon2_config)
             self.element_id_map['topic_icon2'] = topic_icon2
             return topic_icon2
+
         else:
             # 其他情况，直接返回None
             return None
+    def _createRectElement(self, rect_config: dict, element: LayoutElement):
+        element.attributes['fill'] = '#3d85e0'
+        element.attributes['width'] = 20
+        element.attributes['height'] = 100
+        element._bounding_box = element.get_bounding_box()
+    
     
     def _createTitleTextGroup(self, title_config: Dict) -> Optional[dict]:
             """创建主标题组，支持多行文本

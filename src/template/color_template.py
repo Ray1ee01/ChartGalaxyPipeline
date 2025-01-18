@@ -238,6 +238,8 @@ class ColorDesign:
                     return [bcg_color_hex for _ in range(number)]
                     
             if type == 'marks':
+                print("extend_colors1: ", extend_colors1)
+                print("extend_colors2: ", extend_colors2)
                 seed = seed_mark % 6
                 # use extend color in l or c
                 if seed == 1 and len(extend_colors1) >= number:

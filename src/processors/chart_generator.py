@@ -219,14 +219,16 @@ class VegaLiteGenerator(ChartGenerator):
                 if self.template.color_encoding.range is not None:
                     scale["range"] = self.template.color_encoding.range
                 color_encoding["scale"] = scale
-            if self.template.mark.orientation == "horizontal":
-                color_encoding["legend"] = {
-                    "orient": "bottom"
-                }
-            else:
-                color_encoding["legend"] = {
-                    "orient": "right"
-                }
+            # if self.template.mark.orientation == "horizontal":
+            #     color_encoding["legend"] = {
+            #         "orient": "bottom"
+            #     }
+            # else:
+            #     color_encoding["legend"] = {
+            #         "orient": "right"
+            #     }
+            # 不显示图例
+            color_encoding["legend"] = None
             encoding["color"] = color_encoding
         
         
@@ -245,7 +247,7 @@ class VegaLiteGenerator(ChartGenerator):
                 encoding["y"]["sort"] = "-x" if sort_config["ascending"] else "x"
             else:
                 encoding["x"]["sort"] = "-y" if sort_config["ascending"] else "y"
-        # specification["encoding"] = encoding
+        specification["encoding"] = encoding
         
         if self.template.has_annotation:
             specification["layer"] = [

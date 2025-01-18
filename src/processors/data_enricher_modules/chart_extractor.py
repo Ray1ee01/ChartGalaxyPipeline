@@ -53,8 +53,8 @@ class NaiveChartExtractor(ChartExtractor):
     def extract(self, df, item_range = [5, 10]):
         # 从df中随机筛选item_range个item
         item_num = len(df)
-        if item_num < item_range[0]:
-            return None
+        # if item_num < item_range[0]:
+        #     return None
         # 从[5, 20]的范围随机选择一个数字
         # min_num = item_range[0]
         # max_num = item_range[1]

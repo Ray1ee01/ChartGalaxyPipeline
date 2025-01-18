@@ -94,23 +94,23 @@ class Pipeline:
                         chart_component=chart_component_config
                     )
                 
-                with open(f'/data1/liduan/generation/chart/chart_pipeline/src/data/layout_tree/template_image_mapping.json', 'r') as f:
-                    template_image_mapping = json.load(f)
-                image_list = template_image_mapping[f'{layout_file_idx}.json']
-                selected_image = random.choice(image_list)
+                # with open(f'/data1/liduan/generation/chart/chart_pipeline/src/data/layout_tree/template_image_mapping.json', 'r') as f:
+                #     template_image_mapping = json.load(f)
+                # image_list = template_image_mapping[f'{layout_file_idx}.json']
+                # selected_image = random.choice(image_list)
                 # 获取柱子宽度比例
                 chart_design = ChartDesign()
-                chart_design.image_path = selected_image
+                chart_design.image_path = ""
                 bar_ratio = chart_design.get_bar_ratio()
                 print("bar_ratio: ", bar_ratio)
                 if is_horizontal:
                     chart_template.mark.height = bar_ratio['bar_band_ratio']
                 else:
                     chart_template.mark.width = bar_ratio['bar_band_ratio']
-                # 把selected_image保存到cache中
-                selected_image_name = selected_image.split('/')[-1]
-                with open(f"/data1/liduan/generation/chart/chart_pipeline/src/cache/layout_template/{selected_image_name}", 'wb') as f:
-                    shutil.copy(selected_image, f.name)
+                # # 把selected_image保存到cache中
+                # selected_image_name = selected_image.split('/')[-1]
+                # with open(f"/data1/liduan/generation/chart/chart_pipeline/src/cache/layout_template/{selected_image_name}", 'wb') as f:
+                #     shutil.copy(selected_image, f.name)
             else:
                 raise ValueError(f"不支持的图表类型: {processed_data['meta_data']['chart_type']}")
 
@@ -153,6 +153,7 @@ class Pipeline:
                 'x_data_single_url': processed_data['icons']['x_data_single'][0] if len(processed_data['icons']['x_data_single']) > 0 else None,
                 # "x_data_multi_url": [icon[i] for i, icon in enumerate(processed_data['icons']['x_data_multi'])],
                 "x_data_multi_url": processed_data['icons']['x_data_multi'],
+                "x_data_multi_icon_map": processed_data['x_data_multi_icon_map'],
                 "layout_template": layout_template,
                 "chart_composition": chart_image_config,
                 "chart_template": chart_template

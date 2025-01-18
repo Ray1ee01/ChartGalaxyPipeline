@@ -109,7 +109,8 @@ class MarkTemplate:
         
         mark_color = None
         if color_template is not None and color_template.mode == 'monochromatic':
-            seed_mark = random.randint(1, 100)
+            # seed_mark = random.randint(1, 100)
+            seed_mark = 1
             mark_color = color_template.get_color('marks', 1, seed_mark=seed_mark)[0]
 
         # 样式属性
@@ -124,9 +125,9 @@ class MarkTemplate:
         self.annotation_color_style = ColorTemplate()
         self.annotation_side = None
         # 从inner和outer之间随机取一个值
-        self.annotation_side = random.choice(["inner", "outer"])
+        # self.annotation_side = random.choice(["inner", "outer"])
         # print("self.annotation_side: ", self.annotation_side)
-        # self.annotation_side = "outer"
+        self.annotation_side = "outer"
         
         if self.annotation_side == "inner":
             seed_text = random.randint(1, 100)

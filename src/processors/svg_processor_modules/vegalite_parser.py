@@ -7,6 +7,7 @@ from .tree_converter import SVGTreeConverter
 from .elements import *
 from .layout import *
 import random
+from ..image_processor import ImageProcessor
 
 class VegaLiteParser():
     def __init__(self, svg: str, additional_configs: Dict):
@@ -157,14 +158,63 @@ class VegaLiteParser():
         # 从single和multi中随机取一个
         # icon_type = random.choice(["single", "multi"])
         icon_type = "multi"
+        x_datas = []
+        image_urls = []
+
+        
+        
         if icon_type == "multi":
-            image_urls = self.additional_configs['x_data_multi_url']
+            raw_image_urls = self.additional_configs['x_data_multi_url']
+            x_data_multi_icon_map = self.additional_configs['x_data_multi_icon_map']
+            # print("x_data_multi_icon_map: ", x_data_multi_icon_map)
+            x_data_lines = []
+            x_data_ordered = []
+            for i in range(len(mark_group)):
+                x_data_lines.append(mark_group[i].attributes.get('aria-label', ''))
+                print("x_data_lines[i]: ", x_data_lines[i])
+                for key in x_data_multi_icon_map:
+                    if str(key) in x_data_lines[i]:
+                        image_urls.append(x_data_multi_icon_map[key])
+                        print("image_urls[i]: ", image_urls[i])
+                        x_data_ordered.append(key)
+                        break
+            # for i in range(len(y_axis_label_group)):
+            #     print("y_axis_label_group[i]: ", y_axis_label_group[i].content)
+            # 获取第一个y轴标签的aria-label属性值作为字符串
+            arial_label = y_axis_label_group[0].attributes.get('aria-label', '')
+            print("arial_label: ", arial_label)
+            # 获取x_data_ordered中每个key在arial_label字符串中的位置
+            x_data_indexes = []
+            for key in x_data_ordered:
+                # 在arial_label字符串中查找每个单词key的位置
+                index = arial_label.find(str(key))
+                if index != -1:
+                    x_data_indexes.append(index)
+            print("x_data_indexes: ", x_data_indexes)
+            # 将x_data_indexes中的值替换为该值在排序后的序列中的索引
+            # 例如，x_data_indexes = [104, 69, 76, 60, 100, 91, 83]
+            # sorted_indexes = [6, 1, 2, 0, 5, 4, 3]
+            sorted_indexes = sorted(range(len(x_data_indexes)), key=lambda i: x_data_indexes[i])
+            sorted_indexes = [sorted_indexes.index(i) for i in range(len(sorted_indexes))]
+            print("sorted_indexes: ", sorted_indexes)
+            y_axis_label_group = [y_axis_label_group[i] for i in sorted_indexes]
+            for i in range(len(y_axis_label_group)):
+                print("y_axis_label_group[i]: ", y_axis_label_group[i].content)
+            
+            
         else:
             image_urls = [self.additional_configs['x_data_single_url']]*len(mark_group)
+        print("image_urls: ", image_urls)
         # print("image_urls: ", image_urls)
         # image_urls = []
         for i in range(len(image_urls)):
             base64_image = Image._getImageAsBase64(image_urls[i])
+            content_type = base64_image.split(';base64,')[0]
+            base64 = base64_image.split(';base64,')[1]
+            image_processor = ImageProcessor()
+            base64_image = image_processor.crop_by_circle(base64)
+            base64_image = f"{content_type};base64,{base64_image}"
+            
             image_element = Image(base64_image)
             original_width, original_height = Image.get_image_size(image_urls[i])
             image_element.original_width = original_width
@@ -219,7 +269,7 @@ class VegaLiteParser():
             
             # 如果在sequence里,"axis_label"在"x_multiple_icon"之前
             if "axis_label" in sequence and "x_multiple_icon" in sequence and sequence.index("axis_label") < sequence.index("x_multiple_icon") and not relative_to_mark[0] == "inside" and sequence.index("x_multiple_icon") < sequence.index("mark"):
-                # print("chart-image-template: 2")
+                print("chart-image-template: 2")
                 # print("direction: ", direction)
                 # layout_strategy.direction与direction相反，如果direction是right，则layout_strategy.direction是left
                 if direction == "right":

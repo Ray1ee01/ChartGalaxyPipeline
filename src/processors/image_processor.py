@@ -2,8 +2,9 @@
 import base64
 import io
 import requests
-from PIL import Image
+from PIL import Image, ImageDraw
 from typing import Tuple
+
 
 class ImageProcessor:
     def __init__(self):

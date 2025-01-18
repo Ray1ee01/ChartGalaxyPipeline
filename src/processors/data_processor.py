@@ -58,8 +58,8 @@ class VizNetDataProcessor(DataProcessor):
         }
         
         # # 4. get data facts
-        data_fact_generator = DataFactGenerator(chart_data, topic_data)
-        data_fact = data_fact_generator.generate_data_fact()
+        # data_fact_generator = DataFactGenerator(chart_data, topic_data)
+        # data_fact = data_fact_generator.generate_data_fact()
         
         # 5. get topic relevant images
         # topic_images_query = search_image(meta['topic'])
@@ -86,8 +86,9 @@ class VizNetDataProcessor(DataProcessor):
         result['data_facts'] = data_fact
         result['icons'] = {}
         
-        icon_selector = IconSelector(icon_pool, topic_color=None, x_label=result['meta_data']['x_label'])
+        icon_selector = IconSelector(icon_pool, topic_color=None, spe_mode='flag')
         candidate_icons = icon_selector.select(layout_sequence, chart_image_sequence)
+        print("candidate_icons: ", candidate_icons)
 
         topic_icon_idx = -1
         x_single_icon_idx = -1
@@ -130,6 +131,7 @@ class Chart2TableDataProcessor(DataProcessor):
         df, raw_meta_data = dataloader.load(raw_data)
         
         chart_extractor = NaiveChartExtractor()
+        print("df: ", df)
         data, meta_data = chart_extractor.extract(df)
         meta_data.update(raw_meta_data)
         
@@ -143,10 +145,14 @@ class Chart2TableDataProcessor(DataProcessor):
         
         # # 4. get data facts
         data_fact_generator = DataFactGenerator(chart_data, topic_data)
-        data_fact = data_fact_generator.generate_data_fact()
+        # data_fact = data_fact_generator.generate_data_fact()
+        data_fact = {}
         
         # 5. get topic relevant images
-        # topic_images_query = search_image(meta['topic'])
+        # topic_image_query = search_image(topic_data['topic'])
+        # print("topic_images_query: ", topic_image_query)
+        # topic_image_url = topic_image_query['images_results'][0]['original']
+        # return 
         topic_images_query = {}
         # if need more images, search for meta['keywords']
 
@@ -169,9 +175,11 @@ class Chart2TableDataProcessor(DataProcessor):
         result['data_facts'] = data_fact
         result['icons'] = {}
         
-        icon_selector = IconSelector(icon_pool, topic_color=None, x_label=result['meta_data']['x_label'])
+        icon_selector = IconSelector(icon_pool, topic_color=None, spe_mode='flag')
         candidate_icons = icon_selector.select(layout_sequence, chart_image_sequence)
-
+        if isinstance(candidate_icons, tuple):
+            candidate_icons = candidate_icons[0] + candidate_icons[1]
+        print("candidate_icons: ", candidate_icons)
         topic_icon_idx = -1
         x_single_icon_idx = -1
         x_multi_icon_idx = -1
@@ -186,6 +194,9 @@ class Chart2TableDataProcessor(DataProcessor):
         else:
             x_multi_icon_idx = x_single_icon_idx
         
+        icon_semantic = icon_pool
+        icon_positions = icon_semantic.icon_positions
+        
         topic_icon_pool = candidate_icons[0:topic_icon_idx+1]
         x_data_single_icon_pool = candidate_icons[topic_icon_idx+1:x_single_icon_idx+1]
         x_data_multi_icon_pool = candidate_icons[x_multi_icon_idx:]
@@ -197,12 +208,15 @@ class Chart2TableDataProcessor(DataProcessor):
         if not isinstance(x_data_multi_icon_pool, list):
             x_data_multi_icon_pool = [x_data_multi_icon_pool]
         
-        icon_semantic = icon_pool
-        icon_positions = icon_semantic.icon_positions
+
         icon_root = "/data1/liduan/generation/chart/iconset/colored_icons_new"
-        result['icons']['topic'] = [os.path.join(icon_root, icon_positions[v][0], icon_positions[v][1]) for v in topic_icon_pool]
-        result['icons']['x_data_single'] = [os.path.join(icon_root, icon_positions[v][0], icon_positions[v][1]) for v in x_data_single_icon_pool]
-        result['icons']['x_data_multi'] = [os.path.join(icon_root, icon_positions[v][0], icon_positions[v][1]) for v in x_data_multi_icon_pool]
-        
+        result['icons']['topic'] = [os.path.join(icon_root, icon_positions[v][0], icon_positions[v][1]) if isinstance(v, int) else v for v in topic_icon_pool]
+        # result['icons']['topic'] = [topic_image_url]
+        result['icons']['x_data_single'] = [os.path.join(icon_root, icon_positions[v][0], icon_positions[v][1]) if isinstance(v, int) else v for v in x_data_single_icon_pool]
+        result['icons']['x_data_multi'] = [os.path.join(icon_root, icon_positions[v][0], icon_positions[v][1]) if isinstance(v, int) else v for v in x_data_multi_icon_pool]
+        x_data_multi_icon_map = {}
+        for i, data in enumerate(result['data']):
+            x_data_multi_icon_map[data['x_data']] = result['icons']['x_data_multi'][i]
+        result['x_data_multi_icon_map'] = x_data_multi_icon_map
         result['palettes'] = palettes
         return result
