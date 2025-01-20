@@ -1,7 +1,7 @@
 from .HAIChart.extract import get_chart
 import os
 
-def package(x_type, x_label, y_type, y_label, data_x, data_y, source_file, chart_type, description):
+def package(x_type, x_label, y_type, y_label, data_x, data_y, source_file, chart_type, description, group_info = None):
     res = {}
     res['meta_data'] = {
         'x_type': x_type,
@@ -16,8 +16,10 @@ def package(x_type, x_label, y_type, y_label, data_x, data_y, source_file, chart
     }
     if len(data_x) == 1:
         res['data'] = [{'x_data': d[0], 'y_data': d[1]} for d in zip(data_x[0], data_y[0])]
-    else:
+    elif group_info is None:
         res['data'] = [{'x_data': d[0], 'y_data': d[1], 'group':i} for i in range(len(data_x)) for d in zip(data_x[i], data_y[i])]
+    else:
+        res['data'] = [{'x_data': d[0], 'y_data': d[1], 'group':group_info[i]} for i in range(len(data_x)) for d in zip(data_x[i], data_y[i])]
     return res
 
 import pandas as pd
@@ -97,10 +99,13 @@ def extract_chart(file_path, target_path, item_range = (5, 20)):
                 continue    
             if sum([y == 0 for y in y_data[0]]) > len(y_data[0]) / 2: # more than 50% zero
                 continue
-        else: # group TODO
-            continue
+        else: # group
+            assert len(chart['view'].table.classes) == len(y_data)
+            group_info = chart['view'].table.classes
+            # from IPython import embed; embed(); exit()
+            # continue
 
-        res = package(x_type, x_label, y_type, y_label, x_data, y_data, source_file, chart_type, description)
+        res = package(x_type, x_label, y_type, y_label, x_data, y_data, source_file, chart_type, description, group_info)
         results.append(res)
 
         # has_group = 1 if len(x_data) > 1 else 0
