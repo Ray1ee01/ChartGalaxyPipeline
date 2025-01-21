@@ -67,16 +67,16 @@ class VegaLiteGenerator(ChartGenerator):
                     "field": self.template.y_axis.field,
                     "type": self.template.y_axis.field_type
                 },
-                "x":{
-                    "field": self.template.x_axis.field,
-                    "type": self.template.x_axis.field_type,
-                    "aggregate": "max"
-                },
-                "y":{
-                    "field": self.template.y_axis.field,
-                    "type": self.template.y_axis.field_type,
-                    "aggregate": {"argmax": self.template.x_axis.field}
-                }
+                # "x":{
+                #     "field": self.template.x_axis.field,
+                #     "type": self.template.x_axis.field_type,
+                #     "aggregate": "max"
+                # },
+                # "y":{
+                #     "field": self.template.y_axis.field,
+                #     "type": self.template.y_axis.field_type,
+                #     "aggregate": {"argmax": self.template.x_axis.field}
+                # }
             }
         }
         text_config = annotation_specification["mark"]
