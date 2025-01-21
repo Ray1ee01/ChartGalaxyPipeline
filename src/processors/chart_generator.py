@@ -52,6 +52,10 @@ class VegaLiteGenerator(ChartGenerator):
             mark_specification["strokeOpacity"] = self.template.mark.stroke_color_style.opacity
             mark_specification["strokeWidth"] = self.template.mark.stroke_style.stroke_width
         
+        if self.template.mark.point:
+            mark_specification["point"] = self.template.mark.point
+        if self.template.mark.interpolate:
+            mark_specification["interpolate"] = self.template.mark.interpolate
         
         # TODO configure color
         annotation_specification = {
@@ -62,6 +66,16 @@ class VegaLiteGenerator(ChartGenerator):
                 "text": {
                     "field": self.template.y_axis.field,
                     "type": self.template.y_axis.field_type
+                },
+                "x":{
+                    "field": self.template.x_axis.field,
+                    "type": self.template.x_axis.field_type,
+                    "aggregate": "max"
+                },
+                "y":{
+                    "field": self.template.y_axis.field,
+                    "type": self.template.y_axis.field_type,
+                    "aggregate": {"argmax": self.template.x_axis.field}
                 }
             }
         }
@@ -79,9 +93,6 @@ class VegaLiteGenerator(ChartGenerator):
         
         if self.template.mark.orientation == "horizontal":
             side = self.template.mark.annotation_side
-            print('side: ', side)
-            print('self.template.x_axis.orientation: ', self.template.x_axis.orientation)
-            # side = "inner"
             if self.template.x_axis.orientation == "left" and side == "outer":
                 annotation_specification["mark"]["align"] = "left"
                 annotation_specification["mark"]["dx"] = 5
@@ -228,7 +239,7 @@ class VegaLiteGenerator(ChartGenerator):
             #         "orient": "right"
             #     }
             # 不显示图例
-            color_encoding["legend"] = None
+            color_encoding["legend"] = {"title": None}
             encoding["color"] = color_encoding
         
         
@@ -247,9 +258,10 @@ class VegaLiteGenerator(ChartGenerator):
                 encoding["y"]["sort"] = "-x" if sort_config["ascending"] else "x"
             else:
                 encoding["x"]["sort"] = "-y" if sort_config["ascending"] else "y"
-        specification["encoding"] = encoding
+        # specification["encoding"] = encoding
         
-        if self.template.has_annotation:
+        # if self.template.has_annotation:
+        if True:
             specification["layer"] = [
                 {"mark": mark_specification, "encoding": encoding},
                 annotation_specification
@@ -275,6 +287,8 @@ class VegaLiteGenerator(ChartGenerator):
                 x_label: item['x_data'],
                 y_label: item['y_data']
             })
+            if 'group' in item:
+                transformed_data[-1]['group'] = item['group']
         
         
         self.data = transformed_data

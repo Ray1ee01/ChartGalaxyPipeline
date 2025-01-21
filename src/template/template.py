@@ -86,10 +86,17 @@ class ColorEncodingTemplate:
         self.field_type = None
         self.domain = None
         self.range = None
-        if color_template is not None and not color_template.mode == 'monochromatic':
-            if data is not None:
-                self.domain = list(set([row['x_data'] for row in data]))
-                self.field = meta_data['x_label']
+        if len(data[0].keys()) == 3:
+            self.field = 'group'
+            self.field_type = 'nominal'
+            # domain是data列表中每个item的['group']的值的unique值
+            self.domain = list(set([item['group'] for item in data]))
+            self.range = color_template.get_color('marks', len(self.domain), seed_mark=1)
+        else:
+            if color_template is not None and not color_template.mode == 'monochromatic':
+                if data is not None:
+                    self.domain = list(set([row['x_data'] for row in data]))
+                    self.field = meta_data['x_label']
             seed_mark = 1
             colors = color_template.get_color('marks', len(self.domain), seed_mark=seed_mark)
             self.range = colors
@@ -105,12 +112,13 @@ class MarkTemplate:
     def __init__(self, color_template: ColorDesign=None):
         # 基本属性
         self.mark_type = None # 标记类型
-        
+        self.point = None
+        self.interpolate = None
         mark_color = None
-        if color_template is not None and color_template.mode == 'monochromatic':
-            # seed_mark = random.randint(1, 100)
-            seed_mark = 1
-            mark_color = color_template.get_color('marks', 1, seed_mark=seed_mark)[0]
+        # if color_template is not None and color_template.mode == 'monochromatic':
+        #     # seed_mark = random.randint(1, 100)
+        #     seed_mark = 1
+        #     mark_color = color_template.get_color('marks', 1, seed_mark=seed_mark)[0]
 
         # 样式属性
         self.fill_color_style = ColorTemplate()
@@ -181,6 +189,32 @@ class LineTemplate(MarkTemplate):
             "bottom_left": None,
             "bottom_right": None
         }
+
+        self.apply_point_styles()
+        self.apply_interpolate()
+    def apply_point_styles(self):
+        candidate_styles = [
+            True,
+            {
+                "filled": False,
+                "fill": "white"
+            },
+            None
+        ]
+        self.point = random.choice(candidate_styles)
+    def apply_interpolate(self):
+        candidate_interpolates = [
+            "basis",
+            "cardinal",
+            "catmull-rom",
+            "linear",
+            "monotone",
+            "natural",
+            "step",
+            "step-after",
+            "step-before"
+        ]
+        self.interpolate = random.choice(candidate_interpolates)
     def dump(self):
         return {
             "type": self.type,
@@ -406,7 +440,7 @@ class LineChartConstraint(LayoutConstraint):
             raise ValueError("不兼容的图表类型")
         chart_template.mark.orientation = "vertical"
         chart_template.x_axis.orientation = "bottom"
-        chart_template.x_axis.field_type = "nominal"
+        chart_template.x_axis.field_type = "quantitative"
         chart_template.y_axis.orientation = "left"
         chart_template.y_axis.field_type = "quantitative"
 
@@ -418,34 +452,38 @@ class LineChartTemplate(ChartTemplate):
         
     def create_template(self, data: list, meta_data: dict=None, color_template: ColorDesign=None):
         self.x_axis = AxisTemplate(color_template)
+        self.x_axis.field_type = "quantitative"
+        self.x_axis.field = meta_data['x_label']
+
         self.y_axis = self.x_axis.copy()
-        
+        self.y_axis.field_type = "quantitative"
+        self.y_axis.field = meta_data['y_label']
         self.mark = LineTemplate(color_template)
         
         self.color_encoding = ColorEncodingTemplate(color_template, meta_data, data)
 
-        if meta_data is None:
-            # set default value
-            self.x_axis.field = "category"
-            self.x_axis.field_type = "nominal"
+        # if meta_data is None:
+        #     # set default value
+        #     self.x_axis.field = "category"
+        #     self.x_axis.field_type = "nominal"
             
-            self.y_axis.field = "value"
-            self.y_axis.field_type = "quantitative"
-        else:
-            if meta_data['x_type'] == "categorical":
-                meta_data['x_type'] = "nominal"
-            elif meta_data['x_type'] == "numerical":
-                meta_data['x_type'] = "quantitative"
-            if meta_data['y_type'] == "categorical":
-                meta_data['y_type'] = "nominal"
-            elif meta_data['y_type'] == "numerical":
-                meta_data['y_type'] = "quantitative"
+        #     self.y_axis.field = "value"
+        #     self.y_axis.field_type = "quantitative"
+        # else:
+        #     if meta_data['x_type'] == "categorical":
+        #         meta_data['x_type'] = "nominal"
+        #     elif meta_data['x_type'] == "numerical":
+        #         meta_data['x_type'] = "quantitative"
+        #     if meta_data['y_type'] == "categorical":
+        #         meta_data['y_type'] = "nominal"
+        #     elif meta_data['y_type'] == "numerical":
+        #         meta_data['y_type'] = "quantitative"
                 
-            self.x_axis.field = meta_data['x_label']
-            self.x_axis.field_type = meta_data['x_type']
+        #     self.x_axis.field = meta_data['x_label']
+        #     self.x_axis.field_type = meta_data['x_type']
             
-            self.y_axis.field = meta_data['y_label']
-            self.y_axis.field_type = meta_data['y_type']
+        #     self.y_axis.field = meta_data['y_label']
+        #     self.y_axis.field_type = meta_data['y_type']
     
     def dump(self):
         result = {

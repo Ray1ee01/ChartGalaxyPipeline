@@ -59,13 +59,14 @@ class NaiveChartExtractor(ChartExtractor):
         # min_num = item_range[0]
         # max_num = item_range[1]
         # selected_num = np.random.randint(min_num, max_num)
-        selected_num = 7
-        if selected_num > item_num:
-            selected_num = item_num
-        item_idx = np.random.choice(item_num, selected_num, replace=False)
+        
+        # selected_num = 7
+        # if selected_num > item_num:
+        #     selected_num = item_num
+        # item_idx = np.random.choice(item_num, selected_num, replace=False)
         
         # item_idx = np.random.choice(item_num, item_num, replace=False)
-        # item_idx = np.arange(item_num)
+        item_idx = np.arange(item_num)
         meta_data = {
             'x_type': determine_column_type(df, df.columns[0]),
             'x_label': df.columns[0],
@@ -74,6 +75,10 @@ class NaiveChartExtractor(ChartExtractor):
             'y_label': df.columns[1],
             'y_axis': df.columns[1],
         }
+        if 'group' in df.columns:
+            meta_data['group_type'] = determine_column_type(df, df.columns[2])
+            meta_data['group_label'] = df.columns[2]
+            meta_data['group_axis'] = df.columns[2]
         filtered_df = df.iloc[item_idx]
         data = []
         for i in range(len(filtered_df)):
@@ -81,4 +86,6 @@ class NaiveChartExtractor(ChartExtractor):
                 'x_data': avoid_np_type(filtered_df.iloc[i][0]),
                 'y_data': avoid_np_type(filtered_df.iloc[i][1]),
             })
+            if 'group' in df.columns:
+                data[-1]['group'] = avoid_np_type(filtered_df.iloc[i][2])
         return data, meta_data
