@@ -102,7 +102,7 @@ def extract_chart(df, item_range = (5, 20)):
             # from IPython import embed; embed(); exit()
             # continue
 
-        res = package(x_type, x_label, y_type, y_label, x_data, y_data, source_file, chart_type, description, group_info)
+        res = package(x_type, x_label, y_type, y_label, x_data, y_data, "", chart_type, description, group_info)
         results.append(res)
 
         # path = os.path.join(target_path, '{}.json'.format(chart_idx))
