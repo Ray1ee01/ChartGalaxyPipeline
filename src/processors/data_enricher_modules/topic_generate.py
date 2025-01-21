@@ -20,7 +20,7 @@ def dict_to_yaml_string(meta_data):
     # - Text Before Table: {meta_data['textBeforeTable']}
     # - Text After Table: {meta_data['textAfterTable']}
 
-def generate_chart_description(df, meta_data, caption_size=30):
+def generate_chart_description_bf(df, meta_data, caption_size=30):
     prompt = f"""
     Given the following chart data and context, generate a relevant topic, some key words of the topic, a concise title, and an objective description.
 
@@ -43,7 +43,32 @@ def generate_chart_description(df, meta_data, caption_size=30):
     **Title**: [Your title here]
     **Description**: [Your objective description here (less than {caption_size} words)]
     """
+    return prompt
+
+
+def generate_chart_description(df, meta_data, caption_size=30):
+    prompt = f"""
+    Given the following chart data and context, generate a relevant topic, some key words of the topic, a news-style headline, and a subtitle.
+
+    Chart Data (df):
+    {df.head()}
+
+    Context:
+    {dict_to_yaml_string(meta_data)}
     
+    Requirements:
+    1. Topic: Generate a concise topic that summarizes the main theme or insight from the data.
+    2. Key words: Generate some key words of the given topic.
+    3. Headline: Create a news-style headline that captures the key focus of the data, avoiding conclusions. Focus on the main subject or trend. Make it attention-grabbing and informative.
+    4. Subtitle: Write an objective description, similar to a news subtitle, that summarizes the key background or factual findings. Do not mention word data and specific data points, chart elements, or numbers.
+ 
+    Please return the response in the following format:
+
+    **Topic**: [Your concise topic here (less than 5 words)]
+    **Keywords**: [Your key words here (less than 5 words for each key word)]
+    **Headline**: [Your news-style headline here]
+    **Subtitle**: [Your supporting subtitle here (less than {caption_size} words)]
+    """
     return prompt
 
 wwxxhh = 0
@@ -74,7 +99,9 @@ def ask(prompt):
 
     return 'Error!'
 
-answer_pattern = re.compile(r"\*\*Topic\*\*: (.+)\n\*\*Keywords\*\*: (.+)\n\*\*Title\*\*: (.+)\n\*\*Description\*\*: (.+)")
+# answer_pattern = re.compile(r"\*\*Topic\*\*: (.+)\n\*\*Keywords\*\*: (.+)\n\*\*Title\*\*: (.+)\n\*\*Description\*\*: (.+)")
+answer_pattern = re.compile(r"\*\*Topic\*\*: (.+)\n\*\*Keywords\*\*: (.+)\n\*\*Headline\*\*: (.+)\n\*\*Subtitle\*\*: (.+)")
+
 def get_results(response):
     # print(response)
     match = answer_pattern.match(response)
@@ -99,6 +126,8 @@ def check_topic_and_caption(df, meta_data):
     while try_num < 5:
       response = ask(prompt)
       results = get_results(response)
+      print(prompt, results)
+      exit()
       if results:
           break
       try_num += 1
