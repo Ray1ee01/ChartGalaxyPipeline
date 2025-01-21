@@ -127,6 +127,7 @@ class VizNetDataProcessor(DataProcessor):
     
 class Chart2TableDataProcessor(DataProcessor):
     def process(self, raw_data: str, layout_sequence: List[str], chart_image_sequence: List[str]) -> List[Dict]:
+        chart_type = raw_data.split('_')[0]
         dataloader = Chart2TableDataLoader()
         df, raw_meta_data = dataloader.load(raw_data)
         
@@ -170,7 +171,8 @@ class Chart2TableDataProcessor(DataProcessor):
         result['meta_data'] = meta_data.copy()
         result['meta_data'].update(chart_data['meta_data'])
         result['meta_data'].update(topic_data)
-        result['meta_data']['chart_type'] = 'bar'
+        # result['meta_data']['chart_type'] = 'bar'
+        result['meta_data']['chart_type'] = chart_type
         result['data'] = chart_data['data']
         result['data_facts'] = data_fact
         result['icons'] = {}

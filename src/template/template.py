@@ -90,7 +90,6 @@ class ColorEncodingTemplate:
             if data is not None:
                 self.domain = list(set([row['x_data'] for row in data]))
                 self.field = meta_data['x_label']
-            # seed_mark = random.randint(1, 100)
             seed_mark = 1
             colors = color_template.get_color('marks', len(self.domain), seed_mark=seed_mark)
             self.range = colors
@@ -167,8 +166,29 @@ class BarTemplate(MarkTemplate):
             "corner_radiuses": self.corner_radiuses
         }
 
-
+class LineTemplate(MarkTemplate):
+    def __init__(self, color_template: ColorDesign=None):
+        super().__init__(color_template)
+        self.type = "line"
+        self.orientation = None
+        self.height = None
+        self.width = None
+        self.fill_color_style.color = None
+            # 样式属性
+        self.corner_radiuses = {
+            "top_left": None,
+            "top_right": None,
+            "bottom_left": None,
+            "bottom_right": None
+        }
+    def dump(self):
+        return {
+            "type": self.type,
+            "orientation": self.orientation
+        }
     
+    
+
 ## TODO现在还没支持annotation
 class ChartTemplate:
     def __init__(self, template_path: str=None):
@@ -376,6 +396,70 @@ class BarChartTemplate(ChartTemplate):
             
         return result
 
+class LineChartConstraint(LayoutConstraint):
+    """折线图的布局约束"""
+    def validate(self, chart_template: ChartTemplate) -> bool:
+        return isinstance(chart_template, LineChartTemplate)
+    
+    def apply(self, chart_template: ChartTemplate) -> None:
+        if not self.validate(chart_template):
+            raise ValueError("不兼容的图表类型")
+        chart_template.mark.orientation = "vertical"
+        chart_template.x_axis.orientation = "bottom"
+        chart_template.x_axis.field_type = "nominal"
+        chart_template.y_axis.orientation = "left"
+        chart_template.y_axis.field_type = "quantitative"
+
+class LineChartTemplate(ChartTemplate):
+    def __init__(self):
+        super().__init__()
+        self.chart_type = "line"
+        self.sort = None
+        
+    def create_template(self, data: list, meta_data: dict=None, color_template: ColorDesign=None):
+        self.x_axis = AxisTemplate(color_template)
+        self.y_axis = self.x_axis.copy()
+        
+        self.mark = LineTemplate(color_template)
+        
+        self.color_encoding = ColorEncodingTemplate(color_template, meta_data, data)
+
+        if meta_data is None:
+            # set default value
+            self.x_axis.field = "category"
+            self.x_axis.field_type = "nominal"
+            
+            self.y_axis.field = "value"
+            self.y_axis.field_type = "quantitative"
+        else:
+            if meta_data['x_type'] == "categorical":
+                meta_data['x_type'] = "nominal"
+            elif meta_data['x_type'] == "numerical":
+                meta_data['x_type'] = "quantitative"
+            if meta_data['y_type'] == "categorical":
+                meta_data['y_type'] = "nominal"
+            elif meta_data['y_type'] == "numerical":
+                meta_data['y_type'] = "quantitative"
+                
+            self.x_axis.field = meta_data['x_label']
+            self.x_axis.field_type = meta_data['x_type']
+            
+            self.y_axis.field = meta_data['y_label']
+            self.y_axis.field_type = meta_data['y_type']
+    
+    def dump(self):
+        result = {
+            "x_axis": self.x_axis.dump(),
+            "y_axis": self.y_axis.dump(),
+            "mark": self.mark.dump(),
+            "color_encoding": self.color_encoding.dump()
+        }
+        
+        if self.sort is not None:
+            result["sort"] = self.sort
+            
+        return result
+
 # 创建组合模板的工厂类
 class TemplateFactory:
     @staticmethod
@@ -480,6 +564,53 @@ class TemplateFactory:
             chart_template.y_axis.has_label = chart_component.get('y_axis', {}).get('has_label', True)
         return chart_template, layout_template
 
+    @staticmethod
+    def create_line_chart_template(
+        data: list,
+        meta_data: dict,
+        layout_tree: dict,
+        chart_composition: dict = None,
+        sort_config: dict = None,
+        color_template: ColorDesign = None,
+        chart_component: dict = None
+    ):
+        """创建折线图模板"""
+        chart_template = LineChartTemplate()
+        chart_template.create_template(data, meta_data, color_template)
+        layout_template = LayoutTemplate()
+        
+        # 添加方向约束
+        layout_template.add_constraint(LineChartConstraint())
+        
+        # 添加排序约束
+        if sort_config:
+            layout_template.add_constraint(
+                SortConstraint(
+                    sort_by=sort_config["by"],
+                    ascending=sort_config.get("ascending", True)
+                )
+            )
+        
+        if chart_composition:
+            if "mark_annotation" in chart_composition['sequence']:
+                chart_template.has_annotation = True
+        
+        # 构建布局树
+        layout_template.root = layout_template.build_template_from_tree(layout_tree)
+        
+        # 应用约束
+        layout_template.apply_constraints(chart_template)
+        
+        if chart_component:
+            chart_template.x_axis.has_domain = chart_component.get('x_axis', {}).get('has_domain', True)
+            chart_template.x_axis.has_tick = chart_component.get('x_axis', {}).get('has_tick', True)
+            chart_template.x_axis.has_label = chart_component.get('x_axis', {}).get('has_label', True)
+            chart_template.y_axis.has_domain = chart_component.get('y_axis', {}).get('has_domain', True)
+            chart_template.y_axis.has_tick = chart_component.get('y_axis', {}).get('has_tick', True)
+            chart_template.y_axis.has_label = chart_component.get('y_axis', {}).get('has_label', True)
+        
+        return chart_template, layout_template
+        
 class FontTemplate:
     def __init__(self):
         self.font = None

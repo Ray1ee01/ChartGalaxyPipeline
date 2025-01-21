@@ -23,18 +23,10 @@ class Pipeline:
 
     def execute(self, input_data: Any, layout_file_idx: int = 1, chart_image_idx: int = 1, chart_component_idx: int = 1, color_mode: str = 'monochromatic') -> str:
         try:
-            # layout_file_idx = random.randint(1, 13)
-            # layout_file_idx = random.randint(1, 6)
-            # layout_file_idx = 6
-            # layout_file_idx = 6
             with open(f'/data1/liduan/generation/chart/chart_pipeline/src/data/layout_tree/{layout_file_idx}.json', 'r') as f:
                 layout_config = json.load(f)
-            # chart_image_idx = random.randint(1, 7)
-            # chart_image_idx = 7
             with open(f'/data1/liduan/generation/chart/chart_pipeline/src/data/chart_image/{chart_image_idx}.json', 'r') as f:
                 chart_image_config = json.load(f)
-            
-            # chart_component_idx = random.randint(1, 2)
             with open(f'/data1/liduan/generation/chart/chart_pipeline/src/data/chart_component/{chart_component_idx}.json', 'r') as f:
                 chart_component_config = json.load(f)
             
@@ -42,7 +34,6 @@ class Pipeline:
             # 步骤1：数据处理
             processed_data = self.data_processor.process(input_data, layout_config['sequence'], chart_image_config['sequence'])
             time_end = time.time()
-            print("data_processor time: ", time_end - time_start)
             
             # 从布局树文件随机选择一个配置文件
             time_start = time.time()
@@ -54,6 +45,8 @@ class Pipeline:
             title_config = layout_config.get('title_config', {})
             subtitle_config = layout_config.get('subtitle_config', {})
             topic_icon_config = layout_config.get('topic_icon_config', {})
+            sort_config = None
+            
             # 创建模板
             if processed_data['meta_data']['chart_type'] == 'bar':
                 # 如果没有指定orientation,随机选择
@@ -64,7 +57,6 @@ class Pipeline:
                 
                 # 只有在chart_config中指定了sort时才配置排序
                 # is_horizontal = False
-                sort_config = None
                 if 'sort' in chart_config:
                     sort_config = {
                         "by": "x" if is_horizontal else "y",  # 水平图按x轴排序,垂直图按y轴排序
@@ -111,6 +103,16 @@ class Pipeline:
                 # selected_image_name = selected_image.split('/')[-1]
                 # with open(f"/data1/liduan/generation/chart/chart_pipeline/src/cache/layout_template/{selected_image_name}", 'wb') as f:
                 #     shutil.copy(selected_image, f.name)
+            elif processed_data['meta_data']['chart_type'] == 'line':
+                chart_template, layout_template = TemplateFactory.create_line_chart_template(
+                    data=processed_data['data'],
+                    meta_data=processed_data['meta_data'],
+                    layout_tree=layout_tree,
+                    chart_composition=chart_image_config,
+                    sort_config=sort_config,
+                    color_template=color_template,
+                    chart_component=chart_component_config
+                )
             else:
                 raise ValueError(f"不支持的图表类型: {processed_data['meta_data']['chart_type']}")
 
@@ -136,7 +138,7 @@ class Pipeline:
             time_end = time.time()
             print("chart_generator time: ", time_end - time_start)
             
-            # return svg    
+            return svg    
             
             
             time_start = time.time()
