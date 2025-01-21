@@ -31,6 +31,10 @@ def svg_to_png(svg_path, output_path, width, height):
     from cairosvg import svg2png
     
     # Convert SVG to PNG with specified dimensions
+    # print("svg_path: ", svg_path)
+    # print("output_path: ", output_path)
+    # print("width: ", width)
+    # print("height: ", height)
     svg2png(url=svg_path, 
             write_to=output_path,
             output_width=width,
@@ -64,16 +68,20 @@ class FlagIcons(SpecificIcons):
         best_match_index = self.__find_best_match(text_embedding)
         return self.country_data[best_match_index]
 
-    def search_and_save(self, text: str, output_path: str, width: int, height: int) --> str:
+    def search_and_save(self, text: str, output_path: str, width: int, height: int) -> str:
+        if 'USA' in text:
+            text = 'United States of America'
         result = self.search(text)
         image = result['flag_1x1'] if width == height else result['flag_4x3']
-        file_name = image.split('/')[-1]
+        file_name = image.split('/')[-1].split('.')[0] + '.png'
         svg_path = os.path.join(flag_path, image)
-        output_file = os.path.join(flag_path, file_name)
+        output_file = os.path.join(output_path, file_name)
         svg_to_png(svg_path, output_file, width, height)
+        print("text: ", text)
+        print("output_file: ", output_file)
         return output_file
 
-class logo_icons(SpecificIcons):
+class LogoIcons(SpecificIcons):
     def __init__(self):
         self.name = 'Logo Icons'
         self.model = SentenceTransformer(model_path)
@@ -103,7 +111,7 @@ class logo_icons(SpecificIcons):
         result = self.search(text)
         image = result + '.svg'
         svg_path = os.path.join(logo_path, image)
-        output_file = os.path.join(output_path, image)
+        output_file = os.path.join(output_path, image.split('.')[0] + '.png')
         svg_to_png(svg_path, output_file, width, height)
         return output_file
 

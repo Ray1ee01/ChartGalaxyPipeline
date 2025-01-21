@@ -96,8 +96,6 @@ class VegaLiteGenerator(ChartGenerator):
                 annotation_specification["mark"]["dx"] = 5
         else:
             side = self.template.mark.annotation_side
-            print('side: ', side)
-            print('self.template.x_axis.orientation: ', self.template.x_axis.orientation)
             if self.template.x_axis.orientation == "top" and side == "outer":
                 annotation_specification["mark"]["baseline"] = "top"
                 annotation_specification["mark"]["dy"] = 5
@@ -207,12 +205,13 @@ class VegaLiteGenerator(ChartGenerator):
             encoding["y"] = y_encoding
 
         # 颜色编码配置
-        if self.template.color_encoding and self.template.color_encoding.field:
+        if self.template.color_encoding and self.template.color_encoding.domain is not None:
             color_encoding = {
-                "field": self.template.color_encoding.field,
-                "type": self.template.color_encoding.field_type,
             }
-            
+            if self.template.color_encoding.field is not None:
+                color_encoding["field"] = self.template.color_encoding.field
+            if self.template.color_encoding.field_type is not None:
+                color_encoding["type"] = self.template.color_encoding.field_type
             if self.template.color_encoding.domain is not None or self.template.color_encoding.range is not None:
                 scale = {}
                 if self.template.color_encoding.domain is not None:
@@ -220,7 +219,16 @@ class VegaLiteGenerator(ChartGenerator):
                 if self.template.color_encoding.range is not None:
                     scale["range"] = self.template.color_encoding.range
                 color_encoding["scale"] = scale
-                
+            # if self.template.mark.orientation == "horizontal":
+            #     color_encoding["legend"] = {
+            #         "orient": "bottom"
+            #     }
+            # else:
+            #     color_encoding["legend"] = {
+            #         "orient": "right"
+            #     }
+            # 不显示图例
+            color_encoding["legend"] = None
             encoding["color"] = color_encoding
         
         
@@ -228,9 +236,9 @@ class VegaLiteGenerator(ChartGenerator):
         if self.template.mark.orientation == "horizontal":
             # 交换encoding中的x和y
             encoding["x"], encoding["y"] = encoding["y"], encoding["x"]
+            mark_specification["orient"] = "horizontal"
         
         if self.template.sort:
-            print('sort: ', self.template.sort)
             sort_config = {
                 "by": self.template.sort["by"],
                 "ascending": self.template.sort["ascending"]
@@ -273,7 +281,7 @@ class VegaLiteGenerator(ChartGenerator):
         self.template = template
 
         spec = self.template_to_spec()
-        # print('spec: ', spec)
+        print('spec: ', spec)
         result = NodeBridge.execute_node_script(self.script_path, {
             "spec": spec,
         })

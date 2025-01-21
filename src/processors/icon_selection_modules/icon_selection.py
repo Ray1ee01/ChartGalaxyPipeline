@@ -309,7 +309,7 @@ class IconSelector:
         self.sa = SimulatedAnnealing(pool, topic_color = topic_color)
         self.spe_mode = spe_mode 
 
-    def select(self, sequence1, sequence2, cache_path='/data1/jiashu/ChartPipeline/src/cache'):
+    def select(self, sequence1, sequence2, cache_path='/data1/liduan/generation/chart/chart_pipeline/src/cache'):
         '''
         sequence1: list of total template sequence
         sequence2: list of chart sequence

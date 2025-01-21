@@ -678,9 +678,45 @@ class Text(AtomElement):
             baseline_y = old_bounding_box.maxy
             baseline_x = (old_bounding_box.minx+old_bounding_box.maxx)/2
             translate_y = baseline_y - new_bounding_box.maxy
-            translate_x = baseline_x - new_bounding_box.minx
+            translate_x = baseline_x - (new_bounding_box.minx+new_bounding_box.maxx)/2
             self.attributes['transform'] = f"translate({translate_x}, {translate_y}) {self.attributes['transform']}"
     
+    def scale_to_fit(self, scale: float):
+        old_bounding_box = self.get_bounding_box()
+        current_transform = self.attributes.get('transform', '')
+        # 检查rotate是否在transform中
+        rotate_flag = False
+        if 'rotate' in current_transform:
+            rotate_flag = True
+        self.update_scale(scale, scale)
+        new_bounding_box = self.get_bounding_box()
+        text_anchor = self.attributes.get('text-anchor', 'start')
+        if rotate_flag and text_anchor == 'end':
+            baseline_y = old_bounding_box.miny
+            baseline_x = (old_bounding_box.minx+old_bounding_box.maxx)/2
+            translate_y = baseline_y - new_bounding_box.miny
+            translate_x = baseline_x - (new_bounding_box.minx+new_bounding_box.maxx)/2
+            self.attributes['transform'] = f"translate({translate_x}, {translate_y}) {self.attributes['transform']}"
+        elif rotate_flag and (text_anchor == 'start' or text_anchor == 'middle'):
+            baseline_y = old_bounding_box.maxy
+            baseline_x = (old_bounding_box.minx+old_bounding_box.maxx)/2
+            translate_y = baseline_y - new_bounding_box.maxy
+            translate_x = baseline_x - (new_bounding_box.minx+new_bounding_box.maxx)/2
+            self.attributes['transform'] = f"translate({translate_x}, {translate_y}) {self.attributes['transform']}"
+        elif not rotate_flag and text_anchor == 'end':
+            baseline_y = (old_bounding_box.miny+old_bounding_box.maxy)/2
+            baseline_x = old_bounding_box.maxx
+            translate_y = baseline_y - (new_bounding_box.miny+new_bounding_box.maxy)/2
+            translate_x = baseline_x - new_bounding_box.maxx
+            self.attributes['transform'] = f"translate({translate_x}, {translate_y}) {self.attributes['transform']}"
+        elif not rotate_flag and (text_anchor == 'start' or text_anchor == 'middle'):
+            baseline_y = (old_bounding_box.miny+old_bounding_box.maxy)/2
+            baseline_x = old_bounding_box.minx
+            translate_y = baseline_y - (new_bounding_box.miny+new_bounding_box.maxy)/2
+            translate_x = baseline_x - new_bounding_box.minx
+            self.attributes['transform'] = f"translate({translate_x}, {translate_y}) {self.attributes['transform']}"
+        
+        
     def _parse_length(self, value: str) -> float:
         """解析单位的长度值"""
         if not value:

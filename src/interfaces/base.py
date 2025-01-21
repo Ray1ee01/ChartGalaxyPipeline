@@ -4,7 +4,7 @@ from ..template.template import ChartTemplate
 
 class DataProcessor(ABC):
     @abstractmethod
-    def process(self, raw_data: Any) -> List[Dict]:
+    def process(self, raw_data: Any, layout_sequence: List[str]=[], chart_image_sequence: List[str]=[]) -> List[Dict]:
         pass
 
 class ChartGenerator(ABC):

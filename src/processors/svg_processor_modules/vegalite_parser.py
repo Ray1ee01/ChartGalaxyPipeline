@@ -7,6 +7,7 @@ from .tree_converter import SVGTreeConverter
 from .elements import *
 from .layout import *
 import random
+from ..image_processor import ImageProcessor
 
 class VegaLiteParser():
     def __init__(self, svg: str, additional_configs: Dict):
@@ -91,13 +92,30 @@ class VegaLiteParser():
         sequence = self.additional_configs['chart_composition']['sequence']
         relative_to_mark = self.additional_configs['chart_composition']['relative_to_mark']
         
-        # print("mark_group: ", mark_group)
-        # print("mark_annotation_group: ", mark_annotation_group)
+        print("mark_group: ", mark_group)
+        print("mark_annotation_group: ", mark_annotation_group)
         # print("y_axis_label_group: ", y_axis_label_group)
         # build inital layout graph
+        if "mark_annotation" in sequence:
+            if direction == "up" or direction == "down":
+                min_mark_width = max([mark.get_bounding_box().width for mark in mark_group])
+                max_annotation_width = max([mark_annotation.get_bounding_box().width for mark_annotation in mark_annotation_group])
+                if min_mark_width < max_annotation_width:
+                    for i in range(len(mark_annotation_group)):
+                        if direction == "up":
+                            if self.additional_configs['chart_template'].mark.annotation_side == "inner":
+                                mark_annotation_group[i].rotate_to_fit("top")
+                            else:
+                                mark_annotation_group[i].rotate_to_fit("bottom")
+                        else:
+                            if self.additional_configs['chart_template'].mark.annotation_side == "inner":
+                                mark_annotation_group[i].rotate_to_fit("bottom")
+                            else:
+                                mark_annotation_group[i].rotate_to_fit("top")
+            
+            
         for i in range(len(mark_group)):
             if "mark_annotation" in sequence:
-                
                 mark_group[i]._bounding_box = mark_group[i].get_bounding_box()
                 mark_annotation_group[i]._bounding_box = mark_annotation_group[i].get_bounding_box()
                 y_axis_label_group[i]._bounding_box = y_axis_label_group[i].get_bounding_box()
@@ -127,7 +145,7 @@ class VegaLiteParser():
                     break
         layout_strategy_3 = parse_layout_strategy(temporal_group_element, y_axis_title_element, orientation)
         layout_graph.add_edge_by_value(temporal_group_element, y_axis_title_element, layout_strategy_3)
-        print("layout_strategy_3: ", layout_strategy_3.name, layout_strategy_3.direction, layout_strategy_3.padding, layout_strategy_3.offset, layout_strategy_3.alignment)
+        # print("layout_strategy_3: ", layout_strategy_3.name, layout_strategy_3.direction, layout_strategy_3.padding, layout_strategy_3.offset, layout_strategy_3.alignment)
         # 把 paading的绝对值改成5，保证正负和之前不变
         if layout_strategy_3.padding < 0:
             layout_strategy_3.padding = -5
@@ -136,19 +154,67 @@ class VegaLiteParser():
         nodemap = layout_graph.node_map
         node = nodemap[y_axis_title_element]
         temporal_edge = node.prevs_edges[0]
-        print("group.bounding_box: ", temporal_group_element._bounding_box)
-        print("y_axis_title_element.bounding_box: ", y_axis_title_element._bounding_box)
         
         # 从single和multi中随机取一个
-        icon_type = random.choice(["single", "multi"])
+        # icon_type = random.choice(["single", "multi"])
+        icon_type = "multi"
+        x_datas = []
+        image_urls = []
+
+        
+        
         if icon_type == "multi":
-            image_urls = self.additional_configs['x_data_multi_url']
+            raw_image_urls = self.additional_configs['x_data_multi_url']
+            x_data_multi_icon_map = self.additional_configs['x_data_multi_icon_map']
+            # print("x_data_multi_icon_map: ", x_data_multi_icon_map)
+            x_data_lines = []
+            x_data_ordered = []
+            for i in range(len(mark_group)):
+                x_data_lines.append(mark_group[i].attributes.get('aria-label', ''))
+                print("x_data_lines[i]: ", x_data_lines[i])
+                for key in x_data_multi_icon_map:
+                    if str(key) in x_data_lines[i]:
+                        image_urls.append(x_data_multi_icon_map[key])
+                        print("image_urls[i]: ", image_urls[i])
+                        x_data_ordered.append(key)
+                        break
+            # for i in range(len(y_axis_label_group)):
+            #     print("y_axis_label_group[i]: ", y_axis_label_group[i].content)
+            # 获取第一个y轴标签的aria-label属性值作为字符串
+            arial_label = y_axis_label_group[0].attributes.get('aria-label', '')
+            print("arial_label: ", arial_label)
+            # 获取x_data_ordered中每个key在arial_label字符串中的位置
+            x_data_indexes = []
+            for key in x_data_ordered:
+                # 在arial_label字符串中查找每个单词key的位置
+                index = arial_label.find(str(key))
+                if index != -1:
+                    x_data_indexes.append(index)
+            print("x_data_indexes: ", x_data_indexes)
+            # 将x_data_indexes中的值替换为该值在排序后的序列中的索引
+            # 例如，x_data_indexes = [104, 69, 76, 60, 100, 91, 83]
+            # sorted_indexes = [6, 1, 2, 0, 5, 4, 3]
+            sorted_indexes = sorted(range(len(x_data_indexes)), key=lambda i: x_data_indexes[i])
+            sorted_indexes = [sorted_indexes.index(i) for i in range(len(sorted_indexes))]
+            print("sorted_indexes: ", sorted_indexes)
+            y_axis_label_group = [y_axis_label_group[i] for i in sorted_indexes]
+            for i in range(len(y_axis_label_group)):
+                print("y_axis_label_group[i]: ", y_axis_label_group[i].content)
+            
+            
         else:
             image_urls = [self.additional_configs['x_data_single_url']]*len(mark_group)
         print("image_urls: ", image_urls)
+        # print("image_urls: ", image_urls)
         # image_urls = []
         for i in range(len(image_urls)):
             base64_image = Image._getImageAsBase64(image_urls[i])
+            content_type = base64_image.split(';base64,')[0]
+            base64 = base64_image.split(';base64,')[1]
+            image_processor = ImageProcessor()
+            base64_image = image_processor.crop_by_circle(base64)
+            base64_image = f"{content_type};base64,{base64_image}"
+            
             image_element = Image(base64_image)
             original_width, original_height = Image.get_image_size(image_urls[i])
             image_element.original_width = original_width
@@ -204,7 +270,7 @@ class VegaLiteParser():
             # 如果在sequence里,"axis_label"在"x_multiple_icon"之前
             if "axis_label" in sequence and "x_multiple_icon" in sequence and sequence.index("axis_label") < sequence.index("x_multiple_icon") and not relative_to_mark[0] == "inside" and sequence.index("x_multiple_icon") < sequence.index("mark"):
                 print("chart-image-template: 2")
-                print("direction: ", direction)
+                # print("direction: ", direction)
                 # layout_strategy.direction与direction相反，如果direction是right，则layout_strategy.direction是left
                 if direction == "right":
                     layout_strategy.direction = "left"
@@ -216,14 +282,14 @@ class VegaLiteParser():
                     layout_strategy.direction = "down"
                 layout_graph.add_node_with_edges(image_element, y_axis_label_group[i], layout_strategy)
                 node = layout_graph.node_map[image_element]
-                print("node: ", node.value.tag, node.value._bounding_box)
+                # print("node: ", node.value.tag, node.value._bounding_box)
                 for prev, prev_layout_strategy in zip(node.prevs, node.prevs_edges):
-                    print("prev_layout_strategy: ", prev_layout_strategy.value.name, prev_layout_strategy.value.direction, prev_layout_strategy.value.padding, prev_layout_strategy.value.offset, prev_layout_strategy.value.alignment)
-                    print("prev: ", prev.value.tag, prev.value._bounding_box)
+                    # print("prev_layout_strategy: ", prev_layout_strategy.value.name, prev_layout_strategy.value.direction, prev_layout_strategy.value.padding, prev_layout_strategy.value.offset, prev_layout_strategy.value.alignment)
+                    # print("prev: ", prev.value.tag, prev.value._bounding_box)
                     prev_layout_strategy.process_layout()
                 for next, next_layout_strategy in zip(node.nexts, node.nexts_edges):
-                    print("next_layout_strategy: ", next_layout_strategy.value.name, next_layout_strategy.value.direction, next_layout_strategy.value.padding, next_layout_strategy.value.offset, next_layout_strategy.value.alignment)
-                    print("next: ", next.value.tag, next.value._bounding_box)
+                    # print("next_layout_strategy: ", next_layout_strategy.value.name, next_layout_strategy.value.direction, next_layout_strategy.value.padding, next_layout_strategy.value.offset, next_layout_strategy.value.alignment)
+                    # print("next: ", next.value.tag, next.value._bounding_box)
                     next_layout_strategy.process_layout()
 
                 flattened_elements_tree.children.append(image_element)
@@ -271,13 +337,6 @@ class VegaLiteParser():
             # 如果在sequence里,"x_multiple_icon"在"mark_annotation"之前，且在"mark"之后
             elif "x_multiple_icon" in sequence and "mark_annotation" in sequence and sequence.index("x_multiple_icon") < sequence.index("mark_annotation") and sequence.index("x_multiple_icon") > sequence.index("mark") and not relative_to_mark[0] == "inside":
                 print("chart-image-template: 6")
-                #     layout_strategy.direction = "left"
-                # elif direction == "left":
-                #     layout_strategy.direction = "right"
-                # elif direction == "down":
-                #     layout_strategy.direction = "up"
-                # else:
-                #     layout_strategy.direction = "down"
                 layout_strategy.direction = direction
                 layout_graph.add_node_with_edges(image_element, mark_annotation_group[i], layout_strategy)
                 node = layout_graph.node_map[image_element]
@@ -300,9 +359,6 @@ class VegaLiteParser():
                         layout_strategy.direction = "down"
                 else:
                     layout_strategy.direction = direction
-                # print("direction: ", direction)
-                # print("relative_to_mark: ", relative_to_mark)
-                # print("layout_strategy.direction: ", layout_strategy.direction)
                 layout_graph.add_node_with_edges(mark_group[i], image_element, layout_strategy)
                 node = layout_graph.node_map[image_element]
                 for prev, prev_layout_strategy in zip(node.prevs, node.prevs_edges):
@@ -332,12 +388,14 @@ class VegaLiteParser():
     
     def if_mark_group(self, group: LayoutElement) -> bool:
         return group.tag == 'g' and \
+            'role-mark' in group.attributes.get('class', '') and \
             'graphics-object' in group.attributes.get('role', '') and \
             'mark container' in group.attributes.get('aria-roledescription', '') and \
             'text' not in group.attributes.get('aria-roledescription', '')
 
     def if_mark_annotation_group(self, group: LayoutElement) -> bool:
         return group.tag == 'g' and \
+            'role-mark' in group.attributes.get('class', '') and \
             'graphics-object' in group.attributes.get('role', '') and \
             'mark container' in group.attributes.get('aria-roledescription', '') and \
             'text' in group.attributes.get('aria-roledescription', '')

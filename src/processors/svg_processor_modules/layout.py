@@ -19,15 +19,53 @@ class WidthHeightConstraint(SizeConstraint):
     def rescale(self, reference_element: LayoutElement, layout_element: LayoutElement) -> None:
         reference_element_bounding_box = reference_element.get_bounding_box()
         layout_element_bounding_box = layout_element.get_bounding_box()
+        print("reference_element_bounding_box: ", reference_element_bounding_box)
+        print("layout_element_bounding_box: ", layout_element_bounding_box)
+        print("self.max_width_ratio: ", self.max_width_ratio)
+        print("self.max_height_ratio: ", self.max_height_ratio)
+        print("self.min_width_ratio: ", self.min_width_ratio)
+        print("self.min_height_ratio: ", self.min_height_ratio)
+        max_width = -1
+        max_height = -1
+        min_width = 1000000
+        min_height = 1000000
         if self.max_width_ratio is not None:
-            scale_x = min(self.max_width_ratio, reference_element_bounding_box.width / layout_element_bounding_box.width)
+            max_width = self.max_width_ratio * reference_element_bounding_box.width
+        if self.max_height_ratio is not None:
+            max_height = self.max_height_ratio * reference_element_bounding_box.height
+        if self.min_width_ratio is not None:
+            min_width = self.min_width_ratio * reference_element_bounding_box.width
+        if self.min_height_ratio is not None:
+            min_height = self.min_height_ratio * reference_element_bounding_box.height
+        if max_width > 0 and min_width < 1000000:
+            scale_x = (max_width + min_width)/2 / layout_element_bounding_box.width
+        elif max_width > 0:
+            scale_x = max_width / layout_element_bounding_box.width
+        elif min_width < 1000000:
+            scale_x = min_width / layout_element_bounding_box.width
         else:
             scale_x = 1.0
-            
-        if self.max_height_ratio is not None:
-            scale_y = min(self.max_height_ratio, reference_element_bounding_box.height / layout_element_bounding_box.height)
+        if max_height > 0 and min_height < 1000000:
+            scale_y = (max_height + min_height)/2 / layout_element_bounding_box.height
+        elif max_height > 0:
+            scale_y = max_height / layout_element_bounding_box.height
+        elif min_height < 1000000:
+            scale_y = min_height / layout_element_bounding_box.height
         else:
             scale_y = 1.0
+        # if self.max_width_ratio is not None:
+        #     scale_x = min(self.max_width_ratio, reference_element_bounding_box.width / layout_element_bounding_box.width)
+        # else:
+        #     scale_x = 1.0
+            
+        # if self.max_height_ratio is not None:
+        #     scale_y_up = min(self.max_height_ratio, reference_element_bounding_box.height / layout_element_bounding_box.height)
+        # if self.min_height_ratio is not None:
+        #     scale_y_down = 
+        # else:
+        #     scale_y = 1.0
+        print("scale_x: ", scale_x)
+        print("scale_y: ", scale_y)
         if (not scale_x == 1.0) or (not scale_y == 1.0):
             # print("reference_element.tag: ", reference_element.tag)
             # print("layout_element.tag: ", layout_element.tag)

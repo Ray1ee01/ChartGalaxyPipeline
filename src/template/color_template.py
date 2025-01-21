@@ -238,6 +238,8 @@ class ColorDesign:
                     return [bcg_color_hex for _ in range(number)]
                     
             if type == 'marks':
+                print("extend_colors1: ", extend_colors1)
+                print("extend_colors2: ", extend_colors2)
                 seed = seed_mark % 6
                 # use extend color in l or c
                 if seed == 1 and len(extend_colors1) >= number:
@@ -430,7 +432,7 @@ class ColorDesign:
                 res = [main_color1_hex, main_color2_hex, middle_color]
                 return res
 
-        if mode == 'polychromatic':
+        if self.mode == 'polychromatic':
             other_color = None
             inside_color = None
             if self.lightness == 'dark':
@@ -445,6 +447,7 @@ class ColorDesign:
                 return [other_color for _ in range(number)]
             if type == 'marks':
                 seed = seed_mark % 2
+                print("rgb_pool_hex: ", self.rgb_pool_hex)
                 if seed == 0:
                     return [self.basic_colors_hex[2] for _ in range(number)]
                 return self.rgb_pool_hex[:number] + [self.basic_colors_hex[2] for _ in range(number - len(self.rgb_pool_hex))]  

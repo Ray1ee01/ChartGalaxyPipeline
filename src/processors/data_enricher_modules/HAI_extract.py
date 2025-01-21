@@ -1,4 +1,4 @@
-from .HAIChart.extract import get_chart
+from .HAIChart.extract import get_chart_from_df
 import os
 
 def package(x_type, x_label, y_type, y_label, data_x, data_y, source_file, chart_type, description, group_info = None):
@@ -39,14 +39,12 @@ def contains_letter(string_array):
 
 norank_list = [('Mon', 'Tue', 'Wed', 'Thur', 'Fri', 'Sat', 'Sun'), ('Mon', 'Tue', 'Wed', 'Thur', 'Fri'), ('Mon', 'Tue', 'Wed', 'Thur', 'Fri', 'Sat')]
 
-def extract_chart(file_path, target_path, item_range = (5, 20)):
-    file_name = os.path.basename(file_path)
+def extract_chart(df, item_range = (5, 20)):
     try:
-        chart_list = get_chart(file_path)
+        chart_list = get_chart_from_df(df)
     except:
         print('error in get_chart')
         return
-    df = pd.read_csv(file_path)
     chart_idx = 0
     results = []
     for chart in chart_list:
@@ -57,7 +55,6 @@ def extract_chart(file_path, target_path, item_range = (5, 20)):
         y_label = chart['view'].y_name
         x_data = chart['view'].X
         y_data = chart['view'].Y
-        source_file = file_name.split('.csv')[0]
         chart_type = chart['chart']
         description = chart['describe']
         if type(x_data[0][0]) is datetime.date:
@@ -105,20 +102,16 @@ def extract_chart(file_path, target_path, item_range = (5, 20)):
             # from IPython import embed; embed(); exit()
             # continue
 
-        res = package(x_type, x_label, y_type, y_label, x_data, y_data, source_file, chart_type, description, group_info)
+        res = package(x_type, x_label, y_type, y_label, x_data, y_data, "", chart_type, description, group_info)
         results.append(res)
 
-        # has_group = 1 if len(x_data) > 1 else 0
-        # if has_group:
-        #     path = os.path.join(target_path, '{}_group.json'.format(chart_idx))
-        # else:
-        path = os.path.join(target_path, '{}.json'.format(chart_idx))
+        # path = os.path.join(target_path, '{}.json'.format(chart_idx))
             
-        try:
-            with open(path, 'w') as f:
-                json.dump(res, f)
-        except:
-            from IPython import embed; embed();exit()
+        # try:
+        #     with open(path, 'w') as f:
+        #         json.dump(res, f)
+        # except:
+        #     from IPython import embed; embed();exit()
         chart_idx += 1
     
     return results, chart_idx

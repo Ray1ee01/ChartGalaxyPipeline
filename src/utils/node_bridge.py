@@ -7,6 +7,7 @@ class NodeBridge:
     def execute_node_script(script_path: str, data: dict) -> str:
         # 将数据写入临时JSON文件
         tmp_input = 'temp_input.json'
+        
         with open(tmp_input, 'w') as f:
             json.dump(data, f)
         # 执行Node.js脚本

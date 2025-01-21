@@ -52,9 +52,9 @@ class CLIPMatcher:
 
 
 class Semantics:
-    def __init__(self, json_file, meta_data, topk=20):
-        self.chart_data = load_json(json_file)
-        self.topic_data = meta_data
+    def __init__(self, chart_data, topic_data, topk=20):
+        self.chart_data = chart_data
+        self.topic_data = topic_data
         self.icon_cts = []
         self.icon_semantics = []
         self.topk = topk
@@ -90,8 +90,6 @@ class Semantics:
             [0, 1, 2, 4], # topic, x label, y label and x data
         ]
                 
-        
-
     def prepare_sets(self, matcher: CLIPMatcher):
         self.icon_pool = []
         self.icon_dist = []
@@ -150,7 +148,8 @@ class Semantics:
             for i in range(len(icon_set)):
                 icon_set[i] = file2idx[self.icon_positions[icon_set[i]][1]]
             
-def get_icon_pool(json_file, meta_data, matcher=None):
+
+def get_icon_pool_old(json_file, meta_data, matcher=None):
     if matcher is None:
         # time_start = time.time()
         matcher = CLIPMatcher()
@@ -166,4 +165,13 @@ def get_icon_pool(json_file, meta_data, matcher=None):
     semantics.prepare_sets(matcher)
     # time_end = time.time()
     # print('time cost for prepare_sets: ', time_end - time_start)
+    return semantics
+
+
+def get_icon_pool(chart_data, topic_data, matcher=None):
+    if matcher is None:
+        matcher = CLIPMatcher()
+    topk = max(20, len(chart_data['data'])*2)
+    semantics = Semantics(chart_data, topic_data, topk=topk)
+    semantics.prepare_sets(matcher)
     return semantics
