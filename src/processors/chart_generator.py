@@ -55,6 +55,19 @@ class VegaLiteGenerator(ChartGenerator):
             mark_specification["strokeOpacity"] = self.template.mark.stroke_color_style.opacity
             mark_specification["strokeWidth"] = self.template.mark.stroke_style.stroke_width
         
+        additional_mark_specification = {}
+        if self.template.mark.type == "line":
+            additional_mark_specification["type"] = "area"
+            mark_specification["type"] = "line"
+            # additional_mark_specification["fill"] = self.template.mark.stroke_color_style.color
+            additional_mark_specification["fillOpacity"] = 0.3
+            # additional_mark_specification["stroke"] = self.template.mark.stroke_color_style.color
+            # additional_mark_specification["strokeOpacity"] = self.template.mark.stroke_color_style.opacity
+            # additional_mark_specification["strokeWidth"] = self.template.mark.stroke_style.stroke_width
+            # additional_mark_specification["transform"] = [
+            #     {"filter": "datum.group == 'Chile'"}
+            # ]
+        
         if self.template.mark.point:
             mark_specification["point"] = self.template.mark.point
         if self.template.mark.interpolate:
@@ -264,14 +277,21 @@ class VegaLiteGenerator(ChartGenerator):
         specification["encoding"] = encoding
         
         if self.template.has_annotation:
-        # if True:
             specification["layer"] = [
                 {"mark": mark_specification, "encoding": encoding},
                 annotation_specification
             ]
         else:
-            specification["mark"] = mark_specification
-        
+            specification["layer"] = [{"mark": mark_specification}]
+        print("additional_mark_specification: ", additional_mark_specification)
+        if additional_mark_specification:
+            specification["layer"] = [{
+                "mark": additional_mark_specification,
+                "encoding": encoding,
+                "transform": [
+                    {"filter": "datum.group == 'Chile'"}
+                ]
+            }] + specification["layer"]
         return specification
 
     def generate(self, data: dict, template: ChartTemplate) -> Tuple[str, Dict, Dict]:

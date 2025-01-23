@@ -138,7 +138,7 @@ class Pipeline:
             time_end = time.time()
             print("chart_generator time: ", time_end - time_start)
             
-            # return svg    
+            return svg    
             
             
             time_start = time.time()
@@ -158,7 +158,8 @@ class Pipeline:
                 "x_data_multi_icon_map": processed_data['x_data_multi_icon_map'],
                 "layout_template": layout_template,
                 "chart_composition": chart_image_config,
-                "chart_template": chart_template
+                "chart_template": chart_template,
+                "meta_data": processed_data['meta_data']
             })
             additional_configs['title_config'].update(title_config)
             additional_configs['subtitle_config'].update(subtitle_config)

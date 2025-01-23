@@ -905,6 +905,236 @@ class Path(Graphical):
         
         return BoundingBox(maxX - minX, maxY - minY, minX, maxX, minY, maxY)
     
+    def is_intersect(self, other: BoundingBox) -> bool:
+        """判断路径是否与给定的边界框相交
+        
+        Args:
+            other: 要检查的边界框
+            
+        Returns:
+            bool: 如果路径与边界框相交返回True，否则返回False
+        """
+        # 首先进行快速边界框检查
+        path_bbox = self.get_bounding_box()
+        if not path_bbox.is_overlapping(other):
+            return False
+        
+        # 解析路径命令
+        d = self.attributes.get('d', '')
+        if not d:
+            return False
+        
+        # 获取变换矩阵
+        transform = self.get_transform_matrix
+        
+        commands = self._parse_path(d)
+        current_x = 0
+        current_y = 0
+        last_move_x = 0  # 记录上一个M命令的位置
+        last_move_y = 0
+        
+        # 遍历所有路径命令
+        for cmd in commands:
+            command = cmd['command']
+            points = cmd['points']
+            
+            if command in ['M', 'm']:  # 移动命令
+                if command == 'm':  # 相对坐标
+                    current_x += points[0]
+                    current_y += points[1]
+                else:  # 绝对坐标
+                    current_x = points[0]
+                    current_y = points[1]
+                
+                # 应用变换
+                if transform:
+                    transformed_point = self._apply_matrix(current_x, current_y, transform)
+                    current_x, current_y = transformed_point
+                
+                last_move_x = current_x
+                last_move_y = current_y
+                
+            elif command in ['L', 'l']:  # 直线命令
+                end_x = points[0] if command == 'L' else current_x + points[0]
+                end_y = points[1] if command == 'L' else current_y + points[1]
+                
+                # 应用变换
+                if transform:
+                    transformed_end = self._apply_matrix(end_x, end_y, transform)
+                    end_x, end_y = transformed_end
+                
+                # 检查线段是否与边界框相交
+                if self._line_intersects_box(current_x, current_y, end_x, end_y, other):
+                    return True
+                
+                current_x = end_x
+                current_y = end_y
+                
+            elif command in ['H', 'h']:  # 水平线命令
+                end_x = points[0] if command == 'H' else current_x + points[0]
+                end_y = current_y
+                
+                # 应用变换
+                if transform:
+                    transformed_end = self._apply_matrix(end_x, end_y, transform)
+                    end_x, end_y = transformed_end
+                
+                # 检查水平线是否与边界框相交
+                if self._line_intersects_box(current_x, current_y, end_x, end_y, other):
+                    return True
+                
+                current_x = end_x
+                current_y = end_y
+                
+            elif command in ['V', 'v']:  # 垂直线命令
+                end_x = current_x
+                end_y = points[0] if command == 'V' else current_y + points[0]
+                
+                # 应用变换
+                if transform:
+                    transformed_end = self._apply_matrix(end_x, end_y, transform)
+                    end_x, end_y = transformed_end
+                
+                # 检查垂直线是否与边界框相交
+                if self._line_intersects_box(current_x, current_y, end_x, end_y, other):
+                    return True
+                
+                current_x = end_x
+                current_y = end_y
+                
+            elif command in ['Z', 'z']:  # 闭合路径命令
+                # 检查到起始点的连线是否与边界框相交
+                if self._line_intersects_box(current_x, current_y, last_move_x, last_move_y, other):
+                    return True
+                
+                current_x = last_move_x
+                current_y = last_move_y
+                
+            elif command in ['C', 'c']:  # 三次贝塞尔曲线
+                # 对于贝塞尔曲线，我们使用简化的检查方法
+                # 将曲线分解为多个线段进行近似检查
+                if command == 'c':  # 相对坐标转换为绝对坐标
+                    points = [
+                        current_x + points[0], current_y + points[1],  # 控制点1
+                        current_x + points[2], current_y + points[3],  # 控制点2
+                        current_x + points[4], current_y + points[5]   # 终点
+                    ]
+                else:
+                    points = points.copy()  # 复制一份以免修改原始数据
+                
+                # 应用变换到所有控制点
+                if transform:
+                    for i in range(0, len(points), 2):
+                        transformed_point = self._apply_matrix(points[i], points[i+1], transform)
+                        points[i], points[i+1] = transformed_point
+                    transformed_start = self._apply_matrix(current_x, current_y, transform)
+                    current_x, current_y = transformed_start
+                
+                # 使用德卡斯特里奥算法将曲线分成多个点
+                curve_points = self._get_bezier_points(
+                    (current_x, current_y),
+                    (points[0], points[1]),
+                    (points[2], points[3]),
+                    (points[4], points[5]),
+                    10  # 分段数
+                )
+                
+                # 检查曲线的每个线段是否与边界框相交
+                for i in range(len(curve_points) - 1):
+                    if self._line_intersects_box(
+                        curve_points[i][0], curve_points[i][1],
+                        curve_points[i+1][0], curve_points[i+1][1],
+                        other
+                    ):
+                        return True
+                
+                current_x = points[4]
+                current_y = points[5]
+        
+        return False
+
+    def _line_intersects_box(self, x1: float, y1: float, x2: float, y2: float, box: BoundingBox) -> bool:
+        """检查线段是否与边界框相交
+        
+        Args:
+            x1, y1: 线段起点坐标
+            x2, y2: 线段终点坐标
+            box: 边界框
+            
+        Returns:
+            bool: 如果线段与边界框相交返回True，否则返回False
+        """
+        # Cohen-Sutherland算法的区域编码
+        def compute_code(x: float, y: float) -> int:
+            code = 0
+            if x < box.minx:
+                code |= 1  # 左
+            elif x > box.maxx:
+                code |= 2  # 右
+            if y < box.miny:
+                code |= 4  # 下
+            elif y > box.maxy:
+                code |= 8  # 上
+            return code
+        
+        # 获取端点的区域编码
+        code1 = compute_code(x1, y1)
+        code2 = compute_code(x2, y2)
+        
+        while True:
+            # 如果两个端点都在边界框内
+            if code1 == 0 and code2 == 0:
+                return True
+            
+            # 如果线段完全在边界框的一侧
+            if code1 & code2:
+                return False
+            
+            # 选择在边界框外的一个端点
+            code = code1 if code1 else code2
+            
+            # 计算与边界框的交点
+            if code & 1:  # 左边界
+                y = y1 + (y2 - y1) * (box.minx - x1) / (x2 - x1)
+                x = box.minx
+            elif code & 2:  # 右边界
+                y = y1 + (y2 - y1) * (box.maxx - x1) / (x2 - x1)
+                x = box.maxx
+            elif code & 4:  # 下边界
+                x = x1 + (x2 - x1) * (box.miny - y1) / (y2 - y1)
+                y = box.miny
+            else:  # 上边界
+                x = x1 + (x2 - x1) * (box.maxy - y1) / (y2 - y1)
+                y = box.maxy
+            
+            # 更新端点
+            if code == code1:
+                x1, y1 = x, y
+                code1 = compute_code(x1, y1)
+            else:
+                x2, y2 = x, y
+                code2 = compute_code(x2, y2)
+
+    def _get_bezier_points(self, p0: tuple, p1: tuple, p2: tuple, p3: tuple, num_points: int) -> list:
+        """计算三次贝塞尔曲线上的点
+        
+        Args:
+            p0: 起点坐标
+            p1, p2: 控制点坐标
+            p3: 终点坐标
+            num_points: 采样点数量
+            
+        Returns:
+            list: 曲线上的点列表
+        """
+        points = []
+        for i in range(num_points):
+            t = i / (num_points - 1)
+            # 三次贝塞尔曲线公式
+            x = (1-t)**3 * p0[0] + 3*(1-t)**2 * t * p1[0] + 3*(1-t) * t**2 * p2[0] + t**3 * p3[0]
+            y = (1-t)**3 * p0[1] + 3*(1-t)**2 * t * p1[1] + 3*(1-t) * t**2 * p2[1] + t**3 * p3[1]
+            points.append((x, y))
+        return points
     
     def _dump_extra_info(self) -> List[str]:
         return [f"Path params: {self.params[:30]}..." if self.params else "Path params: <empty>"]
@@ -935,3 +1165,65 @@ class Circle(Graphical):
     
     def _dump_extra_info(self) -> List[str]:
         return [f"Center: ({self.cx:.2f}, {self.cy:.2f})", f"Radius: {self.r:.2f}"]
+
+
+class RectEmbellish(GroupElement):
+    """矩形装饰元素"""
+    def __init__(self, type = 2, colors = ['#ff0000', '#0000ff']):
+        super().__init__()
+        self.type = type
+        self.colors = colors
+        self.attributes = {
+            'width': 15,
+            'height': 150
+        }
+        if type == 0:
+            rect = Rect()
+            rect.attributes = {
+                'x': 0,
+                'y': 0,
+                'width': 15,
+                'height': 150,
+                'fill': colors[0]
+            }
+            self.children.append(rect)
+        
+        elif type == 1:
+            rect1 = Rect()
+            rect1.attributes = {
+                'x': 0,
+                'y': 0,
+                'width': 10,
+                'height': 150,
+                'fill': colors[0]
+            }
+            self.children.append(rect1)
+            rect2 = Rect()
+            rect2.attributes = {
+                'x': 10,
+                'y': 0,
+                'width': 10,
+                'height': 150,
+                'fill': colors[1]
+            }
+            self.children.append(rect2)
+            
+        elif type == 2:
+            params = 'M0,0 L15,0 L15,50 L0,40 Z'
+            path1 = Path(params)
+            path1.attributes = {
+                'd': params,
+                'fill': colors[0]
+            }
+            self.children.append(path1)
+            
+            params = 'M0,150 L15,150 L15,110 L0,100 Z'
+            path2 = Path(params)
+            path2.attributes = {
+                'd': params, 
+                'fill': colors[1]
+            }
+            self.children.append(path2)
+
+            
+            

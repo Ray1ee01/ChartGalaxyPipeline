@@ -52,9 +52,10 @@ def main():
     # chart_component_idxs = [2]
     
     input_data = f'line_8'
+    # input_data = f'line_74'
     result = pipeline.execute(input_data, layout_file_idx, chart_image_idx, chart_component_idx, color_mode)
-    # output_filename = f'output_d22_l14_i2_c2_mmonochromatic.svg'
-    output_filename = f'output_d8_l14_i2_c2_mpolychromatic.svg'
+    output_filename = f'output_d8_l16_i9_c3_mpolychromatic.svg'
+    # output_filename = f'output_d74_l16_i9_c3_mpolychromatic.svg'
     with open(os.path.join(output_dir, output_filename), "w") as f:
         f.write(result)
     # color_modes = ['monochromatic', 'complementary', 'analogous', 'polychromatic']

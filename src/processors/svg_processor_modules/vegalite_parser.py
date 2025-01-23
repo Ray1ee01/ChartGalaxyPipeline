@@ -387,12 +387,15 @@ class VegaLiteParser():
     
     
     def if_mark_group(self, group: LayoutElement) -> bool:
-        return group.tag == 'g' and \
-            'role-mark' in group.attributes.get('class', '') and \
-            'graphics-object' in group.attributes.get('role', '') and \
-            'mark container' in group.attributes.get('aria-roledescription', '') and \
-            'text' not in group.attributes.get('aria-roledescription', '')
-
+        if self.additional_configs['meta_data']['chart_type'] == 'bar':
+            return group.tag == 'g' and \
+                'role-mark' in group.attributes.get('class', '') and \
+                'graphics-object' in group.attributes.get('role', '') and \
+                'mark container' in group.attributes.get('aria-roledescription', '') and \
+                'text' not in group.attributes.get('aria-roledescription', '')
+        elif self.additional_configs['meta_data']['chart_type'] == 'line':
+            return group.tag == 'g' and \
+                'mark-group role-scope' in group.attributes.get('class', '')
     def if_mark_annotation_group(self, group: LayoutElement) -> bool:
         return group.tag == 'g' and \
             'role-mark' in group.attributes.get('class', '') and \

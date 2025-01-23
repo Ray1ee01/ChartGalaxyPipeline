@@ -346,6 +346,8 @@ class SVGTreeConverter:
                     flattened.extend(flatten_group(child, final_transform, merged_attributes))
                 else:
                     # 处理叶子节点
+                    if SVGTreeConverter.if_ignore_element(child):
+                        continue
                     child_copy = copy.deepcopy(child)
                     # 更新属性
                     for key, value in merged_attributes.items():
@@ -436,3 +438,9 @@ class SVGTreeConverter:
             ]
             return tree
         return tree
+    
+    @staticmethod
+    def if_ignore_element(element: LayoutElement) -> bool:
+        if 'background' in element.attributes.get('class', '') or 'foreground' in element.attributes.get('class', ''):
+            return True
+        return False

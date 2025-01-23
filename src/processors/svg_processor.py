@@ -157,8 +157,8 @@ class SVGOptimizer(SVGProcessor):
         # # print('additional_configs["layout_tree"]: ', additional_configs["layout_tree"])
         # layout_template.root = layout_template.build_template_from_tree(additional_configs["layout_tree"])
         layout_template = additional_configs['layout_template']
-        layout_processor = LayoutProcessor(flattened_elements_tree, layout_graph, layout_template, additional_configs)
         time_start = time.time()
+        layout_processor = LayoutProcessor(flattened_elements_tree, layout_graph, layout_template, additional_configs)
         element_tree = layout_processor.process()
         time_end = time.time()
         print(f'layout_processor time cost: {time_end - time_start}s')
