@@ -114,262 +114,262 @@ class VegaLiteParser():
                                 mark_annotation_group[i].rotate_to_fit("top")
             
             
-        for i in range(len(mark_group)):
-            if "mark_annotation" in sequence:
-                mark_group[i]._bounding_box = mark_group[i].get_bounding_box()
-                mark_annotation_group[i]._bounding_box = mark_annotation_group[i].get_bounding_box()
-                y_axis_label_group[i]._bounding_box = y_axis_label_group[i].get_bounding_box()
-                layout_strategy_1 = parse_layout_strategy(mark_group[i], mark_annotation_group[i], orientation)
-                layout_strategy_2 = parse_layout_strategy(mark_group[i], y_axis_label_group[i], orientation)
-                layout_graph.add_edge_by_value(mark_group[i], mark_annotation_group[i], layout_strategy_1)
-                layout_graph.add_edge_by_value(mark_group[i], y_axis_label_group[i], layout_strategy_2)
-            else:
-                mark_group[i]._bounding_box = mark_group[i].get_bounding_box()
-                mark_annotation_group[i]._bounding_box = mark_annotation_group[i].get_bounding_box()
-                layout_strategy_1 = parse_layout_strategy(mark_group[i], mark_annotation_group[i],orientation)
-                layout_graph.add_edge_by_value(mark_group[i], mark_annotation_group[i], layout_strategy_1)
+        # for i in range(len(mark_group)):
+        #     if "mark_annotation" in sequence:
+        #         mark_group[i]._bounding_box = mark_group[i].get_bounding_box()
+        #         mark_annotation_group[i]._bounding_box = mark_annotation_group[i].get_bounding_box()
+        #         y_axis_label_group[i]._bounding_box = y_axis_label_group[i].get_bounding_box()
+        #         layout_strategy_1 = parse_layout_strategy(mark_group[i], mark_annotation_group[i], orientation)
+        #         layout_strategy_2 = parse_layout_strategy(mark_group[i], y_axis_label_group[i], orientation)
+        #         layout_graph.add_edge_by_value(mark_group[i], mark_annotation_group[i], layout_strategy_1)
+        #         layout_graph.add_edge_by_value(mark_group[i], y_axis_label_group[i], layout_strategy_2)
+        #     else:
+        #         mark_group[i]._bounding_box = mark_group[i].get_bounding_box()
+        #         mark_annotation_group[i]._bounding_box = mark_annotation_group[i].get_bounding_box()
+        #         layout_strategy_1 = parse_layout_strategy(mark_group[i], mark_annotation_group[i],orientation)
+        #         layout_graph.add_edge_by_value(mark_group[i], mark_annotation_group[i], layout_strategy_1)
         
-        temporal_group_element = GroupElement()
-        temporal_group_element.tag = "g"
-        temporal_group_element.id = "temporal_group"
-        temporal_group_element.children = y_axis_label_group
-        temporal_group_element._bounding_box = temporal_group_element.get_bounding_box()
+        # temporal_group_element = GroupElement()
+        # temporal_group_element.tag = "g"
+        # temporal_group_element.id = "temporal_group"
+        # temporal_group_element.children = y_axis_label_group
+        # temporal_group_element._bounding_box = temporal_group_element.get_bounding_box()
         
-        # y_axis_title_element = 
-        # 从y_axis_group中找到title对应的element
-        for element in y_axis_group:
-            if element.tag == "text":
-                # 如果class attribute中有"role-axis-title"
-                if "role-axis-title" in element.attributes.get('class', ''):
-                    y_axis_title_element = element
-                    break
-        layout_strategy_3 = parse_layout_strategy(temporal_group_element, y_axis_title_element, orientation)
-        layout_graph.add_edge_by_value(temporal_group_element, y_axis_title_element, layout_strategy_3)
-        # print("layout_strategy_3: ", layout_strategy_3.name, layout_strategy_3.direction, layout_strategy_3.padding, layout_strategy_3.offset, layout_strategy_3.alignment)
-        # 把 paading的绝对值改成5，保证正负和之前不变
-        if layout_strategy_3.padding < 0:
-            layout_strategy_3.padding = -5
-        else:
-            layout_strategy_3.padding = 5
-        nodemap = layout_graph.node_map
-        node = nodemap[y_axis_title_element]
-        temporal_edge = node.prevs_edges[0]
+        # # y_axis_title_element = 
+        # # 从y_axis_group中找到title对应的element
+        # for element in y_axis_group:
+        #     if element.tag == "text":
+        #         # 如果class attribute中有"role-axis-title"
+        #         if "role-axis-title" in element.attributes.get('class', ''):
+        #             y_axis_title_element = element
+        #             break
+        # layout_strategy_3 = parse_layout_strategy(temporal_group_element, y_axis_title_element, orientation)
+        # layout_graph.add_edge_by_value(temporal_group_element, y_axis_title_element, layout_strategy_3)
+        # # print("layout_strategy_3: ", layout_strategy_3.name, layout_strategy_3.direction, layout_strategy_3.padding, layout_strategy_3.offset, layout_strategy_3.alignment)
+        # # 把 paading的绝对值改成5，保证正负和之前不变
+        # if layout_strategy_3.padding < 0:
+        #     layout_strategy_3.padding = -5
+        # else:
+        #     layout_strategy_3.padding = 5
+        # nodemap = layout_graph.node_map
+        # node = nodemap[y_axis_title_element]
+        # temporal_edge = node.prevs_edges[0]
         
-        # 从single和multi中随机取一个
-        # icon_type = random.choice(["single", "multi"])
-        icon_type = "multi"
-        x_datas = []
-        image_urls = []
-
-        
-        
-        if icon_type == "multi":
-            raw_image_urls = self.additional_configs['x_data_multi_url']
-            x_data_multi_icon_map = self.additional_configs['x_data_multi_icon_map']
-            # print("x_data_multi_icon_map: ", x_data_multi_icon_map)
-            x_data_lines = []
-            x_data_ordered = []
-            for i in range(len(mark_group)):
-                x_data_lines.append(mark_group[i].attributes.get('aria-label', ''))
-                print("x_data_lines[i]: ", x_data_lines[i])
-                for key in x_data_multi_icon_map:
-                    if str(key) in x_data_lines[i]:
-                        image_urls.append(x_data_multi_icon_map[key])
-                        print("image_urls[i]: ", image_urls[i])
-                        x_data_ordered.append(key)
-                        break
-            # for i in range(len(y_axis_label_group)):
-            #     print("y_axis_label_group[i]: ", y_axis_label_group[i].content)
-            # 获取第一个y轴标签的aria-label属性值作为字符串
-            arial_label = y_axis_label_group[0].attributes.get('aria-label', '')
-            print("arial_label: ", arial_label)
-            # 获取x_data_ordered中每个key在arial_label字符串中的位置
-            x_data_indexes = []
-            for key in x_data_ordered:
-                # 在arial_label字符串中查找每个单词key的位置
-                index = arial_label.find(str(key))
-                if index != -1:
-                    x_data_indexes.append(index)
-            print("x_data_indexes: ", x_data_indexes)
-            # 将x_data_indexes中的值替换为该值在排序后的序列中的索引
-            # 例如，x_data_indexes = [104, 69, 76, 60, 100, 91, 83]
-            # sorted_indexes = [6, 1, 2, 0, 5, 4, 3]
-            sorted_indexes = sorted(range(len(x_data_indexes)), key=lambda i: x_data_indexes[i])
-            sorted_indexes = [sorted_indexes.index(i) for i in range(len(sorted_indexes))]
-            print("sorted_indexes: ", sorted_indexes)
-            y_axis_label_group = [y_axis_label_group[i] for i in sorted_indexes]
-            for i in range(len(y_axis_label_group)):
-                print("y_axis_label_group[i]: ", y_axis_label_group[i].content)
-            
-            
-        else:
-            image_urls = [self.additional_configs['x_data_single_url']]*len(mark_group)
-        print("image_urls: ", image_urls)
-        # print("image_urls: ", image_urls)
+        # # 从single和multi中随机取一个
+        # # icon_type = random.choice(["single", "multi"])
+        # icon_type = "multi"
+        # x_datas = []
         # image_urls = []
-        for i in range(len(image_urls)):
-            base64_image = Image._getImageAsBase64(image_urls[i])
-            content_type = base64_image.split(';base64,')[0]
-            base64 = base64_image.split(';base64,')[1]
-            image_processor = ImageProcessor()
-            base64_image = image_processor.crop_by_circle(base64)
-            base64_image = f"{content_type};base64,{base64_image}"
-            
-            image_element = Image(base64_image)
-            original_width, original_height = Image.get_image_size(image_urls[i])
-            image_element.original_width = original_width
-            image_element.original_height = original_height
-            aspect_ratio = original_width / original_height
-            
-            # 计算新的width和height
-            if orientation == "horizontal":
-                height = mark_group[i].get_bounding_box().height * 1.1
-                width = height * aspect_ratio
-            else:
-                width = mark_group[i].get_bounding_box().width * 1.1
-                height = width / aspect_ratio
-            image_element.attributes = {
-                "xlink:href": f"data:{base64_image}",
-                "width": width,
-                "height": height,
-            }
-            boundingbox = image_element.get_bounding_box()
-            image_element._bounding_box = boundingbox
-            
-            if orientation == "horizontal":
-                if relative_to_mark and relative_to_mark[0] == "inside":
-                    layout_strategy = InnerHorizontalLayoutStrategy()
-                    if relative_to_mark[1] == "start" and direction == "right":
-                        layout_strategy.direction = 'left'
-                    elif relative_to_mark[1] == "end" and direction == "right":
-                        layout_strategy.direction = 'right'
-                    elif relative_to_mark[1] == "start" and direction == "left":
-                        layout_strategy.direction = 'left'
-                    elif relative_to_mark[1] == "end" and direction == "left":
-                        layout_strategy.direction = 'right'
-                    elif relative_to_mark[1] == "middle":
-                        layout_strategy = MiddleHorizontalLayoutStrategy()
-                else:
-                    layout_strategy = HorizontalLayoutStrategy()
-            else:
-                if relative_to_mark and relative_to_mark[0] == "inside":
-                    layout_strategy = InnerVerticalLayoutStrategy()
-                    if relative_to_mark[1] == "start" and direction == "down":
-                        layout_strategy.direction = 'up'
-                    elif relative_to_mark[1] == "end" and direction == "down":
-                        layout_strategy.direction = 'down'
-                    elif relative_to_mark[1] == "start" and direction == "up":
-                        layout_strategy.direction = 'up'
-                    elif relative_to_mark[1] == "end" and direction == "up":
-                        layout_strategy.direction = 'down'
-                    elif relative_to_mark[1] == "middle":
-                        layout_strategy = MiddleVerticalLayoutStrategy()
-                else:
-                    layout_strategy = VerticalLayoutStrategy()
-            
-            # 如果在sequence里,"axis_label"在"x_multiple_icon"之前
-            if "axis_label" in sequence and "x_multiple_icon" in sequence and sequence.index("axis_label") < sequence.index("x_multiple_icon") and not relative_to_mark[0] == "inside" and sequence.index("x_multiple_icon") < sequence.index("mark"):
-                print("chart-image-template: 2")
-                # print("direction: ", direction)
-                # layout_strategy.direction与direction相反，如果direction是right，则layout_strategy.direction是left
-                if direction == "right":
-                    layout_strategy.direction = "left"
-                elif direction == "left":
-                    layout_strategy.direction = "right"
-                elif direction == "down":
-                    layout_strategy.direction = "up"
-                else:
-                    layout_strategy.direction = "down"
-                layout_graph.add_node_with_edges(image_element, y_axis_label_group[i], layout_strategy)
-                node = layout_graph.node_map[image_element]
-                # print("node: ", node.value.tag, node.value._bounding_box)
-                for prev, prev_layout_strategy in zip(node.prevs, node.prevs_edges):
-                    # print("prev_layout_strategy: ", prev_layout_strategy.value.name, prev_layout_strategy.value.direction, prev_layout_strategy.value.padding, prev_layout_strategy.value.offset, prev_layout_strategy.value.alignment)
-                    # print("prev: ", prev.value.tag, prev.value._bounding_box)
-                    prev_layout_strategy.process_layout()
-                for next, next_layout_strategy in zip(node.nexts, node.nexts_edges):
-                    # print("next_layout_strategy: ", next_layout_strategy.value.name, next_layout_strategy.value.direction, next_layout_strategy.value.padding, next_layout_strategy.value.offset, next_layout_strategy.value.alignment)
-                    # print("next: ", next.value.tag, next.value._bounding_box)
-                    next_layout_strategy.process_layout()
 
-                flattened_elements_tree.children.append(image_element)
-            elif "axis_label" in sequence and "x_multiple_icon" in sequence and sequence.index("axis_label") > sequence.index("x_multiple_icon"):
-                print("chart-image-template: 1")
-                if direction == "right":
-                    layout_strategy.direction = "left"
-                elif direction == "left":
-                    layout_strategy.direction = "right"
-                elif direction == "down":
-                    layout_strategy.direction = "up"
-                else:
-                    layout_strategy.direction = "down"
-                layout_graph.add_node_with_edges(y_axis_label_group[i], image_element, layout_strategy)
-                node = layout_graph.node_map[image_element]
-                for prev, prev_layout_strategy in zip(node.prevs, node.prevs_edges):
-                    prev_layout_strategy.process_layout()
-                flattened_elements_tree.children.append(image_element)
-                
-            elif "axis_label" in sequence and "x_multiple_icon" in sequence and sequence.index("axis_label") < sequence.index("x_multiple_icon") and relative_to_mark[0] == "inside" and relative_to_mark[1] == "start":
-                print("chart-image-template: 3")
-                if direction == "right":
-                    layout_strategy.direction = "left"
-                elif direction == "left":
-                    layout_strategy.direction = "right"
-                elif direction == "down":
-                    layout_strategy.direction = "up"
-                else:
-                    layout_strategy.direction = "down"
-                layout_graph.add_node_with_edges(mark_group[i], image_element, layout_strategy)
-                node = layout_graph.node_map[image_element]
-                for prev, prev_layout_strategy in zip(node.prevs, node.prevs_edges):
-                    prev_layout_strategy.process_layout()
-                flattened_elements_tree.children.append(image_element)
-            # 如果在sequence里,"x_multiple_icon"在"mark_annotation"之后
-            elif "x_multiple_icon" in sequence and "mark_annotation" in sequence and sequence.index("x_multiple_icon") > sequence.index("mark_annotation"):
-                print("chart-image-template: 7")
-                layout_strategy.direction = direction
-                    
-                layout_graph.add_node_with_edges(mark_annotation_group[i], image_element, layout_strategy)
-                node = layout_graph.node_map[image_element]
-                for prev, prev_layout_strategy in zip(node.prevs, node.prevs_edges):
-                    prev_layout_strategy.process_layout()
-                flattened_elements_tree.children.append(image_element)
-            # 如果在sequence里,"x_multiple_icon"在"mark_annotation"之前，且在"mark"之后
-            elif "x_multiple_icon" in sequence and "mark_annotation" in sequence and sequence.index("x_multiple_icon") < sequence.index("mark_annotation") and sequence.index("x_multiple_icon") > sequence.index("mark") and not relative_to_mark[0] == "inside":
-                print("chart-image-template: 6")
-                layout_strategy.direction = direction
-                layout_graph.add_node_with_edges(image_element, mark_annotation_group[i], layout_strategy)
-                node = layout_graph.node_map[image_element]
-                for prev, prev_layout_strategy in zip(node.prevs, node.prevs_edges):
-                    prev_layout_strategy.process_layout()
-                for next, next_layout_strategy in zip(node.nexts, node.nexts_edges):
-                    next_layout_strategy.process_layout()
-                flattened_elements_tree.children.append(image_element)
-            # 如果在sequence里,"x_multiple_icon"在"mark_annotation"之前，且在"mark"之后
-            elif "x_multiple_icon" in sequence and "mark_annotation" in sequence and sequence.index("x_multiple_icon") < sequence.index("mark_annotation") and sequence.index("x_multiple_icon") > sequence.index("mark") and relative_to_mark[0] == "inside":
-                print("chart-image-template: 4 or 5")
-                if relative_to_mark[1] == "start":
-                    if direction == "right":
-                        layout_strategy.direction = "left"
-                    elif direction == "left":
-                        layout_strategy.direction = "right"
-                    elif direction == "down":
-                        layout_strategy.direction = "up"
-                    else:
-                        layout_strategy.direction = "down"
-                else:
-                    layout_strategy.direction = direction
-                layout_graph.add_node_with_edges(mark_group[i], image_element, layout_strategy)
-                node = layout_graph.node_map[image_element]
-                for prev, prev_layout_strategy in zip(node.prevs, node.prevs_edges):
-                    prev_layout_strategy.process_layout()
-                flattened_elements_tree.children.append(image_element)
-            else:
-                # 报错
-                raise ValueError(f"不支持的sequence: {sequence}")
+        
+        
+        # if icon_type == "multi":
+        #     raw_image_urls = self.additional_configs['x_data_multi_url']
+        #     x_data_multi_icon_map = self.additional_configs['x_data_multi_icon_map']
+        #     # print("x_data_multi_icon_map: ", x_data_multi_icon_map)
+        #     x_data_lines = []
+        #     x_data_ordered = []
+        #     for i in range(len(mark_group)):
+        #         x_data_lines.append(mark_group[i].attributes.get('aria-label', ''))
+        #         print("x_data_lines[i]: ", x_data_lines[i])
+        #         for key in x_data_multi_icon_map:
+        #             if str(key) in x_data_lines[i]:
+        #                 image_urls.append(x_data_multi_icon_map[key])
+        #                 print("image_urls[i]: ", image_urls[i])
+        #                 x_data_ordered.append(key)
+        #                 break
+        #     # for i in range(len(y_axis_label_group)):
+        #     #     print("y_axis_label_group[i]: ", y_axis_label_group[i].content)
+        #     # 获取第一个y轴标签的aria-label属性值作为字符串
+        #     arial_label = y_axis_label_group[0].attributes.get('aria-label', '')
+        #     print("arial_label: ", arial_label)
+        #     # 获取x_data_ordered中每个key在arial_label字符串中的位置
+        #     x_data_indexes = []
+        #     for key in x_data_ordered:
+        #         # 在arial_label字符串中查找每个单词key的位置
+        #         index = arial_label.find(str(key))
+        #         if index != -1:
+        #             x_data_indexes.append(index)
+        #     print("x_data_indexes: ", x_data_indexes)
+        #     # 将x_data_indexes中的值替换为该值在排序后的序列中的索引
+        #     # 例如，x_data_indexes = [104, 69, 76, 60, 100, 91, 83]
+        #     # sorted_indexes = [6, 1, 2, 0, 5, 4, 3]
+        #     sorted_indexes = sorted(range(len(x_data_indexes)), key=lambda i: x_data_indexes[i])
+        #     sorted_indexes = [sorted_indexes.index(i) for i in range(len(sorted_indexes))]
+        #     print("sorted_indexes: ", sorted_indexes)
+        #     y_axis_label_group = [y_axis_label_group[i] for i in sorted_indexes]
+        #     for i in range(len(y_axis_label_group)):
+        #         print("y_axis_label_group[i]: ", y_axis_label_group[i].content)
             
-        temporal_group_element._bounding_box = temporal_group_element.get_bounding_box()
-        temporal_edge.process_layout()
+            
+        # else:
+        #     image_urls = [self.additional_configs['x_data_single_url']]*len(mark_group)
+        # print("image_urls: ", image_urls)
+        # # print("image_urls: ", image_urls)
+        # # image_urls = []
+        # for i in range(len(image_urls)):
+        #     base64_image = Image._getImageAsBase64(image_urls[i])
+        #     content_type = base64_image.split(';base64,')[0]
+        #     base64 = base64_image.split(';base64,')[1]
+        #     image_processor = ImageProcessor()
+        #     base64_image = image_processor.crop_by_circle(base64)
+        #     base64_image = f"{content_type};base64,{base64_image}"
+            
+        #     image_element = Image(base64_image)
+        #     original_width, original_height = Image.get_image_size(image_urls[i])
+        #     image_element.original_width = original_width
+        #     image_element.original_height = original_height
+        #     aspect_ratio = original_width / original_height
+            
+        #     # 计算新的width和height
+        #     if orientation == "horizontal":
+        #         height = mark_group[i].get_bounding_box().height * 1.1
+        #         width = height * aspect_ratio
+        #     else:
+        #         width = mark_group[i].get_bounding_box().width * 1.1
+        #         height = width / aspect_ratio
+        #     image_element.attributes = {
+        #         "xlink:href": f"data:{base64_image}",
+        #         "width": width,
+        #         "height": height,
+        #     }
+        #     boundingbox = image_element.get_bounding_box()
+        #     image_element._bounding_box = boundingbox
+            
+        #     if orientation == "horizontal":
+        #         if relative_to_mark and relative_to_mark[0] == "inside":
+        #             layout_strategy = InnerHorizontalLayoutStrategy()
+        #             if relative_to_mark[1] == "start" and direction == "right":
+        #                 layout_strategy.direction = 'left'
+        #             elif relative_to_mark[1] == "end" and direction == "right":
+        #                 layout_strategy.direction = 'right'
+        #             elif relative_to_mark[1] == "start" and direction == "left":
+        #                 layout_strategy.direction = 'left'
+        #             elif relative_to_mark[1] == "end" and direction == "left":
+        #                 layout_strategy.direction = 'right'
+        #             elif relative_to_mark[1] == "middle":
+        #                 layout_strategy = MiddleHorizontalLayoutStrategy()
+        #         else:
+        #             layout_strategy = HorizontalLayoutStrategy()
+        #     else:
+        #         if relative_to_mark and relative_to_mark[0] == "inside":
+        #             layout_strategy = InnerVerticalLayoutStrategy()
+        #             if relative_to_mark[1] == "start" and direction == "down":
+        #                 layout_strategy.direction = 'up'
+        #             elif relative_to_mark[1] == "end" and direction == "down":
+        #                 layout_strategy.direction = 'down'
+        #             elif relative_to_mark[1] == "start" and direction == "up":
+        #                 layout_strategy.direction = 'up'
+        #             elif relative_to_mark[1] == "end" and direction == "up":
+        #                 layout_strategy.direction = 'down'
+        #             elif relative_to_mark[1] == "middle":
+        #                 layout_strategy = MiddleVerticalLayoutStrategy()
+        #         else:
+        #             layout_strategy = VerticalLayoutStrategy()
+            
+        #     # 如果在sequence里,"axis_label"在"x_multiple_icon"之前
+        #     if "axis_label" in sequence and "x_multiple_icon" in sequence and sequence.index("axis_label") < sequence.index("x_multiple_icon") and not relative_to_mark[0] == "inside" and sequence.index("x_multiple_icon") < sequence.index("mark"):
+        #         print("chart-image-template: 2")
+        #         # print("direction: ", direction)
+        #         # layout_strategy.direction与direction相反，如果direction是right，则layout_strategy.direction是left
+        #         if direction == "right":
+        #             layout_strategy.direction = "left"
+        #         elif direction == "left":
+        #             layout_strategy.direction = "right"
+        #         elif direction == "down":
+        #             layout_strategy.direction = "up"
+        #         else:
+        #             layout_strategy.direction = "down"
+        #         layout_graph.add_node_with_edges(image_element, y_axis_label_group[i], layout_strategy)
+        #         node = layout_graph.node_map[image_element]
+        #         # print("node: ", node.value.tag, node.value._bounding_box)
+        #         for prev, prev_layout_strategy in zip(node.prevs, node.prevs_edges):
+        #             # print("prev_layout_strategy: ", prev_layout_strategy.value.name, prev_layout_strategy.value.direction, prev_layout_strategy.value.padding, prev_layout_strategy.value.offset, prev_layout_strategy.value.alignment)
+        #             # print("prev: ", prev.value.tag, prev.value._bounding_box)
+        #             prev_layout_strategy.process_layout()
+        #         for next, next_layout_strategy in zip(node.nexts, node.nexts_edges):
+        #             # print("next_layout_strategy: ", next_layout_strategy.value.name, next_layout_strategy.value.direction, next_layout_strategy.value.padding, next_layout_strategy.value.offset, next_layout_strategy.value.alignment)
+        #             # print("next: ", next.value.tag, next.value._bounding_box)
+        #             next_layout_strategy.process_layout()
+
+        #         flattened_elements_tree.children.append(image_element)
+        #     elif "axis_label" in sequence and "x_multiple_icon" in sequence and sequence.index("axis_label") > sequence.index("x_multiple_icon"):
+        #         print("chart-image-template: 1")
+        #         if direction == "right":
+        #             layout_strategy.direction = "left"
+        #         elif direction == "left":
+        #             layout_strategy.direction = "right"
+        #         elif direction == "down":
+        #             layout_strategy.direction = "up"
+        #         else:
+        #             layout_strategy.direction = "down"
+        #         layout_graph.add_node_with_edges(y_axis_label_group[i], image_element, layout_strategy)
+        #         node = layout_graph.node_map[image_element]
+        #         for prev, prev_layout_strategy in zip(node.prevs, node.prevs_edges):
+        #             prev_layout_strategy.process_layout()
+        #         flattened_elements_tree.children.append(image_element)
+                
+        #     elif "axis_label" in sequence and "x_multiple_icon" in sequence and sequence.index("axis_label") < sequence.index("x_multiple_icon") and relative_to_mark[0] == "inside" and relative_to_mark[1] == "start":
+        #         print("chart-image-template: 3")
+        #         if direction == "right":
+        #             layout_strategy.direction = "left"
+        #         elif direction == "left":
+        #             layout_strategy.direction = "right"
+        #         elif direction == "down":
+        #             layout_strategy.direction = "up"
+        #         else:
+        #             layout_strategy.direction = "down"
+        #         layout_graph.add_node_with_edges(mark_group[i], image_element, layout_strategy)
+        #         node = layout_graph.node_map[image_element]
+        #         for prev, prev_layout_strategy in zip(node.prevs, node.prevs_edges):
+        #             prev_layout_strategy.process_layout()
+        #         flattened_elements_tree.children.append(image_element)
+        #     # 如果在sequence里,"x_multiple_icon"在"mark_annotation"之后
+        #     elif "x_multiple_icon" in sequence and "mark_annotation" in sequence and sequence.index("x_multiple_icon") > sequence.index("mark_annotation"):
+        #         print("chart-image-template: 7")
+        #         layout_strategy.direction = direction
+                    
+        #         layout_graph.add_node_with_edges(mark_annotation_group[i], image_element, layout_strategy)
+        #         node = layout_graph.node_map[image_element]
+        #         for prev, prev_layout_strategy in zip(node.prevs, node.prevs_edges):
+        #             prev_layout_strategy.process_layout()
+        #         flattened_elements_tree.children.append(image_element)
+        #     # 如果在sequence里,"x_multiple_icon"在"mark_annotation"之前，且在"mark"之后
+        #     elif "x_multiple_icon" in sequence and "mark_annotation" in sequence and sequence.index("x_multiple_icon") < sequence.index("mark_annotation") and sequence.index("x_multiple_icon") > sequence.index("mark") and not relative_to_mark[0] == "inside":
+        #         print("chart-image-template: 6")
+        #         layout_strategy.direction = direction
+        #         layout_graph.add_node_with_edges(image_element, mark_annotation_group[i], layout_strategy)
+        #         node = layout_graph.node_map[image_element]
+        #         for prev, prev_layout_strategy in zip(node.prevs, node.prevs_edges):
+        #             prev_layout_strategy.process_layout()
+        #         for next, next_layout_strategy in zip(node.nexts, node.nexts_edges):
+        #             next_layout_strategy.process_layout()
+        #         flattened_elements_tree.children.append(image_element)
+        #     # 如果在sequence里,"x_multiple_icon"在"mark_annotation"之前，且在"mark"之后
+        #     elif "x_multiple_icon" in sequence and "mark_annotation" in sequence and sequence.index("x_multiple_icon") < sequence.index("mark_annotation") and sequence.index("x_multiple_icon") > sequence.index("mark") and relative_to_mark[0] == "inside":
+        #         print("chart-image-template: 4 or 5")
+        #         if relative_to_mark[1] == "start":
+        #             if direction == "right":
+        #                 layout_strategy.direction = "left"
+        #             elif direction == "left":
+        #                 layout_strategy.direction = "right"
+        #             elif direction == "down":
+        #                 layout_strategy.direction = "up"
+        #             else:
+        #                 layout_strategy.direction = "down"
+        #         else:
+        #             layout_strategy.direction = direction
+        #         layout_graph.add_node_with_edges(mark_group[i], image_element, layout_strategy)
+        #         node = layout_graph.node_map[image_element]
+        #         for prev, prev_layout_strategy in zip(node.prevs, node.prevs_edges):
+        #             prev_layout_strategy.process_layout()
+        #         flattened_elements_tree.children.append(image_element)
+        #     else:
+        #         # 报错
+        #         raise ValueError(f"不支持的sequence: {sequence}")
+            
+        # temporal_group_element._bounding_box = temporal_group_element.get_bounding_box()
+        # temporal_edge.process_layout()
         
         # layout_graph.visualize()
         # print(flattened_elements_tree.dump())

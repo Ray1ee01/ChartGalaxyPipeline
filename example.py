@@ -41,11 +41,11 @@ def main():
     layout_file_idx = random.randint(1, 6)
     chart_image_idx = random.randint(1, 7)
     # chart_image_idx = 6
-    layout_file_idx = 14
+    layout_file_idx = 16
     chart_image_idx = 9
-    chart_component_idx = 1
-    # color_mode = 'polychromatic'
-    color_mode = 'monochromatic'
+    chart_component_idx = 3
+    color_mode = 'polychromatic'
+    # color_mode = 'monochromatic'
     # layout_file_idxs = [1, 2, 3, 4, 5, 6]
     # chart_image_idxs = [1, 2, 3, 4, 5, 6, 7]
     # chart_component_idxs = [1, 2]

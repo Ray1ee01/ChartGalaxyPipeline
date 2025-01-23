@@ -194,25 +194,25 @@ class LineTemplate(MarkTemplate):
         self.apply_interpolate()
     def apply_point_styles(self):
         candidate_styles = [
-            True,
-            {
-                "filled": False,
-                "fill": "white"
-            },
+            # True,
+            # {
+            #     "filled": False,
+            #     "fill": "white"
+            # },
             None
         ]
         self.point = random.choice(candidate_styles)
     def apply_interpolate(self):
         candidate_interpolates = [
-            "basis",
-            "cardinal",
-            "catmull-rom",
-            "linear",
+            # "basis",
+            # "cardinal",
+            # "catmull-rom",
+            # "linear",
             "monotone",
-            "natural",
-            "step",
-            "step-after",
-            "step-before"
+            # "natural",
+            # "step",
+            # "step-after",
+            # "step-before"
         ]
         self.interpolate = random.choice(candidate_interpolates)
     def dump(self):
@@ -721,10 +721,10 @@ class LabelFontTemplate(FontTemplate):
     def __init__(self):
         super().__init__()
         self.font = "sans-serif"
-        self.font_size = 14
+        self.font_size = 12
         self.font_weight = 500
-        self.line_height = 20
-        self.letter_spacing = 0.1
+        self.line_height = 16
+        self.letter_spacing = 0.25
     def large(self):
         self.font_size = 14
         self.font_weight = 500

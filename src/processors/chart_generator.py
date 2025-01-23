@@ -33,6 +33,8 @@ class VegaLiteGenerator(ChartGenerator):
             "height": {"band": self.template.mark.height} if self.template.mark.height else None,
             "width": {"band": self.template.mark.width} if self.template.mark.width else None
         }
+        # if self.template.mark.type == "line":
+        #     mark_specification["type"] = "area"
         corner_radiuses = {}
         for key, value in self.template.mark.corner_radiuses.items():
             if value is not None:
@@ -45,6 +47,7 @@ class VegaLiteGenerator(ChartGenerator):
         if self.template.mark.fill_color_style.color:
             mark_specification["fill"] = self.template.mark.fill_color_style.color
             mark_specification["fillOpacity"] = self.template.mark.fill_color_style.opacity
+            # mark_specification["fillOpacity"] = 0.3
         
         # 如果有描边样式
         if self.template.mark.stroke_color_style.color:
@@ -258,10 +261,10 @@ class VegaLiteGenerator(ChartGenerator):
                 encoding["y"]["sort"] = "-x" if sort_config["ascending"] else "x"
             else:
                 encoding["x"]["sort"] = "-y" if sort_config["ascending"] else "y"
-        # specification["encoding"] = encoding
+        specification["encoding"] = encoding
         
-        # if self.template.has_annotation:
-        if True:
+        if self.template.has_annotation:
+        # if True:
             specification["layer"] = [
                 {"mark": mark_specification, "encoding": encoding},
                 annotation_specification

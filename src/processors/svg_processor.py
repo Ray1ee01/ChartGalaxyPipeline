@@ -186,8 +186,8 @@ class SVGOptimizer(SVGProcessor):
                 "height": bounding_box.maxy - bounding_box.miny,
             }
             rects.append(rect)
-        # for rect in rects:
-        #     root_element.children.append(rect)
+        for rect in rects:
+            root_element.children.append(rect)
         element_tree = root_element
         
         attrs_list = []
