@@ -78,6 +78,17 @@ def delta_h(h1, h2):
     if dh > 180:
         dh = 360 - dh
     return dh
+
+def lighter_color(rgb):
+    lch = rgb_to_hcl(*rgb)
+    if lch[0] < 70:
+        lch[0] += 10
+    if lch[1] < 60:
+        lch[1] += 10
+    lab = colour.LCHab_to_Lab(lch)
+    xyz = colour.Lab_to_XYZ(lab)
+    rgb = colour.XYZ_to_sRGB(xyz)
+    return norm255rgb(rgb)
     
 text_types = ['title', 'caption']
 class ColorDesign:
@@ -184,7 +195,7 @@ class ColorDesign:
 
         self.basic_colors = [black, white, gray]
         self.basic_colors_hex = [rgb_to_hex(*color) for color in self.basic_colors]
-
+        self.light = 'high' if randint(0, 1) == 0 else 'low'
 
     def get_color(self, type, number, group = 1, seed_color = 0, seed_middle_color = 0, \
             seed_text = 0, seed_mark = 0, seed_axis = 0, seed_embellishment = 0, reverse = False):
@@ -197,6 +208,8 @@ class ColorDesign:
                 length_color = len(self.main_color_pool)
                 seed_color = seed_color % length_color
                 main_color = self.main_color_pool[seed_color]
+            if self.light == 'high':
+                main_color = lighter_color(main_color)
             extend_colors1 = extend_color_in_l(main_color)
             extend_colors2 = extend_color_in_c(main_color)
             main_color_hex = rgb_to_hex(*main_color)
@@ -290,6 +303,9 @@ class ColorDesign:
             selected_color = self.complementary_colors[seed_color]
             color1 = selected_color[0]
             color2 = selected_color[1]
+            if self.light == 'high':
+                color1 = lighter_color(color1)
+                color2 = lighter_color(color2)
             extend_colors1_l = extend_color_in_l(color1)
             extend_colors2_l = extend_color_in_l(color2)
             extend_colors1_c = extend_color_in_c(color1)
@@ -458,6 +474,17 @@ class ColorDesign:
                 return [other_color for _ in range(number)]
             if type == 'embellishment':
                 return self.rgb_pool_hex[:number]
+
+    def rank_color(self, palette, importance):
+        assert len(palette) == len(importance)
+        dists_to_bcg = [ciede2000(hex_to_rgb(color), self.bcg_color) for color in palette]
+
+        # sort by importance, high importance with high dist to bcg
+        # low importance with low dist to bcg
+        color_info = list(zip(palette, importance, dists_to_bcg))
+        sorted_colors = sorted(color_info, key=lambda x: (x[1], x[2]))
+        ranked_palette = [color for color, _, _ in sorted_colors]
+        return ranked_palette
 
 
 if __name__ == "__main__":
