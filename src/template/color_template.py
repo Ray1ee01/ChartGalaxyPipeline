@@ -481,9 +481,14 @@ class ColorDesign:
 
         # sort by importance, high importance with high dist to bcg
         # low importance with low dist to bcg
-        color_info = list(zip(palette, importance, dists_to_bcg))
-        sorted_colors = sorted(color_info, key=lambda x: (x[1], x[2]))
-        ranked_palette = [color for color, _, _ in sorted_colors]
+        dist_sorted_indices = sorted(range(len(dists_to_bcg)), key=lambda i: dists_to_bcg[i], reverse=True)
+        imp_sorted_indices = sorted(range(len(importance)), key=lambda i: importance[i], reverse=True)
+
+        ranked_palette = [None] * len(palette)
+
+        for rank, color_idx in enumerate(dist_sorted_indices):
+            ranked_palette[imp_sorted_indices[rank]] = palette[color_idx]
+
         return ranked_palette
 
 
