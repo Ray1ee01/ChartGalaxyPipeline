@@ -6,6 +6,9 @@ from typing import List
 from .color_template import ColorDesign
 import random
 import copy
+from sentence_transformers import SentenceTransformer, util
+
+model_path = "/data1/jiashu/models/models--sentence-transformers--all-MiniLM-L6-v2/snapshots/fa97f6e7cb1a59073dff9e6b13e2715cf7475ac9"
 
 class ColorTemplate:
     def __init__(self):
@@ -86,20 +89,44 @@ class ColorEncodingTemplate:
         self.field_type = None
         self.domain = None
         self.range = None
+        self.meta_data = meta_data
+        self.color_template = color_template
+        self.embedding_model = SentenceTransformer(model_path)
         if len(data[0].keys()) == 3:
             self.field = 'group'
             self.field_type = 'nominal'
             # domain是data列表中每个item的['group']的值的unique值
             self.domain = list(set([item['group'] for item in data]))
-            self.range = color_template.get_color('marks', len(self.domain), seed_mark=1)
+            self.range = self.color_template.get_color('marks', len(self.domain), seed_mark=1)
+            self.apply_color_rules()
         else:
-            if color_template is not None and not color_template.mode == 'monochromatic':
+            if self.color_template is not None and not self.color_template.mode == 'monochromatic':
                 if data is not None:
                     self.domain = list(set([row['x_data'] for row in data]))
                     self.field = meta_data['x_label']
             seed_mark = 1
-            colors = color_template.get_color('marks', len(self.domain), seed_mark=seed_mark)
+            colors = self.color_template.get_color('marks', len(self.domain), seed_mark=seed_mark)
             self.range = colors
+    def apply_color_rules(self):
+        text = self.meta_data['title'] + " " + self.meta_data['caption']
+        text_embedding = self.embedding_model.encode(text)
+        # domain是一个list，里面是字符串
+        # 计算domain里每个字符串的embedding
+        print("self.domain: ", self.domain)
+        domain_embeddings = self.embedding_model.encode(self.domain)
+        print("domain_embeddings: ", domain_embeddings)
+        # 计算text_embedding和self.domain的相似度
+        similarity = util.cos_sim(text_embedding, domain_embeddings).flatten()
+        print("similarity: ", similarity)
+        # 按相似度排序
+        print("self.domain: ", self.domain)
+        sorted_domain = sorted(self.domain, key=lambda x: similarity[self.domain.index(x)], reverse=True)
+        sorted_colors = self.color_template.rank_color_by_contrast(self.range)
+        print("sorted_colors: ", sorted_colors)
+        print("sorted_domain: ", sorted_domain)
+        self.range = sorted_colors
+        self.domain = sorted_domain
+        
     def dump(self):
         return {
             "field": self.field,

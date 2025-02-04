@@ -107,6 +107,7 @@ class LayoutProcessor:
                 boundingboxes = []
                 for idx, child in enumerate(element.children):
                     self.process_layout_template(child)
+                    print("child: ", child.id, child.tag, child._bounding_box)
                     if child.id == 'topic_icon':
                         topic_icon_idx = idx
                     boundingboxes.append(child._bounding_box)
@@ -492,6 +493,7 @@ class LayoutProcessor:
             'height': element.attributes.get('height', 50),
         }
         boundingbox = element.get_bounding_box()
+        print("boundingbox: ", boundingbox)
         element._bounding_box = boundingbox
 
     def _autolinebreak(self, text: str, max_lines: int=2, n_lines = 0) -> list[str]:

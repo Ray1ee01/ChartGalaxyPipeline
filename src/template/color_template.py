@@ -195,7 +195,7 @@ class ColorDesign:
 
         self.basic_colors = [black, white, gray]
         self.basic_colors_hex = [rgb_to_hex(*color) for color in self.basic_colors]
-        self.light = 'high' if randint(0, 1) == 0 else 'low'
+        self.light = 'high' if random.randint(0, 1) == 0 else 'low'
 
     def get_color(self, type, number, group = 1, seed_color = 0, seed_middle_color = 0, \
             seed_text = 0, seed_mark = 0, seed_axis = 0, seed_embellishment = 0, reverse = False):
@@ -478,7 +478,6 @@ class ColorDesign:
     def rank_color(self, palette, importance):
         assert len(palette) == len(importance)
         dists_to_bcg = [ciede2000(hex_to_rgb(color), self.bcg_color) for color in palette]
-
         # sort by importance, high importance with high dist to bcg
         # low importance with low dist to bcg
         color_info = list(zip(palette, importance, dists_to_bcg))
@@ -486,6 +485,13 @@ class ColorDesign:
         ranked_palette = [color for color, _, _ in sorted_colors]
         return ranked_palette
 
+    def rank_color_by_contrast(self, palette):
+        dists_to_bcg = [ciede2000(hex_to_rgb(color), self.bcg_color) for color in palette]
+        # 按到背景颜色的距离降序排序
+        print("bcg_color: ", self.bcg_color)
+        sorted_colors = sorted(zip(palette, dists_to_bcg), key=lambda x: -x[1])
+        ranked_palette = [color for color, _ in sorted_colors]
+        return ranked_palette
 
 if __name__ == "__main__":
     palette = {

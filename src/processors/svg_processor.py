@@ -141,7 +141,7 @@ class SVGOptimizer(SVGProcessor):
         # flattened_elements_tree._bounding_box = flattened_elements_tree.get_bounding_box()
         # print(flattened_elements_tree.dump())
         
-        # element_tree = flattened_elements_tree
+        element_tree = flattened_elements_tree
 
         # # return parsed_svg
         
@@ -170,7 +170,7 @@ class SVGOptimizer(SVGProcessor):
         root_element.children = element_list
         rects = []
         for element in root_element.children:
-            # if not element.tag == 'text':
+            # if not element.tag == 'path' or element.attributes.get('aria-roledescription') != 'area mark':
             #     continue
             # print('element: ', element.content, element._bounding_box)
             bounding_box = element.get_bounding_box()
@@ -186,8 +186,8 @@ class SVGOptimizer(SVGProcessor):
                 "height": bounding_box.maxy - bounding_box.miny,
             }
             rects.append(rect)
-        for rect in rects:
-            root_element.children.append(rect)
+        # for rect in rects:
+        #     root_element.children.append(rect)
         element_tree = root_element
         
         attrs_list = []

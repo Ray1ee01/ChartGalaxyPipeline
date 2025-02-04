@@ -7,7 +7,7 @@ from src.processors.data_processor import *
 import random
 
 # data_dir = os.path.join(os.path.dirname(__file__),'src', 'data')
-output_dir = os.path.join(os.path.dirname(__file__),'src', 'output6')
+output_dir = os.path.join(os.path.dirname(__file__),'src', 'output7')
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 # random.seed(15)
 
@@ -41,7 +41,7 @@ def main():
     layout_file_idx = random.randint(1, 6)
     chart_image_idx = random.randint(1, 7)
     # chart_image_idx = 6
-    layout_file_idx = 16
+    layout_file_idx = 15
     chart_image_idx = 9
     chart_component_idx = 3
     color_mode = 'polychromatic'
@@ -52,10 +52,12 @@ def main():
     # chart_component_idxs = [2]
     
     input_data = f'line_8'
+    # input_data = f'line_63'
     # input_data = f'line_74'
     result = pipeline.execute(input_data, layout_file_idx, chart_image_idx, chart_component_idx, color_mode)
-    output_filename = f'output_d8_l16_i9_c3_mpolychromatic.svg'
+    # output_filename = f'output_d8_l16_i9_c2_mpolychromatic.svg'
     # output_filename = f'output_d74_l16_i9_c3_mpolychromatic.svg'
+    output_filename = f'output_d63_l16_i9_c2_mpolychromatic.svg'
     with open(os.path.join(output_dir, output_filename), "w") as f:
         f.write(result)
     # color_modes = ['monochromatic', 'complementary', 'analogous', 'polychromatic']

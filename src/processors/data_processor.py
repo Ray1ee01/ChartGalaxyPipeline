@@ -176,13 +176,16 @@ class Chart2TableDataProcessor(DataProcessor):
         result['data'] = chart_data['data']
         result['data_facts'] = data_fact
         result['icons'] = {}
+        print("data: ", result['data'])
+        print('meta_data: ', result['meta_data'])
         
         # icon_selector = IconSelector(icon_pool, topic_color=None, spe_mode='flag')
         icon_selector = IconSelector(icon_pool, topic_color=None)
         candidate_icons = icon_selector.select(layout_sequence, chart_image_sequence)
+        # candidate_icons = [[],[]]
         if isinstance(candidate_icons, tuple):
             candidate_icons = candidate_icons[0] + candidate_icons[1]
-        print("candidate_icons: ", candidate_icons)
+        # print("candidate_icons: ", candidate_icons)
         topic_icon_idx = -1
         x_single_icon_idx = -1
         x_multi_icon_idx = -1
@@ -218,8 +221,8 @@ class Chart2TableDataProcessor(DataProcessor):
         result['icons']['x_data_single'] = [os.path.join(icon_root, icon_positions[v][0], icon_positions[v][1]) if isinstance(v, int) else v for v in x_data_single_icon_pool]
         result['icons']['x_data_multi'] = [os.path.join(icon_root, icon_positions[v][0], icon_positions[v][1]) if isinstance(v, int) else v for v in x_data_multi_icon_pool]
         x_data_multi_icon_map = {}
-        for i, data in enumerate(result['data']):
-            x_data_multi_icon_map[data['x_data']] = result['icons']['x_data_multi'][i]
+        # for i, data in enumerate(result['data']):
+        #     x_data_multi_icon_map[data['x_data']] = result['icons']['x_data_multi'][i]
         result['x_data_multi_icon_map'] = x_data_multi_icon_map
         result['palettes'] = palettes
         return result

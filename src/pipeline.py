@@ -138,7 +138,7 @@ class Pipeline:
             time_end = time.time()
             print("chart_generator time: ", time_end - time_start)
             
-            return svg    
+            # return svg    
             
             
             time_start = time.time()

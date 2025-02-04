@@ -842,6 +842,111 @@ class Path(Graphical):
         
         return commands
     
+    def _get_path_coordinates(self) -> List[float]:
+        """获取路径的坐标点"""
+        attrs = self.attributes
+        d = attrs.get('d', '')
+        commands = self._parse_path(d)
+        transform = self.get_transform_matrix
+
+        coordinates = []
+        # 遍历所有路径命令
+        for cmd in commands:
+            command = cmd['command']
+            points = cmd['points']
+            
+            if command in ['M', 'm']:  # 移动命令
+                if command == 'm':  # 相对坐标
+                    current_x += points[0]
+                    current_y += points[1]
+                else:  # 绝对坐标
+                    current_x = points[0]
+                    current_y = points[1]
+                
+                # 应用变换
+                if transform:
+                    transformed_point = self._apply_matrix(current_x, current_y, transform)
+                    current_x, current_y = transformed_point
+                
+                last_move_x = current_x
+                last_move_y = current_y
+                
+                coordinates.append((current_x, current_y))
+            elif command in ['L', 'l']:  # 直线命令
+                end_x = points[0] if command == 'L' else current_x + points[0]
+                end_y = points[1] if command == 'L' else current_y + points[1]
+                
+                # 应用变换
+                if transform:
+                    transformed_end = self._apply_matrix(end_x, end_y, transform)
+                    end_x, end_y = transformed_end
+                
+                current_x = end_x
+                current_y = end_y
+                coordinates.append((current_x, current_y))
+            elif command in ['H', 'h']:  # 水平线命令
+                end_x = points[0] if command == 'H' else current_x + points[0]
+                end_y = current_y
+                
+                # 应用变换
+                if transform:
+                    transformed_end = self._apply_matrix(end_x, end_y, transform)
+                    end_x, end_y = transformed_end
+                
+                current_x = end_x
+                current_y = end_y
+                coordinates.append((current_x, current_y))
+            elif command in ['V', 'v']:  # 垂直线命令
+                end_x = current_x
+                end_y = points[0] if command == 'V' else current_y + points[0]
+                
+                # 应用变换
+                if transform:
+                    transformed_end = self._apply_matrix(end_x, end_y, transform)
+                    end_x, end_y = transformed_end
+                
+                current_x = end_x
+                current_y = end_y
+                coordinates.append((current_x, current_y))
+            elif command in ['Z', 'z']:  # 闭合路径命令
+                        
+                current_x = last_move_x
+                current_y = last_move_y
+                coordinates.append((current_x, current_y))
+            elif command in ['C', 'c']:  # 三次贝塞尔曲线
+                # 对于贝塞尔曲线，我们使用简化的检查方法
+                # 将曲线分解为多个线段进行近似检查
+                if command == 'c':  # 相对坐标转换为绝对坐标
+                    points = [
+                        current_x + points[0], current_y + points[1],  # 控制点1
+                        current_x + points[2], current_y + points[3],  # 控制点2
+                        current_x + points[4], current_y + points[5]   # 终点
+                    ]
+                else:
+                    points = points.copy()  # 复制一份以免修改原始数据
+                
+                # 应用变换到所有控制点
+                if transform:
+                    for i in range(0, len(points), 2):
+                        transformed_point = self._apply_matrix(points[i], points[i+1], transform)
+                        points[i], points[i+1] = transformed_point
+                    transformed_start = self._apply_matrix(current_x, current_y, transform)
+                    current_x, current_y = transformed_start
+                
+                # 使用德卡斯特里奥算法将曲线分成多个点
+                curve_points = self._get_bezier_points(
+                    (current_x, current_y),
+                    (points[0], points[1]),
+                    (points[2], points[3]),
+                    (points[4], points[5]),
+                    50  # 分段数
+                )
+                coordinates.extend(curve_points)
+                
+                current_x = points[4]
+                current_y = points[5]
+        
+        return coordinates
     def get_bounding_box(self) -> BoundingBox:
         attrs = self.attributes
         d = attrs.get('d', '')

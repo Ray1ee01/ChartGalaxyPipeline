@@ -283,15 +283,15 @@ class VegaLiteGenerator(ChartGenerator):
             ]
         else:
             specification["layer"] = [{"mark": mark_specification}]
-        print("additional_mark_specification: ", additional_mark_specification)
-        if additional_mark_specification:
-            specification["layer"] = [{
-                "mark": additional_mark_specification,
-                "encoding": encoding,
-                "transform": [
-                    {"filter": "datum.group == 'Chile'"}
-                ]
-            }] + specification["layer"]
+        # print("additional_mark_specification: ", additional_mark_specification)
+        # if additional_mark_specification:
+        #     specification["layer"] = [{
+        #         "mark": additional_mark_specification,
+        #         "encoding": encoding,
+        #         "transform": [
+        #             {"filter": "datum.group == 'Chile'"}
+        #         ]
+        #     }] + specification["layer"]
         return specification
 
     def generate(self, data: dict, template: ChartTemplate) -> Tuple[str, Dict, Dict]:

@@ -44,6 +44,8 @@ class VegaLiteParser():
             'y_axis_group': self.y_axis_group,
         }
         
+
+        
         # flattened_elements_tree = SVGTreeConverter.partial_flatten_tree(elements_tree, group_to_flatten)
         flattened_elements_tree, top_level_groups = SVGTreeConverter.move_groups_to_top(elements_tree, group_to_flatten)
         
@@ -92,8 +94,8 @@ class VegaLiteParser():
         sequence = self.additional_configs['chart_composition']['sequence']
         relative_to_mark = self.additional_configs['chart_composition']['relative_to_mark']
         
-        print("mark_group: ", mark_group)
-        print("mark_annotation_group: ", mark_annotation_group)
+        # print("mark_group: ", mark_group)
+        # print("mark_annotation_group: ", mark_annotation_group)
         # print("y_axis_label_group: ", y_axis_label_group)
         # build inital layout graph
         if "mark_annotation" in sequence:
@@ -112,7 +114,22 @@ class VegaLiteParser():
                                 mark_annotation_group[i].rotate_to_fit("bottom")
                             else:
                                 mark_annotation_group[i].rotate_to_fit("top")
-            
+        
+        # 从flattened_elements_tree中找到area_mark_group
+        # for element in flattened_elements_tree.children:
+        #     print("element: ", element)
+        #     if element.tag == 'g': print("element: ", element.dump())
+        
+        self._traverse_elements_tree(flattened_elements_tree)
+        
+        # element_to_replace = {
+        #     'area_mark_group': self.area_mark_group,
+        # }
+        
+        # # 将area_mark_group中的path转换为image
+        # print("self.area_mark_group: ", self.area_mark_group)
+        # print("flattened_elements_tree: ", flattened_elements_tree.dump())
+        # self.replace_area_mark_with_image(self.area_mark_group)
             
         # for i in range(len(mark_group)):
         #     if "mark_annotation" in sequence:
@@ -385,6 +402,49 @@ class VegaLiteParser():
         
         return svg_str, flattened_elements_tree, layout_graph
     
+    def replace_area_mark_with_image(self, father: GroupElement):
+        # 首先找到area_mark
+        for i,child in enumerate(father.children):
+            if self.if_area_mark(child):
+                # 将area_mark的path转换为image
+                image_path = '/data1/liduan/generation/chart/chart_pipeline/src/test.png'
+                base64_image = Image._getImageAsBase64(image_path)
+                base64 = base64_image.split(';base64,')[1]
+                base64 = ImageProcessor().clip_by_path(base64, child)
+                content_type = base64_image.split(';base64,')[0]
+                print("child.attributes:", child.attributes)
+                base64_image = f"{content_type};base64,{base64}"
+                image_element = Image(base64_image)
+                coordinates = child._get_path_coordinates()
+                min_x = min(coordinates, key=lambda x: x[0])[0]
+                min_y = min(coordinates, key=lambda y: y[1])[1]
+                max_x = max(coordinates, key=lambda x: x[0])[0]
+                max_y = max(coordinates, key=lambda y: y[1])[1]
+                child._bounding_box = child.get_bounding_box()
+                image_element.attributes = {
+                    "xlink:href": f"data:{base64_image}",
+                    'width': child._bounding_box.width,
+                    'height': child._bounding_box.height,
+                    'x': min_x,
+                    'y': min_y,
+                    'preserveAspectRatio':'none',
+                }
+                image_element.attributes['transform'] = child.attributes.get('transform', '')
+                image_element._bounding_box = child._bounding_box
+                father.children[i] = image_element
+                break
+    
+    def if_area_mark(self, element: LayoutElement) -> bool:
+        return element.tag == 'path' and \
+            element.attributes.get('aria-roledescription', '') == 'area mark'
+    def if_area_mark_group(self, group: LayoutElement) -> bool:
+        if not group.tag == 'g':
+            return False
+        #如果group中有一个child是area_mark,则返回True
+        for child in group.children:
+            if self.if_area_mark(child):
+                return True
+        return False
     
     def if_mark_group(self, group: LayoutElement) -> bool:
         if self.additional_configs['meta_data']['chart_type'] == 'bar':
@@ -478,7 +538,8 @@ class VegaLiteParser():
                     self._traverse_elements_tree(child)
             self.in_y_axis_flag = False
             return
-            
+        elif self.if_area_mark_group(element):
+            self.area_mark_group = element
         # 递归处理所有子元素
         if hasattr(element, 'children'):
             for child in element.children:
