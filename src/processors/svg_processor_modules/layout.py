@@ -93,8 +93,6 @@ class LayoutStrategy(ABC):
         }
     
 
-
-
 class VerticalLayoutStrategy(LayoutStrategy):
     """垂直布局策略"""
     def __init__(self, alignment: list[str] = ['middle', 'middle'], direction: str = 'down', padding: float = 5, offset: float = 0):

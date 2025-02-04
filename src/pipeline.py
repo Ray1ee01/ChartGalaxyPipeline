@@ -116,22 +116,22 @@ class Pipeline:
             else:
                 raise ValueError(f"不支持的图表类型: {processed_data['meta_data']['chart_type']}")
 
-            title_font_template = TitleFontTemplate()
-            title_font_template.large()
-            title_config['fontSize'] = title_font_template.font_size
-            title_config['linePadding'] = title_font_template.line_height-title_font_template.font_size
-            title_config['letterSpacing'] = title_font_template.letter_spacing
-            title_config['fontWeight'] = title_font_template.font_weight
-            title_config['font'] = title_font_template.font
+            # title_font_template = TitleFontTemplate()
+            # title_font_template.large()
+            # title_config['fontSize'] = title_font_template.font_size
+            # title_config['linePadding'] = title_font_template.line_height-title_font_template.font_size
+            # title_config['letterSpacing'] = title_font_template.letter_spacing
+            # title_config['fontWeight'] = title_font_template.font_weight
+            # title_config['font'] = title_font_template.font
             
-            subtitle_font_template = BodyFontTemplate()
-            subtitle_font_template.middle()
-            subtitle_config['fontSize'] = subtitle_font_template.font_size
-            # subtitle_config['linePadding'] = subtitle_font_template.line_height-subtitle_font_template.font_size
-            subtitle_config['linePadding'] = 0
-            subtitle_config['letterSpacing'] = subtitle_font_template.letter_spacing
-            subtitle_config['fontWeight'] = subtitle_font_template.font_weight
-            subtitle_config['font'] = subtitle_font_template.font
+            # subtitle_font_template = BodyFontTemplate()
+            # subtitle_font_template.middle()
+            # subtitle_config['fontSize'] = subtitle_font_template.font_size
+            # # subtitle_config['linePadding'] = subtitle_font_template.line_height-subtitle_font_template.font_size
+            # subtitle_config['linePadding'] = 0
+            # subtitle_config['letterSpacing'] = subtitle_font_template.letter_spacing
+            # subtitle_config['fontWeight'] = subtitle_font_template.font_weight
+            # subtitle_config['font'] = subtitle_font_template.font
             
             # 步骤2：生成图表
             svg, additional_configs = self.chart_generator.generate(processed_data, chart_template)

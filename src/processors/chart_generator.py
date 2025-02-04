@@ -33,21 +33,13 @@ class VegaLiteGenerator(ChartGenerator):
             "height": {"band": self.template.mark.height} if self.template.mark.height else None,
             "width": {"band": self.template.mark.width} if self.template.mark.width else None
         }
-        # if self.template.mark.type == "line":
-        #     mark_specification["type"] = "area"
-        corner_radiuses = {}
-        for key, value in self.template.mark.corner_radiuses.items():
-            if value is not None:
-                corner_radiuses[key] = value
-        if corner_radiuses:
-            mark_specification["cornerRadius"] = corner_radiuses
+
         
         
         # 如果有填充颜色样式
         if self.template.mark.fill_color_style.color:
             mark_specification["fill"] = self.template.mark.fill_color_style.color
             mark_specification["fillOpacity"] = self.template.mark.fill_color_style.opacity
-            # mark_specification["fillOpacity"] = 0.3
         
         # 如果有描边样式
         if self.template.mark.stroke_color_style.color:
@@ -55,86 +47,25 @@ class VegaLiteGenerator(ChartGenerator):
             mark_specification["strokeOpacity"] = self.template.mark.stroke_color_style.opacity
             mark_specification["strokeWidth"] = self.template.mark.stroke_style.stroke_width
         
-        additional_mark_specification = {}
-        if self.template.mark.type == "line":
-            additional_mark_specification["type"] = "area"
-            mark_specification["type"] = "line"
-            # additional_mark_specification["fill"] = self.template.mark.stroke_color_style.color
-            additional_mark_specification["fillOpacity"] = 0.3
-            # additional_mark_specification["stroke"] = self.template.mark.stroke_color_style.color
-            # additional_mark_specification["strokeOpacity"] = self.template.mark.stroke_color_style.opacity
-            # additional_mark_specification["strokeWidth"] = self.template.mark.stroke_style.stroke_width
-            # additional_mark_specification["transform"] = [
-            #     {"filter": "datum.group == 'Chile'"}
-            # ]
+        # additional_mark_specification = {}
+        # if self.template.mark.type == "line":
+        #     additional_mark_specification["type"] = "area"
+        #     mark_specification["type"] = "line"
+        #     # additional_mark_specification["fill"] = self.template.mark.stroke_color_style.color
+        #     additional_mark_specification["fillOpacity"] = 0.3
+        #     # additional_mark_specification["stroke"] = self.template.mark.stroke_color_style.color
+        #     # additional_mark_specification["strokeOpacity"] = self.template.mark.stroke_color_style.opacity
+        #     # additional_mark_specification["strokeWidth"] = self.template.mark.stroke_style.stroke_width
+        #     # additional_mark_specification["transform"] = [
+        #     #     {"filter": "datum.group == 'Chile'"}
+        #     # ]
         
-        if self.template.mark.point:
-            mark_specification["point"] = self.template.mark.point
-        if self.template.mark.interpolate:
-            mark_specification["interpolate"] = self.template.mark.interpolate
+        # if self.template.mark.point:
+        #     mark_specification["point"] = self.template.mark.point
+        # if self.template.mark.interpolate:
+        #     mark_specification["interpolate"] = self.template.mark.interpolate
         
-        # TODO configure color
-        annotation_specification = {
-            "mark": {
-                "type": "text",
-            },
-            "encoding": {
-                "text": {
-                    "field": self.template.y_axis.field,
-                    "type": self.template.y_axis.field_type
-                },
-                # "x":{
-                #     "field": self.template.x_axis.field,
-                #     "type": self.template.x_axis.field_type,
-                #     "aggregate": "max"
-                # },
-                # "y":{
-                #     "field": self.template.y_axis.field,
-                #     "type": self.template.y_axis.field_type,
-                #     "aggregate": {"argmax": self.template.x_axis.field}
-                # }
-            }
-        }
-        text_config = annotation_specification["mark"]
-        if self.template.mark.annotation_font_style.font is not None:
-            text_config["font"] = self.template.mark.annotation_font_style.font
-        if self.template.mark.annotation_font_style.font_size is not None:
-            text_config["fontSize"] = self.template.mark.annotation_font_style.font_size
-        if self.template.mark.annotation_font_style.font_weight is not None:
-            text_config["fontWeight"] = self.template.mark.annotation_font_style.font_weight
-        # if self.template.mark.annotation_font_style.letter_spacing is not None:
-        #     text_config["letterSpacing"] = self.template.mark.annotation_font_style.letter_spacing
-        if self.template.mark.annotation_color_style.color is not None:
-            text_config["fill"] = self.template.mark.annotation_color_style.color
-        
-        if self.template.mark.orientation == "horizontal":
-            side = self.template.mark.annotation_side
-            if self.template.x_axis.orientation == "left" and side == "outer":
-                annotation_specification["mark"]["align"] = "left"
-                annotation_specification["mark"]["dx"] = 5
-            elif self.template.x_axis.orientation == "left" and side == "inner":
-                annotation_specification["mark"]["align"] = "right"
-                annotation_specification["mark"]["dx"] = -5
-            elif self.template.x_axis.orientation == "right" and side == "outer":
-                annotation_specification["mark"]["align"] = "right"
-                annotation_specification["mark"]["dx"] = -5
-            else:
-                annotation_specification["mark"]["align"] = "left"
-                annotation_specification["mark"]["dx"] = 5
-        else:
-            side = self.template.mark.annotation_side
-            if self.template.x_axis.orientation == "top" and side == "outer":
-                annotation_specification["mark"]["baseline"] = "top"
-                annotation_specification["mark"]["dy"] = 5
-            elif self.template.x_axis.orientation == "top" and side == "inner":
-                annotation_specification["mark"]["baseline"] = "bottom"
-                annotation_specification["mark"]["dy"] = -5
-            elif self.template.x_axis.orientation == "bottom" and side == "outer":
-                annotation_specification["mark"]["baseline"] = "bottom"
-                annotation_specification["mark"]["dy"] = -5
-            else:
-                annotation_specification["mark"]["baseline"] = "top"
-                annotation_specification["mark"]["dy"] = 5
+
         
         # 编码配置
         encoding = {}
@@ -145,8 +76,7 @@ class VegaLiteGenerator(ChartGenerator):
                 "field": self.template.x_axis.field,
                 "type": self.template.x_axis.field_type,
                 "axis": {"orient": "top", "grid": False
-                        #  , "maxExtent": 100, "labelLimit": 100
-                        }
+                }
             }
             
             
@@ -246,43 +176,18 @@ class VegaLiteGenerator(ChartGenerator):
                 if self.template.color_encoding.range is not None:
                     scale["range"] = self.template.color_encoding.range
                 color_encoding["scale"] = scale
-            # if self.template.mark.orientation == "horizontal":
-            #     color_encoding["legend"] = {
-            #         "orient": "bottom"
-            #     }
-            # else:
-            #     color_encoding["legend"] = {
-            #         "orient": "right"
-            #     }
+
             # 不显示图例
             color_encoding["legend"] = {"title": None}
             encoding["color"] = color_encoding
         
+        specification["encoding"] = encoding
+        specification["mark"] = mark_specification
+        specification = self.template.update_specification(specification)
+        
         
         # print('orientation: ', self.template.mark.orientation)
-        if self.template.mark.orientation == "horizontal":
-            # 交换encoding中的x和y
-            encoding["x"], encoding["y"] = encoding["y"], encoding["x"]
-            mark_specification["orient"] = "horizontal"
         
-        if self.template.sort:
-            sort_config = {
-                "by": self.template.sort["by"],
-                "ascending": self.template.sort["ascending"]
-            }
-            if sort_config["by"] == "x":
-                encoding["y"]["sort"] = "-x" if sort_config["ascending"] else "x"
-            else:
-                encoding["x"]["sort"] = "-y" if sort_config["ascending"] else "y"
-        specification["encoding"] = encoding
-        
-        if self.template.has_annotation:
-            specification["layer"] = [
-                {"mark": mark_specification, "encoding": encoding},
-                annotation_specification
-            ]
-        else:
-            specification["layer"] = [{"mark": mark_specification}]
         # print("additional_mark_specification: ", additional_mark_specification)
         # if additional_mark_specification:
         #     specification["layer"] = [{
