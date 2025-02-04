@@ -104,9 +104,9 @@ class ColorEncodingTemplate:
                 if data is not None:
                     self.domain = list(set([row['x_data'] for row in data]))
                     self.field = meta_data['x_label']
-            seed_mark = 1
-            colors = self.color_template.get_color('marks', len(self.domain), seed_mark=seed_mark)
-            self.range = colors
+                    seed_mark = 1
+                    colors = self.color_template.get_color('marks', len(self.domain), seed_mark=seed_mark)
+                    self.range = colors
     def apply_color_rules(self):
         text = self.meta_data['title'] + " " + self.meta_data['caption']
         text_embedding = self.embedding_model.encode(text)

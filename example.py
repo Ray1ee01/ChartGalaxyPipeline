@@ -34,7 +34,7 @@ def main():
         chart_generator=VegaLiteGenerator(),
         svg_processor=SVGOptimizer()
     )
-    # data_range = np.arange(2, 184)
+    data_range = np.arange(2, 184)
     # input_data = f'bar_{data_range[args.chart_idx]}'
 
     
