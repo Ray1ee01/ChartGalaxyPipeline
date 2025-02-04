@@ -51,29 +51,30 @@ def main():
     # chart_component_idxs = [1, 2]
     # chart_component_idxs = [2]
     
-    input_data = f'line_8'
-    # input_data = f'line_63'
-    # input_data = f'line_74'
-    result = pipeline.execute(input_data, layout_file_idx, chart_image_idx, chart_component_idx, color_mode)
-    # output_filename = f'output_d8_l16_i9_c2_mpolychromatic.svg'
-    # output_filename = f'output_d74_l16_i9_c3_mpolychromatic.svg'
-    output_filename = f'output_d63_l16_i9_c2_mpolychromatic.svg'
-    with open(os.path.join(output_dir, output_filename), "w") as f:
-        f.write(result)
-    # color_modes = ['monochromatic', 'complementary', 'analogous', 'polychromatic']
-    # for data_idx in data_range:
-    #     input_data = f'bar_{data_idx}'
-    #     # 随机选择layout_file_idx, chart_image_idx, chart_component_idx, color_mode
-    #     layout_file_idx = random.randint(1, 6)
-    #     chart_image_idx = random.randint(1, 7)
-    #     chart_component_idx = random.randint(1, 2)
-    #     color_mode = random.choice(['monochromatic', 'complementary', 'analogous', 'polychromatic'])
-    #     result = pipeline.execute(input_data, layout_file_idx, chart_image_idx, chart_component_idx, color_mode)
-    #     # output_filename = f'output_d{args.dataset_idx}_c{args.chart_idx}_l{layout_file_idx}_i{chart_image_idx}_c{chart_component_idx}_m{color_mode}.svg'
-    #     output_filename = f'output_d{data_idx}_l{layout_file_idx}_i{chart_image_idx}_c{chart_component_idx}_m{color_mode}.svg'
+    # input_data = f'line_8'
+    # # input_data = f'line_63'
+    # # input_data = f'line_74'
+    # result = pipeline.execute(input_data, layout_file_idx, chart_image_idx, chart_component_idx, color_mode)
+    # # output_filename = f'output_d8_l16_i9_c2_mpolychromatic.svg'
+    # # output_filename = f'output_d74_l16_i9_c3_mpolychromatic.svg'
+    # output_filename = f'output_d63_l16_i9_c2_mpolychromatic.svg'
+    # with open(os.path.join(output_dir, output_filename), "w") as f:
+    #     f.write(result)
+    
+    color_modes = ['monochromatic', 'complementary', 'analogous', 'polychromatic']
+    for data_idx in data_range:
+        input_data = f'bar_{data_idx}'
+        # 随机选择layout_file_idx, chart_image_idx, chart_component_idx, color_mode
+        layout_file_idx = random.randint(1, 6)
+        chart_image_idx = random.randint(1, 7)
+        chart_component_idx = random.randint(1, 2)
+        color_mode = random.choice(['monochromatic', 'complementary', 'analogous', 'polychromatic'])
+        result = pipeline.execute(input_data, layout_file_idx, chart_image_idx, chart_component_idx, color_mode)
+        # output_filename = f'output_d{args.dataset_idx}_c{args.chart_idx}_l{layout_file_idx}_i{chart_image_idx}_c{chart_component_idx}_m{color_mode}.svg'
+        output_filename = f'output_d{data_idx}_l{layout_file_idx}_i{chart_image_idx}_c{chart_component_idx}_m{color_mode}.svg'
 
-        # with open(os.path.join(output_dir, output_filename), "w") as f:
-        #     f.write(result)
+        with open(os.path.join(output_dir, output_filename), "w") as f:
+            f.write(result)
         
         
     # for layout_file_idx in layout_file_idxs:
