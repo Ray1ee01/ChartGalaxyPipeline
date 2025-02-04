@@ -1,5 +1,3 @@
-const sharp = require('sharp');
-
 module.exports = async function(spec) {
 //   // 默认配置
 //   const defaultOptions = {

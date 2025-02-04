@@ -4,11 +4,16 @@
         "layoutStrategy": {
             "name": "vertical",
             "padding": 5,
-            "direction": "down",
+            "direction": "up",
             "overlap": false,
             "alignment": ["middle", "middle"]
         },
         "children": [
+            {
+                "tag": "g",
+                "id": "chart",
+                "children": []
+            },
             {
                 "tag": "g",
                 "id": "group_1",
@@ -48,11 +53,6 @@
                         ]
                     }
                 ]
-            },
-            {
-                "tag": "g",
-                "id": "chart",
-                "children": []
             }
         ]
     },

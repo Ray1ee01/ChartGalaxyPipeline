@@ -6,7 +6,7 @@
         "layoutStrategy": {
             "name": "vertical",
             "padding": 5,
-            "direction": "down",
+            "direction": "up",
             "overlap": false,
             "alignment": ["left", "left"]
         },
@@ -17,14 +17,7 @@
         "children": [
             {
                 "tag": "g",
-                "id": "title",
-                "layoutStrategy": {
-                    "name": "vertical",
-                    "padding": 0,
-                    "direction": "down",
-                    "overlap": false,
-                    "alignment": ["left", "left"]
-                },
+                "id": "chart",
                 "children": []
             },
             {
@@ -41,7 +34,14 @@
             },
             {
                 "tag": "g",
-                "id": "chart",
+                "id": "title",
+                "layoutStrategy": {
+                    "name": "vertical",
+                    "padding": 0,
+                    "direction": "down",
+                    "overlap": false,
+                    "alignment": ["left", "left"]
+                },
                 "children": []
             }
         ]

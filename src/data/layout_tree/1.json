@@ -6,7 +6,7 @@
         "layoutStrategy": {
             "name": "vertical",
             "padding": 5,
-            "direction": "down",
+            "direction": "up",
             "overlap": false
         },
         "sizeConstraint": {
@@ -16,6 +16,11 @@
         "children": [
             {
                 "tag": "g",
+                "id": "chart",
+                "children": []
+            },
+            {
+                "tag": "g",
                 "id": "title",
                 "layoutStrategy": {
                     "name": "vertical",
@@ -23,11 +28,6 @@
                     "direction": "down",
                     "overlap": false
                 },
-                "children": []
-            },
-            {
-                "tag": "g",
-                "id": "chart",
                 "children": []
             }
         ]
