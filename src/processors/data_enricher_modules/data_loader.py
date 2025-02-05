@@ -110,19 +110,6 @@ class Chart2TableDataLoader(DataLoader):
         
         file_name = real_id.split('.')[0]
         data_table = pd.read_csv(os.path.join(dataset_dir, real_id))
-        # # 现在会把空白的列名改成Unnamed: 0, Unnamed: 1, ...
-        # data_table.rename(columns=lambda x: x.replace('Unnamed: ', ''), inplace=True)
-        # # 相应地把数字也变成空白
-        # data_table.rename(columns=lambda x: x.replace('0', ''), inplace=True)
-        # data_table.rename(columns=lambda x: x.replace('1', ''), inplace=True)
-        # data_table.rename(columns=lambda x: x.replace('2', ''), inplace=True)
-        # data_table.rename(columns=lambda x: x.replace('3', ''), inplace=True)
-        # data_table.rename(columns=lambda x: x.replace('4', ''), inplace=True)
-        # data_table.rename(columns=lambda x: x.replace('5', ''), inplace=True)
-        # data_table.rename(columns=lambda x: x.replace('6', ''), inplace=True)
-        # data_table.rename(columns=lambda x: x.replace('7', ''), inplace=True)
-        # data_table.rename(columns=lambda x: x.replace('8', ''), inplace=True)
-        # data_table.rename(columns=lambda x: x.replace('9', ''), inplace=True)
         
         
         raw_meta_data = {

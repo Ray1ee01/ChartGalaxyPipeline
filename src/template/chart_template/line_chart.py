@@ -93,28 +93,36 @@ class LineChartTemplate(ChartTemplate):
         
         self.color_encoding = ColorEncodingTemplate(color_template, meta_data, data)
 
-        # if meta_data is None:
-        #     # set default value
-        #     self.x_axis.field = "category"
-        #     self.x_axis.field_type = "nominal"
+        if meta_data is None:
+            # set default value
+            self.x_axis.field = "category"
+            self.x_axis.field_type = "nominal"
             
-        #     self.y_axis.field = "value"
-        #     self.y_axis.field_type = "quantitative"
-        # else:
-        #     if meta_data['x_type'] == "categorical":
-        #         meta_data['x_type'] = "nominal"
-        #     elif meta_data['x_type'] == "numerical":
-        #         meta_data['x_type'] = "quantitative"
-        #     if meta_data['y_type'] == "categorical":
-        #         meta_data['y_type'] = "nominal"
-        #     elif meta_data['y_type'] == "numerical":
-        #         meta_data['y_type'] = "quantitative"
+            self.y_axis.field = "value"
+            self.y_axis.field_type = "quantitative"
+        else:
+            if meta_data['x_type'] == "categorical":
+                meta_data['x_type'] = "nominal"
+            elif meta_data['x_type'] == "numerical":
+                meta_data['x_type'] = "quantitative"
+            if meta_data['y_type'] == "categorical":
+                meta_data['y_type'] = "nominal"
+            elif meta_data['y_type'] == "numerical":
+                meta_data['y_type'] = "quantitative"
+            
+            if isinstance(data[0]['x_data'], str):
+                meta_data['x_type'] = "temporal"
+            else:
+                meta_data['x_type'] = "quantitative"
                 
-        #     self.x_axis.field = meta_data['x_label']
-        #     self.x_axis.field_type = meta_data['x_type']
-            
-        #     self.y_axis.field = meta_data['y_label']
-        #     self.y_axis.field_type = meta_data['y_type']
+            self.x_axis.field = meta_data['x_label']
+            self.x_axis.field_type = meta_data['x_type']
+                
+            self.y_axis.field = meta_data['y_label']
+            self.y_axis.field_type = meta_data['y_type']
+    
+    def update_specification(self, specification: dict) -> None:
+        return specification
     
     def dump(self):
         result = {

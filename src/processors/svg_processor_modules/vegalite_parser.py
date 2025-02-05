@@ -98,22 +98,22 @@ class VegaLiteParser():
         # print("mark_annotation_group: ", mark_annotation_group)
         # print("y_axis_label_group: ", y_axis_label_group)
         # build inital layout graph
-        if "mark_annotation" in sequence:
-            if direction == "up" or direction == "down":
-                min_mark_width = max([mark.get_bounding_box().width for mark in mark_group])
-                max_annotation_width = max([mark_annotation.get_bounding_box().width for mark_annotation in mark_annotation_group])
-                if min_mark_width < max_annotation_width:
-                    for i in range(len(mark_annotation_group)):
-                        if direction == "up":
-                            if self.additional_configs['chart_template'].mark.annotation_side == "inner":
-                                mark_annotation_group[i].rotate_to_fit("top")
-                            else:
-                                mark_annotation_group[i].rotate_to_fit("bottom")
-                        else:
-                            if self.additional_configs['chart_template'].mark.annotation_side == "inner":
-                                mark_annotation_group[i].rotate_to_fit("bottom")
-                            else:
-                                mark_annotation_group[i].rotate_to_fit("top")
+        # if "mark_annotation" in sequence:
+        #     if direction == "up" or direction == "down":
+        #         min_mark_width = max([mark.get_bounding_box().width for mark in mark_group])
+        #         max_annotation_width = max([mark_annotation.get_bounding_box().width for mark_annotation in mark_annotation_group])
+        #         if min_mark_width < max_annotation_width:
+                    # for i in range(len(mark_annotation_group)):
+                    #     if direction == "up":
+                    #         if self.additional_configs['chart_template'].mark.annotation_side == "inner":
+                    #             mark_annotation_group[i].rotate_to_fit("top")
+                    #         else:
+                    #             mark_annotation_group[i].rotate_to_fit("bottom")
+                    #     else:
+                    #         if self.additional_configs['chart_template'].mark.annotation_side == "inner":
+                    #             mark_annotation_group[i].rotate_to_fit("bottom")
+                    #         else:
+                    #             mark_annotation_group[i].rotate_to_fit("top")
         
         # 从flattened_elements_tree中找到area_mark_group
         # for element in flattened_elements_tree.children:

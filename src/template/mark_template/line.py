@@ -1,5 +1,6 @@
 from .base import MarkTemplate
 from ..color_template import ColorDesign
+import random
 
 class LineTemplate(MarkTemplate):
     def __init__(self, color_template: ColorDesign=None):
@@ -42,6 +43,7 @@ class LineTemplate(MarkTemplate):
             # "step-before"
         ]
         self.interpolate = random.choice(candidate_interpolates)
+    
     def dump(self):
         return {
             "type": self.type,

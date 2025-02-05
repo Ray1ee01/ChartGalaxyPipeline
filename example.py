@@ -7,7 +7,7 @@ from src.processors.data_processor import *
 import random
 
 # data_dir = os.path.join(os.path.dirname(__file__),'src', 'data')
-output_dir = os.path.join(os.path.dirname(__file__),'src', 'output7')
+output_dir = os.path.join(os.path.dirname(__file__),'src', 'output8')
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 # random.seed(15)
 
@@ -34,7 +34,7 @@ def main():
         chart_generator=VegaLiteGenerator(),
         svg_processor=SVGOptimizer()
     )
-    data_range = np.arange(2, 184)
+    data_range = np.arange(3, 184)
     # input_data = f'bar_{data_range[args.chart_idx]}'
 
     
@@ -63,7 +63,8 @@ def main():
     
     color_modes = ['monochromatic', 'complementary', 'analogous', 'polychromatic']
     for data_idx in data_range:
-        input_data = f'bar_{data_idx}'
+        # input_data = f'bar_{data_idx}'
+        input_data = f'line_{data_idx}'
         # 随机选择layout_file_idx, chart_image_idx, chart_component_idx, color_mode
         layout_file_idx = random.randint(1, 6)
         chart_image_idx = random.randint(1, 7)

@@ -96,7 +96,7 @@ class ColorEncodingTemplate:
             # domain是data列表中每个item的['group']的值的unique值
             self.domain = list(set([item['group'] for item in data]))
             self.range = self.color_template.get_color('marks', len(self.domain), seed_mark=1)
-            self.apply_color_rules()
+            # self.apply_color_rules()
         else:
             if self.color_template is not None and not self.color_template.mode == 'monochromatic':
                 if data is not None:
