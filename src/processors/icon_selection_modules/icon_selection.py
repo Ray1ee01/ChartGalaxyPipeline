@@ -267,7 +267,8 @@ class SimulatedAnnealing:
         cur_icons = icons
         temp = self.max_temp
         iter_num = 0
-
+        if cur_icons == []:
+            return []
         while temp > self.min_temp and iter_num < self.max_iter:
             print("temp: ", temp)
             new_icons = self.disturb(cur_icons)
