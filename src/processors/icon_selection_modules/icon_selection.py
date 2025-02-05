@@ -256,10 +256,11 @@ class SimulatedAnnealing:
         # mode: 0 topic, 1 x/y axis, 2 data
         self.init_icon_sets(icon_mode)
 
+        print("icon_mode: ", icon_mode)
         # 0. init icons
         icons = self.init()
         start_loss = self.cal_loss(icons)[0]
-
+        print("start_loss: ", start_loss)
         best_loss = start_loss
         best_icons = icons
         cur_loss = start_loss
@@ -268,6 +269,7 @@ class SimulatedAnnealing:
         iter_num = 0
 
         while temp > self.min_temp and iter_num < self.max_iter:
+            print("temp: ", temp)
             new_icons = self.disturb(cur_icons)
             new_loss = self.cal_loss(new_icons)[0]
             delta_loss = new_loss - cur_loss
