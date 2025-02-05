@@ -70,9 +70,9 @@ class LineChartConstraint(LayoutConstraint):
             raise ValueError("不兼容的图表类型")
         chart_template.mark.orientation = "vertical"
         chart_template.x_axis.orientation = "bottom"
-        chart_template.x_axis.field_type = "quantitative"
+        # chart_template.x_axis.field_type = "quantitative"
         chart_template.y_axis.orientation = "left"
-        chart_template.y_axis.field_type = "quantitative"
+        # chart_template.y_axis.field_type = "quantitative"
 
 
 class LineChartTemplate(ChartTemplate):
@@ -110,8 +110,9 @@ class LineChartTemplate(ChartTemplate):
             elif meta_data['y_type'] == "numerical":
                 meta_data['y_type'] = "quantitative"
             
+            print("is str", isinstance(data[0]['x_data'], str))
             if isinstance(data[0]['x_data'], str):
-                meta_data['x_type'] = "temporal"
+                meta_data['x_type'] = "ordinal"
             else:
                 meta_data['x_type'] = "quantitative"
                 

@@ -180,8 +180,11 @@ class Chart2TableDataProcessor(DataProcessor):
         print('meta_data: ', result['meta_data'])
         
         # icon_selector = IconSelector(icon_pool, topic_color=None, spe_mode='flag')
+        print("icon_pool: ", icon_pool)
         icon_selector = IconSelector(icon_pool, topic_color=None)
+        print("icon_selector: ", icon_selector)
         candidate_icons = icon_selector.select(layout_sequence, chart_image_sequence)
+        print("candidate_icons: ", candidate_icons)
         # candidate_icons = [[],[]]
         if isinstance(candidate_icons, tuple):
             candidate_icons = candidate_icons[0] + candidate_icons[1]
