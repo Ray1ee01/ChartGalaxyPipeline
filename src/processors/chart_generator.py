@@ -181,6 +181,18 @@ class VegaLiteGenerator(ChartGenerator):
             color_encoding["legend"] = {"title": None}
             encoding["color"] = color_encoding
         
+        # 形状编码配置 (for scatter plot)
+        if hasattr(self.template, 'shape_encoding') and self.template.shape_encoding:
+            shape_encoding = {
+                "field": self.template.shape_encoding.field,
+                "type": self.template.shape_encoding.field_type,
+                "scale": {
+                    "domain": self.template.shape_encoding.domain,
+                    "range": self.template.shape_encoding.range
+                }
+            }
+            encoding["shape"] = shape_encoding
+        
         specification["encoding"] = encoding
         specification["mark"] = mark_specification
         specification = self.template.update_specification(specification)
