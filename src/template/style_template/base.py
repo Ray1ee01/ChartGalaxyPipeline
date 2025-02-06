@@ -90,7 +90,8 @@ class ColorEncodingTemplate:
         self.meta_data = meta_data
         self.color_template = color_template
         self.embedding_model = SentenceTransformer(model_path)
-        if len(data[0].keys()) == 3:
+        print(data[0].keys())
+        if len(data[0].keys()) == 3 and 'group' in data[0].keys():
             self.field = 'group'
             self.field_type = 'nominal'
             # domain是data列表中每个item的['group']的值的unique值

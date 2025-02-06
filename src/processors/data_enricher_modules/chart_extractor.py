@@ -79,6 +79,15 @@ class NaiveChartExtractor(ChartExtractor):
             meta_data['group_type'] = determine_column_type(df, df.columns[2])
             meta_data['group_label'] = df.columns[2]
             meta_data['group_axis'] = df.columns[2]
+        if 'order' in df.columns: # For connected scatterplot
+            meta_data['order_type'] = determine_column_type(df, df.columns[2])
+            meta_data['order_label'] = df.columns[2]
+            meta_data['order_axis'] = df.columns[2]
+        if 'size' in df.columns: # For bubble chart
+            meta_data['size_type'] = determine_column_type(df, df.columns[2])
+            meta_data['size_label'] = df.columns[2]
+            meta_data['size_axis'] = df.columns[2]
+            
         filtered_df = df.iloc[item_idx]
         data = []
         for i in range(len(filtered_df)):
@@ -88,4 +97,8 @@ class NaiveChartExtractor(ChartExtractor):
             })
             if 'group' in df.columns:
                 data[-1]['group'] = avoid_np_type(filtered_df.iloc[i][2])
+            if 'order' in df.columns:
+                data[-1]['order'] = avoid_np_type(filtered_df.iloc[i][2])
+            if 'size' in df.columns:
+                data[-1]['size'] = avoid_np_type(filtered_df.iloc[i][2])
         return data, meta_data

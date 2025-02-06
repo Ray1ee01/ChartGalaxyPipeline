@@ -55,6 +55,16 @@ class ScatterPlotTemplate(ChartTemplate):
     
     
     def update_specification(self, specification: dict) -> None:
+        if hasattr(self, 'shape_encoding') and self.shape_encoding:
+            shape_encoding = {
+                "field": self.shape_encoding.field,
+                "type": self.shape_encoding.field_type,
+                "scale": {
+                    "domain": self.shape_encoding.domain,
+                    "range": self.shape_encoding.range
+                }
+            }
+            specification["encoding"]["shape"] = shape_encoding
         return specification
     
     def dump(self):

@@ -114,7 +114,17 @@ class Pipeline:
                     chart_component=chart_component_config
                 )
             elif processed_data['meta_data']['chart_type'] == 'scatter':
-                chart_template, layout_template = TemplateFactory.create_scatter_plot_template(
+                chart_template, layout_template = TemplateFactory.create_scatterplot_template(
+                    data=processed_data['data'],
+                    meta_data=processed_data['meta_data'],
+                    layout_tree=layout_tree,
+                    chart_composition=chart_image_config,
+                    sort_config=sort_config,
+                    color_template=color_template,
+                    chart_component=chart_component_config
+                )
+            elif processed_data['meta_data']['chart_type'] == 'connectedscatter':
+                chart_template, layout_template = TemplateFactory.create_connected_scatterplot_template(
                     data=processed_data['data'],
                     meta_data=processed_data['meta_data'],
                     layout_tree=layout_tree,
