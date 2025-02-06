@@ -16,13 +16,7 @@
         "children": [
             {
                 "tag": "g",
-                "id": "title",
-                "layoutStrategy": {
-                    "name": "vertical",
-                    "padding": 0,
-                    "direction": "down",
-                    "overlap": false
-                },
+                "id": "chart",
                 "children": []
             },
             {
@@ -38,7 +32,13 @@
             },
             {
                 "tag": "g",
-                "id": "chart",
+                "id": "title",
+                "layoutStrategy": {
+                    "name": "vertical",
+                    "padding": 0,
+                    "direction": "down",
+                    "overlap": false
+                },
                 "children": []
             }
         ]

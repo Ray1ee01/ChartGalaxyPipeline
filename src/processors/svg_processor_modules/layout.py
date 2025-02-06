@@ -93,8 +93,6 @@ class LayoutStrategy(ABC):
         }
     
 
-
-
 class VerticalLayoutStrategy(LayoutStrategy):
     """垂直布局策略"""
     def __init__(self, alignment: list[str] = ['middle', 'middle'], direction: str = 'down', padding: float = 5, offset: float = 0):
@@ -162,21 +160,23 @@ class VerticalLayoutStrategy(LayoutStrategy):
             # 获取参考元素的有效边界框
             if reference_element.tag == 'g':
                 reference_element_valid_bounding_boxes = reference_element.get_children_boundingboxes()
+                for i, child in enumerate(reference_element.children):
+                    if child.tag == 'path':
+                        print('child.tag: ', child.tag)
+                        reference_element_valid_bounding_boxes[i] = None
             else:
                 reference_element_valid_bounding_boxes = [reference_element._bounding_box]
                 
             # 获取布局元素的有效边界框
             if layout_element.tag == 'g':
                 layout_element_valid_bounding_boxes = layout_element.get_children_boundingboxes()
+                for i, child in enumerate(layout_element.children):
+                    if child.tag == 'path':
+                        print('child.tag: ', child.tag)
+                        layout_element_valid_bounding_boxes[i] = None
             else:
                 layout_element_valid_bounding_boxes = [layout_element._bounding_box]
-            # if reference_element.tag == 'g' and reference_element.id == 'chart':
-            #     for child in reference_element.children:
-            #         print('child: ', child.tag, child.id, child._bounding_box)
-            
-            # print('layout_element_valid_bounding_boxes: ', layout_element_valid_bounding_boxes)
-            # print('reference_element_valid_bounding_boxes: ', reference_element_valid_bounding_boxes)
-            
+
             def has_overlap(move_distance: float) -> bool:
                 """检查给定移动距离是否会导致重叠"""
                 # 保存原始值
@@ -195,14 +195,25 @@ class VerticalLayoutStrategy(LayoutStrategy):
                         
                 # 检查是否重叠
                 has_overlap = False
-                for ref_box in reference_element_valid_bounding_boxes:
-                    for layout_box in layout_element_valid_bounding_boxes:
-                        if layout_box.is_overlapping(ref_box):
-                            has_overlap = True
-                            # print('overlap')
-                            # print('ref_box: ', ref_box)
-                            # print('layout_box: ', layout_box)
-                            break
+                for i, ref_box in enumerate(reference_element_valid_bounding_boxes):
+                    if ref_box is None:
+                        for j, layout_box in enumerate(layout_element_valid_bounding_boxes):
+                            if layout_box is None:
+                                continue
+                            print('reference_element.children[i].is_intersect(layout_box): ', reference_element.children[i].is_intersect(layout_box))
+                            if reference_element.children[i].is_intersect(layout_box):
+                                has_overlap = True
+                                break
+                    else:
+                        for j, layout_box in enumerate(layout_element_valid_bounding_boxes):
+                            if layout_box is None:
+                                if layout_element.children[j].is_intersect(ref_box):
+                                    has_overlap = True
+                                    break
+                            else:
+                                if layout_box.is_overlapping(ref_box):
+                                    has_overlap = True
+                                    break
                     if has_overlap:
                         break
                         
@@ -218,18 +229,22 @@ class VerticalLayoutStrategy(LayoutStrategy):
                 left = 0  # 最小移动距离
                 right = reference_element._bounding_box.miny - layout_element._bounding_box.miny  # 最大移动距离
                 best_move = 0
+                old_layout_element_bounding_box_miny = layout_element._bounding_box.miny
+                old_layout_element_bounding_box_maxy = layout_element._bounding_box.maxy
                 
                 while left <= right:
                     mid = (left + right) / 2
+                    print('mid: ', mid)
+                    print('has_overlap(mid): ', has_overlap(mid))
                     if has_overlap(mid):
-                        left = mid + 0.1  # 增加一个小的步长
-                        best_move = mid
-                    else:
                         right = mid - 0.1
+                    else:
+                        left = mid + 0.1
+                        best_move = mid
                 # print('best_move: ', best_move)
                 if best_move > 0:
-                    layout_element._bounding_box.miny += best_move
-                    layout_element._bounding_box.maxy += best_move
+                    layout_element._bounding_box.miny = old_layout_element_bounding_box_miny + best_move
+                    layout_element._bounding_box.maxy = old_layout_element_bounding_box_maxy + best_move
                     
             else:  # direction == 'down'
                 left = 0  # 最小移动距离

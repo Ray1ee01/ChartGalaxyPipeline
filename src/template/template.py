@@ -6,236 +6,12 @@ from typing import List
 from .color_template import ColorDesign
 import random
 import copy
-
-class ColorTemplate:
-    def __init__(self):
-        self.color = None
-        self.opacity = None
-    def dump(self):
-        return {
-            "color": self.color,
-            "opacity": self.opacity
-        }
-
-class StrokeTemplate:
-    def __init__(self):
-        self.stroke_width = None
-    def dump(self):
-        return {
-            "strokeWidth": self.stroke_width
-        }
-
-class AxisTemplate:
-    def __init__(self, color_template: ColorDesign=None):
-        # 基本属性
-        self.type = None # 轴类型
-        self.orientation = None # 轴方向
-        self.field = None # field 名称
-        self.field_type = None # 类型
-
-        # 样式属性
-        ## domain 样式
-        self.has_domain = True
-        # 从1到100之间随机取一个值
-        seed_axis = random.randint(1, 100)
-        stroke_color = color_template.get_color('axis', 1, seed_axis=seed_axis)
-        self.domain_color_style = ColorTemplate()
-        self.domain_color_style.color = stroke_color
-        self.domain_stroke_style = StrokeTemplate()
-        
-        ## label 样式
-        self.has_label = True
-        self.label_color_style = ColorTemplate()
-        self.label_color_style.color = stroke_color
-        # self.label_font_style = FontTemplate()
-        self.label_font_style = LabelFontTemplate()
-        
-        ## tick 样式
-        self.has_tick = True
-        self.tick_color_style = ColorTemplate()
-        self.tick_color_style.color = stroke_color
-        self.tick_stroke_style = StrokeTemplate()
-        
-        ## title 样式
-        self.has_title = True
-        self.title_text = None
-        self.title_color_style = ColorTemplate()
-        self.title_color_style.color = stroke_color
-        # self.title_font_style = FontTemplate()
-        self.title_font_style = LabelFontTemplate()
-        ## grid 样式: 暂时不支持
-    def copy(self):
-        return copy.deepcopy(self)
-    def dump(self):
-        return {
-            "type": self.type,
-            "orientation": self.orientation,
-            "field": self.field,
-            "field_type": self.field_type,
-            "has_domain": self.has_domain,
-            "domain_color_style": self.domain_color_style.dump(),
-            "domain_stroke_style": self.domain_stroke_style.dump(),
-            "has_label": self.has_label,
-            "label_color_style": self.label_color_style.dump(),
-            "label_font_style": self.label_font_style.dump(),
-        }
-        
-class ColorEncodingTemplate:
-    def __init__(self, color_template: ColorDesign=None, meta_data: dict=None, data: list=None):
-        self.field = None
-        self.field_type = None
-        self.domain = None
-        self.range = None
-        if color_template is not None and not color_template.mode == 'monochromatic':
-            if data is not None:
-                self.domain = list(set([row['x_data'] for row in data]))
-                self.field = meta_data['x_label']
-            # seed_mark = random.randint(1, 100)
-            seed_mark = 1
-            colors = color_template.get_color('marks', len(self.domain), seed_mark=seed_mark)
-            self.range = colors
-    def dump(self):
-        return {
-            "field": self.field,
-            "field_type": self.field_type,
-            "domain": self.domain,
-            "range": self.range
-        }
-
-class MarkTemplate:
-    def __init__(self, color_template: ColorDesign=None):
-        # 基本属性
-        self.mark_type = None # 标记类型
-        
-        mark_color = None
-        if color_template is not None and color_template.mode == 'monochromatic':
-            # seed_mark = random.randint(1, 100)
-            seed_mark = 1
-            mark_color = color_template.get_color('marks', 1, seed_mark=seed_mark)[0]
-
-        # 样式属性
-        self.fill_color_style = ColorTemplate()
-        self.fill_color_style.color = mark_color
-        self.stroke_color_style = ColorTemplate()
-        self.stroke_color_style.color = mark_color
-        
-        self.stroke_style = StrokeTemplate()
-        
-        self.annotation_font_style = LabelFontTemplate()
-        self.annotation_color_style = ColorTemplate()
-        self.annotation_side = None
-        # 从inner和outer之间随机取一个值
-        # self.annotation_side = random.choice(["inner", "outer"])
-        # print("self.annotation_side: ", self.annotation_side)
-        self.annotation_side = "outer"
-        
-        if self.annotation_side == "inner":
-            seed_text = random.randint(1, 100)
-            self.annotation_color_style.color = color_template.get_color('text', 1, seed_text=seed_text, reverse=True)
-        else:
-            self.annotation_color_style.color = mark_color
-        
-    def dump(self):
-        return {
-            "mark_type": self.mark_type,
-            "fill_color_style": self.fill_color_style.dump(),
-            "stroke_color_style": self.stroke_color_style.dump(),
-            "stroke_style": self.stroke_style.dump()
-        }
-
-class BarTemplate(MarkTemplate):
-    def __init__(self, color_template: ColorDesign=None):
-        super().__init__(color_template)
-        self.type = "bar"
-        self.height = None
-        self.width = None
-        self.orientation = None # 这个不用自己设定，而是应该根据轴的配置推理得到
-        
-        # 样式属性
-        self.corner_radiuses = {
-            "top_left": None,
-            "top_right": None,
-            "bottom_left": None,
-            "bottom_right": None
-        }
-    def dump(self):
-        return {
-            "type": self.type,
-            "height": self.height,
-            "width": self.width,
-            "orientation": self.orientation,
-            "corner_radiuses": self.corner_radiuses
-        }
+from sentence_transformers import SentenceTransformer, util
+from .chart_template.base import *
+from .chart_template.bar_chart import *
+from .chart_template.line_chart import *
 
 
-    
-## TODO现在还没支持annotation
-class ChartTemplate:
-    def __init__(self, template_path: str=None):
-        self.chart_type = None
-        self.has_annotation = False
-
-class LayoutConstraint:
-    """布局约束基类"""
-    def validate(self, chart_template: ChartTemplate) -> bool:
-        raise NotImplementedError
-    
-    def apply(self, chart_template: ChartTemplate) -> None:
-        raise NotImplementedError
-
-class VerticalBarChartConstraint(LayoutConstraint):
-    """垂直柱状图的布局约束"""
-    def validate(self, chart_template: ChartTemplate) -> bool:
-        return isinstance(chart_template, BarChartTemplate)
-    
-    def apply(self, chart_template: ChartTemplate) -> None:
-        if not self.validate(chart_template):
-            raise ValueError("不兼容的图表类型")
-        chart_template.mark.orientation = "vertical"
-        chart_template.x_axis.orientation = "bottom"
-        chart_template.x_axis.field_type = "nominal"
-        chart_template.y_axis.orientation = "left"
-        chart_template.y_axis.field_type = "quantitative"
-        
-
-class HorizontalBarChartConstraint(LayoutConstraint):
-    """水平柱状图的布局约束"""
-    def validate(self, chart_template: ChartTemplate) -> bool:
-        return isinstance(chart_template, BarChartTemplate)
-    
-    def apply(self, chart_template: ChartTemplate) -> None:
-        if not self.validate(chart_template):
-            raise ValueError("不兼容的图表类型")
-        chart_template.mark.orientation = "horizontal"
-        chart_template.x_axis.orientation = "left"
-        chart_template.x_axis.field_type = "nominal"
-        chart_template.y_axis.orientation = "top"
-        chart_template.y_axis.field_type = "quantitative"
-
-class SortConstraint(LayoutConstraint):
-    """排序约束"""
-    def __init__(self, sort_by: str = "y", ascending: bool = True):
-        if sort_by not in ["x", "y"]:
-            raise ValueError("sort_by 必须是 'x' 或 'y'")
-        self.sort_by = sort_by
-        self.ascending = ascending
-    
-    def validate(self, chart_template: ChartTemplate) -> bool:
-        return isinstance(chart_template, BarChartTemplate)
-    
-    def apply(self, chart_template: ChartTemplate) -> None:
-        if not self.validate(chart_template):
-            raise ValueError("不兼容的图表类型")
-        
-        # if self.sort_by == "x":
-        #     sort_field = chart_template.x_axis.field
-        # else:  # "y"
-        #     sort_field = chart_template.y_axis.field
-        
-        chart_template.sort = {
-            "by": self.sort_by,
-            "ascending": self.ascending
-        }
 
 class LayoutTemplate:
     def __init__(self):
@@ -324,57 +100,7 @@ class LayoutTemplate:
         else:
             raise ValueError(f"不支持的布局元素: {layout_tree['tag']}")
 
-class BarChartTemplate(ChartTemplate):
-    def __init__(self):
-        super().__init__()
-        self.chart_type = "bar"
-        self.sort = None
-    
-    def create_template(self, data: list, meta_data: dict=None, color_template: ColorDesign=None):
-        self.x_axis = AxisTemplate(color_template)
-        self.y_axis = self.x_axis.copy()
-        
-        self.mark = BarTemplate(color_template)
-        
-        self.color_encoding = ColorEncodingTemplate(color_template, meta_data, data)
-        
 
-        if meta_data is None:
-            # set default value
-            self.x_axis.field = "category"
-            self.x_axis.field_type = "nominal"
-            
-            self.y_axis.field = "value"
-            self.y_axis.field_type = "quantitative"
-        else:
-            if meta_data['x_type'] == "categorical":
-                meta_data['x_type'] = "nominal"
-            elif meta_data['x_type'] == "numerical":
-                meta_data['x_type'] = "quantitative"
-            if meta_data['y_type'] == "categorical":
-                meta_data['y_type'] = "nominal"
-            elif meta_data['y_type'] == "numerical":
-                meta_data['y_type'] = "quantitative"
-                
-            self.x_axis.field = meta_data['x_label']
-            self.x_axis.field_type = meta_data['x_type']
-            
-            self.y_axis.field = meta_data['y_label']
-            self.y_axis.field_type = meta_data['y_type']
-        
-    def dump(self):
-        result = {
-            "x_axis": self.x_axis.dump(),
-            "y_axis": self.y_axis.dump(),
-            "mark": self.mark.dump(),
-            "color_encoding": self.color_encoding.dump()
-        }
-        
-        # 添加排序配置到输出
-        if self.sort is not None:
-            result["sort"] = self.sort
-            
-        return result
 
 # 创建组合模板的工厂类
 class TemplateFactory:
@@ -480,95 +206,66 @@ class TemplateFactory:
             chart_template.y_axis.has_label = chart_component.get('y_axis', {}).get('has_label', True)
         return chart_template, layout_template
 
-class FontTemplate:
-    def __init__(self):
-        self.font = None
-        self.font_size = None
-        self.font_weight = None
-        self.line_height = None
-        self.letter_spacing = None
-    def dump(self):
-        return {
-            "font": self.font,
-            "fontSize": self.font_size,
-            "fontWeight": self.font_weight,
-            "lineHeight": self.line_height,
-            "letterSpacing": self.letter_spacing
-        }
+    @staticmethod
+    def create_group_bar_chart_template(
+        data: list,
+        meta_data: dict,
+        layout_tree: dict,
+        chart_composition: dict = None, 
+        color_template: ColorDesign = None
+    ):
+        chart_template = GroupBarChartTemplate()
+        chart_template.create_template(data, meta_data, color_template)
+        layout_template = LayoutTemplate()
+        layout_template.add_constraint(GroupBarChartConstraint())
+        layout_template.root = layout_template.build_template_from_tree(layout_tree)
+        layout_template.apply_constraints(chart_template)
+        return chart_template, layout_template
 
-
-class TitleFontTemplate(FontTemplate):
-    """用于标题的字体模板"""
-    def __init__(self):
-        super().__init__()
-        self.font = "sans-serif"
-        self.font_size = 22
-        self.font_weight = 500
-        self.line_height = 28
-        self.letter_spacing = 0
-    def large(self):
-        self.font_size = 22
-        self.font_weight = 600
-        self.line_height = 28
-        self.letter_spacing = 0
-    def middle(self):
-        self.font_size = 16
-        self.font_weight = 600
-        self.line_height = 24
-        self.letter_spacing = 0.15
-    def small(self):
-        self.font_size = 14
-        self.font_weight = 600
-        self.line_height = 20
-        self.letter_spacing = 0.1
-
-class BodyFontTemplate(FontTemplate):
-    """用于正文的字体模板"""
-    def __init__(self):
-        super().__init__()
-        self.font = "sans-serif"
-        self.font_size = 16
-        self.font_weight = 400
-        self.line_height = 24
-        self.letter_spacing = 0.5
-    def large(self):
-        self.font_size = 16
-        self.font_weight = 400
-        self.line_height = 24
-        self.letter_spacing = 0.5
-    def middle(self):
-        self.font_size = 14
-        self.font_weight = 400
-        self.line_height = 20
-        self.letter_spacing = 0.25
-    def small(self):
-        self.font_size = 12
-        self.font_weight = 400
-        self.line_height = 16
-        self.letter_spacing = 0.4
-
-class LabelFontTemplate(FontTemplate):
-    """用于标签的字体模板"""
-    def __init__(self):
-        super().__init__()
-        self.font = "sans-serif"
-        self.font_size = 14
-        self.font_weight = 500
-        self.line_height = 20
-        self.letter_spacing = 0.1
-    def large(self):
-        self.font_size = 14
-        self.font_weight = 500
-        self.line_height = 20
-        self.letter_spacing = 0.1
-    def middle(self):
-        self.font_size = 12
-        self.font_weight = 500
-        self.line_height = 16
-        self.letter_spacing = 0.25
-    def small(self):
-        self.font_size = 10
-        self.font_weight = 500
-        self.line_height = 12
-        self.letter_spacing = 0.4
-
+    @staticmethod
+    def create_line_chart_template(
+        data: list,
+        meta_data: dict,
+        layout_tree: dict,
+        chart_composition: dict = None,
+        sort_config: dict = None,
+        color_template: ColorDesign = None,
+        chart_component: dict = None
+    ):
+        """创建折线图模板"""
+        chart_template = LineChartTemplate()
+        chart_template.create_template(data, meta_data, color_template)
+        layout_template = LayoutTemplate()
+        
+        # 添加方向约束
+        layout_template.add_constraint(LineChartConstraint())
+        
+        # 添加排序约束
+        if sort_config:
+            layout_template.add_constraint(
+                SortConstraint(
+                    sort_by=sort_config["by"],
+                    ascending=sort_config.get("ascending", True)
+                )
+            )
+        
+        if chart_composition:
+            if "mark_annotation" in chart_composition['sequence']:
+                chart_template.has_annotation = True
+        
+        # 构建布局树
+        layout_template.root = layout_template.build_template_from_tree(layout_tree)
+        
+        # 应用约束
+        layout_template.apply_constraints(chart_template)
+        
+        if chart_component:
+            chart_template.x_axis.has_domain = chart_component.get('x_axis', {}).get('has_domain', True)
+            chart_template.x_axis.has_tick = chart_component.get('x_axis', {}).get('has_tick', True)
+            chart_template.x_axis.has_label = chart_component.get('x_axis', {}).get('has_label', True)
+            chart_template.y_axis.has_domain = chart_component.get('y_axis', {}).get('has_domain', True)
+            chart_template.y_axis.has_tick = chart_component.get('y_axis', {}).get('has_tick', True)
+            chart_template.y_axis.has_label = chart_component.get('y_axis', {}).get('has_label', True)
+        
+        return chart_template, layout_template
+        

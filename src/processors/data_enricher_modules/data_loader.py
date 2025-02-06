@@ -103,6 +103,7 @@ class Chart2TableDataLoader(DataLoader):
         else:
             with open(id_map_path, 'r') as f:
                 id_map = json.load(f)
+        print("id_map: ", id_map)
         real_id = id_map[str(data_id)]
         meta_data_path = os.path.join(dataset_dir, 'metadata.json')
         with open(meta_data_path, 'r') as f:
@@ -110,6 +111,8 @@ class Chart2TableDataLoader(DataLoader):
         
         file_name = real_id.split('.')[0]
         data_table = pd.read_csv(os.path.join(dataset_dir, real_id))
+        
+        
         raw_meta_data = {
             'title': loaded_meta_data[file_name]['title'],
         }

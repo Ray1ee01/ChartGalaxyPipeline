@@ -99,11 +99,15 @@ class LayoutProcessor:
                 element.attributes = self.chart_element.attributes
                 element._bounding_box = element.get_bounding_box()
                 print("chart boundingbox: ", element._bounding_box)
+            elif element.id == 'embellish':
+                self._createEmbellishElement(element)
+                element._bounding_box = element.get_bounding_box()
             else:
                 topic_icon_idx = -1
                 boundingboxes = []
                 for idx, child in enumerate(element.children):
                     self.process_layout_template(child)
+                    print("child: ", child.id, child.tag, child._bounding_box)
                     if child.id == 'topic_icon':
                         topic_icon_idx = idx
                     boundingboxes.append(child._bounding_box)
@@ -157,8 +161,8 @@ class LayoutProcessor:
             id = element.id
             if id == 'topic_icon':
                 self._createTopicIconElement(self.topic_icon_config, element)
-        elif element.tag == 'rect' and element.id == 'embellish_0':
-            self._createRectElement({},element)
+        # elif element.tag == 'rect' and element.id == 'embellish_0':
+        #     self._createRectElement({},element)
         
     def process_node(self, tree: dict):
         # 自顶向下递归地创建layout element, 并应用布局
@@ -240,6 +244,7 @@ class LayoutProcessor:
         max_lines = title_config.get('max_lines', 1)
         # text_lines = [text_content]
         text_lines = self._autolinebreak(text_content, max_lines)
+        text_lines = self._avoidSingleWordLine(text_lines)
         print("test_text_lines: ", text_lines)
         
         # # 将文本内容统一转换为列表形式
@@ -381,6 +386,7 @@ class LayoutProcessor:
             
             if current_line:
                 text_lines.append(' '.join(current_line))
+        text_lines = self._avoidSingleWordLine(text_lines)
         n_lines = len(text_lines)
         print("n_lines: ", n_lines)
         # text_lines = self._autolinebreak(text_content, n_lines, n_lines)
@@ -446,6 +452,14 @@ class LayoutProcessor:
         boundingbox = element.get_bounding_box()
         element._bounding_box = boundingbox
 
+    def _createEmbellishElement(self, element: LayoutElement):
+        """创建装饰元素"""
+        embellish_element = RectEmbellish()
+        
+        # element.children.append(embellish_element)
+        for child in embellish_element.children:
+            element.children.append(child)
+        element._bounding_box = element.get_bounding_box()
     def _createTopicIcon(self, topic_icon_config: Dict) -> Optional[dict]:
         """创建主题图标组
         
@@ -479,6 +493,7 @@ class LayoutProcessor:
             'height': element.attributes.get('height', 50),
         }
         boundingbox = element.get_bounding_box()
+        print("boundingbox: ", boundingbox)
         element._bounding_box = boundingbox
 
     def _autolinebreak(self, text: str, max_lines: int=2, n_lines = 0) -> list[str]:
@@ -584,3 +599,11 @@ class LayoutProcessor:
                     _rescale_text(child)
         _rescale_text(self.chart_element)
         self.chart_element._bounding_box = self.chart_element.get_bounding_box()
+
+    def _avoidSingleWordLine(self, text_lines: list[str]) -> list[str]:
+        # 如果有单个单词的行，则将该行合并到上一行
+        for i in range(len(text_lines)):
+            if len(text_lines[i].split()) == 1:
+                text_lines[i-1] += text_lines[i]
+                text_lines.pop(i)
+        return text_lines

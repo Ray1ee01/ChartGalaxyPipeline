@@ -7,7 +7,7 @@
         "layoutStrategy": {
             "name": "vertical",
             "padding": 5,
-            "direction": "down",
+            "direction": "up",
             "overlap": false,
             "alignment": ["middle", "middle"]
         },
@@ -16,6 +16,11 @@
             "max_width": 1
         },
         "children": [
+            {
+                "tag": "g",
+                "id": "chart",
+                "children": []
+            },
             {
                 "tag": "g",
                 "id": "group_1",
@@ -73,11 +78,6 @@
                         "id": "topic_icon"
                     }
                 ]
-            },
-            {
-                "tag": "g",
-                "id": "chart",
-                "children": []
             }
         ]
     },

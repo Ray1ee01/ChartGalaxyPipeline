@@ -127,6 +127,7 @@ class VizNetDataProcessor(DataProcessor):
     
 class Chart2TableDataProcessor(DataProcessor):
     def process(self, raw_data: str, layout_sequence: List[str], chart_image_sequence: List[str]) -> List[Dict]:
+        chart_type = raw_data.split('_')[0]
         dataloader = Chart2TableDataLoader()
         df, raw_meta_data = dataloader.load(raw_data)
         
@@ -170,16 +171,25 @@ class Chart2TableDataProcessor(DataProcessor):
         result['meta_data'] = meta_data.copy()
         result['meta_data'].update(chart_data['meta_data'])
         result['meta_data'].update(topic_data)
-        result['meta_data']['chart_type'] = 'bar'
+        # result['meta_data']['chart_type'] = 'bar'
+        result['meta_data']['chart_type'] = chart_type
         result['data'] = chart_data['data']
         result['data_facts'] = data_fact
         result['icons'] = {}
+        print("data: ", result['data'])
+        print('meta_data: ', result['meta_data'])
         
-        icon_selector = IconSelector(icon_pool, topic_color=None, spe_mode='flag')
+        # icon_selector = IconSelector(icon_pool, topic_color=None, spe_mode='flag')
+        print("icon_pool: ", icon_pool)
+        icon_selector = IconSelector(icon_pool, topic_color=None)
+        print("icon_selector: ", icon_selector)
+        print("chart_image_sequence: ", chart_image_sequence)
         candidate_icons = icon_selector.select(layout_sequence, chart_image_sequence)
+        print("candidate_icons: ", candidate_icons)
+        candidate_icons = [[],[]]
         if isinstance(candidate_icons, tuple):
             candidate_icons = candidate_icons[0] + candidate_icons[1]
-        print("candidate_icons: ", candidate_icons)
+        # print("candidate_icons: ", candidate_icons)
         topic_icon_idx = -1
         x_single_icon_idx = -1
         x_multi_icon_idx = -1
@@ -215,8 +225,8 @@ class Chart2TableDataProcessor(DataProcessor):
         result['icons']['x_data_single'] = [os.path.join(icon_root, icon_positions[v][0], icon_positions[v][1]) if isinstance(v, int) else v for v in x_data_single_icon_pool]
         result['icons']['x_data_multi'] = [os.path.join(icon_root, icon_positions[v][0], icon_positions[v][1]) if isinstance(v, int) else v for v in x_data_multi_icon_pool]
         x_data_multi_icon_map = {}
-        for i, data in enumerate(result['data']):
-            x_data_multi_icon_map[data['x_data']] = result['icons']['x_data_multi'][i]
+        # for i, data in enumerate(result['data']):
+        #     x_data_multi_icon_map[data['x_data']] = result['icons']['x_data_multi'][i]
         result['x_data_multi_icon_map'] = x_data_multi_icon_map
         result['palettes'] = palettes
         return result
