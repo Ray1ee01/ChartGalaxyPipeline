@@ -19,8 +19,10 @@ class ConnectedScatterPlotTemplate(LineChartTemplate):
         self.y_axis.field_type = "quantitative"
         self.y_axis.field = meta_data['y_label']
         self.mark = LineTemplate(color_template)
-        self.mark.point = True
         self.color_encoding = None
+        # self.color_encoding = ColorEncodingTemplate(color_template, meta_data, data)
+        
+        self.mark.point = True
     
     def update_specification(self, specification):
         # specification = super().update_specification(specification)

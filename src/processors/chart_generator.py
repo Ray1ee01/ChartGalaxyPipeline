@@ -220,7 +220,8 @@ class VegaLiteGenerator(ChartGenerator):
                 transformed_data[-1]['group'] = item['group']
             if 'order' in item:
                 transformed_data[-1]['order'] = item['order']
-        
+            if 'size' in item:
+                transformed_data[-1]['size'] = item['size']
         
         self.data = transformed_data
         self.template = template
