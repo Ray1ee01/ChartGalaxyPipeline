@@ -65,10 +65,11 @@ def main():
     color_modes = ['monochromatic', 'complementary', 'analogous', 'polychromatic']
     for data_idx in data_range:
         # input_data = f'bar_{data_idx}'
-        input_data = f'line_{data_idx}'
+        # input_data = f'line_{data_idx}'
+        input_data = f'stackedbar_{data_idx}'
         # 随机选择layout_file_idx, chart_image_idx, chart_component_idx, color_mode
         layout_file_idx = random.randint(1, 6)
-        chart_image_idx = random.randint(8, 9)
+        chart_image_idx = 8
         chart_component_idx = random.randint(1, 2)
         color_mode = random.choice(['monochromatic', 'complementary', 'analogous', 'polychromatic'])
         result = pipeline.execute(input_data, layout_file_idx, chart_image_idx, chart_component_idx, color_mode)

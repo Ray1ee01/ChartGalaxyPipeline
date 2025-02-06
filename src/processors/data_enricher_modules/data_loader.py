@@ -103,6 +103,7 @@ class Chart2TableDataLoader(DataLoader):
         else:
             with open(id_map_path, 'r') as f:
                 id_map = json.load(f)
+        print("id_map: ", id_map)
         real_id = id_map[str(data_id)]
         meta_data_path = os.path.join(dataset_dir, 'metadata.json')
         with open(meta_data_path, 'r') as f:
