@@ -228,3 +228,44 @@ class VegaLiteGenerator(ChartGenerator):
             "spec": spec,
         })
         return result, {}
+
+class EchartGenerator(ChartGenerator):
+    def __init__(self):
+        self.script_path = os.path.join(
+            os.path.dirname(__file__),
+            'chart_generator_modules/echart/echart_option.js'
+        )
+
+    def template_to_option(self):
+        option = {
+            "dataset": {
+                "source": self.format_data
+            },
+            "series": [{
+                "animation": False,
+                "silent": True,
+                "emphasis": {
+                    "disabled": True,
+                    "scale": False
+                }
+            }
+            ]
+        }
+        return option
+    
+    def generate(self, data: dict, template: ChartTemplate) -> Tuple[str, Dict, Dict]:
+        self.data = data['data']
+        self.meta_data = data['meta_data']
+        data_headers = [key for key in self.data[0].keys()]
+        self.format_data = []
+        self.format_data.append(data_headers)
+        for item in self.data:
+            self.format_data.append(list(item.values()))
+        self.template = template
+        option = self.template_to_option()
+        option = self.template.update_option(option)
+        print('option: ', option)
+        result = NodeBridge.execute_node_script(self.script_path, {
+            "option": option,
+        })
+        return result, {}

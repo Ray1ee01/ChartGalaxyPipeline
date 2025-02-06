@@ -269,3 +269,20 @@ class TemplateFactory:
         
         return chart_template, layout_template
         
+    @staticmethod
+    def create_radial_bar_chart_template(
+        data: list,
+        meta_data: dict,
+        layout_tree: dict,
+        chart_composition: dict = None,
+        chart_component: dict = None,
+        color_template: ColorDesign = None
+    ):
+        chart_template = RadialBarChartTemplate()
+        chart_template.create_template(data, meta_data, color_template)
+        layout_template = LayoutTemplate()
+        # layout_template.add_constraint(RadialBarChartConstraint())
+        layout_template.root = layout_template.build_template_from_tree(layout_tree)
+        # layout_template.apply_constraints(chart_template)
+        return chart_template, layout_template
+    

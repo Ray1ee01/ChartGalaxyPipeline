@@ -24,6 +24,9 @@ class VegaLiteParser():
         
     def parse(self) -> dict:
         # 解析SVG为树结构
+        # 移除self.svg中<style >到</style>之间的内容
+        self.svg = re.sub(r'<style[^>]*>.*?</style>', '', self.svg)
+        print("self.svg: ", self.svg)
         svg_tree = self.parseTree(self.svg)
         
         self.svg_root = {

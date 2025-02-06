@@ -1,5 +1,6 @@
 from src.pipeline import Pipeline
-from src.processors.chart_generator import VegaLiteGenerator
+# from src.processors.chart_generator import VegaLiteGenerator
+from src.processors.chart_generator import EchartGenerator
 from src.processors.svg_processor import SVGOptimizer
 import os
 from src.utils.dataset import VizNET
@@ -31,7 +32,8 @@ def main():
     # )
     pipeline = Pipeline(
         data_processor=Chart2TableDataProcessor(),
-        chart_generator=VegaLiteGenerator(),
+        # chart_generator=VegaLiteGenerator(),
+        chart_generator=EchartGenerator(),
         svg_processor=SVGOptimizer()
     )
     # data_range = np.arange(3, 184)
@@ -66,7 +68,7 @@ def main():
     for data_idx in data_range:
         # input_data = f'bar_{data_idx}'
         # input_data = f'line_{data_idx}'
-        input_data = f'stackedbar_{data_idx}'
+        input_data = f'radialbar_{data_idx}'
         # 随机选择layout_file_idx, chart_image_idx, chart_component_idx, color_mode
         layout_file_idx = random.randint(1, 6)
         chart_image_idx = 8

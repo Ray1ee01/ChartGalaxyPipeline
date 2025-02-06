@@ -80,6 +80,38 @@ class AxisTemplate:
             "label_color_style": self.label_color_style.dump(),
             "label_font_style": self.label_font_style.dump(),
         }
+
+
+class PolarSetting():
+    def __init__(self):
+        self.inner_radius = None
+        self.outer_radius = None
+    
+        # randomly inner_radius has 1/3 probability to be 0 and 2/3 probability to be a random value between 0 and 0.5
+        if random.random() < 1/3:
+            self.inner_radius = "0%"
+        else:
+            self.inner_radius = str(random.random() * 50) + "%"
+        self.outer_radius = "80%"
+    def dump(self):
+        return {
+            "inner_radius": self.inner_radius,
+            "outer_radius": self.outer_radius
+        }
+        
+        
+        
+class AngleAxisTemplate(AxisTemplate):
+    def __init__(self, color_template: ColorDesign=None):
+        super().__init__(color_template)
+        self.start_angle = 90
+        self.end_angle = None
+        self.clockwise = True
+        
+class RadiusAxisTemplate(AxisTemplate):
+    def __init__(self, color_template: ColorDesign=None):
+        super().__init__(color_template)
+        
         
 class ColorEncodingTemplate:
     def __init__(self, color_template: ColorDesign=None, meta_data: dict=None, data: list=None):
