@@ -1,6 +1,9 @@
 import random
 import colour
 import numpy as np
+from ..utils.color_statics import palette_iteration, StaticPalettes
+
+static_palettes = StaticPalettes()
 
 def rgb_to_hex(r, g, b):
     r = max(0, min(int(r), 255))
@@ -89,6 +92,12 @@ def lighter_color(rgb):
     xyz = colour.Lab_to_XYZ(lab)
     rgb = colour.XYZ_to_sRGB(xyz)
     return norm255rgb(rgb)
+
+def iterate_rgb_palette(rgb_palette):
+    lch_palette = [rgb_to_hcl(*rgb) for rgb in rgb_palette]
+    lch_palette = palette_iteration(lch_palette)
+    rgb_palette = [norm255rgb(colour.XYZ_to_sRGB(colour.Lab_to_XYZ(colour.LCHab_to_Lab(lch)))) for lch in lch_palette]
+    return rgb_palette
     
 text_types = ['title', 'caption']
 class ColorDesign:
@@ -187,6 +196,11 @@ class ColorDesign:
             bcg_rgb = hex_to_rgb(bcg)
             rgb_cp = [rgb for rgb in rgb_cp if ciede2000(rgb, bcg_rgb) > 10]
             self.rgb_pool_hex = [rgb_to_hex(*rgb) for rgb in rgb_cp]
+            rgb_extend = iterate_rgb_palette(rgb_cp)
+            self.rgb_pool_hex_2 = [rgb_to_hex(*rgb) for rgb in rgb_extend]
+            rgb_extend2 = iterate_rgb_palette(rgb_extend)
+            self.rgb_pool_hex_3 = [rgb_to_hex(*rgb) for rgb in rgb_extend2]
+
             self.bcg_color = hex_to_rgb(self.pool['bcg'])
             if ciede2000(self.bcg_color, black) > ciede2000(self.bcg_color, white):
                 self.lightness = 'light'
@@ -462,11 +476,27 @@ class ColorDesign:
                     return [inside_color for _ in range(number)]
                 return [other_color for _ in range(number)]
             if type == 'marks':
-                seed = seed_mark % 2
+                seed = seed_mark % 4
                 print("rgb_pool_hex: ", self.rgb_pool_hex)
                 if seed == 0:
                     return [self.basic_colors_hex[2] for _ in range(number)]
-                return self.rgb_pool_hex[:number] + [self.basic_colors_hex[2] for _ in range(number - len(self.rgb_pool_hex))]  
+                if len(self.rgb_pool_hex) >= number:
+                    if seed == 1:
+                        return self.rgb_pool_hex[:number]
+                    if seed == 2:
+                        return self.rgb_pool_hex[-number:]
+                if len(self.rgb_pool_hex_2) >= number:
+                    if seed == 1:
+                        return self.rgb_pool_hex_2[:number]
+                    if seed == 2:
+                        return self.rgb_pool_hex_2[-number:]
+                if len(self.rgb_pool_hex_3) >= number:
+                    if seed == 1:
+                        return self.rgb_pool_hex_3[:number]
+                    if seed == 2:
+                        return self.rgb_pool_hex_3[-number:]
+                return static_palettes.get_colors(number)
+
             if type == 'axis':
                 seed = seed_axis % 2
                 if seed == 0:
