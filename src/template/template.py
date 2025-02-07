@@ -482,7 +482,42 @@ class TemplateFactory:
         # layout_template.apply_constraints(chart_template)
         return chart_template, layout_template
 
+    def create_radial_histogram_template(
+        data: list,
+        meta_data: dict,
+        layout_tree: dict,
+        chart_composition: dict = None,
+ 
+        sort_config: dict = None,
+        color_template: ColorDesign = None,
+        chart_component: dict = None,
+    ):
+        chart_template = RadialHistogramTemplate()
+        chart_template.create_template(data, meta_data, color_template)
+        layout_template = LayoutTemplate()
+        # layout_template.add_constraint(RadialBarChartConstraint())
+        layout_template.root = layout_template.build_template_from_tree(layout_tree)
+        # layout_template.apply_constraints(chart_template)
+        return chart_template, layout_template
 
+    def create_polar_area_chart_template(
+        data: list,
+        meta_data: dict,
+        layout_tree: dict,
+        chart_composition: dict = None,
+ 
+        sort_config: dict = None,
+        color_template: ColorDesign = None,
+        chart_component: dict = None,
+    ):
+        chart_template = PolarAreaChartTemplate()
+        chart_template.create_template(data, meta_data, color_template)
+        layout_template = LayoutTemplate()
+        # layout_template.add_constraint(RadialBarChartConstraint())
+        layout_template.root = layout_template.build_template_from_tree(layout_tree)
+        # layout_template.apply_constraints(chart_template)
+        return chart_template, layout_template
+    
 class SlopeChartTemplate(ChartTemplate):
     def __init__(self):
         super().__init__()
