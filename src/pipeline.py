@@ -86,23 +86,14 @@ class Pipeline:
                         chart_component=chart_component_config
                     )
                 
-                # with open(f'/data1/liduan/generation/chart/chart_pipeline/src/data/layout_tree/template_image_mapping.json', 'r') as f:
-                #     template_image_mapping = json.load(f)
-                # image_list = template_image_mapping[f'{layout_file_idx}.json']
-                # selected_image = random.choice(image_list)
                 # 获取柱子宽度比例
                 chart_design = ChartDesign()
                 chart_design.image_path = ""
                 bar_ratio = chart_design.get_bar_ratio()
-                print("bar_ratio: ", bar_ratio)
                 if is_horizontal:
                     chart_template.mark.height = bar_ratio['bar_band_ratio']
                 else:
                     chart_template.mark.width = bar_ratio['bar_band_ratio']
-                # # 把selected_image保存到cache中
-                # selected_image_name = selected_image.split('/')[-1]
-                # with open(f"/data1/liduan/generation/chart/chart_pipeline/src/cache/layout_template/{selected_image_name}", 'wb') as f:
-                #     shutil.copy(selected_image, f.name)
             elif processed_data['meta_data']['chart_type'] == 'line':
                 chart_template, layout_template = TemplateFactory.create_line_chart_template(
                     data=processed_data['data'],
@@ -131,6 +122,8 @@ class Pipeline:
                     chart_composition=chart_image_config,
                     sort_config=sort_config,
                     color_template=color_template,
+                    chart_component=chart_component_config
+                )
             elif processed_data['meta_data']['chart_type'] == 'groupbar':
                 chart_template, layout_template = TemplateFactory.create_group_bar_chart_template(
                     data=processed_data['data'],
@@ -173,6 +166,11 @@ class Pipeline:
                 )
             elif processed_data['meta_data']['chart_type'] == 'bubble':
                 chart_template, layout_template = TemplateFactory.create_bubble_plot_template(
+                    data=processed_data['data'],
+                    meta_data=processed_data['meta_data'],
+                    layout_tree=layout_tree,
+                    chart_composition=chart_image_config,
+                    sort_config=sort_config,
                     color_template=color_template,
                     chart_component=chart_component_config
                 )
@@ -188,23 +186,6 @@ class Pipeline:
                 )
             else:
                 raise ValueError(f"不支持的图表类型: {processed_data['meta_data']['chart_type']}")
-
-            # title_font_template = TitleFontTemplate()
-            # title_font_template.large()
-            # title_config['fontSize'] = title_font_template.font_size
-            # title_config['linePadding'] = title_font_template.line_height-title_font_template.font_size
-            # title_config['letterSpacing'] = title_font_template.letter_spacing
-            # title_config['fontWeight'] = title_font_template.font_weight
-            # title_config['font'] = title_font_template.font
-            
-            # subtitle_font_template = BodyFontTemplate()
-            # subtitle_font_template.middle()
-            # subtitle_config['fontSize'] = subtitle_font_template.font_size
-            # # subtitle_config['linePadding'] = subtitle_font_template.line_height-subtitle_font_template.font_size
-            # subtitle_config['linePadding'] = 0
-            # subtitle_config['letterSpacing'] = subtitle_font_template.letter_spacing
-            # subtitle_config['fontWeight'] = subtitle_font_template.font_weight
-            # subtitle_config['font'] = subtitle_font_template.font
             
             # 步骤2：生成图表
             svg, additional_configs = self.chart_generator.generate(processed_data, chart_template)
@@ -215,6 +196,24 @@ class Pipeline:
             
             
             time_start = time.time()
+            
+            title_config = {}
+            title_font_template = TitleFontTemplate()
+            title_font_template.large()
+            title_config['fontSize'] = title_font_template.font_size
+            title_config['linePadding'] = title_font_template.line_height-title_font_template.font_size
+            title_config['letterSpacing'] = title_font_template.letter_spacing
+            title_config['fontWeight'] = title_font_template.font_weight
+            title_config['font'] = title_font_template.font
+            
+            subtitle_config = {}
+            subtitle_font_template = BodyFontTemplate()
+            subtitle_font_template.middle()
+            subtitle_config['fontSize'] = subtitle_font_template.font_size
+            subtitle_config['linePadding'] = 0
+            subtitle_config['letterSpacing'] = subtitle_font_template.letter_spacing
+            subtitle_config['fontWeight'] = subtitle_font_template.font_weight
+            subtitle_config['font'] = subtitle_font_template.font
             
             # 配置额外信息
             additional_configs.update({

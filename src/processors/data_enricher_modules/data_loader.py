@@ -100,6 +100,7 @@ class Chart2TableDataLoader(DataLoader):
                     cur_id += 1
             with open(id_map_path, 'w') as f:
                 json.dump(id_map, f)
+                
         else:
             with open(id_map_path, 'r') as f:
                 id_map = json.load(f)
