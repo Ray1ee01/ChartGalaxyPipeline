@@ -113,12 +113,20 @@ class Pipeline:
                     color_template=color_template,
                     chart_component=chart_component_config
                 )
+            elif processed_data['meta_data']['chart_type'] == 'scatter':
+                chart_template, layout_template = TemplateFactory.create_scatterplot_template(
             elif processed_data['meta_data']['chart_type'] == 'groupbar':
                 chart_template, layout_template = TemplateFactory.create_group_bar_chart_template(
                     data=processed_data['data'],
                     meta_data=processed_data['meta_data'],
                     layout_tree=layout_tree,
                     chart_composition=chart_image_config,
+                    sort_config=sort_config,
+                    color_template=color_template,
+                    chart_component=chart_component_config
+                )
+            elif processed_data['meta_data']['chart_type'] == 'connectedscatter':
+                chart_template, layout_template = TemplateFactory.create_connected_scatterplot_template(
                     color_template=color_template,
                     chart_component=chart_component_config
                 )
@@ -128,6 +136,12 @@ class Pipeline:
                     meta_data=processed_data['meta_data'],
                     layout_tree=layout_tree,
                     chart_composition=chart_image_config,
+                    sort_config=sort_config,
+                    color_template=color_template,
+                    chart_component=chart_component_config
+                )
+            elif processed_data['meta_data']['chart_type'] == 'bubble':
+                chart_template, layout_template = TemplateFactory.create_bubble_plot_template(
                     color_template=color_template,
                     chart_component=chart_component_config
                 )
@@ -137,6 +151,7 @@ class Pipeline:
                     meta_data=processed_data['meta_data'],
                     layout_tree=layout_tree,
                     chart_composition=chart_image_config,
+                    sort_config=sort_config,
                     color_template=color_template,
                     chart_component=chart_component_config
                 )

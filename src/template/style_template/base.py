@@ -122,7 +122,7 @@ class ColorEncodingTemplate:
         self.meta_data = meta_data
         self.color_template = color_template
         self.embedding_model = SentenceTransformer(model_path)
-        if len(data[0].keys()) == 3:
+        if len(data[0].keys()) == 3 and 'group' in data[0].keys():
             self.field = 'group'
             self.field_type = 'nominal'
             # domain是data列表中每个item的['group']的值的unique值
@@ -165,6 +165,54 @@ class ColorEncodingTemplate:
             "range": self.range
         }
 
+class ShapeEncodingTemplate:
+    def __init__(self, meta_data: dict=None, data: list=None):
+        self.field = None
+        self.field_type = None
+        self.domain = None
+        self.range = None
+        self.meta_data = meta_data
+        self.candidate_shapes = [
+          "arrow",
+          "circle",
+          "square",
+          "cross",
+          "diamond",
+          "triangle",
+          "triangle-up",
+          "triangle-down",
+          "triangle-right",
+          "triangle-left",
+          "wedge",
+          "stroke",
+          "M-1,-1H1V1H-1Z",
+          "M0,.5L.6,.8L.5,.1L1,-.3L.3,-.4L0,-1L-.3,-.4L-1,-.3L-.5,.1L-.6,.8L0,.5Z"
+        ]
+        if len(data[0].keys()) == 3:
+            self.field = 'group'
+            self.field_type = 'nominal'
+            # domain是data列表中每个item的['group']的值的unique值
+            self.domain = list(set([item['group'] for item in data]))
+            self.range = random.choices(self.candidate_shapes, k=len(self.domain))
+        else:
+            pass
+            # if self.color_template is not None and not self.color_template.mode == 'monochromatic':
+            #     if data is not None:
+            #         self.domain = list(set([row['x_data'] for row in data]))
+            #         self.field = meta_data['x_label']
+            #         seed_mark = 1
+            #         colors = self.color_template.get_color('marks', len(self.domain), seed_mark=seed_mark)
+            #         self.range = colors
+        
+    def dump(self):
+        if self.field is None:
+            return None
+        return {
+            "field": self.field,
+            "field_type": self.field_type,
+            "domain": self.domain,
+            "range": self.range
+        }
 
 class FontTemplate:
     def __init__(self):

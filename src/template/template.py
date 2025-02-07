@@ -10,7 +10,9 @@ from sentence_transformers import SentenceTransformer, util
 from .chart_template.base import *
 from .chart_template.bar_chart import *
 from .chart_template.line_chart import *
-
+from .chart_template.scatterplot import *
+from .chart_template.connected_scatterplot import *
+from .chart_template.bubble_plot import *
 
 
 class LayoutTemplate:
@@ -270,13 +272,156 @@ class TemplateFactory:
         return chart_template, layout_template
         
     @staticmethod
+    def create_scatterplot_template(
+        data: list,
+        meta_data: dict,
+        layout_tree: dict,
+        chart_composition: dict = None,
+        sort_config: dict = None,
+        color_template: ColorDesign = None,
+        chart_component: dict = None
+    ):
+        """创建散点图模板"""
+        chart_template = ScatterPlotTemplate()
+        chart_template.create_template(data, meta_data, color_template)
+        layout_template = LayoutTemplate()
+        
+        # 添加方向约束
+        layout_template.add_constraint(ScatterPlotConstraint())
+        
+        # 添加排序约束
+        if sort_config:
+            layout_template.add_constraint(
+                SortConstraint(
+                    sort_by=sort_config["by"],
+                    ascending=sort_config.get("ascending", True)
+                )
+            )
+        
+        if chart_composition:
+            if "mark_annotation" in chart_composition['sequence']:
+                chart_template.has_annotation = True
+        
+        # 构建布局树
+        layout_template.root = layout_template.build_template_from_tree(layout_tree)
+        
+        # 应用约束
+        layout_template.apply_constraints(chart_template)
+        
+        if chart_component:
+            chart_template.x_axis.has_domain = chart_component.get('x_axis', {}).get('has_domain', True)
+            chart_template.x_axis.has_tick = chart_component.get('x_axis', {}).get('has_tick', True)
+            chart_template.x_axis.has_label = chart_component.get('x_axis', {}).get('has_label', True)
+            chart_template.y_axis.has_domain = chart_component.get('y_axis', {}).get('has_domain', True)
+            chart_template.y_axis.has_tick = chart_component.get('y_axis', {}).get('has_tick', True)
+            chart_template.y_axis.has_label = chart_component.get('y_axis', {}).get('has_label', True)
+        
+        return chart_template, layout_template
+    
+    @staticmethod
+    def create_connected_scatterplot_template(
+        data: list,
+        meta_data: dict,
+        layout_tree: dict,
+        chart_composition: dict = None,
+        sort_config: dict = None,
+        color_template: ColorDesign = None,
+        chart_component: dict = None
+    ):
+        """创建连接散点图模板"""
+        chart_template = ConnectedScatterPlotTemplate()
+        chart_template.create_template(data, meta_data, color_template)
+        layout_template = LayoutTemplate()
+        
+        # 添加方向约束
+        layout_template.add_constraint(LineChartConstraint())
+        
+        # # 添加排序约束
+        # if sort_config:
+        #     layout_template.add_constraint(
+        #         SortConstraint(
+        #             sort_by=sort_config["by"],
+        #             ascending=sort_config.get("ascending", True)
+        #         )
+        #     )
+        
+        if chart_composition:
+            if "mark_annotation" in chart_composition['sequence']:
+                chart_template.has_annotation = True
+        
+        # 构建布局树
+        layout_template.root = layout_template.build_template_from_tree(layout_tree)
+        
+        # 应用约束
+        layout_template.apply_constraints(chart_template)
+        
+        if chart_component:
+            chart_template.x_axis.has_domain = chart_component.get('x_axis', {}).get('has_domain', True)
+            chart_template.x_axis.has_tick = chart_component.get('x_axis', {}).get('has_tick', True)
+            chart_template.x_axis.has_label = chart_component.get('x_axis', {}).get('has_label', True)
+            chart_template.y_axis.has_domain = chart_component.get('y_axis', {}).get('has_domain', True)
+            chart_template.y_axis.has_tick = chart_component.get('y_axis', {}).get('has_tick', True)
+            chart_template.y_axis.has_label = chart_component.get('y_axis', {}).get('has_label', True)
+        
+        return chart_template, layout_template
+    
+    @staticmethod
+    def create_bubble_plot_template(
+        data: list,
+        meta_data: dict,
+        layout_tree: dict,
+        chart_composition: dict = None,
+        sort_config: dict = None,
+        color_template: ColorDesign = None,
+        chart_component: dict = None
+    ):
+        """创建气泡图模板"""
+        chart_template = BubblePlotTemplate()
+        chart_template.create_template(data, meta_data, color_template)
+        layout_template = LayoutTemplate()
+        
+        # 添加方向约束
+        layout_template.add_constraint(BubblePlotConstraint())
+        
+        # 添加排序约束
+        if sort_config:
+            layout_template.add_constraint(
+                SortConstraint(
+                    sort_by=sort_config["by"],
+                    ascending=sort_config.get("ascending", True)
+                )
+            )
+        
+        if chart_composition:
+            if "mark_annotation" in chart_composition['sequence']:
+                chart_template.has_annotation = True
+        
+        # 构建布局树
+ 
+        layout_template.root = layout_template.build_template_from_tree(layout_tree)
+        
+        # 应用约束
+        layout_template.apply_constraints(chart_template)
+        
+        if chart_component:
+            chart_template.x_axis.has_domain = chart_component.get('x_axis', {}).get('has_domain', True)
+            chart_template.x_axis.has_tick = chart_component.get('x_axis', {}).get('has_tick', True)
+            chart_template.x_axis.has_label = chart_component.get('x_axis', {}).get('has_label', True)
+            chart_template.y_axis.has_domain = chart_component.get('y_axis', {}).get('has_domain', True)
+            chart_template.y_axis.has_tick = chart_component.get('y_axis', {}).get('has_tick', True)
+            chart_template.y_axis.has_label = chart_component.get('y_axis', {}).get('has_label', True)
+        
+        return chart_template, layout_template
+      
     def create_radial_bar_chart_template(
         data: list,
         meta_data: dict,
         layout_tree: dict,
         chart_composition: dict = None,
+ 
+        sort_config: dict = None,
+        color_template: ColorDesign = None,
         chart_component: dict = None,
-        color_template: ColorDesign = None
     ):
         chart_template = RadialBarChartTemplate()
         chart_template.create_template(data, meta_data, color_template)
@@ -285,4 +430,3 @@ class TemplateFactory:
         layout_template.root = layout_template.build_template_from_tree(layout_tree)
         # layout_template.apply_constraints(chart_template)
         return chart_template, layout_template
-    

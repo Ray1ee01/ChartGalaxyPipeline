@@ -181,6 +181,7 @@ class VegaLiteGenerator(ChartGenerator):
             color_encoding["legend"] = {"title": None}
             encoding["color"] = color_encoding
         
+        
         specification["encoding"] = encoding
         specification["mark"] = mark_specification
         specification = self.template.update_specification(specification)
@@ -217,7 +218,10 @@ class VegaLiteGenerator(ChartGenerator):
             })
             if 'group' in item:
                 transformed_data[-1]['group'] = item['group']
-        
+            if 'order' in item:
+                transformed_data[-1]['order'] = item['order']
+            if 'size' in item:
+                transformed_data[-1]['size'] = item['size']
         
         self.data = transformed_data
         self.template = template
