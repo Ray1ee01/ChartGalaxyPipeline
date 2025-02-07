@@ -17,7 +17,6 @@ class LineTemplate(MarkTemplate):
             "bottom_left": None,
             "bottom_right": None
         }
-
         self.apply_point_styles()
         self.apply_interpolate()
     def apply_point_styles(self):

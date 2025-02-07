@@ -181,6 +181,7 @@ class VegaLiteGenerator(ChartGenerator):
             color_encoding["legend"] = {"title": None}
             encoding["color"] = color_encoding
         
+        
         specification["encoding"] = encoding
         specification["mark"] = mark_specification
         specification = self.template.update_specification(specification)
@@ -217,7 +218,10 @@ class VegaLiteGenerator(ChartGenerator):
             })
             if 'group' in item:
                 transformed_data[-1]['group'] = item['group']
-        
+            if 'order' in item:
+                transformed_data[-1]['order'] = item['order']
+            if 'size' in item:
+                transformed_data[-1]['size'] = item['size']
         
         self.data = transformed_data
         self.template = template
@@ -226,5 +230,46 @@ class VegaLiteGenerator(ChartGenerator):
         print('spec: ', spec)
         result = NodeBridge.execute_node_script(self.script_path, {
             "spec": spec,
+        })
+        return result, {}
+
+class EchartGenerator(ChartGenerator):
+    def __init__(self):
+        self.script_path = os.path.join(
+            os.path.dirname(__file__),
+            'chart_generator_modules/echart/echart_option.js'
+        )
+
+    def template_to_option(self):
+        option = {
+            "dataset": {
+                "source": self.format_data
+            },
+            "series": [{
+                "animation": False,
+                "silent": True,
+                "emphasis": {
+                    "disabled": True,
+                    "scale": False
+                }
+            }
+            ]
+        }
+        return option
+    
+    def generate(self, data: dict, template: ChartTemplate) -> Tuple[str, Dict, Dict]:
+        self.data = data['data']
+        self.meta_data = data['meta_data']
+        data_headers = [key for key in self.data[0].keys()]
+        self.format_data = []
+        self.format_data.append(data_headers)
+        for item in self.data:
+            self.format_data.append(list(item.values()))
+        self.template = template
+        option = self.template_to_option()
+        option = self.template.update_option(option)
+        print('option: ', option)
+        result = NodeBridge.execute_node_script(self.script_path, {
+            "option": option,
         })
         return result, {}

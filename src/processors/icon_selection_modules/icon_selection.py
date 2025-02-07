@@ -270,7 +270,7 @@ class SimulatedAnnealing:
         if cur_icons == []:
             return []
         while temp > self.min_temp and iter_num < self.max_iter:
-            print("temp: ", temp)
+            # print("temp: ", temp)
             new_icons = self.disturb(cur_icons)
             new_loss = self.cal_loss(new_icons)[0]
             delta_loss = new_loss - cur_loss

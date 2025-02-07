@@ -12,6 +12,9 @@ from .chart_template.bar_chart import *
 from .chart_template.line_chart import *
 from .chart_template.bump_chart import *
 from .chart_template.slope_chart import *
+from .chart_template.scatterplot import *
+from .chart_template.connected_scatterplot import *
+from .chart_template.bubble_plot import *
 
 
 class LayoutTemplate:
@@ -208,6 +211,22 @@ class TemplateFactory:
         return chart_template, layout_template
 
     @staticmethod
+    def create_group_bar_chart_template(
+        data: list,
+        meta_data: dict,
+        layout_tree: dict,
+        chart_composition: dict = None, 
+        color_template: ColorDesign = None
+    ):
+        chart_template = GroupBarChartTemplate()
+        chart_template.create_template(data, meta_data, color_template)
+        layout_template = LayoutTemplate()
+        layout_template.add_constraint(GroupBarChartConstraint())
+        layout_template.root = layout_template.build_template_from_tree(layout_tree)
+        layout_template.apply_constraints(chart_template)
+        return chart_template, layout_template
+
+    @staticmethod
     def create_line_chart_template(
         data: list,
         meta_data: dict,
@@ -268,9 +287,58 @@ class TemplateFactory:
         chart_template = BumpChartTemplate()
         chart_template.create_template(data, meta_data, color_template)
         layout_template = LayoutTemplate()
-        
+
         # 添加方向约束
         layout_template.add_constraint(BumpChartConstraint())
+
+        # 添加排序约束
+        if sort_config:
+            layout_template.add_constraint(
+                SortConstraint(
+                    sort_by=sort_config["by"],
+                    ascending=sort_config.get("ascending", True)
+                )
+            )
+
+        if chart_composition:
+            if "mark_annotation" in chart_composition['sequence']:
+                chart_template.has_annotation = True
+
+        # 构建布局树
+        layout_template.root = layout_template.build_template_from_tree(layout_tree)
+
+        # 应用约束
+        layout_template.apply_constraints(chart_template)
+
+        if chart_component:
+            chart_template.x_axis.has_domain = chart_component.get('x_axis', {}).get('has_domain', True)
+            chart_template.x_axis.has_tick = chart_component.get('x_axis', {}).get('has_tick', True)
+            chart_template.x_axis.has_label = chart_component.get('x_axis', {}).get('has_label', True)
+            chart_template.y_axis.has_domain = chart_component.get('y_axis', {}).get('has_domain', True)
+            chart_template.y_axis.has_tick = chart_component.get('y_axis', {}).get('has_tick', True)
+            chart_template.y_axis.has_label = chart_component.get('y_axis', {}).get('has_label', True)
+
+        return chart_template, layout_template
+        
+        
+    @staticmethod
+    def create_scatterplot_template(
+        data: list,
+        meta_data: dict,
+        layout_tree: dict,
+        chart_composition: dict = None,
+        sort_config: dict = None,
+        color_template: ColorDesign = None,
+        chart_component: dict = None
+    ):
+
+        """创建散点图模板"""
+        chart_template = ScatterPlotTemplate()
+        chart_template.create_template(data, meta_data, color_template)
+        layout_template = LayoutTemplate()
+        
+        # 添加方向约束
+        layout_template.add_constraint(ScatterPlotConstraint())
         
         # 添加排序约束
         if sort_config:
@@ -302,7 +370,7 @@ class TemplateFactory:
         return chart_template, layout_template
     
     @staticmethod
-    def create_slope_chart_template(
+    def create_connected_scatterplot_template(
         data: list,
         meta_data: dict,
         layout_tree: dict,
@@ -311,22 +379,22 @@ class TemplateFactory:
         color_template: ColorDesign = None,
         chart_component: dict = None
     ):
-        """创建 slope chart 模板"""
-        chart_template = SlopeChartTemplate()
+        """创建连接散点图模板"""
+        chart_template = ConnectedScatterPlotTemplate()
         chart_template.create_template(data, meta_data, color_template)
         layout_template = LayoutTemplate()
         
         # 添加方向约束
-        layout_template.add_constraint(SlopeChartConstraint())
+        layout_template.add_constraint(LineChartConstraint())
         
-        # 添加排序约束
-        if sort_config:
-            layout_template.add_constraint(
-                SortConstraint(
-                    sort_by=sort_config["by"],
-                    ascending=sort_config.get("ascending", True)
-                )
-            )
+        # # 添加排序约束
+        # if sort_config:
+        #     layout_template.add_constraint(
+        #         SortConstraint(
+        #             sort_by=sort_config["by"],
+        #             ascending=sort_config.get("ascending", True)
+        #         )
+        #     )
         
         if chart_composition:
             if "mark_annotation" in chart_composition['sequence']:
@@ -347,3 +415,111 @@ class TemplateFactory:
             chart_template.y_axis.has_label = chart_component.get('y_axis', {}).get('has_label', True)
         
         return chart_template, layout_template
+    
+    @staticmethod
+    def create_bubble_plot_template(
+        data: list,
+        meta_data: dict,
+        layout_tree: dict,
+        chart_composition: dict = None,
+        sort_config: dict = None,
+        color_template: ColorDesign = None,
+        chart_component: dict = None
+    ):
+        """创建气泡图模板"""
+        chart_template = BubblePlotTemplate()
+        chart_template.create_template(data, meta_data, color_template)
+        layout_template = LayoutTemplate()
+        
+        # 添加方向约束
+        layout_template.add_constraint(BubblePlotConstraint())
+        
+        # 添加排序约束
+        if sort_config:
+            layout_template.add_constraint(
+                SortConstraint(
+                    sort_by=sort_config["by"],
+                    ascending=sort_config.get("ascending", True)
+                )
+            )
+        
+        if chart_composition:
+            if "mark_annotation" in chart_composition['sequence']:
+                chart_template.has_annotation = True
+        
+        # 构建布局树
+ 
+        layout_template.root = layout_template.build_template_from_tree(layout_tree)
+        
+        # 应用约束
+        layout_template.apply_constraints(chart_template)
+        
+        if chart_component:
+            chart_template.x_axis.has_domain = chart_component.get('x_axis', {}).get('has_domain', True)
+            chart_template.x_axis.has_tick = chart_component.get('x_axis', {}).get('has_tick', True)
+            chart_template.x_axis.has_label = chart_component.get('x_axis', {}).get('has_label', True)
+            chart_template.y_axis.has_domain = chart_component.get('y_axis', {}).get('has_domain', True)
+            chart_template.y_axis.has_tick = chart_component.get('y_axis', {}).get('has_tick', True)
+            chart_template.y_axis.has_label = chart_component.get('y_axis', {}).get('has_label', True)
+        
+        return chart_template, layout_template
+      
+    def create_radial_bar_chart_template(
+        data: list,
+        meta_data: dict,
+        layout_tree: dict,
+        chart_composition: dict = None,
+ 
+        sort_config: dict = None,
+        color_template: ColorDesign = None,
+        chart_component: dict = None,
+    ):
+        chart_template = RadialBarChartTemplate()
+        chart_template.create_template(data, meta_data, color_template)
+        layout_template = LayoutTemplate()
+        # layout_template.add_constraint(RadialBarChartConstraint())
+        layout_template.root = layout_template.build_template_from_tree(layout_tree)
+        # layout_template.apply_constraints(chart_template)
+        return chart_template, layout_template
+
+
+class SlopeChartTemplate(ChartTemplate):
+    def __init__(self):
+        super().__init__()
+        self.chart_type = "slope"
+        self.sort = None
+
+    def create_template(self, data: list, meta_data: dict=None, color_template: ColorDesign=None):
+        self.x_axis = AxisTemplate(color_template)
+        self.x_axis.field_type = "ordinal"
+        self.x_axis.field = meta_data['x_label']
+
+        self.y_axis = self.x_axis.copy()
+        self.y_axis.field_type = "quantitative"
+        self.y_axis.field = meta_data['y_label']
+
+        self.mark = LineTemplate(color_template)
+
+        if len(data[0].keys()) == 2: # single line
+            raise ValueError("Slope Chart must have 'group' field")
+
+        self.color_encoding = ColorEncodingTemplate(color_template, meta_data, data)
+
+    def update_specification(self, specification: dict) -> None:
+        # make it prettier
+        specification["encoding"]["x"]["scale"] = {"padding": 0.5}
+        specification["width"] = {"step": 50}
+        return specification
+
+    def dump(self):
+        result = {
+            "x_axis": self.x_axis.dump(),
+            "y_axis": self.y_axis.dump(),
+            "mark": self.mark.dump(),
+            "color_encoding": self.color_encoding.dump()
+        }
+
+        if self.sort is not None:
+            result["sort"] = self.sort
+
+        return result
