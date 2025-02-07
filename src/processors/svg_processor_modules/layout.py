@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
-from typing import List, Union
-from .elements import LayoutElement, GroupElement
+from typing import List, Union, Literal
+from .elements import LayoutElement, GroupElement, BoundingBox
+import math
 
 class SizeConstraint(ABC):
     """尺寸约束基类"""
@@ -415,6 +416,297 @@ class HorizontalLayoutStrategy(LayoutStrategy):
                 if best_move > 0:
                     layout_element._bounding_box.minx = old_layout_element_bounding_box_minx - best_move
                     layout_element._bounding_box.maxx = old_layout_element_bounding_box_maxx - best_move
+
+
+class RadialLayoutStrategy(LayoutStrategy):
+
+    def __init__(self, alignment: list[str] = ['middle', 'middle'], direction: Literal['inner','outer'] = 'outer', padding: float = 5,
+                 offset: float = 0, circle_center: tuple[float, float] = (0,0)):
+        self.padding = padding
+        self.offset = offset
+        self.alignment = alignment
+        self.direction = direction
+        self.name = 'radial'
+        self.circle_center = circle_center
+        self.overlap = False
+
+    def layout(self, reference_element: LayoutElement, layout_element: LayoutElement) -> None:
+        reference_element_bounding_box = reference_element._bounding_box
+        layout_element_bounding_box = layout_element._bounding_box
+
+        old_x = (layout_element_bounding_box.minx + layout_element_bounding_box.maxx) / 2
+        old_y = (layout_element_bounding_box.miny + layout_element_bounding_box.maxy) / 2
+
+        move_x = 0
+        move_y = 0
+
+        if self.alignment != ['middle','middle']:
+            raise NotImplementedError
+
+        if self.offset != 0:
+            raise NotImplementedError
+
+        scale_l = -1e9 if self.direction == 'inner' else 1
+        scale_r = 1 if self.direction == 'inner' else 1e9
+
+        def is_overlapping(scale_mid):
+            if not (self.overlap and (reference_element.tag == 'g' or layout_element.tag == 'g')):
+                return reference_element_bounding_box.is_overlapping(layout_element_bounding_box)
+            else:
+                # 获取参考元素的有效边界框
+                if reference_element.tag == 'g':
+                    reference_element_valid_bounding_boxes = reference_element.get_children_boundingboxes()
+                else:
+                    reference_element_valid_bounding_boxes = [reference_element._bounding_box]
+
+                # 获取布局元素的有效边界框
+                if layout_element.tag == 'g':
+                    layout_element_valid_bounding_boxes = layout_element.get_children_boundingboxes()
+                else:
+                    layout_element_valid_bounding_boxes = [layout_element._bounding_box]
+
+                original_values = []
+                for layout_box in layout_element_valid_bounding_boxes:
+                    original_values.append((layout_box.minx, layout_box.maxx))
+
+                layout_center_x = self.circle_center[0] + (
+                        (reference_element_bounding_box.minx + reference_element_bounding_box.maxx) / 2 -
+                        self.circle_center[0]) * scale_mid
+                layout_center_y = self.circle_center[1] + (
+                        (reference_element_bounding_box.miny + reference_element_bounding_box.maxy) / 2 -
+                        self.circle_center[1]) * scale_mid
+
+                layout_element_bounding_box.minx = layout_center_x - layout_element_bounding_box.width / 2
+                layout_element_bounding_box.maxx = layout_center_x + layout_element_bounding_box.width / 2
+                layout_element_bounding_box.miny = layout_center_y - layout_element_bounding_box.height / 2
+                layout_element_bounding_box.maxy = layout_center_y + layout_element_bounding_box.height / 2
+
+                move_x = layout_center_x - old_x
+                move_y = layout_center_y - old_y
+                # 临时移动边界框进行检查
+                for layout_box in layout_element_valid_bounding_boxes:
+                    layout_box.minx += move_x
+                    layout_box.maxx += move_x
+                    layout_box.miny += move_y
+                    layout_box.maxy -= move_y
+
+                # 检查是否重叠
+                has_overlap = False
+                for ref_box in reference_element_valid_bounding_boxes:
+                    for layout_box in layout_element_valid_bounding_boxes:
+                        if layout_box.is_overlapping(ref_box):
+                            has_overlap = True
+                            break
+                    if has_overlap:
+                        break
+
+                # 恢复原始值
+                for layout_box, (orig_minx, orig_maxx) in zip(layout_element_valid_bounding_boxes, original_values):
+                    layout_box.minx = orig_minx
+                    layout_box.maxx = orig_maxx
+
+                return has_overlap
+
+        # binary search for the scale that two elements do not overlap
+        while scale_l + 1e-9 <= scale_r:
+            mid = (scale_l + scale_r) / 2
+
+            layout_center_x = self.circle_center[0] + ((reference_element_bounding_box.minx + reference_element_bounding_box.maxx) / 2 - self.circle_center[0]) * mid
+            layout_center_y = self.circle_center[1] + ((reference_element_bounding_box.miny + reference_element_bounding_box.maxy) / 2 - self.circle_center[1]) * mid
+
+            layout_element_bounding_box.minx = layout_center_x - layout_element_bounding_box.width / 2
+            layout_element_bounding_box.maxx = layout_center_x + layout_element_bounding_box.width / 2
+            layout_element_bounding_box.miny = layout_center_y - layout_element_bounding_box.height / 2
+            layout_element_bounding_box.maxy = layout_center_y + layout_element_bounding_box.height / 2
+
+            if not is_overlapping(mid):
+                scale_result = mid
+                if self.direction == 'inner':
+                    scale_l = mid
+                else:
+                    scale_r = mid
+            else:
+                if self.direction == 'inner':
+                    scale_r = mid
+                else:
+                    scale_l = mid
+
+        def dist(p1, p2):
+            return ((p1[0]-p2[0]) ** 2 + (p1[1] - p2[1]) ** 2) ** 0.5
+
+        padding_scale = self.padding / dist(self.circle_center, ((reference_element_bounding_box.minx + reference_element_bounding_box.maxx) / 2, (reference_element_bounding_box.miny + reference_element_bounding_box.maxy) / 2))
+        if not (self.overlap and (reference_element.tag == 'g' or layout_element.tag == 'g')):
+            scale_result += (-1 if self.direction == 'inner' else 1) * padding_scale
+
+        layout_center_x = self.circle_center[0] + (
+                    (reference_element_bounding_box.minx + reference_element_bounding_box.maxx) / 2 -
+                    self.circle_center[0]) * scale_result
+        layout_center_y = self.circle_center[1] + (
+                    (reference_element_bounding_box.miny + reference_element_bounding_box.maxy) / 2 -
+                    self.circle_center[1]) * scale_result
+
+        layout_element_bounding_box.minx = layout_center_x - layout_element_bounding_box.width / 2
+        layout_element_bounding_box.maxx = layout_center_x + layout_element_bounding_box.width / 2
+        layout_element_bounding_box.miny = layout_center_y - layout_element_bounding_box.height / 2
+        layout_element_bounding_box.maxy = layout_center_y + layout_element_bounding_box.height / 2
+
+        move_x = layout_center_x - old_x
+        move_y = layout_center_y - old_y
+
+        # print("alignment: ", self.alignment)
+        # print("direction: ", self.direction)
+        # print("layout_element: ", layout_element._bounding_box)
+        # print("reference_element: ", reference_element._bounding_box)
+
+        if layout_element.tag == 'g':
+            for child in layout_element.children:
+                child._bounding_box.minx += move_x
+                child._bounding_box.maxx += move_x
+                child._bounding_box.miny += move_y
+                child._bounding_box.maxy += move_y
+
+
+class CircularLayoutStrategy(LayoutStrategy):
+
+    def __init__(self, alignment: list[str] = ['middle', 'middle'], direction: Literal['clock','anticlock'] = 'clock', padding: float = 5,
+                 offset: float = 0, circle_center: tuple[float, float] = (0,0)):
+        self.padding = padding
+        self.offset = offset
+        self.alignment = alignment
+        self.direction = direction
+        self.name = 'circular'
+        self.circle_center = circle_center
+        self.overlap = False
+
+    def layout(self, reference_element: LayoutElement, layout_element: LayoutElement) -> None:
+        reference_element_bounding_box = reference_element._bounding_box
+        layout_element_bounding_box = layout_element._bounding_box
+
+        old_x = (layout_element_bounding_box.minx + layout_element_bounding_box.maxx) / 2
+        old_y = (layout_element_bounding_box.miny + layout_element_bounding_box.maxy) / 2
+
+        move_x = 0
+        move_y = 0
+
+        if self.alignment != ['middle','middle']:
+            raise NotImplementedError
+
+        if self.offset != 0:
+            raise NotImplementedError
+
+        theta_l = 0
+        theta_r = math.pi
+        theta_result = math.pi
+
+        def dist(p1, p2):
+            return ((p1[0]-p2[0]) ** 2 + (p1[1] - p2[1]) ** 2) ** 0.5
+        radius = dist(self.circle_center, ((reference_element_bounding_box.minx + reference_element_bounding_box.maxx) / 2, (reference_element_bounding_box.miny + reference_element_bounding_box.maxy) / 2))
+
+        def rotate(p1,p2,theta):
+            angle_from_circle_center = math.atan2(p2[1] - p1[1], p2[0] - p1[0])
+            new_angle = angle_from_circle_center + (1 if self.direction=='anticlock' else -1) * theta
+            return p1[0] + radius * math.cos(new_angle), p1[1] + radius * math.sin(new_angle)
+
+        def is_overlapping(theta_mid):
+            if not (self.overlap and (reference_element.tag == 'g' or layout_element.tag == 'g')):
+                return reference_element_bounding_box.is_overlapping(layout_element_bounding_box)
+            else:
+                # 获取参考元素的有效边界框
+                if reference_element.tag == 'g':
+                    reference_element_valid_bounding_boxes = reference_element.get_children_boundingboxes()
+                else:
+                    reference_element_valid_bounding_boxes = [reference_element._bounding_box]
+
+                # 获取布局元素的有效边界框
+                if layout_element.tag == 'g':
+                    layout_element_valid_bounding_boxes = layout_element.get_children_boundingboxes()
+                else:
+                    layout_element_valid_bounding_boxes = [layout_element._bounding_box]
+
+                original_values = []
+                for layout_box in layout_element_valid_bounding_boxes:
+                    original_values.append((layout_box.minx, layout_box.maxx))
+
+                layout_center_x, layout_center_y = rotate(self.circle_center, ((reference_element_bounding_box.minx + reference_element_bounding_box.maxx) / 2,
+                        (reference_element_bounding_box.miny + reference_element_bounding_box.maxy) / 2), theta_mid)
+
+                layout_element_bounding_box.minx = layout_center_x - layout_element_bounding_box.width / 2
+                layout_element_bounding_box.maxx = layout_center_x + layout_element_bounding_box.width / 2
+                layout_element_bounding_box.miny = layout_center_y - layout_element_bounding_box.height / 2
+                layout_element_bounding_box.maxy = layout_center_y + layout_element_bounding_box.height / 2
+
+                move_x = layout_center_x - old_x
+                move_y = layout_center_y - old_y
+                # 临时移动边界框进行检查
+                for layout_box in layout_element_valid_bounding_boxes:
+                    layout_box.minx += move_x
+                    layout_box.maxx += move_x
+                    layout_box.miny += move_y
+                    layout_box.maxy -= move_y
+
+                # 检查是否重叠
+                has_overlap = False
+                for ref_box in reference_element_valid_bounding_boxes:
+                    for layout_box in layout_element_valid_bounding_boxes:
+                        if layout_box.is_overlapping(ref_box):
+                            has_overlap = True
+                            break
+                    if has_overlap:
+                        break
+
+                # 恢复原始值
+                for layout_box, (orig_minx, orig_maxx) in zip(layout_element_valid_bounding_boxes, original_values):
+                    layout_box.minx = orig_minx
+                    layout_box.maxx = orig_maxx
+
+                return has_overlap
+
+        # binary search for the scale that two elements do not overlap
+        while theta_l + 1e-9 <= theta_r:
+            mid = (theta_l + theta_r) / 2
+
+            layout_center_x, layout_center_y = rotate(self.circle_center, (
+            (reference_element_bounding_box.minx + reference_element_bounding_box.maxx) / 2,
+            (reference_element_bounding_box.miny + reference_element_bounding_box.maxy) / 2), mid)
+
+            layout_element_bounding_box.minx = layout_center_x - layout_element_bounding_box.width / 2
+            layout_element_bounding_box.maxx = layout_center_x + layout_element_bounding_box.width / 2
+            layout_element_bounding_box.miny = layout_center_y - layout_element_bounding_box.height / 2
+            layout_element_bounding_box.maxy = layout_center_y + layout_element_bounding_box.height / 2
+
+            if not is_overlapping(mid):
+                theta_result = mid
+                theta_r = mid
+            else:
+                theta_l = mid
+
+        padding_theta = self.padding / radius
+        if not (self.overlap and (reference_element.tag == 'g' or layout_element.tag == 'g')):
+            theta_result += (1 if self.direction=='anticlock' else -1) * padding_theta
+
+        layout_center_x, layout_center_y = rotate(self.circle_center, (
+        (reference_element_bounding_box.minx + reference_element_bounding_box.maxx) / 2,
+        (reference_element_bounding_box.miny + reference_element_bounding_box.maxy) / 2), theta_result)
+
+        layout_element_bounding_box.minx = layout_center_x - layout_element_bounding_box.width / 2
+        layout_element_bounding_box.maxx = layout_center_x + layout_element_bounding_box.width / 2
+        layout_element_bounding_box.miny = layout_center_y - layout_element_bounding_box.height / 2
+        layout_element_bounding_box.maxy = layout_center_y + layout_element_bounding_box.height / 2
+
+        move_x = layout_center_x - old_x
+        move_y = layout_center_y - old_y
+
+        # print("alignment: ", self.alignment)
+        # print("direction: ", self.direction)
+        # print("layout_element: ", layout_element._bounding_box)
+        # print("reference_element: ", reference_element._bounding_box)
+
+        if layout_element.tag == 'g':
+            for child in layout_element.children:
+                child._bounding_box.minx += move_x
+                child._bounding_box.maxx += move_x
+                child._bounding_box.miny += move_y
+                child._bounding_box.maxy += move_y
 
 class InnerHorizontalLayoutStrategy(HorizontalLayoutStrategy):
     """内部水平布局策略"""
