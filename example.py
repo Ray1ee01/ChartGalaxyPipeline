@@ -66,7 +66,9 @@ def main():
     chart_type_list = [
         # 'scatter',
         # 'connectedscatter',
-        'bubble'
+        # 'bubble'
+        # 'bump'
+        'slope'
     ]
     
     
