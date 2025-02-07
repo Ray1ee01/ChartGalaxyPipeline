@@ -7,3 +7,4 @@ search_cache/
 basnet_best_train_gdi.pth
 src/processors/data_enricher_modules/HAIChart/data
 data/
+.idea/*
