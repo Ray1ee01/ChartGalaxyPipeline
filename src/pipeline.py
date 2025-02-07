@@ -113,8 +113,24 @@ class Pipeline:
                     color_template=color_template,
                     chart_component=chart_component_config
                 )
+            elif processed_data['meta_data']['chart_type'] == 'bump':
+                chart_template, layout_template = TemplateFactory.create_bump_chart_template(
+                    data=processed_data['data'],
+                    meta_data=processed_data['meta_data'],
+                    layout_tree=layout_tree,
+                    chart_composition=chart_image_config,
+                    sort_config=sort_config,
+                    color_template=color_template,
+                    chart_component=chart_component_config
+                )
             elif processed_data['meta_data']['chart_type'] == 'scatter':
                 chart_template, layout_template = TemplateFactory.create_scatterplot_template(
+                    data=processed_data['data'],
+                    meta_data=processed_data['meta_data'],
+                    layout_tree=layout_tree,
+                    chart_composition=chart_image_config,
+                    sort_config=sort_config,
+                    color_template=color_template,
             elif processed_data['meta_data']['chart_type'] == 'groupbar':
                 chart_template, layout_template = TemplateFactory.create_group_bar_chart_template(
                     data=processed_data['data'],
@@ -125,8 +141,23 @@ class Pipeline:
                     color_template=color_template,
                     chart_component=chart_component_config
                 )
+            elif processed_data['meta_data']['chart_type'] == 'slope':
+                chart_template, layout_template = TemplateFactory.create_slope_chart_template(
+                    data=processed_data['data'],
+                    meta_data=processed_data['meta_data'],
+                    layout_tree=layout_tree,
+                    chart_composition=chart_image_config,
+                    sort_config=sort_config,
+                    color_template=color_template,
+                    chart_component=chart_component_config
+                )
             elif processed_data['meta_data']['chart_type'] == 'connectedscatter':
                 chart_template, layout_template = TemplateFactory.create_connected_scatterplot_template(
+                    data=processed_data['data'],
+                    meta_data=processed_data['meta_data'],
+                    layout_tree=layout_tree,
+                    chart_composition=chart_image_config,
+                    sort_config=sort_config,
                     color_template=color_template,
                     chart_component=chart_component_config
                 )
