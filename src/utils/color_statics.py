@@ -1,4 +1,6 @@
 import colour
+import numpy as np
+import random
 
 def palette_iteration(lch_palette):
     # rank the colors in the palette by hue
@@ -48,6 +50,24 @@ class StaticPalettes:
         # random select a palette
         color_map = random.choice(self.qualitative_colormaps)
         return self.get_colors_from_cmap(color_map, n_colors)
+    
+class EmphasisColors:
+    def __init__(self):
+        self.colors = []
+        # 默认添加几种强调色
+        self.colors.append("#FF0000")
+        self.colors.append("#00FF00")
+        self.colors.append("#0000FF")
+        self.colors.append("#FFFF00")
+        self.colors.append("#FF00FF")
+        self.colors.append("#00FFFF")
+        
+    def add_color(self, color):
+        self.colors.append(color)
+    
+    def get_color(self):
+        # 随机返回一个颜色
+        return random.choice(self.colors)
 
 if __name__ == "__main__":
     sp = StaticPalettes()

@@ -262,14 +262,14 @@ class LayoutProcessor:
         
         emphasis_phrases = title_config.get('emphasisPhrases', [])
         
-        #如果emphasisPhrases为空，则从text_lines中每一行中找出最长的一个短语作为强调短语
-        if not emphasis_phrases:
-            emphasis_phrases = []
-            for line in text_lines:
-                words = line.split()
-                # 选一个最长的短语作为强调短语
-                emphasis_phrase = max(words, key=len)
-                emphasis_phrases.append(emphasis_phrase)
+        # #如果emphasisPhrases为空，则从text_lines中每一行中找出最长的一个短语作为强调短语
+        # if not emphasis_phrases:
+        #     emphasis_phrases = []
+        #     for line in text_lines:
+        #         words = line.split()
+        #         # 选一个最长的短语作为强调短语
+        #         emphasis_phrase = max(words, key=len)
+        #         emphasis_phrases.append(emphasis_phrase)
         
         # 创建每行文本元素
         line_groups = []  # 存储每行的group element
@@ -285,7 +285,9 @@ class LayoutProcessor:
             line_lower = line.lower()
             
             # 查找所有需要强调的短语
-            for phrase in emphasis_phrases:
+            for text_color_pair in emphasis_phrases:
+                phrase = text_color_pair.get('text')
+                color = text_color_pair.get('color')
                 phrase_lower = phrase.lower()
                 start = 0
                 while True:
@@ -317,9 +319,9 @@ class LayoutProcessor:
                         'y': 0,
                         'text-anchor': text_anchor,
                         'font-family': title_config.get('font', 'sans-serif'),
-                        'font-size': font_size,
+                        'font-size': font_size+4,
                         'font-weight': title_config.get('fontWeight', 'bolder'),
-                        'fill': '#FF0000',  # 强调文本使用红色
+                        'fill': color,  # 强调文本使用红色
                         'letter-spacing': title_config.get('letterSpacing', 0)
                     }
                     text_parts.append(emphasis_text)

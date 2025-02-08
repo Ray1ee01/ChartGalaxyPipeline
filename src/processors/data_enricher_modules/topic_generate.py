@@ -193,8 +193,8 @@ def find_emphasis_phrases(title, meta_data):
         
     Please return the response in the following format:
     [
-        "emphasis_phrase1",
-        "emphasis_phrase2",
+        emphasis_phrase1,
+        emphasis_phrase2,
         ...
     ]
     """

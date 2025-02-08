@@ -229,7 +229,7 @@ class VegaLiteGenerator(ChartGenerator):
         self.template = template
 
         spec = self.template_to_spec()
-        print('spec: ', spec)
+        # print('spec: ', spec)
         result = NodeBridge.execute_node_script(self.script_path, {
             "spec": spec,
         })

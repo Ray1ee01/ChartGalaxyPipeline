@@ -123,6 +123,7 @@ class ColorEncodingTemplate:
         self.color_template = color_template
         self.show_legend = True
         self.embedding_model = SentenceTransformer(model_path)
+        self.color_with_semantics = False
         if 'group' in data[0].keys():
             self.field = 'group'
             self.field_type = 'nominal'
@@ -130,6 +131,7 @@ class ColorEncodingTemplate:
             self.domain = list(set([item['group'] for item in data]))
             self.range = self.color_template.get_color('marks', len(self.domain), seed_mark=1)
             self.apply_color_rules()
+            self.color_with_semantics = True
             self.show_legend = True
         elif self.color_template is not None:
             self.domain = list(set([item['x_data'] for item in data]))
@@ -137,6 +139,7 @@ class ColorEncodingTemplate:
             single_color = self.color_template.get_color('marks', 1, seed_mark=1)
             self.range = [single_color] * len(self.domain)
             self.show_legend = False
+            self.color_with_semantics = False
         # elif self.color_template is not None and not self.color_template.mode == 'monochromatic':
         #     if data is not None:
         #         self.domain = list(set([row['x_data'] for row in data]))
@@ -150,15 +153,24 @@ class ColorEncodingTemplate:
         text_embedding = self.embedding_model.encode(text)
         # domain是一个list，里面是字符串
         # 计算domain里每个字符串的embedding
-        domain_embeddings = self.embedding_model.encode(self.domain)
+        self.domain_embeddings = self.embedding_model.encode(self.domain)
         # 计算text_embedding和self.domain的相似度
-        similarity = util.cos_sim(text_embedding, domain_embeddings).flatten()
+        similarity = util.cos_sim(text_embedding, self.domain_embeddings).flatten()
         # 按相似度排序
         sorted_domain = sorted(self.domain, key=lambda x: similarity[self.domain.index(x)], reverse=True)
         sorted_colors = self.color_template.rank_color_by_contrast(self.range)
         self.range = sorted_colors
         self.domain = sorted_domain
-        
+    
+    def find_color_by_semantics(self, text):
+        text_embedding = self.embedding_model.encode(text)
+        # 计算text_embedding和self.domain的相似度
+        similarity = util.cos_sim(text_embedding, self.domain_embeddings).flatten()
+        # 按相似度排序
+        sorted_domain = sorted(self.domain, key=lambda x: similarity[self.domain.index(x)], reverse=True)
+        # 返回相似度最高的domain对应的color
+        return self.range[self.domain.index(sorted_domain[0])]
+    
     def dump(self):
         return {
             "field": self.field,

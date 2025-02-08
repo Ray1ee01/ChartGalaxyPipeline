@@ -7,6 +7,7 @@ from .template.style_template.base import TitleFontTemplate, BodyFontTemplate
 from .template.color_template import ColorDesign
 from .template.font_template import FontDesign
 from .template.gpt_chart_parser import ChartDesign
+from .utils.color_statics import EmphasisColors
 import shutil
 import random
 import time
@@ -219,9 +220,25 @@ class Pipeline:
             
             emphasis_phrases = find_emphasis_phrases(processed_data['meta_data']['title'], processed_data['meta_data'])
             print("emphasis_phrases: ", emphasis_phrases)
+            emphasis_phrases_config = []
+            if chart_template.color_encoding is not None and chart_template.color_encoding.color_with_semantics:
+                for phrase in emphasis_phrases:
+                    color = chart_template.color_encoding.find_color_by_semantics(phrase)
+                    emphasis_phrases_config.append({
+                        "text": phrase,
+                        "color": color
+                    })
+            else:
+                for phrase in emphasis_phrases:
+                    emphasis_phrases_config.append({
+                        "text": phrase,
+                        "color": EmphasisColors().get_color()
+                    })
+            print("emphasis_phrases_config: ", emphasis_phrases_config)
+                    
             # 配置额外信息
             additional_configs.update({
-                "title_config": {"text": processed_data['meta_data']['title']},
+                "title_config": {"text": processed_data['meta_data']['title'], "emphasis_phrases": emphasis_phrases_config},
                 "subtitle_config": {"text": processed_data['meta_data']['caption']},
                 "topic_icon_config": {},
                 "background_config": {},
@@ -252,7 +269,6 @@ class Pipeline:
             # 步骤3：SVG后处理
             final_svg = self.svg_processor.process(svg, additional_configs, debug=False)
             time_end = time.time()
-            print("svg_processor time: ", time_end - time_start)
             
             return final_svg
             
