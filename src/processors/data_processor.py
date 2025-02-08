@@ -88,7 +88,6 @@ class VizNetDataProcessor(DataProcessor):
         
         icon_selector = IconSelector(icon_pool, topic_color=None, spe_mode='flag')
         candidate_icons = icon_selector.select(layout_sequence, chart_image_sequence)
-        print("candidate_icons: ", candidate_icons)
 
         topic_icon_idx = -1
         x_single_icon_idx = -1
@@ -132,7 +131,6 @@ class Chart2TableDataProcessor(DataProcessor):
         df, raw_meta_data = dataloader.load(raw_data)
         
         chart_extractor = NaiveChartExtractor()
-        print("df: ", df)
         data, meta_data = chart_extractor.extract(df)
         meta_data.update(raw_meta_data)
         
@@ -176,16 +174,10 @@ class Chart2TableDataProcessor(DataProcessor):
         result['data'] = chart_data['data']
         result['data_facts'] = data_fact
         result['icons'] = {}
-        print("data: ", result['data'])
-        print('meta_data: ', result['meta_data'])
         
         # icon_selector = IconSelector(icon_pool, topic_color=None, spe_mode='flag')
-        print("icon_pool: ", icon_pool)
         icon_selector = IconSelector(icon_pool, topic_color=None)
-        print("icon_selector: ", icon_selector)
-        print("chart_image_sequence: ", chart_image_sequence)
         candidate_icons = icon_selector.select(layout_sequence, chart_image_sequence)
-        print("candidate_icons: ", candidate_icons)
         candidate_icons = [[],[]]
         if isinstance(candidate_icons, tuple):
             candidate_icons = candidate_icons[0] + candidate_icons[1]

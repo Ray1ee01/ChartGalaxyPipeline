@@ -334,6 +334,9 @@ class ColorDesign:
             color1_hex = rgb_to_hex(*color1)
             color2_hex = rgb_to_hex(*color2)
             middle_colors = [color for color in self.rgb_pool_hex if color != color1_hex and color != color2_hex]
+            # print("middle_colors: ", middle_colors)
+            if len(middle_colors) == 0:
+                middle_colors = ["#ababab"]
             middle_color_seed = seed_middle_color % len(middle_colors)
             middle_color = middle_colors[middle_color_seed]
             other_color = None

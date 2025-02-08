@@ -7,7 +7,7 @@ from src.processors.data_processor import *
 import random
 
 # data_dir = os.path.join(os.path.dirname(__file__),'src', 'data')
-output_dir = os.path.join(os.path.dirname(__file__),'src', 'output9')
+# output_dir = os.path.join(os.path.dirname(__file__),'src', 'output9')
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 # random.seed(15)
 
@@ -36,7 +36,7 @@ def main():
         svg_processor=SVGOptimizer()
     )
     # data_range = np.arange(3, 184)
-    data_range = np.arange(0,2)
+    data_range = np.arange(0,1)
     # input_data = f'bar_{data_range[args.chart_idx]}'
 
     
@@ -68,12 +68,17 @@ def main():
         # 'connectedscatter',
         # 'bubble'
         # 'bump'
-        'slope'
+        # 'slope'
+        'bar'
+        # 'line'
     ]
     
-    
     color_modes = ['monochromatic', 'complementary', 'analogous', 'polychromatic']
+    # color_modes = ['polychromatic']
     for chart_type in chart_type_list:
+        output_dir = os.path.join(os.path.dirname(__file__),'src', 'output9', chart_type)
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
         for data_idx in data_range:
             input_data = f'{chart_type}_{data_idx}'
             

@@ -36,7 +36,6 @@ def determine_column_type(df, column_name):
 
 class HAIChartExtractor(ChartExtractor):
     def extract(self, df, item_range = (5, 20)):
-        print("df: ", df)
         # try:
         chart_list, valid_chart_num = extract_chart(df, (7,8))
         # except:

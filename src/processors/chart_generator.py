@@ -179,6 +179,8 @@ class VegaLiteGenerator(ChartGenerator):
 
             # 不显示图例
             color_encoding["legend"] = {"title": None}
+            if self.template.color_encoding.show_legend is False:
+                color_encoding["legend"] = None
             encoding["color"] = color_encoding
         
         

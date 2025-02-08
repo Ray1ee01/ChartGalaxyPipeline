@@ -2,6 +2,8 @@ from typing import Any
 import json
 from .interfaces.base import DataProcessor, ChartGenerator, SVGProcessor
 from .template.template import *
+from .processors.data_enricher_modules.topic_generate import find_emphasis_phrases
+from .template.style_template.base import TitleFontTemplate, BodyFontTemplate
 from .template.color_template import ColorDesign
 from .template.font_template import FontDesign
 from .template.gpt_chart_parser import ChartDesign
@@ -192,7 +194,7 @@ class Pipeline:
             time_end = time.time()
             print("chart_generator time: ", time_end - time_start)
             
-            return svg    
+            # return svg    
             
             
             time_start = time.time()
@@ -215,6 +217,8 @@ class Pipeline:
             subtitle_config['fontWeight'] = subtitle_font_template.font_weight
             subtitle_config['font'] = subtitle_font_template.font
             
+            emphasis_phrases = find_emphasis_phrases(processed_data['meta_data']['title'], processed_data['meta_data'])
+            print("emphasis_phrases: ", emphasis_phrases)
             # 配置额外信息
             additional_configs.update({
                 "title_config": {"text": processed_data['meta_data']['title']},
@@ -236,6 +240,7 @@ class Pipeline:
             additional_configs['title_config'].update(title_config)
             additional_configs['subtitle_config'].update(subtitle_config)
             additional_configs['topic_icon_config'].update(topic_icon_config)
+            
 
             # print("additional_configs['title_config']", additional_configs['title_config'])
             seed_text = random.randint(1, 100)
