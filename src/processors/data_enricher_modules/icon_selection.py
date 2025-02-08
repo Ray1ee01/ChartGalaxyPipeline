@@ -4,6 +4,7 @@ import numpy as np
 import clip
 import torch
 import faiss
+from ...utils.global_state import *
 
 feature_root = '/data1/liduan/jiashu/icon_cleaner/final_feat'
 
@@ -171,7 +172,11 @@ def get_icon_pool_old(json_file, meta_data, matcher=None):
 def get_icon_pool(chart_data, topic_data, matcher=None):
     if matcher is None:
         matcher = CLIPMatcher()
-    topk = min(50, max(20, len(chart_data['data'])*2))
+    if larger_icon_pool:
+        topk = 200
+        print('larger icon pool')
+    else:
+        topk = min(50, max(20, len(chart_data['data'])*2))
     semantics = Semantics(chart_data, topic_data, topk=topk)
     semantics.prepare_sets(matcher)
     return semantics
