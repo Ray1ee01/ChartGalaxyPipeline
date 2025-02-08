@@ -4,8 +4,9 @@ from src.processors.svg_processor import SVGOptimizer
 import os
 from src.utils.dataset import VizNET
 from src.processors.data_processor import *
+from src.utils.svg_converter import convert_svg_to_png
 import random
-
+import json
 # data_dir = os.path.join(os.path.dirname(__file__),'src', 'data')
 # output_dir = os.path.join(os.path.dirname(__file__),'src', 'output9')
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
@@ -64,35 +65,41 @@ def main():
     #     f.write(result)
     
     chart_type_list = [
+        # 'bar',
+        # 'line',
+        # 'bump',
         # 'scatter',
         # 'connectedscatter',
-        # 'bubble'
-        # 'bump'
-        # 'slope'
-        'bar'
-        # 'line'
+        # 'bubble',
+        'groupbar',
+        # 'stackedbar',
+        # 'slope',
     ]
     
     color_modes = ['monochromatic', 'complementary', 'analogous', 'polychromatic']
     # color_modes = ['polychromatic']
     for chart_type in chart_type_list:
-        output_dir = os.path.join(os.path.dirname(__file__),'src', 'output9', chart_type)
+        output_dir = os.path.join(os.path.dirname(__file__),'src', 'output_jn', chart_type)
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
         for data_idx in data_range:
             input_data = f'{chart_type}_{data_idx}'
             
             # 随机选择layout_file_idx, chart_image_idx, chart_component_idx, color_mode
-            layout_file_idx = random.randint(1, 6)
+            layout_file_idx = random.randint(1, 16)
             chart_image_idx = 8
             chart_component_idx = random.randint(1, 2)
             color_mode = random.choice(['monochromatic', 'complementary', 'analogous', 'polychromatic'])
-            result = pipeline.execute(input_data, layout_file_idx, chart_image_idx, chart_component_idx, color_mode)
+            result, bounding_boxes = pipeline.execute(input_data, layout_file_idx, chart_image_idx, chart_component_idx, color_mode)
             # output_filename = f'output_d{args.dataset_idx}_c{args.chart_idx}_l{layout_file_idx}_i{chart_image_idx}_c{chart_component_idx}_m{color_mode}.svg'
-            output_filename = f'output_chart_type_{chart_type}_d{data_idx}_l{layout_file_idx}_i{chart_image_idx}_c{chart_component_idx}_m{color_mode}.svg'
-
-            with open(os.path.join(output_dir, output_filename), "w") as f:
+            output_filename = f'output_chart_type_{chart_type}_d{data_idx}_l{layout_file_idx}_i{chart_image_idx}_c{chart_component_idx}_m{color_mode}'
+            with open(os.path.join(output_dir, output_filename+'.svg'), "w") as f:
                 f.write(result)
+            # convert svg to png
+            convert_svg_to_png(os.path.join(output_dir, output_filename+'.svg'), os.path.join(output_dir, output_filename+'.png'))
+            # 保存bounding_boxes
+            with open(os.path.join(output_dir, output_filename+'_bounding_boxes.json'), "w") as f:
+                json.dump(bounding_boxes, f)
         
         
     # for layout_file_idx in layout_file_idxs:

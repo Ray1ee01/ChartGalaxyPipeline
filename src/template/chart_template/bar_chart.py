@@ -402,7 +402,19 @@ class GroupBarChartConstraint(LayoutConstraint):
         # chart_template.y_axis.orientation = "top"
         # chart_template.y_axis.field_type = "quantitative"
 
-# class StackedBarChartConstraint(LayoutConstraint):
+class StackedBarChartConstraint(LayoutConstraint):
+    """堆叠柱状图的布局约束"""
+    def validate(self, chart_template: ChartTemplate) -> bool:
+        return isinstance(chart_template, StackedBarChartTemplate)
+    
+    def apply(self, chart_template: ChartTemplate) -> None:
+        if not self.validate(chart_template):
+            raise ValueError("不兼容的图表类型")
+        # 随机apply VerticalBarChartConstraint或HorizontalBarChartConstraint        
+        if random.random() < 0.5:
+            VerticalBarChartConstraint().apply(chart_template)
+        else:
+            HorizontalBarChartConstraint().apply(chart_template)
     
     
 # class BulletChartTemplate(ChartTemplate):

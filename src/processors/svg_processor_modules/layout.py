@@ -20,12 +20,12 @@ class WidthHeightConstraint(SizeConstraint):
     def rescale(self, reference_element: LayoutElement, layout_element: LayoutElement) -> None:
         reference_element_bounding_box = reference_element.get_bounding_box()
         layout_element_bounding_box = layout_element.get_bounding_box()
-        print("reference_element_bounding_box: ", reference_element_bounding_box)
-        print("layout_element_bounding_box: ", layout_element_bounding_box)
-        print("self.max_width_ratio: ", self.max_width_ratio)
-        print("self.max_height_ratio: ", self.max_height_ratio)
-        print("self.min_width_ratio: ", self.min_width_ratio)
-        print("self.min_height_ratio: ", self.min_height_ratio)
+        # print("reference_element_bounding_box: ", reference_element_bounding_box)
+        # print("layout_element_bounding_box: ", layout_element_bounding_box)
+        # print("self.max_width_ratio: ", self.max_width_ratio)
+        # print("self.max_height_ratio: ", self.max_height_ratio)
+        # print("self.min_width_ratio: ", self.min_width_ratio)
+        # print("self.min_height_ratio: ", self.min_height_ratio)
         max_width = -1
         max_height = -1
         min_width = 1000000
@@ -163,7 +163,7 @@ class VerticalLayoutStrategy(LayoutStrategy):
                 reference_element_valid_bounding_boxes = reference_element.get_children_boundingboxes()
                 for i, child in enumerate(reference_element.children):
                     if child.tag == 'path':
-                        print('child.tag: ', child.tag)
+                        # print('child.tag: ', child.tag)
                         reference_element_valid_bounding_boxes[i] = None
             else:
                 reference_element_valid_bounding_boxes = [reference_element._bounding_box]
@@ -173,7 +173,7 @@ class VerticalLayoutStrategy(LayoutStrategy):
                 layout_element_valid_bounding_boxes = layout_element.get_children_boundingboxes()
                 for i, child in enumerate(layout_element.children):
                     if child.tag == 'path':
-                        print('child.tag: ', child.tag)
+                        # print('child.tag: ', child.tag)
                         layout_element_valid_bounding_boxes[i] = None
             else:
                 layout_element_valid_bounding_boxes = [layout_element._bounding_box]
@@ -201,7 +201,7 @@ class VerticalLayoutStrategy(LayoutStrategy):
                         for j, layout_box in enumerate(layout_element_valid_bounding_boxes):
                             if layout_box is None:
                                 continue
-                            print('reference_element.children[i].is_intersect(layout_box): ', reference_element.children[i].is_intersect(layout_box))
+                            # print('reference_element.children[i].is_intersect(layout_box): ', reference_element.children[i].is_intersect(layout_box))
                             if reference_element.children[i].is_intersect(layout_box):
                                 has_overlap = True
                                 break
@@ -235,8 +235,8 @@ class VerticalLayoutStrategy(LayoutStrategy):
                 
                 while left <= right:
                     mid = (left + right) / 2
-                    print('mid: ', mid)
-                    print('has_overlap(mid): ', has_overlap(mid))
+                    # print('mid: ', mid)
+                    # print('has_overlap(mid): ', has_overlap(mid))
                     if has_overlap(mid):
                         right = mid - 0.1
                     else:

@@ -178,7 +178,7 @@ class Chart2TableDataProcessor(DataProcessor):
         # icon_selector = IconSelector(icon_pool, topic_color=None, spe_mode='flag')
         icon_selector = IconSelector(icon_pool, topic_color=None)
         candidate_icons = icon_selector.select(layout_sequence, chart_image_sequence)
-        candidate_icons = [[],[]]
+        # candidate_icons = [[],[]]
         if isinstance(candidate_icons, tuple):
             candidate_icons = candidate_icons[0] + candidate_icons[1]
         # print("candidate_icons: ", candidate_icons)

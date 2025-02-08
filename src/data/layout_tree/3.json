@@ -6,12 +6,8 @@
         "layoutStrategy": {
             "name": "vertical",
             "padding": 5,
-            "direction": "down",
+            "direction": "up",
             "overlap": false
-        },
-        "sizeConstraint": {
-            "reference": "chart",
-            "max_width": 1
         },
         "children": [
             {

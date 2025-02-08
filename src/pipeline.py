@@ -219,7 +219,6 @@ class Pipeline:
             subtitle_config['font'] = subtitle_font_template.font
             
             emphasis_phrases = find_emphasis_phrases(processed_data['meta_data']['title'], processed_data['meta_data'])
-            print("emphasis_phrases: ", emphasis_phrases)
             emphasis_phrases_config = []
             if chart_template.color_encoding is not None and chart_template.color_encoding.color_with_semantics:
                 for phrase in emphasis_phrases:
@@ -231,15 +230,17 @@ class Pipeline:
             else:
                 for phrase in emphasis_phrases:
                     emphasis_phrases_config.append({
-                        "text": phrase,
+                        # "text": phrase,
+                        #去除phrase首尾的双引号（如果有）
+                        "text": phrase.strip('"'),
                         "color": EmphasisColors().get_color()
                     })
             print("emphasis_phrases_config: ", emphasis_phrases_config)
                     
             # 配置额外信息
             additional_configs.update({
-                "title_config": {"text": processed_data['meta_data']['title'], "emphasis_phrases": emphasis_phrases_config},
-                "subtitle_config": {"text": processed_data['meta_data']['caption']},
+                "title_config": {"text": processed_data['meta_data']['title'].strip('"'), "emphasis_phrases": emphasis_phrases_config},
+                "subtitle_config": {"text": processed_data['meta_data']['caption'].strip('"')},
                 "topic_icon_config": {},
                 "background_config": {},
                 "topic_icon_url": processed_data['icons']['topic'][0] if len(processed_data['icons']['topic']) > 0 else None,
@@ -266,11 +267,13 @@ class Pipeline:
             additional_configs['title_config']['color'] = title_color
             additional_configs['subtitle_config']['color'] = subtitle_color
             additional_configs['background_config']['color'] = color_template.get_color('background', 1)[0]
-            # 步骤3：SVG后处理
-            final_svg = self.svg_processor.process(svg, additional_configs, debug=False)
-            time_end = time.time()
             
-            return final_svg
+            additional_configs['layout_tree'] = layout_tree
+            # 步骤3：SVG后处理
+            final_svg, bounding_boxes = self.svg_processor.process(svg, additional_configs, debug=False)
+            time_end = time.time()
+            print("svg_processor time: ", time_end - time_start)
+            return final_svg, bounding_boxes
             
         except Exception as e:
             raise Exception(f"Pipeline执行失败: {str(e)}")

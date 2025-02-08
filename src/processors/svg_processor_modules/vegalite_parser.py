@@ -13,7 +13,8 @@ class VegaLiteParser():
     def __init__(self, svg: str, additional_configs: Dict):
         self.svg = svg
         self.additional_configs = additional_configs
-        self.mark_group = None
+        # self.mark_group = None
+        self.all_mark_groups = []
         self.mark_annotation_group = None
         self.x_axis_group = None
         self.y_axis_group = None
@@ -41,26 +42,24 @@ class VegaLiteParser():
         self._traverse_elements_tree(elements_tree)
         
         group_to_flatten = {
-            'mark_group': self.mark_group,
+            # 'mark_group': self.mark_group,
             'mark_annotation_group': self.mark_annotation_group,
             'x_axis_group': self.x_axis_group,
             'y_axis_group': self.y_axis_group,
         }
-        
-
+        for i, mark_group in enumerate(self.all_mark_groups):
+            group_to_flatten[f'mark_group_{i}'] = mark_group
         
         # flattened_elements_tree = SVGTreeConverter.partial_flatten_tree(elements_tree, group_to_flatten)
         flattened_elements_tree, top_level_groups = SVGTreeConverter.move_groups_to_top(elements_tree, group_to_flatten)
         
         # 移除tree中所有class为background的元素
-
-            
         flattened_elements_tree = SVGTreeConverter.remove_elements_by_class(flattened_elements_tree, 'background')
         flattened_elements_tree = SVGTreeConverter.remove_elements_by_class(flattened_elements_tree, 'foreground')
         
         
         # print("top_level_groups['y_axis_group']: ", top_level_groups['y_axis_group'])
-        mark_group = top_level_groups['mark_group']
+        # mark_group = top_level_groups['mark_group']
         x_axis_group = top_level_groups['x_axis_group']
         y_axis_group = top_level_groups['y_axis_group']
         # x_axis_label_group = top_level_groups['x_axis_label_group']
@@ -450,15 +449,31 @@ class VegaLiteParser():
         return False
     
     def if_mark_group(self, group: LayoutElement) -> bool:
-        if self.additional_configs['meta_data']['chart_type'] == 'bar':
-            return group.tag == 'g' and \
-                'role-mark' in group.attributes.get('class', '') and \
-                'graphics-object' in group.attributes.get('role', '') and \
-                'mark container' in group.attributes.get('aria-roledescription', '') and \
-                'text' not in group.attributes.get('aria-roledescription', '')
-        elif self.additional_configs['meta_data']['chart_type'] == 'line':
-            return group.tag == 'g' and \
-                'mark-group role-scope' in group.attributes.get('class', '')
+        return group.tag == 'g' and \
+            ('role-mark' in group.attributes.get('class', '') or \
+             'role-scope' in group.attributes.get('class', '')) and \
+            'graphics-object' in group.attributes.get('role', '') and \
+            'mark container' in group.attributes.get('aria-roledescription', '') 
+            # and \
+            # 'text' not in group.attributes.get('aria-roledescription', '')
+    
+            
+        # if self.additional_configs['meta_data']['chart_type'] == 'bar':
+        #     return group.tag == 'g' and \
+        #         'role-mark' in group.attributes.get('class', '') and \
+        #         'graphics-object' in group.attributes.get('role', '') and \
+        #         'mark container' in group.attributes.get('aria-roledescription', '') and \
+        #         'text' not in group.attributes.get('aria-roledescription', '')
+        # elif self.additional_configs['meta_data']['chart_type'] == 'line':
+        #     return group.tag == 'g' and \
+        #         'mark-group role-scope' in group.attributes.get('class', '')
+    
+    
+    def if_legend_group(self, group: LayoutElement) -> bool:
+        return group.tag == 'g' and \
+            'role-legend' in group.attributes.get('class', '') and \
+            'legend' in group.attributes.get('aria-roledescription', '')
+                
     def if_mark_annotation_group(self, group: LayoutElement) -> bool:
         return group.tag == 'g' and \
             'role-mark' in group.attributes.get('class', '') and \
@@ -522,7 +537,7 @@ class VegaLiteParser():
                 self.y_axis_label_group = element
         # 检查当前元素是否匹配任何特定组
         if self.if_mark_group(element):
-            self.mark_group = element
+            self.all_mark_groups.append(element)
         elif self.if_mark_annotation_group(element):
             self.mark_annotation_group = element
         elif self.if_x_axis_group(element):

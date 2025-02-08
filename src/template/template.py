@@ -216,12 +216,32 @@ class TemplateFactory:
         meta_data: dict,
         layout_tree: dict,
         chart_composition: dict = None, 
-        color_template: ColorDesign = None
+        color_template: ColorDesign = None,
+        sort_config: dict = None,
+        chart_component: dict = None
     ):
         chart_template = GroupBarChartTemplate()
         chart_template.create_template(data, meta_data, color_template)
         layout_template = LayoutTemplate()
         layout_template.add_constraint(GroupBarChartConstraint())
+        layout_template.root = layout_template.build_template_from_tree(layout_tree)
+        layout_template.apply_constraints(chart_template)
+        return chart_template, layout_template
+
+    @staticmethod
+    def create_stacked_bar_chart_template(
+        data: list,
+        meta_data: dict,
+        layout_tree: dict,
+        chart_composition: dict = None,
+        color_template: ColorDesign = None,
+        sort_config: dict = None,
+        chart_component: dict = None
+    ):
+        chart_template = StackedBarChartTemplate()
+        chart_template.create_template(data, meta_data, color_template)
+        layout_template = LayoutTemplate()
+        layout_template.add_constraint(StackedBarChartConstraint())
         layout_template.root = layout_template.build_template_from_tree(layout_tree)
         layout_template.apply_constraints(chart_template)
         return chart_template, layout_template

@@ -8,6 +8,7 @@ from .elements import *
 from .layout import *
 from openai import OpenAI
 from ...template.template import *
+import time
 
 default_topic_icon_config = {
     "iconUrl": "/data1/liduan/generation/chart/chart_pipeline/testicon/robotarm2.png"
@@ -86,6 +87,7 @@ class LayoutProcessor:
     
     def process_layout_template(self, element: LayoutElement):
         # print("element: ", element.tag, element.id)
+        time_start = time.time()
         if element.tag == 'g':
             if element.id == 'title':
                 self._createTitleTextElement(self.title_config, element)
@@ -98,19 +100,23 @@ class LayoutProcessor:
                 element.children = self.chart_element.children
                 element.attributes = self.chart_element.attributes
                 element._bounding_box = element.get_bounding_box()
-                print("chart boundingbox: ", element._bounding_box)
+                # print("chart boundingbox: ", element._bounding_box)
             elif element.id == 'embellish':
                 self._createEmbellishElement(element)
                 element._bounding_box = element.get_bounding_box()
             else:
+                time_start_child = time.time()
                 topic_icon_idx = -1
                 boundingboxes = []
                 for idx, child in enumerate(element.children):
                     self.process_layout_template(child)
-                    print("child: ", child.id, child.tag, child._bounding_box)
+                    # print("child: ", child.id, child.tag, child._bounding_box)
                     if child.id == 'topic_icon':
                         topic_icon_idx = idx
                     boundingboxes.append(child._bounding_box)
+                time_end_child = time.time()
+                # print(f'process node {element.id} child time cost: {time_end_child - time_start_child}s')
+                time_start_topic_icon = time.time()
                 if topic_icon_idx != -1:
                     max_height = 0
                     max_width = 0
@@ -129,17 +135,30 @@ class LayoutProcessor:
                         element.children[topic_icon_idx].attributes['height'] = topic_icon_height
                         element.children[topic_icon_idx].attributes['width'] = topic_icon_width
                         element.children[topic_icon_idx]._bounding_box = element.children[topic_icon_idx].get_bounding_box()
+                time_end_topic_icon = time.time()
+                # print(f'process node {element.id} topic_icon time cost: {time_end_topic_icon - time_start_topic_icon}s')
+                time_start_size_constraint = time.time()
                 if element.size_constraint is not None:
+                    time_start_get_ref = time.time()
                     reference_element = element.get_element_by_id(element.reference_id)
+                    time_end_get_ref = time.time()
+                    # print(f'get reference element time: {time_end_get_ref - time_start_get_ref}s')
+
                     scales = []
+                    time_start_constraint = time.time()
                     for child in element.children:
                         if not element.reference_id == child.id:
-                            print("child: ", child.id, element.reference_id)
-                            print("size_constraint: ", element.size_constraint)
                             self.constraint_graph.add_node_with_edges(reference_element, child, element.size_constraint)
                             for edge in self.constraint_graph.node_map[child].prevs_edges:
+                                time_start_process = time.time()
                                 scale = edge.process_layout()
+                                time_end_process = time.time()
+                                # print(f'process constraint time: {time_end_process - time_start_process}s')
                                 scales.append(scale)
+                    time_end_constraint = time.time()
+                    # print(f'process constraints time: {time_end_constraint - time_start_constraint}s')
+
+                    time_start_scale = time.time()
                     min_scale = min(scales)
                     max_scale = max(scales)
                     chart_scale = 1
@@ -149,20 +168,34 @@ class LayoutProcessor:
                         chart_scale = min_scale
                     elif max_scale > 1 and min_scale < 1:
                         chart_scale = (max_scale + min_scale) / 2
+                    time_end_scale = time.time()
+                    print(f'calculate scale time: {time_end_scale - time_start_scale}s')
+
                     if element.reference_id == 'chart':
+                        time_start_rescale = time.time()
                         self.rescale_text_in_chart(chart_scale)
+                        time_end_rescale = time.time()
+                        print(f'rescale chart text time: {time_end_rescale - time_start_rescale}s')
+                time_end_size_constraint = time.time()
+                # print(f'process node {element.id} size_constraint time cost: {time_end_size_constraint - time_start_size_constraint}s')
+                time_start_layout = time.time()
                 for i in range(1, len(element.children)):
                     self.layout_graph.add_node_with_edges(element.children[i-1], element.children[i], element.layout_strategy)
                     node_map = self.layout_graph.node_map
                     for edge in node_map[element.children[i]].prevs_edges:
                         edge.process_layout()
+                time_end_layout = time.time()
+                # print(f'process node {element.id} layout time cost: {time_end_layout - time_start_layout}s')
+                time_start_bounding_box = time.time()
                 element._bounding_box = element.get_bounding_box()
+                time_end_bounding_box = time.time()
+                # print(f'process node {element.id} bounding_box time cost: {time_end_bounding_box - time_start_bounding_box}s')
         elif element.tag == 'image':
             id = element.id
             if id == 'topic_icon':
                 self._createTopicIconElement(self.topic_icon_config, element)
-        # elif element.tag == 'rect' and element.id == 'embellish_0':
-        #     self._createRectElement({},element)
+        time_end = time.time()
+        # print(f'process node {element.id} time cost: {time_end - time_start}s')
         
     def process_node(self, tree: dict):
         # 自顶向下递归地创建layout element, 并应用布局
@@ -260,17 +293,8 @@ class LayoutProcessor:
 
         max_width = 0
         
-        emphasis_phrases = title_config.get('emphasisPhrases', [])
-        
-        # #如果emphasisPhrases为空，则从text_lines中每一行中找出最长的一个短语作为强调短语
-        # if not emphasis_phrases:
-        #     emphasis_phrases = []
-        #     for line in text_lines:
-        #         words = line.split()
-        #         # 选一个最长的短语作为强调短语
-        #         emphasis_phrase = max(words, key=len)
-        #         emphasis_phrases.append(emphasis_phrase)
-        
+        emphasis_phrases = title_config.get('emphasis_phrases', [])
+        # print("emphasis_phrases: ", emphasis_phrases)
         # 创建每行文本元素
         line_groups = []  # 存储每行的group element
         current_y = 0
@@ -650,6 +674,7 @@ class LayoutProcessor:
     
     def rescale_text_in_chart(self, scale: float):
         # 遍历 self.chart_element的子树中的所有元素
+        # time_start = time.time()
         def _rescale_text(element: LayoutElement):
             if element.tag == 'text':
                 # element.update_scale(scale, scale)
@@ -658,7 +683,12 @@ class LayoutProcessor:
                 for child in element.children:
                     _rescale_text(child)
         _rescale_text(self.chart_element)
+        # time_end = time.time()
+        # print(f'rescale chart text time: {time_end - time_start}s')
+        # time_start_bounding_box = time.time()
         self.chart_element._bounding_box = self.chart_element.get_bounding_box()
+        # time_end_bounding_box = time.time()
+        # print(f'rescale chart bounding_box time: {time_end_bounding_box - time_start_bounding_box}s')
 
     def _avoidSingleWordLine(self, text_lines: list[str]) -> list[str]:
         # 如果有单个单词的行，则将该行合并到上一行

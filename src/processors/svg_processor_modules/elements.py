@@ -70,6 +70,17 @@ class BoundingBox:
         """输出边界框信息"""
         return f"BoundingBox(width={self.width:.2f}, height={self.height:.2f}, minx={self.minx:.2f}, maxx={self.maxx:.2f}, miny={self.miny:.2f}, maxy={self.maxy:.2f})"
     
+    def format(self) -> dict:
+        """格式化边界框信息"""
+        return {
+            'width': self.width,
+            'height': self.height,
+            'minx': self.minx,
+            'maxx': self.maxx,
+            'miny': self.miny,
+            'maxy': self.maxy
+        }
+    
 @dataclass
 class Padding:
     """内边距类"""
@@ -355,6 +366,10 @@ class GroupElement(LayoutElement):
         child_bboxes = []
         for child in self.children:
             child_bbox = child.get_bounding_box()
+            # if child._bounding_box:
+            #     child_bbox = child._bounding_box
+            # else:
+            #     child_bbox = child.get_bounding_box()
             child._bounding_box = child_bbox
             if child_bbox and child_bbox.width > 0 and child_bbox.height > 0:
                 if transform:
@@ -586,7 +601,11 @@ class Text(AtomElement):
         # else:
         #     self.attributes['y'] = self._bounding_box.miny - old_min_y
     def update_scale(self, scale_x: float, scale_y: float):
-        old_bounding_box = self.get_bounding_box()
+        # old_bounding_box = self.get_bounding_box()
+        if self._bounding_box:
+            old_bounding_box = self._bounding_box
+        else:
+            old_bounding_box = self.get_bounding_box()
         if scale_x >= 1 and scale_y >= 1:
             scale = max(scale_x, scale_y)
         else:
@@ -601,6 +620,10 @@ class Text(AtomElement):
         # 通过添加translate使得新的bounding box与旧的bounding box的中心重合
         translate_x = (old_bounding_box.minx + old_bounding_box.maxx) / 2 - (new_bounding_box.minx + new_bounding_box.maxx) / 2
         translate_y = (old_bounding_box.miny + old_bounding_box.maxy) / 2 - (new_bounding_box.miny + new_bounding_box.maxy) / 2
+        self._bounding_box.minx += translate_x
+        self._bounding_box.maxx += translate_x
+        self._bounding_box.miny += translate_y
+        self._bounding_box.maxy += translate_y
         self.attributes['transform'] = f"translate({translate_x}, {translate_y}) {self.attributes['transform']}"
         
         return scale
@@ -683,13 +706,18 @@ class Text(AtomElement):
     
     def scale_to_fit(self, scale: float):
         old_bounding_box = self.get_bounding_box()
+        # if self._bounding_box:
+        #     old_bounding_box = self._bounding_box
+        # else:
+        #     old_bounding_box = self.get_bounding_box()
         current_transform = self.attributes.get('transform', '')
         # 检查rotate是否在transform中
         rotate_flag = False
         if 'rotate' in current_transform:
             rotate_flag = True
         self.update_scale(scale, scale)
-        new_bounding_box = self.get_bounding_box()
+        # new_bounding_box = self.get_bounding_box()
+        new_bounding_box = self._bounding_box
         text_anchor = self.attributes.get('text-anchor', 'start')
         if rotate_flag and text_anchor == 'end':
             baseline_y = old_bounding_box.miny
