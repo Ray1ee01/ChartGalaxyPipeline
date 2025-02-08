@@ -5,6 +5,7 @@ from ..data_enricher_modules.icon_selection import Semantics, CLIPMatcher
 import numpy as np
 from scipy.spatial import KDTree
 from .search_specific_icons import FlagIcons, LogoIcons
+from ...utils.global_state import *
 
 raw_images_path = '/data1/liduan/generation/chart/iconset/colored_icons_final'
 feature_root = '/data1/liduan/jiashu/icon_cleaner/final_feat'
@@ -55,7 +56,7 @@ class SimulatedAnnealing:
         elif len(topic_color) == 1:
             delta_thres = 10.0
             cur_icon_set = []
-            search_thres = min(min_search_num, len(icon_set))
+            search_thres = min(min_search_num, len(icon_set)) if not larger_icon_pool else len(icon_set)
             while len(cur_icon_set) < search_thres:
                 for i, color in enumerate(self.main_colors):
                     if np.linalg.norm(color - topic_color[0]) < delta_thres:

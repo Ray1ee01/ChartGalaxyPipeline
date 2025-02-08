@@ -98,6 +98,19 @@ def iterate_rgb_palette(rgb_palette):
     lch_palette = palette_iteration(lch_palette)
     rgb_palette = [norm255rgb(colour.XYZ_to_sRGB(colour.Lab_to_XYZ(colour.LCHab_to_Lab(lch)))) for lch in lch_palette]
     return rgb_palette
+
+def emphasis_color(used_colors, palette):
+    # find the color with the largest distance to used colors in the palette
+    max_dist = 0
+    max_color = None
+    for color in palette:
+        min_dist = min([ciede2000(color, used_color) for used_color in used_colors])
+        if min_dist > max_dist:
+            max_dist = min_dist
+            max_color = color
+    if max_dist < 10:
+        return None
+    return max_color
     
 text_types = ['title', 'caption']
 class ColorDesign:
@@ -201,7 +214,7 @@ class ColorDesign:
             rgb_extend2 = iterate_rgb_palette(rgb_extend)
             self.rgb_pool_hex_3 = [rgb_to_hex(*rgb) for rgb in rgb_extend2]
 
-            self.bcg_color = hex_to_rgb(self.pool['bcg'])
+            self.bcg_color = bcg_rgb
             if ciede2000(self.bcg_color, black) > ciede2000(self.bcg_color, white):
                 self.lightness = 'light'
             else:
@@ -210,6 +223,15 @@ class ColorDesign:
         self.basic_colors = [black, white, gray]
         self.basic_colors_hex = [rgb_to_hex(*color) for color in self.basic_colors]
         self.light = 'high' if random.randint(0, 1) == 0 else 'low'
+
+    def get_emphasis_color(self, used_colors):
+        if isinstance(used_colors[0], str):
+            used_colors = [hex_to_rgb(color) for color in used_colors]
+        palette = self.rgb_pool
+        if self.mode == 'polychromatic':
+            palette = self.rgb_pool_hex_3
+        used_colors.append(self.bcg_color)
+        return emphasis_color(used_colors, palette)
 
     def get_color(self, type, number, group = 1, seed_color = 0, seed_middle_color = 0, \
             seed_text = 0, seed_mark = 0, seed_axis = 0, seed_embellishment = 0, reverse = False):
