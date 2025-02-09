@@ -137,7 +137,7 @@ class Chart2TableDataProcessor(DataProcessor):
         meta_data.update(raw_meta_data)
         
         # 3. generate topic and description
-        topic_data = check_topic_and_caption(df, meta_data) 
+        topic_data = check_topic_and_caption(df, meta_data)
         
         chart_data = {
             "data": data,

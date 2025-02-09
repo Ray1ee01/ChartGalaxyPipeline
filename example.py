@@ -1,5 +1,5 @@
 from src.pipeline import Pipeline
-from src.processors.chart_generator import VegaLiteGenerator
+from src.processors.chart_generator import VegaLiteGenerator, EchartGenerator
 from src.processors.svg_processor import SVGOptimizer
 import os
 from src.utils.dataset import VizNET
@@ -7,7 +7,7 @@ from src.processors.data_processor import *
 import random
 
 # data_dir = os.path.join(os.path.dirname(__file__),'src', 'data')
-output_dir = os.path.join(os.path.dirname(__file__),'src', 'output8')
+output_dir = os.path.join(os.path.dirname(__file__),'src', 'output9')
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 # random.seed(15)
 
@@ -32,10 +32,11 @@ def main():
     pipeline = Pipeline(
         data_processor=Chart2TableDataProcessor(),
         chart_generator=VegaLiteGenerator(),
+        # chart_generator=EchartGenerator(),
         svg_processor=SVGOptimizer()
     )
     # data_range = np.arange(3, 184)
-    data_range = np.arange(8,9)
+    data_range = np.arange(0,2)
     # input_data = f'bar_{data_range[args.chart_idx]}'
 
     
@@ -62,6 +63,15 @@ def main():
     # with open(os.path.join(output_dir, output_filename), "w") as f:
     #     f.write(result)
     
+    chart_type_list = [
+        # 'scatter',
+        # 'connectedscatter',
+        # 'bubble'
+        # 'bump'
+        'slope'
+    ]
+    
+    
     color_modes = ['monochromatic', 'complementary', 'analogous', 'polychromatic']
     for data_idx in data_range:
         input_data = f'bar_{data_idx}'
@@ -78,8 +88,8 @@ def main():
         # output_filename = f'output_d{args.dataset_idx}_c{args.chart_idx}_l{layout_file_idx}_i{chart_image_idx}_c{chart_component_idx}_m{color_mode}.svg'
         output_filename = f'output_d{data_idx}_l{layout_file_idx}_i{chart_image_idx}_c{chart_component_idx}_m{color_mode}.svg'
 
-        with open(os.path.join(output_dir, output_filename), "w") as f:
-            f.write(result)
+            with open(os.path.join(output_dir, output_filename), "w") as f:
+                f.write(result)
         
         
     # for layout_file_idx in layout_file_idxs:
