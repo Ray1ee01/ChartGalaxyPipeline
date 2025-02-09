@@ -1,12 +1,14 @@
 import subprocess
 import json
 import os
-
+import random
 class NodeBridge:
     @staticmethod
     def execute_node_script(script_path: str, data: dict) -> str:
+        # 生成一个随机种子
+        random.seed(random.randint(0, 1000000))
         # 将数据写入临时JSON文件
-        tmp_input = 'temp_input.json'
+        tmp_input = f'temp_input_{random.randint(0, 1000000)}.json'
         
         with open(tmp_input, 'w') as f:
             json.dump(data, f)

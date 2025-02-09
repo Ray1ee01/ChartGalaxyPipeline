@@ -15,8 +15,8 @@ def extract_palette(topic_data, cache_dir, image_root, image_paths, default_imag
     prompts = ' '.join([topic_data['topic'], ' '.join(topic_data['keywords'])])
     infographics = infographic_retriever.retrieve_similar_entries(prompts, top_k=10)
     info_path = os.path.join(cache_dir, 'infographics')
-    shutil.rmtree(info_path, ignore_errors=True)
-    os.makedirs(info_path)
+    # shutil.rmtree(info_path, ignore_errors=True)
+    # os.makedirs(info_path)
     # check if the image exists, if exists, copy to the folder
     sel_image_path = None
     for i, info in enumerate(infographics):

@@ -125,7 +125,7 @@ class VizNetDataProcessor(DataProcessor):
         return result
     
 class Chart2TableDataProcessor(DataProcessor):
-    def process(self, raw_data: str, layout_sequence: List[str], chart_image_sequence: List[str]) -> List[Dict]:
+    def process(self, raw_data: str, layout_sequence: List[str], chart_image_sequence: List[str], matcher: CLIPMatcher) -> List[Dict]:
         chart_type = raw_data.split('_')[0]
         dataloader = Chart2TableDataLoader()
         df, raw_meta_data = dataloader.load(raw_data)
@@ -157,7 +157,7 @@ class Chart2TableDataProcessor(DataProcessor):
 
         # 6. get chart relevant icons
         time_start = time.time()
-        matcher = CLIPMatcher()  # 只创建一次CLIPMatcher实例
+        # matcher = CLIPMatcher()  # 只创建一次CLIPMatcher实例
         icon_pool = get_icon_pool(chart_data, topic_data, matcher)
         with open('./src/processors/style_design_modules/image_paths.json') as f:
             image_paths = json.load(f)

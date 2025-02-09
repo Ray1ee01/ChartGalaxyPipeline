@@ -11,7 +11,7 @@ from .utils.color_statics import EmphasisColors
 import shutil
 import random
 import time
-
+from .processors.data_enricher_modules.icon_selection import CLIPMatcher
 
 class Pipeline:
     def __init__(
@@ -24,9 +24,9 @@ class Pipeline:
         self.chart_generator = chart_generator
         self.svg_processor = svg_processor
 
-    def execute(self, input_data: Any, layout_file_idx: int = 1, chart_image_idx: int = 1, chart_component_idx: int = 1, color_mode: str = 'monochromatic') -> str:
+    def execute(self, input_data: Any, layout_file_idx: int = 1, chart_image_idx: int = 1, chart_component_idx: int = 1, color_mode: str = 'monochromatic', matcher: CLIPMatcher = None) -> str:
         try:
-            with open(f'/data1/liduan/generation/chart/chart_pipeline/src/data/layout_tree/{layout_file_idx}.json', 'r') as f:
+            with open(f'/data1/liduan/generation/chart/chart_pipeline/src/data/layout_tree copy/{layout_file_idx}.json', 'r') as f:
                 layout_config = json.load(f)
             with open(f'/data1/liduan/generation/chart/chart_pipeline/src/data/chart_image/{chart_image_idx}.json', 'r') as f:
                 chart_image_config = json.load(f)
@@ -35,7 +35,7 @@ class Pipeline:
             
             time_start = time.time()
             # 步骤1：数据处理
-            processed_data = self.data_processor.process(input_data, layout_config['sequence'], chart_image_config['sequence'])
+            processed_data = self.data_processor.process(input_data, layout_config['sequence'], chart_image_config['sequence'], matcher)
             time_end = time.time()
             
             # 从布局树文件随机选择一个配置文件
@@ -187,6 +187,26 @@ class Pipeline:
                     color_template=color_template,
                     chart_component=chart_component_config
                 )
+            elif processed_data['meta_data']['chart_type'] == 'bullet':
+                chart_template, layout_template = TemplateFactory.create_bullet_chart_template(
+                    data=processed_data['data'],
+                    meta_data=processed_data['meta_data'],
+                    layout_tree=layout_tree,
+                    chart_composition=chart_image_config,
+                    sort_config=sort_config,
+                    color_template=color_template,
+                    chart_component=chart_component_config
+                )
+            elif processed_data['meta_data']['chart_type'] == 'waterfall':
+                chart_template, layout_template = TemplateFactory.create_waterfall_chart_template(
+                    data=processed_data['data'],
+                    meta_data=processed_data['meta_data'],
+                    layout_tree=layout_tree,
+                    chart_composition=chart_image_config,
+                    sort_config=sort_config,
+                    color_template=color_template,
+                    chart_component=chart_component_config
+                )
             else:
                 raise ValueError(f"不支持的图表类型: {processed_data['meta_data']['chart_type']}")
             
@@ -195,7 +215,6 @@ class Pipeline:
             time_end = time.time()
             print("chart_generator time: ", time_end - time_start)
             
-            # return svg    
             
             
             time_start = time.time()

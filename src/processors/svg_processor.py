@@ -219,25 +219,25 @@ class SVGOptimizer(SVGProcessor):
         # print('subtitle_group_element.bounding_box: ', subtitle_group_element.get_bounding_box())
         
         
-        # # 在root_element中添加多个rect，用于显示这些group的bounding_box
-        # rects = []
-        # for element in root_element.children:
-        #     # if not element.tag == 'path' or element.attributes.get('aria-roledescription') != 'area mark':
-        #     #     continue
-        #     # print('element: ', element.content, element._bounding_box)
-        #     bounding_box = element.get_bounding_box()
-        #     # print('bounding_box: ', bounding_box)
-        #     rect = Rect()
-        #     rect.attributes = {
-        #         "stroke": "red",
-        #         "stroke-width": 1,
-        #         "fill": "none",
-        #         "x": bounding_box.minx,
-        #         "y": bounding_box.miny,
-        #         "width": bounding_box.maxx - bounding_box.minx,
-        #         "height": bounding_box.maxy - bounding_box.miny,
-        #     }
-        #     rects.append(rect)
+        # 在root_element中添加多个rect，用于显示这些group的bounding_box
+        rects = []
+        for element in root_element.children:
+            # if not element.tag == 'path' or element.attributes.get('aria-roledescription') != 'area mark':
+            #     continue
+            # print('element: ', element.content, element._bounding_box)
+            bounding_box = element.get_bounding_box()
+            # print('bounding_box: ', bounding_box)
+            rect = Rect()
+            rect.attributes = {
+                "stroke": "red",
+                "stroke-width": 1,
+                "fill": "none",
+                "x": bounding_box.minx,
+                "y": bounding_box.miny,
+                "width": bounding_box.maxx - bounding_box.minx,
+                "height": bounding_box.maxy - bounding_box.miny,
+            }
+            rects.append(rect)
         # for rect in rects:
         #     root_element.children.append(rect)
         element_tree = root_element

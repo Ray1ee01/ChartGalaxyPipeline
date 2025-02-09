@@ -560,30 +560,59 @@ class Text(AtomElement):
     
     @staticmethod
     def _measure_text(text: str, font_size: float, anchor: str = 'left top') -> Dict[str, float]:
-        """使用Node.js的TextToSVG库测量文本尺寸"""
-        try:
-            data = {
-                'text': text,
-                'fontSize': font_size,
-                'anchor': anchor
-            }
-            # print('data: ', data)
-            measure_script_path = os.path.join(os.path.dirname(__file__), 'text_tool', 'measure_text.js')
-            result = node_bridge.execute_node_script(
-                measure_script_path,
-                data
-            )
-            metrics = json.loads(result)
-            return metrics
-        except Exception as e:
-            print(f"测量文本时出错: {e}")
-            # 回退到估算方法
-            return {
-                'width': len(text) * font_size * 0.6,
-                'height': font_size * 1.2,
-                'ascent': font_size,
-                'descent': 0
-            }
+        data = {
+            'text': text,
+            'fontSize': font_size,
+            'anchor': anchor
+        }
+        # 读取char_sizes_dict.json
+        char_sizes_dict = json.load(open('/data1/liduan/generation/chart/chart_pipeline/src/processors/svg_processor_modules/text_tool/char_sizes_dict.json'))
+        width = 0
+        height = 0
+        ascent = 0
+        descent = 0
+        for char in text:
+            if char in char_sizes_dict:
+                width += char_sizes_dict[char]['width'] * font_size
+                height = max(height, char_sizes_dict[char]['height'] * font_size)
+                ascent = max(ascent, char_sizes_dict[char]['ascent'] * font_size)
+                descent = min(descent, char_sizes_dict[char]['descent'] * font_size)
+            else:
+                width += char_sizes_dict['a']['width'] * font_size
+                height = max(height, char_sizes_dict['a']['height'] * font_size)
+                ascent = max(ascent, char_sizes_dict['a']['ascent'] * font_size)
+                descent = min(descent, char_sizes_dict['a']['descent'] * font_size)
+        return {
+            'width': width,
+            'height': height,
+            'ascent': ascent,
+            'descent': descent
+        }
+        
+        # """使用Node.js的TextToSVG库测量文本尺寸"""
+        # try:
+        #     data = {
+        #         'text': text,
+        #         'fontSize': font_size,
+        #         'anchor': anchor
+        #     }
+        #     # print('data: ', data)
+        #     measure_script_path = os.path.join(os.path.dirname(__file__), 'text_tool', 'measure_text.js')
+        #     result = node_bridge.execute_node_script(
+        #         measure_script_path,
+        #         data
+        #     )
+        #     metrics = json.loads(result)
+        #     return metrics
+        # except Exception as e:
+        #     print(f"测量文本时出错: {e}")
+        #     # 回退到估算方法
+        #     return {
+        #         'width': len(text) * font_size * 0.6,
+        #         'height': font_size * 1.2,
+        #         'ascent': font_size,
+        #         'descent': 0
+        #     }
     
     def update_pos(self, old_min_x: float, old_min_y: float):
         current_transform = self.attributes.get('transform', '')

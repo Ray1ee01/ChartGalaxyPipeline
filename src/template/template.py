@@ -548,3 +548,39 @@ class TemplateFactory:
             chart_template.y_axis.has_label = chart_component.get('y_axis', {}).get('has_label', True)
         
         return chart_template, layout_template
+    
+    @staticmethod
+    def create_bullet_chart_template(
+        data: list,
+        meta_data: dict,
+        layout_tree: dict,
+        chart_composition: dict = None,
+        sort_config: dict = None,
+        color_template: ColorDesign = None,
+        chart_component: dict = None
+    ):
+        chart_template = BulletChartTemplate()
+        chart_template.create_template(data, meta_data, color_template)
+        layout_template = LayoutTemplate()
+        layout_template.add_constraint(BulletChartConstraint())
+        layout_template.root = layout_template.build_template_from_tree(layout_tree)
+        layout_template.apply_constraints(chart_template)
+        return chart_template, layout_template
+
+    @staticmethod
+    def create_waterfall_chart_template(
+        data: list,
+        meta_data: dict,
+        layout_tree: dict,
+        chart_composition: dict = None,
+        sort_config: dict = None,
+        color_template: ColorDesign = None,
+        chart_component: dict = None
+    ):
+        chart_template = WaterfallChartTemplate()
+        chart_template.create_template(data, meta_data, color_template)
+        layout_template = LayoutTemplate()
+        layout_template.add_constraint(WaterfallChartConstraint())
+        layout_template.root = layout_template.build_template_from_tree(layout_tree)
+        layout_template.apply_constraints(chart_template)
+        return chart_template, layout_template

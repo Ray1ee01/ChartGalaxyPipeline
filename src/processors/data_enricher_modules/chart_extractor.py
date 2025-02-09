@@ -100,4 +100,19 @@ class NaiveChartExtractor(ChartExtractor):
                 data[-1]['order'] = avoid_np_type(filtered_df.iloc[i][2])
             if 'size' in df.columns:
                 data[-1]['size'] = avoid_np_type(filtered_df.iloc[i][2])
+        for item in data:
+            for key in item.keys():
+                if isinstance(item[key], str):
+                    item[key] = clean_str(item[key])
+        for key in meta_data.keys():
+            if isinstance(meta_data[key], str):
+                meta_data[key] = clean_str(meta_data[key])
         return data, meta_data
+
+
+def clean_str(s):
+    # 删除字符串中所有不合法的字符
+    # 合法字符：英文、数字、空格
+    valid_chars = "1234567890-=qwertyuiop[]asdfghjkl;zxcvbnm,.ZXCVBNM<>?ASDFGHJKL:QWERTYUIOP|POIUYTREWQ "
+    # return re.sub(r'[^\u0000-\u007F]+', '', s)
+    return ''.join(char for char in s if char in valid_chars)

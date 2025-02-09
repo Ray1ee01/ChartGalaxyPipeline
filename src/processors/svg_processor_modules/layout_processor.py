@@ -293,7 +293,8 @@ class LayoutProcessor:
 
         max_width = 0
         
-        emphasis_phrases = title_config.get('emphasis_phrases', [])
+        # emphasis_phrases = title_config.get('emphasis_phrases', [])
+        emphasis_phrases = []
         # print("emphasis_phrases: ", emphasis_phrases)
         # 创建每行文本元素
         line_groups = []  # 存储每行的group element
