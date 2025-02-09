@@ -47,6 +47,13 @@ class Pipeline:
             topic_icon_config = layout_config.get('topic_icon_config', {})
             sort_config = None
             
+
+            print("开始")
+            print("meta_data: ", processed_data['meta_data'])
+            print("data: ", processed_data['data'])
+            print("layout_tree: ", layout_tree)
+            print("结束")
+
             # 创建模板
             if processed_data['meta_data']['chart_type'] == 'bar':
                 # 如果没有指定orientation,随机选择
@@ -129,6 +136,28 @@ class Pipeline:
                     chart_composition=chart_image_config,
                     color_template=color_template
                 )
+            
+            elif processed_data['meta_data']['chart_type'] == 'pie':
+                chart_template, layout_template = TemplateFactory.create_pie_chart_template(
+                    data=processed_data['data'],
+                    meta_data=processed_data['meta_data'],
+                    layout_tree=layout_tree,
+                    chart_composition=chart_image_config,
+                    sort_config=sort_config,
+                    color_template=color_template,
+                    chart_component=chart_component_config
+                )
+            elif processed_data['meta_data']['chart_type'] == 'donut':
+                chart_template, layout_template = TemplateFactory.create_donut_chart_template(
+                    data=processed_data['data'],
+                    meta_data=processed_data['meta_data'],
+                    layout_tree=layout_tree,
+                    chart_composition=chart_image_config,
+                    sort_config=sort_config,
+                    color_template=color_template,
+                    chart_component=chart_component_config
+                )
+
             else:
                 raise ValueError(f"不支持的图表类型: {processed_data['meta_data']['chart_type']}")
 
@@ -189,7 +218,8 @@ class Pipeline:
             additional_configs['subtitle_config']['color'] = subtitle_color
             additional_configs['background_config']['color'] = color_template.get_color('background', 1)[0]
             # 步骤3：SVG后处理
-            final_svg = self.svg_processor.process(svg, additional_configs, debug=False)
+            # final_svg = self.svg_processor.process(svg, additional_configs, debug=False)
+            final_svg = svg
             time_end = time.time()
             print("svg_processor time: ", time_end - time_start)
             
