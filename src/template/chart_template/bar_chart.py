@@ -509,5 +509,5 @@ class RadialBarChartTemplate(BarChartTemplate):
         }
         
         return self.echart_option
-        
-        
+    
+    

@@ -165,6 +165,8 @@ def generate_color_open(number, bcg_flag = True, src_img_path = '', Sal = None, 
   i = 0
   for m in label:
     for j in range(len(m)):
+      if m[j] not in all_sal:
+        continue
       all_sal[m[j]].append(sal_imo_cv2[i][j][0])
       if len(all_color[m[j]]) == 0:
         all_color[m[j]] = [sp_img_cv2_lab[i][j][0], sp_img_cv2_lab[i][j][1], sp_img_cv2_lab[i][j][2]]

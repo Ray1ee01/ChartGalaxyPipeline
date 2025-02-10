@@ -31,12 +31,12 @@ def main():
     # )
     pipeline = Pipeline(
         data_processor=Chart2TableDataProcessor(),
-        chart_generator=VegaLiteGenerator(),
-        # chart_generator=EchartGenerator(),
+        # chart_generator=VegaLiteGenerator(),
+        chart_generator=EchartGenerator(),
         svg_processor=SVGOptimizer()
     )
     # data_range = np.arange(3, 184)
-    data_range = np.arange(0,2)
+    data_range = np.arange(0,1)
     # input_data = f'bar_{data_range[args.chart_idx]}'
 
     
@@ -66,9 +66,7 @@ def main():
     chart_type_list = [
         # 'scatter',
         # 'connectedscatter',
-        # 'bubble'
-        # 'bump'
-        'slope'
+        'radar'
     ]
     
     

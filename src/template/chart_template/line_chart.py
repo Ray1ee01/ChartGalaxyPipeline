@@ -2,6 +2,8 @@ from .base import ChartTemplate, LayoutConstraint
 from ..style_template.base import AxisTemplate, ColorEncodingTemplate, ColorTemplate, StrokeTemplate
 from ..mark_template.line import LineTemplate
 from ..color_template import ColorDesign
+from ..style_template.base import PolarSetting, AngleAxisTemplate, RadiusAxisTemplate
+import pandas as pd
 
 class LineChartTemplate(ChartTemplate):
     def __init__(self):
@@ -137,3 +139,69 @@ class LineChartTemplate(ChartTemplate):
             result["sort"] = self.sort
             
         return result
+        
+class RadarTemplate(LineChartTemplate):
+    def __init__(self):
+        super().__init__()
+        self.chart_type = "radar"
+        
+    def create_template(self, data: list, meta_data: dict=None, color_template: ColorDesign=None):
+        super().create_template(data, meta_data, color_template)
+        self.x_axis = AngleAxisTemplate(color_template)
+        self.y_axis = RadiusAxisTemplate(color_template)
+        
+    def update_specification(self, specification: dict) -> None:
+        # super().update_specification(specification)
+        raise NotImplementedError("RadarChartTemplate is not implemented")
+    
+    def update_option(self, echart_option: dict) -> None:
+        self.echart_option = echart_option
+        data = echart_option["dataset"]["source"]
+        df = pd.DataFrame(data[1:], columns=data[0])
+
+        x_data = self.x_axis.field or "x_data"
+        y_data = self.y_axis.field or "y_data"
+        group = "group"
+
+        max_value = df[y_data].max()
+        color_encoding = self.color_encoding.dump()
+        self.echart_option["colorBy"] = "series"
+        self.echart_option["color"] = color_encoding["range"]
+        
+        self.echart_option["radar"] = {
+            "indicator": [
+                {
+                    "name": name,
+                    "max": max_value,
+                } for name in df[x_data].unique().tolist()
+            ],
+            "radius": "75%",
+            "startAngle": 90,
+            "shape": "polygon",
+        }
+        
+        self.echart_option["textStyle"] = {
+            "fontFamily": self.mark.annotation_font_style.font,
+            "fontSize": self.mark.annotation_font_style.font_size,
+            "fontWeight": self.mark.annotation_font_style.font_weight,
+        }
+
+        self.echart_option["series"][0]["type"] = "radar"
+        self.echart_option["series"][0]["coordinateSystem"] = "radar"
+        self.echart_option["series"][0]["lineStyle"] = {
+            "width": 2,
+            "type": "solid",
+            "join": "round",
+        }
+        self.echart_option["series"][0]["label"] = {
+            "show": False,
+            "position": "top",
+        }
+        self.echart_option["series"][0]["data"] = [
+            {
+                "value": df[df[group] == name][y_data].tolist(),
+                "name": name,
+            } for name in color_encoding["domain"]
+        ]
+        
+        return self.echart_option

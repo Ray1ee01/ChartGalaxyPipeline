@@ -481,6 +481,22 @@ class TemplateFactory:
         layout_template.root = layout_template.build_template_from_tree(layout_tree)
         # layout_template.apply_constraints(chart_template)
         return chart_template, layout_template
+      
+    def create_radar_chart_template(
+        data: list,
+        meta_data: dict,
+        layout_tree: dict,
+        chart_composition: dict = None,
+ 
+        sort_config: dict = None,
+        color_template: ColorDesign = None,
+        chart_component: dict = None,
+    ):
+        chart_template = RadarTemplate()
+        chart_template.create_template(data, meta_data, color_template)
+        layout_template = LayoutTemplate()
+        layout_template.root = layout_template.build_template_from_tree(layout_tree)
+        return chart_template, layout_template
 
     @staticmethod
     def create_slope_chart_template(
