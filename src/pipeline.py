@@ -50,6 +50,13 @@ class Pipeline:
             topic_icon_config = layout_config.get('topic_icon_config', {})
             sort_config = None
             
+
+            print("开始")
+            print("meta_data: ", processed_data['meta_data'])
+            print("data: ", processed_data['data'])
+            print("layout_tree: ", layout_tree)
+            print("结束")
+
             # 创建模板
             if processed_data['meta_data']['chart_type'] == 'bar':
                 # 如果没有指定orientation,随机选择
@@ -187,8 +194,9 @@ class Pipeline:
                     color_template=color_template,
                     chart_component=chart_component_config
                 )
-            elif processed_data['meta_data']['chart_type'] == 'bullet':
-                chart_template, layout_template = TemplateFactory.create_bullet_chart_template(
+            
+            elif processed_data['meta_data']['chart_type'] == 'pie':
+                chart_template, layout_template = TemplateFactory.create_pie_chart_template(
                     data=processed_data['data'],
                     meta_data=processed_data['meta_data'],
                     layout_tree=layout_tree,
@@ -197,8 +205,8 @@ class Pipeline:
                     color_template=color_template,
                     chart_component=chart_component_config
                 )
-            elif processed_data['meta_data']['chart_type'] == 'waterfall':
-                chart_template, layout_template = TemplateFactory.create_waterfall_chart_template(
+            elif processed_data['meta_data']['chart_type'] == 'donut':
+                chart_template, layout_template = TemplateFactory.create_donut_chart_template(
                     data=processed_data['data'],
                     meta_data=processed_data['meta_data'],
                     layout_tree=layout_tree,
@@ -207,6 +215,7 @@ class Pipeline:
                     color_template=color_template,
                     chart_component=chart_component_config
                 )
+
             else:
                 raise ValueError(f"不支持的图表类型: {processed_data['meta_data']['chart_type']}")
             
@@ -214,6 +223,7 @@ class Pipeline:
             svg, additional_configs = self.chart_generator.generate(processed_data, chart_template)
             time_end = time.time()
             print("chart_generator time: ", time_end - time_start)
+            return svg, {}
             
             
             

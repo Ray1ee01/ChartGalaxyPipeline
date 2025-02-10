@@ -34,7 +34,11 @@ class VegaLiteGenerator(ChartGenerator):
             "width": {"band": self.template.mark.width} if self.template.mark.width else None
         }
 
-        
+        # 如果是饼图类型
+        if self.template.mark.type == "arc":
+            mark_specification["innerRadius"] = self.template.mark.innerRadius if self.template.mark.innerRadius else 0
+            mark_specification["radius"] = self.template.mark.radius if self.template.mark.radius else None
+            print('arc')
         
         # 如果有填充颜色样式
         if self.template.mark.fill_color_style.color:
@@ -183,10 +187,25 @@ class VegaLiteGenerator(ChartGenerator):
                 color_encoding["legend"] = None
             encoding["color"] = color_encoding
         
-        
+        # 如果是饼图类型，添加角度编码
+        if self.template.mark.type == "arc":
+            print('开始添加角度编码')
+            encoding["theta"] = {
+                "field": self.template.theta["field"],
+                "type": self.template.theta["type"] if self.template.theta["type"] else "quantitative"
+            }
+            print('theta field: ', self.template.theta["field"]),
+            if self.template.color is not None:
+                encoding["color"] = {
+                    "field": self.template.color["field"],
+                    "type": self.template.color["type"] if self.template.color["type"] else "nominal"
+                }
+            print('color field: ', self.template.color["field"])
+            print('结束添加角度编码')
+
         specification["encoding"] = encoding
         specification["mark"] = mark_specification
-        specification = self.template.update_specification(specification)
+        # specification = self.template.update_specification(specification)
         
         
         # print('orientation: ', self.template.mark.orientation)

@@ -79,6 +79,8 @@ def main():
         'groupbar',
         'stackedbar',
         'slope',
+        'pie',
+        'donut',
         # 'bullet',
         # 'waterfall',
     ]
@@ -93,6 +95,8 @@ def main():
         'stackedbar': 42,
         'slope': 1,
         'groupbar': 42,
+        'pie': 1,
+        'donut': 1,
     }
     
     time_stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
