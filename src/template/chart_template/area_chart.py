@@ -104,15 +104,6 @@ class AreaChartTemplate(ChartTemplate):
             self.y_axis.field = meta_data['y_label']
             self.y_axis.field_type = meta_data['y_type']
 
-    def update_specification(self, specification):
-        # 添加面积图特有的配置
-        specification["mark"] = {
-            "type": "area",
-            "line": True,  # 是否显示线
-            "point": False  # 是否显示数据点
-        }
-        return specification
-
 class AreaChartConstraint(LayoutConstraint):
     """面积图的布局约束"""
     def validate(self, chart_template: ChartTemplate) -> bool:

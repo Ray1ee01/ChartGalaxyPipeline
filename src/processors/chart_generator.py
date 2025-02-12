@@ -31,7 +31,10 @@ class VegaLiteGenerator(ChartGenerator):
         mark_specification = {
             "type": self.template.mark.type,
             "height": {"band": self.template.mark.height} if self.template.mark.height else None,
-            "width": {"band": self.template.mark.width} if self.template.mark.width else None
+            "width": {"band": self.template.mark.width} if self.template.mark.width else None,
+            "opacity": self.template.mark.opacity,
+            "line": self.template.mark.line,
+            "interpolate": self.template.mark.interpolate
         }
 
         # 如果是饼图类型
@@ -122,48 +125,41 @@ class VegaLiteGenerator(ChartGenerator):
             encoding["x"] = x_encoding
 
         # Y轴配置
-        if self.template.y_axis:
+        if hasattr(self.template, 'y_encoding') and self.template.y_encoding:
+            # 如果模板有自定义的y_encoding，使用它
+            y_encoding = self.template.y_encoding.copy()
+            # 添加轴的配置
+            y_encoding["axis"] = {"grid": False}
+            axis_config = y_encoding["axis"]
+        elif self.template.y_axis:
+            # 否则使用默认的y_axis配置
             y_encoding = {
                 "field": self.template.y_axis.field,
                 "type": self.template.y_axis.field_type,
-                "axis": {"grid": False
-                        }
+                "axis": {"grid": False}
             }
-            
             axis_config = y_encoding["axis"]
-            if self.template.y_axis.has_domain is not None:
-                axis_config["domain"] = self.template.y_axis.has_domain
-            if self.template.y_axis.has_label is not None:
-                axis_config["labels"] = self.template.y_axis.has_label
-            if self.template.y_axis.has_tick is not None:
-                axis_config["ticks"] = self.template.y_axis.has_tick
-            if self.template.y_axis.title_text is not None:
-                axis_config["title"] = self.template.y_axis.title_text
-            if self.template.y_axis.title_color_style.color is not None:
-                axis_config["titleColor"] = self.template.y_axis.title_color_style.color
-            if self.template.y_axis.title_font_style.font_size is not None:
-                axis_config["titleFontSize"] = self.template.y_axis.title_font_style.font_size
-            if self.template.y_axis.title_font_style.font is not None:
-                axis_config["titleFont"] = self.template.y_axis.title_font_style.font
-            if self.template.y_axis.title_font_style.font_weight is not None:
-                axis_config["titleFontWeight"] = self.template.y_axis.title_font_style.font_weight
-            if self.template.y_axis.label_color_style.color is not None:
-                axis_config["labelColor"] = self.template.y_axis.label_color_style.color
-            if self.template.y_axis.label_font_style.font is not None:
-                axis_config["labelFont"] = self.template.y_axis.label_font_style.font
-            if self.template.y_axis.label_font_style.font_size is not None:
-                axis_config["labelFontSize"] = self.template.y_axis.label_font_style.font_size
-            if self.template.y_axis.domain_color_style.color is not None:
-                axis_config["domainColor"] = self.template.y_axis.domain_color_style.color
-            if self.template.y_axis.domain_stroke_style.stroke_width is not None:
-                axis_config["domainWidth"] = self.template.y_axis.domain_stroke_style.stroke_width
-            if self.template.y_axis.tick_color_style.color is not None:
-                axis_config["tickColor"] = self.template.y_axis.tick_color_style.color
-            if self.template.y_axis.tick_stroke_style.stroke_width is not None:
-                axis_config["tickWidth"] = self.template.y_axis.tick_stroke_style.stroke_width
-            if self.template.y_axis.orientation is not None:
-                axis_config["orient"] = self.template.y_axis.orientation
-            encoding["y"] = y_encoding
+
+        # 添加轴的配置
+        if self.template.y_axis:
+            axis_config["domain"] = self.template.y_axis.has_domain
+            axis_config["labels"] = self.template.y_axis.has_label
+            axis_config["ticks"] = self.template.y_axis.has_tick
+            axis_config["title"] = self.template.y_axis.title_text
+            axis_config["titleColor"] = self.template.y_axis.title_color_style.color
+            axis_config["titleFontSize"] = self.template.y_axis.title_font_style.font_size
+            axis_config["titleFont"] = self.template.y_axis.title_font_style.font
+            axis_config["titleFontWeight"] = self.template.y_axis.title_font_style.font_weight
+            axis_config["labelColor"] = self.template.y_axis.label_color_style.color
+            axis_config["labelFont"] = self.template.y_axis.label_font_style.font
+            axis_config["labelFontSize"] = self.template.y_axis.label_font_style.font_size
+            axis_config["domainColor"] = self.template.y_axis.domain_color_style.color
+            axis_config["domainWidth"] = self.template.y_axis.domain_stroke_style.stroke_width
+            axis_config["tickColor"] = self.template.y_axis.tick_color_style.color
+            axis_config["tickWidth"] = self.template.y_axis.tick_stroke_style.stroke_width
+            axis_config["orient"] = self.template.y_axis.orientation
+
+        encoding["y"] = y_encoding
 
         # 颜色编码配置
         if self.template.color_encoding and self.template.color_encoding.domain is not None:
