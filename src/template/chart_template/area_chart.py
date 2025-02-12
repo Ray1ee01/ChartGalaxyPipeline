@@ -45,6 +45,57 @@ class AreaChartTemplate(ChartTemplate):
                 meta_data['x_type'] = "ordinal"
             else:
                 meta_data['x_type'] = "quantitative"
+                # 1. 首先按照group分组，同时收集所有x轴数据点
+                groups = {}
+                all_x_values = set()
+                for item in data:
+                    group = item.get('group', 'default')
+                    if group not in groups:
+                        groups[group] = {}
+                    x_value = float(item['x_data'])
+                    groups[group][x_value] = item['y_data']
+                    all_x_values.add(x_value)
+                
+                # 2. 对每个分组在所有x轴数据点上进行插值
+                new_data = []
+                all_x_values = sorted(list(all_x_values))
+                
+                for group, group_data in groups.items():
+                    x_values = sorted(group_data.keys())
+                    
+                    for x in all_x_values:
+                        if x in group_data:
+                            # 使用原始数据
+                            new_data.append({
+                                'x_data': x,
+                                'y_data': group_data[x],
+                                'group': group if group != 'default' else None
+                            })
+                        else:
+                            # 找到最近的前后两个数据点进行插值
+                            prev_x = max([v for v in x_values if v < x], default=None)
+                            next_x = min([v for v in x_values if v > x], default=None)
+                            
+                            if prev_x is not None and next_x is not None:
+                                # 线性插值
+                                ratio = (x - prev_x) / (next_x - prev_x)
+                                interpolated_value = group_data[prev_x] + ratio * (group_data[next_x] - group_data[prev_x])
+                            elif prev_x is not None:
+                                interpolated_value = group_data[prev_x]
+                            elif next_x is not None:
+                                interpolated_value = group_data[next_x]
+                            else:
+                                continue  # 跳过无法插值的点
+                            
+                            new_data.append({
+                                'x_data': x,
+                                'y_data': interpolated_value,
+                                'group': group if group != 'default' else None
+                            })
+                
+                # 3. 用插值后的数据替换原数据
+                data.clear()
+                data.extend(sorted(new_data, key=lambda x: (x['group'] if x['group'] else '', x['x_data'])))
                 
             # 应用配置
             self.x_axis.field = meta_data['x_label']
