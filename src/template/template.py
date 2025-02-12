@@ -19,6 +19,7 @@ from .chart_template.connected_scatterplot import *
 from .chart_template.bubble_plot import *
 from .chart_template.area_chart import *
 from .chart_template.layered_area_chart import *
+from .chart_template.stream_graph import *
 
 class LayoutTemplate:
     def __init__(self):
@@ -708,6 +709,53 @@ class TemplateFactory:
         
         # 添加方向约束
         layout_template.add_constraint(LayeredAreaChartConstraint())
+        
+        # 添加排序约束
+        if sort_config:
+            layout_template.add_constraint(
+                SortConstraint(
+                    sort_by=sort_config["by"],
+                    ascending=sort_config.get("ascending", True)
+                )
+            )
+        
+        if chart_composition:
+            if "mark_annotation" in chart_composition['sequence']:
+                chart_template.has_annotation = True
+        
+        # 构建布局树
+        layout_template.root = layout_template.build_template_from_tree(layout_tree)
+        
+        # 应用约束
+        layout_template.apply_constraints(chart_template)
+        
+        if chart_component:
+            chart_template.x_axis.has_domain = chart_component.get('x_axis', {}).get('has_domain', True)
+            chart_template.x_axis.has_tick = chart_component.get('x_axis', {}).get('has_tick', True)
+            chart_template.x_axis.has_label = chart_component.get('x_axis', {}).get('has_label', True)
+            chart_template.y_axis.has_domain = chart_component.get('y_axis', {}).get('has_domain', True)
+            chart_template.y_axis.has_tick = chart_component.get('y_axis', {}).get('has_tick', True)
+            chart_template.y_axis.has_label = chart_component.get('y_axis', {}).get('has_label', True)
+        
+        return chart_template, layout_template
+
+    @staticmethod
+    def create_stream_graph_template(
+        data: list,
+        meta_data: dict,
+        layout_tree: dict,
+        chart_composition: dict = None,
+        sort_config: dict = None,
+        color_template: ColorDesign = None,
+        chart_component: dict = None
+    ):
+        """创建Stream Graph模板"""
+        chart_template = StreamGraphTemplate()
+        chart_template.create_template(data, meta_data, color_template)
+        layout_template = LayoutTemplate()
+        
+        # 添加方向约束
+        layout_template.add_constraint(StreamGraphConstraint())
         
         # 添加排序约束
         if sort_config:

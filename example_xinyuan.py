@@ -12,7 +12,8 @@ class CustomDataProcessor(Chart2TableDataProcessor):
         
         # 修改图表类型为 area
         # processed_data['meta_data']['chart_type'] = 'area'
-        processed_data['meta_data']['chart_type'] = 'layeredarea'
+        # processed_data['meta_data']['chart_type'] = 'layeredarea'
+        processed_data['meta_data']['chart_type'] = 'stream'
         # processed_data['meta_data']['chart_type'] = 'line'
         
         return processed_data
@@ -39,7 +40,7 @@ def main():
     # 保存结果
     output_dir = 'output'
     os.makedirs(output_dir, exist_ok=True)
-    output_path = os.path.join(output_dir, 'layered_area_chart.svg')
+    output_path = os.path.join(output_dir, 'stream_chart.svg')
     with open(output_path, 'w') as f:
         f.write(result)
 
