@@ -4,12 +4,13 @@ from src.processors.svg_processor import SVGOptimizer
 import os
 from src.utils.dataset import VizNET
 from src.processors.data_processor import *
-from src.utils.svg_converter import convert_svg_to_png
+# from src.utils.svg_converter import convert_svg_to_png
 import random
 import json
 import numpy as np
 from datetime import datetime
 from src.processors.data_enricher_modules.icon_selection import CLIPMatcher
+from src.processors.data_enricher_modules.bgimage_selection import ImageSearchSystem
 # data_dir = os.path.join(os.path.dirname(__file__),'src', 'data')
 # output_dir = os.path.join(os.path.dirname(__file__),'src', 'output9')
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
@@ -104,6 +105,7 @@ def main():
     # color_modes = ['polychromatic']
     # for chart_type in chart_type_list:
     matcher = CLIPMatcher()
+    bgimage_searcher = ImageSearchSystem()
     if args.chart_type in chart_type_list:
         chart_type = args.chart_type
         output_dir = os.path.join(os.path.dirname(__file__),'src', 'output_jn', chart_type)
@@ -124,7 +126,7 @@ def main():
             color_mode = 'polychromatic'
             try:
                 time_start = time.time()
-                result, bounding_boxes = pipeline.execute(input_data, layout_file_idx, chart_image_idx, chart_component_idx, color_mode, matcher)
+                result, bounding_boxes = pipeline.execute(input_data, layout_file_idx, chart_image_idx, chart_component_idx, color_mode, matcher, bgimage_searcher)
                 time_end = time.time()
                 print(f'pipeline execute time cost: {time_end - time_start} seconds')
                 # output_filename = f'output_d{args.dataset_idx}_c{args.chart_idx}_l{layout_file_idx}_i{chart_image_idx}_c{chart_component_idx}_m{color_mode}.svg'
@@ -133,38 +135,38 @@ def main():
                     f.write(result)
                 # convert svg to png
                 time_start = time.time()
-                width, height, svg_width, svg_height = convert_svg_to_png(os.path.join(output_dir, output_filename+'.svg'), os.path.join(output_dir, output_filename+'.png'))
+                # width, height, svg_width, svg_height = convert_svg_to_png(os.path.join(output_dir, output_filename+'.svg'), os.path.join(output_dir, output_filename+'.png'))
                 time_end = time.time()
                 print(f'convert svg to png time cost: {time_end - time_start} seconds')
                 
-                time_start = time.time()
-                scale = width / svg_width
-                # 将bounding_boxes中的minx, miny, maxx, maxy,width, height乘以scale
-                for key in bounding_boxes.keys():
-                    item = bounding_boxes[key]
-                    if isinstance(item, list):
-                        for box in item:
-                            box['minx'] *= scale
-                            box['miny'] *= scale
-                            box['maxx'] *= scale
-                            box['maxy'] *= scale
-                            box['width'] *= scale
-                            box['height'] *= scale
-                    else:
-                        bounding_boxes[key]['minx'] *= scale
-                        bounding_boxes[key]['miny'] *= scale
-                        bounding_boxes[key]['maxx'] *= scale
-                        bounding_boxes[key]['maxy'] *= scale
-                        bounding_boxes[key]['width'] *= scale
-                        bounding_boxes[key]['height'] *= scale
-                # 保存bounding_boxes
-                time_end = time.time()
-                print(f'save bounding_boxes time cost: {time_end - time_start} seconds')
-                time_start = time.time()
-                with open(os.path.join(output_dir, output_filename+'_bounding_boxes.json'), "w") as f:
-                    json.dump(bounding_boxes, f)
-                time_end = time.time()
-                print(f'save bounding_boxes time cost: {time_end - time_start} seconds')
+                # time_start = time.time()
+                # scale = width / svg_width
+                # # 将bounding_boxes中的minx, miny, maxx, maxy,width, height乘以scale
+                # for key in bounding_boxes.keys():
+                #     item = bounding_boxes[key]
+                #     if isinstance(item, list):
+                #         for box in item:
+                #             box['minx'] *= scale
+                #             box['miny'] *= scale
+                #             box['maxx'] *= scale
+                #             box['maxy'] *= scale
+                #             box['width'] *= scale
+                #             box['height'] *= scale
+                #     else:
+                #         bounding_boxes[key]['minx'] *= scale
+                #         bounding_boxes[key]['miny'] *= scale
+                #         bounding_boxes[key]['maxx'] *= scale
+                #         bounding_boxes[key]['maxy'] *= scale
+                #         bounding_boxes[key]['width'] *= scale
+                #         bounding_boxes[key]['height'] *= scale
+                # # 保存bounding_boxes
+                # time_end = time.time()
+                # print(f'save bounding_boxes time cost: {time_end - time_start} seconds')
+                # time_start = time.time()
+                # with open(os.path.join(output_dir, output_filename+'_bounding_boxes.json'), "w") as f:
+                #     json.dump(bounding_boxes, f)
+                # time_end = time.time()
+                # print(f'save bounding_boxes time cost: {time_end - time_start} seconds')
             except Exception as e:
                 print(e)
                 continue

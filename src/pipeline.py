@@ -12,6 +12,7 @@ import shutil
 import random
 import time
 from .processors.data_enricher_modules.icon_selection import CLIPMatcher
+from .processors.data_enricher_modules.bgimage_selection import ImageSearchSystem
 
 class Pipeline:
     def __init__(
@@ -24,7 +25,7 @@ class Pipeline:
         self.chart_generator = chart_generator
         self.svg_processor = svg_processor
 
-    def execute(self, input_data: Any, layout_file_idx: int = 1, chart_image_idx: int = 1, chart_component_idx: int = 1, color_mode: str = 'monochromatic', matcher: CLIPMatcher = None) -> str:
+    def execute(self, input_data: Any, layout_file_idx: int = 1, chart_image_idx: int = 1, chart_component_idx: int = 1, color_mode: str = 'monochromatic', matcher: CLIPMatcher = None, bgimage_searcher: ImageSearchSystem = None) -> str:
         try:
             with open(f'/data1/liduan/generation/chart/chart_pipeline/src/data/layout_tree copy/{layout_file_idx}.json', 'r') as f:
                 layout_config = json.load(f)
@@ -35,7 +36,7 @@ class Pipeline:
             
             time_start = time.time()
             # 步骤1：数据处理
-            processed_data = self.data_processor.process(input_data, layout_config['sequence'], chart_image_config['sequence'], matcher)
+            processed_data = self.data_processor.process(input_data, layout_config['sequence'], chart_image_config['sequence'], matcher, bgimage_searcher)
             time_end = time.time()
             
             # 从布局树文件随机选择一个配置文件

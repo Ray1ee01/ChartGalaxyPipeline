@@ -9,13 +9,14 @@ import shutil
 import json
 from .data_enricher_modules.data_clean import clean_df
 from .data_enricher_modules.HAI_extract import extract_chart
-from .data_enricher_modules.topic_generate import check_topic_and_caption
+from .data_enricher_modules.topic_generate import check_topic_and_caption, generate_bgimage_search_keywords
 from .data_enricher_modules.image_search import search_image
 
 from .data_enricher_modules.icon_selection import get_icon_pool, CLIPMatcher
 from .icon_selection_modules.icon_selection import IconSelector
 from .data_enricher_modules.data_loader import *
 from .data_enricher_modules.chart_extractor import *
+from .data_enricher_modules.bgimage_selection import ImageSearchSystem
 from .data_enricher_modules.datafact_generator import DataFactGenerator
 from .data_enricher_modules.palette_extractor import extract_palette
 
@@ -125,7 +126,7 @@ class VizNetDataProcessor(DataProcessor):
         return result
     
 class Chart2TableDataProcessor(DataProcessor):
-    def process(self, raw_data: str, layout_sequence: List[str], chart_image_sequence: List[str], matcher: CLIPMatcher) -> List[Dict]:
+    def process(self, raw_data: str, layout_sequence: List[str], chart_image_sequence: List[str], matcher: CLIPMatcher, bgimage_searcher: ImageSearchSystem = None) -> List[Dict]:
         chart_type = raw_data.split('_')[0]
         dataloader = Chart2TableDataLoader()
         df, raw_meta_data = dataloader.load(raw_data)
@@ -147,24 +148,32 @@ class Chart2TableDataProcessor(DataProcessor):
         # data_fact = data_fact_generator.generate_data_fact()
         data_fact = {}
         
+        # # 4.5. get palettes
+        default_image_path = '/data1/jiashu/ChartPipeline/src/processors/style_design_modules/default.png'
+        with open('./src/processors/style_design_modules/image_paths.json') as f:
+            image_paths = json.load(f)
+        palettes = extract_palette(topic_data, cache_dir, image_root, image_paths, default_image_path)
+        
         # 5. get topic relevant images
-        # topic_image_query = search_image(topic_data['topic'])
+        key_words = generate_bgimage_search_keywords(df, meta_data)
+        key_word = key_words[0]
+        if bgimage_searcher is not None:
+            topic_images = bgimage_searcher.search(key_word)
+            topic_image_urls = [image['path'] for image in topic_images]
+        else:
+            topic_image_urls = search_image(key_word, engine='baidu')
+        # topic_image_url = np.random.choice(topic_image_urls) 
+        
         # print("topic_images_query: ", topic_image_query)
         # topic_image_url = topic_image_query['images_results'][0]['original']
         # return 
-        topic_images_query = {}
+        # topic_images_query = {}
         # if need more images, search for meta['keywords']
 
         # 6. get chart relevant icons
         time_start = time.time()
         # matcher = CLIPMatcher()  # 只创建一次CLIPMatcher实例
         icon_pool = get_icon_pool(chart_data, topic_data, matcher)
-        with open('./src/processors/style_design_modules/image_paths.json') as f:
-            image_paths = json.load(f)
-        default_image_path = '/data1/jiashu/ChartPipeline/src/processors/style_design_modules/default.png'
-        
-        palettes = extract_palette(topic_data, cache_dir, image_root, image_paths, default_image_path)
-
         result = {}
         result['meta_data'] = meta_data.copy()
         result['meta_data'].update(chart_data['meta_data'])

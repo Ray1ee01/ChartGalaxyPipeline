@@ -207,3 +207,52 @@ def find_emphasis_phrases(title, meta_data):
     response = [phrase.strip() for phrase in response]
     return response
 
+def generate_bgimage_search_keywords(df, meta_data):
+    def _get_results(response):
+        answer_pattern = re.compile(r"\*\*Search Terms\*\*: \[(.+)\]")
+        # print(response)
+        match = answer_pattern.match(response)
+        if match:
+            results = [term.strip() for term in match.group(1).split(',')]
+            return results
+        return None
+    def _get_prompt(df, meta_data):
+        prompt = f"""Given the following chart data and context, generate **generic image search terms** optimized for search engines (e.g., Google, Baidu) to find relevant background images. Prioritize broad, visually descriptive keywords that reflect the core theme of the data without referencing specific metrics or jargon.  
+
+**Chart Data (df):**  
+{df.head()}  
+
+**Context:**  
+{dict_to_yaml_string(meta_data)}  
+
+**Requirements:**  
+1. **Search Terms**:  
+   - Generate 3–5 search terms that focus on **visual concepts** (e.g., landscapes, objects, symbols) related to the data’s theme.  
+   - Avoid numbers, dates, technical terms, or chart-specific language.  
+   - Use generic, high-traffic keywords (e.g., "city skyline growth" instead of "urban population increase 2023").  
+   - Include terms that imply context (e.g., "industrial factory pollution," "farmers harvesting crops").  
+
+2. Format the terms as phrases (not single keywords) to improve image search relevance.  
+
+**Example:**  
+If the data relates to "electric vehicle adoption trends," search terms could be:  
+**Search Terms**: [Sustainable transportation cityscape, Electric car charging station, Renewable energy infrastructure]  
+
+**Return format:**  
+**Search Terms**: [List your terms here as comma-separated phrases]"""
+        return prompt
+    
+    prompt = _get_prompt(df, meta_data)
+    try_num = 0
+    while try_num < 5:
+      response = ask(prompt)
+      results = _get_results(response)
+    #   print(prompt, results)
+    #   exit()
+      if results:
+          break
+      try_num += 1
+    if not results:
+        print("Error: Unable to generate topic and caption.")
+        return None
+    return results
