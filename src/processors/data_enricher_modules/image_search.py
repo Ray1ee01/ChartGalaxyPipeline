@@ -144,7 +144,8 @@ class BaiduImageCrawler:
         return urls
 
 
-def search_image(query, engine='google'):
+def search_image(query, num=10, engine='google'):
+    # 在当前基础上再爬取num张图片
     if engine == 'google':
         file_name = query.replace(' ', '_') + '.pkl'
         if not os.path.exists(search_cache_path):
@@ -165,9 +166,14 @@ def search_image(query, engine='google'):
             pickle.dump(result, f)
         return [result['images_results'][0]['original']]
     elif engine == 'baidu':
+        cur_results = []
         if os.path.exists(os.path.join(search_cache_path, query)):
-            return [os.path.join(search_cache_path, query, file) for file in os.listdir(os.path.join(search_cache_path, query))]
+            cur_results = [os.path.join(search_cache_path, query, file) for file in os.listdir(os.path.join(search_cache_path, query))]
+        cur_num = len(cur_results)
+        start_page = (cur_num - 1 + 2 * num) // num
+        # if len(results) >= num:
+        #     return results
         crawler = BaiduImageCrawler()
-        results = crawler.start(query, total_page=1, start_page=1, per_page=10)
+        results = crawler.start(query, total_page=1, start_page=start_page, per_page=num)
         return results
 

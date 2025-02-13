@@ -9,6 +9,7 @@ import cv2
 import faiss
 from sklearn.cluster import KMeans
 from .image_search import search_image
+from ...template.color_template import check_in_palette
 
 class ImageSearchSystem:
     """带有缓存和语义检索的图片搜索系统"""
@@ -150,7 +151,7 @@ class ImageSearchSystem:
         # return index, valid
         
     
-    def search(self, keyword, using_template=True):
+    def search(self, keyword, palettes = None, using_template=True):
         """
         执行图片搜索
         
@@ -158,28 +159,49 @@ class ImageSearchSystem:
         :param num: 需要返回的结果数量
         :return: 图片路径列表和对应的元数据
         """
+        palettes = palettes['color_list'] + [palettes['bcg']]
+        # #hex to rgb
+        palettes = [[int(i[1:3], 16), int(i[3:5], 16), int(i[5:7], 16)] for i in palettes]
         # 文本特征提取
         text_features = self._text_to_feature(keyword, using_template=using_template)
         text_features = text_features.cpu().numpy().astype('float32')
         
         # 检查有效性
         all_distances, all_indices = self._search(text_features, using_template=using_template)
-        valid_mask = all_distances > self.threshold
-        valid_indices = all_indices[valid_mask]
+        semantic_valid_mask = all_distances > self.threshold
+        semantic_valid_indices = all_indices[semantic_valid_mask]
         # 获取元数据
-        if len(valid_indices) > 0:
-            index = ', '.join(str(i) for i in valid_indices.flatten())
+        results = []
+        if len(semantic_valid_indices) > 0:
+            index = ', '.join(str(i) for i in semantic_valid_indices.flatten())
             self.cursor.execute(f'SELECT * FROM image_metadata WHERE id IN ({index})')
-            result = [self._format_result(row) for row in self.cursor.fetchall()]
+            semantic_results = [self._format_result(row) for row in self.cursor.fetchall()]
+            if palettes:
+                for semantic_result in semantic_results:
+                    colors = semantic_result['dominant_colors']
+                    for color in colors:
+                        if check_in_palette(color, palettes):
+                            results.append(semantic_result)
+                            break
+            else:
+                results = semantic_results
         # 补充爬取新图片
-        else:
-            new_images = self._crawl_images(keyword)
-            # 认为通过关键词搜索得到的结果一定是有效的
-            result = new_images
+        while len(results) == 0:
+            # 认为通过关键词搜索得到的结果一定是语义有效的
+            new_images = self._crawl_images(keyword, num=10)
+            semantic_results = new_images
+            if palettes:
+                for semantic_result in semantic_results:
+                    colors = semantic_result['colors']
+                    for color in colors:
+                        if check_in_palette(color, palettes):
+                            results.append(semantic_result)
+                            break
+                        
             # all_distances, all_indices = self._search(text_features, using_template=using_template)
             # valid_mask = all_distances > self.threshold
             # valid_indices = all_indices[valid_mask]
-        return result
+        return results[0]
 
     def _format_result(self, db_row):
         """格式化数据库查询结果"""
@@ -191,9 +213,9 @@ class ImageSearchSystem:
             'histogram': json.loads(db_row[4])
         }
 
-    def _crawl_images(self, keyword):
+    def _crawl_images(self, keyword, num=10):
         """图片爬取方法"""
-        img_paths = search_image(keyword, engine='baidu')
+        img_paths = search_image(keyword, num, engine='baidu')
         new_images = []
         for img_path in img_paths:
             try:
@@ -228,8 +250,7 @@ class ImageSearchSystem:
         pixels = image.reshape(-1, 3)
         kmeans = KMeans(n_clusters=k).fit(pixels)
         dominant_colors = kmeans.cluster_centers_.astype(int).tolist()
-        # rgb
-        return [f"#{c[0]:02x}{c[1]:02x}{c[2]:02x}" for c in dominant_colors]
+        return dominant_colors
     
     @staticmethod
     def _get_color_histogram(image_path, bins=8):

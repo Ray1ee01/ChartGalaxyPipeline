@@ -158,7 +158,7 @@ class Chart2TableDataProcessor(DataProcessor):
         key_words = generate_bgimage_search_keywords(df, meta_data)
         key_word = key_words[0]
         if bgimage_searcher is not None:
-            topic_images = bgimage_searcher.search(key_word)
+            topic_images = bgimage_searcher.search(key_word, palettes)
             topic_image_urls = [image['path'] for image in topic_images]
         else:
             topic_image_urls = search_image(key_word, engine='baidu')

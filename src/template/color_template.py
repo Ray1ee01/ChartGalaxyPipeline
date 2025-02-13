@@ -111,7 +111,13 @@ def emphasis_color(used_colors, palette):
     if max_dist < 10:
         return None
     return max_color
-    
+
+def check_in_palette(color, palette):
+    for p in palette:
+        if ciede2000(color, p) < 10:
+            return True
+    return False
+
 text_types = ['title', 'caption']
 class ColorDesign:
     def __init__(self, image_palette, mode='monochromatic'):
