@@ -120,6 +120,7 @@ class ImageSearchSystem:
             self.index.add(
                 image_feature.cpu().numpy().astype('float32'),
             )
+            faiss.write_index(self.index, self.index_path)
             return True
         except sqlite3.IntegrityError:
             # 忽略重复图片
@@ -151,7 +152,7 @@ class ImageSearchSystem:
         # return index, valid
         
     
-    def search(self, keyword, palettes = None, using_template=True):
+    def search(self, keyword, chinese_keyword = None, palettes = None, using_template=True):
         """
         执行图片搜索
         
@@ -159,6 +160,8 @@ class ImageSearchSystem:
         :param num: 需要返回的结果数量
         :return: 图片路径列表和对应的元数据
         """
+        if chinese_keyword is None:
+            chinese_keyword = keyword
         palettes = palettes['color_list'] + [palettes['bcg']]
         # #hex to rgb
         palettes = [[int(i[1:3], 16), int(i[3:5], 16), int(i[5:7], 16)] for i in palettes]
@@ -178,7 +181,7 @@ class ImageSearchSystem:
             semantic_results = [self._format_result(row) for row in self.cursor.fetchall()]
             if palettes:
                 for semantic_result in semantic_results:
-                    colors = semantic_result['dominant_colors']
+                    colors = semantic_result['colors']
                     for color in colors:
                         if check_in_palette(color, palettes):
                             results.append(semantic_result)
@@ -188,7 +191,7 @@ class ImageSearchSystem:
         # 补充爬取新图片
         while len(results) == 0:
             # 认为通过关键词搜索得到的结果一定是语义有效的
-            new_images = self._crawl_images(keyword, num=10)
+            new_images = self._crawl_images(chinese_keyword, num=10)
             semantic_results = new_images
             if palettes:
                 for semantic_result in semantic_results:

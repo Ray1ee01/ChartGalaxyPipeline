@@ -209,12 +209,13 @@ def find_emphasis_phrases(title, meta_data):
 
 def generate_bgimage_search_keywords(df, meta_data):
     def _get_results(response):
-        answer_pattern = re.compile(r"\*\*Search Terms\*\*: \[(.+)\]")
+        answer_pattern = re.compile(r"\*\*Search Terms\*\*: \[(.+)\].*\n\*\*搜索词\*\*: \[(.+)\]")
         # print(response)
         match = answer_pattern.match(response)
         if match:
             results = [term.strip() for term in match.group(1).split(',')]
-            return results
+            chinese_results = [term.strip() for term in match.group(2).split(',')]
+            return [results, chinese_results]
         return None
     def _get_prompt(df, meta_data):
         prompt = f"""Given the following chart data and context, generate **generic image search terms** optimized for search engines (e.g., Google, Baidu) to find relevant background images. Prioritize broad, visually descriptive keywords that reflect the core theme of the data without referencing specific metrics or jargon.  
@@ -239,7 +240,8 @@ If the data relates to "electric vehicle adoption trends," search terms could be
 **Search Terms**: [Sustainable transportation cityscape, Electric car charging station, Renewable energy infrastructure]  
 
 **Return format:**  
-**Search Terms**: [List your terms here as comma-separated phrases]"""
+**Search Terms**: [List your terms here as comma-separated phrases]
+**搜索词**: [List your terms in Chinese here as comma-separated phrases]"""
         return prompt
     
     prompt = _get_prompt(df, meta_data)

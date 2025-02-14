@@ -156,12 +156,14 @@ class Chart2TableDataProcessor(DataProcessor):
         
         # 5. get topic relevant images
         key_words = generate_bgimage_search_keywords(df, meta_data)
-        key_word = key_words[0]
+        key_word = key_words[0][0]
+        chinese_keyword = key_words[1][0]
         if bgimage_searcher is not None:
-            topic_images = bgimage_searcher.search(key_word, palettes)
-            topic_image_urls = [image['path'] for image in topic_images]
+            topic_image = bgimage_searcher.search(key_word, chinese_keyword, palettes)
+            topic_image_url = topic_image['path']
         else:
-            topic_image_urls = search_image(key_word, engine='baidu')
+            topic_image_urls = search_image(chinese_keyword, engine='baidu')
+            topic_image_url = topic_image_urls[0]
         # topic_image_url = np.random.choice(topic_image_urls) 
         
         # print("topic_images_query: ", topic_image_query)
