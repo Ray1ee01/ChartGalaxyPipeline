@@ -7,6 +7,7 @@ class MarkTemplate:
         self.mark_type = None # 标记类型
         self.point = None
         self.interpolate = None
+        self.line = None
         mark_color = None
         # if color_template is not None and color_template.mode == 'monochromatic':
         #     # seed_mark = random.randint(1, 100)
@@ -14,11 +15,11 @@ class MarkTemplate:
         #     mark_color = color_template.get_color('marks', 1, seed_mark=seed_mark)[0]
 
         # 样式属性
+        self.opacity = 1.0
         self.fill_color_style = ColorTemplate()
         self.fill_color_style.color = mark_color
         self.stroke_color_style = ColorTemplate()
         self.stroke_color_style.color = mark_color
-        
         self.stroke_style = StrokeTemplate()
         
         self.annotation_font_style = LabelFontTemplate()

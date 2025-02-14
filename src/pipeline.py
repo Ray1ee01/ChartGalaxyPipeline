@@ -245,9 +245,21 @@ class Pipeline:
                     color_template=color_template,
                     chart_component=chart_component_config
                 )
+            elif processed_data['meta_data']['chart_type'] == 'rangedarea':
+                chart_template, layout_template = TemplateFactory.create_ranged_area_chart_template(
+                    data=processed_data['data'],
+                    meta_data=processed_data['meta_data'],
+                    layout_tree=layout_tree,
+                    chart_composition=chart_image_config,
+                    sort_config=sort_config,
+                    color_template=color_template,
+                    chart_component=chart_component_config
+                )
             else:
                 raise ValueError(f"不支持的图表类型: {processed_data['meta_data']['chart_type']}")
             
+            print("processed_data['data']: ", processed_data['data'])
+
             # 步骤2：生成图表
             svg, additional_configs = self.chart_generator.generate(processed_data, chart_template)
             time_end = time.time()
