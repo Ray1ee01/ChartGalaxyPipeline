@@ -136,7 +136,7 @@ class SVGOptimizer(SVGProcessor):
         # print('additional_configs: ', additional_configs)
         time_start = time.time()
         parser = VegaLiteParser(svg, additional_configs)
-        parsed_svg, flattened_elements_tree, layout_graph = parser.parse()
+        parsed_svg, flattened_elements_tree, layout_graph, defs = parser.parse()
         time_end = time.time()
         print(f'parser time cost: {time_end - time_start}s')
         # flattened_elements_tree._bounding_box = flattened_elements_tree.get_bounding_box()
@@ -155,19 +155,19 @@ class SVGOptimizer(SVGProcessor):
         # else:
         #     additional_configs['subtitle_config']['max_width'] = flattened_elements_tree.get_bounding_box().width
         
-        layout_template = LayoutTemplate()
-        # print('additional_configs["layout_tree"]: ', additional_configs["layout_tree"])
-        layout_template.root = layout_template.build_template_from_tree(additional_configs["layout_tree"])
+        # layout_template = LayoutTemplate()
+        # # print('additional_configs["layout_tree"]: ', additional_configs["layout_tree"])
+        # layout_template.root = layout_template.build_template_from_tree(additional_configs["layout_tree"])
         
-        layout_template = additional_configs['layout_template']
-        time_start = time.time()
-        layout_processor = LayoutProcessor(flattened_elements_tree, layout_graph, layout_template, additional_configs)
-        time_end = time.time()
-        print(f'layout_processor init time cost: {time_end - time_start}s')
-        time_start = time.time()
-        element_tree = layout_processor.process()
-        time_end = time.time()
-        print(f'layout_processor process time cost: {time_end - time_start}s')
+        # layout_template = additional_configs['layout_template']
+        # time_start = time.time()
+        # layout_processor = LayoutProcessor(flattened_elements_tree, layout_graph, layout_template, additional_configs)
+        # time_end = time.time()
+        # print(f'layout_processor init time cost: {time_end - time_start}s')
+        # time_start = time.time()
+        # element_tree = layout_processor.process()
+        # time_end = time.time()
+        # print(f'layout_processor process time cost: {time_end - time_start}s')
         
         
 
@@ -186,7 +186,9 @@ class SVGOptimizer(SVGProcessor):
         y_axis_group = []
         title_group = []
         subtitle_group = []
+        description_group = []
         for element in root_element.children:
+            # print("element: ", element.tag, element.attributes)
             if self.if_in_mark_group(element):
                 mark_group.append(element)
             elif self.if_in_legend_group(element):
@@ -199,6 +201,8 @@ class SVGOptimizer(SVGProcessor):
                 title_group.append(element)
             elif self.if_in_subtitle_group(element):
                 subtitle_group.append(element)
+            elif self.if_description_group(element):
+                description_group.append(element)
         # print('mark_group: ', mark_group)
         # print('legend_group: ', legend_group)
         # print('x_axis_group: ', x_axis_group)
@@ -246,7 +250,8 @@ class SVGOptimizer(SVGProcessor):
         root_bounding_box = root_element.get_bounding_box()
         shift_x = -root_bounding_box.minx
         shift_y = -root_bounding_box.miny
-        random_padding = 50 * random.random()
+        # random_padding = 50 * random.random()
+        random_padding = 0
         shift_x += random_padding
         shift_y += random_padding
         
@@ -309,13 +314,26 @@ class SVGOptimizer(SVGProcessor):
             bounding_boxes['subtitle_group']['miny'] += shift_y
             bounding_boxes['subtitle_group']['maxx'] += shift_x
             bounding_boxes['subtitle_group']['maxy'] += shift_y
+        if len(description_group) > 0:
+            description_group_element = GroupElement()
+            description_group_element.children = description_group
+            root_element.children.append(description_group_element)
+            bounding_boxes['description_group'] = description_group_element.get_bounding_box().format()
+            bounding_boxes['description_group']['minx'] += shift_x
+            bounding_boxes['description_group']['miny'] += shift_y
+            bounding_boxes['description_group']['maxx'] += shift_x
+            bounding_boxes['description_group']['maxy'] += shift_y
         # 把原先的mark_group, legend_group, x_axis_group, y_axis_group, title_group, subtitle_group删除
-        root_element.children = [child for child in root_element.children if child not in mark_group and child not in legend_group and child not in x_axis_group and child not in y_axis_group and child not in title_group and child not in subtitle_group]
+        root_element.children = [child for child in root_element.children if child not in mark_group and child not in legend_group and child not in x_axis_group and child not in y_axis_group and child not in title_group and child not in subtitle_group and child not in description_group]
         
         images = []
         for element in root_element.children:
             if self.if_image(element):
                 images.append(element)
+            if element.tag == 'g':
+                for child in element.children:
+                    if self.if_image(child):
+                        images.append(child)
         bounding_boxes['images'] = [image.get_bounding_box().format() for image in images]
         for image in bounding_boxes['images']:
             image['minx'] += shift_x
@@ -348,7 +366,10 @@ class SVGOptimizer(SVGProcessor):
         svg_str = SVGTreeConverter.element_tree_to_svg(element_tree)
         background_color = additional_configs['background_config']['color']
         svg_str = f"<rect width=\"100%\" height=\"100%\" fill=\"{background_color}\"/>\n" + svg_str
+        if defs:
+            svg_str = svg_str + defs
         svg_str = svg_left + svg_str + svg_right
+        # print("bounding_boxes: ", bounding_boxes)
         return svg_str, bounding_boxes
         # # return svg
         # # 解析SVG为树结构
@@ -491,6 +512,7 @@ class SVGOptimizer(SVGProcessor):
              'role-scope' in element.attributes.get('class', '')) and \
             ('graphics-object' in element.attributes.get('role', '')  or \
                 'graphics-symbol' in element.attributes.get('role', '')) 
+            
             # and \
             # 'mark container' in element.attributes.get('aria-roledescription', '')
             
@@ -512,3 +534,6 @@ class SVGOptimizer(SVGProcessor):
     
     def if_image(self, element: LayoutElement) -> bool:
         return element.tag == 'image'
+
+    def if_description_group(self, element: LayoutElement) -> bool:
+        return 'description' in element.attributes.get('class', '')

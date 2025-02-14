@@ -67,12 +67,87 @@ class LayoutProcessor:
     
     def process(self) -> LayoutElement:
         self.process_layout_template(self.layout_template.root)
+        group = self._createDescriptionGroup()
+        self.layout_template.root.children.append(group)
         return self.layout_template.root
         # return self.process_node(self.layout_tree)
         
     # def process(self) -> LayoutElement:
     #     self._createTitleTextGroup(self.element_tree.layoutStrategy.title)
     #     self._createSubtitleTextGroup(self.element_tree.layoutStrategy.subtitle)
+    
+    def _createDescriptionGroup(self) -> LayoutElement:
+        description_group = GroupElement()
+        description_group.attributes['class'] = 'description'
+        # randomly generate a corpus of 100 different words
+        corpus = [
+            "data", "analysis", "visualization", "chart", "graph", "trend", "insight", "pattern",
+            "statistics", "information", "research", "study", "report", "finding", "metric",
+            "measure", "indicator", "value", "number", "quantity", "comparison", "correlation",
+            "distribution", "variable", "factor", "dimension", "category", "group", "segment",
+            "series", "time", "period", "interval", "range", "scale", "axis", "label", "title",
+            "legend", "annotation", "description", "detail", "summary", "overview", "highlight",
+            "focus", "emphasis", "key", "main", "primary", "secondary", "supplementary", "additional",
+            "extra", "other", "alternative", "option", "choice", "selection", "filter", "subset",
+            "sample", "population", "total", "sum", "average", "mean", "median", "mode", "variance",
+            "deviation", "spread", "dispersion", "cluster", "group", "segment", "section", "part",
+            "component", "element", "item", "unit", "piece", "fraction", "percentage", "ratio",
+            "proportion", "rate", "frequency", "occurrence", "instance", "case", "example",
+            "illustration", "demonstration", "proof", "evidence", "support", "basis", "foundation",
+            "source", "reference", "citation", "quote", "excerpt", "extract", "fragment", "portion"
+        ]
+        # 从这些句子中随机选出30-50个词，组成多行句子，每行单词数6-10个
+        text_sequence = []
+        random.shuffle(corpus)
+        words_count = random.randint(30, 50)
+        text_sequence = corpus[:words_count]
+        # for i in range(30, 50):
+        #     text_sequence.append(corpus[:i])
+        # 将text_sequence中的句子随机打乱
+        # random.shuffle(text_sequence)
+        sentences = []
+        # 随机确定每行单词数
+        while len(text_sequence) > 0:
+            # 随机确定每行单词数
+            line_length = random.randint(6, 10)
+            line_length = min(line_length, len(text_sequence))
+            # 从text_sequence中随机选出line_length个单词
+            # line = text_sequence.pop(line_length)
+            line = text_sequence[:line_length]
+            # 合并成一个字符串，用空格分割
+            sentence = ' '.join(line)
+            sentences.append(sentence)
+            text_sequence = text_sequence[line_length:]
+        # 字体大小从8-16之间随机选择
+        font_size = random.randint(8, 10)
+        # 随机确定字体颜色
+        color = random.choice(["#000000", "#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#FF00FF", "#00FFFF"])
+        # 随机确定字体
+        font = random.choice(["sans-serif", "serif", "monospace"])
+        # 随机确定字体粗细
+        font_weight = random.choice(["normal", "bold"])
+        # 随机确定字体倾斜
+        font_style = random.choice(["normal", "italic"])
+        
+        
+        # 随机选择x,y
+        x = random.randint(0, 300)
+        y = random.randint(0, 300)
+        for sentence in sentences:
+            text = Text(sentence)
+            text.attributes = {
+                'font-size': font_size,
+                'color': color,
+                'font-family': font,
+            }
+            text.attributes['x'] = x
+            text.attributes['y'] = y
+            description_group.children.append(text)
+            # x += text.get_bounding_box().width
+            print("text: ", sentence)
+            print("text: ", text.get_bounding_box().format())
+            y += text.get_bounding_box().height
+        return description_group
         
     def dict_to_layout_strategy(self, layout_strategy: dict) -> LayoutStrategy:
         ret_layout_strategy = None
@@ -86,7 +161,7 @@ class LayoutProcessor:
         return ret_layout_strategy
     
     def process_layout_template(self, element: LayoutElement):
-        # print("element: ", element.tag, element.id)
+        print("element: ", element.tag, element.id)
         time_start = time.time()
         if element.tag == 'g':
             if element.id == 'title':

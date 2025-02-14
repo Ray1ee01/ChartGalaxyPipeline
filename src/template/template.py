@@ -156,9 +156,11 @@ class TemplateFactory:
             chart_template.x_axis.has_domain = chart_component.get('x_axis', {}).get('has_domain', True)
             chart_template.x_axis.has_label = chart_component.get('x_axis', {}).get('has_label', True)
             chart_template.x_axis.has_tick = chart_component.get('x_axis', {}).get('has_tick', True)
+            chart_template.x_axis.has_title = chart_component.get('x_axis', {}).get('has_title', True)
             chart_template.y_axis.has_domain = chart_component.get('y_axis', {}).get('has_domain', True)
             chart_template.y_axis.has_tick = chart_component.get('y_axis', {}).get('has_tick', True)
             chart_template.y_axis.has_label = chart_component.get('y_axis', {}).get('has_label', True)
+            chart_template.y_axis.has_title = chart_component.get('y_axis', {}).get('has_title', True)
         return chart_template, layout_template
     
     @staticmethod

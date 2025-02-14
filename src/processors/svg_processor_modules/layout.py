@@ -108,6 +108,10 @@ class VerticalLayoutStrategy(LayoutStrategy):
         reference_element_bounding_box = reference_element._bounding_box
         layout_element_bounding_box = layout_element._bounding_box
         
+        print('layout')
+        print("reference_element_bounding_box: ", reference_element_bounding_box)
+        print("layout_element_bounding_box: ", layout_element_bounding_box)
+        
         baseline_x = 0
         baseline_y = 0
         
@@ -141,7 +145,11 @@ class VerticalLayoutStrategy(LayoutStrategy):
         layout_element._bounding_box.maxx += move_x
         layout_element._bounding_box.miny += move_y
         layout_element._bounding_box.maxy += move_y
-        
+        print("self.alignment: ", self.alignment)
+        print("self.direction: ", self.direction)
+        print("self.padding: ", self.padding)
+        print("self.offset: ", self.offset)
+        print("layout_element._bounding_box: ", layout_element._bounding_box)
         if layout_element.tag=='g':
             for child in layout_element.children:
                 if child._bounding_box is None:
@@ -871,6 +879,8 @@ class Edge:
         return f"Edge(source={self.source.value.tag}, target={self.target.value.tag}, value={self.value.name})"
     
     def process_layout(self):
+        if self.target.value._bounding_box == None:
+            self.target.value._bounding_box = self.target.value.get_bounding_box()
         old_node_min_x = float(self.target.value._bounding_box.minx)
         old_node_min_y = float(self.target.value._bounding_box.miny)
         if isinstance(self.value, LayoutStrategy):

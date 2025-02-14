@@ -39,11 +39,21 @@ class JSONDataProcessor(DataProcessor):
         return data
 
 class VizNetDataProcessor(DataProcessor):
-    def process(self, raw_data: str, layout_sequence: List[str], chart_image_sequence: List[str]) -> List[Dict]:
+    def process(self, raw_data: str, layout_sequence: List[str], chart_image_sequence: List[str], matcher: CLIPMatcher) -> List[Dict]:
 
         dataloader = VizNetDataLoader()
-        df, raw_meta_data = dataloader.load(raw_data)
+        number = raw_data.split('_')[-1]
         
+        # df, raw_meta_data = dataloader.load(raw_data)
+        df, raw_meta_data = dataloader.load(number)
+        print(df, raw_meta_data)
+        
+        _,__ = GPTChartExtractor().extract(df, options={
+            "x_type": "categorical",
+            "y_type": "numerical",
+            "group_by": "categorical",
+            "y2_type": "numerical",
+        })
         chart_extractor = HAIChartExtractor()
         data, meta_data = chart_extractor.extract(df)
         meta_data.update(raw_meta_data)
@@ -70,8 +80,9 @@ class VizNetDataProcessor(DataProcessor):
 
         # 6. get chart relevant icons
         time_start = time.time()
-        matcher = CLIPMatcher()  # 只创建一次CLIPMatcher实例
-        icon_pool = get_icon_pool(chart_data, topic_data, matcher)
+        # matcher = CLIPMatcher()  # 只创建一次CLIPMatcher实例
+        
+        # icon_pool = get_icon_pool(chart_data, topic_data, matcher)
         with open('./src/processors/style_design_modules/image_paths.json') as f:
             image_paths = json.load(f)
         default_image_path = '/data1/jiashu/ChartPipeline/src/processors/style_design_modules/default.png'
@@ -159,6 +170,7 @@ class Chart2TableDataProcessor(DataProcessor):
         time_start = time.time()
         # matcher = CLIPMatcher()  # 只创建一次CLIPMatcher实例
         icon_pool = get_icon_pool(chart_data, topic_data, matcher)
+        
         with open('./src/processors/style_design_modules/image_paths.json') as f:
             image_paths = json.load(f)
         default_image_path = '/data1/jiashu/ChartPipeline/src/processors/style_design_modules/default.png'
@@ -175,8 +187,8 @@ class Chart2TableDataProcessor(DataProcessor):
         result['data_facts'] = data_fact
         result['icons'] = {}
         
-        # icon_selector = IconSelector(icon_pool, topic_color=None, spe_mode='flag')
-        icon_selector = IconSelector(icon_pool, topic_color=None)
+        icon_selector = IconSelector(icon_pool, topic_color=None, spe_mode='flag')
+        # icon_selector = IconSelector(icon_pool, topic_color=None)
         candidate_icons = icon_selector.select(layout_sequence, chart_image_sequence)
         # candidate_icons = [[],[]]
         if isinstance(candidate_icons, tuple):

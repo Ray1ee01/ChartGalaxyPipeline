@@ -1,2 +1,2 @@
 # global attributes
-larger_icon_pool = True
+larger_icon_pool = False

@@ -96,6 +96,6 @@ def get_chart_from_df(df):
         vega_zeros.append(res)
     # from pprint import pprint
     # pprint(vega_zeros)
-    print("vega_zeros: ", vega_zeros)
+    # print("vega_zeros: ", vega_zeros)
     # dict_sorted = haichart.eh_view.items()
     return vega_zeros

@@ -132,6 +132,8 @@ class SVGTreeConverter:
         tag = element_tree.tag
         attrs_list = []
         for key, value in element_tree.attributes.items():
+            if element_tree.tag == 'image' and key == 'clip-path':
+                continue
             attrs_list.append(f'{key}="{value}"')
         # 如果是GroupElement，则添加transform属性
         # if isinstance(element_tree, GroupElement):
@@ -341,6 +343,7 @@ class SVGTreeConverter:
             merged_attributes.update(current_attributes)
             
             for child in node.children:
+                # print("child: ", child.dump())
                 if isinstance(child, GroupElement):
                     # 递归展开子group
                     flattened.extend(flatten_group(child, final_transform, merged_attributes))
@@ -350,9 +353,14 @@ class SVGTreeConverter:
                         continue
                     child_copy = copy.deepcopy(child)
                     # 更新属性
+                    # print("merged_attributes: ", merged_attributes)
+                    # print("child_copy: ", child_copy.tag, child_copy.attributes)
                     for key, value in merged_attributes.items():
+                        # print("key: ", key, "value: ", value)
                         if key not in child_copy.attributes and key != 'transform':
+                            # print("notin")
                             child_copy.attributes[key] = value
+                    # print("child_copy: ", child_copy.tag, child_copy.attributes)
                     # 更新transform
                     if final_transform:
                         child_transform = child_copy.attributes.get('transform', '')
@@ -369,6 +377,13 @@ class SVGTreeConverter:
                 parent_attributes = {}
                 
             if node in groups_to_move.values():
+                # print("node: ", node)
+                # 找到对应的key
+                # for key, value in groups_to_move.items():
+                #     if value == node:
+                #         # print("key: ", key)
+                #         break
+                
                 group_key = list(groups_to_move.keys())[list(groups_to_move.values()).index(node)]
                 # 完全展开该group的子树
                 flattened_children = flatten_group(node, parent_transform, parent_attributes)
@@ -444,3 +459,21 @@ class SVGTreeConverter:
         if 'background' in element.attributes.get('class', '') or 'foreground' in element.attributes.get('class', ''):
             return True
         return False
+    
+    @staticmethod
+    def defs_to_svg(defs: Dict[str, Any]) -> str:
+        def parse_defs(defs: Dict[str, Any]) -> str:
+            defs_str = f'<{defs["tag"]} '
+            for key, value in defs['attributes'].items():
+                defs_str += f'{key}="{value}"'
+            defs_str += '>'
+            for child in defs['children']:
+                defs_str += parse_defs(child)
+            defs_str += f'</{defs["tag"]}>'
+            return defs_str
+        
+        defs_str = parse_defs(defs)
+        print("defs_str: ", defs_str)
+        return defs_str
+    
+    

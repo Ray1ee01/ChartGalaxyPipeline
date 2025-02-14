@@ -48,12 +48,13 @@ class BarChartTemplate(ChartTemplate):
         """更新规范"""
         encoding = specification["encoding"]
         mark_specification = specification["mark"]
-        corner_radiuses = {}
-        for key, value in self.mark.corner_radiuses.items():
-            if value is not None:
-                corner_radiuses[key] = value
-        if corner_radiuses:
-            specification["mark"]["cornerRadius"] = corner_radiuses
+        corner_radius = self.mark.corner_radius
+        # corner_radiuses = {}
+        # for key, value in self.mark.corner_radiuses.items():
+        #     if value is not None:
+        #         corner_radiuses[key] = value
+        if corner_radius:
+            specification["mark"]["cornerRadius"] = corner_radius
 
         
         annotation_specification = {
@@ -160,6 +161,7 @@ class VerticalBarChartConstraint(LayoutConstraint):
         chart_template.x_axis.field_type = "nominal"
         chart_template.y_axis.orientation = "left"
         chart_template.y_axis.field_type = "quantitative"
+        chart_template.mark.orientation = "vertical"
 
 class HorizontalBarChartConstraint(LayoutConstraint):
     """水平柱状图的布局约束"""
@@ -174,7 +176,7 @@ class HorizontalBarChartConstraint(LayoutConstraint):
         chart_template.x_axis.field_type = "nominal"
         chart_template.y_axis.orientation = "top"
         chart_template.y_axis.field_type = "quantitative"
-        
+        chart_template.mark.orientation = "horizontal"
 class GroupBarChartTemplate(BarChartTemplate):
     def __init__(self):
         super().__init__()
@@ -392,10 +394,10 @@ class GroupBarChartConstraint(LayoutConstraint):
         if not self.validate(chart_template):
             raise ValueError("不兼容的图表类型")
         # 随机apply VerticalBarChartConstraint或HorizontalBarChartConstraint        
-        if random.random() < 0.5:
-            VerticalBarChartConstraint().apply(chart_template)
-        else:
-            HorizontalBarChartConstraint().apply(chart_template)
+        # if random.random() < 0.5:
+        VerticalBarChartConstraint().apply(chart_template)
+        # else:
+        #     HorizontalBarChartConstraint().apply(chart_template)
         # chart_template.mark.orientation = "horizontal"
         # chart_template.x_axis.orientation = "left"
         # chart_template.x_axis.field_type = "nominal"
@@ -455,7 +457,8 @@ class BulletChartTemplate(BarChartTemplate):
         range_percentages = [0.6, 0.8]
         for item in self.data:
             item['ranges'] = [y_data_max*(range_percentages[0] + random.random()), y_data_max*(range_percentages[1] + random.random()),1]
-        
+        # replace 'x_data' and 'y_data' in self.data 
+        specification["data"]["values"] = self.data
         specification["facet"] = {
             "row": {
                 "field": self.x_axis.field,
@@ -529,11 +532,12 @@ class BulletChartConstraint(LayoutConstraint):
     def apply(self, chart_template: ChartTemplate) -> None:
         if not self.validate(chart_template):
             raise ValueError("不兼容的图表类型")
-        # # 随机apply VerticalBarChartConstraint或HorizontalBarChartConstraint        
+        HorizontalBarChartConstraint().apply(chart_template)
+        
+        # # 随机apply VerticalBarChartConstraint或HorizontalBarChartConstraint
         # if random.random() < 0.5:
         #     VerticalBarChartConstraint().apply(chart_template)
         # else:
-        #     HorizontalBarChartConstraint().apply(chart_template)
 
 class RadialBarChartTemplate(BarChartTemplate):
     def __init__(self):

@@ -30,8 +30,10 @@ class VegaLiteGenerator(ChartGenerator):
         # 标记配置
         mark_specification = {
             "type": self.template.mark.type,
-            "height": {"band": self.template.mark.height} if self.template.mark.height else None,
-            "width": {"band": self.template.mark.width} if self.template.mark.width else None
+            # "height": {"band": self.template.mark.height} if self.template.mark.height else None,
+            # "width": {"band": self.template.mark.width} if self.template.mark.width else None
+            # "width": 
+            "height": 10,
         }
 
         # 如果是饼图类型
@@ -91,8 +93,10 @@ class VegaLiteGenerator(ChartGenerator):
                 axis_config["labels"] = self.template.x_axis.has_label
             if self.template.x_axis.has_tick is not None:
                 axis_config["ticks"] = self.template.x_axis.has_tick
-            if self.template.x_axis.title_text is not None:
+            if self.template.x_axis.title_text is not None and self.template.x_axis.has_title is True:
                 axis_config["title"] = self.template.x_axis.title_text
+            else:
+                axis_config["title"] = None
             if self.template.x_axis.title_color_style.color is not None:
                 axis_config["titleColor"] = self.template.x_axis.title_color_style.color
             if self.template.x_axis.title_font_style.font_size is not None:
@@ -137,8 +141,10 @@ class VegaLiteGenerator(ChartGenerator):
                 axis_config["labels"] = self.template.y_axis.has_label
             if self.template.y_axis.has_tick is not None:
                 axis_config["ticks"] = self.template.y_axis.has_tick
-            if self.template.y_axis.title_text is not None:
+            if self.template.y_axis.title_text is not None and self.template.y_axis.has_title is True:
                 axis_config["title"] = self.template.y_axis.title_text
+            else:
+                axis_config["title"] = None
             if self.template.y_axis.title_color_style.color is not None:
                 axis_config["titleColor"] = self.template.y_axis.title_color_style.color
             if self.template.y_axis.title_font_style.font_size is not None:
@@ -182,7 +188,10 @@ class VegaLiteGenerator(ChartGenerator):
                 color_encoding["scale"] = scale
 
             # 不显示图例
-            color_encoding["legend"] = {"title": None}
+            # orients = ["left", "right", "top", "bottom", "top-left", "top-right", "bottom-left", "bottom-right"]
+            # orients = ["top", "bottom", "left", "right"]
+            orients = ["top"]
+            color_encoding["legend"] = {"title": None, "orient": orients[random.randint(0, len(orients) - 1)]}
             if self.template.color_encoding.show_legend is False:
                 color_encoding["legend"] = None
             encoding["color"] = color_encoding
@@ -205,7 +214,14 @@ class VegaLiteGenerator(ChartGenerator):
 
         specification["encoding"] = encoding
         specification["mark"] = mark_specification
-        # specification = self.template.update_specification(specification)
+        specification = self.template.update_specification(specification)
+        
+        if self.template.step is not 0:
+            specification["config"]["view"]["step"] = self.template.step
+        if self.template.height is not 0:
+            specification["config"]["view"]["height"] = self.template.height
+        if self.template.width is not 0:
+            specification["config"]["view"]["width"] = self.template.width
         
         
         # print('orientation: ', self.template.mark.orientation)

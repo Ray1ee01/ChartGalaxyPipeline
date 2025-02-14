@@ -29,6 +29,7 @@ def extract_palette(topic_data, cache_dir, image_root, image_paths, default_imag
             print('Image not found: {}'.format(info))
     if sel_image_path is None:
         sel_image_path = default_image_path
+    print("sel_image_path: ", sel_image_path)
     # 8. get color palette from the image TODO color range
     palettes = get_palette(7, True, sel_image_path)
     return palettes

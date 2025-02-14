@@ -10,6 +10,13 @@ import base64
 import requests
 import mimetypes
 from urllib.parse import urlparse
+from PIL import Image as PILImage
+from io import BytesIO
+# from ..image_processor import ImageProcessor
+import pytesseract
+import time
+import cairosvg
+
 
 node_bridge = NodeBridge()
 
@@ -102,6 +109,7 @@ class LayoutElement(ABC):
         return self._bounding_box
     
     def update_pos(self, old_min_x: float, old_min_y: float):
+        # print("self.tag: ", self.tag, "self.bounding_box: ", self._bounding_box)
         if 'x' in self.attributes:
             self.attributes['x'] += self._bounding_box.minx - old_min_x
         else:
@@ -309,6 +317,7 @@ class LayoutElement(ABC):
         if self.attributes:
             info.append(f"{prefix}  Attributes:")
             for key, value in self.attributes.items():
+                if key == 'xlink:href':continue 
                 info.append(f"{prefix}    {key}: {value}")
         
         # 特定元素的额外属性
@@ -366,10 +375,6 @@ class GroupElement(LayoutElement):
         child_bboxes = []
         for child in self.children:
             child_bbox = child.get_bounding_box()
-            # if child._bounding_box:
-            #     child_bbox = child._bounding_box
-            # else:
-            #     child_bbox = child.get_bounding_box()
             child._bounding_box = child_bbox
             if child_bbox and child_bbox.width > 0 and child_bbox.height > 0:
                 if transform:
@@ -447,7 +452,7 @@ class Image(AtomElement):
         self.tag = 'image'
         self.original_width = 0
         self.original_height = 0
-    
+        
     @staticmethod
     def _getImageAsBase64(image_url: str) -> Optional[str]:
         """将图片转换为base64编码
@@ -491,12 +496,18 @@ class Image(AtomElement):
     
     @staticmethod
     def get_image_size(image_url: str) -> Tuple[int, int]:
+        # print(f"image_url: {image_url}")
         """获取图片尺寸"""
         try:
             # 检查是否已经是base64编码
             if image_url.startswith('data:'):
-                return image_url
-            
+                # 从base64编码中提取图片数据
+                image_data = base64.b64decode(image_url.split(',')[1])
+                # 使用PIL获取图片尺寸
+                img = PILImage.open(BytesIO(image_data))
+                width, height = img.size
+                # print(f"width: {width}, height: {height}")
+                return width, height
             # 判断是URL还是本地文件
             parsed = urlparse(image_url)
             is_url = bool(parsed.scheme and parsed.netloc)
@@ -526,11 +537,27 @@ class Image(AtomElement):
             return None
         
     def get_bounding_box(self) -> BoundingBox:
+        if self.base64:
+            if self.original_width == 0 and self.original_height == 0:
+                img = PILImage.open(BytesIO(base64.b64decode(self.base64.split(',')[1])))
+                self.original_width, self.original_height = img.size
+            self.aspect_ratio = self.original_width / self.original_height
+            # print(f"self.aspect_ratio: {self.aspect_ratio}")
+        if self.attributes.get('preserveAspectRatio', 'None') == 'None':
+            width = float(self.attributes.get('width', 50))
+            height = float(self.attributes.get('height', 50))
+        else:
+            set_width = float(self.attributes.get('width', 50))
+            set_height = float(self.attributes.get('height', 50))
+            # 计算缩放比例,取较小值以保持横纵比
+            scale = min(set_width / self.original_width, set_height / self.original_height)
+            # 按比例计算实际宽高
+            width = self.original_width * scale
+            height = self.original_height * scale
+            
         transform = self.get_transform_matrix
         x = float(self.attributes.get('x', 0))
         y = float(self.attributes.get('y', 0))
-        width = float(self.attributes.get('width', 50))
-        height = float(self.attributes.get('height', 50))
         min_x = x
         min_y = y
         max_x = x + width
@@ -549,7 +576,7 @@ class Image(AtomElement):
 
             
     def _dump_extra_info(self) -> List[str]:
-        return [f"Base64: {self.base64[:30]}..." if self.base64 else "Base64: <empty>"]
+        return [""]
 
 class Text(AtomElement):
     """文本元素"""
@@ -560,34 +587,131 @@ class Text(AtomElement):
     
     @staticmethod
     def _measure_text(text: str, font_size: float, anchor: str = 'left top') -> Dict[str, float]:
-        data = {
-            'text': text,
-            'fontSize': font_size,
-            'anchor': anchor
-        }
-        # 读取char_sizes_dict.json
-        char_sizes_dict = json.load(open('/data1/liduan/generation/chart/chart_pipeline/src/processors/svg_processor_modules/text_tool/char_sizes_dict.json'))
-        width = 0
-        height = 0
-        ascent = 0
-        descent = 0
-        for char in text:
-            if char in char_sizes_dict:
-                width += char_sizes_dict[char]['width'] * font_size
-                height = max(height, char_sizes_dict[char]['height'] * font_size)
-                ascent = max(ascent, char_sizes_dict[char]['ascent'] * font_size)
-                descent = min(descent, char_sizes_dict[char]['descent'] * font_size)
-            else:
-                width += char_sizes_dict['a']['width'] * font_size
-                height = max(height, char_sizes_dict['a']['height'] * font_size)
-                ascent = max(ascent, char_sizes_dict['a']['ascent'] * font_size)
-                descent = min(descent, char_sizes_dict['a']['descent'] * font_size)
-        return {
-            'width': width,
-            'height': height,
-            'ascent': ascent,
-            'descent': descent
-        }
+        
+        def merge_bounding_boxes(bounding_boxes):
+            """合并所有有实际文字内容的boundingbox"""
+            min_x = min(box['x'] for box in bounding_boxes)
+            min_y = min(box['y'] for box in bounding_boxes)
+            max_x = max(box['x'] + box['width'] for box in bounding_boxes)
+            max_y = max(box['y'] + box['height'] for box in bounding_boxes)
+            ascent = max(box['ascent'] for box in bounding_boxes)   
+            descent = min(box['descent'] for box in bounding_boxes)
+            return {
+                'x': min_x,
+                'y': min_y,
+                'width': max_x - min_x,
+                'height': max_y - min_y,
+                'ascent': ascent,
+                'descent': descent
+            }
+        try:
+            # 创建SVG内容
+            svg_content = f"""
+            <svg xmlns="http://www.w3.org/2000/svg" width="400" height="400">
+                <text x="0" y="{font_size}" font-size="{font_size}">{text}</text>
+            </svg>
+            """
+            # print(f"text: {text}, font_size: {font_size}")
+            time_stamp = time.time()
+            svg_path = f'text_{time_stamp}.svg'
+            with open(svg_path, 'w') as f:
+                f.write(svg_content)
+            # 转换为PNG
+            png_path = svg_path.replace('.svg', '.png')
+            cairosvg.svg2png(url=svg_path, write_to=png_path)
+            
+            # OCR识别
+            img = PILImage.open(png_path)
+            result = pytesseract.image_to_data(img, output_type=pytesseract.Output.DICT)
+            # print("result: ", result)
+            # 删除临时文件
+            os.remove(svg_path)
+            os.remove(png_path)
+            
+            # print(f"result: {result}")
+            # 把所有有实际文字内容的boundingbox合并
+            bounding_boxes = []
+            for i in range(len(result['text'])):
+                if result['text'][i]:
+                    bounding_boxes.append({
+                        'x': result['left'][i],
+                        'y': result['top'][i],
+                        'width': result['width'][i],
+                        'height': result['height'][i],
+                        'ascent': result['height'][i],
+                        'descent': result['height'][i]
+                    })
+            # 合并boundingbox
+            merged_bounding_box = merge_bounding_boxes(bounding_boxes)
+            width = merged_bounding_box['width']
+            height = merged_bounding_box['height']
+            ascent = merged_bounding_box['ascent']
+            descent = merged_bounding_box['descent']
+            return {
+                'width': width,
+                'height': height,
+                'ascent': ascent,
+                'descent': descent
+            }
+        except Exception as e:
+            print(f"测量文本时出错: {e}")
+            char_sizes_dict = json.load(open('/data1/liduan/generation/chart/chart_pipeline/src/processors/svg_processor_modules/text_tool/char_sizes_dict.json'))
+            width = 0
+            height = 0
+            ascent = 0
+            descent = 0
+            for char in text:
+                if char in char_sizes_dict:
+                    width += char_sizes_dict[char]['width'] * font_size
+                    height = max(height, char_sizes_dict[char]['height'] * font_size)
+                    ascent = max(ascent, char_sizes_dict[char]['ascent'] * font_size)
+                    descent = min(descent, char_sizes_dict[char]['descent'] * font_size)
+                else:
+                    width += char_sizes_dict['a']['width'] * font_size
+                    height = max(height, char_sizes_dict['a']['height'] * font_size)
+                    ascent = max(ascent, char_sizes_dict['a']['ascent'] * font_size)
+                    descent = min(descent, char_sizes_dict['a']['descent'] * font_size)
+            return {
+                'width': width,
+                'height': height,
+                'ascent': ascent,
+                'descent': descent
+            }
+        #     print(f"测量文本时出错: {e}")
+        #     return {
+        #         'width': 0,
+        #         'height': 0,
+        #         'ascent': 0,
+        #         'descent': 0
+        #     }
+        # data = {
+        #     'text': text,
+        #     'fontSize': font_size,
+        #     'anchor': anchor
+        # }
+        # # 读取char_sizes_dict.json
+        # char_sizes_dict = json.load(open('/data1/liduan/generation/chart/chart_pipeline/src/processors/svg_processor_modules/text_tool/char_sizes_dict.json'))
+        # width = 0
+        # height = 0
+        # ascent = 0
+        # descent = 0
+        # for char in text:
+        #     if char in char_sizes_dict:
+        #         width += char_sizes_dict[char]['width'] * font_size
+        #         height = max(height, char_sizes_dict[char]['height'] * font_size)
+        #         ascent = max(ascent, char_sizes_dict[char]['ascent'] * font_size)
+        #         descent = min(descent, char_sizes_dict[char]['descent'] * font_size)
+        #     else:
+        #         width += char_sizes_dict['a']['width'] * font_size
+        #         height = max(height, char_sizes_dict['a']['height'] * font_size)
+        #         ascent = max(ascent, char_sizes_dict['a']['ascent'] * font_size)
+        #         descent = min(descent, char_sizes_dict['a']['descent'] * font_size)
+        # return {
+        #     'width': width,
+        #     'height': height,
+        #     'ascent': ascent,
+        #     'descent': descent
+        # }
         
         # """使用Node.js的TextToSVG库测量文本尺寸"""
         # try:
@@ -686,7 +810,7 @@ class Text(AtomElement):
             x -= width / 2
         elif text_anchor == 'end':
             x -= width
-            
+        # print("metrics: ", metrics)
         x += dx
         y += dy - metrics['ascent']
         
@@ -696,7 +820,7 @@ class Text(AtomElement):
         max_y = y + height
         # print('text: ', self.content)
         # print('bounding_box: ', height, width)
-        
+        # print("min_x: ", min_x, "min_y: ", min_y, "max_x: ", max_x, "max_y: ", max_y)
         if transform:
             if isinstance(transform, list) and len(transform) == 2:
                 # 如果是两个矩阵,进行两次变换
@@ -1002,6 +1126,64 @@ class Path(Graphical):
                 
                 current_x = points[4]
                 current_y = points[5]
+            elif command == 'A':  # 弧形命令
+                # A命令的参数: rx ry x-axis-rotation large-arc-flag sweep-flag x y
+                rx, ry = points[0], points[1]
+                angle = math.radians(points[2])  # 转换为弧度
+                large_arc_flag = points[3]
+                sweep_flag = points[4]
+                end_x, end_y = points[5], points[6]
+                
+                # 计算圆心
+                # 步骤1: 将终点相对于起点进行旋转，使x轴旋转角度为0
+                cos_angle = math.cos(-angle)
+                sin_angle = math.sin(-angle)
+                
+                # 将终点坐标转换到起点坐标系
+                rel_x = end_x - current_x
+                rel_y = end_y - current_y
+                
+                # 应用旋转
+                x1 = rel_x * cos_angle - rel_y * sin_angle
+                y1 = rel_x * sin_angle + rel_y * cos_angle
+                
+                # 步骤2: 计算圆心
+                rx_sq = rx * rx
+                ry_sq = ry * ry
+                x1_sq = x1 * x1
+                y1_sq = y1 * y1
+                
+                # 根据椭圆方程计算圆心
+                radical = max(0, (rx_sq * ry_sq - rx_sq * y1_sq - ry_sq * x1_sq) / (rx_sq * y1_sq + ry_sq * x1_sq))
+                multiplier = (-1 if large_arc_flag == sweep_flag else 1) * math.sqrt(radical)
+                
+                cx1 = multiplier * (rx * y1 / ry)
+                cy1 = multiplier * (-ry * x1 / rx)
+                
+                # 步骤3: 将圆心转回原始坐标系
+                cx = cos_angle * cx1 - sin_angle * cy1 + (current_x + end_x) / 2
+                cy = sin_angle * cx1 + cos_angle * cy1 + (current_y + end_y) / 2
+                
+                # 计算边界框
+                # 由于旋转，我们需要检查椭圆在0°、90°、180°、270°的点
+                angles = [0, math.pi/2, math.pi, math.pi*3/2]
+                for t in angles:
+                    # 计算椭圆上的点
+                    x = cx + rx * math.cos(t) * cos_angle - ry * math.sin(t) * sin_angle
+                    y = cy + rx * math.cos(t) * sin_angle + ry * math.sin(t) * cos_angle
+                    minX = min(minX, x)
+                    minY = min(minY, y)
+                    maxX = max(maxX, x)
+                    maxY = max(maxY, y)
+                
+                # 确保起点和终点也包含在边界框内
+                minX = min(minX, current_x, end_x)
+                minY = min(minY, current_y, end_y)
+                maxX = max(maxX, current_x, end_x)
+                maxY = max(maxY, current_y, end_y)
+                
+                current_x = end_x
+                current_y = end_y
         
         return coordinates
     def get_bounding_box(self) -> BoundingBox:
@@ -1054,6 +1236,64 @@ class Path(Graphical):
                     maxY = max(maxY, y)
                 current_x = points[-2]
                 current_y = points[-1]
+            elif command == 'A':
+                # A命令的参数: rx ry x-axis-rotation large-arc-flag sweep-flag x y
+                rx, ry = points[0], points[1]
+                x_axis_rotation = points[2]
+                large_arc_flag = points[3]
+                sweep_flag = points[4]
+                end_x, end_y = points[5], points[6]
+                
+                # 计算圆心
+                # 步骤1: 将终点相对于起点进行旋转，使x轴旋转角度为0
+                cos_angle = math.cos(-x_axis_rotation * math.pi / 180)
+                sin_angle = math.sin(-x_axis_rotation * math.pi / 180)
+                
+                # 将终点坐标转换到起点坐标系
+                rel_x = end_x - current_x
+                rel_y = end_y - current_y
+                
+                # 应用旋转
+                x1 = rel_x * cos_angle - rel_y * sin_angle
+                y1 = rel_x * sin_angle + rel_y * cos_angle
+                
+                # 步骤2: 计算圆心
+                rx_sq = rx * rx
+                ry_sq = ry * ry
+                x1_sq = x1 * x1
+                y1_sq = y1 * y1
+                
+                # 根据椭圆方程计算圆心
+                radical = max(0, (rx_sq * ry_sq - rx_sq * y1_sq - ry_sq * x1_sq) / (rx_sq * y1_sq + ry_sq * x1_sq))
+                multiplier = (-1 if large_arc_flag == sweep_flag else 1) * math.sqrt(radical)
+                
+                cx1 = multiplier * (rx * y1 / ry)
+                cy1 = multiplier * (-ry * x1 / rx)
+                
+                # 步骤3: 将圆心转回原始坐标系
+                cx = cos_angle * cx1 - sin_angle * cy1 + (current_x + end_x) / 2
+                cy = sin_angle * cx1 + cos_angle * cy1 + (current_y + end_y) / 2
+                
+                # 计算边界框
+                # 由于旋转，我们需要检查椭圆在0°、90°、180°、270°的点
+                angles = [0, math.pi/2, math.pi, math.pi*3/2]
+                for t in angles:
+                    # 计算椭圆上的点
+                    x = cx + rx * math.cos(t) * cos_angle - ry * math.sin(t) * sin_angle
+                    y = cy + rx * math.cos(t) * sin_angle + ry * math.sin(t) * cos_angle
+                    minX = min(minX, x)
+                    minY = min(minY, y)
+                    maxX = max(maxX, x)
+                    maxY = max(maxY, y)
+                
+                # 确保起点和终点也包含在边界框内
+                minX = min(minX, current_x, end_x)
+                minY = min(minY, current_y, end_y)
+                maxX = max(maxX, current_x, end_x)
+                maxY = max(maxY, current_y, end_y)
+                
+                current_x = end_x
+                current_y = end_y
         
         # 处理变换
         transform = self.get_transform_matrix
@@ -1297,6 +1537,14 @@ class Path(Graphical):
             y = (1-t)**3 * p0[1] + 3*(1-t)**2 * t * p1[1] + 3*(1-t) * t**2 * p2[1] + t**3 * p3[1]
             points.append((x, y))
         return points
+    
+    def _is_rect(self) -> bool:
+        """判断是否为矩形"""
+        # 如果 params里只有M/m, H/h, V/v, Z/z则返回True
+        # 如果 params里有L/l 或者 C/c 则返回False
+        if re.match(r'^L.*C.*$', self.params):
+            return False
+        return True
     
     def _dump_extra_info(self) -> List[str]:
         return [f"Path params: {self.params[:30]}..." if self.params else "Path params: <empty>"]

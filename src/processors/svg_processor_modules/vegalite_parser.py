@@ -8,7 +8,7 @@ from .elements import *
 from .layout import *
 import random
 from ..image_processor import ImageProcessor
-
+from .overlay_processor import OverlayProcessor
 class VegaLiteParser():
     def __init__(self, svg: str, additional_configs: Dict):
         self.svg = svg
@@ -22,6 +22,9 @@ class VegaLiteParser():
         self.y_axis_label_group = None
         self.in_x_axis_flag = False
         self.in_y_axis_flag = False
+        self.in_legend_flag = False
+        self.in_mark_group_flag = False
+        self.mark_data_map = {}
         
     def parse(self) -> dict:
         # 解析SVG为树结构
@@ -29,7 +32,7 @@ class VegaLiteParser():
         self.svg = re.sub(r'<style[^>]*>.*?</style>', '', self.svg)
         # print("self.svg: ", self.svg)
         svg_tree = self.parseTree(self.svg)
-        
+        print("svg_tree: ", svg_tree)
         self.svg_root = {
             'tag': 'svg',
             'attributes': svg_tree['attributes'],
@@ -49,9 +52,116 @@ class VegaLiteParser():
         }
         for i, mark_group in enumerate(self.all_mark_groups):
             group_to_flatten[f'mark_group_{i}'] = mark_group
+        print("all_mark_groups: ", self.all_mark_groups)
+        
+        def find_element_with_aria_label(element):
+                if 'aria-label' in element.attributes:
+                    return element
+                if hasattr(element, 'children'):
+                    for child in element.children:
+                        found = find_element_with_aria_label(child)
+                        if found:
+                            return found
+                return None
+        
+        for mark_group in self.all_mark_groups:
+            for element in mark_group.children:
+                element_with_data = find_element_with_aria_label(element)
+                if element_with_data:
+                    self._bind_data_to_mark(element_with_data)
+        print("mark_data_map: ", self.mark_data_map)
+        icon_urls = self.additional_configs['x_data_multi_url']
+        self.value_icon_map = {}
+        self.value_icon_map['x'] = {}
+        self.value_icon_map['y'] = {}
+        self.value_icon_map['group'] = {}
+        for key, value in self.mark_data_map.items():
+            if value['x_value'] is not None:
+                if value['x_value'] not in self.value_icon_map['x']:
+                    self.value_icon_map['x'][value['x_value']] = icon_urls[random.randint(0, len(icon_urls) - 1)]
+            if value['y_value'] is not None:
+                if value['y_value'] not in self.value_icon_map['y']:
+                    self.value_icon_map['y'][value['y_value']] = icon_urls[random.randint(0, len(icon_urls) - 1)]
+            if value['group_value'] is not None:
+                if value['group_value'] not in self.value_icon_map['group']:
+                    self.value_icon_map['group'][value['group_value']] = icon_urls[random.randint(0, len(icon_urls) - 1)]
+            
+            
+            
+        # orient = self.additional_configs['chart_config'].get('orientation', 'horizontal')
+        try:
+            orient = self.additional_configs['chart_template'].mark.orientation
+        except:
+            orient = 'horizontal'
+        
+        directions = ['top', 'bottom', 'left', 'right']
+        sides = ['outside', 'inside', 'half']
+        config = {
+            # 随机选择一个direction
+            # 'direction': random.choice(directions),
+            'direction': 'left',
+            # 随机选择一个side
+            # 'side': random.choice(sides),
+            'side': 'inside',
+            
+            # 随机选择一个padding
+            # 'padding': random.randint(0, 10)
+            'orient': orient
+        }
+        print("config: ", config)
+        
+        
+        def replace_corresponding_element(element, element_to_replace, new_element):
+            if hasattr(element, 'children'):
+                for i, child in enumerate(element.children):
+                    if child == element_to_replace:
+                        element.children[i] = new_element
+                        return True
+                    if replace_corresponding_element(child, element_to_replace, new_element):
+                        return True
+            return False
+        
+        if self.additional_configs['chart_template'].mark.type == 'bar':
+            for i, mark_group in enumerate(self.all_mark_groups):
+                # image_urls = self.additional_configs['x_data_multi_url']
+                # for j, element in enumerate(mark_group.children):
+                for j, element in enumerate(mark_group.children):
+                    element_with_data = find_element_with_aria_label(element)
+                        
+                        # print("element: ", element.dump())
+                    # image_url = image_urls[j]
+                    # try:
+                    #     image_url = self.value_icon_map['group'][self.mark_data_map[element]['group_value']]
+                    # except:
+                    image_url = self.value_icon_map['x'][self.mark_data_map[element_with_data]['x_value']]
+                    base64_image = Image._getImageAsBase64(image_url)
+                    content_type = base64_image.split(';base64,')[0]
+                    base64 = base64_image.split(';base64,')[1]
+                    base64 = ImageProcessor().crop_by_circle(base64)
+                    base64_image = f"{content_type};base64,{base64}"
+                    image_element = Image(base64_image)
+                    image_element.attributes = {
+                        "xlink:href": f"data:{base64_image}"
+                    }
+                    # image_element._bounding_box = image_element.get_bounding_box()
+                    # mark_group.children[j] = image_element
+                    overlay_processor = OverlayProcessor(element_with_data, image_element, config)
+                    # 用overlay_processor.process()的返回值替换mark_group子树下的element_with_data
+                    replace_corresponding_element(mark_group, element_with_data, overlay_processor.process())
+                    # 随机从1,2,3中取一个
+                    # choice = random.randint(1, 3)
+                    # if choice == 1:
+                    #     mark_group.children[j] = overlay_processor.process()
+                    # elif choice == 2:
+                    #     mark_group.children[j] = overlay_processor.process_replace_single()
+                    # else:
+                    #     mark_group.children[j] = overlay_processor.process_replace_multiple()
+                    # overlay_processor.process_replace_single()
+        
         
         # flattened_elements_tree = SVGTreeConverter.partial_flatten_tree(elements_tree, group_to_flatten)
         flattened_elements_tree, top_level_groups = SVGTreeConverter.move_groups_to_top(elements_tree, group_to_flatten)
+        
         
         # 移除tree中所有class为background的元素
         flattened_elements_tree = SVGTreeConverter.remove_elements_by_class(flattened_elements_tree, 'background')
@@ -69,32 +179,41 @@ class VegaLiteParser():
         mark_annotation_group = top_level_groups['mark_annotation_group']
         # debug: add rect to flattened_elements_tree
         
+
+        
+        
+        
+        
+        
+        
+        
+        
         layout_graph = LayoutGraph()
         
             
-        orientation = self.additional_configs['chart_template'].mark.orientation
-        direction = ""
-        if orientation == "horizontal":
-            axis_orientation = self.additional_configs['chart_template'].x_axis.orientation
-        else:
-            #交换 y_axis_label_group 和 x_axis_label_group
-            # y_axis_label_group = x_axis_label_group
-            # x_axis_label_group = y_axis_label_group
-            x_axis_label_group, y_axis_label_group = y_axis_label_group, x_axis_label_group
-            x_axis_group, y_axis_group = y_axis_group, x_axis_group
-            axis_orientation = self.additional_configs['chart_template'].x_axis.orientation
+        # orientation = self.additional_configs['chart_template'].mark.orientation
+        # direction = ""
+        # if orientation == "horizontal":
+        #     axis_orientation = self.additional_configs['chart_template'].x_axis.orientation
+        # else:
+        #     #交换 y_axis_label_group 和 x_axis_label_group
+        #     # y_axis_label_group = x_axis_label_group
+        #     # x_axis_label_group = y_axis_label_group
+        #     x_axis_label_group, y_axis_label_group = y_axis_label_group, x_axis_label_group
+        #     x_axis_group, y_axis_group = y_axis_group, x_axis_group
+        #     axis_orientation = self.additional_configs['chart_template'].x_axis.orientation
         
-        if axis_orientation == "left":
-            direction = "right"
-        elif axis_orientation == "right":
-            direction = "left"
-        elif axis_orientation == "top":
-            direction = "down"
-        else:
-            direction = "up"
+        # if axis_orientation == "left":
+        #     direction = "right"
+        # elif axis_orientation == "right":
+        #     direction = "left"
+        # elif axis_orientation == "top":
+        #     direction = "down"
+        # else:
+        #     direction = "up"
         
-        sequence = self.additional_configs['chart_composition']['sequence']
-        relative_to_mark = self.additional_configs['chart_composition']['relative_to_mark']
+        # sequence = self.additional_configs['chart_composition']['sequence']
+        # relative_to_mark = self.additional_configs['chart_composition']['relative_to_mark']
         
         # print("mark_group: ", mark_group)
         # print("mark_annotation_group: ", mark_annotation_group)
@@ -122,7 +241,7 @@ class VegaLiteParser():
         #     print("element: ", element)
         #     if element.tag == 'g': print("element: ", element.dump())
         
-        self._traverse_elements_tree(flattened_elements_tree)
+        # self._traverse_elements_tree(flattened_elements_tree)
         
         # element_to_replace = {
         #     'area_mark_group': self.area_mark_group,
@@ -400,9 +519,14 @@ class VegaLiteParser():
         svg_left = f"<svg {attrs_str} xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">"
         svg_right = f"</svg>"
         svg_str = SVGTreeConverter.element_tree_to_svg(flattened_elements_tree)
+        # if self.defs:
+        #     svg_str =  svg_str + SVGTreeConverter.defs_to_svg(self.defs)
         svg_str = svg_left + svg_str + svg_right
-        
-        return svg_str, flattened_elements_tree, layout_graph
+        if self.defs:
+            res_defs = SVGTreeConverter.defs_to_svg(self.defs)
+        else:
+            res_defs = ''
+        return svg_str, flattened_elements_tree, layout_graph, res_defs
     
     def replace_area_mark_with_image(self, father: GroupElement):
         # 首先找到area_mark
@@ -469,10 +593,10 @@ class VegaLiteParser():
         #         'mark-group role-scope' in group.attributes.get('class', '')
     
     
-    def if_legend_group(self, group: LayoutElement) -> bool:
-        return group.tag == 'g' and \
-            'role-legend' in group.attributes.get('class', '') and \
-            'legend' in group.attributes.get('aria-roledescription', '')
+    # def if_legend_group(self, group: LayoutElement) -> bool:
+    #     return group.tag == 'g' and \
+    #         'role-legend' in group.attributes.get('class', '') and \
+    #         'legend' in group.attributes.get('aria-roledescription', '')
                 
     def if_mark_annotation_group(self, group: LayoutElement) -> bool:
         return group.tag == 'g' and \
@@ -496,6 +620,11 @@ class VegaLiteParser():
         return group.tag == 'g' and \
             'mark-text role-axis-label' == group.attributes.get('class', '')
     
+    def if_legend_group(self, group: LayoutElement) -> bool:
+        return group.tag == 'g' and \
+            'role-legend' in group.attributes.get('class', '') and \
+            'legend' in group.attributes.get('aria-roledescription', '')
+    
     # def append_image(self, tree: LayoutElement, image_element: LayoutElement):
     #     tree.children.append(image_element)
         
@@ -505,7 +634,6 @@ class VegaLiteParser():
         # 将SVG字符串解析为XML树
         tree = etree.parse(StringIO(svg), parser)
         root = tree.getroot()
-        
         # 递归解析节点
         return self._parse_node(root)
 
@@ -524,11 +652,15 @@ class VegaLiteParser():
         # 递归处理所有子节点
         for child in node:
             result['children'].append(self._parse_node(child))
-            
+        
+        if result['tag'] == 'defs':
+            self.defs = result
         return result
 
     def _traverse_elements_tree(self, element):
         """递归遍历元素树，识别并设置各种图表组件组"""
+        flag_in_legend = False
+        flag_in_mark_group = False
         # 如果是轴标签组，需要判断是属于x轴还是y轴
         if self.if_axis_label_group(element):
             if self.in_x_axis_flag:
@@ -536,8 +668,16 @@ class VegaLiteParser():
             elif self.in_y_axis_flag:
                 self.y_axis_label_group = element
         # 检查当前元素是否匹配任何特定组
-        if self.if_mark_group(element):
+        if self.if_legend_group(element) and not self.in_legend_flag:
+            self.legend_group = element
+            self.in_legend_flag = True
+            flag_in_legend = True
+            # print("legend_group: ", element.dump())
+        elif self.if_mark_group(element) and not self.in_legend_flag and not self.in_mark_group_flag:
+            # print("mark_group: ", element.dump())
             self.all_mark_groups.append(element)
+            self.in_mark_group_flag = True
+            flag_in_mark_group = True
         elif self.if_mark_annotation_group(element):
             self.mark_annotation_group = element
         elif self.if_x_axis_group(element):
@@ -562,6 +702,37 @@ class VegaLiteParser():
         if hasattr(element, 'children'):
             for child in element.children:
                 self._traverse_elements_tree(child)
+        if flag_in_legend:
+            self.in_legend_flag = False
+        if flag_in_mark_group:
+            self.in_mark_group_flag = False
+        
+    # def _bind_data_to_mark(self, element: LayoutElement):
+    #     # "Unnamed: 1: 67; Label: 2; group: Lorem Ipsum 1"
+    
+    def extract_data_from_aria_label(self, aria_label: str):
+        meta_data = self.additional_configs['meta_data']
+        x_label = meta_data['x_label']
+        y_label = meta_data['y_label']
+        group_label = meta_data.get('group_label', '')
+        
+        group_value = None
+        if x_label in aria_label:
+            x_value = aria_label.split(x_label)[1].split(';')[0].split(':')[1].strip()
+        if y_label in aria_label:
+            y_value = aria_label.split(y_label)[1].split(';')[0].split(':')[1].strip()
+        if group_label is not "" and group_label in aria_label:
+            group_value = aria_label.split(group_label)[1].split(';')[0].split(':')[1].strip()
+            
+        return {
+            'x_value': x_value,
+            'y_value': y_value,
+            'group_value': group_value
+        }
     
     
-    
+    def _bind_data_to_mark(self, element: LayoutElement):
+        aria_label = element.attributes.get('aria-label', '')
+        if aria_label is not "":
+            data = self.extract_data_from_aria_label(aria_label)
+            self.mark_data_map[element] = data

@@ -84,10 +84,10 @@ def delta_h(h1, h2):
 
 def lighter_color(rgb):
     lch = rgb_to_hcl(*rgb)
-    if lch[0] < 70:
-        lch[0] += 10
-    if lch[1] < 60:
-        lch[1] += 10
+    # if lch[0] < 70:
+    lch[0] = min(100, lch[0] + 20)
+    # if lch[1] < 60:
+    lch[1] = min(100, lch[1] + 20)
     lab = colour.LCHab_to_Lab(lch)
     xyz = colour.Lab_to_XYZ(lab)
     rgb = colour.XYZ_to_sRGB(xyz)
@@ -222,7 +222,8 @@ class ColorDesign:
 
         self.basic_colors = [black, white, gray]
         self.basic_colors_hex = [rgb_to_hex(*color) for color in self.basic_colors]
-        self.light = 'high' if random.randint(0, 1) == 0 else 'low'
+        # self.light = 'high' if random.randint(0, 1) == 0 else 'low'
+        self.light='high'
 
     def get_emphasis_color(self, used_colors):
         if isinstance(used_colors[0], str):

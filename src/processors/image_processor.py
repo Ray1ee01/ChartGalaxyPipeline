@@ -8,8 +8,9 @@ from .svg_processor_modules.elements import Path
 class ImageProcessor:
     def __init__(self):
         pass
-
-    def url_to_base64(self, url: str) -> str:
+    
+    @staticmethod
+    def url_to_base64(url: str) -> str:
         """将URL图片转换为base64字符串"""
         if url.startswith(('http://', 'https://')):
             # 网络路径
@@ -22,10 +23,15 @@ class ImageProcessor:
         img.save(buffered, format=img.format)
         return base64.b64encode(buffered.getvalue()).decode()
 
-    def get_width_and_height(self, url: str) -> Tuple[int, int]:
+    # def get_width_and_height(self, url: str) -> Tuple[int, int]:
+    #     """获取图片宽高"""
+    #     response = requests.get(url)
+    #     img = Image.open(io.BytesIO(response.content))
+    #     return img.size
+    @staticmethod
+    def get_width_and_height(base64_str: str) -> Tuple[int, int]:
         """获取图片宽高"""
-        response = requests.get(url)
-        img = Image.open(io.BytesIO(response.content))
+        img = Image.open(io.BytesIO(base64.b64decode(base64_str)))
         return img.size
 
     def resize(self, base64_str: str, width: int, height: int) -> str:
@@ -82,10 +88,10 @@ class ImageProcessor:
         
         # 将裁剪后的图像与原始图像进行按位与操作
         img = Image.composite(img, Image.new('RGBA', img.size, (0, 0, 0, 0)), mask)
-        print("image size: ", img.size)
+        # print("image size: ", img.size)
         # 裁剪后的图片需要进行crop，以保证裁剪后的图片与path的bounding box一致
         img = img.crop((0, 0, path._bounding_box.width*scale_factor, path._bounding_box.height*scale_factor))
-        print("image size after crop: ", img.size)
+        # print("image size after crop: ", img.size)
         buffered = io.BytesIO()
         # 明确指定保存格式为PNG，因为我们需要支持透明度
         img.save(buffered, format='PNG')

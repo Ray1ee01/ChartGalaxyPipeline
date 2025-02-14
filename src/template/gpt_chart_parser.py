@@ -137,7 +137,7 @@ class ChartDesign:
         # return self.extract_bar_ratio()
         # 从0.5-0.95之间随机取一个值
         import random
-        return {"bar_band_ratio": random.uniform(0.5, 0.95)}
+        return {"bar_band_ratio": random.uniform(0.1, 0.95)}
 
 # chart_design = ChartDesign()
 # ratio_info = chart_design.get_bar_ratio()
