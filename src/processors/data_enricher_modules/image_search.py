@@ -11,7 +11,7 @@ search_cache_path = './src/cache/search_cache'
 
 class BaiduImageCrawler:
     # 睡眠时长
-    __time_sleep = 0.1
+    __time_sleep = 0.5
     __amount = 0
     __start_amount = 0
     __counter = 0
@@ -22,7 +22,7 @@ class BaiduImageCrawler:
     
     # 获取图片url内容等
     # t 下载图片时间间隔
-    def __init__(self, t=0.1):
+    def __init__(self, t=0.5):
         self.time_sleep = t
         self.urls = []
     # 获取后缀名
@@ -123,7 +123,7 @@ class BaiduImageCrawler:
                 else:
                     self.save_image(rsp_data, word)
                     pn += self.__per_page
-        print(f"下载结束，下载数量：{self.__counter}")
+        print(f"{word} 下载结束，下载数量{self.__counter}")
         return
 
     def start(self, word, total_page=1, start_page=1, per_page=30):

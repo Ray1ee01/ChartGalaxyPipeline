@@ -29,7 +29,7 @@ class ImageSearchSystem:
                  db_path='image_cache.db',
                  index_path='faiss_index.index',
                  clip_model="ViT-B/32",
-                 threshold=0.25,
+                 threshold=0.30,
                  device=None):
         """
         初始化图像搜索系统
@@ -127,7 +127,7 @@ class ImageSearchSystem:
             return False
     
     def _search(self, text_features, using_template=True):
-        top_k = 10
+        top_k = 2
         all_distances = np.zeros((text_features.shape[0], top_k))
         all_indices = np.zeros((text_features.shape[0], top_k), dtype=np.int64)
         if using_template:
@@ -189,10 +189,16 @@ class ImageSearchSystem:
             else:
                 results = semantic_results
         # 补充爬取新图片
+        re_crawl = 0
         while len(results) == 0:
-            # 认为通过关键词搜索得到的结果一定是语义有效的
+            if re_crawl > 3:
+                results = semantic_results
+                break
             new_images = self._crawl_images(chinese_keyword, num=10)
-            semantic_results = new_images
+            all_distances, semantic_valid_indices = self._search(text_features, using_template=using_template)
+            index = ', '.join(str(i) for i in semantic_valid_indices.flatten())
+            self.cursor.execute(f'SELECT * FROM image_metadata WHERE id IN ({index})')
+            semantic_results = [self._format_result(row) for row in self.cursor.fetchall()]
             if palettes:
                 for semantic_result in semantic_results:
                     colors = semantic_result['colors']
@@ -200,7 +206,7 @@ class ImageSearchSystem:
                         if check_in_palette(color, palettes):
                             results.append(semantic_result)
                             break
-                        
+            re_crawl += 1
             # all_distances, all_indices = self._search(text_features, using_template=using_template)
             # valid_mask = all_distances > self.threshold
             # valid_indices = all_indices[valid_mask]
