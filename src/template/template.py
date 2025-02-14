@@ -737,3 +737,32 @@ class TemplateFactory:
             chart_template.y_axis.has_label = chart_component.get('y_axis', {}).get('has_label', True)
         
         return chart_template, layout_template
+
+    @staticmethod
+    def create_semi_circle_donut_chart_template(
+        data: List[Dict],
+        meta_data: Dict,
+        layout_tree: Dict,
+        chart_composition: Dict,
+        sort_config: Dict,
+        color_template: ColorDesign,
+        chart_component: Dict
+    ):
+        """创建半圆环图模板"""
+        chart_template = SemiCircleDonutChartTemplate(color_template)
+        layout_template = LayoutTemplate()
+        
+        # 使用create_template方法设置模板
+        chart_template.create_template(data, meta_data, color_template)
+
+        # 设置基本mark属性
+        chart_template.mark.radius = 100
+        chart_template.mark.innerRadius = 50
+
+        # 构建布局树
+        layout_template.root = layout_template.build_template_from_tree(layout_tree)
+        
+        # 应用约束
+        layout_template.apply_constraints(chart_template)
+        
+        return chart_template, layout_template

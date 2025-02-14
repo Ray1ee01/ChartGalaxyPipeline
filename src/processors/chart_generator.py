@@ -32,9 +32,9 @@ class VegaLiteGenerator(ChartGenerator):
             "type": self.template.mark.type,
             "height": {"band": self.template.mark.height} if self.template.mark.height else None,
             "width": {"band": self.template.mark.width} if self.template.mark.width else None,
-            "opacity": self.template.mark.opacity,
-            "line": self.template.mark.line,
-            "interpolate": self.template.mark.interpolate
+            "opacity": self.template.mark.opacity if hasattr(self.template.mark, 'opacity') else 1,
+            "line": self.template.mark.line if hasattr(self.template.mark, 'line') else None,
+            "interpolate": self.template.mark.interpolate if hasattr(self.template.mark, 'interpolate') else None,
         }
 
         # 如果是饼图类型
@@ -159,7 +159,7 @@ class VegaLiteGenerator(ChartGenerator):
             axis_config["tickWidth"] = self.template.y_axis.tick_stroke_style.stroke_width
             axis_config["orient"] = self.template.y_axis.orientation
 
-        encoding["y"] = y_encoding
+            encoding["y"] = y_encoding
 
         # 颜色编码配置
         if self.template.color_encoding and self.template.color_encoding.domain is not None:

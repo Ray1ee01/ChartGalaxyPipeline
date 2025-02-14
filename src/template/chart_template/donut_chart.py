@@ -3,6 +3,7 @@ from .base import ChartTemplate, LayoutConstraint
 from ..style_template.base import AxisTemplate, ColorEncodingTemplate, ColorTemplate, StrokeTemplate
 from ..color_template import ColorDesign
 from ..mark_template.pie import PieTemplate
+import pandas as pd
 
 class DonutChartTemplate(ChartTemplate):
     def __init__(self, color_template: ColorDesign = None):
@@ -47,3 +48,75 @@ class DonutChartTemplate(ChartTemplate):
             "theta": self.theta,
             "color": self.color
         }
+
+class SemiCircleDonutChartTemplate(DonutChartTemplate):
+    def __init__(self, color_template: ColorDesign = None):
+        super().__init__(color_template)
+        self.chart_type = "semicircledonut"
+
+    def create_template(self, data: list, meta_data: dict, color_template: ColorDesign = None):
+        super().create_template(data, meta_data, color_template)
+        self.mark.inner_radius = 40
+        self.mark.outer_radius = 80
+
+    def dump(self):
+        return {
+            "mark": self.mark.dump(),
+            "theta": self.theta,
+            "color": self.color,
+        }
+    
+    def update_option(self, echart_option: dict) -> None:
+        """更新半环形图配置选项"""
+        self.echart_option = echart_option
+        
+        # 获取数据并转换为DataFrame
+        data = echart_option["dataset"]["source"]
+        # print("data为")
+        # print(data)
+        df = pd.DataFrame(data[1:], columns=data[0])
+        # print("df为")
+        # print(df)
+        
+        # 获取x轴数据
+        x_list = df['x_data'].tolist()
+        
+        # 配置系列
+        self.echart_option["series"][0].update({
+            "type": "pie",
+            "radius": ["40%", "80%"],  # 设置内外半径
+            "center": ["50%", "70%"],  # 设置圆心位置
+            "avoidLabelOverlap": True,
+            "itemStyle": {
+                "borderRadius": 4,
+                "borderWidth": 2,
+                "borderColor": "#fff"
+            },
+            "label": {
+                "show": True,
+                "formatter": "{b}:\n{d}%"  # 显示名称和百分比
+            },
+            "emphasis": {
+                "itemStyle": {
+                    "shadowBlur": 10,
+                    "shadowOffsetX": 0,
+                    "shadowColor": "rgba(0, 0, 0, 0.5)"
+                }
+            },
+            "startAngle": 180,  # 起始角度
+            "endAngle": 0,  # 结束角度
+            "data": [
+                {
+                    "name": name,
+                    "value": int(df.loc[df["x_data"] == name, "y_data"].sum())
+                } for name in x_list
+            ]
+        })
+        
+        # 配置提示框
+        self.echart_option["tooltip"] = {
+            "trigger": "item",
+            "formatter": "{b}: {c} ({d}%)"
+        }
+        
+        return self.echart_option
