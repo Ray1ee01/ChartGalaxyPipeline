@@ -155,19 +155,19 @@ class SVGOptimizer(SVGProcessor):
         # else:
         #     additional_configs['subtitle_config']['max_width'] = flattened_elements_tree.get_bounding_box().width
         
-        # layout_template = LayoutTemplate()
-        # # print('additional_configs["layout_tree"]: ', additional_configs["layout_tree"])
-        # layout_template.root = layout_template.build_template_from_tree(additional_configs["layout_tree"])
+        layout_template = LayoutTemplate()
+        # print('additional_configs["layout_tree"]: ', additional_configs["layout_tree"])
+        layout_template.root = layout_template.build_template_from_tree(additional_configs["layout_tree"])
         
-        # layout_template = additional_configs['layout_template']
-        # time_start = time.time()
-        # layout_processor = LayoutProcessor(flattened_elements_tree, layout_graph, layout_template, additional_configs)
-        # time_end = time.time()
-        # print(f'layout_processor init time cost: {time_end - time_start}s')
-        # time_start = time.time()
-        # element_tree = layout_processor.process()
-        # time_end = time.time()
-        # print(f'layout_processor process time cost: {time_end - time_start}s')
+        layout_template = additional_configs['layout_template']
+        time_start = time.time()
+        layout_processor = LayoutProcessor(flattened_elements_tree, layout_graph, layout_template, additional_configs)
+        time_end = time.time()
+        print(f'layout_processor init time cost: {time_end - time_start}s')
+        time_start = time.time()
+        element_tree = layout_processor.process()
+        time_end = time.time()
+        print(f'layout_processor process time cost: {time_end - time_start}s')
         
         
 
@@ -179,7 +179,7 @@ class SVGOptimizer(SVGProcessor):
         root_element.children = element_list
         # print('root_element.children: ', root_element.dump())
         
-                # 从element_tree中找到所有mark_group, legend_group, x_axis_group, y_axis_group
+        # 从element_tree中找到所有mark_group, legend_group, x_axis_group, y_axis_group
         mark_group = []
         legend_group = []
         x_axis_group = []
@@ -242,8 +242,8 @@ class SVGOptimizer(SVGProcessor):
                 "height": bounding_box.maxy - bounding_box.miny,
             }
             rects.append(rect)
-        # for rect in rects:
-        #     root_element.children.append(rect)
+        for rect in rects:
+            root_element.children.append(rect)
         element_tree = root_element
         
         # 获取root的bounding_box
@@ -260,86 +260,86 @@ class SVGOptimizer(SVGProcessor):
         
         bounding_boxes = {}
         
-        if len(mark_group) > 0:
-            mark_group_element = GroupElement()
-            mark_group_element.children = mark_group
-            root_element.children.append(mark_group_element)
-            bounding_boxes['mark_group'] = mark_group_element.get_bounding_box().format()
-            bounding_boxes['mark_group']['minx'] += shift_x
-            bounding_boxes['mark_group']['miny'] += shift_y
-            bounding_boxes['mark_group']['maxx'] += shift_x
-            bounding_boxes['mark_group']['maxy'] += shift_y
-        if len(legend_group) > 0:
-            legend_group_element = GroupElement()
-            legend_group_element.children = legend_group
-            root_element.children.append(legend_group_element)
-            bounding_boxes['legend_group'] = legend_group_element.get_bounding_box().format()
-            bounding_boxes['legend_group']['minx'] += shift_x
-            bounding_boxes['legend_group']['miny'] += shift_y
-            bounding_boxes['legend_group']['maxx'] += shift_x
-            bounding_boxes['legend_group']['maxy'] += shift_y
-        if len(x_axis_group) > 0:
-            x_axis_group_element = GroupElement()
-            x_axis_group_element.children = x_axis_group
-            root_element.children.append(x_axis_group_element)
-            bounding_boxes['x_axis_group'] = x_axis_group_element.get_bounding_box().format()
-            bounding_boxes['x_axis_group']['minx'] += shift_x
-            bounding_boxes['x_axis_group']['miny'] += shift_y
-            bounding_boxes['x_axis_group']['maxx'] += shift_x
-            bounding_boxes['x_axis_group']['maxy'] += shift_y
-        if len(y_axis_group) > 0:
-            y_axis_group_element = GroupElement()
-            y_axis_group_element.children = y_axis_group
-            root_element.children.append(y_axis_group_element)
-            bounding_boxes['y_axis_group'] = y_axis_group_element.get_bounding_box().format()
-            bounding_boxes['y_axis_group']['minx'] += shift_x
-            bounding_boxes['y_axis_group']['miny'] += shift_y
-            bounding_boxes['y_axis_group']['maxx'] += shift_x
-            bounding_boxes['y_axis_group']['maxy'] += shift_y
-        if len(title_group) > 0:
-            title_group_element = GroupElement()
-            title_group_element.children = title_group
-            root_element.children.append(title_group_element)
-            bounding_boxes['title_group'] = title_group_element.get_bounding_box().format()
-            bounding_boxes['title_group']['minx'] += shift_x
-            bounding_boxes['title_group']['miny'] += shift_y
-            bounding_boxes['title_group']['maxx'] += shift_x
-            bounding_boxes['title_group']['maxy'] += shift_y
-        if len(subtitle_group) > 0:
-            subtitle_group_element = GroupElement()
-            subtitle_group_element.children = subtitle_group
-            root_element.children.append(subtitle_group_element)
-            bounding_boxes['subtitle_group'] = subtitle_group_element.get_bounding_box().format()
-            bounding_boxes['subtitle_group']['minx'] += shift_x
-            bounding_boxes['subtitle_group']['miny'] += shift_y
-            bounding_boxes['subtitle_group']['maxx'] += shift_x
-            bounding_boxes['subtitle_group']['maxy'] += shift_y
-        if len(description_group) > 0:
-            description_group_element = GroupElement()
-            description_group_element.children = description_group
-            root_element.children.append(description_group_element)
-            bounding_boxes['description_group'] = description_group_element.get_bounding_box().format()
-            bounding_boxes['description_group']['minx'] += shift_x
-            bounding_boxes['description_group']['miny'] += shift_y
-            bounding_boxes['description_group']['maxx'] += shift_x
-            bounding_boxes['description_group']['maxy'] += shift_y
-        # 把原先的mark_group, legend_group, x_axis_group, y_axis_group, title_group, subtitle_group删除
-        root_element.children = [child for child in root_element.children if child not in mark_group and child not in legend_group and child not in x_axis_group and child not in y_axis_group and child not in title_group and child not in subtitle_group and child not in description_group]
+        # if len(mark_group) > 0:
+        #     mark_group_element = GroupElement()
+        #     mark_group_element.children = mark_group
+        #     root_element.children.append(mark_group_element)
+        #     # bounding_boxes['mark_group'] = mark_group_element.get_bounding_box().format()
+        #     # bounding_boxes['mark_group']['minx'] += shift_x
+        #     # bounding_boxes['mark_group']['miny'] += shift_y
+        #     # bounding_boxes['mark_group']['maxx'] += shift_x
+        #     # bounding_boxes['mark_group']['maxy'] += shift_y
+        # if len(legend_group) > 0:
+        #     legend_group_element = GroupElement()
+        #     legend_group_element.children = legend_group
+        #     root_element.children.append(legend_group_element)
+        #     # bounding_boxes['legend_group'] = legend_group_element.get_bounding_box().format()
+        #     # bounding_boxes['legend_group']['minx'] += shift_x
+        #     # bounding_boxes['legend_group']['miny'] += shift_y
+        #     # bounding_boxes['legend_group']['maxx'] += shift_x
+        #     # bounding_boxes['legend_group']['maxy'] += shift_y
+        # if len(x_axis_group) > 0:
+        #     x_axis_group_element = GroupElement()
+        #     x_axis_group_element.children = x_axis_group
+        #     root_element.children.append(x_axis_group_element)
+        #     # bounding_boxes['x_axis_group'] = x_axis_group_element.get_bounding_box().format()
+        #     # bounding_boxes['x_axis_group']['minx'] += shift_x
+        #     # bounding_boxes['x_axis_group']['miny'] += shift_y
+        #     # bounding_boxes['x_axis_group']['maxx'] += shift_x
+        #     # bounding_boxes['x_axis_group']['maxy'] += shift_y
+        # if len(y_axis_group) > 0:
+        #     y_axis_group_element = GroupElement()
+        #     y_axis_group_element.children = y_axis_group
+        #     root_element.children.append(y_axis_group_element)
+        #     # bounding_boxes['y_axis_group'] = y_axis_group_element.get_bounding_box().format()
+        #     # bounding_boxes['y_axis_group']['minx'] += shift_x
+        #     # bounding_boxes['y_axis_group']['miny'] += shift_y
+        #     # bounding_boxes['y_axis_group']['maxx'] += shift_x
+        #     # bounding_boxes['y_axis_group']['maxy'] += shift_y
+        # if len(title_group) > 0:
+        #     title_group_element = GroupElement()
+        #     title_group_element.children = title_group
+        #     root_element.children.append(title_group_element)
+        #     # bounding_boxes['title_group'] = title_group_element.get_bounding_box().format()
+        #     # bounding_boxes['title_group']['minx'] += shift_x
+        #     # bounding_boxes['title_group']['miny'] += shift_y
+        #     # bounding_boxes['title_group']['maxx'] += shift_x
+        #     # bounding_boxes['title_group']['maxy'] += shift_y
+        # if len(subtitle_group) > 0:
+        #     subtitle_group_element = GroupElement()
+        #     subtitle_group_element.children = subtitle_group
+        #     root_element.children.append(subtitle_group_element)
+        #     # bounding_boxes['subtitle_group'] = subtitle_group_element.get_bounding_box().format()
+        #     # bounding_boxes['subtitle_group']['minx'] += shift_x
+        #     # bounding_boxes['subtitle_group']['miny'] += shift_y
+        #     # bounding_boxes['subtitle_group']['maxx'] += shift_x
+        #     # bounding_boxes['subtitle_group']['maxy'] += shift_y
+        # if len(description_group) > 0:
+        #     description_group_element = GroupElement()
+        #     description_group_element.children = description_group
+        #     root_element.children.append(description_group_element)
+        #     # bounding_boxes['description_group'] = description_group_element.get_bounding_box().format()
+        #     # bounding_boxes['description_group']['minx'] += shift_x
+        #     # bounding_boxes['description_group']['miny'] += shift_y
+        #     # bounding_boxes['description_group']['maxx'] += shift_x
+        #     # bounding_boxes['description_group']['maxy'] += shift_y
+        # # 把原先的mark_group, legend_group, x_axis_group, y_axis_group, title_group, subtitle_group删除
+        # root_element.children = [child for child in root_element.children if child not in mark_group and child not in legend_group and child not in x_axis_group and child not in y_axis_group and child not in title_group and child not in subtitle_group and child not in description_group]
         
-        images = []
-        for element in root_element.children:
-            if self.if_image(element):
-                images.append(element)
-            if element.tag == 'g':
-                for child in element.children:
-                    if self.if_image(child):
-                        images.append(child)
-        bounding_boxes['images'] = [image.get_bounding_box().format() for image in images]
-        for image in bounding_boxes['images']:
-            image['minx'] += shift_x
-            image['miny'] += shift_y
-            image['maxx'] += shift_x
-            image['maxy'] += shift_y
+        # images = []
+        # for element in root_element.children:
+        #     if self.if_image(element):
+        #         images.append(element)
+        #     if element.tag == 'g':
+        #         for child in element.children:
+        #             if self.if_image(child):
+        #                 images.append(child)
+        # bounding_boxes['images'] = [image.get_bounding_box().format() for image in images]
+        # for image in bounding_boxes['images']:
+        #     image['minx'] += shift_x
+        #     image['miny'] += shift_y
+        #     image['maxx'] += shift_x
+        #     image['maxy'] += shift_y
         
         
         
@@ -363,7 +363,21 @@ class SVGOptimizer(SVGProcessor):
         svg_left = f"<svg {attrs_str} xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">"
         svg_right = f"</svg>"
         # element_tree.attributes['transform'] = "translate(300,100)"
+        try:
+            background_image = additional_configs['background_image']['url']
+            background_image_element = Image()
+            base64_image = Image._getImageAsBase64(background_image)
+            background_image_element.attributes['xlink:href'] = f"data:{base64_image}"
+            background_image_element.attributes['width'] = "100%"
+            background_image_element.attributes['height'] = "100%"
+            # root_element.children.append(background_image_element)
+            # 把background_image_element插入到root_element的children的第一个位置
+            element_tree.children.insert(0, background_image_element)
+        except:
+            print("no background image")
         svg_str = SVGTreeConverter.element_tree_to_svg(element_tree)
+        
+        
         background_color = additional_configs['background_config']['color']
         svg_str = f"<rect width=\"100%\" height=\"100%\" fill=\"{background_color}\"/>\n" + svg_str
         if defs:

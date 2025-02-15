@@ -25,6 +25,7 @@ class VegaLiteParser():
         self.in_legend_flag = False
         self.in_mark_group_flag = False
         self.mark_data_map = {}
+        self.defs = None
         
     def parse(self) -> dict:
         # 解析SVG为树结构
@@ -32,7 +33,7 @@ class VegaLiteParser():
         self.svg = re.sub(r'<style[^>]*>.*?</style>', '', self.svg)
         # print("self.svg: ", self.svg)
         svg_tree = self.parseTree(self.svg)
-        print("svg_tree: ", svg_tree)
+        # print("svg_tree: ", svg_tree)
         self.svg_root = {
             'tag': 'svg',
             'attributes': svg_tree['attributes'],
@@ -75,10 +76,20 @@ class VegaLiteParser():
         self.value_icon_map['x'] = {}
         self.value_icon_map['y'] = {}
         self.value_icon_map['group'] = {}
+        print("icon_urls: ", icon_urls)
         for key, value in self.mark_data_map.items():
             if value['x_value'] is not None:
                 if value['x_value'] not in self.value_icon_map['x']:
-                    self.value_icon_map['x'][value['x_value']] = icon_urls[random.randint(0, len(icon_urls) - 1)]
+                    try:
+                        # 从icon_urls中找到value['x_value']对应的icon_url
+                        for icon_url in icon_urls:
+                            if value['x_value'] in icon_url['text']:
+                                self.value_icon_map['x'][value['x_value']] = icon_url['file_path']
+                                break
+                    except:
+                        self.value_icon_map['x'][value['x_value']] = icon_urls[random.randint(0, len(icon_urls) - 1)]
+                        
+                    # self.value_icon_map['x'][value['x_value']] = icon_urls[random.randint(0, len(icon_urls) - 1)]
             if value['y_value'] is not None:
                 if value['y_value'] not in self.value_icon_map['y']:
                     self.value_icon_map['y'][value['y_value']] = icon_urls[random.randint(0, len(icon_urls) - 1)]
@@ -148,6 +159,8 @@ class VegaLiteParser():
                     overlay_processor = OverlayProcessor(element_with_data, image_element, config)
                     # 用overlay_processor.process()的返回值替换mark_group子树下的element_with_data
                     replace_corresponding_element(mark_group, element_with_data, overlay_processor.process())
+                    # replace_corresponding_element(mark_group, element_with_data, overlay_processor.process_replace_single())
+                    
                     # 随机从1,2,3中取一个
                     # choice = random.randint(1, 3)
                     # if choice == 1:
@@ -160,6 +173,7 @@ class VegaLiteParser():
         
         
         # flattened_elements_tree = SVGTreeConverter.partial_flatten_tree(elements_tree, group_to_flatten)
+        # print(elements_tree.dump())
         flattened_elements_tree, top_level_groups = SVGTreeConverter.move_groups_to_top(elements_tree, group_to_flatten)
         
         
@@ -577,7 +591,8 @@ class VegaLiteParser():
             ('role-mark' in group.attributes.get('class', '') or \
              'role-scope' in group.attributes.get('class', '')) and \
             'graphics-object' in group.attributes.get('role', '') and \
-            'mark container' in group.attributes.get('aria-roledescription', '') 
+            'mark container' in group.attributes.get('aria-roledescription', '') \
+            and 'text' not in group.attributes.get('aria-roledescription', '')
             # and \
             # 'text' not in group.attributes.get('aria-roledescription', '')
     

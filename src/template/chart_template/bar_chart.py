@@ -13,6 +13,7 @@ class BarChartTemplate(ChartTemplate):
     def create_template(self, data: list, meta_data: dict=None, color_template: ColorDesign=None):
         self.x_axis = AxisTemplate(color_template)
         self.y_axis = self.x_axis.copy()
+        self.height = 42*len(data)
         
         
         self.mark = BarTemplate(color_template)
@@ -124,7 +125,8 @@ class BarChartTemplate(ChartTemplate):
                 encoding["x"]["sort"] = "-y" if sort_config["ascending"] else "y"
         specification["encoding"] = encoding
         
-        if self.has_annotation:
+        # if self.has_annotation:
+        if True:
             specification["layer"] = [
                 {"mark": mark_specification, "encoding": encoding},
                 annotation_specification

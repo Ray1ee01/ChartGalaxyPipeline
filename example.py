@@ -4,12 +4,13 @@ from src.processors.svg_processor import SVGOptimizer
 import os
 from src.utils.dataset import VizNET
 from src.processors.data_processor import *
-from src.utils.svg_converter import convert_svg_to_png
+# from src.utils.svg_converter import convert_svg_to_png
 import random
 import json
 import numpy as np
 from datetime import datetime
 from src.processors.data_enricher_modules.icon_selection import CLIPMatcher
+from src.processors.data_enricher_modules.bgimage_selection import ImageSearchSystem
 # data_dir = os.path.join(os.path.dirname(__file__),'src', 'data')
 # output_dir = os.path.join(os.path.dirname(__file__),'src', 'output9')
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
@@ -24,16 +25,8 @@ def main():
     parser.add_argument('-d', '--dataset_idx', type=int, default=0, help='数据集索引')
     parser.add_argument('-c', '--chart_idx', type=int, default=1, help='图表索引')
     parser.add_argument('-t', '--chart_type', type=str, default='bar', help='图表类型')
-    # parser.add_argument('-l', '--layout_file_idx', type=int, default=1, help='布局文件索引')
-    # parser.add_argument('-i', '--chart_image_idx', type=int, default=1, help='图表图片索引')
     args = parser.parse_args()
 
-    # # 创建pipeline
-    # pipeline = Pipeline(
-    #     data_processor=VizNetDataProcessor(),
-    #     chart_generator=VegaLiteGenerator(),
-    #     svg_processor=SVGOptimizer()
-    # )
     pipeline = Pipeline(
         data_processor=Chart2TableDataProcessor(),
         # data_processor=VizNetDataProcessor(),
@@ -41,34 +34,6 @@ def main():
         # chart_generator=EchartGenerator(),
         svg_processor=SVGOptimizer()
     )
-    # data_range = np.arange(3, 184)
-    # data_range = np.arange(0,1)
-
-    # input_data = f'bar_{data_range[args.chart_idx]}'
-
-    
-    layout_file_idx = random.randint(1, 6)
-    chart_image_idx = random.randint(1, 7)
-    # chart_image_idx = 6
-    layout_file_idx = 15
-    chart_image_idx = 9
-    chart_component_idx = 3
-    color_mode = 'polychromatic'
-    # color_mode = 'monochromatic'
-    # layout_file_idxs = [1, 2, 3, 4, 5, 6]
-    # chart_image_idxs = [1, 2, 3, 4, 5, 6, 7]
-    # chart_component_idxs = [1, 2]
-    # chart_component_idxs = [2]
-    
-    # input_data = f'line_8'
-    # # input_data = f'line_63'
-    # # input_data = f'line_74'
-    # result = pipeline.execute(input_data, layout_file_idx, chart_image_idx, chart_component_idx, color_mode)
-    # # output_filename = f'output_d8_l16_i9_c2_mpolychromatic.svg'
-    # # output_filename = f'output_d74_l16_i9_c3_mpolychromatic.svg'
-    # output_filename = f'output_d63_l16_i9_c2_mpolychromatic.svg'
-    # with open(os.path.join(output_dir, output_filename), "w") as f:
-    #     f.write(result)
     
     chart_type_list = [
         'bar',
@@ -105,13 +70,15 @@ def main():
     # color_modes = ['polychromatic']
     # for chart_type in chart_type_list:
     matcher = CLIPMatcher()
+    bgimage_searcher = ImageSearchSystem()
+    # bgimage_searcher = None
     if args.chart_type in chart_type_list:
         chart_type = args.chart_type
         output_dir = os.path.join(os.path.dirname(__file__),'src', 'output_9', chart_type)
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
         # data_range = np.arange(0, data_sizes[chart_type])
-        data_range = np.arange(0,1)
+        data_range = np.arange(1,3)
         for data_idx in data_range:
             time_stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             input_data = f'{chart_type}_{data_idx}'
@@ -124,10 +91,10 @@ def main():
             # chart_component_idx = random.randint(1, 256)
             chart_component_idx = 208
             # color_mode = random.choice(['monochromatic', 'complementary', 'analogous', 'polychromatic'])
-            color_mode = 'polychromatic'
+            color_mode = 'complementary'
             # try:
             time_start = time.time()
-            result, bounding_boxes = pipeline.execute(input_data, layout_file_idx, chart_image_idx, chart_component_idx, color_mode, matcher)
+            result, bounding_boxes = pipeline.execute(input_data, layout_file_idx, chart_image_idx, chart_component_idx, color_mode, matcher, bgimage_searcher=bgimage_searcher)
             time_end = time.time()
             print(f'pipeline execute time cost: {time_end - time_start} seconds')
             # output_filename = f'output_d{args.dataset_idx}_c{args.chart_idx}_l{layout_file_idx}_i{chart_image_idx}_c{chart_component_idx}_m{color_mode}.svg'

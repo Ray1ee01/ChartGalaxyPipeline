@@ -67,8 +67,8 @@ class LayoutProcessor:
     
     def process(self) -> LayoutElement:
         self.process_layout_template(self.layout_template.root)
-        group = self._createDescriptionGroup()
-        self.layout_template.root.children.append(group)
+        # group = self._createDescriptionGroup()
+        # self.layout_template.root.children.append(group)
         return self.layout_template.root
         # return self.process_node(self.layout_tree)
         
@@ -246,11 +246,11 @@ class LayoutProcessor:
                     time_end_scale = time.time()
                     print(f'calculate scale time: {time_end_scale - time_start_scale}s')
 
-                    if element.reference_id == 'chart':
-                        time_start_rescale = time.time()
-                        self.rescale_text_in_chart(chart_scale)
-                        time_end_rescale = time.time()
-                        print(f'rescale chart text time: {time_end_rescale - time_start_rescale}s')
+                    # if element.reference_id == 'chart':
+                    #     time_start_rescale = time.time()
+                    #     self.rescale_text_in_chart(chart_scale)
+                    #     time_end_rescale = time.time()
+                    #     print(f'rescale chart text time: {time_end_rescale - time_start_rescale}s')
                 time_end_size_constraint = time.time()
                 # print(f'process node {element.id} size_constraint time cost: {time_end_size_constraint - time_start_size_constraint}s')
                 time_start_layout = time.time()

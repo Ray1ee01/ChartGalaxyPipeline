@@ -7,7 +7,7 @@ class ChartTemplate(ABC):
     def __init__(self, template_path: str=None):
         self.chart_type = None
         self.has_annotation = False
-        self.height = 800
+        self.height = 450
         self.width = 400
         self.step = 40
     

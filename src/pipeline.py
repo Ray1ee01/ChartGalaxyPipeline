@@ -12,6 +12,7 @@ import shutil
 import random
 import time
 from .processors.data_enricher_modules.icon_selection import CLIPMatcher
+from .processors.data_enricher_modules.bgimage_selection import ImageSearchSystem
 
 class Pipeline:
     def __init__(
@@ -24,7 +25,7 @@ class Pipeline:
         self.chart_generator = chart_generator
         self.svg_processor = svg_processor
 
-    def execute(self, input_data: Any, layout_file_idx: int = 1, chart_image_idx: int = 1, chart_component_idx: int = 1, color_mode: str = 'monochromatic', matcher: CLIPMatcher = None) -> str:
+    def execute(self, input_data: Any, layout_file_idx: int = 1, chart_image_idx: int = 1, chart_component_idx: int = 1, color_mode: str = 'monochromatic', matcher: CLIPMatcher = None, bgimage_searcher: ImageSearchSystem = None) -> str:
         # try:
         with open(f'/data1/liduan/generation/chart/chart_pipeline/src/data/layout_tree copy/{layout_file_idx}.json', 'r') as f:
             layout_config = json.load(f)
@@ -33,9 +34,18 @@ class Pipeline:
         with open(f'/data1/liduan/generation/chart/chart_pipeline/src/data/chart_component/{chart_component_idx}.json', 'r') as f:
             chart_component_config = json.load(f)
         
+        # style_idx_range = [0,1]
+        # 随机选出一个style_idx
+        style_idx = random.randint(1,2)
+        style_dict = {}
+        with open(f'/data1/liduan/generation/chart/chart_pipeline/src/data/style_configs/{style_idx}.json', 'r') as f:
+            style_dict = json.load(f)
+        
+        
+        
         time_start = time.time()
         # 步骤1：数据处理
-        processed_data = self.data_processor.process(input_data, layout_config['sequence'], chart_image_config['sequence'], matcher)
+        processed_data = self.data_processor.process(input_data, layout_config['sequence'], chart_image_config['sequence'], matcher, bgimage_searcher)
         time_end = time.time()
         # print(processeds_data)
         # return "", {}
@@ -281,12 +291,14 @@ class Pipeline:
             'x_data_single_url': processed_data['icons']['x_data_single'][0] if len(processed_data['icons']['x_data_single']) > 0 else None,
             # "x_data_multi_url": [icon[i] for i, icon in enumerate(processed_data['icons']['x_data_multi'])],
             "x_data_multi_url": processed_data['icons']['x_data_multi'],
+            "background_image": {"url": processed_data['icons']['background_image']},
             "x_data_multi_icon_map": processed_data['x_data_multi_icon_map'],
             "layout_template": layout_template,
             "chart_composition": chart_image_config,
             "chart_template": chart_template,
             "meta_data": processed_data['meta_data'],
-            "chart_config": chart_config
+            "chart_config": chart_config,
+            "style_config": style_dict
         })
         additional_configs['title_config'].update(title_config)
         additional_configs['subtitle_config'].update(subtitle_config)

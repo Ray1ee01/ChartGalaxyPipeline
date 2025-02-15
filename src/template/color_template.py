@@ -83,6 +83,7 @@ def delta_h(h1, h2):
     return dh
 
 def lighter_color(rgb):
+    print("rgb before: ", rgb)
     lch = rgb_to_hcl(*rgb)
     # if lch[0] < 70:
     lch[0] = min(100, lch[0] + 20)
@@ -91,8 +92,9 @@ def lighter_color(rgb):
     lab = colour.LCHab_to_Lab(lch)
     xyz = colour.Lab_to_XYZ(lab)
     rgb = colour.XYZ_to_sRGB(xyz)
-    return norm255rgb(rgb)
-
+    rgb = norm255rgb(rgb)
+    print("rgb after: ", rgb)
+    return rgb
 def iterate_rgb_palette(rgb_palette):
     lch_palette = [rgb_to_hcl(*rgb) for rgb in rgb_palette]
     lch_palette = palette_iteration(lch_palette)
@@ -111,7 +113,13 @@ def emphasis_color(used_colors, palette):
     if max_dist < 10:
         return None
     return max_color
-    
+
+def check_in_palette(color, palette):
+    for p in palette:
+        if ciede2000(color, p) < 10:
+            return True
+    return False
+
 text_types = ['title', 'caption']
 class ColorDesign:
     def __init__(self, image_palette, mode='monochromatic'):
@@ -493,10 +501,14 @@ class ColorDesign:
             inside_color = None
             if self.lightness == 'dark':
                 other_color = self.basic_colors_hex[1]
+                other_color = lighter_color(other_color)
                 inside_color = self.basic_colors_hex[0]
+                inside_color = lighter_color(inside_color)
             else:
                 other_color = self.basic_colors_hex[0]
+                other_color = lighter_color(other_color)
                 inside_color = self.basic_colors_hex[1]
+                inside_color = lighter_color(inside_color)
             if type == 'text':
                 if reverse:
                     return [inside_color for _ in range(number)]
