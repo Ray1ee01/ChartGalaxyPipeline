@@ -451,6 +451,23 @@ class TemplateFactory:
         return chart_template, layout_template
     
     @staticmethod
+    def create_proportional_area_chart_template(
+        data: list,
+        meta_data: dict,
+        layout_tree: dict,
+        chart_composition: dict = None,
+        sort_config: dict = None,
+        color_template: ColorDesign = None,
+        chart_component: dict = None
+    ):
+        """创建面积比例图模版"""
+        chart_template = ProportionalAreaTemplate()
+        chart_template.create_template(data, meta_data, color_template)
+        layout_template = LayoutTemplate()
+        layout_template.root = layout_template.build_template_from_tree(layout_tree)
+        return chart_template, layout_template
+    
+    @staticmethod
     def create_connected_scatterplot_template(
         data: list,
         meta_data: dict,
@@ -561,7 +578,74 @@ class TemplateFactory:
         layout_template.root = layout_template.build_template_from_tree(layout_tree)
         # layout_template.apply_constraints(chart_template)
         return chart_template, layout_template
+      
+    def create_radar_chart_template(
+        data: list,
+        meta_data: dict,
+        layout_tree: dict,
+        chart_composition: dict = None,
+ 
+        sort_config: dict = None,
+        color_template: ColorDesign = None,
+        chart_component: dict = None,
+    ):
+        chart_template = RadarTemplate()
+        chart_template.create_template(data, meta_data, color_template)
+        layout_template = LayoutTemplate()
+        layout_template.root = layout_template.build_template_from_tree(layout_tree)
+        return chart_template, layout_template
+    
+    @staticmethod
+    def create_radial_line_chart_template(
+        data: list,
+        meta_data: dict,
+        layout_tree: dict,
+        chart_composition: dict = None,
+ 
+        sort_config: dict = None,
+        color_template: ColorDesign = None,
+        chart_component: dict = None,
+    ):
+        chart_template = RadialLineTemplate()
+        chart_template.create_template(data, meta_data, color_template)
+        layout_template = LayoutTemplate()
+        layout_template.root = layout_template.build_template_from_tree(layout_tree)
+        return chart_template, layout_template
 
+    @staticmethod
+    def create_radial_area_chart_template(
+        data: list,
+        meta_data: dict,
+        layout_tree: dict,
+        chart_composition: dict = None,
+ 
+        sort_config: dict = None,
+        color_template: ColorDesign = None,
+        chart_component: dict = None,
+    ):
+        chart_template = RadialAreaTemplate()
+        chart_template.create_template(data, meta_data, color_template)
+        layout_template = LayoutTemplate()
+        layout_template.root = layout_template.build_template_from_tree(layout_tree)
+        return chart_template, layout_template
+
+    @staticmethod
+    def create_polar_chart_template(
+        data: list,
+        meta_data: dict,
+        layout_tree: dict,
+        chart_composition: dict = None,
+ 
+        sort_config: dict = None,
+        color_template: ColorDesign = None,
+        chart_component: dict = None,
+    ):
+        chart_template = PolarTemplate()
+        chart_template.create_template(data, meta_data, color_template)
+        layout_template = LayoutTemplate()
+        layout_template.root = layout_template.build_template_from_tree(layout_tree)
+        return chart_template, layout_template
+    
     @staticmethod
     def create_slope_chart_template(
         data: list,

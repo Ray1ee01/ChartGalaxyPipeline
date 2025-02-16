@@ -52,7 +52,7 @@ class Pipeline:
         subtitle_config = layout_config.get('subtitle_config', {})
         topic_icon_config = layout_config.get('topic_icon_config', {})
         sort_config = None
-
+        
         # 创建模板
         if processed_data['meta_data']['chart_type'] == 'bar':
             # 如果没有指定orientation,随机选择
@@ -60,9 +60,9 @@ class Pipeline:
                 is_horizontal = random.choice([True, False])
             else:
                 is_horizontal = chart_config['orientation'] == 'horizontal'
-            
-            # is_horizontal = 
-            
+
+        # is_horizontal = 
+        
             # 只有在chart_config中指定了sort时才配置排序
             if 'sort' in chart_config:
                 sort_config = {
@@ -131,6 +131,16 @@ class Pipeline:
                 color_template=color_template,
                 chart_component=chart_component_config
             )
+        elif processed_data['meta_data']['chart_type'] == 'proportionalarea':
+            chart_template, layout_template = TemplateFactory.create_proportional_area_chart_template(
+                data=processed_data['data'],
+                meta_data=processed_data['meta_data'],
+                layout_tree=layout_tree,
+                chart_composition=chart_image_config,
+                sort_config=sort_config,
+                color_template=color_template,
+                chart_component=chart_component_config
+            )
         elif processed_data['meta_data']['chart_type'] == 'groupbar':
             chart_template, layout_template = TemplateFactory.create_group_bar_chart_template(
                 data=processed_data['data'],
@@ -191,7 +201,6 @@ class Pipeline:
                 color_template=color_template,
                 chart_component=chart_component_config
             )
-        
         elif processed_data['meta_data']['chart_type'] == 'pie':
             chart_template, layout_template = TemplateFactory.create_pie_chart_template(
                 data=processed_data['data'],
@@ -222,16 +231,59 @@ class Pipeline:
                 color_template=color_template,
                 chart_component=chart_component_config
             )
+        elif processed_data['meta_data']['chart_type'] == 'radar':
+            chart_template, layout_template = TemplateFactory.create_radar_chart_template(
+                data=processed_data['data'],
+                meta_data=processed_data['meta_data'],
+                layout_tree=layout_tree,
+                chart_composition=chart_image_config,
+                sort_config=sort_config,
+                color_template=color_template,
+                chart_component=chart_component_config
+            )
+        elif processed_data['meta_data']['chart_type'] == 'radialline':
+            chart_template, layout_template = TemplateFactory.create_radial_line_chart_template(
+                data=processed_data['data'],
+                meta_data=processed_data['meta_data'],
+                layout_tree=layout_tree,
+                chart_composition=chart_image_config,
+                sort_config=sort_config,
+                color_template=color_template,
+                chart_component=chart_component_config
+            )
+        elif processed_data['meta_data']['chart_type'] == 'radialarea':
+            chart_template, layout_template = TemplateFactory.create_radial_area_chart_template(
+                data=processed_data['data'],
+                meta_data=processed_data['meta_data'],
+                layout_tree=layout_tree,
+                chart_composition=chart_image_config,
+                sort_config=sort_config,
+                color_template=color_template,
+                chart_component=chart_component_config
+            )
+        elif processed_data['meta_data']['chart_type'] == 'polar':
+            chart_template, layout_template = TemplateFactory.create_polar_chart_template(
+                data=processed_data['data'],
+                meta_data=processed_data['meta_data'],
+                layout_tree=layout_tree,
+                chart_composition=chart_image_config,
+                sort_config=sort_config,
+                color_template=color_template,
+                chart_component=chart_component_config
+            )
         else:
             raise ValueError(f"不支持的图表类型: {processed_data['meta_data']['chart_type']}")
         
         # 步骤2：生成图表
         svg, additional_configs = self.chart_generator.generate(processed_data, chart_template)
         time_end = time.time()
-        # print("chart_generator time: ", time_end - time_start)
-        # return svg, {}
+        print("chart_generator time: ", time_end - time_start)
+        
+        return svg    
+        
         
         time_start = time.time()
+        
         title_config = {}
         title_font_template = TitleFontTemplate()
         title_font_template.large()
@@ -249,7 +301,7 @@ class Pipeline:
         subtitle_config['letterSpacing'] = subtitle_font_template.letter_spacing
         subtitle_config['fontWeight'] = subtitle_font_template.font_weight
         subtitle_config['font'] = subtitle_font_template.font
-        
+    
         emphasis_phrases = find_emphasis_phrases(processed_data['meta_data']['title'], processed_data['meta_data'])
         emphasis_phrases_config = []
         if chart_template.color_encoding is not None and chart_template.color_encoding.color_with_semantics:
@@ -268,11 +320,11 @@ class Pipeline:
                     "color": EmphasisColors().get_color()
                 })
         print("emphasis_phrases_config: ", emphasis_phrases_config)
-                
+        
         # 配置额外信息
         additional_configs.update({
-            "title_config": {"text": processed_data['meta_data']['title'].strip('"'), "emphasis_phrases": emphasis_phrases_config},
-            "subtitle_config": {"text": processed_data['meta_data']['caption'].strip('"')},
+            "title_config": {"text": processed_data['meta_data']['title']},
+            "subtitle_config": {"text": processed_data['meta_data']['caption']},
             "topic_icon_config": {},
             "background_config": {},
             "topic_icon_url": processed_data['icons']['topic'][0] if len(processed_data['icons']['topic']) > 0 else None,
@@ -291,7 +343,6 @@ class Pipeline:
         additional_configs['title_config'].update(title_config)
         additional_configs['subtitle_config'].update(subtitle_config)
         additional_configs['topic_icon_config'].update(topic_icon_config)
-        
 
         # print("additional_configs['title_config']", additional_configs['title_config'])
         seed_text = random.randint(1, 100)
