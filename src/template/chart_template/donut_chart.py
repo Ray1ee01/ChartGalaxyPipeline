@@ -120,3 +120,111 @@ class SemiCircleDonutChartTemplate(DonutChartTemplate):
         }
         
         return self.echart_option
+    
+class MultiLevelDonutChartTemplate(DonutChartTemplate):
+    def __init__(self, color_template: ColorDesign = None):
+        super().__init__(color_template)
+        self.chart_type = "multi_level_donut"
+
+    def create_template(self, data: list, meta_data: dict, color_template: ColorDesign = None):
+        """
+        创建多层甜甜圈图模板的核心方法
+        """
+        super().create_template(data, meta_data, color_template)
+        
+
+    def dump(self):
+        return {
+            "mark": self.mark.dump(),
+            "theta": self.theta,
+            "color": self.color
+        }
+    
+    def update_option(self, echart_option: dict) -> None:
+        """更新多圈甜甜圈图配置选项"""
+        self.echart_option = echart_option
+        
+        # 获取数据并转换为DataFrame
+        data = echart_option["dataset"]["source"]
+        # print("data为")
+        # print(data)
+        df = pd.DataFrame(data[1:], columns=data[0])
+        # print("df为")
+        # print(df)
+        # 按group列排序DataFrame
+        df = df.sort_values(by='group')
+        # 获取数据
+        x_list = df['x_data'].tolist()
+        y_list = df['y_data'].tolist()
+        group_list = df['group'].unique().tolist()
+          
+        # 配置系列
+        self.echart_option["series"] = []
+        self.echart_option["series"].append({})
+        self.echart_option["series"].append({})
+        self.echart_option["series"][0].update({
+            "type": "pie",
+            "radius": ["25%", "50%"],  # 设置内外半径
+            "center": ["50%", "50%"],  # 设置圆心位置
+            "avoidLabelOverlap": True,
+            "itemStyle": {
+                "borderRadius": 4,
+                "borderWidth": 2,
+                "borderColor": "#fff"
+            },
+            "label": {
+                "show": True,
+                "formatter": "{b}:\n{d}%",  # 显示名称和百分比
+                "position": "inside"
+            },
+            "emphasis": {
+                "itemStyle": {
+                    "shadowBlur": 10,
+                    "shadowOffsetX": 0,
+                    "shadowColor": "rgba(0, 0, 0, 0.5)"
+                }
+            },
+            "data": [
+                {
+                    "name": name,
+                    "value": float(df.loc[df["group"] == name, "x_data"].sum())
+                } for name in group_list
+            ]
+        })
+
+        self.echart_option["series"][1].update({
+            "type": "pie",
+            "radius": ["50%", "75%"],  # 设置内外半径
+            "center": ["50%", "50%"],  # 设置圆心位置
+            "avoidLabelOverlap": True,
+            "itemStyle": {
+                "borderRadius": 4,
+                "borderWidth": 2,
+                "borderColor": "#fff"
+            },
+            "label": {
+                "show": True,
+                "formatter": "{b}:\n{d}%"  # 显示名称和百分比
+            },
+            "emphasis": {
+                "itemStyle": {
+                    "shadowBlur": 10,
+                    "shadowOffsetX": 0,
+                    "shadowColor": "rgba(0, 0, 0, 0.5)"
+                }
+            },
+            "data": [
+                {
+                    "name": name,
+                    "value": float(df.loc[df["y_data"] == name, "x_data"].sum())
+                } for name in y_list
+            ]
+        })
+        
+        # 配置提示框
+        self.echart_option["tooltip"] = {
+            "trigger": "item",
+            "formatter": "{b}: {c} ({d}%)"
+        }
+        
+        return self.echart_option
