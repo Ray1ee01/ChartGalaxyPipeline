@@ -1,6 +1,9 @@
 import random
 import colour
 import numpy as np
+from ..utils.color_statics import palette_iteration, StaticPalettes
+
+static_palettes = StaticPalettes()
 
 def rgb_to_hex(r, g, b):
     r = max(0, min(int(r), 255))
@@ -81,14 +84,33 @@ def delta_h(h1, h2):
 
 def lighter_color(rgb):
     lch = rgb_to_hcl(*rgb)
-    if lch[0] < 70:
-        lch[0] += 10
-    if lch[1] < 60:
-        lch[1] += 10
+    # if lch[0] < 70:
+    lch[0] = min(100, lch[0] + 20)
+    # if lch[1] < 60:
+    lch[1] = min(100, lch[1] + 20)
     lab = colour.LCHab_to_Lab(lch)
     xyz = colour.Lab_to_XYZ(lab)
     rgb = colour.XYZ_to_sRGB(xyz)
     return norm255rgb(rgb)
+
+def iterate_rgb_palette(rgb_palette):
+    lch_palette = [rgb_to_hcl(*rgb) for rgb in rgb_palette]
+    lch_palette = palette_iteration(lch_palette)
+    rgb_palette = [norm255rgb(colour.XYZ_to_sRGB(colour.Lab_to_XYZ(colour.LCHab_to_Lab(lch)))) for lch in lch_palette]
+    return rgb_palette
+
+def emphasis_color(used_colors, palette):
+    # find the color with the largest distance to used colors in the palette
+    max_dist = 0
+    max_color = None
+    for color in palette:
+        min_dist = min([ciede2000(color, used_color) for used_color in used_colors])
+        if min_dist > max_dist:
+            max_dist = min_dist
+            max_color = color
+    if max_dist < 10:
+        return None
+    return max_color
     
 text_types = ['title', 'caption']
 class ColorDesign:
@@ -187,7 +209,12 @@ class ColorDesign:
             bcg_rgb = hex_to_rgb(bcg)
             rgb_cp = [rgb for rgb in rgb_cp if ciede2000(rgb, bcg_rgb) > 10]
             self.rgb_pool_hex = [rgb_to_hex(*rgb) for rgb in rgb_cp]
-            self.bcg_color = hex_to_rgb(self.pool['bcg'])
+            rgb_extend = iterate_rgb_palette(rgb_cp)
+            self.rgb_pool_hex_2 = [rgb_to_hex(*rgb) for rgb in rgb_extend]
+            rgb_extend2 = iterate_rgb_palette(rgb_extend)
+            self.rgb_pool_hex_3 = [rgb_to_hex(*rgb) for rgb in rgb_extend2]
+
+            self.bcg_color = bcg_rgb
             if ciede2000(self.bcg_color, black) > ciede2000(self.bcg_color, white):
                 self.lightness = 'light'
             else:
@@ -195,7 +222,17 @@ class ColorDesign:
 
         self.basic_colors = [black, white, gray]
         self.basic_colors_hex = [rgb_to_hex(*color) for color in self.basic_colors]
-        self.light = 'high' if random.randint(0, 1) == 0 else 'low'
+        # self.light = 'high' if random.randint(0, 1) == 0 else 'low'
+        self.light='high'
+
+    def get_emphasis_color(self, used_colors):
+        if isinstance(used_colors[0], str):
+            used_colors = [hex_to_rgb(color) for color in used_colors]
+        palette = self.rgb_pool
+        if self.mode == 'polychromatic':
+            palette = self.rgb_pool_hex_3
+        used_colors.append(self.bcg_color)
+        return emphasis_color(used_colors, palette)
 
     def get_color(self, type, number, group = 1, seed_color = 0, seed_middle_color = 0, \
             seed_text = 0, seed_mark = 0, seed_axis = 0, seed_embellishment = 0, reverse = False):
@@ -320,6 +357,9 @@ class ColorDesign:
             color1_hex = rgb_to_hex(*color1)
             color2_hex = rgb_to_hex(*color2)
             middle_colors = [color for color in self.rgb_pool_hex if color != color1_hex and color != color2_hex]
+            # print("middle_colors: ", middle_colors)
+            if len(middle_colors) == 0:
+                middle_colors = ["#ababab"]
             middle_color_seed = seed_middle_color % len(middle_colors)
             middle_color = middle_colors[middle_color_seed]
             other_color = None
@@ -462,11 +502,27 @@ class ColorDesign:
                     return [inside_color for _ in range(number)]
                 return [other_color for _ in range(number)]
             if type == 'marks':
-                seed = seed_mark % 2
+                seed = seed_mark % 4
                 print("rgb_pool_hex: ", self.rgb_pool_hex)
                 if seed == 0:
                     return [self.basic_colors_hex[2] for _ in range(number)]
-                return self.rgb_pool_hex[:number] + [self.basic_colors_hex[2] for _ in range(number - len(self.rgb_pool_hex))]  
+                if len(self.rgb_pool_hex) >= number:
+                    if seed == 1:
+                        return self.rgb_pool_hex[:number]
+                    if seed == 2:
+                        return self.rgb_pool_hex[-number:]
+                if len(self.rgb_pool_hex_2) >= number:
+                    if seed == 1:
+                        return self.rgb_pool_hex_2[:number]
+                    if seed == 2:
+                        return self.rgb_pool_hex_2[-number:]
+                if len(self.rgb_pool_hex_3) >= number:
+                    if seed == 1:
+                        return self.rgb_pool_hex_3[:number]
+                    if seed == 2:
+                        return self.rgb_pool_hex_3[-number:]
+                return static_palettes.get_colors(number)
+
             if type == 'axis':
                 seed = seed_axis % 2
                 if seed == 0:
@@ -480,9 +536,14 @@ class ColorDesign:
         dists_to_bcg = [ciede2000(hex_to_rgb(color), self.bcg_color) for color in palette]
         # sort by importance, high importance with high dist to bcg
         # low importance with low dist to bcg
-        color_info = list(zip(palette, importance, dists_to_bcg))
-        sorted_colors = sorted(color_info, key=lambda x: (x[1], x[2]))
-        ranked_palette = [color for color, _, _ in sorted_colors]
+        dist_sorted_indices = sorted(range(len(dists_to_bcg)), key=lambda i: dists_to_bcg[i], reverse=True)
+        imp_sorted_indices = sorted(range(len(importance)), key=lambda i: importance[i], reverse=True)
+
+        ranked_palette = [None] * len(palette)
+
+        for rank, color_idx in enumerate(dist_sorted_indices):
+            ranked_palette[imp_sorted_indices[rank]] = palette[color_idx]
+
         return ranked_palette
 
     def rank_color_by_contrast(self, palette):

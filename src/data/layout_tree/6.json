@@ -11,10 +11,6 @@
             "overlap": false,
             "alignment": ["middle", "middle"]
         },
-        "sizeConstraint": {
-            "reference": "chart",
-            "max_width": 1
-        },
         "children": [
             {
                 "tag": "g",

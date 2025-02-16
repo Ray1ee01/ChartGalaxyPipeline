@@ -30,11 +30,17 @@ class VegaLiteGenerator(ChartGenerator):
         # 标记配置
         mark_specification = {
             "type": self.template.mark.type,
-            "height": {"band": self.template.mark.height} if self.template.mark.height else None,
-            "width": {"band": self.template.mark.width} if self.template.mark.width else None
+            # "height": {"band": self.template.mark.height} if self.template.mark.height else None,
+            # "width": {"band": self.template.mark.width} if self.template.mark.width else None
+            # "width": 
+            "height": 10,
         }
 
-        
+        # 如果是饼图类型
+        if self.template.mark.type == "arc":
+            mark_specification["innerRadius"] = self.template.mark.innerRadius if self.template.mark.innerRadius else 0
+            mark_specification["radius"] = self.template.mark.radius if self.template.mark.radius else None
+            print('arc')
         
         # 如果有填充颜色样式
         if self.template.mark.fill_color_style.color:
@@ -87,8 +93,10 @@ class VegaLiteGenerator(ChartGenerator):
                 axis_config["labels"] = self.template.x_axis.has_label
             if self.template.x_axis.has_tick is not None:
                 axis_config["ticks"] = self.template.x_axis.has_tick
-            if self.template.x_axis.title_text is not None:
+            if self.template.x_axis.title_text is not None and self.template.x_axis.has_title is True:
                 axis_config["title"] = self.template.x_axis.title_text
+            else:
+                axis_config["title"] = None
             if self.template.x_axis.title_color_style.color is not None:
                 axis_config["titleColor"] = self.template.x_axis.title_color_style.color
             if self.template.x_axis.title_font_style.font_size is not None:
@@ -133,8 +141,10 @@ class VegaLiteGenerator(ChartGenerator):
                 axis_config["labels"] = self.template.y_axis.has_label
             if self.template.y_axis.has_tick is not None:
                 axis_config["ticks"] = self.template.y_axis.has_tick
-            if self.template.y_axis.title_text is not None:
+            if self.template.y_axis.title_text is not None and self.template.y_axis.has_title is True:
                 axis_config["title"] = self.template.y_axis.title_text
+            else:
+                axis_config["title"] = None
             if self.template.y_axis.title_color_style.color is not None:
                 axis_config["titleColor"] = self.template.y_axis.title_color_style.color
             if self.template.y_axis.title_font_style.font_size is not None:
@@ -178,13 +188,40 @@ class VegaLiteGenerator(ChartGenerator):
                 color_encoding["scale"] = scale
 
             # 不显示图例
-            color_encoding["legend"] = {"title": None}
+            # orients = ["left", "right", "top", "bottom", "top-left", "top-right", "bottom-left", "bottom-right"]
+            # orients = ["top", "bottom", "left", "right"]
+            orients = ["top"]
+            color_encoding["legend"] = {"title": None, "orient": orients[random.randint(0, len(orients) - 1)]}
+            if self.template.color_encoding.show_legend is False:
+                color_encoding["legend"] = None
             encoding["color"] = color_encoding
         
-        
+        # 如果是饼图类型，添加角度编码
+        if self.template.mark.type == "arc":
+            print('开始添加角度编码')
+            encoding["theta"] = {
+                "field": self.template.theta["field"],
+                "type": self.template.theta["type"] if self.template.theta["type"] else "quantitative"
+            }
+            print('theta field: ', self.template.theta["field"]),
+            if self.template.color is not None:
+                encoding["color"] = {
+                    "field": self.template.color["field"],
+                    "type": self.template.color["type"] if self.template.color["type"] else "nominal"
+                }
+            print('color field: ', self.template.color["field"])
+            print('结束添加角度编码')
+
         specification["encoding"] = encoding
         specification["mark"] = mark_specification
         specification = self.template.update_specification(specification)
+        
+        if self.template.step is not 0:
+            specification["config"]["view"]["step"] = self.template.step
+        if self.template.height is not 0:
+            specification["config"]["view"]["height"] = self.template.height
+        if self.template.width is not 0:
+            specification["config"]["view"]["width"] = self.template.width
         
         
         # print('orientation: ', self.template.mark.orientation)

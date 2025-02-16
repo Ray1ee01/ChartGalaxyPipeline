@@ -178,3 +178,32 @@ def check_topic_and_caption(df, meta_data):
     # print(wwxxhh) 1015
     # print(results, caption_size)
     return results
+
+def find_emphasis_phrases(title, meta_data):
+    prompt = f"""
+    Given the following title and context, find the emphasis phrases in the title.
+
+    Title: {title}
+    Context: {dict_to_yaml_string(meta_data)}
+
+    Requirements:
+    1. Find the emphasis phrases in the title.
+    2. The emphasis phrases should be in the title.
+    3. The emphasis phrases should be in the context.\
+        
+    Please return the response in the following format:
+    [
+        emphasis_phrase1,
+        emphasis_phrase2,
+        ...
+    ]
+    """
+    response = ask(prompt)
+    
+    # 解析response
+    response = response.strip()
+    response = response[1:-1]
+    response = response.split(',')
+    response = [phrase.strip() for phrase in response]
+    return response
+

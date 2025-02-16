@@ -5,6 +5,7 @@ from ..data_enricher_modules.icon_selection import Semantics, CLIPMatcher
 import numpy as np
 from scipy.spatial import KDTree
 from .search_specific_icons import FlagIcons, LogoIcons
+from ...utils.global_state import *
 
 raw_images_path = '/data1/liduan/generation/chart/iconset/colored_icons_final'
 feature_root = '/data1/liduan/jiashu/icon_cleaner/final_feat'
@@ -55,7 +56,7 @@ class SimulatedAnnealing:
         elif len(topic_color) == 1:
             delta_thres = 10.0
             cur_icon_set = []
-            search_thres = min(min_search_num, len(icon_set))
+            search_thres = min(min_search_num, len(icon_set)) if not larger_icon_pool else len(icon_set)
             while len(cur_icon_set) < search_thres:
                 for i, color in enumerate(self.main_colors):
                     if np.linalg.norm(color - topic_color[0]) < delta_thres:
@@ -333,7 +334,8 @@ class IconSelector:
                 for i in range(len(self.pool.chart_data['data'])):
                     text = self.pool.chart_data['data'][i]['x_data']
                     file_path = flag_icons.search_and_save(text, image_path, 600, 600)
-                    res.append(file_path)
+                    # res.append(file_path)
+                    res.append({"file_path": file_path, "text": text})
             elif self.spe_mode == 'logo':
                 logo_icons = LogoIcons()
                 image_path = os.path.join(cache_path, 'icons')
@@ -342,7 +344,8 @@ class IconSelector:
                 for i in range(len(self.pool.chart_data['data'])):
                     text = self.pool.chart_data['data'][i]['x_data']
                     file_path = logo_icons.search_and_save(text, image_path, 600, 600) # TODO size
-                    res.append(file_path)
+                    # res.append(file_path)
+                    res.append({"file_path": file_path, "text": text})
             else:
                 icon_mode.append(4)
         if res:

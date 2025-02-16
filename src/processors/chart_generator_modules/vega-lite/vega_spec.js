@@ -32,7 +32,7 @@ async function main() {
     }
   }
   catch(e){
-    console.log(e);
+    // console.log(e);
   }
 
   // console.log(JSON.stringify(vegaSpec, null, 2));

@@ -7,6 +7,9 @@ class ChartTemplate(ABC):
     def __init__(self, template_path: str=None):
         self.chart_type = None
         self.has_annotation = False
+        self.height = 800
+        self.width = 400
+        self.step = 40
     
     def update_specification(self, specification: dict) -> None:
         """更新规范"""

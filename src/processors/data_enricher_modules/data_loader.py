@@ -88,7 +88,7 @@ class Chart2TableDataLoader(DataLoader):
     def load(self, data_id: str) -> Any:
         data_type = data_id.split('_')[0]
         data_id = int(data_id.split('_')[1])
-        dataset_dir = os.path.join(self.root_dir, data_type)
+        dataset_dir = os.path.join(self.root_dir, "vc_"+data_type)
         id_map_path = os.path.join(dataset_dir, 'id_map.json')
         cur_id = 0
         if not os.path.exists(id_map_path):
@@ -104,7 +104,6 @@ class Chart2TableDataLoader(DataLoader):
         else:
             with open(id_map_path, 'r') as f:
                 id_map = json.load(f)
-        print("id_map: ", id_map)
         real_id = id_map[str(data_id)]
         meta_data_path = os.path.join(dataset_dir, 'metadata.json')
         with open(meta_data_path, 'r') as f:
@@ -112,6 +111,7 @@ class Chart2TableDataLoader(DataLoader):
         
         file_name = real_id.split('.')[0]
         data_table = pd.read_csv(os.path.join(dataset_dir, real_id))
+        # print(data_table.head())
         
         
         raw_meta_data = {

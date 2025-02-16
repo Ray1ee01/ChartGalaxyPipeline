@@ -8,6 +8,7 @@ from .elements import *
 from .layout import *
 from openai import OpenAI
 from ...template.template import *
+import time
 
 default_topic_icon_config = {
     "iconUrl": "/data1/liduan/generation/chart/chart_pipeline/testicon/robotarm2.png"
@@ -66,12 +67,87 @@ class LayoutProcessor:
     
     def process(self) -> LayoutElement:
         self.process_layout_template(self.layout_template.root)
+        group = self._createDescriptionGroup()
+        self.layout_template.root.children.append(group)
         return self.layout_template.root
         # return self.process_node(self.layout_tree)
         
     # def process(self) -> LayoutElement:
     #     self._createTitleTextGroup(self.element_tree.layoutStrategy.title)
     #     self._createSubtitleTextGroup(self.element_tree.layoutStrategy.subtitle)
+    
+    def _createDescriptionGroup(self) -> LayoutElement:
+        description_group = GroupElement()
+        description_group.attributes['class'] = 'description'
+        # randomly generate a corpus of 100 different words
+        corpus = [
+            "data", "analysis", "visualization", "chart", "graph", "trend", "insight", "pattern",
+            "statistics", "information", "research", "study", "report", "finding", "metric",
+            "measure", "indicator", "value", "number", "quantity", "comparison", "correlation",
+            "distribution", "variable", "factor", "dimension", "category", "group", "segment",
+            "series", "time", "period", "interval", "range", "scale", "axis", "label", "title",
+            "legend", "annotation", "description", "detail", "summary", "overview", "highlight",
+            "focus", "emphasis", "key", "main", "primary", "secondary", "supplementary", "additional",
+            "extra", "other", "alternative", "option", "choice", "selection", "filter", "subset",
+            "sample", "population", "total", "sum", "average", "mean", "median", "mode", "variance",
+            "deviation", "spread", "dispersion", "cluster", "group", "segment", "section", "part",
+            "component", "element", "item", "unit", "piece", "fraction", "percentage", "ratio",
+            "proportion", "rate", "frequency", "occurrence", "instance", "case", "example",
+            "illustration", "demonstration", "proof", "evidence", "support", "basis", "foundation",
+            "source", "reference", "citation", "quote", "excerpt", "extract", "fragment", "portion"
+        ]
+        # 从这些句子中随机选出30-50个词，组成多行句子，每行单词数6-10个
+        text_sequence = []
+        random.shuffle(corpus)
+        words_count = random.randint(30, 50)
+        text_sequence = corpus[:words_count]
+        # for i in range(30, 50):
+        #     text_sequence.append(corpus[:i])
+        # 将text_sequence中的句子随机打乱
+        # random.shuffle(text_sequence)
+        sentences = []
+        # 随机确定每行单词数
+        while len(text_sequence) > 0:
+            # 随机确定每行单词数
+            line_length = random.randint(6, 10)
+            line_length = min(line_length, len(text_sequence))
+            # 从text_sequence中随机选出line_length个单词
+            # line = text_sequence.pop(line_length)
+            line = text_sequence[:line_length]
+            # 合并成一个字符串，用空格分割
+            sentence = ' '.join(line)
+            sentences.append(sentence)
+            text_sequence = text_sequence[line_length:]
+        # 字体大小从8-16之间随机选择
+        font_size = random.randint(8, 10)
+        # 随机确定字体颜色
+        color = random.choice(["#000000", "#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#FF00FF", "#00FFFF"])
+        # 随机确定字体
+        font = random.choice(["sans-serif", "serif", "monospace"])
+        # 随机确定字体粗细
+        font_weight = random.choice(["normal", "bold"])
+        # 随机确定字体倾斜
+        font_style = random.choice(["normal", "italic"])
+        
+        
+        # 随机选择x,y
+        x = random.randint(0, 300)
+        y = random.randint(0, 300)
+        for sentence in sentences:
+            text = Text(sentence)
+            text.attributes = {
+                'font-size': font_size,
+                'color': color,
+                'font-family': font,
+            }
+            text.attributes['x'] = x
+            text.attributes['y'] = y
+            description_group.children.append(text)
+            # x += text.get_bounding_box().width
+            print("text: ", sentence)
+            print("text: ", text.get_bounding_box().format())
+            y += text.get_bounding_box().height
+        return description_group
         
     def dict_to_layout_strategy(self, layout_strategy: dict) -> LayoutStrategy:
         ret_layout_strategy = None
@@ -85,7 +161,8 @@ class LayoutProcessor:
         return ret_layout_strategy
     
     def process_layout_template(self, element: LayoutElement):
-        # print("element: ", element.tag, element.id)
+        print("element: ", element.tag, element.id)
+        time_start = time.time()
         if element.tag == 'g':
             if element.id == 'title':
                 self._createTitleTextElement(self.title_config, element)
@@ -98,19 +175,23 @@ class LayoutProcessor:
                 element.children = self.chart_element.children
                 element.attributes = self.chart_element.attributes
                 element._bounding_box = element.get_bounding_box()
-                print("chart boundingbox: ", element._bounding_box)
+                # print("chart boundingbox: ", element._bounding_box)
             elif element.id == 'embellish':
                 self._createEmbellishElement(element)
                 element._bounding_box = element.get_bounding_box()
             else:
+                time_start_child = time.time()
                 topic_icon_idx = -1
                 boundingboxes = []
                 for idx, child in enumerate(element.children):
                     self.process_layout_template(child)
-                    print("child: ", child.id, child.tag, child._bounding_box)
+                    # print("child: ", child.id, child.tag, child._bounding_box)
                     if child.id == 'topic_icon':
                         topic_icon_idx = idx
                     boundingboxes.append(child._bounding_box)
+                time_end_child = time.time()
+                # print(f'process node {element.id} child time cost: {time_end_child - time_start_child}s')
+                time_start_topic_icon = time.time()
                 if topic_icon_idx != -1:
                     max_height = 0
                     max_width = 0
@@ -129,17 +210,30 @@ class LayoutProcessor:
                         element.children[topic_icon_idx].attributes['height'] = topic_icon_height
                         element.children[topic_icon_idx].attributes['width'] = topic_icon_width
                         element.children[topic_icon_idx]._bounding_box = element.children[topic_icon_idx].get_bounding_box()
+                time_end_topic_icon = time.time()
+                # print(f'process node {element.id} topic_icon time cost: {time_end_topic_icon - time_start_topic_icon}s')
+                time_start_size_constraint = time.time()
                 if element.size_constraint is not None:
+                    time_start_get_ref = time.time()
                     reference_element = element.get_element_by_id(element.reference_id)
+                    time_end_get_ref = time.time()
+                    # print(f'get reference element time: {time_end_get_ref - time_start_get_ref}s')
+
                     scales = []
+                    time_start_constraint = time.time()
                     for child in element.children:
                         if not element.reference_id == child.id:
-                            print("child: ", child.id, element.reference_id)
-                            print("size_constraint: ", element.size_constraint)
                             self.constraint_graph.add_node_with_edges(reference_element, child, element.size_constraint)
                             for edge in self.constraint_graph.node_map[child].prevs_edges:
+                                time_start_process = time.time()
                                 scale = edge.process_layout()
+                                time_end_process = time.time()
+                                # print(f'process constraint time: {time_end_process - time_start_process}s')
                                 scales.append(scale)
+                    time_end_constraint = time.time()
+                    # print(f'process constraints time: {time_end_constraint - time_start_constraint}s')
+
+                    time_start_scale = time.time()
                     min_scale = min(scales)
                     max_scale = max(scales)
                     chart_scale = 1
@@ -149,20 +243,34 @@ class LayoutProcessor:
                         chart_scale = min_scale
                     elif max_scale > 1 and min_scale < 1:
                         chart_scale = (max_scale + min_scale) / 2
+                    time_end_scale = time.time()
+                    print(f'calculate scale time: {time_end_scale - time_start_scale}s')
+
                     if element.reference_id == 'chart':
+                        time_start_rescale = time.time()
                         self.rescale_text_in_chart(chart_scale)
+                        time_end_rescale = time.time()
+                        print(f'rescale chart text time: {time_end_rescale - time_start_rescale}s')
+                time_end_size_constraint = time.time()
+                # print(f'process node {element.id} size_constraint time cost: {time_end_size_constraint - time_start_size_constraint}s')
+                time_start_layout = time.time()
                 for i in range(1, len(element.children)):
                     self.layout_graph.add_node_with_edges(element.children[i-1], element.children[i], element.layout_strategy)
                     node_map = self.layout_graph.node_map
                     for edge in node_map[element.children[i]].prevs_edges:
                         edge.process_layout()
+                time_end_layout = time.time()
+                # print(f'process node {element.id} layout time cost: {time_end_layout - time_start_layout}s')
+                time_start_bounding_box = time.time()
                 element._bounding_box = element.get_bounding_box()
+                time_end_bounding_box = time.time()
+                # print(f'process node {element.id} bounding_box time cost: {time_end_bounding_box - time_start_bounding_box}s')
         elif element.tag == 'image':
             id = element.id
             if id == 'topic_icon':
                 self._createTopicIconElement(self.topic_icon_config, element)
-        # elif element.tag == 'rect' and element.id == 'embellish_0':
-        #     self._createRectElement({},element)
+        time_end = time.time()
+        # print(f'process node {element.id} time cost: {time_end - time_start}s')
         
     def process_node(self, tree: dict):
         # 自顶向下递归地创建layout element, 并应用布局
@@ -242,35 +350,8 @@ class LayoutProcessor:
         text_anchor = title_config.get('textAnchor', 'middle')
         max_width = title_config.get('max_width', float('inf'))
         max_lines = title_config.get('max_lines', 1)
-        # text_lines = [text_content]
         text_lines = self._autolinebreak(text_content, max_lines)
         text_lines = self._avoidSingleWordLine(text_lines)
-        print("test_text_lines: ", text_lines)
-        
-        # # 将文本内容统一转换为列表形式
-        # if isinstance(text_content, list):
-        #     text_lines = text_content
-        # else:
-        #     # 如果渲染宽度超过max_width,按空格分词并重组文本行
-        #     words = text_content.split()
-        #     text_lines = []
-        #     current_line = []
-        #     current_width = 0
-            
-        #     for word in words:
-        #         word_metrics = Text._measure_text(word + ' ', font_size, text_anchor)
-        #         word_width = word_metrics['width']
-                
-        #         if current_width + word_width <= max_width:
-        #             current_line.append(word)
-        #             current_width += word_width
-        #         else:
-        #             text_lines.append(' '.join(current_line))
-        #             current_line = [word]
-        #             current_width = word_width
-            
-        #     if current_line:
-        #         text_lines.append(' '.join(current_line))
         
         # 计算每行文本的度量和总体尺寸
         line_metrics = []
@@ -286,45 +367,124 @@ class LayoutProcessor:
             total_height += metrics['height']
 
         max_width = 0
+        
+        # emphasis_phrases = title_config.get('emphasis_phrases', [])
+        emphasis_phrases = []
+        # print("emphasis_phrases: ", emphasis_phrases)
         # 创建每行文本元素
-        text_elements = []
+        line_groups = []  # 存储每行的group element
         current_y = 0
         for i, (line, metrics) in enumerate(zip(text_lines, line_metrics)):
             # 计算当前行的y位置（考虑行高）
             if i > 0:
                 current_y += font_size * line_height
             
-            attributes = {
-                'class': 'chart-title-line',
-                'x': 0,
-                'y': 0,
-                'text-anchor': text_anchor,
-                'font-family': title_config.get('font', 'sans-serif'),
-                'font-size': font_size,
-                'font-weight': title_config.get('fontWeight', 'bolder'),
-                'fill': title_config.get('color', '#000000'),
-                'letter-spacing': title_config.get('letterSpacing', 0)
-            }
-            text_element = Text(line)
-            text_element.attributes = attributes
-            boundingbox = text_element.get_bounding_box()
-            text_element._bounding_box = boundingbox
-            print("text_element: ", text_element.content)
-            print("text boundingbox: ", boundingbox)
-            max_width = max(max_width, boundingbox.width)
-            text_elements.append(text_element)
+            # 处理强调短语
+            text_parts = []
+            current_pos = 0
+            line_lower = line.lower()
+            
+            # 查找所有需要强调的短语
+            for text_color_pair in emphasis_phrases:
+                phrase = text_color_pair.get('text')
+                color = text_color_pair.get('color')
+                phrase_lower = phrase.lower()
+                start = 0
+                while True:
+                    pos = line_lower.find(phrase_lower, start)
+                    if pos == -1:
+                        break
+                        
+                    # 添加强调短语前的普通文本
+                    if pos > current_pos:
+                        normal_text = Text(line[current_pos:pos])
+                        normal_text.attributes = {
+                            'class': 'chart-title-line',
+                            'x': 0,
+                            'y': 0,
+                            'text-anchor': text_anchor,
+                            'font-family': title_config.get('font', 'sans-serif'),
+                            'font-size': font_size,
+                            'font-weight': title_config.get('fontWeight', 'bolder'),
+                            'fill': title_config.get('color', '#000000'),
+                            'letter-spacing': title_config.get('letterSpacing', 0)
+                        }
+                        text_parts.append(normal_text)
+                    
+                    # 添加强调短语
+                    emphasis_text = Text(line[pos:pos+len(phrase)])
+                    emphasis_text.attributes = {
+                        'class': 'chart-title-line emphasis',
+                        'x': 0,
+                        'y': 0,
+                        'text-anchor': text_anchor,
+                        'font-family': title_config.get('font', 'sans-serif'),
+                        'font-size': font_size+4,
+                        'font-weight': title_config.get('fontWeight', 'bolder'),
+                        'fill': color,  # 强调文本使用红色
+                        'letter-spacing': title_config.get('letterSpacing', 0)
+                    }
+                    text_parts.append(emphasis_text)
+                    
+                    current_pos = pos + len(phrase)
+                    start = pos + 1
+            
+            # 添加剩余的普通文本
+            if current_pos < len(line):
+                normal_text = Text(line[current_pos:])
+                normal_text.attributes = {
+                    'class': 'chart-title-line',
+                    'x': 0,
+                    'y': 0,
+                    'text-anchor': text_anchor,
+                    'font-family': title_config.get('font', 'sans-serif'),
+                    'font-size': font_size,
+                    'font-weight': title_config.get('fontWeight', 'bolder'),
+                    'fill': title_config.get('color', '#000000'),
+                    'letter-spacing': title_config.get('letterSpacing', 0)
+                }
+                text_parts.append(normal_text)
+            
+            # 创建当前行的group element
+            line_group = GroupElement()
+            line_group.children = text_parts
+            
+            layout_strategy = HorizontalLayoutStrategy()
+            layout_strategy.alignment = ["middle","middle"]
+            layout_strategy.direction = "right"
+            
+            # 计算每个文本部分的位置
+            # current_x = 0
+            for text_part in text_parts:
+                text_part._bounding_box = text_part.get_bounding_box()
+                # text_part.attributes['x'] = current_x
+                # current_x += text_part._bounding_box.width
+            
+            for i in range(1, len(text_parts)):
+                node_map = self.layout_graph.node_map
+                self.layout_graph.add_edge_by_value(text_parts[i-1], text_parts[i], layout_strategy)
+                for edge in node_map[text_parts[i]].prevs_edges:
+                    edge.process_layout()
+                
+            
+            
+            # 设置group的边界框
+            line_width = sum(part._bounding_box.width for part in text_parts)
+            line_group._bounding_box = line_group.get_bounding_box()
+            
+            line_groups.append(line_group)
+            max_width = max(max_width, line_width)
+
         self.subtitle_config['max_width'] = max_width
-        element.children = text_elements
-        # for text_element in text_elements:
-        #     self.layout_graph.add_node(Node(text_element))
-        for i in range(1, len(text_elements)):
+        element.children = line_groups
+        
+        # 应用布局 - 现在是对line groups应用
+        for i in range(1, len(line_groups)):
             node_map = self.layout_graph.node_map
-            self.layout_graph.add_edge_by_value(text_elements[i-1], text_elements[i], element.layout_strategy)
-            for edge in node_map[text_elements[i]].prevs_edges:
+            self.layout_graph.add_edge_by_value(line_groups[i-1], line_groups[i], element.layout_strategy)
+            for edge in node_map[line_groups[i]].prevs_edges:
                 edge.process_layout()
-            # layout_strategy.layout(node_map[text_elements[i-1]].value, node_map[text_elements[i]].value)
-            # node_map[text_elements[i]].value.update_pos(old_node_min_x, old_node_min_y)
-    
+
         boundingbox = element.get_bounding_box()
         element._bounding_box = boundingbox
 
@@ -590,6 +750,7 @@ class LayoutProcessor:
     
     def rescale_text_in_chart(self, scale: float):
         # 遍历 self.chart_element的子树中的所有元素
+        # time_start = time.time()
         def _rescale_text(element: LayoutElement):
             if element.tag == 'text':
                 # element.update_scale(scale, scale)
@@ -598,7 +759,12 @@ class LayoutProcessor:
                 for child in element.children:
                     _rescale_text(child)
         _rescale_text(self.chart_element)
+        # time_end = time.time()
+        # print(f'rescale chart text time: {time_end - time_start}s')
+        # time_start_bounding_box = time.time()
         self.chart_element._bounding_box = self.chart_element.get_bounding_box()
+        # time_end_bounding_box = time.time()
+        # print(f'rescale chart bounding_box time: {time_end_bounding_box - time_start_bounding_box}s')
 
     def _avoidSingleWordLine(self, text_lines: list[str]) -> list[str]:
         # 如果有单个单词的行，则将该行合并到上一行

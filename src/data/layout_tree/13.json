@@ -1,4 +1,5 @@
 {
+    "sequence": ["topic_icon"],
     "layout_tree":{
         "tag": "g",
         "layoutStrategy": {

@@ -6,7 +6,12 @@ import pandas as pd
 import numpy as np
 import re
 from .HAI_extract import extract_chart
+from openai import OpenAI
 
+client = OpenAI(
+    api_key="sk-HGwzhul85auxqDzz6eF39b9eD47347F7A454Ad9e8f1f380d",
+    base_url="https://aihubmix.com/v1"
+)
 class ChartExtractor(ABC):
     @abstractmethod
     def extract(self, df, item_range = (5, 20)):
@@ -36,7 +41,6 @@ def determine_column_type(df, column_name):
 
 class HAIChartExtractor(ChartExtractor):
     def extract(self, df, item_range = (5, 20)):
-        print("df: ", df)
         # try:
         chart_list, valid_chart_num = extract_chart(df, (7,8))
         # except:
@@ -49,6 +53,69 @@ def avoid_np_type(data):
     if isinstance(data, (np.integer, np.floating, np.bool_)):
         return data.item()
     return data
+
+class GPTChartExtractor(ChartExtractor):
+    def extract(self, df, item_range = (5, 20), options = {}):
+        # 用gpt从df中提取出options中需要的列。
+        # options的格式如下：{
+        #     "x_type": "categorical", // or "numerical"
+        #     "y_type": "numerical", // or "categorical"
+        #     "group_by": "categorical"
+        #     "y2_type": "numerical", // or "categorical"
+        # }
+        
+        # 根据options中，让gpt从df中提取出需要的列。
+        # 然后根据提取出的列，生成chart_data和meta_data。
+        # chart_data的格式如下：
+        # [{
+        #     "x_data": [x_data],
+        #     "y_data": [y_data],
+        #     "group": [group_data],
+        #     "y2_data": [y2_data],
+        # }]
+        # meta_data的格式如下：
+        # {
+        #     "x_type": "categorical", // or "numerical"
+        #     "y_type": "numerical", // or "categorical"
+        #     "group_by": "categorical"
+        #     "y2_type": "numerical", // or "categorical"
+        # }
+        
+        ### 输出df的column_name
+        print(df.columns)
+        
+        # 用gpt从df中提取出需要的列。
+        prompt = f"""
+        Please extract the columns from the dataframe based on the following options:
+        {options}
+        
+        ### Table Columns
+        {df.columns}
+        ### example Data only 3 rows
+        {df.head(3)}
+        
+        ### if you can't find the column, please return "None" as the column name
+        ### Please return the response in the following format:
+        
+        ***x_data***: column_name
+        ***y_data***: column_name
+        ***group***: column_name
+        ***y2_data***: column_name
+        
+        """
+        
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "user", "content": prompt}
+            ]
+        )
+        print(response.choices[0].message.content)
+        response_json = json.loads(response.choices[0].message.content)
+        return response_json
+        
+        
+
 class NaiveChartExtractor(ChartExtractor):
     def extract(self, df, item_range = [5, 10]):
         # 从df中随机筛选item_range个item
@@ -67,6 +134,7 @@ class NaiveChartExtractor(ChartExtractor):
         
         # item_idx = np.random.choice(item_num, item_num, replace=False)
         item_idx = np.arange(item_num)
+        # item_idx = np.arange(3)
         meta_data = {
             'x_type': determine_column_type(df, df.columns[0]),
             'x_label': df.columns[0],
@@ -75,6 +143,12 @@ class NaiveChartExtractor(ChartExtractor):
             'y_label': df.columns[1],
             'y_axis': df.columns[1],
         }
+        # print(meta_data)
+        for key in meta_data.keys():
+            if 'Unnamed' in meta_data[key]:
+                meta_data[key] = key
+        
+        
         if 'group' in df.columns:
             meta_data['group_type'] = determine_column_type(df, df.columns[2])
             meta_data['group_label'] = df.columns[2]
@@ -101,4 +175,19 @@ class NaiveChartExtractor(ChartExtractor):
                 data[-1]['order'] = avoid_np_type(filtered_df.iloc[i][2])
             if 'size' in df.columns:
                 data[-1]['size'] = avoid_np_type(filtered_df.iloc[i][2])
+        for item in data:
+            for key in item.keys():
+                if isinstance(item[key], str):
+                    item[key] = clean_str(item[key])
+        for key in meta_data.keys():
+            if isinstance(meta_data[key], str):
+                meta_data[key] = clean_str(meta_data[key])
         return data, meta_data
+
+
+def clean_str(s):
+    # 删除字符串中所有不合法的字符
+    # 合法字符：英文、数字、空格
+    valid_chars = "1234567890-=qwertyuiop[]asdfghjkl;zxcvbnm,.ZXCVBNM<>?ASDFGHJKL:QWERTYUIOP|POIUYTREWQ "
+    # return re.sub(r'[^\u0000-\u007F]+', '', s)
+    return ''.join(char for char in s if char in valid_chars)

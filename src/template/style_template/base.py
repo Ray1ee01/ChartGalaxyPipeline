@@ -122,42 +122,56 @@ class ColorEncodingTemplate:
         self.range = None
         self.meta_data = meta_data
         self.color_template = color_template
+        self.show_legend = True
         self.embedding_model = SentenceTransformer(model_path)
-        if len(data[0].keys()) == 3 and 'group' in data[0].keys():
+        self.color_with_semantics = False
+        if 'group' in data[0].keys():
             self.field = 'group'
             self.field_type = 'nominal'
             # domain是data列表中每个item的['group']的值的unique值
             self.domain = list(set([item['group'] for item in data]))
             self.range = self.color_template.get_color('marks', len(self.domain), seed_mark=1)
-            # self.apply_color_rules()
-        else:
-            if self.color_template is not None and not self.color_template.mode == 'monochromatic':
-                if data is not None:
-                    self.domain = list(set([row['x_data'] for row in data]))
-                    self.field = meta_data['x_label']
-                    seed_mark = 1
-                    colors = self.color_template.get_color('marks', len(self.domain), seed_mark=seed_mark)
-                    self.range = colors
+            self.apply_color_rules()
+            self.color_with_semantics = True
+            self.show_legend = True
+        elif self.color_template is not None:
+            self.domain = list(set([item['x_data'] for item in data]))
+            self.field = meta_data['x_label']
+            single_color = self.color_template.get_color('marks', 1, seed_mark=1)
+            self.range = [single_color] * len(self.domain)
+            self.show_legend = False
+            self.color_with_semantics = False
+        # elif self.color_template is not None and not self.color_template.mode == 'monochromatic':
+        #     if data is not None:
+        #         self.domain = list(set([row['x_data'] for row in data]))
+        #         self.field = meta_data['x_label']
+        #         seed_mark = 1
+        #         colors = self.color_template.get_color('marks', len(self.domain), seed_mark=seed_mark)
+        #         self.range = colors
+        #         self.show_legend = True
     def apply_color_rules(self):
         text = self.meta_data['title'] + " " + self.meta_data['caption']
         text_embedding = self.embedding_model.encode(text)
         # domain是一个list，里面是字符串
         # 计算domain里每个字符串的embedding
-        print("self.domain: ", self.domain)
-        domain_embeddings = self.embedding_model.encode(self.domain)
-        print("domain_embeddings: ", domain_embeddings)
+        self.domain_embeddings = self.embedding_model.encode(self.domain)
         # 计算text_embedding和self.domain的相似度
-        similarity = util.cos_sim(text_embedding, domain_embeddings).flatten()
-        print("similarity: ", similarity)
+        similarity = util.cos_sim(text_embedding, self.domain_embeddings).flatten()
         # 按相似度排序
-        print("self.domain: ", self.domain)
         sorted_domain = sorted(self.domain, key=lambda x: similarity[self.domain.index(x)], reverse=True)
         sorted_colors = self.color_template.rank_color_by_contrast(self.range)
-        print("sorted_colors: ", sorted_colors)
-        print("sorted_domain: ", sorted_domain)
         self.range = sorted_colors
         self.domain = sorted_domain
-        
+    
+    def find_color_by_semantics(self, text):
+        text_embedding = self.embedding_model.encode(text)
+        # 计算text_embedding和self.domain的相似度
+        similarity = util.cos_sim(text_embedding, self.domain_embeddings).flatten()
+        # 按相似度排序
+        sorted_domain = sorted(self.domain, key=lambda x: similarity[self.domain.index(x)], reverse=True)
+        # 返回相似度最高的domain对应的color
+        return self.range[self.domain.index(sorted_domain[0])]
+    
     def dump(self):
         return {
             "field": self.field,
@@ -243,17 +257,17 @@ class TitleFontTemplate(FontTemplate):
         self.letter_spacing = 0
     def large(self):
         self.font_size = 22
-        self.font_weight = 600
+        self.font_weight = 500
         self.line_height = 28
         self.letter_spacing = 0
     def middle(self):
         self.font_size = 16
-        self.font_weight = 600
+        self.font_weight = 500
         self.line_height = 24
         self.letter_spacing = 0.15
     def small(self):
         self.font_size = 14
-        self.font_weight = 600
+        self.font_weight = 500
         self.line_height = 20
         self.letter_spacing = 0.1
 

@@ -158,7 +158,7 @@ def generate_color_open(number, bcg_flag = True, src_img_path = '', Sal = None, 
   all_color = {}
   all_sal = {}
   ave_sal = []
-  for i in range(1, 1000):
+  for i in range(1, 2000):
     all_color[i] = []
     all_sal[i] = []
 

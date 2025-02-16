@@ -91,6 +91,7 @@ def extract_chart(df, item_range = (5, 20)):
                 y_data = [y_data_cp]
 
         # add filter for y_data
+        group_info = None
         if len(y_data) == 1: # no group
             if all([y_data[0][0] == y for y in y_data[0]]): # all same data
                 continue    

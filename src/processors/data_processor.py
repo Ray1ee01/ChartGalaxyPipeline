@@ -39,11 +39,21 @@ class JSONDataProcessor(DataProcessor):
         return data
 
 class VizNetDataProcessor(DataProcessor):
-    def process(self, raw_data: str, layout_sequence: List[str], chart_image_sequence: List[str]) -> List[Dict]:
+    def process(self, raw_data: str, layout_sequence: List[str], chart_image_sequence: List[str], matcher: CLIPMatcher) -> List[Dict]:
 
         dataloader = VizNetDataLoader()
-        df, raw_meta_data = dataloader.load(raw_data)
+        number = raw_data.split('_')[-1]
         
+        # df, raw_meta_data = dataloader.load(raw_data)
+        df, raw_meta_data = dataloader.load(number)
+        print(df, raw_meta_data)
+        
+        _,__ = GPTChartExtractor().extract(df, options={
+            "x_type": "categorical",
+            "y_type": "numerical",
+            "group_by": "categorical",
+            "y2_type": "numerical",
+        })
         chart_extractor = HAIChartExtractor()
         data, meta_data = chart_extractor.extract(df)
         meta_data.update(raw_meta_data)
@@ -70,8 +80,9 @@ class VizNetDataProcessor(DataProcessor):
 
         # 6. get chart relevant icons
         time_start = time.time()
-        matcher = CLIPMatcher()  # 只创建一次CLIPMatcher实例
-        icon_pool = get_icon_pool(chart_data, topic_data, matcher)
+        # matcher = CLIPMatcher()  # 只创建一次CLIPMatcher实例
+        
+        # icon_pool = get_icon_pool(chart_data, topic_data, matcher)
         with open('./src/processors/style_design_modules/image_paths.json') as f:
             image_paths = json.load(f)
         default_image_path = '/data1/jiashu/ChartPipeline/src/processors/style_design_modules/default.png'
@@ -88,7 +99,6 @@ class VizNetDataProcessor(DataProcessor):
         
         icon_selector = IconSelector(icon_pool, topic_color=None, spe_mode='flag')
         candidate_icons = icon_selector.select(layout_sequence, chart_image_sequence)
-        print("candidate_icons: ", candidate_icons)
 
         topic_icon_idx = -1
         x_single_icon_idx = -1
@@ -126,13 +136,12 @@ class VizNetDataProcessor(DataProcessor):
         return result
     
 class Chart2TableDataProcessor(DataProcessor):
-    def process(self, raw_data: str, layout_sequence: List[str], chart_image_sequence: List[str]) -> List[Dict]:
+    def process(self, raw_data: str, layout_sequence: List[str], chart_image_sequence: List[str], matcher: CLIPMatcher) -> List[Dict]:
         chart_type = raw_data.split('_')[0]
         dataloader = Chart2TableDataLoader()
         df, raw_meta_data = dataloader.load(raw_data)
         
         chart_extractor = NaiveChartExtractor()
-        print("df: ", df)
         data, meta_data = chart_extractor.extract(df)
         meta_data.update(raw_meta_data)
         
@@ -159,8 +168,9 @@ class Chart2TableDataProcessor(DataProcessor):
 
         # 6. get chart relevant icons
         time_start = time.time()
-        matcher = CLIPMatcher()  # 只创建一次CLIPMatcher实例
+        # matcher = CLIPMatcher()  # 只创建一次CLIPMatcher实例
         icon_pool = get_icon_pool(chart_data, topic_data, matcher)
+        
         with open('./src/processors/style_design_modules/image_paths.json') as f:
             image_paths = json.load(f)
         default_image_path = '/data1/jiashu/ChartPipeline/src/processors/style_design_modules/default.png'
@@ -176,17 +186,11 @@ class Chart2TableDataProcessor(DataProcessor):
         result['data'] = chart_data['data']
         result['data_facts'] = data_fact
         result['icons'] = {}
-        print("data: ", result['data'])
-        print('meta_data: ', result['meta_data'])
         
-        # icon_selector = IconSelector(icon_pool, topic_color=None, spe_mode='flag')
-        print("icon_pool: ", icon_pool)
-        icon_selector = IconSelector(icon_pool, topic_color=None)
-        print("icon_selector: ", icon_selector)
-        print("chart_image_sequence: ", chart_image_sequence)
+        icon_selector = IconSelector(icon_pool, topic_color=None, spe_mode='flag')
+        # icon_selector = IconSelector(icon_pool, topic_color=None)
         candidate_icons = icon_selector.select(layout_sequence, chart_image_sequence)
-        print("candidate_icons: ", candidate_icons)
-        candidate_icons = [[],[]]
+        # candidate_icons = [[],[]]
         if isinstance(candidate_icons, tuple):
             candidate_icons = candidate_icons[0] + candidate_icons[1]
         # print("candidate_icons: ", candidate_icons)

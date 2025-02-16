@@ -48,12 +48,13 @@ class BarChartTemplate(ChartTemplate):
         """更新规范"""
         encoding = specification["encoding"]
         mark_specification = specification["mark"]
-        corner_radiuses = {}
-        for key, value in self.mark.corner_radiuses.items():
-            if value is not None:
-                corner_radiuses[key] = value
-        if corner_radiuses:
-            specification["mark"]["cornerRadius"] = corner_radiuses
+        corner_radius = self.mark.corner_radius
+        # corner_radiuses = {}
+        # for key, value in self.mark.corner_radiuses.items():
+        #     if value is not None:
+        #         corner_radiuses[key] = value
+        if corner_radius:
+            specification["mark"]["cornerRadius"] = corner_radius
 
         
         annotation_specification = {
@@ -160,6 +161,7 @@ class VerticalBarChartConstraint(LayoutConstraint):
         chart_template.x_axis.field_type = "nominal"
         chart_template.y_axis.orientation = "left"
         chart_template.y_axis.field_type = "quantitative"
+        chart_template.mark.orientation = "vertical"
 
 class HorizontalBarChartConstraint(LayoutConstraint):
     """水平柱状图的布局约束"""
@@ -174,7 +176,7 @@ class HorizontalBarChartConstraint(LayoutConstraint):
         chart_template.x_axis.field_type = "nominal"
         chart_template.y_axis.orientation = "top"
         chart_template.y_axis.field_type = "quantitative"
-        
+        chart_template.mark.orientation = "horizontal"
 class GroupBarChartTemplate(BarChartTemplate):
     def __init__(self):
         super().__init__()
@@ -392,82 +394,150 @@ class GroupBarChartConstraint(LayoutConstraint):
         if not self.validate(chart_template):
             raise ValueError("不兼容的图表类型")
         # 随机apply VerticalBarChartConstraint或HorizontalBarChartConstraint        
-        if random.random() < 0.5:
-            VerticalBarChartConstraint().apply(chart_template)
-        else:
-            HorizontalBarChartConstraint().apply(chart_template)
+        # if random.random() < 0.5:
+        VerticalBarChartConstraint().apply(chart_template)
+        # else:
+        #     HorizontalBarChartConstraint().apply(chart_template)
         # chart_template.mark.orientation = "horizontal"
         # chart_template.x_axis.orientation = "left"
         # chart_template.x_axis.field_type = "nominal"
         # chart_template.y_axis.orientation = "top"
         # chart_template.y_axis.field_type = "quantitative"
 
-# class StackedBarChartConstraint(LayoutConstraint):
+class StackedBarChartConstraint(LayoutConstraint):
+    """堆叠柱状图的布局约束"""
+    def validate(self, chart_template: ChartTemplate) -> bool:
+        return isinstance(chart_template, StackedBarChartTemplate)
+    
+    def apply(self, chart_template: ChartTemplate) -> None:
+        if not self.validate(chart_template):
+            raise ValueError("不兼容的图表类型")
+        # 随机apply VerticalBarChartConstraint或HorizontalBarChartConstraint        
+        if random.random() < 0.5:
+            VerticalBarChartConstraint().apply(chart_template)
+        else:
+            HorizontalBarChartConstraint().apply(chart_template)
     
     
-# class BulletChartTemplate(ChartTemplate):
-#     def __init__(self):
-#         super().__init__()
-#         self.chart_type = "bullet"
+class BulletChartTemplate(BarChartTemplate):
+    def __init__(self):
+        super().__init__()
+        self.chart_type = "bullet"
     
-#     def create_template(self, data: list, meta_data: dict=None, color_template: ColorDesign=None):
-#         super().create_template(data, meta_data, color_template)
+    def create_template(self, data: list, meta_data: dict=None, color_template: ColorDesign=None):
+        super().create_template(data, meta_data, color_template)
+        self.data = data
+        self.meta_data = meta_data
         
-#     def update_specification(self, specification: dict) -> None:
-#         # 这里是bar chart相关的配置，通用配置放在chart generator中    
-#         """更新规范"""
-#         encoding = specification["encoding"]
-#         mark_specification = specification["mark"]
+    def update_specification(self, specification: dict) -> None:
+        # 这里是bar chart相关的配置，通用配置放在chart generator中    
+        """更新规范"""
+        encoding = specification["encoding"]
+        mark_specification = specification["mark"]
+        mark_specification["height"] = {"band": 0.8}
+        mark_specification["encoding"] = {
+            "x": {
+                "field": self.y_axis.field,
+                "type": self.y_axis.field_type,
+            }
+        }
         
-#         # only for test: update data
-#         x_data_key = self.x_axis.field
-#         y_data_key = self.y_axis.field
-#         y_data_list = []
-#         y_data_min = 0
-#         y_data_max = 0
-#         for item in self.data:
-#             y_data_list.append(item[y_data_key])
-#             # y_data_min = min(y_data_min, item[y_data_key])
-#             y_data_max = max(y_data_max, item[y_data_key])
-#         range_percentages = [0.6, 0.8]
-#         for item in self.data:
-#             item['ranges'] = [y_data_max*(range_percentages[0] + random.random()), y_data_max*(range_percentages[1] + random.random()),1]
         
-#         specification["layer"] = [
-#             mark_specification,
-#             {
-#                 "mark": {
-#                     "type": "bar",
-#                     "color": "#eee",
-#                 },
-#                 "encoding": {
-#                     "x": {
-#                         "field": "ranges[2]",
-#                     }
-#                 }
-#             },
-#             {
-#                 "mark": {
-#                     "type": "bar",
-#                     "color": "#eee",
-#                 },
-                
-#             }
-#         ]
+        # only for test: update data
+        x_data_key = self.x_axis.field
+        y_data_key = self.y_axis.field
+        y_data_list = []
+        y_data_min = 0
+        y_data_max = 0
+        print(self.data)
+        for item in self.data:
+            y_data_list.append(item['y_data'])
+            # y_data_min = min(y_data_min, item[y_data_key])
+            y_data_max = max(y_data_max, item['y_data'])
+        range_percentages = [0.6, 0.8]
+        for item in self.data:
+            item['ranges'] = [y_data_max*(range_percentages[0] + random.random()), y_data_max*(range_percentages[1] + random.random()),1]
+        # replace 'x_data' and 'y_data' in self.data 
+        specification["data"]["values"] = self.data
+        specification["facet"] = {
+            "row": {
+                "field": self.x_axis.field,
+                "type": "ordinal",
+            }
+        }
+        specification["spacing"] = 10
         
-# class BulletChartConstraint(LayoutConstraint):
-#     """堆叠柱状图的布局约束"""
-#     def validate(self, chart_template: ChartTemplate) -> bool:
-#         return isinstance(chart_template, StackedBarChartTemplate)
+        specification["spec"] ={
+            "encoding": {
+                "x": {
+                    "type": "quantitative",
+                    "scale": {"nice": False},
+                    "title": None
+                },
+            }
+        }
+        
+        specification["spec"]["layer"] = [
+            {
+                "mark": {
+                    "type": "bar",
+                    "color": "#eee",
+                },
+                "encoding": {
+                    "x": {
+                        "field": "ranges[2]",
+                    }
+                }
+            },
+            {
+                "mark": {
+                    "type": "bar",
+                    "color": "#ddd",
+                },
+                "encoding": {
+                    "x": {
+                        "field": "ranges[1]",
+                    }
+                }
+            },
+            {
+                "mark": {
+                    "type": "bar",
+                    "color": "#ccc",
+                },
+                "encoding": {
+                    "x": {
+                        "field": "ranges[0]",
+                    }
+                }
+            },
+            {"mark": mark_specification},
+        ]
+        # 从specification中删除mark字段
+        del specification["mark"]
+        del specification["encoding"]
+        
+        specification["resolve"] = {
+            "scale": {
+                "x": "independent",
+            }
+        }
+        return specification
+        
+class BulletChartConstraint(LayoutConstraint):
+    """子弹图的布局约束"""
+    def validate(self, chart_template: ChartTemplate) -> bool:
+        return isinstance(chart_template, BulletChartTemplate)
     
-#     def apply(self, chart_template: ChartTemplate) -> None:
-#         if not self.validate(chart_template):
-#             raise ValueError("不兼容的图表类型")
-#         # 随机apply VerticalBarChartConstraint或HorizontalBarChartConstraint        
-#         if random.random() < 0.5:
-#             VerticalBarChartConstraint().apply(chart_template)
-#         else:
-#             HorizontalBarChartConstraint().apply(chart_template)
+    def apply(self, chart_template: ChartTemplate) -> None:
+        if not self.validate(chart_template):
+            raise ValueError("不兼容的图表类型")
+        HorizontalBarChartConstraint().apply(chart_template)
+        
+        # # 随机apply VerticalBarChartConstraint或HorizontalBarChartConstraint
+        # if random.random() < 0.5:
+        #     VerticalBarChartConstraint().apply(chart_template)
+        # else:
 
 class RadialBarChartTemplate(BarChartTemplate):
     def __init__(self):
@@ -509,5 +579,47 @@ class RadialBarChartTemplate(BarChartTemplate):
         }
         
         return self.echart_option
+        
+class WaterfallChartTemplate(BarChartTemplate):
+    def __init__(self):
+        super().__init__()
+        self.chart_type = "waterfall"
     
+    def create_template(self, data: list, meta_data: dict=None, color_template: ColorDesign=None):
+        super().create_template(data, meta_data, color_template)
+        self.data = data
+        self.meta_data = meta_data
+        y_list = []
+        current_y = 0
+        for item in self.data:
+            y_list.append(current_y)
+            current_y += item['y_data']
+        for i, item in enumerate(self.data):
+            if i == 0:
+                item["y_range0"] = 0
+                item["y_range1"] = y_list[i]
+            elif i == len(self.data) - 1:
+                item["y_range0"] = 0
+                item["y_range1"] = y_list[i]
+            else:
+                item["y_range0"] = y_list[i-1]
+                item["y_range1"] = y_list[i]
+        
+    def update_specification(self, specification: dict) -> None:
+        mark_specification = specification["mark"]
+        encoding = specification["encoding"]
+        encoding["y"] = {"field": "y_range0"}
+        encoding["y2"] = {"field": "y_range1"}
+        
+        mark_specification["width"] = {"band": 0.8}
+        return specification
+
+class WaterfallChartConstraint(LayoutConstraint):
+    """瀑布图的布局约束"""
+    def validate(self, chart_template: ChartTemplate) -> bool:
+        return isinstance(chart_template, WaterfallChartTemplate)
     
+    def apply(self, chart_template: ChartTemplate) -> None:
+        if not self.validate(chart_template):
+            raise ValueError("不兼容的图表类型")
+        

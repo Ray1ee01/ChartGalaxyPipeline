@@ -10,6 +10,8 @@ from sentence_transformers import SentenceTransformer, util
 from .chart_template.base import *
 from .chart_template.bar_chart import *
 from .chart_template.line_chart import *
+from .chart_template.pie_chart import *
+from .chart_template.donut_chart import *
 from .chart_template.bump_chart import *
 from .chart_template.slope_chart import *
 from .chart_template.scatterplot import *
@@ -154,9 +156,11 @@ class TemplateFactory:
             chart_template.x_axis.has_domain = chart_component.get('x_axis', {}).get('has_domain', True)
             chart_template.x_axis.has_label = chart_component.get('x_axis', {}).get('has_label', True)
             chart_template.x_axis.has_tick = chart_component.get('x_axis', {}).get('has_tick', True)
+            chart_template.x_axis.has_title = chart_component.get('x_axis', {}).get('has_title', True)
             chart_template.y_axis.has_domain = chart_component.get('y_axis', {}).get('has_domain', True)
             chart_template.y_axis.has_tick = chart_component.get('y_axis', {}).get('has_tick', True)
             chart_template.y_axis.has_label = chart_component.get('y_axis', {}).get('has_label', True)
+            chart_template.y_axis.has_title = chart_component.get('y_axis', {}).get('has_title', True)
         return chart_template, layout_template
     
     @staticmethod
@@ -216,12 +220,32 @@ class TemplateFactory:
         meta_data: dict,
         layout_tree: dict,
         chart_composition: dict = None, 
-        color_template: ColorDesign = None
+        color_template: ColorDesign = None,
+        sort_config: dict = None,
+        chart_component: dict = None
     ):
         chart_template = GroupBarChartTemplate()
         chart_template.create_template(data, meta_data, color_template)
         layout_template = LayoutTemplate()
         layout_template.add_constraint(GroupBarChartConstraint())
+        layout_template.root = layout_template.build_template_from_tree(layout_tree)
+        layout_template.apply_constraints(chart_template)
+        return chart_template, layout_template
+
+    @staticmethod
+    def create_stacked_bar_chart_template(
+        data: list,
+        meta_data: dict,
+        layout_tree: dict,
+        chart_composition: dict = None,
+        color_template: ColorDesign = None,
+        sort_config: dict = None,
+        chart_component: dict = None
+    ):
+        chart_template = StackedBarChartTemplate()
+        chart_template.create_template(data, meta_data, color_template)
+        layout_template = LayoutTemplate()
+        layout_template.add_constraint(StackedBarChartConstraint())
         layout_template.root = layout_template.build_template_from_tree(layout_tree)
         layout_template.apply_constraints(chart_template)
         return chart_template, layout_template
@@ -274,6 +298,64 @@ class TemplateFactory:
         return chart_template, layout_template
         
     @staticmethod
+    def create_pie_chart_template(
+        data: List[Dict],
+        meta_data: Dict,
+        layout_tree: Dict,
+        chart_composition: Dict,
+        sort_config: Dict,
+        color_template: ColorDesign,
+        chart_component: Dict
+    ) -> Tuple[ChartTemplate, Dict]:
+        # 创建饼图模板
+        chart_template = PieChartTemplate(color_template)
+        layout_template = LayoutTemplate()
+        
+        # 使用create_template方法设置模板
+        chart_template.create_template(data, meta_data, color_template)
+
+        # 设置基本mark属性
+        chart_template.mark.radius = 100
+        chart_template.mark.innerRadius = 0
+
+        # 构建布局树
+        layout_template.root = layout_template.build_template_from_tree(layout_tree)
+        
+        # 应用约束
+        layout_template.apply_constraints(chart_template)
+
+        return chart_template, layout_template
+    
+    @staticmethod
+    def create_donut_chart_template(
+        data: List[Dict],
+        meta_data: Dict,
+        layout_tree: Dict,
+        chart_composition: Dict,
+        sort_config: Dict,
+        color_template: ColorDesign,
+        chart_component: Dict
+    ) -> Tuple[ChartTemplate, Dict]:
+        # 创建甜甜圈图模板
+        chart_template = DonutChartTemplate(color_template)
+        layout_template = LayoutTemplate()
+        
+        # 使用create_template方法设置模板
+        chart_template.create_template(data, meta_data, color_template)
+
+        # 设置基本mark属性
+        chart_template.mark.radius = 100
+        chart_template.mark.innerRadius = 50
+
+        # 构建布局树
+        layout_template.root = layout_template.build_template_from_tree(layout_tree)
+        
+        # 应用约束
+        layout_template.apply_constraints(chart_template)
+        
+        return chart_template, layout_template
+    
+    @staticmethod
     def create_bump_chart_template(
         data: list,
         meta_data: dict,
@@ -319,8 +401,7 @@ class TemplateFactory:
             chart_template.y_axis.has_label = chart_component.get('y_axis', {}).get('has_label', True)
 
         return chart_template, layout_template
-        
-        
+               
     @staticmethod
     def create_scatterplot_template(
         data: list,
@@ -422,7 +503,7 @@ class TemplateFactory:
         
         # 应用约束
         layout_template.apply_constraints(chart_template)
-        
+                
         if chart_component:
             chart_template.x_axis.has_domain = chart_component.get('x_axis', {}).get('has_domain', True)
             chart_template.x_axis.has_tick = chart_component.get('x_axis', {}).get('has_tick', True)
@@ -465,7 +546,6 @@ class TemplateFactory:
                 chart_template.has_annotation = True
         
         # 构建布局树
- 
         layout_template.root = layout_template.build_template_from_tree(layout_tree)
         
         # 应用约束
@@ -481,12 +561,12 @@ class TemplateFactory:
         
         return chart_template, layout_template
       
+    @staticmethod
     def create_radial_bar_chart_template(
         data: list,
         meta_data: dict,
         layout_tree: dict,
         chart_composition: dict = None,
- 
         sort_config: dict = None,
         color_template: ColorDesign = None,
         chart_component: dict = None,
@@ -596,13 +676,13 @@ class TemplateFactory:
         if chart_composition:
             if "mark_annotation" in chart_composition['sequence']:
                 chart_template.has_annotation = True
-        
+
         # 构建布局树
         layout_template.root = layout_template.build_template_from_tree(layout_tree)
         
         # 应用约束
         layout_template.apply_constraints(chart_template)
-        
+
         if chart_component:
             chart_template.x_axis.has_domain = chart_component.get('x_axis', {}).get('has_domain', True)
             chart_template.x_axis.has_tick = chart_component.get('x_axis', {}).get('has_tick', True)
@@ -611,4 +691,40 @@ class TemplateFactory:
             chart_template.y_axis.has_tick = chart_component.get('y_axis', {}).get('has_tick', True)
             chart_template.y_axis.has_label = chart_component.get('y_axis', {}).get('has_label', True)
         
+        return chart_template, layout_template
+    
+    @staticmethod
+    def create_bullet_chart_template(
+        data: list,
+        meta_data: dict,
+        layout_tree: dict,
+        chart_composition: dict = None,
+        sort_config: dict = None,
+        color_template: ColorDesign = None,
+        chart_component: dict = None
+    ):
+        chart_template = BulletChartTemplate()
+        chart_template.create_template(data, meta_data, color_template)
+        layout_template = LayoutTemplate()
+        layout_template.add_constraint(BulletChartConstraint())
+        layout_template.root = layout_template.build_template_from_tree(layout_tree)
+        layout_template.apply_constraints(chart_template)
+        return chart_template, layout_template
+
+    @staticmethod
+    def create_waterfall_chart_template(
+        data: list,
+        meta_data: dict,
+        layout_tree: dict,
+        chart_composition: dict = None,
+        sort_config: dict = None,
+        color_template: ColorDesign = None,
+        chart_component: dict = None
+    ):
+        chart_template = WaterfallChartTemplate()
+        chart_template.create_template(data, meta_data, color_template)
+        layout_template = LayoutTemplate()
+        layout_template.add_constraint(WaterfallChartConstraint())
+        layout_template.root = layout_template.build_template_from_tree(layout_tree)
+        layout_template.apply_constraints(chart_template)
         return chart_template, layout_template
