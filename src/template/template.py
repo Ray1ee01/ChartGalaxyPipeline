@@ -766,3 +766,32 @@ class TemplateFactory:
         layout_template.apply_constraints(chart_template)
         
         return chart_template, layout_template
+    
+    @staticmethod
+    def create_multi_level_pie_chart_template(
+        data: List[Dict],
+        meta_data: Dict,
+        layout_tree: Dict,
+        chart_composition: Dict,
+        sort_config: Dict,
+        color_template: ColorDesign,
+        chart_component: Dict
+    ):
+        """创建多层饼图模板"""
+        chart_template = MultiLevelPieChartTemplate(color_template)
+        layout_template = LayoutTemplate()
+        
+        # 使用create_template方法设置模板
+        chart_template.create_template(data, meta_data, color_template)
+
+        # 设置基本mark属性
+        chart_template.mark.radius = 100
+        chart_template.mark.innerRadius = 0
+
+        # 构建布局树
+        layout_template.root = layout_template.build_template_from_tree(layout_tree)
+        
+        # 应用约束
+        layout_template.apply_constraints(chart_template)
+        
+        return chart_template, layout_template

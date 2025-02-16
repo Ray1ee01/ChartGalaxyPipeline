@@ -11,9 +11,10 @@ class CustomDataProcessor(Chart2TableDataProcessor):
         processed_data = super().process(raw_data, layout_sequence, chart_image_sequence, matcher)
         
         # 确定图表类型
-        processed_data['meta_data']['chart_type'] = 'semicircledonut'
+        # processed_data['meta_data']['chart_type'] = 'semicircledonut'
         # processed_data['meta_data']['chart_type'] = 'layeredarea'
         # processed_data['meta_data']['chart_type'] = 'line'
+        processed_data['meta_data']['chart_type'] = 'multilevelpie'
         
         return processed_data
 
@@ -27,7 +28,7 @@ def main():
     )
 
     # 使用 pie 类型的数据
-    input_data = "pie_8"
+    input_data = "pie_166"
 
     # 生成图表
     result, bounding_boxes = pipeline.execute(
@@ -41,7 +42,7 @@ def main():
     output_dir = 'output'
     os.makedirs(output_dir, exist_ok=True)
     # output_path = os.path.join(output_dir, 'layered_area_chart.svg')
-    output_path = os.path.join(output_dir, 'semi_circle_donut_chart.svg')
+    output_path = os.path.join(output_dir, 'multi_level_pie_chart.svg')
     with open(output_path, 'w') as f:
         f.write(result)
 
