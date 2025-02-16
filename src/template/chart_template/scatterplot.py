@@ -2,6 +2,8 @@ from .base import ChartTemplate, LayoutConstraint
 from ..style_template.base import AxisTemplate, ColorEncodingTemplate, ShapeEncodingTemplate, ColorTemplate, StrokeTemplate
 from ..mark_template.point import PointTemplate
 from ..color_template import ColorDesign
+import pandas as pd
+import copy
 
 class ScatterPlotTemplate(ChartTemplate):
     def __init__(self):
@@ -95,3 +97,136 @@ class ScatterPlotConstraint(LayoutConstraint):
         chart_template.x_axis.field_type = "quantitative"
         chart_template.y_axis.orientation = "left"
         chart_template.y_axis.field_type = "quantitative"
+
+class ProportionalAreaTemplate(ScatterPlotTemplate):
+    def __init__(self):
+        super().__init__()
+        self.chart_type = "propotionalarea"
+
+    def create_template(self, data: list, meta_data: dict=None, color_template: ColorDesign=None):
+        super().create_template(data, meta_data, color_template)
+        # TODO 设置轴
+        self.x_axis = AxisTemplate(color_template)
+        self.y_axis = AxisTemplate(color_template)
+
+    def update_specification(self, specification: dict) -> None:
+        # for Vega-Lite
+        pass
+
+    def update_option(self, echart_option: dict) -> None:
+        self.echart_option = echart_option
+        data = echart_option["dataset"]["source"]
+        df = pd.DataFrame(data[1:], columns=data[0])
+
+        x_data = self.x_axis.field or "x_data"
+        y_data = self.y_axis.field or "y_data"
+        group = "group"
+
+        color_encoding = self.color_encoding.dump()
+        self.echart_option["colorBy"] = "series"
+        self.echart_option["color"] = color_encoding["range"]
+
+        if "series" not in echart_option or not echart_option["series"]:
+            user_series = {}
+        else:
+            user_series = echart_option["series"][0]
+
+        domain = color_encoding["domain"]
+        group_num = len(domain)
+
+        new_series_list = []
+        new_titles_list = []
+        new_singleAxis_list = []
+
+        def wrap_text_in_lines(text: str, width: int = 8) -> str:
+            lines = []
+            for i in range(0, len(text), width):
+                lines.append(text[i : i + width])
+            return "\n".join(lines)
+
+        for idx, name in enumerate(domain):
+            sub_df = df[df[group] == name].copy()
+            min_val = sub_df[y_data].min()
+            max_val = sub_df[y_data].max()
+            mean_val = sub_df[y_data].mean()
+
+            axis_data = sub_df[x_data].unique().tolist()
+            axis_data_wrapped = []
+            for item in axis_data:
+                item_str = str(item)
+                item_wrapped = wrap_text_in_lines(item_str, 8)
+                axis_data_wrapped.append(item_wrapped)
+
+            series_item = copy.deepcopy(user_series)
+
+            wrapped_name = wrap_text_in_lines(str(name), 8)
+
+            title_item = {
+                "textBaseline": "middle",
+                "top": f"{(idx + 0.5) / group_num * 100}%",
+                "text": wrapped_name
+            }
+
+            singleAxis_item = {
+                "left": 150,
+                "right": 80,
+                "type": "category",
+                "boundaryGap": False,
+                "data": axis_data_wrapped,
+                "top": f"{(idx * 100 - 5) / group_num}%",
+                "height": f"{100 / group_num - 10}%",
+                "axisLine": {"show": False},
+                "axisLabel": {
+                    "fontSize": 15,
+                    "interval": 0,
+                },
+            }
+
+            series_item.update({
+                "singleAxisIndex": idx,
+                "coordinateSystem": "singleAxis",
+                "type": "scatter",
+                "data": []
+            })
+
+            max_symbolSize = min(120, 600/len(sub_df)) if len(sub_df) > 0 else 20
+            min_symbolSize = 0.2 * max_symbolSize
+            mean_symbolSize = 0.5 * (max_symbolSize + min_symbolSize)
+            diff_symbolSize = max_symbolSize - mean_symbolSize
+
+            for jdx in range(len(sub_df)):
+                row = sub_df.iloc[jdx]
+                val_x = wrap_text_in_lines(row[x_data])
+                val_y = float(row[y_data])
+
+                if max_val == min_val:
+                    sz = mean_symbolSize
+                else:
+                    if val_y == mean_val:
+                        sz = mean_symbolSize
+                    elif val_y > mean_val and max_val != mean_val:
+                        ratio = (val_y - mean_val) / (max_val - mean_val)
+                        sz = mean_symbolSize + ratio * diff_symbolSize
+                    elif val_y < mean_val and min_val != mean_val:
+                        ratio = (mean_val - val_y) / (mean_val - min_val)
+                        sz = mean_symbolSize - ratio * diff_symbolSize
+                    else:
+                        if val_y > mean_val:
+                            sz = max_symbolSize
+                        else:
+                            sz = min_symbolSize
+
+                series_item["data"].append({
+                    "value": [val_x, val_y],
+                    "symbolSize": sz
+                })
+
+            new_series_list.append(series_item)
+            new_titles_list.append(title_item)
+            new_singleAxis_list.append(singleAxis_item)
+
+        echart_option["title"] = new_titles_list
+        echart_option["singleAxis"] = new_singleAxis_list
+        echart_option["series"] = new_series_list
+
+        return echart_option

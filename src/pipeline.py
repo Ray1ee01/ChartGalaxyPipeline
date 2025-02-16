@@ -124,6 +124,16 @@ class Pipeline:
                     color_template=color_template,
                     chart_component=chart_component_config
                 )
+            elif processed_data['meta_data']['chart_type'] == 'proportionalarea':
+                chart_template, layout_template = TemplateFactory.create_proportional_area_chart_template(
+                    data=processed_data['data'],
+                    meta_data=processed_data['meta_data'],
+                    layout_tree=layout_tree,
+                    chart_composition=chart_image_config,
+                    sort_config=sort_config,
+                    color_template=color_template,
+                    chart_component=chart_component_config
+                )
             elif processed_data['meta_data']['chart_type'] == 'groupbar':
                 chart_template, layout_template = TemplateFactory.create_group_bar_chart_template(
                     data=processed_data['data'],
@@ -186,6 +196,36 @@ class Pipeline:
                 )
             elif processed_data['meta_data']['chart_type'] == 'radar':
                 chart_template, layout_template = TemplateFactory.create_radar_chart_template(
+                    data=processed_data['data'],
+                    meta_data=processed_data['meta_data'],
+                    layout_tree=layout_tree,
+                    chart_composition=chart_image_config,
+                    sort_config=sort_config,
+                    color_template=color_template,
+                    chart_component=chart_component_config
+                )
+            elif processed_data['meta_data']['chart_type'] == 'radialline':
+                chart_template, layout_template = TemplateFactory.create_radial_line_chart_template(
+                    data=processed_data['data'],
+                    meta_data=processed_data['meta_data'],
+                    layout_tree=layout_tree,
+                    chart_composition=chart_image_config,
+                    sort_config=sort_config,
+                    color_template=color_template,
+                    chart_component=chart_component_config
+                )
+            elif processed_data['meta_data']['chart_type'] == 'radialarea':
+                chart_template, layout_template = TemplateFactory.create_radial_area_chart_template(
+                    data=processed_data['data'],
+                    meta_data=processed_data['meta_data'],
+                    layout_tree=layout_tree,
+                    chart_composition=chart_image_config,
+                    sort_config=sort_config,
+                    color_template=color_template,
+                    chart_component=chart_component_config
+                )
+            elif processed_data['meta_data']['chart_type'] == 'polar':
+                chart_template, layout_template = TemplateFactory.create_polar_chart_template(
                     data=processed_data['data'],
                     meta_data=processed_data['meta_data'],
                     layout_tree=layout_tree,
