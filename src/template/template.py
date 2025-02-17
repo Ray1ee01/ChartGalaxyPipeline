@@ -625,12 +625,29 @@ class TemplateFactory:
         meta_data: dict,
         layout_tree: dict,
         chart_composition: dict = None,
- 
         sort_config: dict = None,
         color_template: ColorDesign = None,
         chart_component: dict = None,
     ):
         chart_template = RadialAreaTemplate()
+        chart_template.create_template(data, meta_data, color_template)
+        layout_template = LayoutTemplate()
+        layout_template.root = layout_template.build_template_from_tree(layout_tree)
+        return chart_template, layout_template
+    
+        
+    @staticmethod
+    def create_radial_histogram_template(
+        data: list,
+        meta_data: dict,
+        layout_tree: dict,
+        chart_composition: dict = None,
+ 
+        sort_config: dict = None,
+        color_template: ColorDesign = None,
+        chart_component: dict = None,
+    ):
+        chart_template = RadialHistogramTemplate()
         chart_template.create_template(data, meta_data, color_template)
         layout_template = LayoutTemplate()
         layout_template.root = layout_template.build_template_from_tree(layout_tree)
@@ -642,18 +659,35 @@ class TemplateFactory:
         meta_data: dict,
         layout_tree: dict,
         chart_composition: dict = None,
- 
         sort_config: dict = None,
         color_template: ColorDesign = None,
         chart_component: dict = None,
     ):
-        chart_template = PolarTemplate()
+        chart_template = RadialHistogramTemplate()
+        chart_template.create_template(data, meta_data, color_template)
+        layout_template = LayoutTemplate()
+        # layout_template.add_constraint(RadialBarChartConstraint())
+        layout_template.root = layout_template.build_template_from_tree(layout_tree)
+        # layout_template.apply_constraints(chart_template)
+        return chart_template, layout_template
+
+    @staticmethod
+    def create_polar_area_chart_template(
+        data: list,
+        meta_data: dict,
+        layout_tree: dict,
+        chart_composition: dict = None,
+        sort_config: dict = None,
+        color_template: ColorDesign = None,
+        chart_component: dict = None,
+    ):
+        chart_template = PolarAreaTemplate()
         chart_template.create_template(data, meta_data, color_template)
         layout_template = LayoutTemplate()
         layout_template.root = layout_template.build_template_from_tree(layout_tree)
         return chart_template, layout_template
-    
-    @staticmethod
+        
+        
     def create_slope_chart_template(
         data: list,
         meta_data: dict,
@@ -682,21 +716,12 @@ class TemplateFactory:
         
         if annotation_config:
             chart_template.has_annotation = annotation_config.get('has_annotation', False)
-
-        # 构建布局树
+        chart_template = PolarAreaChartTemplate()
+        chart_template.create_template(data, meta_data, color_template)
+        layout_template = LayoutTemplate()
+        # layout_template.add_constraint(RadialBarChartConstraint())
         layout_template.root = layout_template.build_template_from_tree(layout_tree)
-        
-        # 应用约束
-        layout_template.apply_constraints(chart_template)
-
-        if axis_config:
-            chart_template.x_axis.has_domain = axis_config.get('x_axis', {}).get('has_domain', True)
-            chart_template.x_axis.has_tick = axis_config.get('x_axis', {}).get('has_tick', True)
-            chart_template.x_axis.has_label = axis_config.get('x_axis', {}).get('has_label', True)
-            chart_template.y_axis.has_domain = axis_config.get('y_axis', {}).get('has_domain', True)
-            chart_template.y_axis.has_tick = axis_config.get('y_axis', {}).get('has_tick', True)
-            chart_template.y_axis.has_label = axis_config.get('y_axis', {}).get('has_label', True)
-        
+        # layout_template.apply_constraints(chart_template)
         return chart_template, layout_template
     
     @staticmethod

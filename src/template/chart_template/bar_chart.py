@@ -594,6 +594,48 @@ class RadialBarChartTemplate(BarChartTemplate):
         }
         
         return self.echart_option
+    
+class RadialHistogramTemplate(BarChartTemplate):
+    def __init__(self):
+        super().__init__()
+        self.chart_type = "radialhistogram"
+        
+    def create_template(self, data: list, meta_data: dict=None, color_template: ColorDesign=None):
+        super().create_template(data, meta_data, color_template)
+        self.x_axis = AngleAxisTemplate(color_template)
+        self.x_axis.field = "x_data"
+        self.y_axis = RadiusAxisTemplate(color_template)
+        self.y_axis.field = "y_data"
+        self.polar_setting = PolarSetting()
+        
+    def update_specification(self, specification: dict) -> None:
+        # super().update_specification(specification)
+        raise NotImplementedError("RadialBarChartTemplate is not implemented")
+    
+    def update_option(self, echart_option: dict) -> None:
+        self.echart_option = echart_option
+        polar_setting = {
+            "radius": [self.polar_setting.inner_radius, self.polar_setting.outer_radius],
+        }
+        angleAxis = {
+            "startAngle": self.x_axis.start_angle,
+            "endAngle": self.x_axis.end_angle,
+            "clockwise": self.x_axis.clockwise,
+            "type": "category",
+        }
+        radiusAxis = {
+            # "type": "category",
+        }
+        self.echart_option["polar"] = polar_setting
+        self.echart_option["angleAxis"] = angleAxis
+        self.echart_option["radiusAxis"] = radiusAxis
+        
+        self.echart_option["series"][0]["type"] = "bar"
+        self.echart_option["series"][0]["coordinateSystem"] = "polar"
+        self.echart_option["series"][0]["encode"] = {
+            "angle": self.x_axis.field,
+            "radius": self.y_axis.field,
+        }
         
 class WaterfallChartTemplate(BarChartTemplate):
     def __init__(self):
@@ -638,3 +680,87 @@ class WaterfallChartConstraint(LayoutConstraint):
         if not self.validate(chart_template):
             raise ValueError("不兼容的图表类型")
         
+class PolarAreaChartTemplate(BarChartTemplate):
+    def __init__(self):
+        super().__init__()
+        self.chart_type = "polararea"
+        
+    def create_template(self, data: list, meta_data: dict=None, color_template: ColorDesign=None):
+        super().create_template(data, meta_data, color_template)
+        self.x_axis = AngleAxisTemplate(color_template)
+        self.y_axis = RadiusAxisTemplate(color_template)
+        self.polar_setting = PolarSetting()
+        
+    def update_specification(self, specification: dict) -> None:
+        # super().update_specification(specification)
+        raise NotImplementedError("RadialBarChartTemplate is not implemented")
+    
+    def update_option(self, echart_option: dict) -> None:
+        self.echart_option = echart_option
+        format_data = self.echart_option["dataset"]["source"]
+        transformed_data = self.transform_data(format_data)
+        self.echart_option["dataset"]["source"] = transformed_data
+        polar_setting = {
+            "radius": [self.polar_setting.inner_radius, self.polar_setting.outer_radius],
+        }
+        angleAxis = {
+            "startAngle": self.x_axis.start_angle,
+            "endAngle": self.x_axis.end_angle,
+            "clockwise": self.x_axis.clockwise,
+            "type": "category",
+        }
+        radiusAxis = {
+        }
+        self.echart_option["polar"] = polar_setting
+        self.echart_option["angleAxis"] = angleAxis
+        self.echart_option["radiusAxis"] = radiusAxis
+        series = []
+        for i in range(1, len(transformed_data[0])):
+            series.append({
+                "type": "bar",
+                "coordinateSystem": "polar",
+                "stack": "a",
+            })
+        self.echart_option["series"] = series
+        self.echart_option["legend"] = {}
+        # self.echart_option["series"][0]["type"] = "bar"
+        # self.echart_option["series"][0]["coordinateSystem"] = "polar"
+        # self.echart_option["series"][0]["encode"] = {
+        #     "angle": self.x_axis.field,
+        #     "radius": self.y_axis.field,
+        # }
+        
+        return self.echart_option
+    
+    def transform_data(self, data: list) -> list:
+        # 获取列名
+        headers = data[0]  # ['x_data', 'y_data', 'group']
+        
+        # 获取所有的 'group' 值
+        groups = sorted(set(row[2] for row in data[1:]))  # 去除重复的 group 值
+        # 新的列头 ['x_data', '2012 value', '10-year average value']
+        new_headers = ['x_data'] + groups
+        
+        # 创建一个字典来存储转换后的数据
+        transformed_data = {group: [] for group in groups}
+        transformed_data['x_data'] = []
+        
+        # 填充数据
+        for row in data[1:]:
+            x_data, y_data, group = row
+            if x_data not in transformed_data['x_data']:
+                transformed_data['x_data'].append(x_data)
+            # 填入对应的 y_data
+            transformed_data[group].append(y_data)
+        
+        # 创建二维数组，首先加入表头
+        result = [new_headers]
+        
+        # 将数据按行填入二维数组
+        for i in range(len(transformed_data['x_data'])):
+            row = [transformed_data['x_data'][i]]
+            for group in groups:
+                row.append(transformed_data[group][i])
+            result.append(row)
+        
+        return result
