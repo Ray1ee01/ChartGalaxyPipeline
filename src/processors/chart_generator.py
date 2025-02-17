@@ -195,6 +195,10 @@ class VegaLiteGenerator(ChartGenerator):
                 
             encoding["y"] = y_encoding
 
+        # 添加y2编码（如果存在）
+        if hasattr(self.template, 'y2_encoding') and self.template.y2_encoding:
+            encoding["y2"] = self.template.y2_encoding.copy()
+
         # 颜色编码配置
         if self.template.color_encoding and self.template.color_encoding.domain is not None:
             color_encoding = {
@@ -268,17 +272,23 @@ class VegaLiteGenerator(ChartGenerator):
         x_type = self.meta_data['x_type']
         y_type = self.meta_data['y_type']
         transformed_data = []
+
+        print('raw_data: ', raw_data)
         for item in raw_data:
-            transformed_data.append({
+            data_point = {
                 x_label: item['x_data'],
                 y_label: item['y_data']
-            })
+            }
+            # 添加其他可能存在的字段
+            if 'y2_data' in item:
+                data_point['y2_data'] = item['y2_data']
             if 'group' in item:
-                transformed_data[-1]['group'] = item['group']
+                data_point['group'] = item['group']
             if 'order' in item:
-                transformed_data[-1]['order'] = item['order']
+                data_point['order'] = item['order']
             if 'size' in item:
-                transformed_data[-1]['size'] = item['size']
+                data_point['size'] = item['size']
+            transformed_data.append(data_point)
         
         self.data = transformed_data
         self.template = template

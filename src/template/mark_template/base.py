@@ -9,14 +9,15 @@ class MarkTemplate:
         self.mark_type = None # 标记类型
         self.point = None
         self.interpolate = None
+        self.line = None
         mark_color = None
 
         # 样式属性
+        self.opacity = 1.0
         self.fill_color_style = ColorTemplate()
         self.fill_color_style.color = mark_color
         self.stroke_color_style = ColorTemplate()
         self.stroke_color_style.color = mark_color
-        
         self.stroke_style = StrokeTemplate()
         
         self.annotation_font_style = LabelFontTemplate()
