@@ -102,13 +102,14 @@ class PolarSetting():
         }
         
         
-        
+
 class AngleAxisTemplate(AxisTemplate):
     def __init__(self, color_template: ColorDesign=None):
         super().__init__(color_template)
         self.start_angle = 90
         self.end_angle = None
         self.clockwise = True
+        
         
 class RadiusAxisTemplate(AxisTemplate):
     def __init__(self, color_template: ColorDesign=None):
