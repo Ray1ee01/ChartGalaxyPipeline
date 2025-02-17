@@ -50,10 +50,13 @@ def rgb_to_hcl(r, g, b):
 def norm255rgb(rgb):
     return [int(max(min(x*255, 255),0)) for x in rgb]
 
-def extend_color_in_l(rgb):
+def extend_color_in_l(rgb, number=5):
     lch = rgb_to_hcl(*rgb)
     res = []
-    for l in range(45, 95, 10):
+    # for l in range(45, 95, 10):
+    delta = (95 - 45) / number
+    for i in range(number):
+        l = 45 + i * delta
         lch[0] = l
         lab = colour.LCHab_to_Lab(lch)
         xyz = colour.Lab_to_XYZ(lab)
@@ -62,10 +65,12 @@ def extend_color_in_l(rgb):
     res = [rgb_to_hex(*rgb) for rgb in res]
     return res
 
-def extend_color_in_c(rgb):
+def extend_color_in_c(rgb, number=5):
     lch = rgb_to_hcl(*rgb)
     res = []
-    for c in range(35, 85, 10):
+    delta = (85 - 35) / number
+    for i in range(number):
+        c = 35 + i * delta
         lch[1] = c
         lab = colour.LCHab_to_Lab(lch)
         xyz = colour.Lab_to_XYZ(lab)
@@ -85,10 +90,10 @@ def delta_h(h1, h2):
 def lighter_color(rgb):
     print("rgb before: ", rgb)
     lch = rgb_to_hcl(*rgb)
-    # if lch[0] < 70:
-    lch[0] = min(100, lch[0] + 20)
-    # if lch[1] < 60:
-    lch[1] = min(100, lch[1] + 20)
+    if lch[0] < 80:
+        lch[0] += 15
+    if lch[1] < 70:
+        lch[1] += 10
     lab = colour.LCHab_to_Lab(lch)
     xyz = colour.Lab_to_XYZ(lab)
     rgb = colour.XYZ_to_sRGB(xyz)
@@ -119,16 +124,18 @@ def check_in_palette(color, palette):
         if ciede2000(color, p) < 10:
             return True
     return False
-
+    
 text_types = ['title', 'caption']
 class ColorDesign:
-    def __init__(self, image_palette, mode='monochromatic'):
+    def __init__(self, image_palette, mode='monochromatic', lighter='high'):
         self.pool = image_palette
         self.mode = mode
         self.rgb_pool = [hex_to_rgb(color) for color in self.pool['color_list']]
         black = (0, 0, 0)
         white = (255, 255, 255)
-        gray = (128, 128, 128)
+        gray1 = (75, 75, 75)
+        gray2 = (150, 150, 150)
+        gray3 = (200, 200, 200)
         self.rgb_pool.sort(key=lambda x: ciede2000(x, black))
 
         if mode == 'monochromatic':
@@ -145,7 +152,7 @@ class ColorDesign:
             if dist_color_2_black > dist_color_2_white:
                 self.lightness = 'light'
             else:
-                self.lightness = 'black'
+                self.lightness = 'dark'
 
         if mode == 'complementary':
             rgb_cp = self.rgb_pool.copy()
@@ -157,6 +164,7 @@ class ColorDesign:
 
             # for each color, find the color with hue difference closest to 180
             self.complementary_colors = []
+            save_colors = []
             for i in range(len(lch_pool)):
                 h = lch_pool[i][2]
                 h_diff = [delta_h(h, h2) for h2 in h_pool]
@@ -166,7 +174,9 @@ class ColorDesign:
                     if abs(h_diff[j] - 180) < delta_h_min:
                         delta_h_min = h_diff[j]
                         min_idx = j
-                self.complementary_colors.append([rgb_cp[i], rgb_cp[min_idx]])
+                save_colors.append((rgb_cp[i], rgb_cp[min_idx], abs(delta_h_min)))
+            save_colors.sort(key=lambda x: x[2])
+            self.complementary_colors = [(x[0], x[1]) for x in save_colors]
             self.rgb_pool = rgb_cp
             self.rgb_pool_hex = [rgb_to_hex(*rgb) for rgb in self.rgb_pool]
             
@@ -176,7 +186,7 @@ class ColorDesign:
             if dist_color_2_black > dist_color_2_white:
                 self.lightness = 'light'
             else:
-                self.lightness = 'black'
+                self.lightness = 'dark'
 
         if mode == 'analogous':
             rgb_cp = self.rgb_pool.copy()
@@ -188,6 +198,7 @@ class ColorDesign:
 
             # for each color, find the color with hue difference closest 
             self.complementary_colors = []
+            save_colors = []
             for i in range(len(lch_pool)):
                 h = lch_pool[i][2]
                 h_diff = [delta_h(h, h2) for h2 in h_pool]
@@ -199,7 +210,9 @@ class ColorDesign:
                     if abs(h_diff[j]) < delta_h_min:
                         delta_h_min = h_diff[j]
                         min_idx = j
-                self.complementary_colors.append([rgb_cp[i], rgb_cp[min_idx]])
+                save_colors.append((rgb_cp[i], rgb_cp[min_idx], abs(delta_h_min)))
+            save_colors.sort(key=lambda x: x[2])
+            self.complementary_colors = [(x[0], x[1]) for x in save_colors]
             self.rgb_pool = rgb_cp
             self.rgb_pool_hex = [rgb_to_hex(*rgb) for rgb in self.rgb_pool]
             
@@ -209,7 +222,7 @@ class ColorDesign:
             if dist_color_2_black > dist_color_2_white:
                 self.lightness = 'light'
             else:
-                self.lightness = 'black'
+                self.lightness = 'dark'
 
         if mode == 'polychromatic':
             rgb_cp = self.rgb_pool.copy()
@@ -229,11 +242,9 @@ class ColorDesign:
             #     self.lightness = 'dark'
             self.lightness = 'dark'
 
-        self.basic_colors = [black, white, gray]
+        self.basic_colors = [black, white, gray1, gray2, gray3]
         self.basic_colors_hex = [rgb_to_hex(*color) for color in self.basic_colors]
-        # self.light = 'high' if random.randint(0, 1) == 0 else 'low'
-        # self.light='high'
-        self.light = 'low'
+        self.light = 'high' if lighter == 'high' else 'low'
 
     def get_emphasis_color(self, used_colors):
         if isinstance(used_colors[0], str):
@@ -243,106 +254,158 @@ class ColorDesign:
             palette = self.rgb_pool_hex_3
         used_colors.append(self.bcg_color)
         return emphasis_color(used_colors, palette)
+    
+    def get_reverse_color(self, color, seed = 0):
+        bcg_color_hex = rgb_to_hex(*self.bcg_color)
+        if color == bcg_color_hex:
+            return get_color('text', seed_text = seed, reverse = True)['title'][0]
+        else:
+            if self.lightness == 'dark':
+                if seed % 2 == 0:
+                    return self.basic_colors_hex[1]
+                return bcg_color_hex
+            else:
+                if seed % 2 == 0:
+                    return self.basic_colors_hex[0]
+                return bcg_color_hex
 
-    def get_color(self, type, number, group = 1, seed_color = 0, seed_middle_color = 0, \
-            seed_text = 0, seed_mark = 0, seed_axis = 0, seed_embellishment = 0, reverse = False):
+    def get_color(self, type, number = 1, group = 1,\
+            seed_color = 0, seed_middle_color = 0, seed_order\
+            seed_text = 0, seed_mark = 0, seed_axis = 0):
         if type == 'background':
             return [self.pool['bcg'] for _ in range(number)]
 
         if self.mode == 'monochromatic': 
             main_color = self.main_color
-            if seed_color > 0:
-                length_color = len(self.main_color_pool)
-                seed_color = seed_color % length_color
-                main_color = self.main_color_pool[seed_color]
             if self.light == 'high':
                 main_color = lighter_color(main_color)
-            extend_colors1 = extend_color_in_l(main_color)
-            extend_colors2 = extend_color_in_c(main_color)
+            if seed_color > 0:
+                if seed_color == 1:
+                    if self.lightness == 'dark':
+                        main_color = [255, 255, 255]
+                    else:
+                        main_color = [55, 55, 55]
+                else:
+                    choice = seed_color % len(self.main_color_pool)
+                    main_color = self.main_color_pool[choice]
+            if group == 1:
+                if number < 6:
+                    extend_colors1 = extend_color_in_l(main_color)
+                    extend_colors2 = extend_color_in_c(main_color)
+                else:
+                    extend_colors1 = extend_color_in_l(main_color, number)
+                    extend_colors2 = extend_color_in_c(main_color, number)
+            else:
+                if group < 6:
+                    extend_colors1 = extend_color_in_l(main_color)
+                    extend_colors2 = extend_color_in_c(main_color)
+                else:
+                    extend_colors1 = extend_color_in_l(main_color, group)
+                    extend_colors2 = extend_color_in_c(main_color, group)
             main_color_hex = rgb_to_hex(*main_color)
             bcg_color_hex = rgb_to_hex(*self.bcg_color)
+            if self.lightness == 'dark':
+                other_color = self.basic_colors_hex[1]
+                gray_color = self.basic_colors_hex[4]
+            else:
+                other_color = self.basic_colors_hex[0]
+                gray_color = self.basic_colors_hex[2]
 
             if type == 'text':
-                seed = -1 - seed_text % 2 if reverse else seed_text % 5
+                seed = seed_text % 4
                 if seed == 0: # all same color
-                    return [main_color_hex for _ in range(number)]
+                    return {
+                        'title': [main_color_hex],
+                        'caption': [main_color_hex],
+                        'annotation': [main_color_hex],
+                    }
                 if seed == 1: # all black/white
-                    if self.lightness == 'dark':
-                        return [self.basic_colors_hex[1] for _ in range(number)]
-                    return [self.basic_colors_hex[0] for _ in range(number)]
+                    return {
+                        'title': [other_color],
+                        'caption': [other_color],
+                        'annotation': [other_color],
+                    }
                 if seed == 2: # extend in lightness
-                    res = extend_colors1[:number]
-                    if len(res) < number:
-                        res += [extend_colors1[-1] for _ in range(number - len(res))]
-                    return res
-                if seed == 3: # extend in chroma
-                    res = extend_colors2[:number]
-                    if len(res) < number:
-                        res += [extend_colors2[-1] for _ in range(number - len(res))]
-                    return res
-                if seed == 4: # main color + other black/white
-                    res = [main_color_hex]
-                    other_color = None
                     if self.lightness == 'dark':
-                        other_color = self.basic_colors_hex[1]
+                        res = extend_colors1[-3:]
                     else:
-                        other_color = self.basic_colors_hex[0]
-                    for i in range(1, number):
-                        res.append(other_color)
-                    return res
-                if seed == -1: # reverse black/white
-                    if self.lightness == 'dark':
-                        return [self.basic_colors[0] for _ in range(number)]
-                    return [self.basic_colors[1] for _ in range(number)]
-                if seed == -2: # reverse bcg color
-                    return [bcg_color_hex for _ in range(number)]
+                        res = extend_colors1[:3]
+                    return {
+                        'title': res[:1],
+                        'caption': res[1:2],
+                        'annotation': res[2:3],
+                    }
+                if seed == 3: # main color + other black/white
+                    return {
+                        'title': [main_color_hex],
+                        'caption': [other_color],
+                        'annotation': [other_color],
+                    }
                     
             if type == 'marks':
-                print("extend_colors1: ", extend_colors1)
-                print("extend_colors2: ", extend_colors2)
-                seed = seed_mark % 6
-                # use extend color in l or c
-                if seed == 1 and len(extend_colors1) >= number:
-                    return extend_colors1[:number]
-                if seed == 2 and len(extend_colors1) >= number:
-                    return extend_colors1[-number:]
-                if seed == 3 and len(extend_colors2) >= number:
-                    return extend_colors2[:number]
-                if seed == 4 and len(extend_colors2) >= number:
-                    return extend_colors2[-number:]
-                # use gray color as marks
-                if seed == 5:
-                    return [self.basic_colors_hex[2] for _ in range(number)]
-                # use main color as marks
-                return [main_color_hex for _ in range(number)]
+                if group == 1:
+                    seed = seed_mark % 6
+                    if seed == 0:
+                        return {
+                            'group1': [main_color_hex for _ in range(number)],
+                        }
+                    if seed == 1:
+                        return {
+                            'group1': extend_colors1[:number],
+                        }
+                    if seed == 2:
+                        return {
+                            'group1': extend_colors1[-number:],
+                        }
+                    if seed == 3:
+                        return {
+                            'group1': extend_colors2[:number],
+                        }   
+                    if seed == 4:
+                        return {
+                            'group1': extend_colors2[-number:],
+                        }
+                    if seed == 5:
+                        return {
+                            'group1': [gray_color for _ in range(number)],
+                        }
+                else:
+                    seed = seed_mark % 4
+                    group_colors = []
+                    if seed == 0:
+                        group_colors = extend_colors1[:group]
+                    if seed == 1:
+                        group_colors = extend_colors1[-group:]
+                    if seed == 2:
+                        group_colors = extend_colors2[:group]
+                    if seed == 3:
+                        group_colors = extend_colors2[-group:]
+                    res = {}
+                    for i in range(group):
+                        res[f'group{i+1}'] = group_colors
+                    return res
                 
             if type == 'axis':
                 seed = seed_axis % 5
-                if seed == 1: # darkest color of c
-                    return [extend_colors1[0] for _ in range(number)]
-                if seed == 2: # darkest color of l
-                    return [extend_colors2[0] for _ in range(number)]
-                if seed == 3: # gray
-                    return [self.basic_colors_hex[2] for _ in range(number)]
-                if seed == 4: # main color
-                    return [main_color_hex for _ in range(number)]
-                if self.lightness == 'dark': # black or white
-                    return [self.basic_colors_hex[1] for _ in range(number)]
-                return [self.basic_colors_hex[0] for _ in range(number)]
-
-            if type == 'embellishment':
-                seed = seed_embellishment % 3
+                if seed == 0:
+                    return {
+                        'axis': [extend_colors1[0]]
+                    }
                 if seed == 1:
-                    res = []
-                    for i in range(number):
-                        res.append(random.choice(extend_colors1))
-                    return res
-                if seed == 2:
-                    res = []
-                    for i in range(number):
-                        res.append(random.choice(extend_colors2))
-                    return res
-                return [main_color_hex for _ in range(number)]
+                    return {
+                        'axis': [extend_colors2[0]]
+                    }
+                if seed == 3: # gray
+                    return {
+                        'axis': [gray_color]
+                    }
+                if seed == 4: # main color
+                    return {
+                        'axis': [main_color_hex]
+                    }
+                return {
+                    'axis': [other_color]
+                }
         
         if self.mode == 'complementary' or self.mode == 'analogous':
             length = len(self.complementary_colors)
@@ -350,200 +413,303 @@ class ColorDesign:
             selected_color = self.complementary_colors[seed_color]
             color1 = selected_color[0]
             color2 = selected_color[1]
+            # random shift
+            if ran
+                color1, co
             if self.light == 'high':
                 color1 = lighter_color(color1)
                 color2 = lighter_color(color2)
-            extend_colors1_l = extend_color_in_l(color1)
-            extend_colors2_l = extend_color_in_l(color2)
-            extend_colors1_c = extend_color_in_c(color1)
-            extend_colors2_c = extend_color_in_c(color2)
-            if self.lightness == 'dark':
-                main_color1_hex = extend_colors1_l[-1]
-                main_color2_hex = extend_colors2_l[-1]
-            else:
-                main_color1_hex = extend_colors1_l[0]
-                main_color2_hex = extend_colors2_l[0]
             
+            if number < 6:
+                extend_colors1_l = extend_color_in_l(color1)
+                extend_colors2_l = extend_color_in_l(color2)
+                extend_colors1_c = extend_color_in_c(color1)
+                extend_colors2_c = extend_color_in_c(color2)
+            else:
+                extend_colors1_l = extend_color_in_l(color1, number)
+                extend_colors2_l = extend_color_in_l(color2, number)
+                extend_colors1_c = extend_color_in_c(color1, number)
+                extend_colors2_c = extend_color_in_c(color2, number)
+
             color1_hex = rgb_to_hex(*color1)
             color2_hex = rgb_to_hex(*color2)
+            main_color1_hex = color1_hex
+            main_color2_hex = color2_hex
             middle_colors = [color for color in self.rgb_pool_hex if color != color1_hex and color != color2_hex]
             # print("middle_colors: ", middle_colors)
             if len(middle_colors) == 0:
                 middle_colors = ["#ababab"]
             middle_color_seed = seed_middle_color % len(middle_colors)
             middle_color = middle_colors[middle_color_seed]
+
             other_color = None
             inside_color = None
+            print(self.lightness)
             if self.lightness == 'dark':
                 other_color = self.basic_colors_hex[1]
                 inside_color = self.basic_colors_hex[0]
+                gray_color = self.basic_colors_hex[4]
             else:
                 other_color = self.basic_colors_hex[0]
                 inside_color = self.basic_colors_hex[1]
+                gray_color = self.basic_colors_hex[2]
 
             if type == 'text':
-                type_num = 4
-                if number > 2:
-                    type_num = 10
-                if number > 3:
-                    type_num = 12
-                if number > 4:
-                    type_num = 13
-                text_seed = (seed_text % type_num) + 1 if not reverse else -1 - seed_text % 2
-                if text_seed == 1: # all black/white
-                    return [other_color for _ in range(number)]
-                if text_seed == 2: # title black/white，others gray
-                    res = [other_color]
-                    for i in range(1, number):
-                        res.append(self.basic_colors_hex[2])
-                    return res
-                if text_seed == 3: # title color1, others black/white
-                    res = [main_color1_hex]
-                    for i in range(1, number):
-                        res.append(other_color)
-                    return res
-                if text_seed == 4: # title color2, others black/white
-                    res = [main_color2_hex]
-                    for i in range(1, number):
-                        res.append(other_color)
-                    return res
-                if text_seed == 5 and number > 2: # title color1, caption/annotation color1 and color2, other black/white
-                    res = [main_color1_hex, main_color1_hex, main_color2_hex]
-                    for i in range(3, number):
-                        res.append(other_color)
-                    return res
-                if text_seed == 6 and number > 2: # title color2, caption/annotation color1 and color2, other black/white
-                    res = [main_color2_hex, main_color1_hex, main_color2_hex]
-                    for i in range(3, number):
-                        res.append(other_color)
-                    return res
-                if text_seed == 7 and number > 2: # title color1, caption/annotation color1 and color2, other gray
-                    res = [main_color1_hex, main_color1_hex, main_color2_hex]
-                    for i in range(3, number):
-                        res.append(self.basic_colors_hex[2])
-                    return res
-                if text_seed == 8 and number > 2: # title color2, caption/annotation color1 and color2, other gray
-                    res = [main_color2_hex, main_color1_hex, main_color2_hex]
-                    for i in range(3, number):
-                        res.append(self.basic_colors_hex[2])
-                    return res
-                if text_seed == 9 and number > 2: # title (color1, black/white, color2), black/white
-                    res = [main_color1_hex, other_color, main_color2_hex]
-                    for i in range(3, number):
-                        res.append(other_color)
-                    return res
-                if text_seed == 10 and number > 2: # title (color1, black/white, color2), gary
-                    res = [main_color1_hex, other_color, main_color2_hex]
-                    for i in range(3, number):
-                        res.append(self.basic_colors_hex[2])
-                    return res
-                if text_seed == 11 and number > 3: # title (color1, black/white, color2, middle_color), black/white
-                    res = [main_color1_hex, other_color, main_color2_hex, middle_color]
-                    for i in range(4, number):
-                        res.append(other_color)
-                    return res
-                if text_seed == 12 and number > 3: # title (color1, black/white, color2, middle_color), gray
-                    res = [main_color1_hex, other_color, main_color2_hex, middle_color]
-                    for i in range(4, number):
-                        res.append(self.basic_colors_hex[2])
-                    return res
-                if text_seed == 13 and number > 4: # title (color1, black/white, color2, middle_color), color1, color2, gray
-                    res = [main_color1_hex, other_color, main_color2_hex, middle_color, main_color1_hex, main_color2_hex]
-                    for i in range(6, number):
-                        res.append(self.basic_colors_hex[2])
-                    return res
-                if text_seed == -1:
-                    return [inside_color for _ in range(number)]
-                if text_seed == -2:
-                    return [middle_color for _ in range(number)]
-                return [other_color for _ in range(number)]
+                seed = seed_text % 14
+                if seed == 0:
+                    return {
+                        'title': [other_color],
+                        'caption': [other_color],
+                        'annotation': [other_color],
+                    }
+                if seed == 1:
+                    return {
+                        'title': [other_color],
+                        'caption': [gary_color],
+                        'annotation': [gary_color],
+                    }
+                if seed == 2:
+                    return {
+                        'title': [main_color1_hex],
+                        'caption': [other_color],
+                        'annotation': [other_color],
+                    }
+                if seed == 3:
+                    return {
+                        'title': [main_color2_hex],
+                        'caption': [other_color],
+                        'annotation': [other_color],
+                    }
+                if seed == 4:
+                    return {
+                        'title': [main_color1_hex],
+                        'caption': [main_color1_hex, main_color2_hex],
+                        'annotation': [other_color],
+                    }
+                if seed == 5:
+                    return {
+                        'title': [main_color2_hex],
+                        'caption': [main_color1_hex, main_color2_hex],
+                        'annotation': [other_color],
+                    }
+                if seed == 6:
+                    return {
+                        'title': [other_color],
+                        'caption': [main_color1_hex, main_color2_hex],
+                        'annotation': [other_color],
+                    }
+                if seed == 7:
+                    return {
+                        'title': [main_color1_hex],
+                        'caption': [main_color1_hex, main_color2_hex],
+                        'annotation': [gray_color],
+                    }
+                if seed == 8:
+                    return {
+                        'title': [main_color2_hex],
+                        'caption': [main_color1_hex, main_color2_hex],
+                        'annotation': [gray_color],
+                    }
+                if seed == 9:
+                    return {
+                        'title': [other_color],
+                        'caption': [main_color1_hex, main_color2_hex],
+                        'annotation': [gray_color],
+                    }
+                if seed == 10:
+                    return {
+                        'title': [main_color1_hex],
+                        'caption': [other_color, main_color1_hex, main_color2_hex],
+                        'annotation': [gray_color],
+                    }
+                if seed == 11:
+                    return {
+                        'title': [main_color2_hex],
+                        'caption': [other_color, main_color1_hex, main_color2_hex],
+                        'annotation': [gray_color],
+                    }
+                if seed == 12:
+                    return {
+                        'title': [other_color],
+                        'caption': [other_color, main_color1_hex, main_color2_hex],
+                        'annotation': [gray_color],
+                    }
+                if seed == 13:
+                    return {
+                        'title': [main_color1_hex, main_color2_hex, middle_color],
+                        'caption': [other_color],
+                        'annotation': [gray_color],
+                    }
 
             if type == 'marks':
-                type_num = 2
-                if number > 2:
-                    type_num = 6
-                mark_seed = (seed_mark % type_num) + 1
-                if mark_seed == 1:
-                    return [self.basic_colors_hex[2] for _ in range(number)]
-                if mark_seed == 2 and number == 2:
-                    res = [main_color1_hex, main_color2_hex]
-                    return res
-                if mark_seed == 3 and number % 2 == 0 and number / 2 <= len(extend_colors1_l):
-                    target = number // 2
-                    res = extend_colors1_l[:target] + extend_colors2_l[:target]
-                    return res
-                if mark_seed == 4 and number % 2 == 0 and number / 2 <= len(extend_colors1_c):
-                    target = number // 2
-                    res = extend_colors1_c[:target] + extend_colors2_c[:target]
-                    return res
-                if mark_seed == 5 and number % 2 == 0 and number / 2 <= len(extend_colors1_l):
-                    target = number // 2
-                    res = extend_colors1_l[-target:] + extend_colors2_l[-target:]
-                    return res
-                if mark_seed == 6 and number % 2 == 0 and number / 2 <= len(extend_colors1_c):
-                    target = number // 2
-                    res = extend_colors1_c[-target:] + extend_colors2_c[-target:]
-                    return res
-                return [self.basic_colors_hex[2] for _ in range(number)]
+                if group == 1 and number == 2:
+                    return {
+                        'group1': [main_color1_hex, main_color2_hex],
+                    }
+                if group == 1:
+                    seed = seed_mark % 4
+                    if seed == 0:
+                        return {
+                            'group1': [other_color],
+                        }
+                    if seed == 1:
+                        return {
+                            'group1': [main_color1_hex],
+                        }
+                    if seed == 2:
+                        return {
+                            'group1': [main_color2_hex],
+                        }
+                    if seed == 3:
+                        return {
+                            'group1': [gray_color],
+                        }
+                else:
+                    assert group == 2
+                    seed = seed_mark % 5
+                    if seed == 0:
+                        return {
+                            'group1': [main_color1_hex],
+                            'group2': [main_color2_hex],
+                        }
+                    if seed == 1:
+                        return {
+                            'group1': extend_colors1_l[:number],
+                            'group2': extend_colors2_l[:number],
+                        }
+                    if seed == 2:
+                        return {
+                            'group1': extend_colors1_l[-number:],
+                            'group2': extend_colors2_l[-number:],
+                        }
+                    if seed == 3:
+                        return {
+                            'group1': extend_colors1_c[:number],
+                            'group2': extend_colors2_c[:number],
+                        }
+                    if seed == 4:
+                        return {
+                            'group1': extend_colors1_c[-number:],
+                            'group2': extend_colors2_c[-number:],
+                        }
 
             if type == 'axis':
-                axis_seed = seed_axis % 3
-                if axis_seed == 1: # other color
-                    return [other_color for _ in range(number)]
-                if axis_seed == 2: # middle color
-                    return [middle_color for _ in range(number)]
-                return [self.basic_colors_hex[2] for _ in range(number)]
-
-            if type == 'embellishment':
-                res = [main_color1_hex, main_color2_hex, middle_color]
-                return res
+                axis_seed = seed_axis % 5
+                if axis_seed == 0:
+                    return {
+                        'axis': [other_color],
+                    }
+                if axis_seed == 1:
+                    return {
+                        'axis': [gray_color],
+                    }
+                if axis_seed == 2:
+                    return {
+                        'axis': [extend_colors1_l[0]],
+                    }
+                if axis_seed == 3:
+                    return {
+                        'axis': [extend_colors2_l[0]],
+                    }
+                if axis_seed == 4:
+                    return {
+                        'axis': [middle_color],
+                    }
 
         if self.mode == 'polychromatic':
             other_color = None
-            inside_color = None
-            # if self.lightness == 'dark':
-            #     other_color = self.basic_colors_hex[1]
-            #     other_color = lighter_color(other_color)
-            #     inside_color = self.basic_colors_hex[0]
-            #     inside_color = lighter_color(inside_color)
-            # else:
-            #     other_color = self.basic_colors_hex[0]
-            #     other_color = lighter_color(other_color)
-            #     inside_color = self.basic_colors_hex[1]
-            #     inside_color = lighter_color(inside_color)
+            gray_color = None
+            if self.lightness == 'dark':
+                other_color = self.basic_colors_hex[1]
+                gray_color = self.basic_colors_hex[4]
+            else:
+                other_color = self.basic_colors_hex[0]
+                gray_color = self.basic_colors_hex[2]
             if type == 'text':
-                if reverse:
-                    return [inside_color for _ in range(number)]
-                return [other_color for _ in range(number)]
-            if type == 'marks':
-                seed = seed_mark % 4
-                print("rgb_pool_hex: ", self.rgb_pool_hex)
+                seed = seed_text % 2
                 if seed == 0:
-                    return [self.basic_colors_hex[2] for _ in range(number)]
-                if len(self.rgb_pool_hex) >= number:
-                    if seed == 1:
-                        return self.rgb_pool_hex[:number]
-                    if seed == 2:
-                        return self.rgb_pool_hex[-number:]
-                if len(self.rgb_pool_hex_2) >= number:
-                    if seed == 1:
-                        return self.rgb_pool_hex_2[:number]
-                    if seed == 2:
-                        return self.rgb_pool_hex_2[-number:]
-                if len(self.rgb_pool_hex_3) >= number:
-                    if seed == 1:
-                        return self.rgb_pool_hex_3[:number]
-                    if seed == 2:
-                        return self.rgb_pool_hex_3[-number:]
-                return static_palettes.get_colors(number)
+                    return {
+                        'title': [other_color],
+                        'caption': [other_color],
+                        'annotation': [other_color],
+                    }
+                if self.middle_color is None:
+                    rand_color = random.choice(self.rgb_pool_hex)
+                    extend_colors = extend_color_in_l(hex_to_rgb(rand_color))
+                    dark_rand_color = extend_colors[0] if self.lightness == 'dark' else extend_colors[-1]
+                    self.middle_color = {
+                        'color': rand_color,
+                        'dark': dark_rand_color,
+                    }
+                return {
+                    'title': [self.middle_color['dark']],
+                    'caption': [self.middle_color['dark']],
+                    'annotation': [self.middle_color['dark']]
+                }
+            if type == 'marks':
+                seed = seed_mark % 2
+                if group == 1:
+                    if len(self.rgb_pool_hex) >= number:
+                        if seed == 1:
+                            clist = self.rgb_pool_hex[:number]
+                        if seed == 2:
+                            clist = self.rgb_pool_hex[-number:]
+                    elif len(self.rgb_pool_hex_2) >= number:
+                        if seed == 1:
+                            clist = self.rgb_pool_hex_2[:number]
+                        if seed == 2:
+                            clist = self.rgb_pool_hex_2[-number:]
+                    elif len(self.rgb_pool_hex_3) >= number:
+                        if seed == 1:
+                            clist = self.rgb_pool_hex_3[:number]
+                        if seed == 2:
+                            clist = self.rgb_pool_hex_3[-number:]
+                    else:
+                        clist = static_palettes.get_colors(number)
+                    return {
+                        'group1': clist,
+                    }
+                else:
+                    base_colors = []
+                    if len(self.rgb_pool_hex) >= group:
+                        if seed == 1:
+                            base_colors = self.rgb_pool_hex[:group]
+                        if seed == 2:
+                            base_colors = self.rgb_pool_hex[-group:]
+                    elif len(self.rgb_pool_hex_2) >= group:
+                        if seed == 1:
+                            base_colors = self.rgb_pool_hex_2[:group]
+                        if seed == 2:
+                            base_colors = self.rgb_pool_hex_2[-group:]
+                    elif len(self.rgb_pool_hex_3) >= group:
+                        if seed == 1:
+                            base_colors = self.rgb_pool_hex_3[:group]
+                        if seed == 2:
+                            base_colors = self.rgb_pool_hex_3[-group:]
+                    else:
+                        base_colors = static_palettes.get_colors(group)
+                    if seed_color % 2 == 0:
+                        res = {}
+                        for i in range(group):
+                            res[f'group{i+1}'] = [base_colors[i] for _ in range(number)]
+                    else:
+                        res = {}
+                        for i in range(group):
+                            res[f'group{i+1}'] = extend_color_in_l(hex_to_rgb(base_colors[i]), number)
+                    return res
 
             if type == 'axis':
-                seed = seed_axis % 2
+                seed = seed_axis % 3
                 if seed == 0:
-                    return [self.basic_colors_hex[2] for _ in range(number)]
-                return [other_color for _ in range(number)]
-            if type == 'embellishment':
-                return self.rgb_pool_hex[:number]
+                    return {
+                        'axis': [gray_color],
+                    }
+                if seed == 1:
+                    return {
+                        'axis': [other_color],
+                    }
+
+                'axis': [random.choice(self.rgb_pool_hex)],
 
     def rank_color(self, palette, importance):
         assert len(palette) == len(importance)
