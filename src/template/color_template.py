@@ -2,6 +2,8 @@ import random
 import colour
 import numpy as np
 from ..utils.color_statics import palette_iteration, StaticPalettes
+# from color_statics import palette_iteration, StaticPalettes
+
 
 static_palettes = StaticPalettes()
 
@@ -54,9 +56,12 @@ def extend_color_in_l(rgb, number=5):
     lch = rgb_to_hcl(*rgb)
     res = []
     # for l in range(45, 95, 10):
-    delta = (95 - 45) / number
+    h = lch[2]
+    start_l = 45 if h < 85 and h > 114 else 75
+    end_l = 95
+    delta = (end_l - start_l) / number
     for i in range(number):
-        l = 45 + i * delta
+        l = start_l + i * delta
         lch[0] = l
         lab = colour.LCHab_to_Lab(lch)
         xyz = colour.Lab_to_XYZ(lab)
@@ -158,23 +163,45 @@ class ColorDesign:
             bcg_rgb = hex_to_rgb(bcg)
             rgb_cp = [rgb for rgb in rgb_cp if ciede2000(rgb, bcg_rgb) > 10]
             lch_pool = [rgb_to_hcl(*rgb) for rgb in rgb_cp]
+            # filter c < 30
+            lch_valid_idx = [i for i in range(len(lch_pool)) if lch_pool[i][1] > 30]
+            lch_pool = [lch_pool[i] for i in lch_valid_idx]
+            rgb_cp = [rgb_cp[i] for i in lch_valid_idx]
             h_pool = [lch[2] for lch in lch_pool]
+            # print('lch', lch_pool)
+            # rgbs_lch = [norm255rgb(colour.XYZ_to_sRGB(colour.Lab_to_XYZ(colour.LCHab_to_Lab(lch)))) for lch in lch_pool]
+            # print('rgbs', rgbs_lch)
 
             # for each color, find the color with hue difference closest to 180
             self.complementary_colors = []
-            save_colors = []
-            for i in range(len(lch_pool)):
-                h = lch_pool[i][2]
-                h_diff = [delta_h(h, h2) for h2 in h_pool]
-                min_idx = 0
-                delta_h_min = 180
-                for j in range(len(h_diff)):
-                    if abs(h_diff[j] - 180) < delta_h_min:
-                        delta_h_min = h_diff[j]
-                        min_idx = j
-                save_colors.append((rgb_cp[i], rgb_cp[min_idx], abs(delta_h_min)))
-            save_colors.sort(key=lambda x: x[2])
-            self.complementary_colors = [(x[0], x[1]) for x in save_colors]
+            if len(lch_pool) > 1:    
+                save_colors = []
+                for i in range(len(lch_pool)):
+                    h = lch_pool[i][2]
+                    h_diff = [delta_h(h, h2) for h2 in h_pool]
+                    min_idx = 0
+                    delta_h_min = 180
+                    for j in range(len(h_diff)):
+                        if abs(h_diff[j] - 180) < delta_h_min:
+                            delta_h_min = h_diff[j]
+                            min_idx = j
+                    save_colors.append((rgb_cp[i], rgb_cp[min_idx], abs(delta_h_min)))
+                save_colors.sort(key=lambda x: x[2])
+                self.complementary_colors = [(x[0], x[1]) for x in save_colors]
+            elif len(lch_pool) == 1:
+                lch1 = lch_pool[0]
+                h2 = (lch1[2] + 180) % 360
+                rgb2 = norm255rgb(colour.XYZ_to_sRGB(colour.Lab_to_XYZ(colour.LCHab_to_Lab([lch1[0], lch1[1], h2]))))
+                self.complementary_colors = [(rgb_cp[0], rgb2)]
+            else:
+                specific_c = 65
+                rand_h1 = random.randint(0, 360)
+                rand_h2 = (rand_h1 + 180) % 360
+                rgb1 = norm255rgb(colour.XYZ_to_sRGB(colour.Lab_to_XYZ(colour.LCHab_to_Lab([specific_c, 65, rand_h1]))))
+                rgb2 = norm255rgb(colour.XYZ_to_sRGB(colour.Lab_to_XYZ(colour.LCHab_to_Lab([specific_c, 65, rand_h2]))))
+                self.complementary_colors = [(rgb1, rgb2)]
+            print('complementary', self.complementary_colors)
+
             self.rgb_pool = rgb_cp
             self.rgb_pool_hex = [rgb_to_hex(*rgb) for rgb in self.rgb_pool]
             
@@ -267,7 +294,7 @@ class ColorDesign:
                 return bcg_color_hex
 
     def get_color(self, type, number = 1, group = 1,\
-            seed_color = 0, seed_middle_color = 0, seed_order\
+            seed_color = 0, seed_middle_color = 0, seed_order = 0, \
             seed_text = 0, seed_mark = 0, seed_axis = 0):
         if type == 'background':
             return [self.pool['bcg'] for _ in range(number)]
@@ -411,8 +438,8 @@ class ColorDesign:
             color1 = selected_color[0]
             color2 = selected_color[1]
             # random shift
-            if ran
-                color1, co
+            if seed_order % 2 == 1:
+                color1, color2 = color2, color1
             if self.light == 'high':
                 color1 = lighter_color(color1)
                 color2 = lighter_color(color2)
@@ -703,7 +730,9 @@ class ColorDesign:
                         'axis': [other_color],
                     }
 
-                'axis': [random.choice(self.rgb_pool_hex)],
+                return {
+                    'axis': [random.choice(self.rgb_pool_hex)]
+                }
 
     def rank_color(self, palette, importance):
         assert len(palette) == len(importance)
