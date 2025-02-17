@@ -5,6 +5,7 @@ from ..color_template import ColorDesign
 import random
 import copy
 from sentence_transformers import SentenceTransformer, util
+from ...utils.color_statics import StaticPalettes
 
 model_path = "/data1/jiashu/models/models--sentence-transformers--all-MiniLM-L6-v2/snapshots/fa97f6e7cb1a59073dff9e6b13e2715cf7475ac9"
 
@@ -39,7 +40,8 @@ class AxisTemplate:
         self.has_domain = True
         # 从1到100之间随机取一个值
         seed_axis = random.randint(1, 100)
-        stroke_color = color_template.get_color('axis', 1, seed_axis=seed_axis)
+        # stroke_color = color_template.get_color('axis', 1, seed_axis=seed_axis)
+        stroke_color = "#0f223b"
         self.domain_color_style = ColorTemplate()
         self.domain_color_style.color = stroke_color
         self.domain_stroke_style = StrokeTemplate()
@@ -47,7 +49,7 @@ class AxisTemplate:
         ## label 样式
         self.has_label = True
         self.label_color_style = ColorTemplate()
-        self.label_color_style.color = stroke_color
+        self.label_color_style.color = "#000d2a"
         # self.label_font_style = FontTemplate()
         self.label_font_style = LabelFontTemplate()
         
@@ -125,19 +127,26 @@ class ColorEncodingTemplate:
         self.embedding_model = SentenceTransformer(model_path)
         self.color_with_semantics = False
         if 'group' in data[0].keys():
+            print("color encoding template: ", data[0])
             self.field = 'group'
             self.field_type = 'nominal'
             # domain是data列表中每个item的['group']的值的unique值
             self.domain = list(set([item['group'] for item in data]))
-            self.range = self.color_template.get_color('marks', len(self.domain), seed_mark=1)
+            static_palettes = StaticPalettes()
+            self.range = static_palettes.get_colors(len(self.domain))
+            # self.range = static_palettes.get_colors_from_cmap('Pastel1', len(self.domain))
+            # self.range = self.color_template.get_color('marks', len(self.domain), seed_mark=1)
             self.apply_color_rules()
             self.color_with_semantics = True
             self.show_legend = True
         elif self.color_template is not None:
             self.domain = list(set([item['x_data'] for item in data]))
             self.field = meta_data['x_label']
-            single_color = self.color_template.get_color('marks', 1, seed_mark=1)
-            self.range = [single_color] * len(self.domain)
+            single_color = self.color_template.get_color('marks', 1, seed_mark=1)[0]
+            # self.range = [single_color] * len(self.domain)
+            self.range = []
+            for i in range(len(self.domain)):
+                self.range.append(single_color)
             self.show_legend = False
             self.color_with_semantics = False
         # elif self.color_template is not None and not self.color_template.mode == 'monochromatic':
@@ -251,22 +260,22 @@ class TitleFontTemplate(FontTemplate):
         super().__init__()
         self.font = "sans-serif"
         self.font_size = 22
-        self.font_weight = 500
+        self.font_weight = 700
         self.line_height = 28
         self.letter_spacing = 0
     def large(self):
-        self.font_size = 22
-        self.font_weight = 500
+        self.font_size = 24
+        self.font_weight = 700
         self.line_height = 28
         self.letter_spacing = 0
     def middle(self):
         self.font_size = 16
-        self.font_weight = 500
+        self.font_weight = 700
         self.line_height = 24
         self.letter_spacing = 0.15
     def small(self):
         self.font_size = 14
-        self.font_weight = 500
+        self.font_weight = 700
         self.line_height = 20
         self.letter_spacing = 0.1
 
@@ -285,7 +294,7 @@ class BodyFontTemplate(FontTemplate):
         self.line_height = 24
         self.letter_spacing = 0.5
     def middle(self):
-        self.font_size = 14
+        self.font_size = 13
         self.font_weight = 400
         self.line_height = 20
         self.letter_spacing = 0.25

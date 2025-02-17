@@ -223,15 +223,17 @@ class ColorDesign:
             self.rgb_pool_hex_3 = [rgb_to_hex(*rgb) for rgb in rgb_extend2]
 
             self.bcg_color = bcg_rgb
-            if ciede2000(self.bcg_color, black) > ciede2000(self.bcg_color, white):
-                self.lightness = 'light'
-            else:
-                self.lightness = 'dark'
+            # if ciede2000(self.bcg_color, black) > ciede2000(self.bcg_color, white):
+            #     self.lightness = 'light'
+            # else:
+            #     self.lightness = 'dark'
+            self.lightness = 'dark'
 
         self.basic_colors = [black, white, gray]
         self.basic_colors_hex = [rgb_to_hex(*color) for color in self.basic_colors]
         # self.light = 'high' if random.randint(0, 1) == 0 else 'low'
-        self.light='high'
+        # self.light='high'
+        self.light = 'low'
 
     def get_emphasis_color(self, used_colors):
         if isinstance(used_colors[0], str):
@@ -499,16 +501,16 @@ class ColorDesign:
         if self.mode == 'polychromatic':
             other_color = None
             inside_color = None
-            if self.lightness == 'dark':
-                other_color = self.basic_colors_hex[1]
-                other_color = lighter_color(other_color)
-                inside_color = self.basic_colors_hex[0]
-                inside_color = lighter_color(inside_color)
-            else:
-                other_color = self.basic_colors_hex[0]
-                other_color = lighter_color(other_color)
-                inside_color = self.basic_colors_hex[1]
-                inside_color = lighter_color(inside_color)
+            # if self.lightness == 'dark':
+            #     other_color = self.basic_colors_hex[1]
+            #     other_color = lighter_color(other_color)
+            #     inside_color = self.basic_colors_hex[0]
+            #     inside_color = lighter_color(inside_color)
+            # else:
+            #     other_color = self.basic_colors_hex[0]
+            #     other_color = lighter_color(other_color)
+            #     inside_color = self.basic_colors_hex[1]
+            #     inside_color = lighter_color(inside_color)
             if type == 'text':
                 if reverse:
                     return [inside_color for _ in range(number)]

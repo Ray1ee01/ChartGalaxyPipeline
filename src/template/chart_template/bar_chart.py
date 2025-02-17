@@ -3,23 +3,28 @@ from ..style_template.base import AxisTemplate, ColorEncodingTemplate, ColorTemp
 from ..mark_template.bar import BarTemplate
 from ..color_template import ColorDesign
 import random
-
+from typing import Dict
 class BarChartTemplate(ChartTemplate):
     def __init__(self):
         super().__init__()
         self.chart_type = "bar"
         self.sort = None
     
-    def create_template(self, data: list, meta_data: dict=None, color_template: ColorDesign=None):
+    def create_template(self, data: list, meta_data: dict=None, color_template: ColorDesign=None, config: Dict=None):
+        
+        self.config = config
+        
         self.x_axis = AxisTemplate(color_template)
+        self.x_axis.orientation = self.config.get('x_axis_orient', {}).get('orient', None)
+        
         self.y_axis = self.x_axis.copy()
-        self.height = 42*len(data)
+        self.y_axis.orientation = self.config.get('y_axis_orient', {}).get('orient', None)
         
-        
-        self.mark = BarTemplate(color_template)
+        mark_config = self.config.get('mark', {}).get('bar', {})
+        self.mark = BarTemplate(color_template, mark_config)
         
         self.color_encoding = ColorEncodingTemplate(color_template, meta_data, data)
-        
+        print(self.color_encoding.dump())
 
         if meta_data is None:
             # set default value
@@ -49,6 +54,8 @@ class BarChartTemplate(ChartTemplate):
         """更新规范"""
         encoding = specification["encoding"]
         mark_specification = specification["mark"]
+        mark_specification["height"] = self.mark.height
+        mark_specification["width"] = self.mark.width
         corner_radius = self.mark.corner_radius
         # corner_radiuses = {}
         # for key, value in self.mark.corner_radiuses.items():
@@ -80,7 +87,7 @@ class BarChartTemplate(ChartTemplate):
             text_config["fill"] = self.mark.annotation_color_style.color
         
         if self.mark.orientation == "horizontal":
-            side = self.mark.annotation_side
+            side = self.config.get('annotation', {}).get('annotation_side', "outer")
             if self.x_axis.orientation == "left" and side == "outer":
                 annotation_specification["mark"]["align"] = "left"
                 annotation_specification["mark"]["dx"] = 5
@@ -94,7 +101,7 @@ class BarChartTemplate(ChartTemplate):
                 annotation_specification["mark"]["align"] = "left"
                 annotation_specification["mark"]["dx"] = 5
         else:
-            side = self.mark.annotation_side
+            side = self.config.get('annotation', {}).get('annotation_side', "outer")
             if self.x_axis.orientation == "top" and side == "outer":
                 annotation_specification["mark"]["baseline"] = "top"
                 annotation_specification["mark"]["dy"] = 5
@@ -113,20 +120,26 @@ class BarChartTemplate(ChartTemplate):
             encoding["x"], encoding["y"] = encoding["y"], encoding["x"]
             mark_specification["orient"] = "horizontal"
 
-        
-        if self.sort:
-            sort_config = {
-                "by": self.sort["by"],
-                "ascending": self.sort["ascending"]
-            }
-            if sort_config["by"] == "x":
-                encoding["y"]["sort"] = "-x" if sort_config["ascending"] else "x"
+        if self.config.get('layout', {}).get('chart_config', {}).get('sort', {}):
+            sort_config = self.config.get('layout', {}).get('chart_config', {}).get('sort', {})
+            if sort_config.get('by', 'y') == 'x':
+                encoding["y"]["sort"] = "-x" if sort_config.get('ascending', True) else "x"
             else:
-                encoding["x"]["sort"] = "-y" if sort_config["ascending"] else "y"
+                encoding["x"]["sort"] = "y" if sort_config.get('ascending', True) else "-y"
+        
+        # if self.sort:
+        #     sort_config = {
+        #         "by": self.sort["by"],
+        #         "ascending": self.sort["ascending"]
+        #     }
+        #     if sort_config["by"] == "x":
+        #         encoding["y"]["sort"] = "-x" if sort_config["ascending"] else "x"
+        #     else:
+        #         encoding["x"]["sort"] = "-y" if sort_config["ascending"] else "y"
         specification["encoding"] = encoding
         
-        # if self.has_annotation:
-        if True:
+        if self.has_annotation:
+        # if True:
             specification["layer"] = [
                 {"mark": mark_specification, "encoding": encoding},
                 annotation_specification

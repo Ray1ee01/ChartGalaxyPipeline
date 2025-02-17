@@ -43,6 +43,7 @@ class LayoutProcessor:
         self.title_config = default_title_config
         self.subtitle_config = default_subtitle_config
         self.topic_icon_config = default_topic_icon_config
+        self.additional_configs = additional_configs
         # 如果additional_configs中存在title_config, 则使用additional_configs中的title_config
         if 'title_config' in additional_configs:
             # update title_config
@@ -231,7 +232,8 @@ class LayoutProcessor:
                                 # print(f'process constraint time: {time_end_process - time_start_process}s')
                                 scales.append(scale)
                     time_end_constraint = time.time()
-                    # print(f'process constraints time: {time_end_constraint - time_start_constraint}s')
+                    print("processing element: ", element.id)
+                    print(f'process constraints time: {time_end_constraint - time_start_constraint}s')
 
                     time_start_scale = time.time()
                     min_scale = min(scales)
@@ -349,8 +351,10 @@ class LayoutProcessor:
         line_height = title_config.get('lineHeight', 1.5)  # 默认行高为字体大小的1.2倍
         text_anchor = title_config.get('textAnchor', 'middle')
         max_width = title_config.get('max_width', float('inf'))
-        max_lines = title_config.get('max_lines', 1)
+        # max_lines = title_config.get('max_lines', 1)
+        max_lines = 2
         text_lines = self._autolinebreak(text_content, max_lines)
+        text_lines = self._avoidShortLine(text_lines)
         text_lines = self._avoidSingleWordLine(text_lines)
         
         # 计算每行文本的度量和总体尺寸
@@ -614,8 +618,9 @@ class LayoutProcessor:
 
     def _createEmbellishElement(self, element: LayoutElement):
         """创建装饰元素"""
-        embellish_element = RectEmbellish()
-        
+        embellish_element = RectEmbellish(colors = [self.additional_configs.get('theme_color', '#0000ff')])
+        # print("embellish_element: ", embellish_element.dump())
+        # print("embellish_element.children: ", embellish_element.children)
         # element.children.append(embellish_element)
         for child in embellish_element.children:
             element.children.append(child)
@@ -649,8 +654,8 @@ class LayoutProcessor:
             'class': 'topic-icon',
             'xlink:href': f"data:{image_data}",
             'preserveAspectRatio': 'xMidYMid meet',
-            'width': element.attributes.get('width', 50),
-            'height': element.attributes.get('height', 50),
+            'width': element.attributes.get('width',60),
+            'height': element.attributes.get('height', 60),
         }
         boundingbox = element.get_bounding_box()
         print("boundingbox: ", boundingbox)
@@ -703,6 +708,8 @@ class LayoutProcessor:
             Each line should be close to X characters (e.g., 20 characters), but avoid breaking words or disrupting sentence semantics.
             Do not split words (e.g., avoid breaking "in-formation" across two lines), and avoid placing punctuation marks alone at the start of a new line.
             If a line exceeds the character limit, break it at the nearest valid position according to the above rules.
+            Ensure that the longest line is at least 23 characters.
+            
             The total number of lines must not exceed {max_lines if max_lines > 0 else "unlimited"}. If there is a line limit, adjust line lengths accordingly to fit the content within the specified number of lines.
             Input Format:
             {text}
@@ -770,6 +777,26 @@ class LayoutProcessor:
         # 如果有单个单词的行，则将该行合并到上一行
         for i in range(len(text_lines)):
             if len(text_lines[i].split()) == 1:
-                text_lines[i-1] += text_lines[i]
+                text_lines[i-1] += " " + text_lines[i]
                 text_lines.pop(i)
+        return text_lines
+
+    def _avoidShortLine(self, text_lines: list[str], min_length: int = 23) -> list[str]:
+        # 如果有某一行的字符数<min_length，则从下一行中取一个单词，合并到该行
+        for i in range(len(text_lines)-1):
+            line = text_lines[i]
+            if len(line) < min_length:
+                next_line = text_lines[i+1]
+                next_line_words = next_line.split()
+                if len(next_line_words) > 0:
+                    line += " " + next_line_words[0]
+                    next_line = next_line[len(next_line_words[0]):]
+                    text_lines[i+1] = next_line
+                    text_lines[i] = line
+                else:
+                    break
+        # 有可能导致行数减少，检测是否存在空行
+        for line in text_lines:
+            if len(line) == 0:
+                text_lines.pop(text_lines.index(line))
         return text_lines

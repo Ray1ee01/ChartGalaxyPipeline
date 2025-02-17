@@ -114,20 +114,23 @@ class TemplateFactory:
     def create_vertical_bar_chart_template(
         data: list,
         meta_data: dict,
-        layout_tree: dict,
-        chart_composition: dict = None,
-        sort_config: dict = None,  # {"by": "y", "ascending": True}
-        color_template: ColorDesign = None,
-        chart_component: dict = None
+        color_template: ColorDesign,
+        config: dict,
     ):
         """创建垂直柱状图模板
-        
-        Args:
-            layout_tree (dict): 布局树配置
-            sort_config (dict, optional): 排序配置，包含 by ("x"/"y") 和 ascending
         """
+        
+        annotation_config = config.get('annotation', None)
+        sort_config = config.get('sort', None)
+        axis_config = {
+            "x_axis": config.get('x_axis', {}),
+            "y_axis": config.get('y_axis', {})
+        }
+        print(config)
+        layout_tree = config.get('layout', {}).get('layout_tree', None)
+        
         chart_template = BarChartTemplate()
-        chart_template.create_template(data, meta_data, color_template)
+        chart_template.create_template(data, meta_data, color_template, config)
         layout_template = LayoutTemplate()
         
         # 添加方向约束
@@ -137,50 +140,55 @@ class TemplateFactory:
         if sort_config:
             layout_template.add_constraint(
                 SortConstraint(
-                    sort_by=sort_config["by"],
+                    sort_by=sort_config.get('by', 'y'),
                     ascending=sort_config.get("ascending", True)
                 )
             )
         
-        if chart_composition:
-            if "mark_annotation" in chart_composition['sequence']:
-                chart_template.has_annotation = True
+        if annotation_config:
+            chart_template.has_annotation = annotation_config.get('has_annotation', False)
         
+        print(layout_tree)
         # 构建布局树
         layout_template.root = layout_template.build_template_from_tree(layout_tree)
         
         # 应用约束
         layout_template.apply_constraints(chart_template)
-        print("chart_component: ", chart_component)
-        if chart_component:
-            chart_template.x_axis.has_domain = chart_component.get('x_axis', {}).get('has_domain', True)
-            chart_template.x_axis.has_label = chart_component.get('x_axis', {}).get('has_label', True)
-            chart_template.x_axis.has_tick = chart_component.get('x_axis', {}).get('has_tick', True)
-            chart_template.x_axis.has_title = chart_component.get('x_axis', {}).get('has_title', True)
-            chart_template.y_axis.has_domain = chart_component.get('y_axis', {}).get('has_domain', True)
-            chart_template.y_axis.has_tick = chart_component.get('y_axis', {}).get('has_tick', True)
-            chart_template.y_axis.has_label = chart_component.get('y_axis', {}).get('has_label', True)
-            chart_template.y_axis.has_title = chart_component.get('y_axis', {}).get('has_title', True)
+        
+        print("axis_config: ", axis_config)
+        if axis_config:
+            chart_template.x_axis.has_domain = axis_config.get('x_axis', {}).get('has_domain', True)
+            chart_template.x_axis.has_label = axis_config.get('x_axis', {}).get('has_label', True)
+            chart_template.x_axis.has_tick = axis_config.get('x_axis', {}).get('has_tick', True)
+            chart_template.x_axis.has_title = axis_config.get('x_axis', {}).get('has_title', True)
+            chart_template.x_axis.has_grid = axis_config.get('x_axis', {}).get('has_grid', True)
+            chart_template.y_axis.has_domain = axis_config.get('y_axis', {}).get('has_domain', True)
+            chart_template.y_axis.has_tick = axis_config.get('y_axis', {}).get('has_tick', True)
+            chart_template.y_axis.has_label = axis_config.get('y_axis', {}).get('has_label', True)
+            chart_template.y_axis.has_title = axis_config.get('y_axis', {}).get('has_title', True)
+            chart_template.y_axis.has_grid = axis_config.get('y_axis', {}).get('has_grid', True)
         return chart_template, layout_template
     
     @staticmethod
     def create_horizontal_bar_chart_template(
         data: list,
         meta_data: dict,
-        layout_tree: dict,
-        chart_composition: dict = None,
-        sort_config: dict = None,  # {"by": "y", "ascending": True}
-        color_template: ColorDesign = None,
-        chart_component: dict = None
+        color_template: ColorDesign,
+        config: dict
     ):
         """创建水平柱状图模板
-        
-        Args:
-            layout_tree (dict): 布局树配置
-            sort_config (dict, optional): 排序配置，包含 by ("x"/"y") 和 ascending
         """
+        
+        annotation_config = config.get('annotation', None)
+        sort_config = config.get('sort', None)
+        axis_config = {
+            "x_axis": config.get('x_axis', {}),
+            "y_axis": config.get('y_axis', {})
+        }
+        layout_tree = config.get('layout', {}).get('layout_tree', None)
+        
         chart_template = BarChartTemplate()
-        chart_template.create_template(data, meta_data, color_template)
+        chart_template.create_template(data, meta_data, color_template, config)
         layout_template = LayoutTemplate()
         
         # 添加方向约束
@@ -190,14 +198,13 @@ class TemplateFactory:
         if sort_config:
             layout_template.add_constraint(
                 SortConstraint(
-                    sort_by=sort_config["by"],
+                    sort_by=sort_config.get('by', 'x'),
                     ascending=sort_config.get("ascending", True)
                 )
             )
         
-        if chart_composition:
-            if "mark_annotation" in chart_composition['sequence']:
-                chart_template.has_annotation = True
+        if annotation_config:
+            chart_template.has_annotation = annotation_config.get('has_annotation', False)
         
         # 构建布局树
         layout_template.root = layout_template.build_template_from_tree(layout_tree)
@@ -205,13 +212,17 @@ class TemplateFactory:
         # 应用约束
         layout_template.apply_constraints(chart_template)
         
-        if chart_component:
-            chart_template.x_axis.has_domain = chart_component.get('x_axis', {}).get('has_domain', True)
-            chart_template.x_axis.has_tick = chart_component.get('x_axis', {}).get('has_tick', True)
-            chart_template.x_axis.has_label = chart_component.get('x_axis', {}).get('has_label', True)
-            chart_template.y_axis.has_domain = chart_component.get('y_axis', {}).get('has_domain', True)
-            chart_template.y_axis.has_tick = chart_component.get('y_axis', {}).get('has_tick', True)
-            chart_template.y_axis.has_label = chart_component.get('y_axis', {}).get('has_label', True)
+        if axis_config:
+            chart_template.x_axis.has_domain = axis_config.get('x_axis', {}).get('has_domain', True)
+            chart_template.x_axis.has_tick = axis_config.get('x_axis', {}).get('has_tick', True)
+            chart_template.x_axis.has_label = axis_config.get('x_axis', {}).get('has_label', True)
+            chart_template.x_axis.has_title = axis_config.get('x_axis', {}).get('has_title', True)
+            chart_template.x_axis.has_grid = axis_config.get('x_axis', {}).get('has_grid', True)
+            chart_template.y_axis.has_domain = axis_config.get('y_axis', {}).get('has_domain', True)
+            chart_template.y_axis.has_tick = axis_config.get('y_axis', {}).get('has_tick', True)
+            chart_template.y_axis.has_label = axis_config.get('y_axis', {}).get('has_label', True)
+            chart_template.y_axis.has_title = axis_config.get('y_axis', {}).get('has_title', True)
+            chart_template.y_axis.has_grid = axis_config.get('y_axis', {}).get('has_grid', True)
         return chart_template, layout_template
 
     @staticmethod
@@ -219,10 +230,10 @@ class TemplateFactory:
         data: list,
         meta_data: dict,
         layout_tree: dict,
-        chart_composition: dict = None, 
+        annotation_config: dict = None, 
         color_template: ColorDesign = None,
         sort_config: dict = None,
-        chart_component: dict = None
+        axis_config: dict = None
     ):
         chart_template = GroupBarChartTemplate()
         chart_template.create_template(data, meta_data, color_template)
@@ -237,10 +248,10 @@ class TemplateFactory:
         data: list,
         meta_data: dict,
         layout_tree: dict,
-        chart_composition: dict = None,
+        annotation_config: dict = None,
         color_template: ColorDesign = None,
         sort_config: dict = None,
-        chart_component: dict = None
+        axis_config: dict = None
     ):
         chart_template = StackedBarChartTemplate()
         chart_template.create_template(data, meta_data, color_template)
@@ -255,10 +266,10 @@ class TemplateFactory:
         data: list,
         meta_data: dict,
         layout_tree: dict,
-        chart_composition: dict = None,
+        annotation_config: dict = None,
         sort_config: dict = None,
         color_template: ColorDesign = None,
-        chart_component: dict = None
+        axis_config: dict = None
     ):
         """创建折线图模板"""
         chart_template = LineChartTemplate()
@@ -272,14 +283,13 @@ class TemplateFactory:
         if sort_config:
             layout_template.add_constraint(
                 SortConstraint(
-                    sort_by=sort_config["by"],
+                    sort_by=sort_config.get('by', 'y'),
                     ascending=sort_config.get("ascending", True)
                 )
             )
         
-        if chart_composition:
-            if "mark_annotation" in chart_composition['sequence']:
-                chart_template.has_annotation = True
+        if annotation_config:
+            chart_template.has_annotation = annotation_config.get('has_annotation', False)
         
         # 构建布局树
         layout_template.root = layout_template.build_template_from_tree(layout_tree)
@@ -287,13 +297,13 @@ class TemplateFactory:
         # 应用约束
         layout_template.apply_constraints(chart_template)
         
-        if chart_component:
-            chart_template.x_axis.has_domain = chart_component.get('x_axis', {}).get('has_domain', True)
-            chart_template.x_axis.has_tick = chart_component.get('x_axis', {}).get('has_tick', True)
-            chart_template.x_axis.has_label = chart_component.get('x_axis', {}).get('has_label', True)
-            chart_template.y_axis.has_domain = chart_component.get('y_axis', {}).get('has_domain', True)
-            chart_template.y_axis.has_tick = chart_component.get('y_axis', {}).get('has_tick', True)
-            chart_template.y_axis.has_label = chart_component.get('y_axis', {}).get('has_label', True)
+        if axis_config:
+            chart_template.x_axis.has_domain = axis_config.get('x_axis', {}).get('has_domain', True)
+            chart_template.x_axis.has_tick = axis_config.get('x_axis', {}).get('has_tick', True)
+            chart_template.x_axis.has_label = axis_config.get('x_axis', {}).get('has_label', True)
+            chart_template.y_axis.has_domain = axis_config.get('y_axis', {}).get('has_domain', True)
+            chart_template.y_axis.has_tick = axis_config.get('y_axis', {}).get('has_tick', True)
+            chart_template.y_axis.has_label = axis_config.get('y_axis', {}).get('has_label', True)
         
         return chart_template, layout_template
         
@@ -302,10 +312,10 @@ class TemplateFactory:
         data: List[Dict],
         meta_data: Dict,
         layout_tree: Dict,
-        chart_composition: Dict,
+        annotation_config: Dict,
         sort_config: Dict,
         color_template: ColorDesign,
-        chart_component: Dict
+        axis_config: Dict
     ) -> Tuple[ChartTemplate, Dict]:
         # 创建饼图模板
         chart_template = PieChartTemplate(color_template)
@@ -331,10 +341,10 @@ class TemplateFactory:
         data: List[Dict],
         meta_data: Dict,
         layout_tree: Dict,
-        chart_composition: Dict,
+        annotation_config: Dict,
         sort_config: Dict,
         color_template: ColorDesign,
-        chart_component: Dict
+        axis_config: Dict
     ) -> Tuple[ChartTemplate, Dict]:
         # 创建甜甜圈图模板
         chart_template = DonutChartTemplate(color_template)
@@ -360,10 +370,10 @@ class TemplateFactory:
         data: list,
         meta_data: dict,
         layout_tree: dict,
-        chart_composition: dict = None,
+        annotation_config: dict = None,
         sort_config: dict = None,
         color_template: ColorDesign = None,
-        chart_component: dict = None
+        axis_config: dict = None
     ):
         """创建 bump chart 模板"""
         chart_template = BumpChartTemplate()
@@ -377,14 +387,13 @@ class TemplateFactory:
         if sort_config:
             layout_template.add_constraint(
                 SortConstraint(
-                    sort_by=sort_config["by"],
+                    sort_by=sort_config.get('by', 'y'),
                     ascending=sort_config.get("ascending", True)
                 )
             )
 
-        if chart_composition:
-            if "mark_annotation" in chart_composition['sequence']:
-                chart_template.has_annotation = True
+        if annotation_config:
+            chart_template.has_annotation = annotation_config.get('has_annotation', False)
 
         # 构建布局树
         layout_template.root = layout_template.build_template_from_tree(layout_tree)
@@ -392,13 +401,13 @@ class TemplateFactory:
         # 应用约束
         layout_template.apply_constraints(chart_template)
 
-        if chart_component:
-            chart_template.x_axis.has_domain = chart_component.get('x_axis', {}).get('has_domain', True)
-            chart_template.x_axis.has_tick = chart_component.get('x_axis', {}).get('has_tick', True)
-            chart_template.x_axis.has_label = chart_component.get('x_axis', {}).get('has_label', True)
-            chart_template.y_axis.has_domain = chart_component.get('y_axis', {}).get('has_domain', True)
-            chart_template.y_axis.has_tick = chart_component.get('y_axis', {}).get('has_tick', True)
-            chart_template.y_axis.has_label = chart_component.get('y_axis', {}).get('has_label', True)
+        if axis_config:
+            chart_template.x_axis.has_domain = axis_config.get('x_axis', {}).get('has_domain', True)
+            chart_template.x_axis.has_tick = axis_config.get('x_axis', {}).get('has_tick', True)
+            chart_template.x_axis.has_label = axis_config.get('x_axis', {}).get('has_label', True)
+            chart_template.y_axis.has_domain = axis_config.get('y_axis', {}).get('has_domain', True)
+            chart_template.y_axis.has_tick = axis_config.get('y_axis', {}).get('has_tick', True)
+            chart_template.y_axis.has_label = axis_config.get('y_axis', {}).get('has_label', True)
 
         return chart_template, layout_template
                
@@ -407,10 +416,10 @@ class TemplateFactory:
         data: list,
         meta_data: dict,
         layout_tree: dict,
-        chart_composition: dict = None,
+        annotation_config: dict = None,
         sort_config: dict = None,
         color_template: ColorDesign = None,
-        chart_component: dict = None
+        axis_config: dict = None
     ):
 
         """创建散点图模板"""
@@ -425,14 +434,13 @@ class TemplateFactory:
         if sort_config:
             layout_template.add_constraint(
                 SortConstraint(
-                    sort_by=sort_config["by"],
+                    sort_by=sort_config.get('by', 'y'),
                     ascending=sort_config.get("ascending", True)
                 )
             )
         
-        if chart_composition:
-            if "mark_annotation" in chart_composition['sequence']:
-                chart_template.has_annotation = True
+        if annotation_config:
+            chart_template.has_annotation = annotation_config.get('has_annotation', False)
         
         # 构建布局树
         layout_template.root = layout_template.build_template_from_tree(layout_tree)
@@ -440,13 +448,13 @@ class TemplateFactory:
         # 应用约束
         layout_template.apply_constraints(chart_template)
         
-        if chart_component:
-            chart_template.x_axis.has_domain = chart_component.get('x_axis', {}).get('has_domain', True)
-            chart_template.x_axis.has_tick = chart_component.get('x_axis', {}).get('has_tick', True)
-            chart_template.x_axis.has_label = chart_component.get('x_axis', {}).get('has_label', True)
-            chart_template.y_axis.has_domain = chart_component.get('y_axis', {}).get('has_domain', True)
-            chart_template.y_axis.has_tick = chart_component.get('y_axis', {}).get('has_tick', True)
-            chart_template.y_axis.has_label = chart_component.get('y_axis', {}).get('has_label', True)
+        if axis_config:
+            chart_template.x_axis.has_domain = axis_config.get('x_axis', {}).get('has_domain', True)
+            chart_template.x_axis.has_tick = axis_config.get('x_axis', {}).get('has_tick', True)
+            chart_template.x_axis.has_label = axis_config.get('x_axis', {}).get('has_label', True)
+            chart_template.y_axis.has_domain = axis_config.get('y_axis', {}).get('has_domain', True)
+            chart_template.y_axis.has_tick = axis_config.get('y_axis', {}).get('has_tick', True)
+            chart_template.y_axis.has_label = axis_config.get('y_axis', {}).get('has_label', True)
         
         return chart_template, layout_template
     
@@ -455,10 +463,10 @@ class TemplateFactory:
         data: list,
         meta_data: dict,
         layout_tree: dict,
-        chart_composition: dict = None,
+        annotation_config: dict = None,
         sort_config: dict = None,
         color_template: ColorDesign = None,
-        chart_component: dict = None
+        axis_config: dict = None
     ):
         """创建连接散点图模板"""
         chart_template = ConnectedScatterPlotTemplate()
@@ -472,13 +480,13 @@ class TemplateFactory:
         # if sort_config:
         #     layout_template.add_constraint(
         #         SortConstraint(
-        #             sort_by=sort_config["by"],
+        #             sort_by=sort_config.get('by', 'y'),
         #             ascending=sort_config.get("ascending", True)
         #         )
         #     )
         
-        if chart_composition:
-            if "mark_annotation" in chart_composition['sequence']:
+        if annotation_config:
+            if "mark_annotation" in annotation_config['sequence']:
                 chart_template.has_annotation = True
         
         # 构建布局树
@@ -487,13 +495,13 @@ class TemplateFactory:
         # 应用约束
         layout_template.apply_constraints(chart_template)
                 
-        if chart_component:
-            chart_template.x_axis.has_domain = chart_component.get('x_axis', {}).get('has_domain', True)
-            chart_template.x_axis.has_tick = chart_component.get('x_axis', {}).get('has_tick', True)
-            chart_template.x_axis.has_label = chart_component.get('x_axis', {}).get('has_label', True)
-            chart_template.y_axis.has_domain = chart_component.get('y_axis', {}).get('has_domain', True)
-            chart_template.y_axis.has_tick = chart_component.get('y_axis', {}).get('has_tick', True)
-            chart_template.y_axis.has_label = chart_component.get('y_axis', {}).get('has_label', True)
+        if axis_config:
+            chart_template.x_axis.has_domain = axis_config.get('x_axis', {}).get('has_domain', True)
+            chart_template.x_axis.has_tick = axis_config.get('x_axis', {}).get('has_tick', True)
+            chart_template.x_axis.has_label = axis_config.get('x_axis', {}).get('has_label', True)
+            chart_template.y_axis.has_domain = axis_config.get('y_axis', {}).get('has_domain', True)
+            chart_template.y_axis.has_tick = axis_config.get('y_axis', {}).get('has_tick', True)
+            chart_template.y_axis.has_label = axis_config.get('y_axis', {}).get('has_label', True)
         
         return chart_template, layout_template
     
@@ -502,10 +510,10 @@ class TemplateFactory:
         data: list,
         meta_data: dict,
         layout_tree: dict,
-        chart_composition: dict = None,
+        annotation_config: dict = None,
         sort_config: dict = None,
         color_template: ColorDesign = None,
-        chart_component: dict = None
+        axis_config: dict = None
     ):
         """创建气泡图模板"""
         chart_template = BubblePlotTemplate()
@@ -519,14 +527,13 @@ class TemplateFactory:
         if sort_config:
             layout_template.add_constraint(
                 SortConstraint(
-                    sort_by=sort_config["by"],
+                    sort_by=sort_config.get('by', 'y'),
                     ascending=sort_config.get("ascending", True)
                 )
             )
         
-        if chart_composition:
-            if "mark_annotation" in chart_composition['sequence']:
-                chart_template.has_annotation = True
+        if annotation_config:
+            chart_template.has_annotation = annotation_config.get('has_annotation', False)
         
         # 构建布局树
         layout_template.root = layout_template.build_template_from_tree(layout_tree)
@@ -534,13 +541,13 @@ class TemplateFactory:
         # 应用约束
         layout_template.apply_constraints(chart_template)
         
-        if chart_component:
-            chart_template.x_axis.has_domain = chart_component.get('x_axis', {}).get('has_domain', True)
-            chart_template.x_axis.has_tick = chart_component.get('x_axis', {}).get('has_tick', True)
-            chart_template.x_axis.has_label = chart_component.get('x_axis', {}).get('has_label', True)
-            chart_template.y_axis.has_domain = chart_component.get('y_axis', {}).get('has_domain', True)
-            chart_template.y_axis.has_tick = chart_component.get('y_axis', {}).get('has_tick', True)
-            chart_template.y_axis.has_label = chart_component.get('y_axis', {}).get('has_label', True)
+        if axis_config:
+            chart_template.x_axis.has_domain = axis_config.get('x_axis', {}).get('has_domain', True)
+            chart_template.x_axis.has_tick = axis_config.get('x_axis', {}).get('has_tick', True)
+            chart_template.x_axis.has_label = axis_config.get('x_axis', {}).get('has_label', True)
+            chart_template.y_axis.has_domain = axis_config.get('y_axis', {}).get('has_domain', True)
+            chart_template.y_axis.has_tick = axis_config.get('y_axis', {}).get('has_tick', True)
+            chart_template.y_axis.has_label = axis_config.get('y_axis', {}).get('has_label', True)
         
         return chart_template, layout_template
       
@@ -549,10 +556,10 @@ class TemplateFactory:
         data: list,
         meta_data: dict,
         layout_tree: dict,
-        chart_composition: dict = None,
+        annotation_config: dict = None,
         sort_config: dict = None,
         color_template: ColorDesign = None,
-        chart_component: dict = None,
+        axis_config: dict = None,
     ):
         chart_template = RadialBarChartTemplate()
         chart_template.create_template(data, meta_data, color_template)
@@ -567,10 +574,10 @@ class TemplateFactory:
         data: list,
         meta_data: dict,
         layout_tree: dict,
-        chart_composition: dict = None,
+        annotation_config: dict = None,
         sort_config: dict = None,
         color_template: ColorDesign = None,
-        chart_component: dict = None
+        axis_config: dict = None
     ):
         """创建 slope chart 模板"""
         chart_template = SlopeChartTemplate()
@@ -584,14 +591,13 @@ class TemplateFactory:
         if sort_config:
             layout_template.add_constraint(
                 SortConstraint(
-                    sort_by=sort_config["by"],
+                    sort_by=sort_config.get('by', 'y'),
                     ascending=sort_config.get("ascending", True)
                 )
             )
         
-        if chart_composition:
-            if "mark_annotation" in chart_composition['sequence']:
-                chart_template.has_annotation = True
+        if annotation_config:
+            chart_template.has_annotation = annotation_config.get('has_annotation', False)
 
         # 构建布局树
         layout_template.root = layout_template.build_template_from_tree(layout_tree)
@@ -599,13 +605,13 @@ class TemplateFactory:
         # 应用约束
         layout_template.apply_constraints(chart_template)
 
-        if chart_component:
-            chart_template.x_axis.has_domain = chart_component.get('x_axis', {}).get('has_domain', True)
-            chart_template.x_axis.has_tick = chart_component.get('x_axis', {}).get('has_tick', True)
-            chart_template.x_axis.has_label = chart_component.get('x_axis', {}).get('has_label', True)
-            chart_template.y_axis.has_domain = chart_component.get('y_axis', {}).get('has_domain', True)
-            chart_template.y_axis.has_tick = chart_component.get('y_axis', {}).get('has_tick', True)
-            chart_template.y_axis.has_label = chart_component.get('y_axis', {}).get('has_label', True)
+        if axis_config:
+            chart_template.x_axis.has_domain = axis_config.get('x_axis', {}).get('has_domain', True)
+            chart_template.x_axis.has_tick = axis_config.get('x_axis', {}).get('has_tick', True)
+            chart_template.x_axis.has_label = axis_config.get('x_axis', {}).get('has_label', True)
+            chart_template.y_axis.has_domain = axis_config.get('y_axis', {}).get('has_domain', True)
+            chart_template.y_axis.has_tick = axis_config.get('y_axis', {}).get('has_tick', True)
+            chart_template.y_axis.has_label = axis_config.get('y_axis', {}).get('has_label', True)
         
         return chart_template, layout_template
     
@@ -614,10 +620,10 @@ class TemplateFactory:
         data: list,
         meta_data: dict,
         layout_tree: dict,
-        chart_composition: dict = None,
+        annotation_config: dict = None,
         sort_config: dict = None,
         color_template: ColorDesign = None,
-        chart_component: dict = None
+        axis_config: dict = None
     ):
         chart_template = BulletChartTemplate()
         chart_template.create_template(data, meta_data, color_template)
@@ -632,10 +638,10 @@ class TemplateFactory:
         data: list,
         meta_data: dict,
         layout_tree: dict,
-        chart_composition: dict = None,
+        annotation_config: dict = None,
         sort_config: dict = None,
         color_template: ColorDesign = None,
-        chart_component: dict = None
+        axis_config: dict = None
     ):
         chart_template = WaterfallChartTemplate()
         chart_template.create_template(data, meta_data, color_template)

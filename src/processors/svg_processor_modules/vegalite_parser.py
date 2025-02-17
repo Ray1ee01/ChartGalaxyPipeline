@@ -105,8 +105,8 @@ class VegaLiteParser():
         except:
             orient = 'horizontal'
         
-        directions = ['top', 'bottom', 'left', 'right']
-        sides = ['outside', 'inside', 'half']
+        # directions = ['top', 'bottom', 'left', 'right']
+        # sides = ['outside', 'inside', 'half']
         config = {
             # 随机选择一个direction
             # 'direction': random.choice(directions),
@@ -119,7 +119,7 @@ class VegaLiteParser():
             # 'padding': random.randint(0, 10)
             'orient': orient
         }
-        print("config: ", config)
+        # # print("config: ", config)
         
         
         def replace_corresponding_element(element, element_to_replace, new_element):
@@ -132,24 +132,37 @@ class VegaLiteParser():
                         return True
             return False
         
-        if self.additional_configs['chart_template'].mark.type == 'bar':
+        
+        shift_x = 0
+        shift_y = 0
+        flag_to_move = False
+        
+        if self.additional_configs['chart_template'].mark.type == 'bar' and self.additional_configs.get('image_overlay', {}):
+            config = self.additional_configs['image_overlay']
+            try:
+                orient = self.additional_configs['chart_template'].mark.orientation
+            except:
+                orient = 'horizontal'
+            config['orient'] = orient
+            print("config: ", config)
+            old_boundingboxes = []
+            new_boundingboxes = []
             for i, mark_group in enumerate(self.all_mark_groups):
-                # image_urls = self.additional_configs['x_data_multi_url']
-                # for j, element in enumerate(mark_group.children):
                 for j, element in enumerate(mark_group.children):
                     element_with_data = find_element_with_aria_label(element)
                         
-                        # print("element: ", element.dump())
+                    # print("element: ", element.dump())
                     # image_url = image_urls[j]
                     # try:
                     #     image_url = self.value_icon_map['group'][self.mark_data_map[element]['group_value']]
                     # except:
                     image_url = self.value_icon_map['x'][self.mark_data_map[element_with_data]['x_value']]
                     base64_image = Image._getImageAsBase64(image_url)
-                    content_type = base64_image.split(';base64,')[0]
-                    base64 = base64_image.split(';base64,')[1]
-                    base64 = ImageProcessor().crop_by_circle(base64)
-                    base64_image = f"{content_type};base64,{base64}"
+                    if config['crop'] == 'circle':
+                        content_type = base64_image.split(';base64,')[0]
+                        base64 = base64_image.split(';base64,')[1]
+                        base64 = ImageProcessor().crop_by_circle(base64)
+                        base64_image = f"{content_type};base64,{base64}"
                     image_element = Image(base64_image)
                     image_element.attributes = {
                         "xlink:href": f"data:{base64_image}"
@@ -158,8 +171,21 @@ class VegaLiteParser():
                     # mark_group.children[j] = image_element
                     overlay_processor = OverlayProcessor(element_with_data, image_element, config)
                     # 用overlay_processor.process()的返回值替换mark_group子树下的element_with_data
-                    replace_corresponding_element(mark_group, element_with_data, overlay_processor.process())
+                    old_boundingboxes.append(element_with_data.get_bounding_box())
+                    new_element = overlay_processor.process()
+                    replace_corresponding_element(mark_group, element_with_data, new_element)
+                    new_boundingboxes.append(new_element.get_bounding_box())
+            # print("old_boundingboxes: ", old_boundingboxes)
+            # print("new_boundingboxes: ", new_boundingboxes)
+            if orient == 'horizontal' and config['direction'] == 'left' and config['side'] == 'outside':
+                flag_to_move = True
+                shift_x = new_boundingboxes[0].minx - old_boundingboxes[0].minx
+            if orient == 'vertical' and config['direction'] == 'bottom' and config['side'] == 'outside':
+                flag_to_move = True
+                shift_y = new_boundingboxes[0].maxy - old_boundingboxes[0].maxy
+                    
                     # replace_corresponding_element(mark_group, element_with_data, overlay_processor.process_replace_single())
+                    
                     
                     # 随机从1,2,3中取一个
                     # choice = random.randint(1, 3)
@@ -170,6 +196,8 @@ class VegaLiteParser():
                     # else:
                     #     mark_group.children[j] = overlay_processor.process_replace_multiple()
                     # overlay_processor.process_replace_single()
+        
+        
         
         
         # flattened_elements_tree = SVGTreeConverter.partial_flatten_tree(elements_tree, group_to_flatten)
@@ -186,12 +214,13 @@ class VegaLiteParser():
         # mark_group = top_level_groups['mark_group']
         x_axis_group = top_level_groups['x_axis_group']
         y_axis_group = top_level_groups['y_axis_group']
+        print("x_axis_group: ", x_axis_group)
+        print("y_axis_group: ", y_axis_group)
         # x_axis_label_group = top_level_groups['x_axis_label_group']
         # y_axis_label_group = top_level_groups['y_axis_label_group']
         x_axis_label_group = [element for element in top_level_groups['x_axis_group'] if element.tag == 'text' and "role-axis-label" in element.attributes.get('class', '')]
         y_axis_label_group = [element for element in top_level_groups['y_axis_group'] if element.tag == 'text' and "role-axis-label" in element.attributes.get('class', '')]
         mark_annotation_group = top_level_groups['mark_annotation_group']
-        # debug: add rect to flattened_elements_tree
         
 
         
@@ -205,17 +234,25 @@ class VegaLiteParser():
         layout_graph = LayoutGraph()
         
             
-        # orientation = self.additional_configs['chart_template'].mark.orientation
-        # direction = ""
-        # if orientation == "horizontal":
-        #     axis_orientation = self.additional_configs['chart_template'].x_axis.orientation
-        # else:
-        #     #交换 y_axis_label_group 和 x_axis_label_group
-        #     # y_axis_label_group = x_axis_label_group
-        #     # x_axis_label_group = y_axis_label_group
-        #     x_axis_label_group, y_axis_label_group = y_axis_label_group, x_axis_label_group
-        #     x_axis_group, y_axis_group = y_axis_group, x_axis_group
-        #     axis_orientation = self.additional_configs['chart_template'].x_axis.orientation
+        orientation = self.additional_configs['chart_template'].mark.orientation
+        direction = ""
+        if orientation == "horizontal":
+            axis_orientation = self.additional_configs['chart_template'].x_axis.orientation
+            x_axis_label_group, y_axis_label_group = y_axis_label_group, x_axis_label_group
+            x_axis_group, y_axis_group = y_axis_group, x_axis_group
+        else:
+            axis_orientation = self.additional_configs['chart_template'].x_axis.orientation
+        
+        # 把x_axis_label_group中的text元素的x坐标+shift_x,y坐标+shift_y
+        
+        # print("shift_x: ", shift_x)
+        # print("shift_y: ", shift_y)
+        # print("x_axis_label_group: ", x_axis_label_group)
+        for element in x_axis_label_group:
+            element.attributes['x'] = float(element.attributes.get('x', 0)) + shift_x
+            element.attributes['y'] = float(element.attributes.get('y', 0)) + shift_y
+        
+        
         
         # if axis_orientation == "left":
         #     direction = "right"

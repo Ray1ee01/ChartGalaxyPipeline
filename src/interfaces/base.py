@@ -9,10 +9,10 @@ class DataProcessor(ABC):
 
 class ChartGenerator(ABC):
     @abstractmethod
-    def generate(self, data: List[Dict], template: ChartTemplate=None) -> str:
+    def generate(self, data: List[Dict], template: ChartTemplate=None, config: Dict=None) -> str:
         pass
 
 class SVGProcessor(ABC):
     @abstractmethod
-    def process(self, svg: str) -> str:
+    def process(self, svg: str, config: Dict=None) -> str:
         pass

@@ -242,8 +242,8 @@ class SVGOptimizer(SVGProcessor):
                 "height": bounding_box.maxy - bounding_box.miny,
             }
             rects.append(rect)
-        for rect in rects:
-            root_element.children.append(rect)
+        # for rect in rects:
+        #     root_element.children.append(rect)
         element_tree = root_element
         
         # 获取root的bounding_box
@@ -251,7 +251,8 @@ class SVGOptimizer(SVGProcessor):
         shift_x = -root_bounding_box.minx
         shift_y = -root_bounding_box.miny
         # random_padding = 50 * random.random()
-        random_padding = 0
+        # random_padding = 0
+        random_padding = 50
         shift_x += random_padding
         shift_y += random_padding
         
@@ -363,18 +364,18 @@ class SVGOptimizer(SVGProcessor):
         svg_left = f"<svg {attrs_str} xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\">"
         svg_right = f"</svg>"
         # element_tree.attributes['transform'] = "translate(300,100)"
-        try:
-            background_image = additional_configs['background_image']['url']
-            background_image_element = Image()
-            base64_image = Image._getImageAsBase64(background_image)
-            background_image_element.attributes['xlink:href'] = f"data:{base64_image}"
-            background_image_element.attributes['width'] = "100%"
-            background_image_element.attributes['height'] = "100%"
-            # root_element.children.append(background_image_element)
-            # 把background_image_element插入到root_element的children的第一个位置
-            element_tree.children.insert(0, background_image_element)
-        except:
-            print("no background image")
+        # try:
+        #     background_image = additional_configs['background_image']['url']
+        #     background_image_element = Image()
+        #     base64_image = Image._getImageAsBase64(background_image)
+        #     background_image_element.attributes['xlink:href'] = f"data:{base64_image}"
+        #     background_image_element.attributes['width'] = "100%"
+        #     background_image_element.attributes['height'] = "100%"
+        #     # root_element.children.append(background_image_element)
+        #     # 把background_image_element插入到root_element的children的第一个位置
+        #     element_tree.children.insert(0, background_image_element)
+        # except:
+        #     print("no background image")
         svg_str = SVGTreeConverter.element_tree_to_svg(element_tree)
         
         

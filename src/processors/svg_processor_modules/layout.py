@@ -22,6 +22,7 @@ class WidthHeightConstraint(SizeConstraint):
         layout_element_bounding_box = layout_element.get_bounding_box()
         # print("reference_element_bounding_box: ", reference_element_bounding_box)
         # print("layout_element_bounding_box: ", layout_element_bounding_box)
+        # print("layout_element: ", layout_element.dump())
         # print("self.max_width_ratio: ", self.max_width_ratio)
         # print("self.max_height_ratio: ", self.max_height_ratio)
         # print("self.min_width_ratio: ", self.min_width_ratio)
@@ -108,9 +109,9 @@ class VerticalLayoutStrategy(LayoutStrategy):
         reference_element_bounding_box = reference_element._bounding_box
         layout_element_bounding_box = layout_element._bounding_box
         
-        print('layout')
-        print("reference_element_bounding_box: ", reference_element_bounding_box)
-        print("layout_element_bounding_box: ", layout_element_bounding_box)
+        # print('layout')
+        # print("reference_element_bounding_box: ", reference_element_bounding_box)
+        # print("layout_element_bounding_box: ", layout_element_bounding_box)
         
         baseline_x = 0
         baseline_y = 0
@@ -145,11 +146,11 @@ class VerticalLayoutStrategy(LayoutStrategy):
         layout_element._bounding_box.maxx += move_x
         layout_element._bounding_box.miny += move_y
         layout_element._bounding_box.maxy += move_y
-        print("self.alignment: ", self.alignment)
-        print("self.direction: ", self.direction)
-        print("self.padding: ", self.padding)
-        print("self.offset: ", self.offset)
-        print("layout_element._bounding_box: ", layout_element._bounding_box)
+        # print("self.alignment: ", self.alignment)
+        # print("self.direction: ", self.direction)
+        # print("self.padding: ", self.padding)
+        # print("self.offset: ", self.offset)
+        # print("layout_element._bounding_box: ", layout_element._bounding_box)
         if layout_element.tag=='g':
             for child in layout_element.children:
                 if child._bounding_box is None:
@@ -170,7 +171,7 @@ class VerticalLayoutStrategy(LayoutStrategy):
             if reference_element.tag == 'g':
                 reference_element_valid_bounding_boxes = reference_element.get_children_boundingboxes()
                 for i, child in enumerate(reference_element.children):
-                    if child.tag == 'path':
+                    if child.tag == 'path' or child.tag == 'line' or child.tag == 'g':
                         # print('child.tag: ', child.tag)
                         reference_element_valid_bounding_boxes[i] = None
             else:
@@ -180,7 +181,7 @@ class VerticalLayoutStrategy(LayoutStrategy):
             if layout_element.tag == 'g':
                 layout_element_valid_bounding_boxes = layout_element.get_children_boundingboxes()
                 for i, child in enumerate(layout_element.children):
-                    if child.tag == 'path':
+                    if child.tag == 'path' or child.tag == 'line' or child.tag == 'g':
                         # print('child.tag: ', child.tag)
                         layout_element_valid_bounding_boxes[i] = None
             else:
@@ -205,22 +206,27 @@ class VerticalLayoutStrategy(LayoutStrategy):
                 # 检查是否重叠
                 has_overlap = False
                 for i, ref_box in enumerate(reference_element_valid_bounding_boxes):
-                    if ref_box is None:
+                    if ref_box is None and reference_element.children[i].tag == 'path':
                         for j, layout_box in enumerate(layout_element_valid_bounding_boxes):
                             if layout_box is None:
                                 continue
                             # print('reference_element.children[i].is_intersect(layout_box): ', reference_element.children[i].is_intersect(layout_box))
                             if reference_element.children[i].is_intersect(layout_box):
+                                print("path is_intersect")
                                 has_overlap = True
                                 break
+                    elif ref_box is None and (reference_element.children[i].tag == 'line' or reference_element.children[i].tag == 'g'):
+                        has_overlap = False
                     else:
                         for j, layout_box in enumerate(layout_element_valid_bounding_boxes):
                             if layout_box is None:
                                 if layout_element.children[j].is_intersect(ref_box):
+                                    print("layout_path is_intersect")
                                     has_overlap = True
                                     break
                             else:
                                 if layout_box.is_overlapping(ref_box):
+                                    print("layout bbox is_overlapping")
                                     has_overlap = True
                                     break
                     if has_overlap:
@@ -236,25 +242,30 @@ class VerticalLayoutStrategy(LayoutStrategy):
             # 二分查找最优移动距离
             if self.direction == 'up':
                 left = 0  # 最小移动距离
-                right = reference_element._bounding_box.miny - layout_element._bounding_box.miny  # 最大移动距离
+                right = reference_element._bounding_box.maxy - layout_element._bounding_box.maxy  # 最大移动距离
+                right_mid = reference_element._bounding_box.miny - layout_element._bounding_box.miny
                 best_move = 0
                 old_layout_element_bounding_box_miny = layout_element._bounding_box.miny
                 old_layout_element_bounding_box_maxy = layout_element._bounding_box.maxy
-                
+                # print("old_layout_element_bounding_box_miny: ", old_layout_element_bounding_box_miny)
+                # print("old_layout_element_bounding_box_maxy: ", old_layout_element_bounding_box_maxy)
                 while left <= right:
                     mid = (left + right) / 2
-                    # print('mid: ', mid)
-                    # print('has_overlap(mid): ', has_overlap(mid))
+                    print('mid: ', mid)
+                    print('has_overlap(mid): ', has_overlap(mid))
                     if has_overlap(mid):
                         right = mid - 0.1
                     else:
                         left = mid + 0.1
                         best_move = mid
-                # print('best_move: ', best_move)
+                print('best_move: ', best_move)
                 if best_move > 0:
+                    if best_move > right_mid:
+                        best_move = (best_move+right_mid)/2
                     layout_element._bounding_box.miny = old_layout_element_bounding_box_miny + best_move
                     layout_element._bounding_box.maxy = old_layout_element_bounding_box_maxy + best_move
-                    
+                    print("layout_element._bounding_box: ", layout_element._bounding_box)
+                    print("reference_element._bounding_box: ", reference_element._bounding_box)
             else:  # direction == 'down'
                 left = 0  # 最小移动距离
                 right = layout_element._bounding_box.maxy - reference_element._bounding_box.maxy  # 最大移动距离

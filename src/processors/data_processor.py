@@ -9,7 +9,7 @@ import shutil
 import json
 from .data_enricher_modules.data_clean import clean_df
 from .data_enricher_modules.HAI_extract import extract_chart
-from .data_enricher_modules.topic_generate import check_topic_and_caption, generate_bgimage_search_keywords
+from .data_enricher_modules.topic_generate import check_topic_and_caption, generate_bgimage_search_keywords, if_has_country_name
 from .data_enricher_modules.image_search import search_image
 
 from .data_enricher_modules.icon_selection import get_icon_pool, CLIPMatcher
@@ -165,17 +165,21 @@ class Chart2TableDataProcessor(DataProcessor):
             image_paths = json.load(f)
         palettes = extract_palette(topic_data, cache_dir, image_root, image_paths, default_image_path)
         
-        # 5. get topic relevant images
-        key_words = generate_bgimage_search_keywords(df, meta_data)
-        key_word = key_words[0][0]
-        chinese_keyword = key_words[1][0]
-        if bgimage_searcher is not None:
-            topic_image = bgimage_searcher.search(key_word, chinese_keyword, palettes)
-            topic_image_url = topic_image['path']
-        else:
-            # topic_image_urls = search_image(chinese_keyword, engine='baidu')
-            # topic_image_url = topic_image_urls[0]
-            topic_image_url = ""
+        
+        topic_image_url = ""
+        # # 5. get topic relevant images
+        # key_words = generate_bgimage_search_keywords(df, meta_data)
+        # key_word = key_words[0][0]
+        # chinese_keyword = key_words[1][0]
+        # if bgimage_searcher is not None:
+        #     topic_image = bgimage_searcher.search(key_word, chinese_keyword, palettes)
+        #     topic_image_url = topic_image['path']
+        # else:
+        #     # topic_image_urls = search_image(chinese_keyword, engine='baidu')
+        #     # topic_image_url = topic_image_urls[0]
+        #     topic_image_url = ""
+        
+        
 
         # topic_image_url = np.random.choice(topic_image_urls)
         
@@ -198,8 +202,15 @@ class Chart2TableDataProcessor(DataProcessor):
         result['data'] = chart_data['data']
         result['data_facts'] = data_fact
         result['icons'] = {}
-        
-        icon_selector = IconSelector(icon_pool, topic_color=None, spe_mode='flag')
+
+        icon_pool = get_icon_pool(chart_data, topic_data, matcher)
+        # if if_has_country_name(chart_data['data']):
+        if True:
+            icon_selector = IconSelector(icon_pool, topic_color=None, spe_mode='flag')
+            print("has country name")
+        else:
+            icon_selector = IconSelector(icon_pool, topic_color=None)
+            print("no country name")
         # icon_selector = IconSelector(icon_pool, topic_color=None)
         candidate_icons = icon_selector.select(layout_sequence, chart_image_sequence)
         # candidate_icons = [[],[]]

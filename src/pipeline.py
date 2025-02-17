@@ -25,44 +25,38 @@ class Pipeline:
         self.chart_generator = chart_generator
         self.svg_processor = svg_processor
 
-    def execute(self, input_data: Any, layout_file_idx: int = 1, chart_image_idx: int = 1, chart_component_idx: int = 1, color_mode: str = 'monochromatic', matcher: CLIPMatcher = None, bgimage_searcher: ImageSearchSystem = None) -> str:
+    def execute(self, input_data: Any, config: dict, matcher: CLIPMatcher = None, bgimage_searcher: ImageSearchSystem = None) -> str:
         # try:
-        with open(f'/data1/liduan/generation/chart/chart_pipeline/src/data/layout_tree copy/{layout_file_idx}.json', 'r') as f:
-            layout_config = json.load(f)
-        with open(f'/data1/liduan/generation/chart/chart_pipeline/src/data/chart_image/{chart_image_idx}.json', 'r') as f:
-            chart_image_config = json.load(f)
-        with open(f'/data1/liduan/generation/chart/chart_pipeline/src/data/chart_component/{chart_component_idx}.json', 'r') as f:
-            chart_component_config = json.load(f)
-        
-        # style_idx_range = [0,1]
-        # 随机选出一个style_idx
-        style_idx = random.randint(1,2)
-        style_dict = {}
-        with open(f'/data1/liduan/generation/chart/chart_pipeline/src/data/style_configs/{style_idx}.json', 'r') as f:
-            style_dict = json.load(f)
-        
-        
+        # with open(f'/data1/liduan/generation/chart/chart_pipeline/src/data/layout_tree copy/{config['layout']}.json', 'r') as f:
+        #     layout_config = json.load(f)
+        layout_config = config['layout']
+        icon_config = config['icon']
+        legend_config = config['legend']
+        color_config = config['color']['mode']
+        axis_config = {
+            "x_axis": config['x_axis'],
+            "y_axis": config['y_axis']
+        }
         
         time_start = time.time()
         # 步骤1：数据处理
-        processed_data = self.data_processor.process(input_data, layout_config['sequence'], chart_image_config['sequence'], matcher, bgimage_searcher)
+        processed_data = self.data_processor.process(input_data, layout_config['sequence'], icon_config['need_icon'], matcher, bgimage_searcher)
         time_end = time.time()
         # print(processeds_data)
         # return "", {}
     
     
-        # 从布局树文件随机选择一个配置文件
         time_start = time.time()
-
-        color_template = ColorDesign(processed_data['palettes'], mode=color_mode)
+        color_template = ColorDesign(processed_data['palettes'], mode=color_config)
         
         layout_tree = layout_config['layout_tree']
         chart_config = layout_config.get('chart_config', {})
         title_config = layout_config.get('title_config', {})
         subtitle_config = layout_config.get('subtitle_config', {})
         topic_icon_config = layout_config.get('topic_icon_config', {})
-        sort_config = None
-
+        sort_config = layout_config.get('sort_config', {})
+        # axis_config = layout_config.get('axis_config', {})
+        annotation_config = config.get('annotation', {})
         # 创建模板
         if processed_data['meta_data']['chart_type'] == 'bar':
             # 如果没有指定orientation,随机选择
@@ -73,133 +67,119 @@ class Pipeline:
             
             # is_horizontal = 
             
-            # 只有在chart_config中指定了sort时才配置排序
-            if 'sort' in chart_config:
-                sort_config = {
-                    "by": "x" if is_horizontal else "y",  # 水平图按x轴排序,垂直图按y轴排序
-                    "ascending": False  # 默认降序
-                }
-                sort_config.update(chart_config['sort'])
+            # # 只有在chart_config中指定了sort时才配置排序
+            # if sort_config:
+            #     sort_config = {
+            #         "by": "x" if is_horizontal else "y",  # 水平图按x轴排序,垂直图按y轴排序
+            #         "ascending": False  # 默认降序
+            #     }
+            #     sort_config.update(chart_config['sort'])
+            
             
             # 使用新的工厂方法创建模板
             if is_horizontal:
                 chart_template, layout_template = TemplateFactory.create_horizontal_bar_chart_template(
                     data=processed_data['data'],
                     meta_data=processed_data['meta_data'],
-                    layout_tree=layout_tree,
-                    chart_composition=chart_image_config,
-                    sort_config=sort_config,
                     color_template=color_template,
-                    chart_component=chart_component_config
+                    config=config
                 )
             else:
                 chart_template, layout_template = TemplateFactory.create_vertical_bar_chart_template(
                     data=processed_data['data'],
                     meta_data=processed_data['meta_data'],
-                    layout_tree=layout_tree,
-                    chart_composition=chart_image_config,
-                    sort_config=sort_config,
                     color_template=color_template,
-                    chart_component=chart_component_config
+                    config=config
                 )
-            
-            # 获取柱子宽度比例
-            chart_design = ChartDesign()
-            chart_design.image_path = ""
-            bar_ratio = chart_design.get_bar_ratio()
-            if is_horizontal:
-                chart_template.mark.height = bar_ratio['bar_band_ratio']
-            else:
-                chart_template.mark.width = bar_ratio['bar_band_ratio']
         elif processed_data['meta_data']['chart_type'] == 'line':
             chart_template, layout_template = TemplateFactory.create_line_chart_template(
                 data=processed_data['data'],
                 meta_data=processed_data['meta_data'],
                 layout_tree=layout_tree,
-                chart_composition=chart_image_config,
+                annotation_config=annotation_config,
                 sort_config=sort_config,
                 color_template=color_template,
-                chart_component=chart_component_config
+                axis_config=axis_config
             )
         elif processed_data['meta_data']['chart_type'] == 'bump':
             chart_template, layout_template = TemplateFactory.create_bump_chart_template(
                 data=processed_data['data'],
                 meta_data=processed_data['meta_data'],
                 layout_tree=layout_tree,
-                chart_composition=chart_image_config,
+                annotation_config=annotation_config,
                 sort_config=sort_config,
                 color_template=color_template,
-                chart_component=chart_component_config
+                axis_config=axis_config
             )
         elif processed_data['meta_data']['chart_type'] == 'scatter':
             chart_template, layout_template = TemplateFactory.create_scatterplot_template(
                 data=processed_data['data'],
                 meta_data=processed_data['meta_data'],
                 layout_tree=layout_tree,
-                chart_composition=chart_image_config,
+                annotation_config=annotation_config,
                 sort_config=sort_config,
                 color_template=color_template,
-                chart_component=chart_component_config
+                axis_config=axis_config
             )
         elif processed_data['meta_data']['chart_type'] == 'groupbar':
             chart_template, layout_template = TemplateFactory.create_group_bar_chart_template(
                 data=processed_data['data'],
                 meta_data=processed_data['meta_data'],
                 layout_tree=layout_tree,
-                chart_composition=chart_image_config,
+                annotation_config=annotation_config,
                 sort_config=sort_config,
                 color_template=color_template,
-                chart_component=chart_component_config
+                axis_config=axis_config
             )
         elif processed_data['meta_data']['chart_type'] == 'slope':
             chart_template, layout_template = TemplateFactory.create_slope_chart_template(
                 data=processed_data['data'],
                 meta_data=processed_data['meta_data'],
                 layout_tree=layout_tree,
-                chart_composition=chart_image_config,
+                annotation_config=annotation_config,
                 sort_config=sort_config,
                 color_template=color_template,
-                chart_component=chart_component_config
+                axis_config=axis_config
             )
         elif processed_data['meta_data']['chart_type'] == 'connectedscatter':
             chart_template, layout_template = TemplateFactory.create_connected_scatterplot_template(
                 data=processed_data['data'],
                 meta_data=processed_data['meta_data'],
                 layout_tree=layout_tree,
-                chart_composition=chart_image_config,
+                annotation_config=annotation_config,
                 sort_config=sort_config,
                 color_template=color_template,
-                chart_component=chart_component_config
+                axis_config=axis_config
             )
         elif processed_data['meta_data']['chart_type'] == 'stackedbar':
             chart_template, layout_template = TemplateFactory.create_stacked_bar_chart_template(
                 data=processed_data['data'],
                 meta_data=processed_data['meta_data'],
                 layout_tree=layout_tree,
-                chart_composition=chart_image_config,
+                annotation_config=annotation_config,
                 sort_config=sort_config,
                 color_template=color_template,
-                chart_component=chart_component_config
+                axis_config=axis_config
             )
         elif processed_data['meta_data']['chart_type'] == 'bubble':
             chart_template, layout_template = TemplateFactory.create_bubble_plot_template(
                 data=processed_data['data'],
                 meta_data=processed_data['meta_data'],
                 layout_tree=layout_tree,
-                chart_composition=chart_image_config,
+                annotation_config=annotation_config,
                 sort_config=sort_config,
                 color_template=color_template,
-                chart_component=chart_component_config
+                axis_config=axis_config
             )
         elif processed_data['meta_data']['chart_type'] == 'radialbar':
             chart_template, layout_template = TemplateFactory.create_radial_bar_chart_template(
                 data=processed_data['data'],
                 meta_data=processed_data['meta_data'],
                 layout_tree=layout_tree,
-                chart_composition=chart_image_config,
+                annotation_config=annotation_config,
                 sort_config=sort_config,
                 color_template=color_template,
-                chart_component=chart_component_config
+                axis_config=axis_config
             )
         
         elif processed_data['meta_data']['chart_type'] == 'pie':
@@ -207,36 +187,45 @@ class Pipeline:
                 data=processed_data['data'],
                 meta_data=processed_data['meta_data'],
                 layout_tree=layout_tree,
-                chart_composition=chart_image_config,
+                annotation_config=annotation_config,
                 sort_config=sort_config,
                 color_template=color_template,
-                chart_component=chart_component_config
+                axis_config=axis_config
             )
         elif processed_data['meta_data']['chart_type'] == 'donut':
             chart_template, layout_template = TemplateFactory.create_donut_chart_template(
                 data=processed_data['data'],
                 meta_data=processed_data['meta_data'],
                 layout_tree=layout_tree,
-                chart_composition=chart_image_config,
+                annotation_config=annotation_config,
                 sort_config=sort_config,
                 color_template=color_template,
-                chart_component=chart_component_config
+                axis_config=axis_config
             )
         elif processed_data['meta_data']['chart_type'] == 'bullet':
             chart_template, layout_template = TemplateFactory.create_bullet_chart_template(
                 data=processed_data['data'],
                 meta_data=processed_data['meta_data'],
                 layout_tree=layout_tree,
-                chart_composition=chart_image_config,
+                annotation_config=annotation_config,
                 sort_config=sort_config,
                 color_template=color_template,
-                chart_component=chart_component_config
+                axis_config=axis_config
             )
         else:
             raise ValueError(f"不支持的图表类型: {processed_data['meta_data']['chart_type']}")
         
+        
+        # 获取主题色
+        theme_color = "#0000ff"
+        try: 
+            theme_color = chart_template.color_encoding.range[0]
+        except:
+            theme_color = "#0000ff"
+        
+        
         # 步骤2：生成图表
-        svg, additional_configs = self.chart_generator.generate(processed_data, chart_template)
+        svg, additional_configs = self.chart_generator.generate(processed_data, chart_template, config)
         time_end = time.time()
         # print("chart_generator time: ", time_end - time_start)
         # return svg, {}
@@ -294,11 +283,12 @@ class Pipeline:
             "background_image": {"url": processed_data['icons']['background_image']},
             "x_data_multi_icon_map": processed_data['x_data_multi_icon_map'],
             "layout_template": layout_template,
-            "chart_composition": chart_image_config,
+            "annotation_config": annotation_config,
             "chart_template": chart_template,
             "meta_data": processed_data['meta_data'],
             "chart_config": chart_config,
-            "style_config": style_dict
+            # "style_config": style_dict,
+            "theme_color": theme_color
         })
         additional_configs['title_config'].update(title_config)
         additional_configs['subtitle_config'].update(subtitle_config)
@@ -308,12 +298,16 @@ class Pipeline:
         # print("additional_configs['title_config']", additional_configs['title_config'])
         seed_text = random.randint(1, 100)
         # 配置颜色
-        title_color,subtitle_color = color_template.get_color('text', 2)
-        additional_configs['title_config']['color'] = title_color
-        additional_configs['subtitle_config']['color'] = subtitle_color
-        additional_configs['background_config']['color'] = color_template.get_color('background', 1)[0]
+        # title_color,subtitle_color = color_template.get_color('text', 2)
+        # additional_configs['title_config']['color'] = title_color
+        additional_configs['title_config']['color'] = "#0f2740"
+        # additional_configs['subtitle_config']['color'] = subtitle_color
+        additional_configs['subtitle_config']['color'] = "#445f7c"
+        # additional_configs['background_config']['color'] = color_template.get_color('background', 1)[0]
+        additional_configs['background_config']['color'] = "#ffffff"
         
         additional_configs['layout_tree'] = layout_tree
+        additional_configs.update(config)
         # 步骤3：SVG后处理
         final_svg, bounding_boxes = self.svg_processor.process(svg, additional_configs, debug=False)
         time_end = time.time()

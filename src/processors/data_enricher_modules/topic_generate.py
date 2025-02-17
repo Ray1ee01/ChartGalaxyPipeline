@@ -258,3 +258,20 @@ If the data relates to "electric vehicle adoption trends," search terms could be
         print("Error: Unable to generate topic and caption.")
         return None
     return results
+
+def if_has_country_name(data: list):
+    # 只选data中的前三个
+    data = data[:3]
+    data_str = ''
+    for item in data:
+        for key, value in item.items():
+            data_str += f"{key}: {value}\n"
+    
+    prompt = f"""
+    Given the following data, determine if it is about specific countries/regions.
+    {data_str}
+    
+    ### you should return "yes" or "no"
+    """
+    response = ask(prompt)
+    return response == "yes"
