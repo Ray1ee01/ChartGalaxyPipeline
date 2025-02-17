@@ -162,7 +162,7 @@ class LayoutProcessor:
         return ret_layout_strategy
     
     def process_layout_template(self, element: LayoutElement):
-        print("element: ", element.tag, element.id)
+        # print("element: ", element.tag, element.id)
         time_start = time.time()
         if element.tag == 'g':
             if element.id == 'title':
@@ -232,7 +232,7 @@ class LayoutProcessor:
                                 # print(f'process constraint time: {time_end_process - time_start_process}s')
                                 scales.append(scale)
                     time_end_constraint = time.time()
-                    print("processing element: ", element.id)
+                    # print("processing element: ", element.id)
                     print(f'process constraints time: {time_end_constraint - time_start_constraint}s')
 
                     time_start_scale = time.time()
@@ -645,7 +645,7 @@ class LayoutProcessor:
         if not topic_icon_config.get('iconUrl'):
             return None
         
-        image_data = Image._getImageAsBase64(topic_icon_config['iconUrl'])
+        image_data = Image._getImageAsBase64(topic_icon_config['iconUrl']['file_path'])
         if not image_data:
             return None
         

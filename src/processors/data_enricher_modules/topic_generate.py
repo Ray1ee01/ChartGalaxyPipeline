@@ -274,4 +274,4 @@ def if_has_country_name(data: list):
     ### you should return "yes" or "no"
     """
     response = ask(prompt)
-    return response == "yes"
+    return "Yes" in response or "yes" in response

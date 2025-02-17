@@ -91,10 +91,10 @@ def main():
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
         # data_range = np.arange(0, data_sizes[chart_type])
-        # data_range = np.arange(0,20)
+        data_range = np.arange(0,10)
         # data_range = np.arange(34,35)
         # data_range = np.arange(197,198)
-        data_range = np.arange(164,165)
+        # data_range = np.arange(164,165)
         for data_idx in data_range:
             time_stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             input_data = f'{chart_type}_{data_idx}'

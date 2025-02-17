@@ -133,22 +133,29 @@ class ColorEncodingTemplate:
             self.field_type = 'nominal'
             # domain是data列表中每个item的['group']的值的unique值
             self.domain = list(set([item['group'] for item in data]))
-            static_palettes = StaticPalettes()
-            self.range = static_palettes.get_colors(len(self.domain))
+            # static_palettes = StaticPalettes()
+            # self.range = static_palettes.get_colors(len(self.domain))
             # self.range = static_palettes.get_colors_from_cmap('Pastel1', len(self.domain))
-            # self.range = self.color_template.get_color('marks', len(self.domain), seed_mark=1)
+            colors = self.color_template.get_color('marks', number = 1, group = len(self.domain), seed_mark=1)
+            print("pool: ", self.color_template.pool)
+            print("colors: ", colors)
+            self.range = []
+            for i in range(1, len(self.domain)+1):
+                self.range.append(colors['group'+str(i)][0])
+            print("range: ", self.range)
             self.apply_color_rules()
             self.color_with_semantics = True
-            self.show_legend = True
+            # self.show_legend = True
         elif self.color_template is not None:
             self.domain = list(set([item['x_data'] for item in data]))
             self.field = meta_data['x_label']
-            single_color = self.color_template.get_color('marks', 1, seed_mark=1)[0]
+            single_color = self.color_template.get_color('marks', number = 1, group = 1, seed_mark=1)['group1'][0]
+            print("single_color: ", single_color)
             # self.range = [single_color] * len(self.domain)
             self.range = []
             for i in range(len(self.domain)):
                 self.range.append(single_color)
-            self.show_legend = False
+            # self.show_legend = False
             self.color_with_semantics = False
         # elif self.color_template is not None and not self.color_template.mode == 'monochromatic':
         #     if data is not None:
@@ -166,11 +173,15 @@ class ColorEncodingTemplate:
         self.domain_embeddings = self.embedding_model.encode(self.domain)
         # 计算text_embedding和self.domain的相似度
         similarity = util.cos_sim(text_embedding, self.domain_embeddings).flatten()
+        
+        
         # 按相似度排序
         sorted_domain = sorted(self.domain, key=lambda x: similarity[self.domain.index(x)], reverse=True)
         sorted_colors = self.color_template.rank_color_by_contrast(self.range)
         self.range = sorted_colors
         self.domain = sorted_domain
+        print("sorted_domain: ", sorted_domain)
+        print("sorted_colors: ", sorted_colors)
     
     def find_color_by_semantics(self, text):
         text_embedding = self.embedding_model.encode(text)

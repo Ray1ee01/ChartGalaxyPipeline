@@ -204,8 +204,8 @@ class Chart2TableDataProcessor(DataProcessor):
         result['icons'] = {}
 
         icon_pool = get_icon_pool(chart_data, topic_data, matcher)
-        # if if_has_country_name(chart_data['data']):
-        if True:
+        if if_has_country_name(chart_data['data']):
+        # if True:
             icon_selector = IconSelector(icon_pool, topic_color=None, spe_mode='flag')
             print("has country name")
         else:

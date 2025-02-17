@@ -109,8 +109,8 @@ class LayoutElement(ABC):
         return self._bounding_box
     
     def update_pos(self, old_min_x: float, old_min_y: float):
-        print("self.tag: ", self.tag, "self.bounding_box: ", self._bounding_box)
-        print("old_min_x: ", old_min_x, "old_min_y: ", old_min_y)
+        # print("self.tag: ", self.tag, "self.bounding_box: ", self._bounding_box)
+        # print("old_min_x: ", old_min_x, "old_min_y: ", old_min_y)
         if 'x' in self.attributes:
             self.attributes['x'] += self._bounding_box.minx - old_min_x
         else:
@@ -466,6 +466,8 @@ class Image(AtomElement):
             Tuple[Optional[str], int, int]: base64编码的图片数据(包含MIME类型)、原始宽度、原始高度
         """
         try:
+            if isinstance(image_url, dict):
+                image_url = image_url['file_path']
             # 检查是否已经是base64编码
             if image_url.startswith('data:'):
                 return image_url

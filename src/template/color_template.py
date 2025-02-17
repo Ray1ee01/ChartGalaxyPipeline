@@ -270,7 +270,7 @@ class ColorDesign:
                 return bcg_color_hex
 
     def get_color(self, type, number = 1, group = 1,\
-            seed_color = 0, seed_middle_color = 0, seed_order\
+            seed_color = 0, seed_middle_color = 0, seed_order = 0,\
             seed_text = 0, seed_mark = 0, seed_axis = 0):
         if type == 'background':
             return [self.pool['bcg'] for _ in range(number)]
@@ -414,8 +414,8 @@ class ColorDesign:
             color1 = selected_color[0]
             color2 = selected_color[1]
             # random shift
-            if ran
-                color1, co
+            if random.random() < 0.5:
+                color1, color2 = color2, color1
             if self.light == 'high':
                 color1 = lighter_color(color1)
                 color2 = lighter_color(color2)
@@ -708,8 +708,9 @@ class ColorDesign:
                     return {
                         'axis': [other_color],
                     }
-
-                'axis': [random.choice(self.rgb_pool_hex)],
+                return {
+                    'axis': [random.choice(self.rgb_pool_hex)],
+                }
 
     def rank_color(self, palette, importance):
         assert len(palette) == len(importance)

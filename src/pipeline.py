@@ -123,11 +123,8 @@ class Pipeline:
             chart_template, layout_template = TemplateFactory.create_group_bar_chart_template(
                 data=processed_data['data'],
                 meta_data=processed_data['meta_data'],
-                layout_tree=layout_tree,
-                annotation_config=annotation_config,
-                sort_config=sort_config,
                 color_template=color_template,
-                axis_config=axis_config
+                config=config
             )
         elif processed_data['meta_data']['chart_type'] == 'slope':
             chart_template, layout_template = TemplateFactory.create_slope_chart_template(
@@ -356,7 +353,7 @@ class Pipeline:
         time_end = time.time()
         print("chart_generator time: ", time_end - time_start)
         
-        return svg,{}
+        # return svg,{}
         
         
         time_start = time.time()
@@ -416,6 +413,7 @@ class Pipeline:
             "annotation_config": annotation_config,
             "chart_template": chart_template,
             "meta_data": processed_data['meta_data'],
+            "data": processed_data['data'],
             "chart_config": chart_config,
             # "style_config": style_dict,
             "theme_color": theme_color

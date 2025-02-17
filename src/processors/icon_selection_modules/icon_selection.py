@@ -290,7 +290,7 @@ class SimulatedAnnealing:
         # final_loss = self.cal_loss(best_icons)
         # print('Final loss:', final_loss)
         res = []
-        best_icon_positions = [self.semantic.icon_positions[best_icons[i]] for i in range(best_icons)]
+        best_icon_positions = [self.semantic.icon_positions[best_icons[i]] for i in range(len(best_icons))]
         for i in range(len(best_icons)):
             res.append({
                 "file_path": os.path.join(raw_images_path, best_icon_positions[i][0], best_icon_positions[i][1]),

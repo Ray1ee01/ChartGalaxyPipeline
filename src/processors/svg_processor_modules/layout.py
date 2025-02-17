@@ -20,13 +20,6 @@ class WidthHeightConstraint(SizeConstraint):
     def rescale(self, reference_element: LayoutElement, layout_element: LayoutElement) -> None:
         reference_element_bounding_box = reference_element.get_bounding_box()
         layout_element_bounding_box = layout_element.get_bounding_box()
-        # print("reference_element_bounding_box: ", reference_element_bounding_box)
-        # print("layout_element_bounding_box: ", layout_element_bounding_box)
-        # print("layout_element: ", layout_element.dump())
-        # print("self.max_width_ratio: ", self.max_width_ratio)
-        # print("self.max_height_ratio: ", self.max_height_ratio)
-        # print("self.min_width_ratio: ", self.min_width_ratio)
-        # print("self.min_height_ratio: ", self.min_height_ratio)
         max_width = -1
         max_height = -1
         min_width = 1000000
@@ -66,8 +59,6 @@ class WidthHeightConstraint(SizeConstraint):
         #     scale_y_down = 
         # else:
         #     scale_y = 1.0
-        print("scale_x: ", scale_x)
-        print("scale_y: ", scale_y)
         if (not scale_x == 1.0) or (not scale_y == 1.0):
             # print("reference_element.tag: ", reference_element.tag)
             # print("layout_element.tag: ", layout_element.tag)
@@ -109,9 +100,6 @@ class VerticalLayoutStrategy(LayoutStrategy):
         reference_element_bounding_box = reference_element._bounding_box
         layout_element_bounding_box = layout_element._bounding_box
         
-        # print('layout')
-        # print("reference_element_bounding_box: ", reference_element_bounding_box)
-        # print("layout_element_bounding_box: ", layout_element_bounding_box)
         
         baseline_x = 0
         baseline_y = 0
@@ -146,11 +134,6 @@ class VerticalLayoutStrategy(LayoutStrategy):
         layout_element._bounding_box.maxx += move_x
         layout_element._bounding_box.miny += move_y
         layout_element._bounding_box.maxy += move_y
-        # print("self.alignment: ", self.alignment)
-        # print("self.direction: ", self.direction)
-        # print("self.padding: ", self.padding)
-        # print("self.offset: ", self.offset)
-        # print("layout_element._bounding_box: ", layout_element._bounding_box)
         if layout_element.tag=='g':
             for child in layout_element.children:
                 if child._bounding_box is None:
@@ -212,7 +195,6 @@ class VerticalLayoutStrategy(LayoutStrategy):
                                 continue
                             # print('reference_element.children[i].is_intersect(layout_box): ', reference_element.children[i].is_intersect(layout_box))
                             if reference_element.children[i].is_intersect(layout_box):
-                                print("path is_intersect")
                                 has_overlap = True
                                 break
                     elif ref_box is None and (reference_element.children[i].tag == 'line' or reference_element.children[i].tag == 'g'):
@@ -221,12 +203,10 @@ class VerticalLayoutStrategy(LayoutStrategy):
                         for j, layout_box in enumerate(layout_element_valid_bounding_boxes):
                             if layout_box is None:
                                 if layout_element.children[j].is_intersect(ref_box):
-                                    print("layout_path is_intersect")
                                     has_overlap = True
                                     break
                             else:
                                 if layout_box.is_overlapping(ref_box):
-                                    print("layout bbox is_overlapping")
                                     has_overlap = True
                                     break
                     if has_overlap:
@@ -247,25 +227,18 @@ class VerticalLayoutStrategy(LayoutStrategy):
                 best_move = 0
                 old_layout_element_bounding_box_miny = layout_element._bounding_box.miny
                 old_layout_element_bounding_box_maxy = layout_element._bounding_box.maxy
-                # print("old_layout_element_bounding_box_miny: ", old_layout_element_bounding_box_miny)
-                # print("old_layout_element_bounding_box_maxy: ", old_layout_element_bounding_box_maxy)
                 while left <= right:
                     mid = (left + right) / 2
-                    print('mid: ', mid)
-                    print('has_overlap(mid): ', has_overlap(mid))
                     if has_overlap(mid):
                         right = mid - 0.1
                     else:
                         left = mid + 0.1
                         best_move = mid
-                print('best_move: ', best_move)
                 if best_move > 0:
                     if best_move > right_mid:
                         best_move = (best_move+right_mid)/2
                     layout_element._bounding_box.miny = old_layout_element_bounding_box_miny + best_move
                     layout_element._bounding_box.maxy = old_layout_element_bounding_box_maxy + best_move
-                    print("layout_element._bounding_box: ", layout_element._bounding_box)
-                    print("reference_element._bounding_box: ", reference_element._bounding_box)
             else:  # direction == 'down'
                 left = 0  # 最小移动距离
                 right = layout_element._bounding_box.maxy - reference_element._bounding_box.maxy  # 最大移动距离
@@ -275,14 +248,11 @@ class VerticalLayoutStrategy(LayoutStrategy):
                 
                 while left <= right:
                     mid = (left + right) / 2
-                    # print('mid: ', mid)
                     if has_overlap(mid):
-                        # print('overlap')
                         right = mid - 0.1
                     else:
                         left = mid + 0.1
                         best_move = mid
-                # print('best_move: ', best_move)
                 if best_move > 0:
                     layout_element._bounding_box.miny = old_layout_element_bounding_box_miny - best_move
                     layout_element._bounding_box.maxy = old_layout_element_bounding_box_maxy - best_move
@@ -335,10 +305,6 @@ class HorizontalLayoutStrategy(LayoutStrategy):
         layout_element._bounding_box.miny += move_y
         layout_element._bounding_box.maxy += move_y
         
-        # print("alignment: ", self.alignment)
-        # print("direction: ", self.direction)
-        # print("layout_element: ", layout_element._bounding_box)
-        # print("reference_element: ", reference_element._bounding_box)
 
         
         if layout_element.tag=='g':
@@ -572,10 +538,6 @@ class RadialLayoutStrategy(LayoutStrategy):
         move_x = layout_center_x - old_x
         move_y = layout_center_y - old_y
 
-        # print("alignment: ", self.alignment)
-        # print("direction: ", self.direction)
-        # print("layout_element: ", layout_element._bounding_box)
-        # print("reference_element: ", reference_element._bounding_box)
 
         if layout_element.tag == 'g':
             for child in layout_element.children:
@@ -715,10 +677,6 @@ class CircularLayoutStrategy(LayoutStrategy):
         move_x = layout_center_x - old_x
         move_y = layout_center_y - old_y
 
-        # print("alignment: ", self.alignment)
-        # print("direction: ", self.direction)
-        # print("layout_element: ", layout_element._bounding_box)
-        # print("reference_element: ", reference_element._bounding_box)
 
         if layout_element.tag == 'g':
             for child in layout_element.children:
@@ -773,9 +731,6 @@ def parse_layout_strategy(reference_element: LayoutElement, layout_element: Layo
     # 计算布局策略的参数
     # 在初步情况下，可以alignment都是["middle", "middle"]
     alignment = ["middle", "middle"]
-    # print("reference_element: ", reference_element._bounding_box)
-    # print("layout_element: ", layout_element._bounding_box)
-    # print("layout_strategy: ", layout_strategy)
     if layout_strategy == 'vertical':
         if reference_element._bounding_box.miny > layout_element._bounding_box.miny:
             layout_strategy = VerticalLayoutStrategy(alignment=alignment, direction='up')

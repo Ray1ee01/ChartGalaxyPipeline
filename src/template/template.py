@@ -232,18 +232,56 @@ class TemplateFactory:
     def create_group_bar_chart_template(
         data: list,
         meta_data: dict,
-        layout_tree: dict,
-        annotation_config: dict = None, 
         color_template: ColorDesign = None,
-        sort_config: dict = None,
-        axis_config: dict = None
+        config: dict = None
     ):
+        annotation_config = config.get('annotation', None)
+        sort_config = config.get('sort', None)
+        axis_config = {
+            "x_axis": config.get('x_axis', {}),
+            "y_axis": config.get('y_axis', {})
+        }
+        layout_tree = config.get('layout', {}).get('layout_tree', None)
+        
         chart_template = GroupBarChartTemplate()
-        chart_template.create_template(data, meta_data, color_template)
+        chart_template.create_template(data, meta_data, color_template, config)
         layout_template = LayoutTemplate()
-        layout_template.add_constraint(GroupBarChartConstraint())
+        
+        orientation = config.get('layout', {}).get('chart_config', {}).get('orientation', 'vertical')
+        if orientation == 'vertical':
+            layout_template.add_constraint(VerticalBarChartConstraint())
+        else:
+            layout_template.add_constraint(HorizontalBarChartConstraint())
+        
+        # 添加排序约束
+        if sort_config:
+            layout_template.add_constraint(
+                SortConstraint(
+                    sort_by=sort_config.get('by', 'y'),
+                    ascending=sort_config.get("ascending", True)
+                )
+            )
+        
+        if annotation_config:
+            chart_template.has_annotation = annotation_config.get('has_annotation', False)
+        
+        # 构建布局树
         layout_template.root = layout_template.build_template_from_tree(layout_tree)
+        
+        # 应用约束
         layout_template.apply_constraints(chart_template)
+        
+        if axis_config:
+            chart_template.x_axis.has_domain = axis_config.get('x_axis', {}).get('has_domain', True)
+            chart_template.x_axis.has_tick = axis_config.get('x_axis', {}).get('has_tick', True)
+            chart_template.x_axis.has_label = axis_config.get('x_axis', {}).get('has_label', True)
+            chart_template.x_axis.has_title = axis_config.get('x_axis', {}).get('has_title', True)
+            chart_template.x_axis.has_grid = axis_config.get('x_axis', {}).get('has_grid', True)
+            chart_template.y_axis.has_domain = axis_config.get('y_axis', {}).get('has_domain', True)
+            chart_template.y_axis.has_tick = axis_config.get('y_axis', {}).get('has_tick', True)
+            chart_template.y_axis.has_label = axis_config.get('y_axis', {}).get('has_label', True)
+            chart_template.y_axis.has_title = axis_config.get('y_axis', {}).get('has_title', True)
+            chart_template.y_axis.has_grid = axis_config.get('y_axis', {}).get('has_grid', True)
         return chart_template, layout_template
 
     @staticmethod

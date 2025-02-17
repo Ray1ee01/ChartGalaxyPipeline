@@ -50,22 +50,45 @@ class BarChartTemplate(ChartTemplate):
             self.y_axis.field_type = meta_data['y_type']
     
     def update_specification(self, specification: dict) -> None:
-        # 这里是bar chart相关的配置，通用配置放在chart generator中    
-        """更新规范"""
+        """更新规范的基础实现"""
         encoding = specification["encoding"]
         mark_specification = specification["mark"]
+        
+        # 设置基本的mark属性
         mark_specification["height"] = self.mark.height
         mark_specification["width"] = self.mark.width
-        corner_radius = self.mark.corner_radius
-        # corner_radiuses = {}
-        # for key, value in self.mark.corner_radiuses.items():
-        #     if value is not None:
-        #         corner_radiuses[key] = value
-        if corner_radius:
-            specification["mark"]["cornerRadius"] = corner_radius
+        if self.mark.corner_radius:
+            specification["mark"]["cornerRadius"] = self.mark.corner_radius
 
+        # 创建注释规范
+        annotation_specification = self._create_annotation_specification()
         
-        annotation_specification = {
+        # 处理方向相关的配置
+        if self.mark.orientation == "horizontal":
+            self._apply_horizontal_orientation(encoding, mark_specification)
+            self._configure_horizontal_annotation(annotation_specification)
+        else:
+            self._configure_vertical_annotation(annotation_specification)
+
+        # 处理排序
+        self._apply_sort_configuration(encoding)
+        
+        specification["encoding"] = encoding
+        
+        # 添加图层
+        if self.has_annotation:
+            specification["layer"] = [
+                {"mark": mark_specification, "encoding": encoding},
+                annotation_specification
+            ]
+        else:
+            specification["layer"] = [{"mark": mark_specification}]
+        
+        return specification
+
+    def _create_annotation_specification(self) -> dict:
+        """创建基础的注释规范"""
+        annotation_spec = {
             "mark": {
                 "type": "text",
             },
@@ -76,7 +99,9 @@ class BarChartTemplate(ChartTemplate):
                 },
             }
         }
-        text_config = annotation_specification["mark"]
+        
+        # 配置文本样式
+        text_config = annotation_spec["mark"]
         if self.mark.annotation_font_style.font is not None:
             text_config["font"] = self.mark.annotation_font_style.font
         if self.mark.annotation_font_style.font_size is not None:
@@ -85,70 +110,55 @@ class BarChartTemplate(ChartTemplate):
             text_config["fontWeight"] = self.mark.annotation_font_style.font_weight
         if self.mark.annotation_color_style.color is not None:
             text_config["fill"] = self.mark.annotation_color_style.color
-        
-        if self.mark.orientation == "horizontal":
-            side = self.config.get('annotation', {}).get('annotation_side', "outer")
-            if self.x_axis.orientation == "left" and side == "outer":
-                annotation_specification["mark"]["align"] = "left"
-                annotation_specification["mark"]["dx"] = 5
-            elif self.x_axis.orientation == "left" and side == "inner":
-                annotation_specification["mark"]["align"] = "right"
-                annotation_specification["mark"]["dx"] = -5
-            elif self.x_axis.orientation == "right" and side == "outer":
-                annotation_specification["mark"]["align"] = "right"
-                annotation_specification["mark"]["dx"] = -5
-            else:
-                annotation_specification["mark"]["align"] = "left"
-                annotation_specification["mark"]["dx"] = 5
-        else:
-            side = self.config.get('annotation', {}).get('annotation_side', "outer")
-            if self.x_axis.orientation == "top" and side == "outer":
-                annotation_specification["mark"]["baseline"] = "top"
-                annotation_specification["mark"]["dy"] = 5
-            elif self.x_axis.orientation == "top" and side == "inner":
-                annotation_specification["mark"]["baseline"] = "bottom"
-                annotation_specification["mark"]["dy"] = -5
-            elif self.x_axis.orientation == "bottom" and side == "outer":
-                annotation_specification["mark"]["baseline"] = "bottom"
-                annotation_specification["mark"]["dy"] = -5
-            else:
-                annotation_specification["mark"]["baseline"] = "top"
-                annotation_specification["mark"]["dy"] = 5
-        
-        if self.mark.orientation == "horizontal":
-            # 交换encoding中的x和y
-            encoding["x"], encoding["y"] = encoding["y"], encoding["x"]
-            mark_specification["orient"] = "horizontal"
+            
+        return annotation_spec
 
+    def _apply_horizontal_orientation(self, encoding: dict, mark_specification: dict) -> None:
+        """应用水平方向的编码设置"""
+        encoding["x"], encoding["y"] = encoding["y"], encoding["x"]
+        mark_specification["orient"] = "horizontal"
+
+    def _configure_horizontal_annotation(self, annotation_specification: dict) -> None:
+        """配置水平方向的注释位置"""
+        side = self.config.get('annotation', {}).get('annotation_side', "outer")
+        if self.x_axis.orientation == "left" and side == "outer":
+            annotation_specification["mark"]["align"] = "left"
+            annotation_specification["mark"]["dx"] = 5
+        elif self.x_axis.orientation == "left" and side == "inner":
+            annotation_specification["mark"]["align"] = "right"
+            annotation_specification["mark"]["dx"] = -5
+        elif self.x_axis.orientation == "right" and side == "outer":
+            annotation_specification["mark"]["align"] = "right"
+            annotation_specification["mark"]["dx"] = -5
+        else:
+            annotation_specification["mark"]["align"] = "left"
+            annotation_specification["mark"]["dx"] = 5
+
+    def _configure_vertical_annotation(self, annotation_specification: dict) -> None:
+        """配置垂直方向的注释位置"""
+        side = self.config.get('annotation', {}).get('annotation_side', "outer")
+        if self.x_axis.orientation == "top" and side == "outer":
+            annotation_specification["mark"]["baseline"] = "top"
+            annotation_specification["mark"]["dy"] = 5
+        elif self.x_axis.orientation == "top" and side == "inner":
+            annotation_specification["mark"]["baseline"] = "bottom"
+            annotation_specification["mark"]["dy"] = -5
+        elif self.x_axis.orientation == "bottom" and side == "outer":
+            annotation_specification["mark"]["baseline"] = "bottom"
+            annotation_specification["mark"]["dy"] = -5
+        else:
+            annotation_specification["mark"]["baseline"] = "top"
+            annotation_specification["mark"]["dy"] = 5
+
+    def _apply_sort_configuration(self, encoding: dict) -> None:
+        """应用排序配置"""
         if self.config.get('layout', {}).get('chart_config', {}).get('sort', {}):
             sort_config = self.config.get('layout', {}).get('chart_config', {}).get('sort', {})
             if sort_config.get('by', 'y') == 'x':
                 encoding["y"]["sort"] = "-x" if sort_config.get('ascending', True) else "x"
             else:
                 encoding["x"]["sort"] = "y" if sort_config.get('ascending', True) else "-y"
-        
-        # if self.sort:
-        #     sort_config = {
-        #         "by": self.sort["by"],
-        #         "ascending": self.sort["ascending"]
-        #     }
-        #     if sort_config["by"] == "x":
-        #         encoding["y"]["sort"] = "-x" if sort_config["ascending"] else "x"
-        #     else:
-        #         encoding["x"]["sort"] = "-y" if sort_config["ascending"] else "y"
-        specification["encoding"] = encoding
-        
-        if self.has_annotation:
-        # if True:
-            specification["layer"] = [
-                {"mark": mark_specification, "encoding": encoding},
-                annotation_specification
-            ]
-        else:
-            specification["layer"] = [{"mark": mark_specification}]
-        
-        return specification
-    
+
     def dump(self):
         result = {
             "x_axis": self.x_axis.dump(),
@@ -197,105 +207,24 @@ class GroupBarChartTemplate(BarChartTemplate):
         super().__init__()
         self.chart_type = "groupbar"
         
-    def create_template(self, data: list, meta_data: dict=None, color_template: ColorDesign=None):
-        super().create_template(data, meta_data, color_template)
+    def create_template(self, data: list, meta_data: dict=None, color_template: ColorDesign=None, config: dict=None):
+        super().create_template(data, meta_data, color_template, config)
         
     def update_specification(self, specification: dict) -> None:
-        # 这里是bar chart相关的配置，通用配置放在chart generator中    
-        """更新规范"""
+        """分组柱状图特有的规范更新"""
+        # 添加分组偏移设置
         encoding = specification["encoding"]
-        mark_specification = specification["mark"]
         if self.mark.orientation == "horizontal":
             encoding["yOffset"] = {"field": "group"}
         else:
             encoding["xOffset"] = {"field": "group"}
             
-        corner_radiuses = {}
-        for key, value in self.mark.corner_radiuses.items():
-            if value is not None:
-                corner_radiuses[key] = value
-        if corner_radiuses:
-            specification["mark"]["cornerRadius"] = corner_radiuses
-
+        # 调用父类的实现来处理通用部分
+        result = super().update_specification(specification)
         
-        annotation_specification = {
-            "mark": {
-                "type": "text",
-            },
-            "encoding": {
-                "text": {
-                    "field": self.y_axis.field,
-                    "type": self.y_axis.field_type
-                },
-            }
-        }
-        text_config = annotation_specification["mark"]
-        if self.mark.annotation_font_style.font is not None:
-            text_config["font"] = self.mark.annotation_font_style.font
-        if self.mark.annotation_font_style.font_size is not None:
-            text_config["fontSize"] = self.mark.annotation_font_style.font_size
-        if self.mark.annotation_font_style.font_weight is not None:
-            text_config["fontWeight"] = self.mark.annotation_font_style.font_weight
-        if self.mark.annotation_color_style.color is not None:
-            text_config["fill"] = self.mark.annotation_color_style.color
+        return result
         
-        if self.mark.orientation == "horizontal":
-            side = self.mark.annotation_side
-            if self.x_axis.orientation == "left" and side == "outer":
-                annotation_specification["mark"]["align"] = "left"
-                annotation_specification["mark"]["dx"] = 5
-            elif self.x_axis.orientation == "left" and side == "inner":
-                annotation_specification["mark"]["align"] = "right"
-                annotation_specification["mark"]["dx"] = -5
-            elif self.x_axis.orientation == "right" and side == "outer":
-                annotation_specification["mark"]["align"] = "right"
-                annotation_specification["mark"]["dx"] = -5
-            else:
-                annotation_specification["mark"]["align"] = "left"
-                annotation_specification["mark"]["dx"] = 5
-        else:
-            side = self.mark.annotation_side
-            if self.x_axis.orientation == "top" and side == "outer":
-                annotation_specification["mark"]["baseline"] = "top"
-                annotation_specification["mark"]["dy"] = 5
-            elif self.x_axis.orientation == "top" and side == "inner":
-                annotation_specification["mark"]["baseline"] = "bottom"
-                annotation_specification["mark"]["dy"] = -5
-            elif self.x_axis.orientation == "bottom" and side == "outer":
-                annotation_specification["mark"]["baseline"] = "bottom"
-                annotation_specification["mark"]["dy"] = -5
-            else:
-                annotation_specification["mark"]["baseline"] = "top"
-                annotation_specification["mark"]["dy"] = 5
         
-        if self.mark.orientation == "horizontal":
-            # 交换encoding中的x和y
-            encoding["x"], encoding["y"] = encoding["y"], encoding["x"]
-            mark_specification["orient"] = "horizontal"
-
-        
-        if self.sort:
-            sort_config = {
-                "by": self.sort["by"],
-                "ascending": self.sort["ascending"]
-            }
-            if sort_config["by"] == "x":
-                encoding["y"]["sort"] = "-x" if sort_config["ascending"] else "x"
-            else:
-                encoding["x"]["sort"] = "-y" if sort_config["ascending"] else "y"
-        specification["encoding"] = encoding
-        
-        if self.has_annotation:
-            specification["layer"] = [
-                {"mark": mark_specification, "encoding": encoding},
-                annotation_specification
-            ]
-        else:
-            specification["layer"] = [{"mark": mark_specification}]
-        
-        return specification        
-        
-
 class StackedBarChartTemplate(BarChartTemplate):
     def __init__(self):
         super().__init__()
