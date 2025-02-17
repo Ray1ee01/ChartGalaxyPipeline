@@ -17,7 +17,8 @@ from .chart_template.slope_chart import *
 from .chart_template.scatterplot import *
 from .chart_template.connected_scatterplot import *
 from .chart_template.bubble_plot import *
-
+from .chart_template.area_chart import *
+from .chart_template.layered_area_chart import *
 
 class LayoutTemplate:
     def __init__(self):
@@ -758,4 +759,177 @@ class TemplateFactory:
         layout_template.add_constraint(WaterfallChartConstraint())
         layout_template.root = layout_template.build_template_from_tree(layout_tree)
         layout_template.apply_constraints(chart_template)
+        return chart_template, layout_template
+
+    @staticmethod
+    def create_area_chart_template(
+        data: list,
+        meta_data: dict,
+        layout_tree: dict,
+        chart_composition: dict = None,
+        sort_config: dict = None,
+        color_template: ColorDesign = None,
+        chart_component: dict = None
+    ):
+        """创建面积图模板"""
+        chart_template = AreaChartTemplate()
+        chart_template.create_template(data, meta_data, color_template)
+        layout_template = LayoutTemplate()
+        
+        # 添加方向约束
+        layout_template.add_constraint(AreaChartConstraint())
+        
+        # 添加排序约束
+        if sort_config:
+            layout_template.add_constraint(
+                SortConstraint(
+                    sort_by=sort_config["by"],
+                    ascending=sort_config.get("ascending", True)
+                )
+            )
+        
+        if chart_composition:
+            if "mark_annotation" in chart_composition['sequence']:
+                chart_template.has_annotation = True
+        
+        # 构建布局树
+        layout_template.root = layout_template.build_template_from_tree(layout_tree)
+        
+        # 应用约束
+        layout_template.apply_constraints(chart_template)
+        
+        if chart_component:
+            chart_template.x_axis.has_domain = chart_component.get('x_axis', {}).get('has_domain', True)
+            chart_template.x_axis.has_tick = chart_component.get('x_axis', {}).get('has_tick', True)
+            chart_template.x_axis.has_label = chart_component.get('x_axis', {}).get('has_label', True)
+            chart_template.y_axis.has_domain = chart_component.get('y_axis', {}).get('has_domain', True)
+            chart_template.y_axis.has_tick = chart_component.get('y_axis', {}).get('has_tick', True)
+            chart_template.y_axis.has_label = chart_component.get('y_axis', {}).get('has_label', True)
+        
+        return chart_template, layout_template
+
+    @staticmethod
+    def create_layered_area_chart_template(
+        data: list,
+        meta_data: dict,
+        layout_tree: dict,
+        chart_composition: dict = None,
+        sort_config: dict = None,
+        color_template: ColorDesign = None,
+        chart_component: dict = None
+    ):
+        """创建层叠面积图模板"""
+        chart_template = LayeredAreaChartTemplate()
+        chart_template.create_template(data, meta_data, color_template)
+        layout_template = LayoutTemplate()
+        
+        # 添加方向约束
+        layout_template.add_constraint(LayeredAreaChartConstraint())
+        
+        # 添加排序约束
+        if sort_config:
+            layout_template.add_constraint(
+                SortConstraint(
+                    sort_by=sort_config["by"],
+                    ascending=sort_config.get("ascending", True)
+                )
+            )
+        
+        if chart_composition:
+            if "mark_annotation" in chart_composition['sequence']:
+                chart_template.has_annotation = True
+        
+        # 构建布局树
+        layout_template.root = layout_template.build_template_from_tree(layout_tree)
+        
+        # 应用约束
+        layout_template.apply_constraints(chart_template)
+        
+        if chart_component:
+            chart_template.x_axis.has_domain = chart_component.get('x_axis', {}).get('has_domain', True)
+            chart_template.x_axis.has_tick = chart_component.get('x_axis', {}).get('has_tick', True)
+            chart_template.x_axis.has_label = chart_component.get('x_axis', {}).get('has_label', True)
+            chart_template.y_axis.has_domain = chart_component.get('y_axis', {}).get('has_domain', True)
+            chart_template.y_axis.has_tick = chart_component.get('y_axis', {}).get('has_tick', True)
+            chart_template.y_axis.has_label = chart_component.get('y_axis', {}).get('has_label', True)
+        
+        return chart_template, layout_template
+
+    @staticmethod
+    def create_semi_circle_donut_chart_template(
+        data: List[Dict],
+        meta_data: Dict,
+        layout_tree: Dict,
+        chart_composition: Dict,
+        sort_config: Dict,
+        color_template: ColorDesign,
+        chart_component: Dict
+    ):
+        """创建半圆环图模板"""
+        chart_template = SemiCircleDonutChartTemplate(color_template)
+        layout_template = LayoutTemplate()
+        
+        # 使用create_template方法设置模板
+        chart_template.create_template(data, meta_data, color_template)
+
+        # 设置基本mark属性
+        chart_template.mark.radius = 100
+        chart_template.mark.innerRadius = 50
+
+        # 构建布局树
+        layout_template.root = layout_template.build_template_from_tree(layout_tree)
+        
+        # 应用约束
+        layout_template.apply_constraints(chart_template)
+        
+        return chart_template, layout_template
+    
+    @staticmethod
+    def create_multi_level_pie_chart_template(
+        data: List[Dict],
+        meta_data: Dict,
+        layout_tree: Dict,
+        chart_composition: Dict,
+        sort_config: Dict,
+        color_template: ColorDesign,
+        chart_component: Dict
+    ):
+        """创建多层饼图模板"""
+        chart_template = MultiLevelPieChartTemplate(color_template)
+        layout_template = LayoutTemplate()
+        
+        # 使用create_template方法设置模板
+        chart_template.create_template(data, meta_data, color_template)
+
+        # 构建布局树
+        layout_template.root = layout_template.build_template_from_tree(layout_tree)
+        
+        # 应用约束
+        layout_template.apply_constraints(chart_template)
+        
+        return chart_template, layout_template
+    
+    @staticmethod
+    def create_multi_level_donut_chart_template(
+        data: List[Dict],
+        meta_data: Dict,
+        layout_tree: Dict,
+        chart_composition: Dict,
+        sort_config: Dict,
+        color_template: ColorDesign,
+        chart_component: Dict
+    ):
+        """创建多层甜甜圈图模板"""
+        chart_template = MultiLevelDonutChartTemplate(color_template)
+        layout_template = LayoutTemplate()
+        
+        # 使用create_template方法设置模板
+        chart_template.create_template(data, meta_data, color_template)
+
+        # 构建布局树
+        layout_template.root = layout_template.build_template_from_tree(layout_tree)
+        
+        # 应用约束
+        layout_template.apply_constraints(chart_template)
+        
         return chart_template, layout_template

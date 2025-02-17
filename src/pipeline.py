@@ -54,14 +54,9 @@ class Pipeline:
         title_config = layout_config.get('title_config', {})
         subtitle_config = layout_config.get('subtitle_config', {})
         topic_icon_config = layout_config.get('topic_icon_config', {})
-<<<<<<< HEAD
         sort_config = layout_config.get('sort_config', {})
         # axis_config = layout_config.get('axis_config', {})
         annotation_config = config.get('annotation', {})
-=======
-        sort_config = None
-        
->>>>>>> f4b3949bac48cea6b19b096debf969ee5aee853c
         # 创建模板
         if processed_data['meta_data']['chart_type'] == 'bar':
             # 如果没有指定orientation,随机选择
@@ -69,7 +64,6 @@ class Pipeline:
                 is_horizontal = random.choice([True, False])
             else:
                 is_horizontal = chart_config['orientation'] == 'horizontal'
-<<<<<<< HEAD
             
             # is_horizontal = 
             
@@ -81,18 +75,6 @@ class Pipeline:
             #     }
             #     sort_config.update(chart_config['sort'])
             
-=======
-
-        # is_horizontal = 
-        
-            # 只有在chart_config中指定了sort时才配置排序
-            if 'sort' in chart_config:
-                sort_config = {
-                    "by": "x" if is_horizontal else "y",  # 水平图按x轴排序,垂直图按y轴排序
-                    "ascending": False  # 默认降序
-                }
-                sort_config.update(chart_config['sort'])
->>>>>>> f4b3949bac48cea6b19b096debf969ee5aee853c
             
             # 使用新的工厂方法创建模板
             if is_horizontal:
@@ -109,7 +91,6 @@ class Pipeline:
                     color_template=color_template,
                     config=config
                 )
-<<<<<<< HEAD
         elif processed_data['meta_data']['chart_type'] == 'line':
             chart_template, layout_template = TemplateFactory.create_line_chart_template(
                 data=processed_data['data'],
@@ -280,6 +261,76 @@ class Pipeline:
                 color_template=color_template,
                 chart_component=chart_component_config
             )
+        elif processed_data['meta_data']['chart_type'] == 'radialhistogram':
+            chart_template, layout_template = TemplateFactory.create_radial_histogram_template(
+                data=processed_data['data'],
+                meta_data=processed_data['meta_data'],
+                layout_tree=layout_tree,
+                chart_composition=chart_image_config,
+                sort_config=sort_config,
+                color_template=color_template,
+                chart_component=chart_component_config
+            )
+        elif processed_data['meta_data']['chart_type'] == 'polararea':
+                chart_template, layout_template = TemplateFactory.create_polar_area_chart_template(
+                    data=processed_data['data'],
+                    meta_data=processed_data['meta_data'],
+                    layout_tree=layout_tree,
+                    chart_composition=chart_image_config,
+                    sort_config=sort_config,
+                    color_template=color_template,
+                    chart_component=chart_component_config
+                )
+        elif processed_data['meta_data']['chart_type'] == 'area':
+            chart_template, layout_template = TemplateFactory.create_area_chart_template(
+                data=processed_data['data'],
+                meta_data=processed_data['meta_data'],
+                layout_tree=layout_tree,
+                chart_composition=chart_image_config,
+                sort_config=sort_config,
+                color_template=color_template,
+                chart_component=chart_component_config
+            )
+        elif processed_data['meta_data']['chart_type'] == 'layeredarea':
+            chart_template, layout_template = TemplateFactory.create_layered_area_chart_template(
+                data=processed_data['data'],
+                meta_data=processed_data['meta_data'],
+                layout_tree=layout_tree,
+                chart_composition=chart_image_config,
+                sort_config=sort_config,
+                color_template=color_template,
+                chart_component=chart_component_config
+            )
+        elif processed_data['meta_data']['chart_type'] == 'semicircledonut':
+            chart_template, layout_template = TemplateFactory.create_semi_circle_donut_chart_template(
+                data=processed_data['data'],
+                meta_data=processed_data['meta_data'],
+                layout_tree=layout_tree,
+                chart_composition=chart_image_config,
+                sort_config=sort_config,
+                color_template=color_template,
+                chart_component=chart_component_config
+            )
+        elif processed_data['meta_data']['chart_type'] == 'multilevelpie':
+            chart_template, layout_template = TemplateFactory.create_multi_level_pie_chart_template(
+                data=processed_data['data'],
+                meta_data=processed_data['meta_data'],
+                layout_tree=layout_tree,
+                chart_composition=chart_image_config,
+                sort_config=sort_config,
+                color_template=color_template,
+                chart_component=chart_component_config
+            )
+        elif processed_data['meta_data']['chart_type'] == 'multileveldonut':
+            chart_template, layout_template = TemplateFactory.create_multi_level_donut_chart_template(
+                data=processed_data['data'],
+                meta_data=processed_data['meta_data'],
+                layout_tree=layout_tree,
+                chart_composition=chart_image_config,
+                sort_config=sort_config,
+                color_template=color_template,
+                chart_component=chart_component_config
+            )
         else:
             raise ValueError(f"不支持的图表类型: {processed_data['meta_data']['chart_type']}")
         
@@ -364,80 +415,57 @@ class Pipeline:
         additional_configs['title_config'].update(title_config)
         additional_configs['subtitle_config'].update(subtitle_config)
         additional_configs['topic_icon_config'].update(topic_icon_config)
-=======
-            elif processed_data['meta_data']['chart_type'] == 'radialhistogram':
-                chart_template, layout_template = TemplateFactory.create_radial_histogram_template(
-                    data=processed_data['data'],
-                    meta_data=processed_data['meta_data'],
-                    layout_tree=layout_tree,
-                    chart_composition=chart_image_config,
-                    sort_config=sort_config,
-                    color_template=color_template,
-                    chart_component=chart_component_config
-                )
-            elif processed_data['meta_data']['chart_type'] == 'polararea':
-                chart_template, layout_template = TemplateFactory.create_polar_area_chart_template(
-                    data=processed_data['data'],
-                    meta_data=processed_data['meta_data'],
-                    layout_tree=layout_tree,
-                    chart_composition=chart_image_config,
-                    sort_config=sort_config,
-                    color_template=color_template,
-                    chart_component=chart_component_config
-                )
-            else:
-                raise ValueError(f"不支持的图表类型: {processed_data['meta_data']['chart_type']}")
-            
-            # 步骤2：生成图表
-            svg, additional_configs = self.chart_generator.generate(processed_data, chart_template)
-            time_end = time.time()
-            print("chart_generator time: ", time_end - time_start)
-            
-            return svg    
-            
-            
-            time_start = time.time()
-            
-            title_config = {}
-            title_font_template = TitleFontTemplate()
-            title_font_template.large()
-            title_config['fontSize'] = title_font_template.font_size
-            title_config['linePadding'] = title_font_template.line_height-title_font_template.font_size
-            title_config['letterSpacing'] = title_font_template.letter_spacing
-            title_config['fontWeight'] = title_font_template.font_weight
-            title_config['font'] = title_font_template.font
-            
-            subtitle_config = {}
-            subtitle_font_template = BodyFontTemplate()
-            subtitle_font_template.middle()
-            subtitle_config['fontSize'] = subtitle_font_template.font_size
-            subtitle_config['linePadding'] = 0
-            subtitle_config['letterSpacing'] = subtitle_font_template.letter_spacing
-            subtitle_config['fontWeight'] = subtitle_font_template.font_weight
-            subtitle_config['font'] = subtitle_font_template.font
-            
-            # 配置额外信息
-            additional_configs.update({
-                "title_config": {"text": processed_data['meta_data']['title']},
-                "subtitle_config": {"text": processed_data['meta_data']['caption']},
-                "topic_icon_config": {},
-                "background_config": {},
-                "topic_icon_url": processed_data['icons']['topic'][0] if len(processed_data['icons']['topic']) > 0 else None,
-                # "x_label_icon_url": processed_data['icons']['x_label'][0],
-                # "y_label_icon_url": processed_data['icons']['y_label'][0],
-                'x_data_single_url': processed_data['icons']['x_data_single'][0] if len(processed_data['icons']['x_data_single']) > 0 else None,
-                # "x_data_multi_url": [icon[i] for i, icon in enumerate(processed_data['icons']['x_data_multi'])],
-                "x_data_multi_url": processed_data['icons']['x_data_multi'],
-                "x_data_multi_icon_map": processed_data['x_data_multi_icon_map'],
-                "layout_template": layout_template,
-                "chart_composition": chart_image_config,
-                "chart_template": chart_template,
-                "meta_data": processed_data['meta_data']
-            })
-            additional_configs['title_config'].update(title_config)
-            additional_configs['subtitle_config'].update(subtitle_config)
-            additional_configs['topic_icon_config'].update(topic_icon_config)
->>>>>>> origin/develop-wangzheng
+
+        
+        # 步骤2：生成图表
+        svg, additional_configs = self.chart_generator.generate(processed_data, chart_template)
+        time_end = time.time()
+        print("chart_generator time: ", time_end - time_start)
+        
+        return svg    
+        
+        
+        time_start = time.time()
+        
+        title_config = {}
+        title_font_template = TitleFontTemplate()
+        title_font_template.large()
+        title_config['fontSize'] = title_font_template.font_size
+        title_config['linePadding'] = title_font_template.line_height-title_font_template.font_size
+        title_config['letterSpacing'] = title_font_template.letter_spacing
+        title_config['fontWeight'] = title_font_template.font_weight
+        title_config['font'] = title_font_template.font
+        
+        subtitle_config = {}
+        subtitle_font_template = BodyFontTemplate()
+        subtitle_font_template.middle()
+        subtitle_config['fontSize'] = subtitle_font_template.font_size
+        subtitle_config['linePadding'] = 0
+        subtitle_config['letterSpacing'] = subtitle_font_template.letter_spacing
+        subtitle_config['fontWeight'] = subtitle_font_template.font_weight
+        subtitle_config['font'] = subtitle_font_template.font
+        
+        # 配置额外信息
+        additional_configs.update({
+            "title_config": {"text": processed_data['meta_data']['title']},
+            "subtitle_config": {"text": processed_data['meta_data']['caption']},
+            "topic_icon_config": {},
+            "background_config": {},
+            "topic_icon_url": processed_data['icons']['topic'][0] if len(processed_data['icons']['topic']) > 0 else None,
+            # "x_label_icon_url": processed_data['icons']['x_label'][0],
+            # "y_label_icon_url": processed_data['icons']['y_label'][0],
+            'x_data_single_url': processed_data['icons']['x_data_single'][0] if len(processed_data['icons']['x_data_single']) > 0 else None,
+            # "x_data_multi_url": [icon[i] for i, icon in enumerate(processed_data['icons']['x_data_multi'])],
+            "x_data_multi_url": processed_data['icons']['x_data_multi'],
+            "x_data_multi_icon_map": processed_data['x_data_multi_icon_map'],
+            "layout_template": layout_template,
+            "chart_composition": chart_image_config,
+            "chart_template": chart_template,
+            "meta_data": processed_data['meta_data']
+        })
+        additional_configs['title_config'].update(title_config)
+        additional_configs['subtitle_config'].update(subtitle_config)
+        additional_configs['topic_icon_config'].update(topic_icon_config)
 
         # print("additional_configs['title_config']", additional_configs['title_config'])
         seed_text = random.randint(1, 100)
@@ -458,5 +486,3 @@ class Pipeline:
         print("svg_processor time: ", time_end - time_start)
         return final_svg, bounding_boxes
             
-        # except Exception as e:
-        #     raise Exception(f"Pipeline执行失败: {str(e)}")
