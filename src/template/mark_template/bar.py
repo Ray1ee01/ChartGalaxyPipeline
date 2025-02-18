@@ -1,19 +1,30 @@
 from .base import MarkTemplate
 from ..color_template import ColorDesign
+from typing import Dict
 import random
 
 class BarTemplate(MarkTemplate):
-    def __init__(self, color_template: ColorDesign=None):
-        super().__init__(color_template)
+    def __init__(self, color_template: ColorDesign=None, config: Dict=None):
+        super().__init__(color_template, config)
         self.type = "bar"
-        self.height = None
-        self.width = None
-        self.orientation = None # 这个不用自己设定，而是应该根据轴的配置推理得到
+        self.height = config
+        self.width = config
+        
+        
+        # self.height = config.get('height', None)
+        # self.width = config.get('width', None)
+        # self.orientation = config.get('orientation', None) # 这个不用自己设定，而是应该根据轴的配置推理得到
         
         # 样式属性
-        
-        random_number = 5
-        self.corner_radius = random_number
+        # random_number = 5
+        if config.get("corner_radius_end", None) is not None:
+            self.corner_radius_end = config["corner_radius_end"]
+        else:
+            self.corner_radius_end = 0
+        if config.get("corner_radius", None) is not None:
+            self.corner_radius = config["corner_radius"]
+        else:
+            self.corner_radius = 0
     def dump(self):
         return {
             "type": self.type,

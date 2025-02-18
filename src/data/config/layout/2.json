@@ -1,0 +1,89 @@
+{
+    "sequence": [
+        "topic_icon"
+    ],
+    "layout_tree":{
+        "tag": "g",
+        "layoutStrategy": {
+            "name": "vertical",
+            "padding": 15,
+            "direction": "down",
+            "overlap": false,
+            "alignment": ["left", "left"]
+        },
+        "sizeConstraint": {
+            "reference": "group_2",
+            "max_width": 1.0,
+            "min_width": 0.8
+        },
+        "children": [
+            {
+                "tag": "g",
+                "id": "group_1",
+                "layoutStrategy": {
+                    "name": "vertical",
+                    "padding": 10,
+                    "direction": "down",
+                    "overlap": false,
+                    "alignment": ["left", "left"]
+                },
+                "children": [
+                    {
+                        "tag": "g",
+                        "id": "title",
+                        "layoutStrategy": {
+                            "name": "vertical",
+                            "padding": 0,
+                            "direction": "down",
+                            "overlap": false,
+                            "alignment": ["left", "left"]
+                        },
+                        "children": []
+                    },
+                    {
+                        "tag": "g",
+                        "id": "subtitle",
+                        "layoutStrategy": {
+                            "name": "vertical",
+                            "padding": 0,
+                            "direction": "down",
+                            "overlap": false,
+                            "alignment": ["left", "left"]
+                        },
+                        "children": []
+                    }
+                ]
+            },
+            {
+                "tag": "g",
+                "id": "group_2",
+                "layoutStrategy": {
+                    "name": "vertical",
+                    "offset": -10,
+                    "direction": "down",
+                    "overlap": true,
+                    "alignment": ["right", "right"]
+                },
+                "children": [
+                    {
+                        "tag": "g",
+                        "id": "chart",
+                        "children": []
+                    },
+                    {
+                        "tag": "image",
+                        "id": "topic_icon"
+                    }
+                ]
+            }
+        ]
+    },
+    "chart_config": {
+        "valid_type": ["bar"],
+        "orientation": "horizontal",
+        "sort": {
+            "ascending": true,
+            "by": "x"
+        }
+    }
+}

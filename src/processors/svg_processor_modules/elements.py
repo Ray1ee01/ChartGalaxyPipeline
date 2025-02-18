@@ -109,7 +109,8 @@ class LayoutElement(ABC):
         return self._bounding_box
     
     def update_pos(self, old_min_x: float, old_min_y: float):
-        # print("self.tag: ", self.tag, "self.bounding_box: ", self._bounding_box)
+        print("self.tag: ", self.tag, "self.bounding_box: ", self._bounding_box)
+        print("old_min_x: ", old_min_x, "old_min_y: ", old_min_y)
         if 'x' in self.attributes:
             self.attributes['x'] += self._bounding_box.minx - old_min_x
         else:
@@ -118,7 +119,8 @@ class LayoutElement(ABC):
             self.attributes['y'] += self._bounding_box.miny - old_min_y
         else:
             self.attributes['y'] = self._bounding_box.miny - old_min_y
-        # print("self.tag: ", self.tag, "self.attributes['x']: ", self.attributes['x'], "self.attributes['y']: ", self.attributes['y'])
+        print("self.tag: ", self.tag, "self.attributes['x']: ", self.attributes['x'], "self.attributes['y']: ", self.attributes['y'])
+        print("self.tag: ", self.tag, "self.bounding_box: ", self.get_bounding_box())
     def update_scale(self, scale_x: float, scale_y: float):
         current_transform = self.attributes.get('transform', '')
         if scale_x >= 1 and scale_y >= 1:
@@ -415,6 +417,7 @@ class GroupElement(LayoutElement):
         """获取所有子元素的边界框"""
         children_boundingboxes = []
         for child in self.children:
+            # print("child.tag: ", child.tag,"child.attributes: ", child.attributes)
             if child._bounding_box:
                children_boundingboxes.append(child._bounding_box)
             else:
@@ -464,6 +467,8 @@ class Image(AtomElement):
             Tuple[Optional[str], int, int]: base64编码的图片数据(包含MIME类型)、原始宽度、原始高度
         """
         try:
+            if isinstance(image_url, dict):
+                image_url = image_url['file_path']
             # 检查是否已经是base64编码
             if image_url.startswith('data:'):
                 return image_url
@@ -574,7 +579,40 @@ class Image(AtomElement):
         else:
             return BoundingBox(max_x - min_x, max_y - min_y, min_x, max_x, min_y, max_y)
 
-            
+    def update_scale(self, scale_x: float, scale_y: float):
+        # old_bounding_box = self.get_bounding_box()
+        if self._bounding_box:
+            old_bounding_box = self._bounding_box
+        else:
+            old_bounding_box = self.get_bounding_box()
+        if scale_x >= 1 and scale_y >= 1:
+            scale = max(scale_x, scale_y)
+        else:
+            scale = min(scale_x, scale_y)
+        new_transform = f"scale({scale})"
+        current_transform = self.attributes.get('transform', '')
+        if current_transform:
+            self.attributes['transform'] = f"{new_transform} {current_transform}"
+        else:
+            self.attributes['transform'] = new_transform
+        new_bounding_box = self.get_bounding_box()
+        # 通过添加translate使得新的bounding box与旧的bounding box的中心重合
+        translate_x = (old_bounding_box.minx + old_bounding_box.maxx) / 2 - (new_bounding_box.minx + new_bounding_box.maxx) / 2
+        translate_y = (old_bounding_box.miny + old_bounding_box.maxy) / 2 - (new_bounding_box.miny + new_bounding_box.maxy) / 2
+        self._bounding_box.minx += translate_x
+        self._bounding_box.maxx += translate_x
+        self._bounding_box.miny += translate_y
+        self._bounding_box.maxy += translate_y
+        self.attributes['transform'] = f"translate({translate_x}, {translate_y}) {self.attributes['transform']}"
+    
+    def update_pos(self, old_min_x: float, old_min_y: float):
+        current_transform = self.attributes.get('transform', '')
+        new_transform = f"translate({self._bounding_box.minx - old_min_x}, {self._bounding_box.miny - old_min_y})"
+        if current_transform:
+            self.attributes['transform'] = f"{new_transform} {current_transform}"
+        else:
+            self.attributes['transform'] = new_transform
+    
     def _dump_extra_info(self) -> List[str]:
         return [""]
 
@@ -604,79 +642,79 @@ class Text(AtomElement):
                 'ascent': ascent,
                 'descent': descent
             }
-        try:
-            # 创建SVG内容
-            svg_content = f"""
-            <svg xmlns="http://www.w3.org/2000/svg" width="400" height="400">
-                <text x="0" y="{font_size}" font-size="{font_size}">{text}</text>
-            </svg>
-            """
-            # print(f"text: {text}, font_size: {font_size}")
-            time_stamp = time.time()
-            svg_path = f'text_{time_stamp}.svg'
-            with open(svg_path, 'w') as f:
-                f.write(svg_content)
-            # 转换为PNG
-            png_path = svg_path.replace('.svg', '.png')
-            cairosvg.svg2png(url=svg_path, write_to=png_path)
+        # try:
+        #     # 创建SVG内容
+        #     svg_content = f"""
+        #     <svg xmlns="http://www.w3.org/2000/svg" width="400" height="400">
+        #         <text x="0" y="{font_size}" font-size="{font_size}">{text}</text>
+        #     </svg>
+        #     """
+        #     # print(f"text: {text}, font_size: {font_size}")
+        #     time_stamp = time.time()
+        #     svg_path = f'text_{time_stamp}.svg'
+        #     with open(svg_path, 'w') as f:
+        #         f.write(svg_content)
+        #     # 转换为PNG
+        #     png_path = svg_path.replace('.svg', '.png')
+        #     cairosvg.svg2png(url=svg_path, write_to=png_path)
             
-            # OCR识别
-            img = PILImage.open(png_path)
-            result = pytesseract.image_to_data(img, output_type=pytesseract.Output.DICT)
-            # print("result: ", result)
-            # 删除临时文件
-            os.remove(svg_path)
-            os.remove(png_path)
+        #     # OCR识别
+        #     img = PILImage.open(png_path)
+        #     result = pytesseract.image_to_data(img, output_type=pytesseract.Output.DICT)
+        #     # print("result: ", result)
+        #     # 删除临时文件
+        #     os.remove(svg_path)
+        #     os.remove(png_path)
             
-            # print(f"result: {result}")
-            # 把所有有实际文字内容的boundingbox合并
-            bounding_boxes = []
-            for i in range(len(result['text'])):
-                if result['text'][i]:
-                    bounding_boxes.append({
-                        'x': result['left'][i],
-                        'y': result['top'][i],
-                        'width': result['width'][i],
-                        'height': result['height'][i],
-                        'ascent': result['height'][i],
-                        'descent': result['height'][i]
-                    })
-            # 合并boundingbox
-            merged_bounding_box = merge_bounding_boxes(bounding_boxes)
-            width = merged_bounding_box['width']
-            height = merged_bounding_box['height']
-            ascent = merged_bounding_box['ascent']
-            descent = merged_bounding_box['descent']
-            return {
-                'width': width,
-                'height': height,
-                'ascent': ascent,
-                'descent': descent
-            }
-        except Exception as e:
-            print(f"测量文本时出错: {e}")
-            char_sizes_dict = json.load(open('/data1/liduan/generation/chart/chart_pipeline/src/processors/svg_processor_modules/text_tool/char_sizes_dict.json'))
-            width = 0
-            height = 0
-            ascent = 0
-            descent = 0
-            for char in text:
-                if char in char_sizes_dict:
-                    width += char_sizes_dict[char]['width'] * font_size
-                    height = max(height, char_sizes_dict[char]['height'] * font_size)
-                    ascent = max(ascent, char_sizes_dict[char]['ascent'] * font_size)
-                    descent = min(descent, char_sizes_dict[char]['descent'] * font_size)
-                else:
-                    width += char_sizes_dict['a']['width'] * font_size
-                    height = max(height, char_sizes_dict['a']['height'] * font_size)
-                    ascent = max(ascent, char_sizes_dict['a']['ascent'] * font_size)
-                    descent = min(descent, char_sizes_dict['a']['descent'] * font_size)
-            return {
-                'width': width,
-                'height': height,
-                'ascent': ascent,
-                'descent': descent
-            }
+        #     # print(f"result: {result}")
+        #     # 把所有有实际文字内容的boundingbox合并
+        #     bounding_boxes = []
+        #     for i in range(len(result['text'])):
+        #         if result['text'][i]:
+        #             bounding_boxes.append({
+        #                 'x': result['left'][i],
+        #                 'y': result['top'][i],
+        #                 'width': result['width'][i],
+        #                 'height': result['height'][i],
+        #                 'ascent': result['height'][i],
+        #                 'descent': result['height'][i]
+        #             })
+        #     # 合并boundingbox
+        #     merged_bounding_box = merge_bounding_boxes(bounding_boxes)
+        #     width = merged_bounding_box['width']
+        #     height = merged_bounding_box['height']
+        #     ascent = merged_bounding_box['ascent']
+        #     descent = merged_bounding_box['descent']
+        #     return {
+        #         'width': width,
+        #         'height': height,
+        #         'ascent': ascent,
+        #         'descent': descent
+        #     }
+        # except Exception as e:
+        # print(f"测量文本时出错: {e}")
+        char_sizes_dict = json.load(open('/data1/liduan/generation/chart/chart_pipeline/src/processors/svg_processor_modules/text_tool/char_sizes_dict.json'))
+        width = 0
+        height = 0
+        ascent = 0
+        descent = 0
+        for char in text:
+            if char in char_sizes_dict:
+                width += char_sizes_dict[char]['width'] * font_size
+                height = max(height, char_sizes_dict[char]['height'] * font_size)
+                ascent = max(ascent, char_sizes_dict[char]['ascent'] * font_size)
+                descent = min(descent, char_sizes_dict[char]['descent'] * font_size)
+            else:
+                width += char_sizes_dict['a']['width'] * font_size
+                height = max(height, char_sizes_dict['a']['height'] * font_size)
+                ascent = max(ascent, char_sizes_dict['a']['ascent'] * font_size)
+                descent = min(descent, char_sizes_dict['a']['descent'] * font_size)
+        return {
+            'width': width,
+            'height': height,
+            'ascent': ascent,
+            'descent': descent
+        }
         #     print(f"测量文本时出错: {e}")
         #     return {
         #         'width': 0,
@@ -754,6 +792,7 @@ class Text(AtomElement):
         # else:
         #     self.attributes['y'] = self._bounding_box.miny - old_min_y
     def update_scale(self, scale_x: float, scale_y: float):
+        print("update_scale: ", scale_x, scale_y)
         # old_bounding_box = self.get_bounding_box()
         if self._bounding_box:
             old_bounding_box = self._bounding_box
@@ -940,6 +979,7 @@ class Rect(Graphical):
         y = float(self.attributes.get('y', 0))
         width = float(self.attributes.get('width', 0))
         height = float(self.attributes.get('height', 0))
+        # print("attributes: ", self.attributes)
         
         if transform:
             if isinstance(transform, list) and len(transform) == 2:
@@ -1579,8 +1619,9 @@ class Circle(Graphical):
 
 class RectEmbellish(GroupElement):
     """矩形装饰元素"""
-    def __init__(self, type = 2, colors = ['#ff0000', '#0000ff']):
+    def __init__(self, type = 0, colors = ['#ff0000', '#0000ff']):
         super().__init__()
+        print("type: ", type)
         self.type = type
         self.colors = colors
         self.attributes = {

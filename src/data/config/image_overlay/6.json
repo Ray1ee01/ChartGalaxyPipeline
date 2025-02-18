@@ -1,0 +1,8 @@
+{
+    "direction": "left",
+    "side": "outside",
+    "size_ratio": 0.9,
+    "crop": "circle",
+    "padding": 7,
+    "object": "mark"
+}

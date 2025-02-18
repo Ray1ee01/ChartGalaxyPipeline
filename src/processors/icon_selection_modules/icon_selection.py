@@ -125,6 +125,8 @@ class SimulatedAnnealing:
         cstart = 0
         cend = 0
         self.disturb_choice = []
+        self.raw_text = []
+        all_texts = self.semantic.icon_semantics
         for i in range(len(self.icon_cts_total)):
             cend += self.icon_cts_total[i]
             if i in icon_mode:
@@ -134,6 +136,7 @@ class SimulatedAnnealing:
                     # self.icon_dist.append(self.icon_dist_total[j])
                     self.icon_index.append(self.icon_index_total[j])
                     self.kdtrees.append(self.kdtrees_total[j])
+                    self.raw_text.append(all_texts[j])
             cstart = cend
         self.icon_num = len(self.icon_pool)
 
@@ -286,7 +289,15 @@ class SimulatedAnnealing:
         
         # final_loss = self.cal_loss(best_icons)
         # print('Final loss:', final_loss)
-        return best_icons
+        res = []
+        best_icon_positions = [self.semantic.icon_positions[best_icons[i]] for i in range(len(best_icons))]
+        for i in range(len(best_icons)):
+            res.append({
+                "file_path": os.path.join(raw_images_path, best_icon_positions[i][0], best_icon_positions[i][1]),
+                "text": self.raw_text[i]
+            })
+        # from IPython import embed; embed(); exit()
+        return res
 
 import colour
 import numpy as np

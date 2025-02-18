@@ -16,6 +16,9 @@ class VegaLiteGenerator(ChartGenerator):
 
     def template_to_spec(self):
         """将ChartTemplate转换为Vega-Lite规范"""
+        
+        
+        
         # 基础规范
         specification = {
             "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -27,13 +30,19 @@ class VegaLiteGenerator(ChartGenerator):
             }
         }
         
+        if self.config.get('chart_size',{}).get('height',0) != 0:
+            specification['height'] = self.config['chart_size']['height']
+        if self.config.get('chart_size',{}).get('width',0) != 0:
+            specification['width'] = self.config['chart_size']['width']
+        
         # 标记配置
         mark_specification = {
             "type": self.template.mark.type,
-            # "height": {"band": self.template.mark.height} if self.template.mark.height else None,
-            # "width": {"band": self.template.mark.width} if self.template.mark.width else None
-            # "width": 
-            "height": 10,
+            "height": {"band": self.template.mark.height} if self.template.mark.height else None,
+            "width": {"band": self.template.mark.width} if self.template.mark.width else None,
+            "opacity": self.template.mark.opacity if hasattr(self.template.mark, 'opacity') else 1,
+            "line": self.template.mark.line if hasattr(self.template.mark, 'line') else None,
+            "interpolate": self.template.mark.interpolate if hasattr(self.template.mark, 'interpolate') else None,
         }
 
         # 如果是饼图类型
@@ -81,7 +90,8 @@ class VegaLiteGenerator(ChartGenerator):
             x_encoding = {
                 "field": self.template.x_axis.field,
                 "type": self.template.x_axis.field_type,
-                "axis": {"orient": "top", "grid": False
+                "axis": {"orient": self.template.x_axis.orientation, "grid": self.template.x_axis.has_grid,
+                    "labelPadding":5
                 }
             }
             
@@ -121,19 +131,29 @@ class VegaLiteGenerator(ChartGenerator):
                 axis_config["tickWidth"] = self.template.x_axis.tick_stroke_style.stroke_width
             if self.template.x_axis.orientation is not None:
                 axis_config["orient"] = self.template.x_axis.orientation
+            
+            if self.template.x_axis.has_grid is not None:
+                axis_config["grid"] = self.template.x_axis.has_grid
                 
                 
             encoding["x"] = x_encoding
 
         # Y轴配置
-        if self.template.y_axis:
+        if hasattr(self.template, 'y_encoding') and self.template.y_encoding:
+            # 如果模板有自定义的y_encoding，使用它
+            y_encoding = self.template.y_encoding.copy()
+            # 添加轴的配置
+            y_encoding["axis"] = {"grid": False}
+            axis_config = y_encoding["axis"]
+        elif self.template.y_axis:
+            # 否则使用默认的y_axis配置
             y_encoding = {
                 "field": self.template.y_axis.field,
                 "type": self.template.y_axis.field_type,
-                "axis": {"grid": False
-                        }
+                "axis": {"orient": self.template.y_axis.orientation, "grid": self.template.y_axis.has_grid,
+                    "labelPadding":5
+                }
             }
-            
             axis_config = y_encoding["axis"]
             if self.template.y_axis.has_domain is not None:
                 axis_config["domain"] = self.template.y_axis.has_domain
@@ -169,7 +189,15 @@ class VegaLiteGenerator(ChartGenerator):
                 axis_config["tickWidth"] = self.template.y_axis.tick_stroke_style.stroke_width
             if self.template.y_axis.orientation is not None:
                 axis_config["orient"] = self.template.y_axis.orientation
+                
+            if self.template.y_axis.has_grid is not None:
+                axis_config["grid"] = self.template.y_axis.has_grid
+                
             encoding["y"] = y_encoding
+
+        # 添加y2编码（如果存在）
+        if hasattr(self.template, 'y2_encoding') and self.template.y2_encoding:
+            encoding["y2"] = self.template.y2_encoding.copy()
 
         # 颜色编码配置
         if self.template.color_encoding and self.template.color_encoding.domain is not None:
@@ -190,38 +218,33 @@ class VegaLiteGenerator(ChartGenerator):
             # 不显示图例
             # orients = ["left", "right", "top", "bottom", "top-left", "top-right", "bottom-left", "bottom-right"]
             # orients = ["top", "bottom", "left", "right"]
-            orients = ["top"]
-            color_encoding["legend"] = {"title": None, "orient": orients[random.randint(0, len(orients) - 1)]}
-            if self.template.color_encoding.show_legend is False:
+            # orients = ["top"]
+            legend_config = self.config.get('legend', {})
+            color_encoding["legend"] = {"title": None, "orient": legend_config.get('orient', "top")}
+            if legend_config.get('show_legend', True) is False:
                 color_encoding["legend"] = None
             encoding["color"] = color_encoding
         
-        # 如果是饼图类型，添加角度编码
-        if self.template.mark.type == "arc":
-            print('开始添加角度编码')
-            encoding["theta"] = {
-                "field": self.template.theta["field"],
-                "type": self.template.theta["type"] if self.template.theta["type"] else "quantitative"
-            }
-            print('theta field: ', self.template.theta["field"]),
-            if self.template.color is not None:
-                encoding["color"] = {
-                    "field": self.template.color["field"],
-                    "type": self.template.color["type"] if self.template.color["type"] else "nominal"
-                }
-            print('color field: ', self.template.color["field"])
-            print('结束添加角度编码')
+        # # 如果是饼图类型，添加角度编码
+        # if self.template.mark.type == "arc":
+        #     print('开始添加角度编码')
+        #     encoding["theta"] = {
+        #         "field": self.template.theta["field"],
+        #         "type": self.template.theta["type"] if self.template.theta["type"] else "quantitative"
+        #     }
+        #     print('theta field: ', self.template.theta["field"]),
+        #     if self.template.color is not None:
+        #         encoding["color"] = {
+        #             "field": self.template.color["field"],
+        #             "type": self.template.color["type"] if self.template.color["type"] else "nominal"
+        #         }
+        #     print('color field: ', self.template.color["field"])
+        #     print('结束添加角度编码')
 
         specification["encoding"] = encoding
         specification["mark"] = mark_specification
         specification = self.template.update_specification(specification)
         
-        if self.template.step is not 0:
-            specification["config"]["view"]["step"] = self.template.step
-        if self.template.height is not 0:
-            specification["config"]["view"]["height"] = self.template.height
-        if self.template.width is not 0:
-            specification["config"]["view"]["width"] = self.template.width
         
         
         # print('orientation: ', self.template.mark.orientation)
@@ -237,10 +260,11 @@ class VegaLiteGenerator(ChartGenerator):
         #     }] + specification["layer"]
         return specification
 
-    def generate(self, data: dict, template: ChartTemplate) -> Tuple[str, Dict, Dict]:
+    def generate(self, data: dict, template: ChartTemplate, config: Dict=None) -> Tuple[str, Dict, Dict]:
         # 获取原始数据
         raw_data = data['data']
         self.meta_data = data['meta_data']
+        self.config = config
         
         # 转换数据格式
         x_label = self.meta_data['x_label']
@@ -248,17 +272,23 @@ class VegaLiteGenerator(ChartGenerator):
         x_type = self.meta_data['x_type']
         y_type = self.meta_data['y_type']
         transformed_data = []
+
+        print('raw_data: ', raw_data)
         for item in raw_data:
-            transformed_data.append({
+            data_point = {
                 x_label: item['x_data'],
                 y_label: item['y_data']
-            })
+            }
+            # 添加其他可能存在的字段
+            if 'y2_data' in item:
+                data_point['y2_data'] = item['y2_data']
             if 'group' in item:
-                transformed_data[-1]['group'] = item['group']
+                data_point['group'] = item['group']
             if 'order' in item:
-                transformed_data[-1]['order'] = item['order']
+                data_point['order'] = item['order']
             if 'size' in item:
-                transformed_data[-1]['size'] = item['size']
+                data_point['size'] = item['size']
+            transformed_data.append(data_point)
         
         self.data = transformed_data
         self.template = template
