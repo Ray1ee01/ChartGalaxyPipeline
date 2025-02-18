@@ -37,13 +37,13 @@ class LayeredAreaChartTemplate(AreaChartTemplate):
         if 'encoding' not in specification:
             specification['encoding'] = {}
             
-        # 确保y轴配置存在
-        if 'y' not in specification['encoding']:
-            specification['encoding']['y'] = {}
+        # # 确保y轴配置存在
+        # if 'y' not in specification['encoding']:
+        #     specification['encoding']['y'] = {}
             
-        # 添加stack=null配置
-        specification['encoding']['y']['stack'] = None
-        
+        # # 添加stack=null配置
+        # specification['encoding']['y']['stack'] = None
+        specification['encoding']['y'] = self.y_encoding
         return specification
 
 class LayeredAreaChartConstraint(AreaChartConstraint):

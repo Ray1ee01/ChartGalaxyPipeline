@@ -89,9 +89,7 @@
     },
     "chart_config": {
         "valid_type": [
-            "stream",
-            "rangedarea",
-            "layeredarea"
+            "area"
         ],
         "orientation": "vertical",
         "sort": {

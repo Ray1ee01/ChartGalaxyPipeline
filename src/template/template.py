@@ -993,12 +993,21 @@ class TemplateFactory:
     def create_ranged_area_chart_template(
         data: list,
         meta_data: dict,
-        color_template: ColorDesign = None,
-        config: dict = None
+        color_template: ColorDesign,
+        config: dict,
     ):
         """创建范围区域图模板"""
+        
+        annotation_config = config.get('annotation', None)
+        sort_config = config.get('sort', None)
+        axis_config = {
+            "x_axis": config.get('x_axis', {}),
+            "y_axis": config.get('y_axis', {})
+        }
+        layout_tree = config.get('layout', {}).get('layout_tree', None)
+        
         chart_template = RangedAreaChartTemplate()
-        chart_template.create_template(data, meta_data, color_template)
+        chart_template.create_template(data, meta_data, color_template, config)
         layout_template = LayoutTemplate()
         
         # 添加方向约束
@@ -1008,14 +1017,13 @@ class TemplateFactory:
         if sort_config:
             layout_template.add_constraint(
                 SortConstraint(
-                    sort_by=sort_config["by"],
+                    sort_by=sort_config.get('by', 'y'),
                     ascending=sort_config.get("ascending", True)
                 )
             )
         
-        if chart_composition:
-            if "mark_annotation" in chart_composition['sequence']:
-                chart_template.has_annotation = True
+        if annotation_config:
+            chart_template.has_annotation = annotation_config.get('has_annotation', False)
         
         # 构建布局树
         layout_template.root = layout_template.build_template_from_tree(layout_tree)
@@ -1023,12 +1031,16 @@ class TemplateFactory:
         # 应用约束
         layout_template.apply_constraints(chart_template)
         
-        if chart_component:
-            chart_template.x_axis.has_domain = chart_component.get('x_axis', {}).get('has_domain', True)
-            chart_template.x_axis.has_tick = chart_component.get('x_axis', {}).get('has_tick', True)
-            chart_template.x_axis.has_label = chart_component.get('x_axis', {}).get('has_label', True)
-            chart_template.y_axis.has_domain = chart_component.get('y_axis', {}).get('has_domain', True)
-            chart_template.y_axis.has_tick = chart_component.get('y_axis', {}).get('has_tick', True)
-            chart_template.y_axis.has_label = chart_component.get('y_axis', {}).get('has_label', True)
-
+        if axis_config:
+            chart_template.x_axis.has_domain = axis_config.get('x_axis', {}).get('has_domain', True)
+            chart_template.x_axis.has_tick = axis_config.get('x_axis', {}).get('has_tick', True)
+            chart_template.x_axis.has_label = axis_config.get('x_axis', {}).get('has_label', True)
+            chart_template.x_axis.has_title = axis_config.get('x_axis', {}).get('has_title', True)
+            chart_template.x_axis.has_grid = axis_config.get('x_axis', {}).get('has_grid', True)
+            chart_template.y_axis.has_domain = axis_config.get('y_axis', {}).get('has_domain', True)
+            chart_template.y_axis.has_tick = axis_config.get('y_axis', {}).get('has_tick', True)
+            chart_template.y_axis.has_label = axis_config.get('y_axis', {}).get('has_label', True)
+            chart_template.y_axis.has_title = axis_config.get('y_axis', {}).get('has_title', True)
+            chart_template.y_axis.has_grid = axis_config.get('y_axis', {}).get('has_grid', True)
+        
         return chart_template, layout_template

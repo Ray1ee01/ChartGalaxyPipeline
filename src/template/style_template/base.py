@@ -132,7 +132,7 @@ class ColorEncodingTemplate:
             self.field = 'group'
             self.field_type = 'nominal'
             # domain是data列表中每个item的['group']的值的unique值
-            self.domain = list(set([item['group'] for item in data]))
+            self.domain = list(set([str(item['group']) for item in data]))
             # static_palettes = StaticPalettes()
             # self.range = static_palettes.get_colors(len(self.domain))
             # self.range = static_palettes.get_colors_from_cmap('Pastel1', len(self.domain))

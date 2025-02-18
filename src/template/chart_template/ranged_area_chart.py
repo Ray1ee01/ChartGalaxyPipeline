@@ -10,7 +10,7 @@ class RangedAreaChartTemplate(AreaChartTemplate):
         self.chart_type = "rangedarea"
         self.sort = None
 
-    def create_template(self, data: list, meta_data: dict=None, color_template: ColorDesign=None):
+    def create_template(self, data: list, meta_data: dict=None, color_template: ColorDesign=None, config: dict=None):
         # 首先按group分组，只取第一个group的数据
         groups = {}
         for item in data:

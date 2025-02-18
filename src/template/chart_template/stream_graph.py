@@ -29,6 +29,11 @@ class StreamGraphTemplate(AreaChartTemplate):
                 "grid": False
             }
         }
+    def update_specification(self, specification: dict):
+        encoding = specification['encoding']
+        encoding["y"] = self.y_encoding
+        specification['encoding'] = encoding
+        return specification
 
 class StreamGraphConstraint(AreaChartConstraint):
     """Stream图的布局约束"""
