@@ -34,7 +34,7 @@ class VegaLiteParser():
         self.x_values = list(set(self.x_values))
         self.group_values = []
         for data in self.data:
-            self.group_values.append(str(data['group']))
+            self.group_values.append(str(data.get('group', '')))
         self.group_values = list(set(self.group_values))
         self.defs = None
         
@@ -95,6 +95,9 @@ class VegaLiteParser():
         # 如果texts比x_texts短，则用""补齐
         if len(texts) < len(self.x_values):
             texts.extend([""] * (len(self.x_values) - len(texts)))
+        # 如果texts比x_texts长，则用texts中最后一个元素补齐
+        if len(texts) > len(self.x_values):
+            texts = texts[:len(self.x_values)]
         print("texts: ", texts)
         print("x_texts: ", self.x_values)
         similarity_matrix = get_text_list_similarity(texts, self.x_values)
@@ -848,7 +851,7 @@ class VegaLiteParser():
         y_label = meta_data['y_label']
         group_label = meta_data.get('group_label', '')
         
-        # print("aria_label: ", aria_label)
+        print("aria_label: ", aria_label)
         group_value = None
         if x_label in aria_label:
             x_value = aria_label.split(x_label)[1].split(';')[0].split(':')[1].strip()

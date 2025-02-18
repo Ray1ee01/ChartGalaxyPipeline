@@ -145,7 +145,7 @@ class VerticalLayoutStrategy(LayoutStrategy):
             
         
         if self.overlap and (reference_element.tag == 'g' or layout_element.tag == 'g'):
-            # print('move_x: ', move_x, 'move_y: ', move_y)
+            print('move_x: ', move_x, 'move_y: ', move_y)
             
             reference_element_valid_bounding_boxes = []
             layout_element_valid_bounding_boxes = []
@@ -229,19 +229,40 @@ class VerticalLayoutStrategy(LayoutStrategy):
                 old_layout_element_bounding_box_maxy = layout_element._bounding_box.maxy
                 while left <= right:
                     mid = (left + right) / 2
+                    print("mid: ", mid)
                     if has_overlap(mid):
+                        print("has_overlap: ", has_overlap(mid))
                         right = mid - 0.1
                     else:
                         left = mid + 0.1
                         best_move = mid
+                print("best_move: ", best_move)
+                old_best_move = best_move
+                adjust_x = 0
+                adjust_y = 0
                 if best_move > 0:
                     if best_move > right_mid:
                         best_move = (best_move+right_mid)/2
-                    layout_element._bounding_box.miny = old_layout_element_bounding_box_miny + best_move
-                    layout_element._bounding_box.maxy = old_layout_element_bounding_box_maxy + best_move
+                        height = layout_element._bounding_box.height
+                        enlarge_height = abs(old_best_move-best_move)
+                        new_height = height + enlarge_height
+                        width = layout_element._bounding_box.width
+                        ratio = new_height/width
+                        new_width = ratio*width
+                        layout_element.attributes['width'] = new_width
+                        layout_element.attributes['height'] = new_height
+                        gap_width = new_width - width
+                        gap_height = new_height - height
+                        adjust_x = gap_width
+                        adjust_y = gap_height
+                        print("adjust_x: ", adjust_x, "adjust_y: ", adjust_y)
+                        
+                    layout_element._bounding_box.miny = old_layout_element_bounding_box_miny + best_move - adjust_y
+                    layout_element._bounding_box.maxy = old_layout_element_bounding_box_maxy + best_move - adjust_y
             else:  # direction == 'down'
                 left = 0  # 最小移动距离
                 right = layout_element._bounding_box.maxy - reference_element._bounding_box.maxy  # 最大移动距离
+                right_mid = layout_element._bounding_box.miny - reference_element._bounding_box.miny
                 best_move = 0
                 old_layout_element_bounding_box_miny = layout_element._bounding_box.miny
                 old_layout_element_bounding_box_maxy = layout_element._bounding_box.maxy
@@ -254,6 +275,8 @@ class VerticalLayoutStrategy(LayoutStrategy):
                         left = mid + 0.1
                         best_move = mid
                 if best_move > 0:
+                    if best_move > right_mid:
+                        best_move = (best_move+right_mid)/2
                     layout_element._bounding_box.miny = old_layout_element_bounding_box_miny - best_move
                     layout_element._bounding_box.maxy = old_layout_element_bounding_box_maxy - best_move
 
@@ -980,3 +1003,4 @@ class LayoutGraph:
         # plt.tight_layout()
                 
         # 保存图形
+        

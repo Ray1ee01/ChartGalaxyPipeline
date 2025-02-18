@@ -149,7 +149,8 @@ class BarChartTemplate(ChartTemplate):
         else:
             annotation_specification["mark"]["baseline"] = "top"
             annotation_specification["mark"]["dy"] = 5
-
+        if self.chart_type == "groupbar":
+            annotation_specification["mark"]["dx"] = 3
     def _apply_sort_configuration(self, encoding: dict) -> None:
         """应用排序配置"""
         if self.config.get('layout', {}).get('chart_config', {}).get('sort', {}):
@@ -222,6 +223,7 @@ class GroupBarChartTemplate(BarChartTemplate):
         # 调用父类的实现来处理通用部分
         result = super().update_specification(specification)
         
+        result["encoding"]["x"]["labelOffset"] = -3
         return result
         
         

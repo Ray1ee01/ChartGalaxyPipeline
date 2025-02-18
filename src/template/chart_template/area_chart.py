@@ -9,7 +9,7 @@ class AreaChartTemplate(ChartTemplate):
         self.chart_type = "area"
         self.sort = None
     
-    def create_template(self, data: list, meta_data: dict=None, color_template: ColorDesign=None):
+    def create_template(self, data: list, meta_data: dict=None, color_template: ColorDesign=None, config: dict=None):
         self.x_axis = AxisTemplate(color_template)
         self.x_axis.field_type = "quantitative"
         self.x_axis.field = meta_data['x_label']
@@ -103,7 +103,9 @@ class AreaChartTemplate(ChartTemplate):
                 
             self.y_axis.field = meta_data['y_label']
             self.y_axis.field_type = meta_data['y_type']
-
+    def update_specification(self, specification: dict):
+        return specification
+        
 class AreaChartConstraint(LayoutConstraint):
     """面积图的布局约束"""
     def validate(self, chart_template: ChartTemplate) -> bool:

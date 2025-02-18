@@ -6,62 +6,6 @@ from ..style_template.base import PolarSetting, AngleAxisTemplate, RadiusAxisTem
 import pandas as pd
 import copy
 
-class LineChartTemplate(ChartTemplate):
-    def __init__(self):
-        super().__init__()
-        self.chart_type = "line"
-        self.sort = None
-        
-    def create_template(self, data: list, meta_data: dict=None, color_template: ColorDesign=None):
-        self.x_axis = AxisTemplate(color_template)
-        self.x_axis.field_type = "quantitative"
-        self.x_axis.field = meta_data['x_label']
-
-        self.y_axis = self.x_axis.copy()
-        self.y_axis.field_type = "quantitative"
-        self.y_axis.field = meta_data['y_label']
-        
-        self.mark = LineTemplate(color_template)
-        
-        self.color_encoding = ColorEncodingTemplate(color_template, meta_data, data)
-
-        # if meta_data is None:
-        #     # set default value
-        #     self.x_axis.field = "category"
-        #     self.x_axis.field_type = "nominal"
-            
-        #     self.y_axis.field = "value"
-        #     self.y_axis.field_type = "quantitative"
-        # else:
-        #     if meta_data['x_type'] == "categorical":
-        #         meta_data['x_type'] = "nominal"
-        #     elif meta_data['x_type'] == "numerical":
-        #         meta_data['x_type'] = "quantitative"
-        #     if meta_data['y_type'] == "categorical":
-        #         meta_data['y_type'] = "nominal"
-        #     elif meta_data['y_type'] == "numerical":
-        #         meta_data['y_type'] = "quantitative"
-                
-        #     self.x_axis.field = meta_data['x_label']
-        #     self.x_axis.field_type = meta_data['x_type']
-            
-        #     self.y_axis.field = meta_data['y_label']
-        #     self.y_axis.field_type = meta_data['y_type']
-    
-    def dump(self):
-        result = {
-            "x_axis": self.x_axis.dump(),
-            "y_axis": self.y_axis.dump(),
-            "mark": self.mark.dump(),
-            "color_encoding": self.color_encoding.dump()
-        }
-        
-        if self.sort is not None:
-            result["sort"] = self.sort
-            
-        return result
-
-
 
 class LineChartConstraint(LayoutConstraint):
     """折线图的布局约束"""
@@ -84,7 +28,7 @@ class LineChartTemplate(ChartTemplate):
         self.chart_type = "line"
         self.sort = None
         
-    def create_template(self, data: list, meta_data: dict=None, color_template: ColorDesign=None):
+    def create_template(self, data: list, meta_data: dict=None, color_template: ColorDesign=None, config: dict=None):
         self.x_axis = AxisTemplate(color_template)
         self.x_axis.field_type = "quantitative"
         self.x_axis.field = meta_data['x_label']

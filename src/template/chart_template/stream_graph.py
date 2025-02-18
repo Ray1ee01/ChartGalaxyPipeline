@@ -9,9 +9,9 @@ class StreamGraphTemplate(AreaChartTemplate):
         self.chart_type = "stream"
         self.sort = None
 
-    def create_template(self, data: list, meta_data: dict=None, color_template: ColorDesign=None):
+    def create_template(self, data: list, meta_data: dict=None, color_template: ColorDesign=None, config: dict=None):
         # 首先调用父类的create_template
-        super().create_template(data, meta_data, color_template)
+        super().create_template(data, meta_data, color_template, config)
         
         # 配置mark的属性
         self.mark.type = "area"  # 使用area类型

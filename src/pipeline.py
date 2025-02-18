@@ -81,43 +81,31 @@ class Pipeline:
                 )
         elif processed_data['meta_data']['chart_type'] == 'line':
             chart_template, layout_template = TemplateFactory.create_line_chart_template(
-                data=processed_data['data'],
-                meta_data=processed_data['meta_data'],
-                layout_tree=layout_tree,
-                annotation_config=annotation_config,
-                sort_config=sort_config,
-                color_template=color_template,
-                axis_config=axis_config
+                    data=processed_data['data'],
+                    meta_data=processed_data['meta_data'],
+                    color_template=color_template,
+                    config=config
             )
         elif processed_data['meta_data']['chart_type'] == 'bump':
             chart_template, layout_template = TemplateFactory.create_bump_chart_template(
-                data=processed_data['data'],
-                meta_data=processed_data['meta_data'],
-                layout_tree=layout_tree,
-                annotation_config=annotation_config,
-                sort_config=sort_config,
-                color_template=color_template,
-                axis_config=axis_config
+                    data=processed_data['data'],
+                    meta_data=processed_data['meta_data'],
+                    color_template=color_template,
+                    config=config
             )
         elif processed_data['meta_data']['chart_type'] == 'scatter':
             chart_template, layout_template = TemplateFactory.create_scatterplot_template(
-                data=processed_data['data'],
-                meta_data=processed_data['meta_data'],
-                layout_tree=layout_tree,
-                annotation_config=annotation_config,
-                sort_config=sort_config,
-                color_template=color_template,
-                axis_config=axis_config
+                    data=processed_data['data'],
+                    meta_data=processed_data['meta_data'],
+                    color_template=color_template,
+                    config=config
             )
         elif processed_data['meta_data']['chart_type'] == 'proportionalarea':
             chart_template, layout_template = TemplateFactory.create_proportional_area_chart_template(
-                data=processed_data['data'],
-                meta_data=processed_data['meta_data'],
-                layout_tree=layout_tree,
-                chart_composition=chart_image_config,
-                sort_config=sort_config,
-                color_template=color_template,
-                chart_component=chart_component_config
+                    data=processed_data['data'],
+                    meta_data=processed_data['meta_data'],
+                    color_template=color_template,
+                    config=config
             )
         elif processed_data['meta_data']['chart_type'] == 'groupbar':
             chart_template, layout_template = TemplateFactory.create_group_bar_chart_template(
@@ -128,213 +116,150 @@ class Pipeline:
             )
         elif processed_data['meta_data']['chart_type'] == 'slope':
             chart_template, layout_template = TemplateFactory.create_slope_chart_template(
-                data=processed_data['data'],
-                meta_data=processed_data['meta_data'],
-                layout_tree=layout_tree,
-                annotation_config=annotation_config,
-                sort_config=sort_config,
-                color_template=color_template,
-                axis_config=axis_config
+                    data=processed_data['data'],
+                    meta_data=processed_data['meta_data'],
+                    color_template=color_template,
+                    config=config
             )
         elif processed_data['meta_data']['chart_type'] == 'connectedscatter':
             chart_template, layout_template = TemplateFactory.create_connected_scatterplot_template(
-                data=processed_data['data'],
-                meta_data=processed_data['meta_data'],
-                layout_tree=layout_tree,
-                annotation_config=annotation_config,
-                sort_config=sort_config,
-                color_template=color_template,
-                axis_config=axis_config
+                    data=processed_data['data'],
+                    meta_data=processed_data['meta_data'],
+                    color_template=color_template,
+                    config=config
             )
         elif processed_data['meta_data']['chart_type'] == 'stackedbar':
             chart_template, layout_template = TemplateFactory.create_stacked_bar_chart_template(
-                data=processed_data['data'],
-                meta_data=processed_data['meta_data'],
-                layout_tree=layout_tree,
-                annotation_config=annotation_config,
-                sort_config=sort_config,
-                color_template=color_template,
-                axis_config=axis_config
+                    data=processed_data['data'],
+                    meta_data=processed_data['meta_data'],
+                    color_template=color_template,
+                    config=config
             )
         elif processed_data['meta_data']['chart_type'] == 'bubble':
             chart_template, layout_template = TemplateFactory.create_bubble_plot_template(
-                data=processed_data['data'],
-                meta_data=processed_data['meta_data'],
-                layout_tree=layout_tree,
-                annotation_config=annotation_config,
-                sort_config=sort_config,
-                color_template=color_template,
-                axis_config=axis_config
+                    data=processed_data['data'],
+                    meta_data=processed_data['meta_data'],
+                    color_template=color_template,
+                    config=config
             )
         elif processed_data['meta_data']['chart_type'] == 'radialbar':
             chart_template, layout_template = TemplateFactory.create_radial_bar_chart_template(
-                data=processed_data['data'],
-                meta_data=processed_data['meta_data'],
-                layout_tree=layout_tree,
-                annotation_config=annotation_config,
-                sort_config=sort_config,
-                color_template=color_template,
-                axis_config=axis_config
+                    data=processed_data['data'],
+                    meta_data=processed_data['meta_data'],
+                    color_template=color_template,
+                    config=config
             )
         elif processed_data['meta_data']['chart_type'] == 'pie':
             chart_template, layout_template = TemplateFactory.create_pie_chart_template(
-                data=processed_data['data'],
-                meta_data=processed_data['meta_data'],
-                layout_tree=layout_tree,
-                annotation_config=annotation_config,
-                sort_config=sort_config,
-                color_template=color_template,
-                axis_config=axis_config
+                    data=processed_data['data'],
+                    meta_data=processed_data['meta_data'],
+                    color_template=color_template,
+                    config=config
             )
         elif processed_data['meta_data']['chart_type'] == 'donut':
             chart_template, layout_template = TemplateFactory.create_donut_chart_template(
-                data=processed_data['data'],
-                meta_data=processed_data['meta_data'],
-                layout_tree=layout_tree,
-                annotation_config=annotation_config,
-                sort_config=sort_config,
-                color_template=color_template,
-                axis_config=axis_config
+                    data=processed_data['data'],
+                    meta_data=processed_data['meta_data'],
+                    color_template=color_template,
+                    config=config
             )
         elif processed_data['meta_data']['chart_type'] == 'bullet':
             chart_template, layout_template = TemplateFactory.create_bullet_chart_template(
-                data=processed_data['data'],
-                meta_data=processed_data['meta_data'],
-                layout_tree=layout_tree,
-                annotation_config=annotation_config,
-                sort_config=sort_config,
-                color_template=color_template,
-                axis_config=axis_config
+                    data=processed_data['data'],
+                    meta_data=processed_data['meta_data'],
+                    color_template=color_template,
+                    config=config
             )
         elif processed_data['meta_data']['chart_type'] == 'radar':
             chart_template, layout_template = TemplateFactory.create_radar_chart_template(
-                data=processed_data['data'],
-                meta_data=processed_data['meta_data'],
-                layout_tree=layout_tree,
-                chart_composition=chart_image_config,
-                sort_config=sort_config,
-                color_template=color_template,
-                chart_component=chart_component_config
+                    data=processed_data['data'],
+                    meta_data=processed_data['meta_data'],
+                    color_template=color_template,
+                    config=config
             )
         elif processed_data['meta_data']['chart_type'] == 'radialline':
             chart_template, layout_template = TemplateFactory.create_radial_line_chart_template(
-                data=processed_data['data'],
-                meta_data=processed_data['meta_data'],
-                layout_tree=layout_tree,
-                chart_composition=chart_image_config,
-                sort_config=sort_config,
-                color_template=color_template,
-                chart_component=chart_component_config
+                    data=processed_data['data'],
+                    meta_data=processed_data['meta_data'],
+                    color_template=color_template,
+                    config=config
             )
         elif processed_data['meta_data']['chart_type'] == 'radialarea':
             chart_template, layout_template = TemplateFactory.create_radial_area_chart_template(
-                data=processed_data['data'],
-                meta_data=processed_data['meta_data'],
-                layout_tree=layout_tree,
-                chart_composition=chart_image_config,
-                sort_config=sort_config,
-                color_template=color_template,
-                chart_component=chart_component_config
+                    data=processed_data['data'],
+                    meta_data=processed_data['meta_data'],
+                    color_template=color_template,
+                    config=config
             )
         elif processed_data['meta_data']['chart_type'] == 'polar':
             chart_template, layout_template = TemplateFactory.create_polar_chart_template(
-                data=processed_data['data'],
-                meta_data=processed_data['meta_data'],
-                layout_tree=layout_tree,
-                chart_composition=chart_image_config,
-                sort_config=sort_config,
-                color_template=color_template,
-                chart_component=chart_component_config
+                    data=processed_data['data'],
+                    meta_data=processed_data['meta_data'],
+                    color_template=color_template,
+                    config=config
             )
         elif processed_data['meta_data']['chart_type'] == 'radialhistogram':
             chart_template, layout_template = TemplateFactory.create_radial_histogram_template(
-                data=processed_data['data'],
-                meta_data=processed_data['meta_data'],
-                layout_tree=layout_tree,
-                chart_composition=chart_image_config,
-                sort_config=sort_config,
-                color_template=color_template,
-                chart_component=chart_component_config
+                    data=processed_data['data'],
+                    meta_data=processed_data['meta_data'],
+                    color_template=color_template,
+                    config=config
             )
         elif processed_data['meta_data']['chart_type'] == 'polararea':
                 chart_template, layout_template = TemplateFactory.create_polar_area_chart_template(
                     data=processed_data['data'],
                     meta_data=processed_data['meta_data'],
-                    layout_tree=layout_tree,
-                    chart_composition=chart_image_config,
-                    sort_config=sort_config,
                     color_template=color_template,
-                    chart_component=chart_component_config
+                    config=config
                 )
         elif processed_data['meta_data']['chart_type'] == 'area':
             chart_template, layout_template = TemplateFactory.create_area_chart_template(
                 data=processed_data['data'],
                 meta_data=processed_data['meta_data'],
-                layout_tree=layout_tree,
-                chart_composition=chart_image_config,
-                sort_config=sort_config,
                 color_template=color_template,
-                chart_component=chart_component_config
+                config=config
             )
         elif processed_data['meta_data']['chart_type'] == 'layeredarea':
             chart_template, layout_template = TemplateFactory.create_layered_area_chart_template(
-                data=processed_data['data'],
-                meta_data=processed_data['meta_data'],
-                layout_tree=layout_tree,
-                chart_composition=chart_image_config,
-                sort_config=sort_config,
-                color_template=color_template,
-                chart_component=chart_component_config
+                    data=processed_data['data'],
+                    meta_data=processed_data['meta_data'],
+                    color_template=color_template,
+                    config=config
             )
         elif processed_data['meta_data']['chart_type'] == 'semicircledonut':
             chart_template, layout_template = TemplateFactory.create_semi_circle_donut_chart_template(
-                data=processed_data['data'],
-                meta_data=processed_data['meta_data'],
-                layout_tree=layout_tree,
-                chart_composition=chart_image_config,
-                sort_config=sort_config,
-                color_template=color_template,
-                chart_component=chart_component_config
+                    data=processed_data['data'],
+                    meta_data=processed_data['meta_data'],
+                    color_template=color_template,
+                    config=config
             )
         elif processed_data['meta_data']['chart_type'] == 'multilevelpie':
             chart_template, layout_template = TemplateFactory.create_multi_level_pie_chart_template(
-                data=processed_data['data'],
-                meta_data=processed_data['meta_data'],
-                layout_tree=layout_tree,
-                chart_composition=chart_image_config,
-                sort_config=sort_config,
-                color_template=color_template,
-                chart_component=chart_component_config
+                    data=processed_data['data'],
+                    meta_data=processed_data['meta_data'],
+                    color_template=color_template,
+                    config=config
             )
         elif processed_data['meta_data']['chart_type'] == 'multileveldonut':
             chart_template, layout_template = TemplateFactory.create_multi_level_donut_chart_template(
-                data=processed_data['data'],
-                meta_data=processed_data['meta_data'],
-                layout_tree=layout_tree,
-                chart_composition=chart_image_config,
-                sort_config=sort_config,
-                color_template=color_template,
-                chart_component=chart_component_config
+                    data=processed_data['data'],
+                    meta_data=processed_data['meta_data'],
+                    color_template=color_template,
+                    config=config
             )
         elif processed_data['meta_data']['chart_type'] == 'stream':
                 chart_template, layout_template = TemplateFactory.create_stream_graph_template(
                     data=processed_data['data'],
                     meta_data=processed_data['meta_data'],
-                    layout_tree=layout_tree,
-                    chart_composition=chart_image_config,
-                    sort_config=sort_config,
                     color_template=color_template,
-                    chart_component=chart_component_config
+                    config=config
                 )
         elif processed_data['meta_data']['chart_type'] == 'rangedarea':
             chart_template, layout_template = TemplateFactory.create_ranged_area_chart_template(
-                data=processed_data['data'],
-                meta_data=processed_data['meta_data'],
-                layout_tree=layout_tree,
-                chart_composition=chart_image_config,
-                sort_config=sort_config,
-                color_template=color_template,
-                chart_component=chart_component_config
+                    data=processed_data['data'],
+                    meta_data=processed_data['meta_data'],
+                    color_template=color_template,
+                    config=config
             )
         else:
             raise ValueError(f"不支持的图表类型: {processed_data['meta_data']['chart_type']}")
