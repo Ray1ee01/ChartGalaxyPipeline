@@ -850,6 +850,9 @@ class VegaLiteParser():
         x_label = meta_data['x_label']
         y_label = meta_data['y_label']
         group_label = meta_data.get('group_label', '')
+        print("x_label: ", x_label)
+        print("y_label: ", y_label)
+        print("group_label: ", group_label)
         
         print("aria_label: ", aria_label)
         group_value = None
