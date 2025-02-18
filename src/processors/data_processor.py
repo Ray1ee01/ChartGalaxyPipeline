@@ -18,6 +18,7 @@ from .data_enricher_modules.data_loader import *
 from .data_enricher_modules.chart_extractor import *
 from .data_enricher_modules.datafact_generator import DataFactGenerator
 from .data_enricher_modules.palette_extractor import extract_palette
+from .data_enricher_modules.data_fact_detector import DataFactDetector
 
 data_save_dir = './src/data'
 cache_dir = './src/cache'
@@ -70,6 +71,9 @@ class VizNetDataProcessor(DataProcessor):
         # # 4. get data facts
         # data_fact_generator = DataFactGenerator(chart_data, topic_data)
         # data_fact = data_fact_generator.generate_data_fact()
+
+        data_fact_detector = DataFactDetector()
+        data_fact, data_fact_icon = data_fact_detector.detect_data_facts(chart_data)
         
         # 5. get topic relevant images
         # topic_images_query = search_image(meta['topic'])
@@ -154,9 +158,12 @@ class Chart2TableDataProcessor(DataProcessor):
         }
         
         # # 4. get data facts
-        data_fact_generator = DataFactGenerator(chart_data, topic_data)
+        # data_fact_generator = DataFactGenerator(chart_data, topic_data)
         # data_fact = data_fact_generator.generate_data_fact()
-        data_fact = {}
+        # data_fact = {} # 这里可以去掉了
+
+        data_fact_detector = DataFactDetector()
+        data_fact, data_fact_icon = data_fact_detector.detect_data_facts(chart_data, chart_type)
         
         # 5. get topic relevant images
         # topic_image_query = search_image(topic_data['topic'])
