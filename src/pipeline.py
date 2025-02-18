@@ -361,7 +361,10 @@ class Pipeline:
         additional_configs['layout_tree'] = layout_tree
         additional_configs.update(config)
         # 步骤3：SVG后处理
-        final_svg, bounding_boxes = self.svg_processor.process(svg, additional_configs, debug=False)
+        # final_svg, bounding_boxes = self.svg_processor.process(svg, additional_configs, debug=False)
+        final_svg = svg
+        bounding_boxes = {}
+        # 这里的修改是为了暂时调试
         time_end = time.time()
         return final_svg, bounding_boxes
             

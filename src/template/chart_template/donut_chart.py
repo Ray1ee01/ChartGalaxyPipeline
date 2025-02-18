@@ -15,7 +15,10 @@ class DonutChartTemplate(ChartTemplate):
         self.y_axis: Optional[AxisTemplate] = None # 占位
         self.color_encoding: Optional[ColorEncodingTemplate] = None
 
-    def create_template(self, data: list, meta_data: dict, color_template: ColorDesign = None):
+    def update_specification(self, specification):
+        return specification
+
+    def create_template(self, data: list, meta_data: dict, color_template: ColorDesign = None, config: dict = None):
         """
         创建甜甜圈图模板的核心方法
         """
@@ -38,7 +41,8 @@ class DonutChartTemplate(ChartTemplate):
             "type": "nominal"
         }
 
-        self.mark = PieTemplate(color_template)
+        mark_config = config.get('mark', {}).get('arc', {})
+        self.mark = PieTemplate(color_template, mark_config)
         self.color_encoding = ColorEncodingTemplate(color_template, meta_data, data)
 
 

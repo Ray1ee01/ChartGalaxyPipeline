@@ -367,13 +367,10 @@ class TemplateFactory:
         layout_template = LayoutTemplate()
         
         # 使用create_template方法设置模板
-        chart_template.create_template(data, meta_data, color_template)
-
-        # 设置基本mark属性
-        chart_template.mark.radius = 100
-        chart_template.mark.innerRadius = 0
+        chart_template.create_template(data, meta_data, color_template, config)
 
         # 构建布局树
+        layout_tree = config.get('layout', {}).get('layout_tree', None)
         layout_template.root = layout_template.build_template_from_tree(layout_tree)
         
         # 应用约束
@@ -393,13 +390,10 @@ class TemplateFactory:
         layout_template = LayoutTemplate()
         
         # 使用create_template方法设置模板
-        chart_template.create_template(data, meta_data, color_template)
-
-        # 设置基本mark属性
-        chart_template.mark.radius = 100
-        chart_template.mark.innerRadius = 50
+        chart_template.create_template(data, meta_data, color_template, config)
 
         # 构建布局树
+        layout_tree = config.get('layout', {}).get('layout_tree', None)
         layout_template.root = layout_template.build_template_from_tree(layout_tree)
         
         # 应用约束
@@ -878,13 +872,14 @@ class TemplateFactory:
         layout_template = LayoutTemplate()
         
         # 使用create_template方法设置模板
-        chart_template.create_template(data, meta_data, color_template)
+        chart_template.create_template(data, meta_data, color_template, config)
 
         # 设置基本mark属性
         chart_template.mark.radius = 100
         chart_template.mark.innerRadius = 50
 
         # 构建布局树
+        layout_tree = config.get('layout', {}).get('layout_tree', None)
         layout_template.root = layout_template.build_template_from_tree(layout_tree)
         
         # 应用约束
@@ -904,7 +899,8 @@ class TemplateFactory:
         layout_template = LayoutTemplate()
         
         # 使用create_template方法设置模板
-        chart_template.create_template(data, meta_data, color_template)
+        chart_template.create_template(data, meta_data, color_template, config)
+        layout_tree = config.get('layout', {}).get('layout_tree', None)
         layout_template.root = layout_template.build_template_from_tree(layout_tree)
         layout_template.apply_constraints(chart_template)
         return chart_template, layout_template
@@ -977,16 +973,10 @@ class TemplateFactory:
         layout_template = LayoutTemplate()
         
         # 使用create_template方法设置模板
-        chart_template.create_template(data, meta_data, color_template)
-
-        if chart_component:
-            chart_template.x_axis.has_domain = chart_component.get('x_axis', {}).get('has_domain', True)
-            chart_template.x_axis.has_tick = chart_component.get('x_axis', {}).get('has_tick', True)
-            chart_template.x_axis.has_label = chart_component.get('x_axis', {}).get('has_label', True)
-            chart_template.y_axis.has_domain = chart_component.get('y_axis', {}).get('has_domain', True)
-            chart_template.y_axis.has_tick = chart_component.get('y_axis', {}).get('has_tick', True)
-            chart_template.y_axis.has_label = chart_component.get('y_axis', {}).get('has_label', True)
-        
+        chart_template.create_template(data, meta_data, color_template, config)
+        layout_tree = config.get('layout', {}).get('layout_tree', None)
+        layout_template.root = layout_template.build_template_from_tree(layout_tree)
+        layout_template.apply_constraints(chart_template)
         return chart_template, layout_template
 
     @staticmethod

@@ -15,10 +15,15 @@ class PieChartTemplate(ChartTemplate):
         self.y_axis: Optional[AxisTemplate] = None # 占位
         self.color_encoding: Optional[ColorEncodingTemplate] = None
 
-    def create_template(self, data: list, meta_data: dict, color_template: ColorDesign = None):
+    def update_specification(self, specification):
+        return specification
+
+    def create_template(self, data: list, meta_data: dict, color_template: ColorDesign = None, config: dict = None):
         """
         创建饼图模板的核心方法
         """
+        self.config = config
+
         # 验证必要的字段
         if meta_data.get('x_type') == 'categorical':
             value_field = meta_data.get('y_label')
@@ -42,7 +47,8 @@ class PieChartTemplate(ChartTemplate):
             "type": "nominal"
         }
 
-        self.mark = PieTemplate(color_template)
+        mark_config = self.config.get('mark', {}).get('arc', {})
+        self.mark = PieTemplate(color_template, mark_config)
         self.color_encoding = ColorEncodingTemplate(color_template, meta_data, data)
 
         ### 设置坐标轴的占位代码

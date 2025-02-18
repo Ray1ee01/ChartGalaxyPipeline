@@ -89,6 +89,7 @@ def main():
     
     date = datetime.now().strftime("%Y%m%d")
     valid_chart_types = configs['layout']['chart_config']['valid_type']
+    print(f'valid_chart_types: {valid_chart_types}')
     for chart_type in valid_chart_types:
         if chart_type not in chart_type_list:
             print(f'{chart_type} is not in chart_type_list')
@@ -97,7 +98,7 @@ def main():
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
         # data_range = np.arange(0, data_sizes[chart_type])
-        data_range = np.arange(0,10)
+        data_range = np.arange(8,9)
         # data_range = np.arange(39,40)
         # data_range = np.arange(197,198)
         # data_range = np.arange(164,165)

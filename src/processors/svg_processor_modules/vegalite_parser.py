@@ -8,8 +8,10 @@ from .elements import *
 from .layout import *
 import random
 from ..image_processor import ImageProcessor
-from .overlay_processor import OverlayProcessor
-from ...utils.text_similarity import get_text_list_similarity, linear_assignment,get_text_similarity
+# from .overlay_processor import OverlayProcessor
+# No module named 'src.processors.svg_processor_modules.overlay_processor'
+# from ...utils.text_similarity import get_text_list_similarity, linear_assignment,get_text_similarity
+# No module named 'src.utils.text_similarity'
 
 class VegaLiteParser():
     def __init__(self, svg: str, additional_configs: Dict):

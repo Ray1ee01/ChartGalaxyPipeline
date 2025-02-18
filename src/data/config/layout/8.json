@@ -89,7 +89,7 @@
     },
     "chart_config": {
         "valid_type": [
-            "area"
+            "donut"
         ],
         "orientation": "vertical",
         "sort": {
