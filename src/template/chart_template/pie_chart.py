@@ -71,11 +71,11 @@ class MultiLevelPieChartTemplate(PieChartTemplate):
         super().__init__(color_template)
         self.chart_type = "multi_level_pie"
 
-    def create_template(self, data: list, meta_data: dict, color_template: ColorDesign = None):
+    def create_template(self, data: list, meta_data: dict, color_template: ColorDesign = None, config: dict = None):
         """
         创建多层饼图模板的核心方法
         """
-        super().create_template(data, meta_data, color_template)
+        super().create_template(data, meta_data, color_template, config)
         
 
     def dump(self):
@@ -109,7 +109,7 @@ class MultiLevelPieChartTemplate(PieChartTemplate):
         self.echart_option["series"].append({})
         self.echart_option["series"][0].update({
             "type": "pie",
-            "radius": ["0%", "40%"],  # 设置内外半径
+            "radius": ["0%", f"\"{self.mark.innerRadius}%\""],  # 设置内外半径
             "center": ["50%", "50%"],  # 设置圆心位置
             "avoidLabelOverlap": True,
             "itemStyle": {
@@ -139,7 +139,7 @@ class MultiLevelPieChartTemplate(PieChartTemplate):
 
         self.echart_option["series"][1].update({
             "type": "pie",
-            "radius": ["40%", "80%"],  # 设置内外半径
+            "radius": [f"\"{self.mark.innerRadius}%\"", f"\"{self.mark.radius}%\""],  # 设置内外半径
             "center": ["50%", "50%"],  # 设置圆心位置
             "avoidLabelOverlap": True,
             "itemStyle": {
@@ -149,7 +149,8 @@ class MultiLevelPieChartTemplate(PieChartTemplate):
             },
             "label": {
                 "show": True,
-                "formatter": "{b}:\n{d}%"  # 显示名称和百分比
+                "formatter": "{b}:\n{d}%",  # 显示名称和百分比
+                "position": "inside"
             },
             "emphasis": {
                 "itemStyle": {

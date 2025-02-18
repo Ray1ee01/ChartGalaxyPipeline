@@ -58,10 +58,8 @@ class SemiCircleDonutChartTemplate(DonutChartTemplate):
         super().__init__(color_template)
         self.chart_type = "semicircledonut"
 
-    def create_template(self, data: list, meta_data: dict, color_template: ColorDesign = None):
-        super().create_template(data, meta_data, color_template)
-        self.mark.inner_radius = 40
-        self.mark.outer_radius = 80
+    def create_template(self, data: list, meta_data: dict, color_template: ColorDesign = None, config: dict = None):
+        super().create_template(data, meta_data, color_template, config)
 
     def dump(self):
         return {
@@ -88,7 +86,7 @@ class SemiCircleDonutChartTemplate(DonutChartTemplate):
         # 配置系列
         self.echart_option["series"][0].update({
             "type": "pie",
-            "radius": ["40%", "80%"],  # 设置内外半径
+            "radius": [f"\"{self.mark.innerRadius}%\"", f"\"{self.mark.radius}%\""],  # 设置内外半径
             "center": ["50%", "70%"],  # 设置圆心位置
             "avoidLabelOverlap": True,
             "itemStyle": {
@@ -163,12 +161,13 @@ class MultiLevelDonutChartTemplate(DonutChartTemplate):
         group_list = df['group'].unique().tolist()
           
         # 配置系列
+        middle = (self.mark.innerRadius + self.mark.radius) / 2
         self.echart_option["series"] = []
         self.echart_option["series"].append({})
         self.echart_option["series"].append({})
         self.echart_option["series"][0].update({
             "type": "pie",
-            "radius": ["25%", "50%"],  # 设置内外半径
+            "radius": [f"\"{self.mark.innerRadius}%\"", f"\"{middle}%\""],  # 设置内外半径
             "center": ["50%", "50%"],  # 设置圆心位置
             "avoidLabelOverlap": True,
             "itemStyle": {
@@ -198,7 +197,7 @@ class MultiLevelDonutChartTemplate(DonutChartTemplate):
 
         self.echart_option["series"][1].update({
             "type": "pie",
-            "radius": ["50%", "75%"],  # 设置内外半径
+            "radius": [f"\"{middle}%\"", f"\"{self.mark.radius}%\""],  # 设置内外半径
             "center": ["50%", "50%"],  # 设置圆心位置
             "avoidLabelOverlap": True,
             "itemStyle": {

@@ -233,11 +233,11 @@ class VegaLiteGenerator(ChartGenerator):
                 "type": self.template.theta["type"] if self.template.theta["type"] else "quantitative"
             }
             # print('theta field: ', self.template.theta["field"]),
-            # if self.template.color is not None:
-            #     encoding["color"] = {
-            #         "field": self.template.color["field"],
-            #         "type": self.template.color["type"] if self.template.color["type"] else "nominal"
-            #     }
+            if self.template.color is not None:
+                encoding["color"] = {
+                    "field": self.template.color["field"],
+                    "type": self.template.color["type"] if self.template.color["type"] else "nominal"
+                }
             # print('color field: ', self.template.color["field"])
             # print('结束添加角度编码')
 

@@ -64,7 +64,10 @@ def main():
         "stream",
         "rangedarea",
         "layeredarea",
-        "stackedarea"
+        "stackedarea",
+        "semicircledonut",
+        "multilevelpie",
+        "multileveldonut"
         # 'waterfall',
     ]
     
