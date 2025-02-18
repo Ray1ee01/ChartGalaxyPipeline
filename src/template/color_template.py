@@ -132,7 +132,7 @@ def check_in_palette(color, palette):
     
 text_types = ['title', 'caption']
 class ColorDesign:
-    def __init__(self, image_palette, mode='monochromatic', lighter='high', same_threshold=5):
+    def __init__(self, image_palette, mode='monochromatic', lighter='high', same_threshold=8):
         self.pool = image_palette
         self.mode = mode
         self.rgb_pool = [hex_to_rgb(color) for color in self.pool['color_list']]
