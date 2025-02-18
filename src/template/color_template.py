@@ -132,10 +132,24 @@ def check_in_palette(color, palette):
     
 text_types = ['title', 'caption']
 class ColorDesign:
-    def __init__(self, image_palette, mode='monochromatic', lighter='high'):
+    def __init__(self, image_palette, mode='monochromatic', lighter='high', same_threshold=5):
         self.pool = image_palette
         self.mode = mode
         self.rgb_pool = [hex_to_rgb(color) for color in self.pool['color_list']]
+        # check similar color and remove
+        res = []
+        for i in range(len(self.rgb_pool)):
+            find = False
+            for j in range(i):
+                if ciede2000(self.rgb_pool[i], self.rgb_pool[j]) < same_threshold:
+                    find = True
+                    break
+            if not find:
+                res.append(self.rgb_pool[i])
+        self.rgb_pool = res
+        self.hex_rgb_pool = [rgb_to_hex(*rgb) for rgb in self.rgb_pool]
+        print('rgb_pool', self.rgb_pool)
+
         black = (0, 0, 0)
         white = (255, 255, 255)
         gray1 = (75, 75, 75)
