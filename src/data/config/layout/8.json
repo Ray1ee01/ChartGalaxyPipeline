@@ -1,0 +1,101 @@
+{
+    "sequence": [
+        "topic_icon"
+    ],
+    "layout_tree":{
+        "tag": "g",
+        "layoutStrategy": {
+            "name": "vertical",
+            "padding": 15,
+            "direction": "down",
+            "overlap": false,
+            "alignment": ["left", "left"]
+        },
+        "sizeConstraint": {
+            "reference": "chart",
+            "max_width": 1.1,
+            "min_width": 0.85
+        },
+        "children": [
+            {
+                "tag": "g",
+                "id": "group_0",
+                "layoutStrategy": {
+                    "name": "horizontal",
+                    "padding": 10,
+                    "direction": "right",
+                    "overlap": false
+                },
+                "sizeConstraint": {
+                    "reference": "group_1",
+                    "max_height": 1,
+                    "min_height": 0.95
+                },
+                "children": [
+                    {
+                        "tag": "g",
+                        "id": "embellish",
+                        "children": []
+                    },
+                    {
+                        "tag": "g",
+                        "id": "group_1",
+                        "layoutStrategy": {
+                            "name": "vertical",
+                            "padding": 10,
+                            "direction": "down",
+                            "overlap": false,
+                            "alignment": ["left", "left"]
+                        },
+                        "sizeConstraint": {
+                            "reference": "title",
+                            "max_width": 1
+                        },
+                        "children": [
+                            {
+                                "tag": "g",
+                                "id": "title",
+                                "layoutStrategy": {
+                                    "name": "vertical",
+                                    "padding": 0,
+                                    "direction": "down",
+                                    "overlap": false,
+                                    "alignment": ["left", "left"]
+                                },
+                                "children": []
+                            },
+                            {
+                                "tag": "g",
+                                "id": "subtitle",
+                                "layoutStrategy": {
+                                    "name": "vertical",
+                                    "padding": 0,
+                                    "direction": "down",
+                                    "overlap": false,
+                                    "alignment": ["left", "left"]
+                                },
+                                "children": []
+                            }
+                        ]
+                    }
+                ]
+            },
+            {
+                "tag": "g",
+                "id": "chart",
+                "children": []
+            }
+        ]
+    },
+    "chart_config": {
+        "valid_type": [
+            "stream",
+            "rangedarea",
+            "layeredarea"
+        ],
+        "orientation": "vertical",
+        "sort": {
+            "ascending": true
+        }
+    }
+}

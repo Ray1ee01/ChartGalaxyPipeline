@@ -1,0 +1,16 @@
+{
+    "layout": 2,
+    "x_axis": 11,
+    "x_axis_orient": 1,
+    "y_axis": 31,
+    "y_axis_orient": 2,
+    "color": 0,
+    "legend": 0,
+    "mark": {
+        "bar": 0
+    },
+    "icon": 1,
+    "chart_size": 1,
+    "annotation": 1,
+    "image_overlay": 6
+}
