@@ -363,11 +363,20 @@ class TemplateFactory:
         config: dict = None
     ) -> Tuple[ChartTemplate, Dict]:
         # 创建饼图模板
+        
+        annotation_config = config.get('annotation', None)
+        sort_config = config.get('sort', None)
+        axis_config = {
+            "x_axis": config.get('x_axis', {}),
+            "y_axis": config.get('y_axis', {})
+        }
+        layout_tree = config.get('layout', {}).get('layout_tree', None)
+        
         chart_template = PieChartTemplate(color_template)
         layout_template = LayoutTemplate()
         
         # 使用create_template方法设置模板
-        chart_template.create_template(data, meta_data, color_template)
+        chart_template.create_template(data, meta_data, color_template, config)
 
         # 设置基本mark属性
         chart_template.mark.radius = 100
@@ -388,12 +397,21 @@ class TemplateFactory:
         color_template: ColorDesign = None,
         config: dict = None
     ) -> Tuple[ChartTemplate, Dict]:
+        
+        annotation_config = config.get('annotation', None)
+        sort_config = config.get('sort', None)
+        axis_config = {
+            "x_axis": config.get('x_axis', {}),
+            "y_axis": config.get('y_axis', {})
+        }
+        layout_tree = config.get('layout', {}).get('layout_tree', None)
+        
         # 创建甜甜圈图模板
         chart_template = DonutChartTemplate(color_template)
         layout_template = LayoutTemplate()
         
         # 使用create_template方法设置模板
-        chart_template.create_template(data, meta_data, color_template)
+        chart_template.create_template(data, meta_data, color_template, config)
 
         # 设置基本mark属性
         chart_template.mark.radius = 100
@@ -873,12 +891,21 @@ class TemplateFactory:
         color_template: ColorDesign = None,
         config: dict = None
     ):
+        
+        annotation_config = config.get('annotation', None)
+        sort_config = config.get('sort', None)
+        axis_config = {
+            "x_axis": config.get('x_axis', {}),
+            "y_axis": config.get('y_axis', {})
+        }
+        layout_tree = config.get('layout', {}).get('layout_tree', None)
+        
         """创建半圆环图模板"""
         chart_template = SemiCircleDonutChartTemplate(color_template)
         layout_template = LayoutTemplate()
         
         # 使用create_template方法设置模板
-        chart_template.create_template(data, meta_data, color_template)
+        chart_template.create_template(data, meta_data, color_template, config)
 
         # 设置基本mark属性
         chart_template.mark.radius = 100

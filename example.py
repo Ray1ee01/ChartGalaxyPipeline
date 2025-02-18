@@ -97,7 +97,7 @@ def main():
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
         # data_range = np.arange(0, data_sizes[chart_type])
-        data_range = np.arange(0,10)
+        data_range = np.arange(6,7)
         # data_range = np.arange(39,40)
         # data_range = np.arange(197,198)
         # data_range = np.arange(164,165)

@@ -17,8 +17,14 @@ class BarTemplate(MarkTemplate):
         
         # 样式属性
         # random_number = 5
-        self.corner_radius = 0
-
+        if config.get("corner_radius_end", None) is not None:
+            self.corner_radius_end = config["corner_radius_end"]
+        else:
+            self.corner_radius_end = 0
+        if config.get("corner_radius", None) is not None:
+            self.corner_radius = config["corner_radius"]
+        else:
+            self.corner_radius = 0
     def dump(self):
         return {
             "type": self.type,

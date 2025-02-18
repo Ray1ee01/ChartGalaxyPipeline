@@ -20,6 +20,8 @@ class WidthHeightConstraint(SizeConstraint):
     def rescale(self, reference_element: LayoutElement, layout_element: LayoutElement) -> None:
         reference_element_bounding_box = reference_element.get_bounding_box()
         layout_element_bounding_box = layout_element.get_bounding_box()
+        print("reference_element_bounding_box: ", reference_element_bounding_box)
+        print("layout_element_bounding_box: ", layout_element_bounding_box)
         max_width = -1
         max_height = -1
         min_width = 1000000
@@ -59,11 +61,13 @@ class WidthHeightConstraint(SizeConstraint):
         #     scale_y_down = 
         # else:
         #     scale_y = 1.0
+        print("scale_x: ", scale_x, "scale_y: ", scale_y)
         if (not scale_x == 1.0) or (not scale_y == 1.0):
             # print("reference_element.tag: ", reference_element.tag)
             # print("layout_element.tag: ", layout_element.tag)
             scale = layout_element.update_scale(scale_x, scale_y)
             layout_element._bounding_box = layout_element.get_bounding_box()
+            print("layout_element._bounding_box: ", layout_element._bounding_box)
             return scale
         else:
             return 1.0
@@ -291,8 +295,16 @@ class HorizontalLayoutStrategy(LayoutStrategy):
         self.overlap = False
         
     def layout(self, reference_element: LayoutElement, layout_element: LayoutElement) -> None:
+        print("reference_element: ", reference_element.tag, reference_element.id)
+        print("layout_element: ", layout_element.tag, layout_element.id)
         reference_element_bounding_box = reference_element._bounding_box
         layout_element_bounding_box = layout_element._bounding_box
+        print("reference_element_bounding_box: ", reference_element_bounding_box)
+        print("layout_element_bounding_box: ", layout_element_bounding_box)
+        print("direction: ", self.direction)
+        print("alignment: ", self.alignment)
+        print("padding: ", self.padding)
+        print("offset: ", self.offset)
         baseline_x = 0
         baseline_y = 0
         
@@ -336,7 +348,7 @@ class HorizontalLayoutStrategy(LayoutStrategy):
                 child._bounding_box.maxx += move_x
                 child._bounding_box.miny += move_y
                 child._bounding_box.maxy += move_y
-        
+        print("layout_element._bounding_box: ", layout_element._bounding_box)
         if self.overlap and (reference_element.tag == 'g' or layout_element.tag == 'g'):
             reference_element_valid_bounding_boxes = []
             layout_element_valid_bounding_boxes = []

@@ -109,8 +109,8 @@ class LayoutElement(ABC):
         return self._bounding_box
     
     def update_pos(self, old_min_x: float, old_min_y: float):
-        # print("self.tag: ", self.tag, "self.bounding_box: ", self._bounding_box)
-        # print("old_min_x: ", old_min_x, "old_min_y: ", old_min_y)
+        print("self.tag: ", self.tag, "self.bounding_box: ", self._bounding_box)
+        print("old_min_x: ", old_min_x, "old_min_y: ", old_min_y)
         if 'x' in self.attributes:
             self.attributes['x'] += self._bounding_box.minx - old_min_x
         else:
@@ -119,7 +119,8 @@ class LayoutElement(ABC):
             self.attributes['y'] += self._bounding_box.miny - old_min_y
         else:
             self.attributes['y'] = self._bounding_box.miny - old_min_y
-        # print("self.tag: ", self.tag, "self.attributes['x']: ", self.attributes['x'], "self.attributes['y']: ", self.attributes['y'])
+        print("self.tag: ", self.tag, "self.attributes['x']: ", self.attributes['x'], "self.attributes['y']: ", self.attributes['y'])
+        print("self.tag: ", self.tag, "self.bounding_box: ", self.get_bounding_box())
     def update_scale(self, scale_x: float, scale_y: float):
         current_transform = self.attributes.get('transform', '')
         if scale_x >= 1 and scale_y >= 1:
@@ -578,7 +579,40 @@ class Image(AtomElement):
         else:
             return BoundingBox(max_x - min_x, max_y - min_y, min_x, max_x, min_y, max_y)
 
-            
+    def update_scale(self, scale_x: float, scale_y: float):
+        # old_bounding_box = self.get_bounding_box()
+        if self._bounding_box:
+            old_bounding_box = self._bounding_box
+        else:
+            old_bounding_box = self.get_bounding_box()
+        if scale_x >= 1 and scale_y >= 1:
+            scale = max(scale_x, scale_y)
+        else:
+            scale = min(scale_x, scale_y)
+        new_transform = f"scale({scale})"
+        current_transform = self.attributes.get('transform', '')
+        if current_transform:
+            self.attributes['transform'] = f"{new_transform} {current_transform}"
+        else:
+            self.attributes['transform'] = new_transform
+        new_bounding_box = self.get_bounding_box()
+        # 通过添加translate使得新的bounding box与旧的bounding box的中心重合
+        translate_x = (old_bounding_box.minx + old_bounding_box.maxx) / 2 - (new_bounding_box.minx + new_bounding_box.maxx) / 2
+        translate_y = (old_bounding_box.miny + old_bounding_box.maxy) / 2 - (new_bounding_box.miny + new_bounding_box.maxy) / 2
+        self._bounding_box.minx += translate_x
+        self._bounding_box.maxx += translate_x
+        self._bounding_box.miny += translate_y
+        self._bounding_box.maxy += translate_y
+        self.attributes['transform'] = f"translate({translate_x}, {translate_y}) {self.attributes['transform']}"
+    
+    def update_pos(self, old_min_x: float, old_min_y: float):
+        current_transform = self.attributes.get('transform', '')
+        new_transform = f"translate({self._bounding_box.minx - old_min_x}, {self._bounding_box.miny - old_min_y})"
+        if current_transform:
+            self.attributes['transform'] = f"{new_transform} {current_transform}"
+        else:
+            self.attributes['transform'] = new_transform
+    
     def _dump_extra_info(self) -> List[str]:
         return [""]
 
@@ -758,6 +792,7 @@ class Text(AtomElement):
         # else:
         #     self.attributes['y'] = self._bounding_box.miny - old_min_y
     def update_scale(self, scale_x: float, scale_y: float):
+        print("update_scale: ", scale_x, scale_y)
         # old_bounding_box = self.get_bounding_box()
         if self._bounding_box:
             old_bounding_box = self._bounding_box

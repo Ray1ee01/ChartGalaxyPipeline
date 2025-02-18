@@ -75,37 +75,37 @@ class VegaLiteParser():
             category_axis = self.y_axis_group
         else:
             category_axis = self.x_axis_group
+        if category_axis is not None:
+            def find_all_text_elements(element):
+                # 将element的children以及递归地children的children中的text元素返回
+                text_elements = []
+                if element.tag == 'text':
+                    text_elements.append(element)
+                if hasattr(element, 'children'):
+                    for child in element.children:
+                        text_elements.extend(find_all_text_elements(child))
+                return text_elements
             
-        def find_all_text_elements(element):
-            # 将element的children以及递归地children的children中的text元素返回
-            text_elements = []
-            if element.tag == 'text':
-                text_elements.append(element)
-            if hasattr(element, 'children'):
-                for child in element.children:
-                    text_elements.extend(find_all_text_elements(child))
-            return text_elements
-        
-        category_axis_text_elements = find_all_text_elements(category_axis)
-        texts = [element.content for element in category_axis_text_elements]
-        # x_texts = [self.data[i]['x_data'] for i in range(len(self.data))]
-        # unique texts
-        # texts = list(set(texts))
-        # x_texts = list(set(x_texts))
-        # 如果texts比x_texts短，则用""补齐
-        if len(texts) < len(self.x_values):
-            texts.extend([""] * (len(self.x_values) - len(texts)))
-        # 如果texts比x_texts长，则用texts中最后一个元素补齐
-        if len(texts) > len(self.x_values):
-            texts = texts[:len(self.x_values)]
-        print("texts: ", texts)
-        print("x_texts: ", self.x_values)
-        similarity_matrix = get_text_list_similarity(texts, self.x_values)
-        assignment = linear_assignment(similarity_matrix)
-        # 根据assignment，找到每个category_axis_text_element对应的x_texts
-        self.text_data_map = {}
-        for i, text in enumerate(texts):
-            self.text_data_map[category_axis_text_elements[i]] = self.x_values[assignment[i]]
+            category_axis_text_elements = find_all_text_elements(category_axis)
+            texts = [element.content for element in category_axis_text_elements]
+            # x_texts = [self.data[i]['x_data'] for i in range(len(self.data))]
+            # unique texts
+            # texts = list(set(texts))
+            # x_texts = list(set(x_texts))
+            # 如果texts比x_texts短，则用""补齐
+            if len(texts) < len(self.x_values):
+                texts.extend([""] * (len(self.x_values) - len(texts)))
+            # 如果texts比x_texts长，则用texts中最后一个元素补齐
+            if len(texts) > len(self.x_values):
+                texts = texts[:len(self.x_values)]
+            print("texts: ", texts)
+            print("x_texts: ", self.x_values)
+            similarity_matrix = get_text_list_similarity(texts, self.x_values)
+            assignment = linear_assignment(similarity_matrix)
+            # 根据assignment，找到每个category_axis_text_element对应的x_texts
+            self.text_data_map = {}
+            for i, text in enumerate(texts):
+                self.text_data_map[category_axis_text_elements[i]] = self.x_values[assignment[i]]
         
         def find_element_with_aria_label(element):
                 if 'aria-label' in element.attributes:
@@ -850,11 +850,11 @@ class VegaLiteParser():
         x_label = meta_data['x_label']
         y_label = meta_data['y_label']
         group_label = meta_data.get('group_label', '')
-        print("x_label: ", x_label)
-        print("y_label: ", y_label)
-        print("group_label: ", group_label)
+        # print("x_label: ", x_label)
+        # print("y_label: ", y_label)
+        # print("group_label: ", group_label)
         
-        print("aria_label: ", aria_label)
+        # print("aria_label: ", aria_label)
         group_value = None
         if x_label in aria_label:
             x_value = aria_label.split(x_label)[1].split(';')[0].split(':')[1].strip()

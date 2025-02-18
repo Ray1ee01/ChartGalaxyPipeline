@@ -15,10 +15,12 @@ class PieChartTemplate(ChartTemplate):
         self.y_axis: Optional[AxisTemplate] = None # 占位
         self.color_encoding: Optional[ColorEncodingTemplate] = None
 
-    def create_template(self, data: list, meta_data: dict, color_template: ColorDesign = None):
+    def create_template(self, data: list, meta_data: dict, color_template: ColorDesign = None, config: dict = None):
         """
         创建饼图模板的核心方法
         """
+        # print("x_type: ", meta_data.get('x_type'))
+        # print("y_type: ", meta_data.get('y_type'))
         # 验证必要的字段
         if meta_data.get('x_type') == 'categorical':
             value_field = meta_data.get('y_label')
@@ -26,6 +28,9 @@ class PieChartTemplate(ChartTemplate):
         elif meta_data.get('y_type') == 'categorical':
             value_field = meta_data.get('x_label')
             category_field = meta_data.get('y_label')
+        else:
+            category_field = meta_data.get('x_label')
+            value_field = meta_data.get('y_label')
         
         if not value_field or not category_field:
             raise ValueError("Both value_field and category_field are required for pie chart")
@@ -52,6 +57,10 @@ class PieChartTemplate(ChartTemplate):
         # self.y_axis = self.x_axis.copy()
         # self.y_axis.field_type = "nominal"
         # self.y_axis.field = meta_data['y_label']
+    def update_specification(self, specification: dict):
+        specification['encoding']['theta'] = self.theta
+        specification['encoding']['color'] = self.color
+        return specification
 
     def dump(self):
         return {

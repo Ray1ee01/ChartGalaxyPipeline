@@ -57,7 +57,9 @@ class BarChartTemplate(ChartTemplate):
         # 设置基本的mark属性
         mark_specification["height"] = self.mark.height
         mark_specification["width"] = self.mark.width
-        if self.mark.corner_radius:
+        if self.mark.corner_radius_end is not None:
+            specification["mark"]["cornerRadiusEnd"] = self.mark.corner_radius_end
+        if self.mark.corner_radius is not None:
             specification["mark"]["cornerRadius"] = self.mark.corner_radius
 
         # 创建注释规范

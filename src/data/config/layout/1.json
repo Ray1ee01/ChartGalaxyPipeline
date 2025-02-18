@@ -47,10 +47,6 @@
                             "overlap": false,
                             "alignment": ["left", "left"]
                         },
-                        "sizeConstraint": {
-                            "reference": "title",
-                            "max_width": 1
-                        },
                         "children": [
                             {
                                 "tag": "g",

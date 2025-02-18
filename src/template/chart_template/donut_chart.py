@@ -15,7 +15,7 @@ class DonutChartTemplate(ChartTemplate):
         self.y_axis: Optional[AxisTemplate] = None # 占位
         self.color_encoding: Optional[ColorEncodingTemplate] = None
 
-    def create_template(self, data: list, meta_data: dict, color_template: ColorDesign = None):
+    def create_template(self, data: list, meta_data: dict, color_template: ColorDesign = None, config: dict = None):
         """
         创建甜甜圈图模板的核心方法
         """
@@ -41,6 +41,10 @@ class DonutChartTemplate(ChartTemplate):
         self.mark = PieTemplate(color_template)
         self.color_encoding = ColorEncodingTemplate(color_template, meta_data, data)
 
+    def update_specification(self, specification: dict):
+        specification['encoding']['theta'] = self.theta
+        specification['encoding']['color'] = self.color
+        return specification
 
     def dump(self):
         return {
@@ -54,8 +58,8 @@ class SemiCircleDonutChartTemplate(DonutChartTemplate):
         super().__init__(color_template)
         self.chart_type = "semicircledonut"
 
-    def create_template(self, data: list, meta_data: dict, color_template: ColorDesign = None):
-        super().create_template(data, meta_data, color_template)
+    def create_template(self, data: list, meta_data: dict, color_template: ColorDesign = None, config: dict = None):
+        super().create_template(data, meta_data, color_template, config)
         self.mark.inner_radius = 40
         self.mark.outer_radius = 80
 

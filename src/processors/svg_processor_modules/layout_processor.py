@@ -222,9 +222,11 @@ class LayoutProcessor:
 
                     scales = []
                     time_start_constraint = time.time()
+                    print("element.reference_id: ", element.reference_id)
                     for child in element.children:
                         if not element.reference_id == child.id:
                             self.constraint_graph.add_node_with_edges(reference_element, child, element.size_constraint)
+                            print("child: ", child.id)
                             for edge in self.constraint_graph.node_map[child].prevs_edges:
                                 time_start_process = time.time()
                                 scale = edge.process_layout()
@@ -236,15 +238,15 @@ class LayoutProcessor:
                     print(f'process constraints time: {time_end_constraint - time_start_constraint}s')
 
                     time_start_scale = time.time()
-                    min_scale = min(scales)
-                    max_scale = max(scales)
-                    chart_scale = 1
-                    if max_scale >= 1 and min_scale >= 1:
-                        chart_scale = max_scale
-                    elif max_scale < 1 and min_scale < 1:
-                        chart_scale = min_scale
-                    elif max_scale > 1 and min_scale < 1:
-                        chart_scale = (max_scale + min_scale) / 2
+                    # min_scale = min(scales)
+                    # max_scale = max(scales)
+                    # chart_scale = 1
+                    # if max_scale >= 1 and min_scale >= 1:
+                    #     chart_scale = max_scale
+                    # elif max_scale < 1 and min_scale < 1:
+                    #     chart_scale = min_scale
+                    # elif max_scale > 1 and min_scale < 1:
+                    #     chart_scale = (max_scale + min_scale) / 2
                     time_end_scale = time.time()
                     print(f'calculate scale time: {time_end_scale - time_start_scale}s')
 
