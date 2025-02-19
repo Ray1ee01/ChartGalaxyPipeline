@@ -7,7 +7,8 @@ import copy
 from sentence_transformers import SentenceTransformer, util
 from ...utils.color_statics import StaticPalettes
 
-model_path = "/data1/jiashu/models/models--sentence-transformers--all-MiniLM-L6-v2/snapshots/fa97f6e7cb1a59073dff9e6b13e2715cf7475ac9"
+# model_path = "/data1/jiashu/models/models--sentence-transformers--all-MiniLM-L6-v2/snapshots/fa97f6e7cb1a59073dff9e6b13e2715cf7475ac9"
+model_path = "D:/VIS/Infographics/data/fa97f6e7cb1a59073dff9e6b13e2715cf7475ac9"
 
 class ColorTemplate:
     def __init__(self):

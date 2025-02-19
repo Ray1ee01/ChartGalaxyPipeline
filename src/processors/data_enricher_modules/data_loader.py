@@ -83,7 +83,8 @@ class VizNetDataLoader(DataLoader):
 
 class Chart2TableDataLoader(DataLoader):
     def __init__(self):
-        self.root_dir = '/data1/liduan/generation/chart/chart_pipeline/src/data/chart_to_table'
+        # self.root_dir = '/data1/liduan/generation/chart/chart_pipeline/src/data/chart_to_table'
+        self.root_dir = "D:/VIS/Infographics/data/chart_pipeline/src/data/chart_to_table"
 
     def load(self, data_id: str) -> Any:
         data_type = data_id.split('_')[0]
@@ -106,7 +107,7 @@ class Chart2TableDataLoader(DataLoader):
                 id_map = json.load(f)
         real_id = id_map[str(data_id)]
         meta_data_path = os.path.join(dataset_dir, 'metadata.json')
-        with open(meta_data_path, 'r') as f:
+        with open(meta_data_path, 'r', encoding='utf-8') as f:
             loaded_meta_data = json.load(f)
         
         file_name = real_id.split('.')[0]

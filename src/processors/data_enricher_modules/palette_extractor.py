@@ -5,7 +5,7 @@ from ..style_design_modules.infographic_palette import get_palette
 
 
 library_path = './src/processors/style_design_modules/all_seeds.json'
-model_path = '/data1/jiashu/models/models--sentence-transformers--all-MiniLM-L6-v2/snapshots/fa97f6e7cb1a59073dff9e6b13e2715cf7475ac9'
+model_path = 'D:/VIS/Infographics/data/fa97f6e7cb1a59073dff9e6b13e2715cf7475ac9'
 
 infographic_retriever = InfographicRetriever(library_path, model_path)
 

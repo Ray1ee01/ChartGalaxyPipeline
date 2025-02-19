@@ -6,8 +6,8 @@ import torch
 import faiss
 from ...utils.global_state import *
 
-feature_root = '/data1/liduan/jiashu/icon_cleaner/final_feat'
-
+# feature_root = '/data1/liduan/jiashu/icon_cleaner/final_feat'
+feature_root = 'D:/VIS/Infographics/data/final_feat'
 def load_json(file_path):
     with open(file_path, 'r') as f:
         data = json.load(f)

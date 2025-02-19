@@ -2,7 +2,7 @@ import json
 import os
 
 
-config_root = "/data1/liduan/generation/chart/chart_pipeline/src/data/config"
+config_root = "D:/VIS/Infographics/data/chart_pipeline/src/data/config"
 
 chart_type_mark_mapping = {
     "bar": "bar",

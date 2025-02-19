@@ -7,8 +7,8 @@ from scipy.spatial import KDTree
 from .search_specific_icons import FlagIcons, LogoIcons
 from ...utils.global_state import *
 
-raw_images_path = '/data1/liduan/generation/chart/iconset/colored_icons_final'
-feature_root = '/data1/liduan/jiashu/icon_cleaner/final_feat'
+raw_images_path = "D:/VIS/Infographics/data/colored_icons_final"
+feature_root = "D:/VIS/Infographics/data/final_feat"
 semantic_knum = 50
 
 def load_pickle(file_path):

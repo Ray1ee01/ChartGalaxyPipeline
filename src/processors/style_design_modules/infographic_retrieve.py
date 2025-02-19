@@ -4,7 +4,7 @@ import numpy as np
 from sentence_transformers import SentenceTransformer, util
 
 library_path = 'all_seeds.json'
-model_path = "/data1/jiashu/models/models--sentence-transformers--all-MiniLM-L6-v2/snapshots/fa97f6e7cb1a59073dff9e6b13e2715cf7475ac9"
+model_path = "D:/VIS/Infographics/data/fa97f6e7cb1a59073dff9e6b13e2715cf7475ac9"
 
 class InfographicRetriever:
     def __init__(self, library_path, model_path):
@@ -19,7 +19,7 @@ class InfographicRetriever:
         self.model_path = model_path
         
         # Load knowledge base
-        with open(library_path) as f:
+        with open(library_path, 'r', encoding='utf-8') as f:
             self.knowledge_base = json.load(f)
             
         # Load embedding model

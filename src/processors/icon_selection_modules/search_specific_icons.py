@@ -14,9 +14,9 @@ class SpecificIcons(ABC):
     def search_and_save(self, text: str, output_path: str, width: int, height: int) -> str:
         pass
 
-flag_path = '/data1/jiashu/data/flag_icons'
-model_path = "/data1/jiashu/models/models--sentence-transformers--all-MiniLM-L6-v2/snapshots/fa97f6e7cb1a59073dff9e6b13e2715cf7475ac9"
-logo_path = '/data1/jiashu/data/logo_icons/images/svg'
+flag_path = "D:/VIS/Infographics/data/flag_icons"
+model_path = "D:/VIS/Infographics/data/fa97f6e7cb1a59073dff9e6b13e2715cf7475ac9"
+logo_path = "D:\VIS\Infographics\data\svg"
 
 def svg_to_png(svg_path, output_path, width, height):
     """

@@ -693,7 +693,8 @@ class Text(AtomElement):
         #     }
         # except Exception as e:
         # print(f"测量文本时出错: {e}")
-        char_sizes_dict = json.load(open('/data1/liduan/generation/chart/chart_pipeline/src/processors/svg_processor_modules/text_tool/char_sizes_dict.json'))
+        # char_sizes_dict = json.load(open('/data1/liduan/generation/chart/chart_pipeline/src/processors/svg_processor_modules/text_tool/char_sizes_dict.json'))
+        char_sizes_dict = json.load(open('D:/VIS/Infographics/data/chart_pipeline/src/processors/svg_processor_modules/text_tool/char_sizes_dict.json'))
         width = 0
         height = 0
         ascent = 0

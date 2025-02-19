@@ -22,7 +22,7 @@ from .data_enricher_modules.palette_extractor import extract_palette
 
 data_save_dir = './src/data'
 cache_dir = './src/cache'
-image_root = '/data3/yukai/datasets/infographic_data/check_202501022351'
+image_root = "D:/VIS/Infographics/data/check_202501022351"
 
 
 class CSVDataProcessor(DataProcessor):
