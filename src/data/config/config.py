@@ -2,7 +2,9 @@ import json
 import os
 
 
-config_root = "D:/VIS/Infographics/data/chart_pipeline/src/data/config"
+# config_root = "/data1/liduan/generation/chart/chart_pipeline/src/data/config"
+# 改绝对路径为相对路径
+config_root = os.path.dirname(os.path.abspath(__file__))
 
 chart_type_mark_mapping = {
     "bar": "bar",

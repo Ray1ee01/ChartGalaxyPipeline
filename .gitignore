@@ -7,6 +7,7 @@ search_cache/
 basnet_best_train_gdi.pth
 src/processors/data_enricher_modules/HAIChart/data
 src/processors/svg_processor_modules/__pycache__
+src/data/config/__pycache__
 src/output_jn
 data/
 *.so
