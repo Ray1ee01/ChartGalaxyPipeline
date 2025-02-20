@@ -800,6 +800,20 @@ class TemplateFactory:
         # layout_template.add_constraint(RadialBarChartConstraint())
         layout_template.root = layout_template.build_template_from_tree(layout_tree)
         # layout_template.apply_constraints(chart_template)
+        
+        if axis_config:
+            chart_template.x_axis.has_domain = axis_config.get('x_axis', {}).get('has_domain', True)
+            chart_template.x_axis.has_tick = axis_config.get('x_axis', {}).get('has_tick', True)
+            chart_template.x_axis.has_label = axis_config.get('x_axis', {}).get('has_label', True)
+            chart_template.y_axis.has_domain = axis_config.get('y_axis', {}).get('has_domain', True)
+            chart_template.y_axis.has_tick = axis_config.get('y_axis', {}).get('has_tick', True)
+            chart_template.y_axis.has_label = axis_config.get('y_axis', {}).get('has_label', True)
+            chart_template.y_axis.has_title = axis_config.get('y_axis', {}).get('has_title', True)
+            chart_template.x_axis.has_title = axis_config.get('x_axis', {}).get('has_title', True)
+            chart_template.x_axis.has_grid = axis_config.get('x_axis', {}).get('has_grid', True)
+            chart_template.y_axis.has_title = axis_config.get('y_axis', {}).get('has_title', True)
+            chart_template.y_axis.has_grid = axis_config.get('y_axis', {}).get('has_grid', True)
+            
         return chart_template, layout_template
     
     @staticmethod

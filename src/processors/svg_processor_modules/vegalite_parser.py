@@ -148,9 +148,9 @@ class VegaLiteParser():
                         self.value_icon_map['x'][value['x_value']] = icon_urls[random.randint(0, len(icon_urls) - 1)]
                         
                     # self.value_icon_map['x'][value['x_value']] = icon_urls[random.randint(0, len(icon_urls) - 1)]
-            if value['y_value'] is not None:
-                if value['y_value'] not in self.value_icon_map['y']:
-                    self.value_icon_map['y'][value['y_value']] = icon_urls[random.randint(0, len(icon_urls) - 1)]
+            # if value['y_value'] is not None:
+            #     if value['y_value'] not in self.value_icon_map['y']:
+            #         self.value_icon_map['y'][value['y_value']] = icon_urls[random.randint(0, len(icon_urls) - 1)]
             if value['group_value'] is not None:
                 if value['group_value'] not in self.value_icon_map['group']:
                     self.value_icon_map['group'][value['group_value']] = icon_urls[random.randint(0, len(icon_urls) - 1)]
@@ -898,8 +898,8 @@ class VegaLiteParser():
         group_value = None
         if x_label in aria_label:
             x_value = aria_label.split(x_label)[1].split(';')[0].split(':')[1].strip()
-        if y_label in aria_label:
-            y_value = aria_label.split(y_label)[1].split(';')[0].split(':')[1].strip()
+        # if y_label in aria_label:
+        #     y_value = aria_label.split(y_label)[1].split(';')[0].split(':')[1].strip()
         if group_label is not "" and group_label in aria_label:
             group_value = aria_label.split(group_label)[1].split(';')[0].split(':')[1].strip()
         
@@ -924,7 +924,7 @@ class VegaLiteParser():
                     
         return {
             'x_value': res_x_value,
-            'y_value': y_value,
+            # 'y_value': y_value,
             'group_value': res_group_value
         }
     

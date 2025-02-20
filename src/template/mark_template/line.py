@@ -31,13 +31,13 @@ class LineTemplate(MarkTemplate):
         self.point = random.choice(candidate_styles)
     def apply_interpolate(self):
         candidate_interpolates = [
-            # "basis",
+            "basis",
             # "cardinal",
             # "catmull-rom",
-            # "linear",
+            "linear",
             "monotone",
             # "natural",
-            # "step",
+            "step",
             # "step-after",
             # "step-before"
         ]

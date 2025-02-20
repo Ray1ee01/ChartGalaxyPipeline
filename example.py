@@ -56,19 +56,11 @@ def main():
         'stackedbar',
         'slope',
         'pie',
-        'donut',
-        'bullet',
-        'radialbar',
         "area",
         "line",
         "stream",
         "rangedarea",
         "layeredarea",
-        "stackedarea",
-        "semicircledonut",
-        "multilevelpie",
-        "multileveldonut"
-        # 'waterfall',
     ]
     
     data_sizes = {
