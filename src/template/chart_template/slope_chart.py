@@ -25,7 +25,7 @@ class SlopeChartTemplate(ChartTemplate):
         self.chart_type = "slope"
         self.sort = None
         
-    def create_template(self, data: list, meta_data: dict=None, color_template: ColorDesign=None):
+    def create_template(self, data: list, meta_data: dict=None, color_template: ColorDesign=None, config: dict=None):
         self.x_axis = AxisTemplate(color_template)
         self.x_axis.field_type = "ordinal"
         self.x_axis.field = meta_data['x_label']

@@ -84,12 +84,6 @@
         ]
     },
     "chart_config": {
-        "valid_type": [
-            "donut"
-        ],
-        "orientation": "vertical",
-        "sort": {
-            "ascending": true
-        }
+        "valid_type": ["pie","scatter","line","area","bar"]
     }
 }

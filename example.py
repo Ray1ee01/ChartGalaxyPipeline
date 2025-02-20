@@ -81,8 +81,8 @@ def main():
         'stackedbar': 42,
         'slope': 1,
         'groupbar': 42,
-        'pie': 1,
-        'donut': 1,
+        'pie': 13,
+        'donut': 13,
     }
     
     
@@ -100,8 +100,9 @@ def main():
         output_dir = os.path.join(os.path.dirname(__file__),'src', f'output_{date}', chart_type)
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
-        # data_range = np.arange(0, data_sizes[chart_type])
-        data_range = np.arange(8,9)
+        data_range = np.arange(0, 1)
+        # data_range = np.arange(10,11)
+        # data_range = np.arange(8,9)
         # data_range = np.arange(39,40)
         # data_range = np.arange(197,198)
         # data_range = np.arange(164,165)

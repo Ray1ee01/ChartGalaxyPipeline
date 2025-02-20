@@ -275,6 +275,7 @@ class Pipeline:
         
         # 步骤2：生成图表
         svg, additional_configs = self.chart_generator.generate(processed_data, chart_template, config)
+        # print('svg: ', svg)
         time_end = time.time()
         print("chart_generator time: ", time_end - time_start)
         
@@ -361,8 +362,8 @@ class Pipeline:
         additional_configs['layout_tree'] = layout_tree
         additional_configs.update(config)
         # 步骤3：SVG后处理
-        # final_svg, bounding_boxes = self.svg_processor.process(svg, additional_configs, debug=False)
-        final_svg = svg
+        final_svg, bounding_boxes = self.svg_processor.process(svg, additional_configs, debug=False)
+        # final_svg = svg
         bounding_boxes = {}
         # 这里的修改是为了暂时调试
         time_end = time.time()

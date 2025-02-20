@@ -62,7 +62,7 @@
         ]
     },
     "chart_config": {
-        "valid_type": ["groupbar"],
+        "valid_type": ["pie","scatter","line","area","bar"],
         "orientation": "vertical"
     }
 }

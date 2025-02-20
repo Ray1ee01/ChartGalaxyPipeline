@@ -19,7 +19,9 @@ class OverlayProcessor:
         new_element = GroupElement()
         # new_element.children = [self.reference_element, self.target_element]
         # print("reference_element: ", self.reference_element.dump())
-        if self.reference_element.tag == 'path' and self.reference_element._is_rect() or self.reference_element.tag == 'rect' or self.reference_element.tag == 'text':
+        # if (self.reference_element.tag == 'path' and self.reference_element._is_rect()) or self.reference_element.tag == 'rect' or self.reference_element.tag == 'text':
+        if self.config['type'] =='bar':
+            print("rect")
             """
             config有四个维度:
             {
@@ -47,9 +49,6 @@ class OverlayProcessor:
             direction = self.config.get('direction', 'center')
             side = self.config.get('side', 'outside')
             padding = self.config.get('padding', 0)
-            
-            
-            
             
             if direction == 'top' or direction == 'bottom':
                 height = self.reference_element.get_bounding_box().height
@@ -86,10 +85,51 @@ class OverlayProcessor:
             print("self.reference_element._bounding_box: ", self.reference_element._bounding_box)
             new_element.children = [self.reference_element, self.target_element]
             return new_element
-
-    
-    def process_replace_single(self):
+        elif self.config['type'] == 'arc':
+            print("arcs")
+            print("self.config: ", self.config)
+            self.reference_element.bounding_box = self.reference_element.get_bounding_box()
+            arcs = self.reference_element.arcs
+            if len(arcs.keys()) == 1:
+                arc = arcs[list(arcs.keys())[0]]
+                anchor_point = arc['center']
+            elif len(arcs.keys()) > 1:
+                max_rx = 0
+                min_rx = 10000
+                max_key = None
+                for key, arc in arcs.items():
+                    if arc['rx'] > max_rx:
+                        max_rx = arc['rx']
+                        max_key = key
+                    if arc['rx'] < min_rx:
+                        min_rx = arc['rx']
+                        min_key = key
+                if self.config['arc']['side'] == 'outer':
+                    anchor_point = arcs[max_key]['outer']
+                elif self.config['arc']['side'] == 'inner':
+                    anchor_point0 = arcs[max_key]['center']
+                    anchor_point1 = arcs[min_key]['center']
+                    anchor_point = (anchor_point0[0] + anchor_point1[0]) / 2, (anchor_point0[1] + anchor_point1[1]) / 2
+                else:
+                    anchor_point = arcs[max_key]['center']
+            else:
+                # print("arcs: ", arcs)
+                new_element.children = [self.reference_element]
+                return new_element
+                # raise ValueError("Invalid arcs")
+            self.target_element.attributes['width'] = 20
+            self.target_element.attributes['height'] = 20
+            self.target_element.attributes['x'] = anchor_point[0] - 10
+            self.target_element.attributes['y'] = anchor_point[1] - 10
+            self.target_element.attributes['preserveAspectRatio'] = 'none'
+            
+            circle_element = Circle(anchor_point[0], anchor_point[1], 12)
+            circle_element.attributes['fill'] = self.reference_element.attributes['fill']
+            circle_element.attributes['stroke'] = 'none'
+            new_element.children = [self.reference_element, circle_element, self.target_element ]
+            return new_element
         
+    def process_replace_single(self):
         new_element = GroupElement()
         new_element.children = [self.target_element]
         if self.reference_element.tag == 'path' and self.reference_element._is_rect() or self.reference_element.tag == 'rect':

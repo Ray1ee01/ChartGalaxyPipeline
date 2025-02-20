@@ -25,18 +25,20 @@ class PieChartTemplate(ChartTemplate):
         self.config = config
 
         # 验证必要的字段
-        if meta_data.get('x_type') == 'categorical':
-            value_field = meta_data.get('y_label')
-            category_field = meta_data.get('x_label')
-        elif meta_data.get('y_type') == 'categorical':
-            value_field = meta_data.get('x_label')
-            category_field = meta_data.get('y_label')
-        else:
-            category_field = meta_data.get('x_label')
-            value_field = meta_data.get('y_label')
-        
-        if not value_field or not category_field:
-            raise ValueError("Both value_field and category_field are required for pie chart")
+        # if meta_data.get('x_type') == 'categorical':
+        #     value_field = meta_data.get('y_label')
+        #     category_field = meta_data.get('x_label')
+        # elif meta_data.get('y_type') == 'categorical':
+        #     value_field = meta_data.get('x_label')
+        #     category_field = meta_data.get('y_label')
+        # else:
+        #     category_field = meta_data.get('x_label')
+        #     value_field = meta_data.get('y_label')
+        print("meta_data: ", meta_data)
+        value_field = meta_data.get('y_label')
+        category_field = meta_data.get('x_label')
+        # if not value_field or not category_field:
+        #     raise ValueError("Both value_field and category_field are required for pie chart")
 
         # 设置theta编码
         self.theta={

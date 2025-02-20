@@ -73,8 +73,8 @@ class VizNetDataProcessor(DataProcessor):
         # data_fact_generator = DataFactGenerator(chart_data, topic_data)
         # data_fact = data_fact_generator.generate_data_fact()
 
-        data_fact_detector = DataFactDetector()
-        data_fact, data_fact_icon = data_fact_detector.detect_data_facts(chart_data)
+        # data_fact_detector = DataFactDetector()
+        # data_fact, data_fact_icon = data_fact_detector.detect_data_facts(chart_data)
         
         # 5. get topic relevant images
         # topic_images_query = search_image(meta['topic'])
@@ -163,8 +163,10 @@ class Chart2TableDataProcessor(DataProcessor):
         # data_fact = data_fact_generator.generate_data_fact()
         # data_fact = {} # 这里可以去掉了
 
-        data_fact_detector = DataFactDetector()
-        data_fact, data_fact_icon = data_fact_detector.detect_data_facts(chart_data, chart_type)
+        # data_fact_detector = DataFactDetector()
+        # data_fact, data_fact_icon = data_fact_detector.detect_data_facts(chart_data, chart_type)
+        data_fact = {}
+        
         
         # # 4.5. get palettes
         default_image_path = '/data1/jiashu/ChartPipeline/src/processors/style_design_modules/default.png'

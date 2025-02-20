@@ -1044,6 +1044,8 @@ class Path(Graphical):
         super().__init__()
         self.params = params
         self.tag = 'path'
+        self.anchor_points = {}
+        self.arcs = {}
     def _parse_path(self, d: str) -> List[Dict]:
         """解析SVG路径的'd'属性"""
         commands = []
@@ -1169,60 +1171,89 @@ class Path(Graphical):
                 current_y = points[5]
             elif command == 'A':  # 弧形命令
                 # A命令的参数: rx ry x-axis-rotation large-arc-flag sweep-flag x y
+                # print("d: ", d)
                 rx, ry = points[0], points[1]
-                angle = math.radians(points[2])  # 转换为弧度
+                x_axis_rotation = points[2]
                 large_arc_flag = points[3]
                 sweep_flag = points[4]
                 end_x, end_y = points[5], points[6]
                 
-                # 计算圆心
-                # 步骤1: 将终点相对于起点进行旋转，使x轴旋转角度为0
-                cos_angle = math.cos(-angle)
-                sin_angle = math.sin(-angle)
+
                 
+                # 计算圆心
+                cos_angle = math.cos(-x_axis_rotation * math.pi / 180)
+                sin_angle = math.sin(-x_axis_rotation * math.pi / 180)
+
                 # 将终点坐标转换到起点坐标系
                 rel_x = end_x - current_x
                 rel_y = end_y - current_y
-                
                 # 应用旋转
                 x1 = rel_x * cos_angle - rel_y * sin_angle
                 y1 = rel_x * sin_angle + rel_y * cos_angle
-                
-                # 步骤2: 计算圆心
-                rx_sq = rx * rx
-                ry_sq = ry * ry
-                x1_sq = x1 * x1
-                y1_sq = y1 * y1
-                
-                # 根据椭圆方程计算圆心
-                radical = max(0, (rx_sq * ry_sq - rx_sq * y1_sq - ry_sq * x1_sq) / (rx_sq * y1_sq + ry_sq * x1_sq))
-                multiplier = (-1 if large_arc_flag == sweep_flag else 1) * math.sqrt(radical)
-                
-                cx1 = multiplier * (rx * y1 / ry)
-                cy1 = multiplier * (-ry * x1 / rx)
-                
-                # 步骤3: 将圆心转回原始坐标系
-                cx = cos_angle * cx1 - sin_angle * cy1 + (current_x + end_x) / 2
-                cy = sin_angle * cx1 + cos_angle * cy1 + (current_y + end_y) / 2
-                
-                # 计算边界框
-                # 由于旋转，我们需要检查椭圆在0°、90°、180°、270°的点
-                angles = [0, math.pi/2, math.pi, math.pi*3/2]
-                for t in angles:
-                    # 计算椭圆上的点
-                    x = cx + rx * math.cos(t) * cos_angle - ry * math.sin(t) * sin_angle
-                    y = cy + rx * math.cos(t) * sin_angle + ry * math.sin(t) * cos_angle
-                    minX = min(minX, x)
-                    minY = min(minY, y)
-                    maxX = max(maxX, x)
-                    maxY = max(maxY, y)
-                
-                # 确保起点和终点也包含在边界框内
-                minX = min(minX, current_x, end_x)
-                minY = min(minY, current_y, end_y)
-                maxX = max(maxX, current_x, end_x)
-                maxY = max(maxY, current_y, end_y)
-                
+
+                # 确保半径足够大
+                rx = abs(rx)
+                ry = abs(ry)
+                x1_prime = x1 / 2
+                y1_prime = y1 / 2
+
+                # 确保半径满足要求
+                radius_check = (x1_prime * x1_prime) / (rx * rx) + (y1_prime * y1_prime) / (ry * ry)
+                if radius_check > 1:
+                    rx *= math.sqrt(radius_check)
+                    ry *= math.sqrt(radius_check)
+
+                # 计算圆心
+                sign = -1 if large_arc_flag == sweep_flag else 1
+                numerator = (rx * rx) * (ry * ry) - (rx * rx) * (y1_prime * y1_prime) - (ry * ry) * (x1_prime * x1_prime)
+                denominator = (rx * rx) * (y1_prime * y1_prime) + (ry * ry) * (x1_prime * x1_prime)
+                c = sign * math.sqrt(max(0, numerator / denominator))
+
+                cx1 = c * ((rx * y1_prime) / ry)
+                cy1 = c * (-(ry * x1_prime) / rx)
+
+                # 将圆心转回原始坐标系
+                cx = (cos_angle * cx1 - sin_angle * cy1) + current_x
+                cy = (sin_angle * cx1 + cos_angle * cy1) + current_y
+
+                # 计算起始角度和结束角度
+                start_angle = math.atan2((current_y - cy) / ry, (current_x - cx) / rx)
+                end_angle = math.atan2((end_y - cy) / ry, (end_x - cx) / rx)
+
+                # 考虑 sweep_flag 的方向
+                if sweep_flag == 0 and end_angle > start_angle:
+                    end_angle -= 2 * math.pi
+                elif sweep_flag == 1 and end_angle < start_angle:
+                    end_angle += 2 * math.pi
+
+                if transform:
+                    transformed_end = self._apply_matrix(end_x, end_y, transform)
+                    end_x, end_y = transformed_end
+                    
+                # 处理large_arc_flag为1的情况
+                if large_arc_flag == 1:
+                    # 如果角度差小于π,需要加上2π
+                    if end_angle - start_angle < math.pi:
+                        end_angle += 2 * math.pi
+                    # 如果角度差大于-π,需要减去2π  
+                    elif end_angle - start_angle > -math.pi:
+                        start_angle += 2 * math.pi
+                # 采样点
+                num_samples = 20
+                samples = []
+                for i in range(num_samples + 1):
+                    theta = start_angle + (end_angle - start_angle) * (i / num_samples)
+                    sample_x = cx + rx * math.cos(theta)
+                    sample_y = cy + ry * math.sin(theta)
+                    samples.append((sample_x, sample_y))
+                    
+                if transform:
+                    for i in range(len(samples)):
+                        transformed_sample = self._apply_matrix(samples[i][0], samples[i][1], transform)
+                        samples[i] = transformed_sample
+
+                # return samples
+                coordinates.extend(samples)
                 current_x = end_x
                 current_y = end_y
         
@@ -1279,65 +1310,111 @@ class Path(Graphical):
                 current_y = points[-1]
             elif command == 'A':
                 # A命令的参数: rx ry x-axis-rotation large-arc-flag sweep-flag x y
+                # print("d: ", d)
                 rx, ry = points[0], points[1]
                 x_axis_rotation = points[2]
                 large_arc_flag = points[3]
                 sweep_flag = points[4]
                 end_x, end_y = points[5], points[6]
                 
+                self.arcs[(current_x, current_y)] = {
+                    'rx': rx,
+                    'ry': ry,
+                    'x_axis_rotation': x_axis_rotation,
+                    'large_arc_flag': large_arc_flag,
+                    'sweep_flag': sweep_flag,
+                }
+                
                 # 计算圆心
                 # 步骤1: 将终点相对于起点进行旋转，使x轴旋转角度为0
                 cos_angle = math.cos(-x_axis_rotation * math.pi / 180)
                 sin_angle = math.sin(-x_axis_rotation * math.pi / 180)
-                
+
                 # 将终点坐标转换到起点坐标系
                 rel_x = end_x - current_x
                 rel_y = end_y - current_y
-                
                 # 应用旋转
                 x1 = rel_x * cos_angle - rel_y * sin_angle
                 y1 = rel_x * sin_angle + rel_y * cos_angle
-                
-                # 步骤2: 计算圆心
-                rx_sq = rx * rx
-                ry_sq = ry * ry
-                x1_sq = x1 * x1
-                y1_sq = y1 * y1
-                
-                # 根据椭圆方程计算圆心
-                radical = max(0, (rx_sq * ry_sq - rx_sq * y1_sq - ry_sq * x1_sq) / (rx_sq * y1_sq + ry_sq * x1_sq))
-                multiplier = (-1 if large_arc_flag == sweep_flag else 1) * math.sqrt(radical)
-                
-                cx1 = multiplier * (rx * y1 / ry)
-                cy1 = multiplier * (-ry * x1 / rx)
-                
+                    
+                # 确保半径足够大
+                rx = abs(rx)
+                ry = abs(ry)
+                x1_prime = x1 / 2
+                y1_prime = y1 / 2
+
+                # 确保半径满足要求
+                radius_check = (x1_prime * x1_prime) / (rx * rx) + (y1_prime * y1_prime) / (ry * ry)
+                if radius_check > 1:
+                    rx *= math.sqrt(radius_check)
+                    ry *= math.sqrt(radius_check)
+
+                # # 计算 sq
+                # sq = ((rx*rx*ry*ry) - (rx*rx*y1_prime*y1_prime) - (ry*ry*x1_prime*x1_prime)) / ((rx*y1_prime) + (ry*x1_prime))**2
+                # sq = max(0, sq)  # 确保 sq 不为负数
+                # print("sq: ", sq)
+
+                # 计算系数
+                sign = -1 if large_arc_flag == sweep_flag else 1
+                # coef = sign * math.sqrt(sq)
+                # print("coef: ", coef)
+
+                # 计算 c
+                numerator = (rx * rx) * (ry * ry) - (rx * rx) * (y1_prime * y1_prime) - (ry * ry) * (x1_prime * x1_prime)
+                denominator = (rx * rx) * (y1_prime * y1_prime) + (ry * ry) * (x1_prime * x1_prime)
+                c = sign * math.sqrt(max(0, numerator / denominator))
+
+                # 计算圆心在旋转后的坐标系中的坐标
+                cx1 = c * ((rx * y1_prime) / ry)
+                cy1 = c * (-(ry * x1_prime) / rx)
+
                 # 步骤3: 将圆心转回原始坐标系
-                cx = cos_angle * cx1 - sin_angle * cy1 + (current_x + end_x) / 2
-                cy = sin_angle * cx1 + cos_angle * cy1 + (current_y + end_y) / 2
+                cx = (cos_angle * cx1 - sin_angle * cy1) - current_x - x1_prime
+                cy = (sin_angle * cx1 + cos_angle * cy1) - current_y - y1_prime
+                # 计算起始角度和结束角度
+                start_angle = math.atan2((current_y - cy) / ry, (current_x - cx) / rx)
+                end_angle = math.atan2((end_y - cy) / ry, (end_x - cx) / rx)
+
+                # 处理large_arc_flag为1的情况
+                if large_arc_flag == 1:
+                    # 如果角度差小于π,需要加上2π
+                    if end_angle - start_angle < math.pi:
+                        end_angle += 2 * math.pi
+                    # 如果角度差大于-π,需要减去2π  
+                    elif end_angle - start_angle > -math.pi:
+                        start_angle += 2 * math.pi
                 
-                # 计算边界框
-                # 由于旋转，我们需要检查椭圆在0°、90°、180°、270°的点
-                angles = [0, math.pi/2, math.pi, math.pi*3/2]
-                for t in angles:
-                    # 计算椭圆上的点
-                    x = cx + rx * math.cos(t) * cos_angle - ry * math.sin(t) * sin_angle
-                    y = cy + rx * math.cos(t) * sin_angle + ry * math.sin(t) * cos_angle
-                    minX = min(minX, x)
-                    minY = min(minY, y)
-                    maxX = max(maxX, x)
-                    maxY = max(maxY, y)
-                
+                # 采样点
+                num_samples = 20
+                for i in range(num_samples + 1):
+                    theta = start_angle + (end_angle - start_angle) * (i / num_samples)
+                    sample_x = cx + rx * math.cos(theta)
+                    sample_y = cy + ry * math.sin(theta)
+                    if i == num_samples//2:
+                        self.arcs[(current_x, current_y)]['center'] = (sample_x, sample_y)
+                        # outer是沿着圆心到(sample_x, sample_y)再走过25的距离
+                        self.arcs[(current_x, current_y)]['outer'] = (sample_x + 25 * math.cos(theta), sample_y + 25 * math.sin(theta))
+                        # print("self.arcs[(current_x, current_y)]['center']: ", self.arcs[(current_x, current_y)]['center'])
+                    minX = min(minX, sample_x)
+                    minY = min(minY, sample_y)
+                    maxX = max(maxX, sample_x)
+                    maxY = max(maxY, sample_y)
                 # 确保起点和终点也包含在边界框内
                 minX = min(minX, current_x, end_x)
                 minY = min(minY, current_y, end_y)
                 maxX = max(maxX, current_x, end_x)
                 maxY = max(maxY, current_y, end_y)
+                transform = self.get_transform_matrix        
                 
+                if transform:
+                    self.arcs[(current_x, current_y)]['center'] = self._apply_matrix(self.arcs[(current_x, current_y)]['center'][0], self.arcs[(current_x, current_y)]['center'][1], transform)
+                    self.arcs[(current_x, current_y)]['outer'] = self._apply_matrix(self.arcs[(current_x, current_y)]['outer'][0], self.arcs[(current_x, current_y)]['outer'][1], transform)
                 current_x = end_x
                 current_y = end_y
         
         # 处理变换
-        transform = self.get_transform_matrix
+        transform = self.get_transform_matrix        
+        
         if transform:
             if isinstance(transform, list) and len(transform) == 2:
                 bbox = self._apply_transform(minX, minY, maxX, maxY, transform[0])
@@ -1583,9 +1660,12 @@ class Path(Graphical):
         """判断是否为矩形"""
         # 如果 params里只有M/m, H/h, V/v, Z/z则返回True
         # 如果 params里有L/l 或者 C/c 则返回False
-        if re.match(r'^L.*C.*$', self.params):
+        print("self.params: ", self.params)
+        print("self.attributes['d']: ", self.attributes['d'])
+        if re.match(r'^L.*C.*$', self.params) or 'A' in self.attributes['d']:
             return False
         return True
+    
     
     def _dump_extra_info(self) -> List[str]:
         return [f"Path params: {self.params[:30]}..." if self.params else "Path params: <empty>"]
@@ -1598,6 +1678,11 @@ class Circle(Graphical):
         self.cy = cy
         self.r = r
         self.tag = 'circle'
+        self.attributes = {
+            'cx': cx,
+            'cy': cy,
+            'r': r
+        }
     def get_bounding_box(self) -> BoundingBox:
         transform = self.get_transform_matrix
         cx = float(self.attributes.get('cx', 0))
@@ -1609,7 +1694,7 @@ class Circle(Graphical):
                 bbox = self._apply_transform(cx - r, cy - r, cx + r, cy + r, transform[0])
                 bbox = self._apply_transform(bbox.maxx, bbox.maxy, cx + r, cy + r, transform[1])
                 return BoundingBox(bbox.maxx - bbox.minx, bbox.maxy - bbox.miny, bbox.minx, bbox.maxx, bbox.miny, bbox.maxy)
-            bbox = self._apply_transform(cx - r, cy - r, cx + r, cy + r, matrix)
+            bbox = self._apply_transform(cx - r, cy - r, cx + r, cy + r, transform)
             return BoundingBox(bbox.maxx - bbox.minx, bbox.maxy - bbox.miny, bbox.minx, bbox.maxx, bbox.miny, bbox.maxy)
         
         return BoundingBox(2 * r, 2 * r, cx - r, cx + r, cy - r, cy + r)

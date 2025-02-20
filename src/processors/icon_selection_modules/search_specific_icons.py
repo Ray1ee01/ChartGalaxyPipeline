@@ -69,7 +69,7 @@ class FlagIcons(SpecificIcons):
         return self.country_data[best_match_index]
 
     def search_and_save(self, text: str, output_path: str, width: int, height: int) -> str:
-        if 'USA' in text:
+        if 'USA' in str(text):
             text = 'United States of America'
         result = self.search(text)
         image = result['flag_1x1'] if width == height else result['flag_4x3']

@@ -131,7 +131,8 @@ class SVGOptimizer(SVGProcessor):
             Union[dict, str]: 如果debug为True，返回处理后的树结构；否则返回处理后的SVG字符串
         """
         # 丢弃svg中所有tag为rect且fill为#ffffff的rect
-        svg = re.sub(r'<rect[^>]*fill="#ffffff"[^>]*>', '', svg)
+        print('svg: ', svg)
+        svg = re.sub(r"<rect[^>]*fill=\"#ffffff\"[^>]*>", '', svg)
         # return svg
         # print('additional_configs: ', additional_configs)
         time_start = time.time()
@@ -225,6 +226,7 @@ class SVGOptimizer(SVGProcessor):
         
         # 在root_element中添加多个rect，用于显示这些group的bounding_box
         rects = []
+        points = []
         for element in root_element.children:
             # if not element.tag == 'path' or element.attributes.get('aria-roledescription') != 'area mark':
             #     continue
@@ -242,8 +244,12 @@ class SVGOptimizer(SVGProcessor):
                 "height": bounding_box.maxy - bounding_box.miny,
             }
             rects.append(rect)
+            # if element.tag == 'path':
+            #     points.extend(element._get_path_coordinates())
         # for rect in rects:
         #     root_element.children.append(rect)
+        # for point in points:
+        #     root_element.children.append(Circle(point[0], point[1], 5))
         element_tree = root_element
         
         # 获取root的bounding_box

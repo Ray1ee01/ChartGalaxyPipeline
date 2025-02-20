@@ -8,9 +8,9 @@ from .elements import *
 from .layout import *
 import random
 from ..image_processor import ImageProcessor
-# from .overlay_processor import OverlayProcessor
+from .overlay_processor import OverlayProcessor
 # No module named 'src.processors.svg_processor_modules.overlay_processor'
-# from ...utils.text_similarity import get_text_list_similarity, linear_assignment,get_text_similarity
+from ...utils.text_similarity import get_text_list_similarity, linear_assignment,get_text_similarity
 # No module named 'src.utils.text_similarity'
 
 class VegaLiteParser():
@@ -73,10 +73,11 @@ class VegaLiteParser():
             orient = 'horizontal'
             
         category_axis = None
-        if orient == 'horizontal':
-            category_axis = self.y_axis_group
-        else:
-            category_axis = self.x_axis_group
+        if self.additional_configs['chart_template'].mark.type == 'bar':
+            if orient == 'horizontal':
+                category_axis = self.y_axis_group
+            else:
+                category_axis = self.x_axis_group
         if category_axis is not None:
             def find_all_text_elements(element):
                 # 将element的children以及递归地children的children中的text元素返回
@@ -100,6 +101,9 @@ class VegaLiteParser():
             # 如果texts比x_texts长，则用texts中最后一个元素补齐
             if len(texts) > len(self.x_values):
                 texts = texts[:len(self.x_values)]
+            # 如果x_texts比texts长，则用x_texts中最后一个元素补齐
+            if len(self.x_values) > len(texts):
+                self.x_values.extend([self.x_values[-1]] * (len(texts) - len(self.x_values)))
             print("texts: ", texts)
             print("x_texts: ", self.x_values)
             similarity_matrix = get_text_list_similarity(texts, self.x_values)
@@ -120,6 +124,7 @@ class VegaLiteParser():
                 return None
         
         for mark_group in self.all_mark_groups:
+            # self.replace_area_mark_with_image(mark_group)
             for element in mark_group.children:
                 element_with_data = find_element_with_aria_label(element)
                 if element_with_data:
@@ -182,10 +187,11 @@ class VegaLiteParser():
                         return True
             return False
         
-        
-        if self.additional_configs.get('image_overlay', {}).get('object', '') == 'label':
+        mark_type = self.additional_configs['chart_template'].mark.type
+        if self.additional_configs.get('image_overlay', {}).get(mark_type, {}).get('object', '') == 'label':
             
             config = self.additional_configs['image_overlay']
+            config['type'] = mark_type
             axis_orient = self.additional_configs['chart_template'].x_axis.orientation
             try:
                 orient = self.additional_configs['chart_template'].mark.orientation
@@ -235,8 +241,9 @@ class VegaLiteParser():
         shift_y = 0
         flag_to_move = False
         
-        if self.additional_configs['chart_template'].mark.type == 'bar' and self.additional_configs.get('image_overlay', {}).get('object', '') == 'mark':
+        if self.additional_configs['chart_template'].mark.type == 'bar' and self.additional_configs.get('image_overlay', {}).get(mark_type, {}).get('object', '') == 'mark':
             config = self.additional_configs['image_overlay']
+            config['type'] = mark_type
             try:
                 orient = self.additional_configs['chart_template'].mark.orientation
             except:
@@ -294,7 +301,37 @@ class VegaLiteParser():
                     #     mark_group.children[j] = overlay_processor.process_replace_multiple()
                     # overlay_processor.process_replace_single()
         
-        
+        if self.additional_configs['chart_template'].mark.type == 'arc' and self.additional_configs.get('image_overlay', {}).get('object', '') == 'mark':
+            print("self.additional_configs['chart_template'].mark.type: ", self.additional_configs['chart_template'].mark.type)
+            config = self.additional_configs['image_overlay']
+            config['type'] = mark_type
+            print("self.all_mark_groups: ", self.all_mark_groups)
+            for i, mark_group in enumerate(self.all_mark_groups):
+                for j, element in enumerate(mark_group.children):
+                    element_with_data = find_element_with_aria_label(element)
+                    print("element_with_data: ", element_with_data.dump())
+                    # print("element: ", element.dump())
+                    # image_url = image_urls[j]
+                    # try:
+                    #     image_url = self.value_icon_map['group'][self.mark_data_map[element]['group_value']]
+                    # except:
+                    image_url = self.value_icon_map['x'][self.mark_data_map[element_with_data]['x_value']]
+                    base64_image = Image._getImageAsBase64(image_url)
+                    content_type = base64_image.split(';base64,')[0]
+                    base64 = base64_image.split(';base64,')[1]
+                    base64 = ImageProcessor().crop_by_circle(base64)
+                    base64_image = f"{content_type};base64,{base64}"
+                    image_element = Image(base64_image)
+                    image_element.attributes = {
+                        "xlink:href": f"data:{base64_image}"
+                    }
+                    # image_element._bounding_box = image_element.get_bounding_box()
+                    # mark_group.children[j] = image_element
+                    overlay_processor = OverlayProcessor(element_with_data, image_element, config)
+                    new_element = overlay_processor.process()
+                    replace_corresponding_element(mark_group, element_with_data, new_element)
+            
+
         
         
         # flattened_elements_tree = SVGTreeConverter.partial_flatten_tree(elements_tree, group_to_flatten)
@@ -669,7 +706,7 @@ class VegaLiteParser():
         for i,child in enumerate(father.children):
             if self.if_area_mark(child):
                 # 将area_mark的path转换为image
-                image_path = '/data1/liduan/generation/chart/chart_pipeline/src/test.png'
+                image_path = "D:/VIS/Infographics/data/chart_pipeline/src/test.png"
                 base64_image = Image._getImageAsBase64(image_path)
                 base64 = base64_image.split(';base64,')[1]
                 base64 = ImageProcessor().clip_by_path(base64, child)
@@ -678,11 +715,13 @@ class VegaLiteParser():
                 base64_image = f"{content_type};base64,{base64}"
                 image_element = Image(base64_image)
                 coordinates = child._get_path_coordinates()
+                print("coordinates: ", coordinates)
                 min_x = min(coordinates, key=lambda x: x[0])[0]
                 min_y = min(coordinates, key=lambda y: y[1])[1]
                 max_x = max(coordinates, key=lambda x: x[0])[0]
                 max_y = max(coordinates, key=lambda y: y[1])[1]
                 child._bounding_box = child.get_bounding_box()
+                print("child._bounding_box: ", child._bounding_box)
                 image_element.attributes = {
                     "xlink:href": f"data:{base64_image}",
                     'width': child._bounding_box.width,
@@ -697,8 +736,7 @@ class VegaLiteParser():
                 break
     
     def if_area_mark(self, element: LayoutElement) -> bool:
-        return element.tag == 'path' and \
-            element.attributes.get('aria-roledescription', '') == 'area mark'
+        return element.tag == 'path'
     def if_area_mark_group(self, group: LayoutElement) -> bool:
         if not group.tag == 'g':
             return False

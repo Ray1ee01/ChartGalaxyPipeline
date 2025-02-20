@@ -78,9 +78,12 @@ def load_config(i):
                 chart_size_config = json.load(f)
             configs[key] = chart_size_config
         elif key == "image_overlay":
-            image_overlay_config_path = os.path.join(config_root, "image_overlay", f"{value}.json")
-            with open(image_overlay_config_path, 'r') as f:
-                image_overlay_config = json.load(f)
+            image_overlay_config = {}
+            for mark_type, mark_value in value.items():
+                image_overlay_config_path = os.path.join(config_root, "image_overlay", mark_type, f"{mark_value}.json")
+                with open(image_overlay_config_path, 'r') as f:
+                    image_overlay_config = json.load(f)
+                image_overlay_config[mark_type] = image_overlay_config
             configs[key] = image_overlay_config
     return configs
 

@@ -102,11 +102,6 @@
         ]
     },
     "chart_config": {
-        "valid_type": ["bar"],
-        "orientation": "horizontal",
-        "sort": {
-            "ascending": true,
-            "by": "x"
-        }
+        "valid_type": ["bar","line","area","scatter","pie"]
     }
 }

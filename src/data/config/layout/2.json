@@ -79,7 +79,7 @@
         ]
     },
     "chart_config": {
-        "valid_type": ["bar"],
+        "valid_type": ["pie","bar","line","area","scatter"],
         "orientation": "horizontal",
         "sort": {
             "ascending": true,
