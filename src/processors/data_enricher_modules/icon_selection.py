@@ -6,10 +6,6 @@ import torch
 import faiss
 from ...utils.global_state import *
 from config import feature_root_path as feature_root
-from config import https_proxy_url
-
-os.environ['http_proxy'] = https_proxy_url
-os.environ['https_proxy'] = https_proxy_url
 
 # feature_root = '/data1/liduan/jiashu/icon_cleaner/final_feat'
 #feature_root = 'D:/VIS/Infographics/data/final_feat'
