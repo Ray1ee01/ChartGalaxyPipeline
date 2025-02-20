@@ -5,9 +5,14 @@ import clip
 import torch
 import faiss
 from ...utils.global_state import *
+from config import feature_root_path as feature_root
+from config import https_proxy_url
+
+os.environ['http_proxy'] = https_proxy_url
+os.environ['https_proxy'] = https_proxy_url
 
 # feature_root = '/data1/liduan/jiashu/icon_cleaner/final_feat'
-feature_root = 'D:/VIS/Infographics/data/final_feat'
+#feature_root = 'D:/VIS/Infographics/data/final_feat'
 def load_json(file_path):
     with open(file_path, 'r') as f:
         data = json.load(f)
@@ -34,7 +39,7 @@ class CLIPMatcher:
 
         faiss.normalize_L2(text_features)
         return self.index.search(text_features, k)
-    
+
     def find_icon_by_prompts(self, input_texts, k):
         text_feat = []
         for input_text in input_texts:
@@ -47,7 +52,7 @@ class CLIPMatcher:
 
         faiss.normalize_L2(text_features)
         return self.index.search(text_features, k)
-    
+
     def get_icon(self, idxes):
         return {idx: (self.info['label'][idx], self.info['file'][idx]) for idx in idxes}
 
@@ -60,7 +65,7 @@ class Semantics:
         self.icon_semantics = []
         self.topk = topk
 
-        # 0: chart topic, 1: x axis label, 2: y axis label, 3: x single icon, 4: x data, 5: group data 
+        # 0: chart topic, 1: x axis label, 2: y axis label, 3: x single icon, 4: x data, 5: group data
         self.icon_cts = [1, 1, 1, 1]
         self.icon_semantics.append(self.topic_data['topic'])
         self.icon_semantics.append(self.chart_data['meta_data']['x_label'])
@@ -70,7 +75,7 @@ class Semantics:
         self.icon_cts.append(len(self.chart_data['data']))
         for i in range(len(self.chart_data['data'])):
             self.icon_semantics.append(self.chart_data['data'][i]['x_data'])
-        
+
         # x label and y label and y group
         group_num = 0
         group_set = set()
@@ -90,7 +95,7 @@ class Semantics:
             [0, 1, 2, 3], # topic, x label, y label and x single icon
             [0, 1, 2, 4], # topic, x label, y label and x data
         ]
-                
+
     def prepare_sets(self, matcher: CLIPMatcher):
         self.icon_pool = []
         self.icon_dist = []
@@ -148,7 +153,7 @@ class Semantics:
         for icon_set in self.icon_pool:
             for i in range(len(icon_set)):
                 icon_set[i] = file2idx[self.icon_positions[icon_set[i]][1]]
-            
+
 
 def get_icon_pool_old(json_file, meta_data, matcher=None):
     if matcher is None:
@@ -156,12 +161,12 @@ def get_icon_pool_old(json_file, meta_data, matcher=None):
         matcher = CLIPMatcher()
         # time_end = time.time()
         # print('time cost for CLIPMatcher: ', time_end - time_start)
-    
+
     # time_start = time.time()
     semantics = Semantics(json_file, meta_data, topk=20)
     # time_end = time.time()
     # print('time cost for Semantics: ', time_end - time_start)
-    
+
     # time_start = time.time()
     semantics.prepare_sets(matcher)
     # time_end = time.time()
