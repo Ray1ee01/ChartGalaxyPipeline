@@ -85,20 +85,9 @@
     },
     "chart_config": {
         "valid_type": [
-            "bar",
-            "line",
-            "bump",
-            "scatter",
-            "connectedscatter",
-            "bubble",
-            "groupbar",
-            "stackedbar",
-            "slope",
-            "pie",
-            "area",
-            "stream",
-            "rangedarea",
-            "layeredarea",
+
+            "slope"
+
         ]
     }
 }

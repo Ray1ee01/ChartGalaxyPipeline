@@ -1046,6 +1046,9 @@ class Path(Graphical):
         self.tag = 'path'
         self.anchor_points = {}
         self.arcs = {}
+        self.cx = None
+        self.cy = None
+        
     def _parse_path(self, d: str) -> List[Dict]:
         """解析SVG路径的'd'属性"""
         commands = []
@@ -1215,6 +1218,15 @@ class Path(Graphical):
                 # 将圆心转回原始坐标系
                 cx = (cos_angle * cx1 - sin_angle * cy1) + current_x
                 cy = (sin_angle * cx1 + cos_angle * cy1) + current_y
+                
+                if self.cx is None:
+                    self.cx = cx
+                else:
+                    self.cx = (self.cx+cx)/2
+                if self.cy is None:
+                    self.cy = cy
+                else:
+                    self.cy = (self.cy+cy)/2
 
                 # 计算起始角度和结束角度
                 start_angle = math.atan2((current_y - cy) / ry, (current_x - cx) / rx)

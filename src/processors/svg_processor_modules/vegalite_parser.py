@@ -154,9 +154,9 @@ class VegaLiteParser():
             if value['group_value'] is not None:
                 if value['group_value'] not in self.value_icon_map['group']:
                     self.value_icon_map['group'][value['group_value']] = icon_urls[random.randint(0, len(icon_urls) - 1)]
+        print("self.value_icon_map: ", self.value_icon_map)
             
-            
-            
+        print("self.mark_data_map: ", self.mark_data_map)
         # orient = self.additional_configs['chart_config'].get('orientation', 'horizontal')
 
         
@@ -331,6 +331,9 @@ class VegaLiteParser():
                     new_element = overlay_processor.process()
                     replace_corresponding_element(mark_group, element_with_data, new_element)
             
+            mark_group0 = self.all_mark_groups[0]
+            arc_0 = mark_group0.children[0]
+
 
         
         
