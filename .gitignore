@@ -16,3 +16,4 @@ data/
 *.pyc
 connectivity.c
 temp_input_*.json
+.vscode
