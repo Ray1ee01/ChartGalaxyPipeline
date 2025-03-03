@@ -6,12 +6,42 @@ import os
 # 改绝对路径为相对路径
 config_root = os.path.dirname(os.path.abspath(__file__))
 
+CONFIG = {
+    "debug": True
+}
+
 chart_type_mark_mapping = {
     "bar": "bar",
     "stackedbar": "bar",
     "groupbar": "bar",
 }
 
+def update_configs(configs, meta_data):
+    if meta_data["axes"]["x_axis"] == "yes":
+        value = 0
+        x_axis_config_path = os.path.join(config_root, "axis", f"{value}.json")
+        with open(x_axis_config_path, 'r') as f:
+            x_axis_config = json.load(f)
+        configs["x_axis"] = x_axis_config
+    else:
+        value = 31
+        x_axis_config_path = os.path.join(config_root, "axis", f"{value}.json")
+        with open(x_axis_config_path, 'r') as f:
+            x_axis_config = json.load(f)
+        configs["x_axis"] = x_axis_config
+    if meta_data["axes"]["y_axis"] == "yes":
+        value = 27
+        y_axis_config_path = os.path.join(config_root, "axis", f"{value}.json")
+        with open(y_axis_config_path, 'r') as f:
+            y_axis_config = json.load(f)
+        configs["y_axis"] = y_axis_config
+    else:
+        value = 31
+        y_axis_config_path = os.path.join(config_root, "axis", f"{value}.json")
+        with open(y_axis_config_path, 'r') as f:
+            y_axis_config = json.load(f)
+        configs["y_axis"] = y_axis_config
+    return configs
 
 def load_config(i):
     config_path = os.path.join(config_root, "composite", f"{i}.json")

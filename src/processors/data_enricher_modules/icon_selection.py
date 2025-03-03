@@ -66,10 +66,12 @@ class Semantics:
         self.icon_semantics.append(self.chart_data['meta_data']['x_label'])
         self.icon_semantics.append(self.chart_data['meta_data']['y_label'])
         self.icon_semantics.append(self.topic_data['topic'])
+        x_label = self.chart_data['meta_data']['x_label']
+        y_label = self.chart_data['meta_data']['y_label']
         # x data
         self.icon_cts.append(len(self.chart_data['data']))
         for i in range(len(self.chart_data['data'])):
-            self.icon_semantics.append(self.chart_data['data'][i]['x_data'])
+            self.icon_semantics.append(self.chart_data['data'][i][x_label])
         
         # x label and y label and y group
         group_num = 0
@@ -78,7 +80,7 @@ class Semantics:
             group_set = set([x['group'] for x in self.chart_data['data']])
             group_num = len(group_set)
         for group in group_set:
-            self.icon_semantics.append('{}-{}'.format(group,self.chart_data['meta_data']['y_label']))
+            self.icon_semantics.append('{}-{}'.format(group,y_label))
         self.icon_cts.append(group_num)
 
         # optional mode

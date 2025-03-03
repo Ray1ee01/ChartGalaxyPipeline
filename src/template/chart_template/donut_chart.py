@@ -44,6 +44,10 @@ class DonutChartTemplate(ChartTemplate):
         mark_config = config.get('mark', {}).get('arc', {})
         self.mark = PieTemplate(color_template, mark_config)
         self.color_encoding = ColorEncodingTemplate(color_template, meta_data, data)
+        single_color_flag = self.color_encoding.encoding_data("x_label")
+        if single_color_flag:
+            self.mark.color = self.color_encoding.range[0]
+            self.color_encoding = None
 
     def update_specification(self, specification: dict):
         specification['encoding']['theta'] = self.theta

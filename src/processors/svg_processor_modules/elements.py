@@ -96,6 +96,45 @@ class Padding:
     bottom: float = 0
     left: float = 0
 
+
+@dataclass
+class DataAttribute:
+    """数据属性"""
+    """
+    available_keys: x_data, y_data, group_data, x_data_list, y_data_list, group_data_list
+    例如对于line chart,一条线会对应多个数据点,因此,需要x_data_list, y_data_list这样的扩展
+    """
+    data_attributes: dict
+    _available_keys = {'x_data', 'y_data', 'group_data','size_data', 'order_data', 'x_data_list', 'y_data_list', 'group_data_list', 'y2_data_list'}
+    _list_keys = {'x_data_list', 'y_data_list', 'group_data_list', 'y2_data_list'}
+    _non_list_keys = {'x_data', 'y_data', 'group_data', 'size_data', 'order_data'}
+
+    def __init__(self, data_attributes: dict):
+        self._validate_keys(data_attributes)
+        self._validate_values(data_attributes)
+        self.data_attributes = data_attributes
+
+    def update_attributes(self, data_attributes: dict):
+        self._validate_keys(data_attributes)
+        self._validate_values(data_attributes)
+        self.data_attributes = data_attributes
+
+    def _validate_keys(self, data_attributes: dict):
+        """验证数据属性字典中的键是否合法"""
+        invalid_keys = set(data_attributes.keys()) - self._available_keys
+        if invalid_keys:
+            raise ValueError(f"发现非法的数据属性键: {invalid_keys}。允许的键为: {self._available_keys}")
+
+    def _validate_values(self, data_attributes: dict):
+        """验证数据属性值的类型是否合法"""
+        for key, value in data_attributes.items():
+            if key in self._list_keys and not isinstance(value, list):
+                raise ValueError(f"键 {key} 的值必须是list类型,但收到了 {type(value)}")
+            elif key in self._non_list_keys and isinstance(value, list):
+                raise ValueError(f"键 {key} 的值不能是list类型,但收到了list")
+
+
+
 class LayoutElement(ABC):
     """布局元素基类"""
     def __init__(self):
@@ -182,9 +221,9 @@ class LayoutElement(ABC):
                     translate2 = [1, 0, 0, 1, cx, cy]
                     
                     # 按顺序应用变换: matrix * translate1 * rotate * translate2
-                    matrix = self._multiply_matrices(matrix, translate1)
-                    matrix = self._multiply_matrices(matrix, rotate)
                     matrix = self._multiply_matrices(matrix, translate2)
+                    matrix = self._multiply_matrices(matrix, rotate)
+                    matrix = self._multiply_matrices(matrix, translate1)
                 else:  # 普通旋转
                     rotate = [cos_a, sin_a, -sin_a, cos_a, 0, 0]
                     matrix = self._multiply_matrices(matrix, rotate)
@@ -434,6 +473,9 @@ class GroupElement(LayoutElement):
     
     def _dump_extra_info(self) -> List[str]:
         info = []
+        print("self.tag: ", self.tag)
+        print("self.children: ", self.children)
+        print("self.layout_strategy: ", self.layout_strategy)
         if self.layout_strategy:
             info.append(f"Layout Strategy: {self.layout_strategy.__class__.__name__}")
         if self.children:
@@ -455,6 +497,8 @@ class Image(AtomElement):
         self.tag = 'image'
         self.original_width = 0
         self.original_height = 0
+        if base64:
+            self.attributes['xlink:href'] = "data:" + base64
         
     @staticmethod
     def _getImageAsBase64(image_url: str) -> Optional[str]:
@@ -469,6 +513,7 @@ class Image(AtomElement):
         try:
             if isinstance(image_url, dict):
                 image_url = image_url['file_path']
+                # print("image_url: ", image_url)
             # 检查是否已经是base64编码
             if image_url.startswith('data:'):
                 return image_url
@@ -503,43 +548,40 @@ class Image(AtomElement):
     def get_image_size(image_url: str) -> Tuple[int, int]:
         # print(f"image_url: {image_url}")
         """获取图片尺寸"""
-        try:
-            # 检查是否已经是base64编码
-            if image_url.startswith('data:'):
-                # 从base64编码中提取图片数据
-                image_data = base64.b64decode(image_url.split(',')[1])
-                # 使用PIL获取图片尺寸
-                img = PILImage.open(BytesIO(image_data))
-                width, height = img.size
-                # print(f"width: {width}, height: {height}")
-                return width, height
-            # 判断是URL还是本地文件
-            parsed = urlparse(image_url)
-            is_url = bool(parsed.scheme and parsed.netloc)
-            
-            # 获取图片数据
-            if is_url:
-                response = requests.get(image_url)
-                image_data = response.content
-                # 从URL或Content-Type获取MIME类型
-                content_type = response.headers.get('content-type')
-                if not content_type:
-                    content_type = mimetypes.guess_type(image_url)[0] or 'image/png'
-            else:
-                # 处理本地文件
-                with open(image_url, 'rb') as f:
-                    image_data = f.read()
-                content_type = mimetypes.guess_type(image_url)[0] or 'image/png'
-            
-            # 获取图片尺寸
-            from PIL import Image as PILImage
-            from io import BytesIO
+        # try:
+        # 检查是否已经是base64编码
+        if image_url.startswith('data:') or image_url.startswith('image/'):
+            # 从base64编码中提取图片数据
+            image_data = base64.b64decode(image_url.split(',')[1])
+            # 使用PIL获取图片尺寸
             img = PILImage.open(BytesIO(image_data))
             width, height = img.size
+            # print(f"width: {width}, height: {height}")
             return width, height
-        except Exception as e:
-            print(f"Error processing image {image_url}: {str(e)}")
-            return None
+        # 判断是URL还是本地文件
+        parsed = urlparse(image_url)
+        is_url = bool(parsed.scheme and parsed.netloc)
+        
+        # 获取图片数据
+        if is_url:
+            response = requests.get(image_url)
+            image_data = response.content
+            # 从URL或Content-Type获取MIME类型
+            content_type = response.headers.get('content-type')
+            if not content_type:
+                content_type = mimetypes.guess_type(image_url)[0] or 'image/png'
+        else:
+            # 处理本地文件
+            with open(image_url, 'rb') as f:
+                image_data = f.read()
+            content_type = mimetypes.guess_type(image_url)[0] or 'image/png'
+        
+        img = PILImage.open(BytesIO(image_data))
+        width, height = img.size
+        return width, height
+        # except Exception as e:
+        #     print(f"Error processing image {image_url}: {str(e)}")
+        #     return None
         
     def get_bounding_box(self) -> BoundingBox:
         if self.base64:
@@ -1048,7 +1090,7 @@ class Path(Graphical):
         self.arcs = {}
         self.cx = None
         self.cy = None
-        
+        self.r = None
     def _parse_path(self, d: str) -> List[Dict]:
         """解析SVG路径的'd'属性"""
         commands = []
@@ -1219,14 +1261,7 @@ class Path(Graphical):
                 cx = (cos_angle * cx1 - sin_angle * cy1) + current_x
                 cy = (sin_angle * cx1 + cos_angle * cy1) + current_y
                 
-                if self.cx is None:
-                    self.cx = cx
-                else:
-                    self.cx = (self.cx+cx)/2
-                if self.cy is None:
-                    self.cy = cy
-                else:
-                    self.cy = (self.cy+cy)/2
+
 
                 # 计算起始角度和结束角度
                 start_angle = math.atan2((current_y - cy) / ry, (current_x - cx) / rx)
@@ -1361,6 +1396,8 @@ class Path(Graphical):
                     rx *= math.sqrt(radius_check)
                     ry *= math.sqrt(radius_check)
 
+
+
                 # # 计算 sq
                 # sq = ((rx*rx*ry*ry) - (rx*rx*y1_prime*y1_prime) - (ry*ry*x1_prime*x1_prime)) / ((rx*y1_prime) + (ry*x1_prime))**2
                 # sq = max(0, sq)  # 确保 sq 不为负数
@@ -1387,6 +1424,20 @@ class Path(Graphical):
                 start_angle = math.atan2((current_y - cy) / ry, (current_x - cx) / rx)
                 end_angle = math.atan2((end_y - cy) / ry, (end_x - cx) / rx)
 
+
+                if self.cx is None:
+                    self.cx = cx
+                else:
+                    self.cx = (self.cx+cx)/2
+                if self.cy is None:
+                    self.cy = cy
+                else:
+                    self.cy = (self.cy+cy)/2
+                if self.r is None:
+                    self.r = rx
+                    print("self.r: ", self.r)
+                else:
+                    self.r = min(self.r, rx)
                 # 处理large_arc_flag为1的情况
                 if large_arc_flag == 1:
                     # 如果角度差小于π,需要加上2π
@@ -1433,8 +1484,19 @@ class Path(Graphical):
                 bbox = self._apply_transform(bbox.maxx, bbox.maxy, maxX, maxY, transform[1])
                 return BoundingBox(bbox.maxx - bbox.minx, bbox.maxy - bbox.miny, bbox.minx, bbox.maxx, bbox.miny, bbox.maxy)
             bbox = self._apply_transform(minX, minY, maxX, maxY, transform)
+            if self.attributes.get('stroke-width', None) is not None:
+                stroke_width = float(self.attributes['stroke-width'])
+                bbox.minx -= stroke_width/2
+                bbox.miny -= stroke_width/2
+                bbox.maxx += stroke_width/2
+                bbox.maxy += stroke_width/2
             return BoundingBox(bbox.maxx - bbox.minx, bbox.maxy - bbox.miny, bbox.minx, bbox.maxx, bbox.miny, bbox.maxy)
-        
+        if self.attributes.get('stroke-width', None) is not None:
+            stroke_width = float(self.attributes['stroke-width'])
+            bbox.minx -= stroke_width/2
+            bbox.miny -= stroke_width/2
+            bbox.maxx += stroke_width/2
+            bbox.maxy += stroke_width/2
         return BoundingBox(maxX - minX, maxY - minY, minX, maxX, minY, maxY)
     
     def is_intersect(self, other: BoundingBox) -> bool:
@@ -1774,5 +1836,145 @@ class RectEmbellish(GroupElement):
             }
             self.children.append(path2)
 
-            
-            
+
+class Infographics(GroupElement):
+    """信息图元素"""
+    def __init__(self):
+        super().__init__()
+        self.attributes['class'] = 'infographics'
+        self.children = []
+        
+class Title(GroupElement):
+    """标题元素"""
+    def __init__(self):
+        super().__init__()
+        self.attributes['class'] = 'title'
+        self.children = []
+        
+class Description(GroupElement):
+    """描述元素"""
+    def __init__(self):
+        super().__init__()
+        self.attributes['class'] = 'description'
+        self.children = []
+        
+class UseImage(Image):
+    """使用图片元素"""
+    def __init__(self, base64: str=None):
+        super().__init__(base64)
+        self.attributes['class'] = 'use-image'
+    def _dump_extra_info(self) -> List[str]:
+        return [f"UseImage: {self.base64[:10]}..." if self.base64 else "UseImage: <empty>"]
+        
+class Chart(GroupElement):
+    """图表元素"""
+    def __init__(self):
+        super().__init__()
+        self.attributes['class'] = 'chart'
+        self.children = []
+
+class Background(GroupElement):
+    """背景元素"""
+    def __init__(self):
+        super().__init__()
+        self.attributes['class'] = 'background'
+        self.children = []
+
+class Axis(GroupElement):
+    """轴元素"""
+    def __init__(self, xory: str):
+        super().__init__()
+        self.xory = xory
+        self.attributes['class'] = f'axis {xory}'
+        self.children = []
+
+class AxisLabel(GroupElement):
+    """轴标签元素"""
+    def __init__(self, basic_element: LayoutElement):
+        super().__init__()
+        self.attributes['class'] = 'axis-label'
+        self.data_attributes = DataAttribute({})
+        self.axis_orient = None
+        self.children.append(basic_element)
+class AxisTick(GroupElement):
+    """轴刻度元素"""
+    def __init__(self, basic_element: LayoutElement):
+        super().__init__()
+        self.attributes['class'] = 'axis-tick'
+        self.data_attributes = DataAttribute({})
+        self.children.append(basic_element)
+
+class AxisDomain(GroupElement):
+    """轴域元素"""
+    def __init__(self, basic_element: LayoutElement):
+        super().__init__()
+        self.attributes['class'] = 'axis-domain'
+        self.data_attributes = DataAttribute({})
+        self.children.append(basic_element)
+
+class AxisTitle(GroupElement):
+    """轴标题元素"""
+    def __init__(self, basic_element: LayoutElement):
+        super().__init__()
+        self.attributes['class'] = 'axis-title'
+        self.data_attributes = DataAttribute({})
+        self.children.append(basic_element)
+
+class Mark(GroupElement):
+    """标记元素"""
+    def __init__(self, basic_element: LayoutElement):
+        super().__init__()
+        self.attributes['class'] = 'mark'
+        self.data_attributes = DataAttribute({})
+        self.children.append(basic_element)
+    
+    def _dump_extra_info(self) -> List[str]:
+        return [f"Mark type: {self.tag}"]
+    
+class BarMark(Mark):
+    """柱状元素"""
+    def __init__(self, basic_element: LayoutElement):
+        super().__init__(basic_element)
+        self.attributes['class'] = 'bar'
+        self.orient = 'vertical'
+        self.data_attributes = DataAttribute({})
+
+class PathMark(Mark):
+    """折线元素"""
+    def __init__(self, basic_element: LayoutElement):
+        super().__init__(basic_element)
+        self.attributes['class'] = 'line'
+        self.data_attributes = DataAttribute({})
+
+class ArcMark(Mark):
+    """弧元素"""
+    def __init__(self, basic_element: LayoutElement):
+        super().__init__(basic_element)
+        self.attributes['class'] = 'arc'
+        self.data_attributes = DataAttribute({})
+
+class AreaMark(Mark):
+    """区域元素"""
+    def __init__(self, basic_element: LayoutElement):
+        super().__init__(basic_element)
+        self.attributes['class'] = 'area'
+        self.data_attributes = DataAttribute({})
+
+class PointMark(Mark):
+    """点元素"""
+    def __init__(self, basic_element: LayoutElement):
+        super().__init__(basic_element)
+        self.attributes['class'] = 'point'
+        self.data_attributes = DataAttribute({})
+
+
+def copy_attributes(source: LayoutElement, target: LayoutElement):
+    for key, value in source.attributes.items():
+        # 不拷贝class
+        if key == 'class':
+            continue
+        target.attributes[key] = value
+
+def copy_children(source: LayoutElement, target: LayoutElement):
+    for child in source.children:
+        target.children.append(child)

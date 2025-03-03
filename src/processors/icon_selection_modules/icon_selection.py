@@ -342,9 +342,10 @@ class IconSelector:
                 image_path = os.path.join(cache_path, 'icons')
                 if not os.path.exists(image_path):
                     os.makedirs(image_path)
+                x_label = self.pool.chart_data['meta_data']['x_label']
                 for i in range(len(self.pool.chart_data['data'])):
-                    text = self.pool.chart_data['data'][i]['x_data']
-                    file_path = flag_icons.search_and_save(text, image_path, 600, 600)
+                    text = self.pool.chart_data['data'][i][x_label]
+                    file_path = flag_icons.search_and_save(str(text), image_path, 600, 600)
                     # res.append(file_path)
                     res.append({"file_path": file_path, "text": text})
             elif self.spe_mode == 'logo':
@@ -352,9 +353,10 @@ class IconSelector:
                 image_path = os.path.join(cache_path, 'icons')
                 if not os.path.exists(image_path):
                     os.makedirs(image_path)
+                x_label = self.pool.chart_data['meta_data']['x_label']
                 for i in range(len(self.pool.chart_data['data'])):
-                    text = self.pool.chart_data['data'][i]['x_data']
-                    file_path = logo_icons.search_and_save(text, image_path, 600, 600) # TODO size
+                    text = self.pool.chart_data['data'][i][x_label]
+                    file_path = logo_icons.search_and_save(str(text), image_path, 600, 600) # TODO size
                     # res.append(file_path)
                     res.append({"file_path": file_path, "text": text})
             else:

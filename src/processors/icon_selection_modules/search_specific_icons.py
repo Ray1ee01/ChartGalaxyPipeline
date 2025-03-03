@@ -92,7 +92,7 @@ class LogoIcons(SpecificIcons):
 
     def __load_logos(self):
         logo_names = os.listdir(logo_path)
-        self.logo_names = [name.split('.')[0] for name in logo_names if name.endswith('.svg')]
+        self.logo_names = [name.split('.')[0] for name in logo_names if name.endswith('.svg') or name.endswith('.png')]
 
     def __create_embeddings(self, texts):
         embeddings = self.model.encode(texts)
@@ -109,10 +109,14 @@ class LogoIcons(SpecificIcons):
 
     def search_and_save(self, text: str, output_path: str, width: int, height: int) -> str:
         result = self.search(text)
-        image = result + '.svg'
-        svg_path = os.path.join(logo_path, image)
-        output_file = os.path.join(output_path, image.split('.')[0] + '.png')
-        svg_to_png(svg_path, output_file, width, height)
+        try:
+            image = result + '.svg'
+            svg_path = os.path.join(logo_path, image)
+            output_file = os.path.join(output_path, image.split('.')[0] + '.png')
+            svg_to_png(svg_path, output_file, width, height)
+        except:
+            image = result + '.png'
+            output_file = os.path.join(output_path, image)
         return output_file
 
 if __name__ == '__main__':

@@ -11,11 +11,6 @@
             "overlap": false,
             "alignment": ["left", "left"]
         },
-        "sizeConstraint": {
-            "reference": "group_2",
-            "max_width": 1.0,
-            "min_width": 0.8
-        },
         "children": [
             {
                 "tag": "g",
@@ -79,7 +74,7 @@
         ]
     },
     "chart_config": {
-        "valid_type": ["pie","bar","line","area","scatter"],
+        "valid_type": ["bar"],
         "orientation": "horizontal",
         "sort": {
             "ascending": true,

@@ -12,12 +12,13 @@ import base64
 import requests
 from urllib.parse import urlparse
 import mimetypes
-from .svg_processor_modules.vegalite_parser import VegaLiteParser
+from .svg_processor_modules.vegalite_parser import SVGParser
 from .svg_processor_modules.layout_processor import LayoutProcessor
 from .svg_processor_modules.tree_converter import SVGTreeConverter
 from .svg_processor_modules.elements import *
 from ..template.template import LayoutTemplate
 import time
+from .svg_processor_modules.variation import ImageChart
 
 default_additional_configs = {
     "iconAttachConfig": {
@@ -131,20 +132,41 @@ class SVGOptimizer(SVGProcessor):
             Union[dict, str]: 如果debug为True，返回处理后的树结构；否则返回处理后的SVG字符串
         """
         # 丢弃svg中所有tag为rect且fill为#ffffff的rect
-        print('svg: ', svg)
+        # print('svg: ', svg)
         svg = re.sub(r"<rect[^>]*fill=\"#ffffff\"[^>]*>", '', svg)
         # return svg
         # print('additional_configs: ', additional_configs)
         time_start = time.time()
-        parser = VegaLiteParser(svg, additional_configs)
-        parsed_svg, flattened_elements_tree, layout_graph, defs = parser.parse()
+        parser = SVGParser(svg, additional_configs)
+        parsed_svg, chart_element_tree, layout_graph, defs = parser.parse()
+        
+        chart_element = Chart()
+        copy_children(chart_element_tree, chart_element)
+        copy_attributes(chart_element_tree, chart_element)
+        
+
+        
+        image_url = "D:/VIS/Infographics/data/svg/Netflix_2015_logo.svg.png"
+        base64_image = Image._getImageAsBase64(image_url)
+        image_element = UseImage(base64_image)
+        image_chart = ImageChart(chart_element, image_element)
+        config = {
+            # "variation_type": "behind",
+            # "variation_type": "overlay",
+        }
+        chart_element, image_element = image_chart.process(config)
+        
+        infographics = Infographics()
+        infographics.children = [chart_element, image_element]
+        
+        
+        
         time_end = time.time()
         print(f'parser time cost: {time_end - time_start}s')
-        # flattened_elements_tree._bounding_box = flattened_elements_tree.get_bounding_box()
-        # print(flattened_elements_tree.dump())
         
-        element_tree = flattened_elements_tree
+        element_tree = infographics
 
+        # root_element = element_tree
         # # # return parsed_svg
         
         # if additional_configs.get('title_config').get('max_width_ratio'):
@@ -162,7 +184,7 @@ class SVGOptimizer(SVGProcessor):
         
         layout_template = additional_configs['layout_template']
         time_start = time.time()
-        layout_processor = LayoutProcessor(flattened_elements_tree, layout_graph, layout_template, additional_configs)
+        layout_processor = LayoutProcessor(element_tree, layout_graph, layout_template, additional_configs)
         time_end = time.time()
         print(f'layout_processor init time cost: {time_end - time_start}s')
         time_start = time.time()
@@ -170,40 +192,40 @@ class SVGOptimizer(SVGProcessor):
         time_end = time.time()
         print(f'layout_processor process time cost: {time_end - time_start}s')
         
+        root_element = element_tree
         
 
         
 
-        element_list = SVGTreeConverter.flatten_tree(element_tree)
+        # element_list = SVGTreeConverter.flatten_tree(element_tree)
         # element_list = SVGTreeConverter.flatten_tree(flattened_elements_tree)
-        root_element = GroupElement()
-        root_element.children = element_list
-        # print('root_element.children: ', root_element.dump())
+        # root_element = GroupElement()
+        # root_element.children = element_list
+        # # print('root_element.children: ', root_element.dump())
         
-        # 从element_tree中找到所有mark_group, legend_group, x_axis_group, y_axis_group
-        mark_group = []
-        legend_group = []
-        x_axis_group = []
-        y_axis_group = []
-        title_group = []
-        subtitle_group = []
-        description_group = []
-        for element in root_element.children:
-            # print("element: ", element.tag, element.attributes)
-            if self.if_in_mark_group(element):
-                mark_group.append(element)
-            elif self.if_in_legend_group(element):
-                legend_group.append(element)
-            elif self.if_in_x_axis_group(element):
-                x_axis_group.append(element)
-            elif self.if_in_y_axis_group(element):
-                y_axis_group.append(element)
-            elif self.if_in_title_group(element):
-                title_group.append(element)
-            elif self.if_in_subtitle_group(element):
-                subtitle_group.append(element)
-            elif self.if_description_group(element):
-                description_group.append(element)
+        # # 从element_tree中找到所有mark_group, legend_group, x_axis_group, y_axis_group
+        # mark_group = []
+        # legend_group = []
+        # x_axis_group = []
+        # y_axis_group = []
+        # title_group = []
+        # subtitle_group = []
+        # description_group = []
+        # for element in root_element.children:
+        #     if self.if_in_mark_group(element):
+        #         mark_group.append(element)
+        #     elif self.if_in_legend_group(element):
+        #         legend_group.append(element)
+        #     elif self.if_in_x_axis_group(element):
+        #         x_axis_group.append(element)
+        #     elif self.if_in_y_axis_group(element):
+        #         y_axis_group.append(element)
+        #     elif self.if_in_title_group(element):
+        #         title_group.append(element)
+        #     elif self.if_in_subtitle_group(element):
+        #         subtitle_group.append(element)
+        #     elif self.if_description_group(element):
+        #         description_group.append(element)
         # print('mark_group: ', mark_group)
         # print('legend_group: ', legend_group)
         # print('x_axis_group: ', x_axis_group)
@@ -225,35 +247,36 @@ class SVGOptimizer(SVGProcessor):
         
         
         # 在root_element中添加多个rect，用于显示这些group的bounding_box
-        rects = []
-        points = []
-        for element in root_element.children:
-            # if not element.tag == 'path' or element.attributes.get('aria-roledescription') != 'area mark':
-            #     continue
-            # print('element: ', element.content, element._bounding_box)
-            bounding_box = element.get_bounding_box()
-            # print('bounding_box: ', bounding_box)
-            rect = Rect()
-            rect.attributes = {
-                "stroke": "red",
-                "stroke-width": 1,
-                "fill": "none",
-                "x": bounding_box.minx,
-                "y": bounding_box.miny,
-                "width": bounding_box.maxx - bounding_box.minx,
-                "height": bounding_box.maxy - bounding_box.miny,
-            }
-            rects.append(rect)
-            # if element.tag == 'path':
-            #     points.extend(element._get_path_coordinates())
-        # for rect in rects:
-        #     root_element.children.append(rect)
-        # for point in points:
-        #     root_element.children.append(Circle(point[0], point[1], 5))
-        element_tree = root_element
+        # rects = []
+        # points = []
+        # for element in root_element.children:
+        #     # if not element.tag == 'path' or element.attributes.get('aria-roledescription') != 'area mark':
+        #     #     continue
+        #     # print('element: ', element.content, element._bounding_box)
+        #     bounding_box = element.get_bounding_box()
+        #     # print('bounding_box: ', bounding_box)
+        #     rect = Rect()
+        #     rect.attributes = {
+        #         "stroke": "red",
+        #         "stroke-width": 1,
+        #         "fill": "none",
+        #         "x": bounding_box.minx,
+        #         "y": bounding_box.miny,
+        #         "width": bounding_box.maxx - bounding_box.minx,
+        #         "height": bounding_box.maxy - bounding_box.miny,
+        #     }
+        #     rects.append(rect)
+        #     # if element.tag == 'path':
+        #     #     points.extend(element._get_path_coordinates())
+        # # for rect in rects:
+        # #     root_element.children.append(rect)
+        # # for point in points:
+        # #     root_element.children.append(Circle(point[0], point[1], 5))
+        # element_tree = root_element
         
         # 获取root的bounding_box
         root_bounding_box = root_element.get_bounding_box()
+        
         shift_x = -root_bounding_box.minx
         shift_y = -root_bounding_box.miny
         # random_padding = 50 * random.random()
@@ -383,6 +406,7 @@ class SVGOptimizer(SVGProcessor):
         # except:
         #     print("no background image")
         svg_str = SVGTreeConverter.element_tree_to_svg(element_tree)
+        print("svg str")
         
         
         background_color = additional_configs['background_config']['color']
@@ -558,3 +582,4 @@ class SVGOptimizer(SVGProcessor):
 
     def if_description_group(self, element: LayoutElement) -> bool:
         return 'description' in element.attributes.get('class', '')
+    

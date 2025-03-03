@@ -123,49 +123,75 @@ class ColorEncodingTemplate:
         self.field_type = None
         self.domain = None
         self.range = None
+        self.data = data
         self.meta_data = meta_data
         self.color_template = color_template
         self.show_legend = True
         self.embedding_model = SentenceTransformer(model_path)
         self.color_with_semantics = False
-        if 'group' in data[0].keys():
-            print("color encoding template: ", data[0])
-            self.field = 'group'
-            self.field_type = 'nominal'
-            # domain是data列表中每个item的['group']的值的unique值
-            self.domain = list(set([str(item['group']) for item in data]))
-            # static_palettes = StaticPalettes()
+        self.palette = StaticPalettes()
+
+        # if 'group_label' in meta_data.keys():
+        #     print("color encoding template: ", data[0])
+        #     self.field = meta_data['group_label']
+        #     self.field_type = 'nominal'
+        #     # domain是data列表中每个item的['group_label']的值的unique值
+        #     self.domain = list(set([str(item[self.field]) for item in data]))
             # self.range = static_palettes.get_colors(len(self.domain))
             # self.range = static_palettes.get_colors_from_cmap('Pastel1', len(self.domain))
-            colors = self.color_template.get_color('marks', number = 1, group = len(self.domain), seed_mark=1)
-            print("pool: ", self.color_template.pool)
-            print("colors: ", colors)
-            self.range = []
-            for i in range(1, len(self.domain)+1):
-                self.range.append(colors['group'+str(i)][0])
-            print("range: ", self.range)
-            self.apply_color_rules()
-            self.color_with_semantics = True
+            # colors = self.color_template.get_color('marks', number = 1, group = len(self.domain), seed_mark=1)
+            # print("pool: ", self.color_template.pool)
+            # print("colors: ", colors)
+            # self.range = []
+            # for i in range(1, len(self.domain)+1):
+            #     self.range.append(colors['group'+str(i)][0])
+            # print("range: ", self.range)
+            # self.apply_color_rules()
+            # self.color_with_semantics = True
             # self.show_legend = True
-        elif self.color_template is not None:
-            self.domain = list(set([item['x_data'] for item in data]))
-            self.field = meta_data['x_label']
-            single_color = self.color_template.get_color('marks', number = 1, group = 1, seed_mark=1)['group1'][0]
-            print("single_color: ", single_color)
-            # self.range = [single_color] * len(self.domain)
-            self.range = []
-            for i in range(len(self.domain)):
-                self.range.append(single_color)
-            # self.show_legend = False
-            self.color_with_semantics = False
-        # elif self.color_template is not None and not self.color_template.mode == 'monochromatic':
-        #     if data is not None:
-        #         self.domain = list(set([row['x_data'] for row in data]))
-        #         self.field = meta_data['x_label']
-        #         seed_mark = 1
-        #         colors = self.color_template.get_color('marks', len(self.domain), seed_mark=seed_mark)
-        #         self.range = colors
-        #         self.show_legend = True
+        # elif self.color_template is not None:
+        #     self.domain = list(set([item[meta_data['x_label']] for item in data]))
+        #     self.field = meta_data['x_label']
+        #     # single_color = self.color_template.get_color('marks', number = 1, group = 1, seed_mark=1)['group1'][0]
+        #     # print("single_color: ", single_color)
+        #     static_palettes = StaticPalettes()
+        #     single_color = static_palettes.get_colors(1)[0]
+        #     self.range = []
+        #     for i in range(len(self.domain)):
+        #         self.range.append(single_color)
+        #     # self.show_legend = False
+        #     self.color_with_semantics = False
+    def encoding_data(self, data_name: str=""):
+        single_color_flag = True
+        # 根据data_name可以是x_label, group_label
+        if data_name == 'x_label':
+            self.field = self.meta_data['x_label']
+            self.domain = list(set([item[self.field] for item in self.data]))
+            self.range = self.palette.get_colors(len(self.domain))
+            self.apply_color_rules()
+            single_color_flag = False
+            return single_color_flag
+        elif data_name == 'group_label':
+            if "group_label" in self.meta_data.keys():
+                self.field = self.meta_data['group_label']
+                self.domain = list(set([item[self.field] for item in self.data]))
+                self.range = self.palette.get_colors(len(self.domain))
+                self.apply_color_rules()
+                single_color_flag = False
+                return single_color_flag
+            else:
+                print("group_label not in meta_data")
+
+        # 如果不encode，则使用单色
+        self.field = self.meta_data['x_label']
+        self.domain = list(set([item[self.field] for item in self.data]))
+        single_color = self.palette.get_colors(1)[0]
+        self.range = []
+        for i in range(len(self.domain)):
+            self.range.append(single_color)
+        self.apply_color_rules()
+        single_color_flag = True
+        return single_color_flag
     def apply_color_rules(self):
         text = self.meta_data['title'] + " " + self.meta_data['caption']
         text_embedding = self.embedding_model.encode(text)

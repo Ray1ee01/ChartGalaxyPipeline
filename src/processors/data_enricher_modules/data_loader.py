@@ -121,4 +121,17 @@ class Chart2TableDataLoader(DataLoader):
         
         return data_table, raw_meta_data
         
-        
+class TestDataLoader(DataLoader):
+    def load(self, data_id: str) -> Any:
+        data_id = int(data_id)
+        self.root_dir = "D:/VIS/Infographics/data/chart_pipeline/src/data/chart_to_table/test_set"
+        # meta_info = json.load(open(os.path.join(self.root_dir, 'variation_examples.json')))
+        meta_info = json.load(open(os.path.join(self.root_dir, 'info_new.json')))
+        if str(data_id) not in meta_info:
+            raise ValueError(f"data_id {data_id} not found")
+        basic_chart_type = meta_info[str(data_id)]['basic_chart_type']
+        chart_type = meta_info[str(data_id)]['chart_type']
+        variation_info = meta_info[str(data_id)]['data']
+        data_json = json.load(open(os.path.join(self.root_dir, f"{data_id}.json")))
+
+        return data_json, basic_chart_type, chart_type, variation_info

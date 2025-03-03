@@ -32,13 +32,9 @@ class OverlayProcessor:
             }
             """
 
-            # 计算reference_element的bounding_box
             self.reference_element.bounding_box = self.reference_element.get_bounding_box()
-            # 计算target_element的bounding_box
             self.target_element.bounding_box = self.target_element.get_bounding_box()
             
-            print("self.reference_element.bounding_box: ", self.reference_element.bounding_box)
-            print("self.target_element.bounding_box: ", self.target_element.bounding_box)
 
             self.fit_in_size(self.config.get('orient', 'horizontal'), self.config.get('size_ratio', 1.0))
             

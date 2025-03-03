@@ -102,6 +102,7 @@
         ]
     },
     "chart_config": {
-        "valid_type": ["bar","line","area","scatter","pie"]
+        "valid_type": ["bar"]
     }
+    
 }

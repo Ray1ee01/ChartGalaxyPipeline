@@ -139,7 +139,14 @@ class TemplateFactory:
         # 添加方向约束
         layout_template.add_constraint(VerticalBarChartConstraint())
         
-        # 添加排序约束
+        sort_config = {}
+        if meta_data['orientation'] == 'horizontal':
+            sort_config['by'] = 'x'
+            sort_config['ascending'] = True
+        else:
+            sort_config['by'] = 'y'
+            sort_config['ascending'] = False
+        
         if sort_config:
             layout_template.add_constraint(
                 SortConstraint(
@@ -197,15 +204,20 @@ class TemplateFactory:
         # 添加方向约束
         layout_template.add_constraint(HorizontalBarChartConstraint())
         
-        # 添加排序约束
+        sort_config = {}
+        if meta_data['orientation'] == 'horizontal':
+            sort_config['by'] = 'x'
+            sort_config['ascending'] = True
+        else:
+            sort_config['by'] = 'y'
+            sort_config['ascending'] = False
         if sort_config:
             layout_template.add_constraint(
                 SortConstraint(
-                    sort_by=sort_config.get('by', 'x'),
+                    sort_by=sort_config.get('by', 'y'),
                     ascending=sort_config.get("ascending", True)
                 )
             )
-        
         if annotation_config:
             chart_template.has_annotation = annotation_config.get('has_annotation', False)
         
@@ -253,7 +265,14 @@ class TemplateFactory:
         else:
             layout_template.add_constraint(HorizontalBarChartConstraint())
         
-        # 添加排序约束
+        sort_config = {}
+        if meta_data['orientation'] == 'horizontal':
+            sort_config['by'] = 'x'
+            sort_config['ascending'] = True
+        else:
+            sort_config['by'] = 'y'
+            sort_config['ascending'] = False
+    
         if sort_config:
             layout_template.add_constraint(
                 SortConstraint(
@@ -293,7 +312,16 @@ class TemplateFactory:
     ):
         
         annotation_config = config.get('annotation', None)
-        sort_config = config.get('sort', None)
+        # sort_config = config.get('sort', None)
+        sort_config = {}
+        if meta_data['orientation'] == 'horizontal':
+            sort_config['by'] = 'x'
+            sort_config['ascending'] = True
+        else:
+            sort_config['by'] = 'y'
+            sort_config['ascending'] = False
+
+        print("sort_config: ", sort_config)
         axis_config = {
             "x_axis": config.get('x_axis', {}),
             "y_axis": config.get('y_axis', {})
@@ -302,9 +330,27 @@ class TemplateFactory:
         chart_template = StackedBarChartTemplate()
         chart_template.create_template(data, meta_data, color_template, config)
         layout_template = LayoutTemplate()
-        layout_template.add_constraint(StackedBarChartConstraint())
+        # layout_template.add_constraint(StackedBarChartConstraint())
+        if meta_data['orientation'] == 'horizontal':
+            layout_template.add_constraint(HorizontalBarChartConstraint())
+        else:
+            layout_template.add_constraint(VerticalBarChartConstraint())
+            
+        if annotation_config:
+            chart_template.has_annotation = annotation_config.get('has_annotation', False)
+        
         layout_template.root = layout_template.build_template_from_tree(layout_tree)
+        
+        if sort_config:
+            layout_template.add_constraint(
+                SortConstraint(
+                    sort_by=sort_config.get('by', 'y'),
+                    ascending=sort_config.get("ascending", True)
+                )
+            )
         layout_template.apply_constraints(chart_template)
+
+
         if axis_config:
             chart_template.x_axis.has_domain = axis_config.get('x_axis', {}).get('has_domain', True)
             chart_template.x_axis.has_tick = axis_config.get('x_axis', {}).get('has_tick', True)

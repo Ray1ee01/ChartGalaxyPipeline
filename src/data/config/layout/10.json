@@ -85,9 +85,7 @@
     },
     "chart_config": {
         "valid_type": [
-
-            "slope"
-
+            "pie"
         ]
     }
 }

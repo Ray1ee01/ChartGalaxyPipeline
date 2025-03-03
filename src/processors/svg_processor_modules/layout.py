@@ -67,7 +67,7 @@ class WidthHeightConstraint(SizeConstraint):
             # print("layout_element.tag: ", layout_element.tag)
             scale = layout_element.update_scale(scale_x, scale_y)
             layout_element._bounding_box = layout_element.get_bounding_box()
-            print("layout_element._bounding_box: ", layout_element._bounding_box)
+            # print("layout_element._bounding_box: ", layout_element._bounding_box)
             return scale
         else:
             return 1.0
@@ -260,29 +260,52 @@ class VerticalLayoutStrategy(LayoutStrategy):
                         adjust_x = gap_width
                         adjust_y = gap_height
                         print("adjust_x: ", adjust_x, "adjust_y: ", adjust_y)
-                        
                     layout_element._bounding_box.miny = old_layout_element_bounding_box_miny + best_move - adjust_y
                     layout_element._bounding_box.maxy = old_layout_element_bounding_box_maxy + best_move - adjust_y
             else:  # direction == 'down'
                 left = 0  # 最小移动距离
-                right = layout_element._bounding_box.maxy - reference_element._bounding_box.maxy  # 最大移动距离
-                right_mid = layout_element._bounding_box.miny - reference_element._bounding_box.miny
+                right = layout_element._bounding_box.miny - reference_element._bounding_box.miny  # 最大移动距离
+                right_mid = layout_element._bounding_box.maxy - reference_element._bounding_box.maxy
                 best_move = 0
                 old_layout_element_bounding_box_miny = layout_element._bounding_box.miny
                 old_layout_element_bounding_box_maxy = layout_element._bounding_box.maxy
                 
                 while left <= right:
                     mid = (left + right) / 2
+                    print("mid: ", mid)
                     if has_overlap(mid):
+                        print("has_overlap: ", has_overlap(mid))
                         right = mid - 0.1
                     else:
                         left = mid + 0.1
                         best_move = mid
+                print("best_move: ", best_move)
+                print("right_mid: ", right_mid)
+                old_best_move = best_move
+                adjust_x = 0
+                adjust_y = 0
                 if best_move > 0:
                     if best_move > right_mid:
                         best_move = (best_move+right_mid)/2
-                    layout_element._bounding_box.miny = old_layout_element_bounding_box_miny - best_move
+                        height = layout_element._bounding_box.height
+                        enlarge_height = abs(old_best_move-best_move)
+                        print("enlarge_height: ", enlarge_height)
+                        new_height = height + enlarge_height
+                        width = layout_element._bounding_box.width
+                        ratio = new_height/width
+                        new_width = ratio*width
+                        layout_element.attributes['width'] = new_width
+                        layout_element.attributes['height'] = new_height
+                        gap_width = new_width - width
+                        gap_height = new_height - height
+                        adjust_x = gap_width
+                        adjust_y = gap_height
+                        print("adjust_x: ", adjust_x, "adjust_y: ", adjust_y)
+                        
+                    layout_element._bounding_box.miny = old_layout_element_bounding_box_miny - best_move 
                     layout_element._bounding_box.maxy = old_layout_element_bounding_box_maxy - best_move
+                    layout_element._bounding_box.minx -= adjust_x
+                    layout_element._bounding_box.maxx -= adjust_x
 
 class HorizontalLayoutStrategy(LayoutStrategy):
     """水平布局策略"""
@@ -299,12 +322,12 @@ class HorizontalLayoutStrategy(LayoutStrategy):
         print("layout_element: ", layout_element.tag, layout_element.id)
         reference_element_bounding_box = reference_element._bounding_box
         layout_element_bounding_box = layout_element._bounding_box
-        print("reference_element_bounding_box: ", reference_element_bounding_box)
-        print("layout_element_bounding_box: ", layout_element_bounding_box)
-        print("direction: ", self.direction)
-        print("alignment: ", self.alignment)
-        print("padding: ", self.padding)
-        print("offset: ", self.offset)
+        # print("reference_element_bounding_box: ", reference_element_bounding_box)
+        # print("layout_element_bounding_box: ", layout_element_bounding_box)
+        # print("direction: ", self.direction)
+        # print("alignment: ", self.alignment)
+        # print("padding: ", self.padding)
+        # print("offset: ", self.offset)
         baseline_x = 0
         baseline_y = 0
         
@@ -348,7 +371,7 @@ class HorizontalLayoutStrategy(LayoutStrategy):
                 child._bounding_box.maxx += move_x
                 child._bounding_box.miny += move_y
                 child._bounding_box.maxy += move_y
-        print("layout_element._bounding_box: ", layout_element._bounding_box)
+        # print("layout_element._bounding_box: ", layout_element._bounding_box)
         if self.overlap and (reference_element.tag == 'g' or layout_element.tag == 'g'):
             reference_element_valid_bounding_boxes = []
             layout_element_valid_bounding_boxes = []

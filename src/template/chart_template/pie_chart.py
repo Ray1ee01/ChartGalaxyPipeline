@@ -55,6 +55,10 @@ class PieChartTemplate(ChartTemplate):
         mark_config = self.config.get('mark', {}).get('arc', {})
         self.mark = PieTemplate(color_template, mark_config)
         self.color_encoding = ColorEncodingTemplate(color_template, meta_data, data)
+        single_color_flag = self.color_encoding.encoding_data("x_label")
+        if single_color_flag:
+            self.mark.color = self.color_encoding.range[0]
+            self.color_encoding = None
 
         ### 设置坐标轴的占位代码
         # self.x_axis = AxisTemplate(color_template)

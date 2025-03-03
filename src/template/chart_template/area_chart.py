@@ -21,6 +21,10 @@ class AreaChartTemplate(ChartTemplate):
         self.mark = AreaTemplate(color_template)
         
         self.color_encoding = ColorEncodingTemplate(color_template, meta_data, data)
+        single_color_flag = self.color_encoding.encoding_data("group_label")
+        if single_color_flag:
+            self.mark.color = self.color_encoding.range[0]
+            self.color_encoding = None
 
         if meta_data is None:
             # 设置默认值
