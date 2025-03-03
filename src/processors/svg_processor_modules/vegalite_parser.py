@@ -21,6 +21,7 @@ class VegaLiteParser():
         self.mark_annotation_group = None
         self.x_axis_group = None
         self.y_axis_group = None
+        self.legend_group = None
         self.x_axis_label_group = None
         self.y_axis_label_group = None
         self.in_x_axis_flag = False
@@ -56,12 +57,20 @@ class VegaLiteParser():
         # 遍历Elements树，找到mark_group, mark_annotation_group, axis_group, x_axis_group, y_axis_group, x_axis_label_group, y_axis_label_group
         self._traverse_elements_tree(elements_tree)
         
+        
+        
         group_to_flatten = {
             # 'mark_group': self.mark_group,
             'mark_annotation_group': self.mark_annotation_group,
             'x_axis_group': self.x_axis_group,
             'y_axis_group': self.y_axis_group,
         }
+        
+        marks_minx = min([mark_group.get_bounding_box().minx for mark_group in self.all_mark_groups])
+        marks_maxx = max([mark_group.get_bounding_box().maxx for mark_group in self.all_mark_groups])
+        marks_miny = min([mark_group.get_bounding_box().miny for mark_group in self.all_mark_groups])
+        marks_maxy = max([mark_group.get_bounding_box().maxy for mark_group in self.all_mark_groups])
+        self._resize_legend_group(marks_maxy - marks_miny, marks_maxx - marks_minx)
         for i, mark_group in enumerate(self.all_mark_groups):
             group_to_flatten[f'mark_group_{i}'] = mark_group
         
@@ -245,7 +254,6 @@ class VegaLiteParser():
             for i, mark_group in enumerate(self.all_mark_groups):
                 for j, element in enumerate(mark_group.children):
                     element_with_data = find_element_with_aria_label(element)
-                        
                     # print("element: ", element.dump())
                     # image_url = image_urls[j]
                     # try:
@@ -293,7 +301,51 @@ class VegaLiteParser():
                     # overlay_processor.process_replace_single()
         
         
-        
+        if self.additional_configs['chart_template'].mark.type == 'circle' and self.additional_configs.get('image_overlay', {}).get('object', '') == 'mark':
+            config = self.additional_configs['image_overlay']
+            try:
+                orient = self.additional_configs['chart_template'].mark.orientation
+            except:
+                orient = 'horizontal'
+            config['orient'] = orient
+            old_boundingboxes = []
+            new_boundingboxes = []
+            for i, mark_group in enumerate(self.all_mark_groups):
+                for j, element in enumerate(mark_group.children):
+                    element_with_data = find_element_with_aria_label(element)
+                    # print("element: ", element.dump())
+                    # image_url = image_urls[j]
+                    try:
+                        image_url = self.value_icon_map['group'][self.mark_data_map[element]['group_value']]
+                    except:
+                        image_url = self.value_icon_map['x'][self.mark_data_map[element_with_data]['x_value']]
+                    base64_image = Image._getImageAsBase64(image_url)
+                    if config.get('crop', '') == 'circle':
+                        content_type = base64_image.split(';base64,')[0]
+                        base64 = base64_image.split(';base64,')[1]
+                        base64 = ImageProcessor().crop_by_circle(base64)
+                        base64_image = f"{content_type};base64,{base64}"
+                    image_element = Image(base64_image)
+                    image_element.attributes = {
+                        "xlink:href": f"data:{base64_image}"
+                    }
+                    # image_element._bounding_box = image_element.get_bounding_box()
+                    # mark_group.children[j] = image_element
+                    overlay_processor = OverlayProcessor(element_with_data, image_element, config)
+                    # 用overlay_processor.process()的返回值替换mark_group子树下的element_with_data
+                    old_boundingboxes.append(element_with_data.get_bounding_box())
+                    # new_element = overlay_processor.process()
+                    new_element = overlay_processor.process_replace_single()
+                    replace_corresponding_element(mark_group, element_with_data, new_element)
+                    new_boundingboxes.append(new_element.get_bounding_box())
+            # print("old_boundingboxes: ", old_boundingboxes)
+            # print("new_boundingboxes: ", new_boundingboxes)
+            if orient == 'horizontal' and config['direction'] == 'left' and config['side'] == 'outside':
+                flag_to_move = True
+                shift_x = new_boundingboxes[0].minx - old_boundingboxes[0].minx
+            if orient == 'vertical' and config['direction'] == 'bottom' and config['side'] == 'outside':
+                flag_to_move = True
+                shift_y = new_boundingboxes[0].maxy - old_boundingboxes[0].maxy
         
         # flattened_elements_tree = SVGTreeConverter.partial_flatten_tree(elements_tree, group_to_flatten)
         # print(elements_tree.dump())
@@ -854,7 +906,7 @@ class VegaLiteParser():
         # print("y_label: ", y_label)
         # print("group_label: ", group_label)
         
-        # print("aria_label: ", aria_label)
+        print("aria_label: ", aria_label)
         group_value = None
         if x_label in aria_label:
             x_value = aria_label.split(x_label)[1].split(';')[0].split(':')[1].strip()
@@ -894,3 +946,18 @@ class VegaLiteParser():
         if aria_label is not "":
             data = self.extract_data_from_aria_label(aria_label)
             self.mark_data_map[element] = data
+    
+    
+    def _resize_legend_group(self, max_height, max_width):
+        if self.legend_group is not None:
+            print("max_height: ", max_height)
+            print("max_width: ", max_width)
+            self.legend_group._bounding_box = self.legend_group.get_bounding_box()
+            print("legend_group._bounding_box: ", self.legend_group._bounding_box.dump())
+            bounding_box = self.legend_group._bounding_box
+            height_ratio = max_height / bounding_box.height
+            width_ratio = max_width / bounding_box.width
+            # 取最小的一个
+            ratio = min(height_ratio, width_ratio)
+            if ratio < 1:
+                self.legend_group.update_scale(ratio, ratio)

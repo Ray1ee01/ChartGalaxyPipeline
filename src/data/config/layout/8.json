@@ -13,8 +13,8 @@
         },
         "sizeConstraint": {
             "reference": "chart",
-            "max_width": 1.1,
-            "min_width": 0.85
+            "max_width": 1.0,
+            "min_width": 0.95
         },
         "children": [
             {
@@ -85,7 +85,7 @@
     },
     "chart_config": {
         "valid_type": [
-            "area"
+            "scatter"
         ],
         "orientation": "vertical",
         "sort": {

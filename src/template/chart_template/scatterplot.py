@@ -11,7 +11,7 @@ class ScatterPlotTemplate(ChartTemplate):
         self.chart_type = "scatterplot"
         self.sort = None
     
-    def create_template(self, data: list, meta_data: dict=None, color_template: ColorDesign=None):
+    def create_template(self, data: list, meta_data: dict=None, color_template: ColorDesign=None, config: dict=None):
         self.x_axis = AxisTemplate(color_template)
         # self.x_axis.field_type = "quantitative"
         self.x_axis.field_type = None
@@ -67,6 +67,14 @@ class ScatterPlotTemplate(ChartTemplate):
                 }
             }
             specification["encoding"]["shape"] = shape_encoding
+            specification["encoding"]["x"]["scale"] = {
+                "zero": False
+            }
+            specification["encoding"]["y"]["scale"] = {
+                "zero": False
+            }
+        specification["mark"]["size"] = self.mark.size    
+            
         return specification
     
     def dump(self):

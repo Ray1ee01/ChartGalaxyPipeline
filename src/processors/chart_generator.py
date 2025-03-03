@@ -135,6 +135,8 @@ class VegaLiteGenerator(ChartGenerator):
             if self.template.x_axis.has_grid is not None:
                 axis_config["grid"] = self.template.x_axis.has_grid
                 
+            axis_config["labelAngle"] = 0
+                
                 
             encoding["x"] = x_encoding
 
@@ -192,6 +194,8 @@ class VegaLiteGenerator(ChartGenerator):
                 
             if self.template.y_axis.has_grid is not None:
                 axis_config["grid"] = self.template.y_axis.has_grid
+                
+            axis_config["labelAngle"] = 0
                 
             encoding["y"] = y_encoding
 

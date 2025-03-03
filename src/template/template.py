@@ -477,8 +477,16 @@ class TemplateFactory:
     ):
 
         """创建散点图模板"""
+        
+        annotation_config = config.get('annotation', None)
+        sort_config = config.get('sort', None)
+        axis_config = {
+            "x_axis": config.get('x_axis', {}),
+            "y_axis": config.get('y_axis', {})
+        }
+        layout_tree = config.get('layout', {}).get('layout_tree', None)
         chart_template = ScatterPlotTemplate()
-        chart_template.create_template(data, meta_data, color_template)
+        chart_template.create_template(data, meta_data, color_template, config)
         layout_template = LayoutTemplate()
         
         # 添加方向约束
@@ -509,6 +517,10 @@ class TemplateFactory:
             chart_template.y_axis.has_domain = axis_config.get('y_axis', {}).get('has_domain', True)
             chart_template.y_axis.has_tick = axis_config.get('y_axis', {}).get('has_tick', True)
             chart_template.y_axis.has_label = axis_config.get('y_axis', {}).get('has_label', True)
+            chart_template.y_axis.has_title = axis_config.get('y_axis', {}).get('has_title', True)
+            chart_template.y_axis.has_grid = axis_config.get('y_axis', {}).get('has_grid', True)
+            chart_template.x_axis.has_title = axis_config.get('x_axis', {}).get('has_title', True)
+            chart_template.x_axis.has_grid = axis_config.get('x_axis', {}).get('has_grid', True)
         
         return chart_template, layout_template
     

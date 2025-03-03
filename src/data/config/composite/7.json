@@ -11,5 +11,6 @@
     },
     "icon": 0,
     "chart_size": 0,
-    "annotation": 0
+    "annotation": 0,
+    "image_overlay":12
 }

@@ -5,14 +5,14 @@ import random
 class PointTemplate(MarkTemplate):
     def __init__(self, color_template: ColorDesign=None):
         super().__init__(color_template)
-        self.type = "point"
+        self.type = "circle"
         
         self.height = None # 占位
         self.width = None # 占位
         
         self.shape = None  # 点的形状（arrow, circle, square等）
         self.angle = None
-        self.size = None  # 点的大小
+        self.size = 200
         self.stroke_width = None  # 描边宽度
         
         # 样式属性

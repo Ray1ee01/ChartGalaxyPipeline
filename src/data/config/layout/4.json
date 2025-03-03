@@ -110,7 +110,7 @@
         ]
     },
     "chart_config": {
-        "valid_type": ["bar"],
+        "valid_type": ["bar", "groupbar"],
         "orientation": "horizontal"
     }
 }

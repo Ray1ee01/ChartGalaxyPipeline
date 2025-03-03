@@ -93,11 +93,12 @@ def main():
         if chart_type not in chart_type_list:
             print(f'{chart_type} is not in chart_type_list')
             continue
-        output_dir = os.path.join(os.path.dirname(__file__),'src', f'output_{date}', chart_type)
+        output_dir = os.path.join(os.path.dirname(__file__),'src', f'output_{date}_1', chart_type)
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
+        data_range = np.arange(0,1)
         # data_range = np.arange(0, data_sizes[chart_type])
-        data_range = np.arange(6,7)
+        # data_range = np.arange(6,7)
         # data_range = np.arange(39,40)
         # data_range = np.arange(197,198)
         # data_range = np.arange(164,165)

@@ -79,7 +79,7 @@
         ]
     },
     "chart_config": {
-        "valid_type": ["groupbar"],
+        "valid_type": ["groupbar", "bar"],
         "orientation": "vertical"
     }
 }
