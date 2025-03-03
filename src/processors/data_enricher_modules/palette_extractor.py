@@ -2,10 +2,10 @@ import os
 import shutil
 from ..style_design_modules.infographic_retrieve import InfographicRetriever
 from ..style_design_modules.infographic_palette import get_palette
-
+from config import sentence_transformer_path as model_path
 
 library_path = './src/processors/style_design_modules/all_seeds.json'
-model_path = 'D:/VIS/Infographics/data/fa97f6e7cb1a59073dff9e6b13e2715cf7475ac9'
+#model_path = 'D:/VIS/Infographics/data/fa97f6e7cb1a59073dff9e6b13e2715cf7475ac9'
 
 infographic_retriever = InfographicRetriever(library_path, model_path)
 

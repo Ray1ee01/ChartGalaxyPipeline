@@ -8,7 +8,7 @@ from sentence_transformers import SentenceTransformer, util
 from ...utils.color_statics import StaticPalettes
 
 # model_path = "/data1/jiashu/models/models--sentence-transformers--all-MiniLM-L6-v2/snapshots/fa97f6e7cb1a59073dff9e6b13e2715cf7475ac9"
-model_path = "D:/VIS/Infographics/data/fa97f6e7cb1a59073dff9e6b13e2715cf7475ac9"
+from config import sentence_transformer_path as model_path
 
 class ColorTemplate:
     def __init__(self):
@@ -46,20 +46,20 @@ class AxisTemplate:
         self.domain_color_style = ColorTemplate()
         self.domain_color_style.color = stroke_color
         self.domain_stroke_style = StrokeTemplate()
-        
+
         ## label 样式
         self.has_label = True
         self.label_color_style = ColorTemplate()
         self.label_color_style.color = "#000d2a"
         # self.label_font_style = FontTemplate()
         self.label_font_style = LabelFontTemplate()
-        
+
         ## tick 样式
         self.has_tick = True
         self.tick_color_style = ColorTemplate()
         self.tick_color_style.color = stroke_color
         self.tick_stroke_style = StrokeTemplate()
-        
+
         ## title 样式
         self.has_title = True
         self.title_text = None
@@ -89,7 +89,7 @@ class PolarSetting():
     def __init__(self):
         self.inner_radius = None
         self.outer_radius = None
-    
+
         # randomly inner_radius has 1/3 probability to be 0 and 2/3 probability to be a random value between 0 and 0.5
         if random.random() < 1/3:
             self.inner_radius = "0%"
@@ -101,8 +101,8 @@ class PolarSetting():
             "inner_radius": self.inner_radius,
             "outer_radius": self.outer_radius
         }
-        
-        
+
+
 
 class AngleAxisTemplate(AxisTemplate):
     def __init__(self, color_template: ColorDesign=None):
@@ -110,13 +110,13 @@ class AngleAxisTemplate(AxisTemplate):
         self.start_angle = 90
         self.end_angle = None
         self.clockwise = True
-        
-        
+
+
 class RadiusAxisTemplate(AxisTemplate):
     def __init__(self, color_template: ColorDesign=None):
         super().__init__(color_template)
-        
-        
+
+
 class ColorEncodingTemplate:
     def __init__(self, color_template: ColorDesign=None, meta_data: dict=None, data: list=None):
         self.field = None
@@ -200,8 +200,8 @@ class ColorEncodingTemplate:
         self.domain_embeddings = self.embedding_model.encode(self.domain)
         # 计算text_embedding和self.domain的相似度
         similarity = util.cos_sim(text_embedding, self.domain_embeddings).flatten()
-        
-        
+
+
         # 按相似度排序
         sorted_domain = sorted(self.domain, key=lambda x: similarity[self.domain.index(x)], reverse=True)
         sorted_colors = self.color_template.rank_color_by_contrast(self.range)
@@ -209,7 +209,7 @@ class ColorEncodingTemplate:
         self.domain = sorted_domain
         print("sorted_domain: ", sorted_domain)
         print("sorted_colors: ", sorted_colors)
-    
+
     def find_color_by_semantics(self, text):
         text_embedding = self.embedding_model.encode(text)
         # 计算text_embedding和self.domain的相似度
@@ -218,7 +218,7 @@ class ColorEncodingTemplate:
         sorted_domain = sorted(self.domain, key=lambda x: similarity[self.domain.index(x)], reverse=True)
         # 返回相似度最高的domain对应的color
         return self.range[self.domain.index(sorted_domain[0])]
-    
+
     def dump(self):
         return {
             "field": self.field,
@@ -265,7 +265,7 @@ class ShapeEncodingTemplate:
             #         seed_mark = 1
             #         colors = self.color_template.get_color('marks', len(self.domain), seed_mark=seed_mark)
             #         self.range = colors
-        
+
     def dump(self):
         if self.field is None:
             return None
