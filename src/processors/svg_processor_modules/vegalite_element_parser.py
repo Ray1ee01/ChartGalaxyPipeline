@@ -96,7 +96,8 @@ class VegaLiteElementParser:
     def _handle_mark(self, element):
         """处理 mark 元素"""
         # 添加chart_type属性
-        self.chart_type = element.attributes.get('aria-roledescription', '').lower()
+        # self.chart_type = element.attributes.get('aria-roledescription', '').lower()
+        self.chart_type = self.chart_template.chart_type
         print("self.chart_type: ", self.chart_type)
         if "bar" in self.chart_type:
             mark_group = self._handle_bar(element)

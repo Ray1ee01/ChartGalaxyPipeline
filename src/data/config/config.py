@@ -17,8 +17,9 @@ chart_type_mark_mapping = {
 }
 
 def update_configs(configs, meta_data):
+    # 先按只有label处理，所以如果yes就是只有label，如果是no就是什么都没有
     if meta_data["axes"]["x_axis"] == "yes":
-        value = 0
+        value = 27
         x_axis_config_path = os.path.join(config_root, "axis", f"{value}.json")
         with open(x_axis_config_path, 'r') as f:
             x_axis_config = json.load(f)

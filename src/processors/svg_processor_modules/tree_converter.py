@@ -197,7 +197,7 @@ class SVGTreeConverter:
         # 如果是g标签且只有transform属性或者没有属性
         if (tag == 'g') and (len(node.get('attributes', {})) == 1 and 'transform' in node.get('attributes', {})) or (len(node.get('attributes', {})) == 0):
             res_list = []
-            print("node: ", node)
+            # print("node: ", node)
             for child in node['children']:
                 # 合并属性
                 child_attrs = child.get('attributes', {})
@@ -230,9 +230,7 @@ class SVGTreeConverter:
                 # 更新子节点属性并返回
                 child['attributes'] = merged_attrs
                 res_list.append(child)
-            print("res_list: ", res_list)
             return res_list
-        print("return node: ", node)
         return [node]
     
     @staticmethod
@@ -245,7 +243,7 @@ class SVGTreeConverter:
         Returns:
             转换后的Element节点
         """
-        print("node: ", node)
+        # print("node: ", node)
         tag = node.get('tag', '').lower()
         attrs = node.get('attributes', {})
         

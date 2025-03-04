@@ -232,7 +232,7 @@ class VegaLiteGenerator(ChartGenerator):
             # color_encoding["legend"] = {"title": None, "orient": legend_config.get('orient', "top")}
             # if legend_config.get('show_legend', True) is False:
             #     color_encoding["legend"] = None
-            # encoding["color"] = color_encoding
+            encoding["color"] = color_encoding
         
         # # 如果是饼图类型，添加角度编码
         # if self.template.mark.type == "arc":
