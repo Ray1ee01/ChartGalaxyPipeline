@@ -68,7 +68,8 @@ class ScatterPlotTemplate(ChartTemplate):
                 "scale": {
                     "domain": self.shape_encoding.domain,
                     "range": self.shape_encoding.range
-                }
+                },
+                "legend": None
             }
             specification["encoding"]["shape"] = shape_encoding
             specification["encoding"]["x"]["scale"] = {
