@@ -11,11 +11,6 @@
             "overlap": false,
             "alignment": ["left", "left"]
         },
-        "sizeConstraint": {
-            "reference": "group_2",
-            "max_width": 1.0,
-            "min_width": 0.8
-        },
         "children": [
             {
                 "tag": "g",
@@ -79,7 +74,11 @@
         ]
     },
     "chart_config": {
-        "valid_type": ["groupbar", "bar"],
-        "orientation": "vertical"
+        "valid_type": ["groupbar"],
+        "orientation": "vertical",
+        "sort": {
+            "ascending": true,
+            "by": "y"
+        }
     }
 }

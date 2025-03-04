@@ -11,6 +11,8 @@ const getSpec = require('./vega_spec');
 async function main() {
   // 读取输入数据
   const inputFile = process.argv[2];
+  // const inputJson = JSON.parse(fs.readFileSync(inputFile, 'utf8'));
+  //使用utf-8读取文件
   const inputJson = JSON.parse(fs.readFileSync(inputFile, 'utf8'));
   const inputSpec = inputJson.spec;
   // const inputData = inputJson.data;
@@ -32,7 +34,7 @@ async function main() {
     }
   }
   catch(e){
-    // console.log(e);
+    console.error(e);
   }
 
   // console.log(JSON.stringify(vegaSpec, null, 2));
@@ -40,6 +42,7 @@ async function main() {
   const view = new vega.View(vega.parse(vegaSpec))
   .renderer('svg')
   .initialize();  // 使用无头渲染器
+  // console.log("view: ", view)
 
   // 导出SVG
   try {

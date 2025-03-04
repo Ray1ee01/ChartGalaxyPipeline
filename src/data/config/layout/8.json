@@ -13,8 +13,8 @@
         },
         "sizeConstraint": {
             "reference": "chart",
-            "max_width": 1.0,
-            "min_width": 0.95
+            "max_width": 1.1,
+            "min_width": 0.85
         },
         "children": [
             {
@@ -84,12 +84,6 @@
         ]
     },
     "chart_config": {
-        "valid_type": [
-            "scatter"
-        ],
-        "orientation": "vertical",
-        "sort": {
-            "ascending": true
-        }
+        "valid_type": ["stackedbar"]
     }
 }

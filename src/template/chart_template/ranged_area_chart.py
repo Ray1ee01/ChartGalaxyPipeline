@@ -45,7 +45,7 @@ class RangedAreaChartTemplate(AreaChartTemplate):
                 'y_data': y_val,  # 上边界
                 'y2_data': y_val * random_factors[i]  # 下边界
             })
-
+        meta_data['y2_label'] = 'y2_data'
         
         # 配置mark的属性
         self.mark = AreaTemplate(color_template)

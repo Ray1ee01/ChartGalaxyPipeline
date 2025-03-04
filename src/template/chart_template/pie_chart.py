@@ -15,25 +15,30 @@ class PieChartTemplate(ChartTemplate):
         self.y_axis: Optional[AxisTemplate] = None # 占位
         self.color_encoding: Optional[ColorEncodingTemplate] = None
 
+    def update_specification(self, specification):
+        return specification
+
     def create_template(self, data: list, meta_data: dict, color_template: ColorDesign = None, config: dict = None):
         """
         创建饼图模板的核心方法
         """
-        # print("x_type: ", meta_data.get('x_type'))
-        # print("y_type: ", meta_data.get('y_type'))
+        self.config = config
+
         # 验证必要的字段
-        if meta_data.get('x_type') == 'categorical':
-            value_field = meta_data.get('y_label')
-            category_field = meta_data.get('x_label')
-        elif meta_data.get('y_type') == 'categorical':
-            value_field = meta_data.get('x_label')
-            category_field = meta_data.get('y_label')
-        else:
-            category_field = meta_data.get('x_label')
-            value_field = meta_data.get('y_label')
-        
-        if not value_field or not category_field:
-            raise ValueError("Both value_field and category_field are required for pie chart")
+        # if meta_data.get('x_type') == 'categorical':
+        #     value_field = meta_data.get('y_label')
+        #     category_field = meta_data.get('x_label')
+        # elif meta_data.get('y_type') == 'categorical':
+        #     value_field = meta_data.get('x_label')
+        #     category_field = meta_data.get('y_label')
+        # else:
+        #     category_field = meta_data.get('x_label')
+        #     value_field = meta_data.get('y_label')
+        print("meta_data: ", meta_data)
+        value_field = meta_data.get('y_label')
+        category_field = meta_data.get('x_label')
+        # if not value_field or not category_field:
+        #     raise ValueError("Both value_field and category_field are required for pie chart")
 
         # 设置theta编码
         self.theta={
@@ -47,8 +52,13 @@ class PieChartTemplate(ChartTemplate):
             "type": "nominal"
         }
 
-        self.mark = PieTemplate(color_template)
+        mark_config = self.config.get('mark', {}).get('arc', {})
+        self.mark = PieTemplate(color_template, mark_config)
         self.color_encoding = ColorEncodingTemplate(color_template, meta_data, data)
+        single_color_flag = self.color_encoding.encoding_data("x_label")
+        if single_color_flag:
+            self.mark.color = self.color_encoding.range[0]
+            self.color_encoding = None
 
         ### 设置坐标轴的占位代码
         # self.x_axis = AxisTemplate(color_template)
@@ -74,11 +84,11 @@ class MultiLevelPieChartTemplate(PieChartTemplate):
         super().__init__(color_template)
         self.chart_type = "multi_level_pie"
 
-    def create_template(self, data: list, meta_data: dict, color_template: ColorDesign = None):
+    def create_template(self, data: list, meta_data: dict, color_template: ColorDesign = None, config: dict = None):
         """
         创建多层饼图模板的核心方法
         """
-        super().create_template(data, meta_data, color_template)
+        super().create_template(data, meta_data, color_template, config)
         
 
     def dump(self):
@@ -112,7 +122,7 @@ class MultiLevelPieChartTemplate(PieChartTemplate):
         self.echart_option["series"].append({})
         self.echart_option["series"][0].update({
             "type": "pie",
-            "radius": ["0%", "40%"],  # 设置内外半径
+            "radius": ["0%", f"\"{self.mark.innerRadius}%\""],  # 设置内外半径
             "center": ["50%", "50%"],  # 设置圆心位置
             "avoidLabelOverlap": True,
             "itemStyle": {
@@ -142,7 +152,7 @@ class MultiLevelPieChartTemplate(PieChartTemplate):
 
         self.echart_option["series"][1].update({
             "type": "pie",
-            "radius": ["40%", "80%"],  # 设置内外半径
+            "radius": [f"\"{self.mark.innerRadius}%\"", f"\"{self.mark.radius}%\""],  # 设置内外半径
             "center": ["50%", "50%"],  # 设置圆心位置
             "avoidLabelOverlap": True,
             "itemStyle": {
@@ -152,7 +162,8 @@ class MultiLevelPieChartTemplate(PieChartTemplate):
             },
             "label": {
                 "show": True,
-                "formatter": "{b}:\n{d}%"  # 显示名称和百分比
+                "formatter": "{b}:\n{d}%",  # 显示名称和百分比
+                "position": "inside"
             },
             "emphasis": {
                 "itemStyle": {

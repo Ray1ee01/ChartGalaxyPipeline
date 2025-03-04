@@ -7,7 +7,8 @@ import copy
 from sentence_transformers import SentenceTransformer, util
 from ...utils.color_statics import StaticPalettes
 
-model_path = "/data1/jiashu/models/models--sentence-transformers--all-MiniLM-L6-v2/snapshots/fa97f6e7cb1a59073dff9e6b13e2715cf7475ac9"
+# model_path = "/data1/jiashu/models/models--sentence-transformers--all-MiniLM-L6-v2/snapshots/fa97f6e7cb1a59073dff9e6b13e2715cf7475ac9"
+from config import sentence_transformer_path as model_path
 
 class ColorTemplate:
     def __init__(self):
@@ -45,20 +46,20 @@ class AxisTemplate:
         self.domain_color_style = ColorTemplate()
         self.domain_color_style.color = stroke_color
         self.domain_stroke_style = StrokeTemplate()
-        
+
         ## label 样式
         self.has_label = True
         self.label_color_style = ColorTemplate()
         self.label_color_style.color = "#000d2a"
         # self.label_font_style = FontTemplate()
         self.label_font_style = LabelFontTemplate()
-        
+
         ## tick 样式
         self.has_tick = True
         self.tick_color_style = ColorTemplate()
         self.tick_color_style.color = stroke_color
         self.tick_stroke_style = StrokeTemplate()
-        
+
         ## title 样式
         self.has_title = True
         self.title_text = None
@@ -88,7 +89,7 @@ class PolarSetting():
     def __init__(self):
         self.inner_radius = None
         self.outer_radius = None
-    
+
         # randomly inner_radius has 1/3 probability to be 0 and 2/3 probability to be a random value between 0 and 0.5
         if random.random() < 1/3:
             self.inner_radius = "0%"
@@ -100,8 +101,8 @@ class PolarSetting():
             "inner_radius": self.inner_radius,
             "outer_radius": self.outer_radius
         }
-        
-        
+
+
 
 class AngleAxisTemplate(AxisTemplate):
     def __init__(self, color_template: ColorDesign=None):
@@ -109,62 +110,88 @@ class AngleAxisTemplate(AxisTemplate):
         self.start_angle = 90
         self.end_angle = None
         self.clockwise = True
-        
-        
+
+
 class RadiusAxisTemplate(AxisTemplate):
     def __init__(self, color_template: ColorDesign=None):
         super().__init__(color_template)
-        
-        
+
+
 class ColorEncodingTemplate:
     def __init__(self, color_template: ColorDesign=None, meta_data: dict=None, data: list=None):
         self.field = None
         self.field_type = None
         self.domain = None
         self.range = None
+        self.data = data
         self.meta_data = meta_data
         self.color_template = color_template
         self.show_legend = True
         self.embedding_model = SentenceTransformer(model_path)
         self.color_with_semantics = False
-        if 'group' in data[0].keys():
-            print("color encoding template: ", data[0])
-            self.field = 'group'
-            self.field_type = 'nominal'
-            # domain是data列表中每个item的['group']的值的unique值
-            self.domain = list(set([str(item['group']) for item in data]))
-            # static_palettes = StaticPalettes()
+        self.palette = StaticPalettes()
+
+        # if 'group_label' in meta_data.keys():
+        #     print("color encoding template: ", data[0])
+        #     self.field = meta_data['group_label']
+        #     self.field_type = 'nominal'
+        #     # domain是data列表中每个item的['group_label']的值的unique值
+        #     self.domain = list(set([str(item[self.field]) for item in data]))
             # self.range = static_palettes.get_colors(len(self.domain))
             # self.range = static_palettes.get_colors_from_cmap('Pastel1', len(self.domain))
-            colors = self.color_template.get_color('marks', number = 1, group = len(self.domain), seed_mark=1)
-            print("pool: ", self.color_template.pool)
-            print("colors: ", colors)
-            self.range = []
-            for i in range(1, len(self.domain)+1):
-                self.range.append(colors['group'+str(i)][0])
-            print("range: ", self.range)
-            self.apply_color_rules()
-            self.color_with_semantics = True
+            # colors = self.color_template.get_color('marks', number = 1, group = len(self.domain), seed_mark=1)
+            # print("pool: ", self.color_template.pool)
+            # print("colors: ", colors)
+            # self.range = []
+            # for i in range(1, len(self.domain)+1):
+            #     self.range.append(colors['group'+str(i)][0])
+            # print("range: ", self.range)
+            # self.apply_color_rules()
+            # self.color_with_semantics = True
             # self.show_legend = True
-        elif self.color_template is not None:
-            self.domain = list(set([item['x_data'] for item in data]))
-            self.field = meta_data['x_label']
-            single_color = self.color_template.get_color('marks', number = 1, group = 1, seed_mark=1)['group1'][0]
-            print("single_color: ", single_color)
-            # self.range = [single_color] * len(self.domain)
-            self.range = []
-            for i in range(len(self.domain)):
-                self.range.append(single_color)
-            # self.show_legend = False
-            self.color_with_semantics = False
-        # elif self.color_template is not None and not self.color_template.mode == 'monochromatic':
-        #     if data is not None:
-        #         self.domain = list(set([row['x_data'] for row in data]))
-        #         self.field = meta_data['x_label']
-        #         seed_mark = 1
-        #         colors = self.color_template.get_color('marks', len(self.domain), seed_mark=seed_mark)
-        #         self.range = colors
-        #         self.show_legend = True
+        # elif self.color_template is not None:
+        #     self.domain = list(set([item[meta_data['x_label']] for item in data]))
+        #     self.field = meta_data['x_label']
+        #     # single_color = self.color_template.get_color('marks', number = 1, group = 1, seed_mark=1)['group1'][0]
+        #     # print("single_color: ", single_color)
+        #     static_palettes = StaticPalettes()
+        #     single_color = static_palettes.get_colors(1)[0]
+        #     self.range = []
+        #     for i in range(len(self.domain)):
+        #         self.range.append(single_color)
+        #     # self.show_legend = False
+        #     self.color_with_semantics = False
+    def encoding_data(self, data_name: str=""):
+        single_color_flag = True
+        # 根据data_name可以是x_label, group_label
+        if data_name == 'x_label':
+            self.field = self.meta_data['x_label']
+            self.domain = list(set([item[self.field] for item in self.data]))
+            self.range = self.palette.get_colors(len(self.domain))
+            self.apply_color_rules()
+            single_color_flag = False
+            return single_color_flag
+        elif data_name == 'group_label':
+            if "group_label" in self.meta_data.keys():
+                self.field = self.meta_data['group_label']
+                self.domain = list(set([item[self.field] for item in self.data]))
+                self.range = self.palette.get_colors(len(self.domain))
+                self.apply_color_rules()
+                single_color_flag = False
+                return single_color_flag
+            else:
+                print("group_label not in meta_data")
+
+        # 如果不encode，则使用单色
+        self.field = self.meta_data['x_label']
+        self.domain = list(set([item[self.field] for item in self.data]))
+        single_color = self.palette.get_colors(1)[0]
+        self.range = []
+        for i in range(len(self.domain)):
+            self.range.append(single_color)
+        self.apply_color_rules()
+        single_color_flag = True
+        return single_color_flag
     def apply_color_rules(self):
         text = self.meta_data['title'] + " " + self.meta_data['caption']
         text_embedding = self.embedding_model.encode(text)
@@ -173,8 +200,8 @@ class ColorEncodingTemplate:
         self.domain_embeddings = self.embedding_model.encode(self.domain)
         # 计算text_embedding和self.domain的相似度
         similarity = util.cos_sim(text_embedding, self.domain_embeddings).flatten()
-        
-        
+
+
         # 按相似度排序
         sorted_domain = sorted(self.domain, key=lambda x: similarity[self.domain.index(x)], reverse=True)
         sorted_colors = self.color_template.rank_color_by_contrast(self.range)
@@ -182,7 +209,7 @@ class ColorEncodingTemplate:
         self.domain = sorted_domain
         print("sorted_domain: ", sorted_domain)
         print("sorted_colors: ", sorted_colors)
-    
+
     def find_color_by_semantics(self, text):
         text_embedding = self.embedding_model.encode(text)
         # 计算text_embedding和self.domain的相似度
@@ -191,7 +218,7 @@ class ColorEncodingTemplate:
         sorted_domain = sorted(self.domain, key=lambda x: similarity[self.domain.index(x)], reverse=True)
         # 返回相似度最高的domain对应的color
         return self.range[self.domain.index(sorted_domain[0])]
-    
+
     def dump(self):
         return {
             "field": self.field,
@@ -238,7 +265,7 @@ class ShapeEncodingTemplate:
             #         seed_mark = 1
             #         colors = self.color_template.get_color('marks', len(self.domain), seed_mark=seed_mark)
             #         self.range = colors
-        
+
     def dump(self):
         if self.field is None:
             return None

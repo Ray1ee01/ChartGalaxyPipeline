@@ -9,6 +9,7 @@ from .layout import *
 from openai import OpenAI
 from ...template.template import *
 import time
+from ...processors.image_processor import ImageProcessor
 
 default_topic_icon_config = {
     "iconUrl": "/data1/liduan/generation/chart/chart_pipeline/testicon/robotarm2.png"
@@ -481,7 +482,7 @@ class LayoutProcessor:
             line_groups.append(line_group)
             max_width = max(max_width, line_width)
 
-        self.subtitle_config['max_width'] = max_width
+        # self.subtitle_config['max_width'] = max_width
         element.children = line_groups
         
         # 应用布局 - 现在是对line groups应用
@@ -648,6 +649,13 @@ class LayoutProcessor:
             return None
         
         image_data = Image._getImageAsBase64(topic_icon_config['iconUrl']['file_path'])
+        image_processor = ImageProcessor()
+        # if config.get('crop', '') == 'circle':
+        content_type = image_data.split(';base64,')[0]
+        base64 = image_data.split(';base64,')[1]
+        base64 = image_processor.crop_by_circle(base64)
+        base64 = image_processor.apply_alpha(base64, 0.75)
+        image_data = f"{content_type};base64,{base64}"
         if not image_data:
             return None
         

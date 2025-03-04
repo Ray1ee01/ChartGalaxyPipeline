@@ -6,6 +6,7 @@ import json
 import pandas as pd
 import numpy as np
 import re
+from config import chart_data_path as root_dir
 
 # cache_dir = '/data1/liduan/generation/chart/chart_pipeline/src/cache'
 
@@ -76,14 +77,15 @@ class VizNetDataLoader(DataLoader):
         raw_meta_data['url'] = raw_data['url']
         raw_meta_data['textBeforeTable'] = raw_data['textBeforeTable']
         raw_meta_data['textAfterTable'] = raw_data['textAfterTable']
-        
+
         return df, raw_meta_data
 
 
 
 class Chart2TableDataLoader(DataLoader):
     def __init__(self):
-        self.root_dir = '/data1/liduan/generation/chart/chart_pipeline/src/data/chart_to_table'
+        # self.root_dir = '/data1/liduan/generation/chart/chart_pipeline/src/data/chart_to_table'
+        self.root_dir = root_dir#"D:/VIS/Infographics/data/chart_pipeline/src/data/chart_to_table"
 
     def load(self, data_id: str) -> Any:
         data_type = data_id.split('_')[0]
@@ -100,24 +102,37 @@ class Chart2TableDataLoader(DataLoader):
                     cur_id += 1
             with open(id_map_path, 'w') as f:
                 json.dump(id_map, f)
-                
+
         else:
             with open(id_map_path, 'r') as f:
                 id_map = json.load(f)
         real_id = id_map[str(data_id)]
         meta_data_path = os.path.join(dataset_dir, 'metadata.json')
-        with open(meta_data_path, 'r') as f:
+        with open(meta_data_path, 'r', encoding='utf-8') as f:
             loaded_meta_data = json.load(f)
-        
+
         file_name = real_id.split('.')[0]
         data_table = pd.read_csv(os.path.join(dataset_dir, real_id))
         # print(data_table.head())
-        
-        
+
+
         raw_meta_data = {
             'title': loaded_meta_data[file_name]['title'],
         }
-        
+
         return data_table, raw_meta_data
         
-        
+class TestDataLoader(DataLoader):
+    def load(self, data_id: str) -> Any:
+        data_id = int(data_id)
+        self.root_dir = root_dir
+        # meta_info = json.load(open(os.path.join(self.root_dir, 'variation_examples.json')))
+        meta_info = json.load(open(os.path.join(self.root_dir, 'info_new.json')))
+        if str(data_id) not in meta_info:
+            raise ValueError(f"data_id {data_id} not found")
+        basic_chart_type = meta_info[str(data_id)]['basic_chart_type']
+        chart_type = meta_info[str(data_id)]['chart_type']
+        variation_info = meta_info[str(data_id)]['data']
+        data_json = json.load(open(os.path.join(self.root_dir, f"{data_id}.json")))
+
+        return data_json, basic_chart_type, chart_type, variation_info

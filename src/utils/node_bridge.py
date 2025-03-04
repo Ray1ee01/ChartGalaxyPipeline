@@ -10,16 +10,15 @@ class NodeBridge:
         # 将数据写入临时JSON文件
         tmp_input = f'temp_input_{random.randint(0, 1000000)}.json'
         
-        with open(tmp_input, 'w') as f:
+        with open(tmp_input, 'w', encoding='utf-8') as f:
             json.dump(data, f)
         # 执行Node.js脚本
         result = subprocess.run([
             'node', script_path, tmp_input
-        ], capture_output=True, text=True)
+        ], capture_output=True, encoding='utf-8')
         # 清理临时文件
         os.remove(tmp_input)
         
-        # print(result.stdout)
 
         if result.returncode != 0:
             raise Exception(f"Node.js执行错误: {result.stderr}")

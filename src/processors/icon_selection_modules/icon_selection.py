@@ -7,8 +7,8 @@ from scipy.spatial import KDTree
 from .search_specific_icons import FlagIcons, LogoIcons
 from ...utils.global_state import *
 
-raw_images_path = '/data1/liduan/generation/chart/iconset/colored_icons_final'
-feature_root = '/data1/liduan/jiashu/icon_cleaner/final_feat'
+from config import raw_images_path
+from config import feature_root_path as feature_root
 semantic_knum = 50
 
 def load_pickle(file_path):
@@ -30,7 +30,7 @@ class SimulatedAnnealing:
         self.icon_cts_total = contexts.icon_cts
         self.icon_pool_total = contexts.icon_pool
         # self.icon_dist_total = contexts.icon_dist
-        self.icon_num_total = len(self.icon_pool_total)        
+        self.icon_num_total = len(self.icon_pool_total)
 
         # 2. init color divide
         self.pool_min_list = 3
@@ -66,7 +66,7 @@ class SimulatedAnnealing:
 
         self.icon_sets_list = icon_sets_list
         self.color_set_init = False
-        
+
         # 3. init local icon harmony: ink, aspect
         self.icon_ink = load_np(os.path.join(feature_root, 'ink_ratio.npy'))
         self.icon_aspect = load_np(os.path.join(feature_root, 'aspect_ratio.npy'))
@@ -91,7 +91,7 @@ class SimulatedAnnealing:
         return np.linalg.norm(lab1 - lab2)
 
     def init_color_set(self, i):
-        assert i < len(self.icon_sets_list) 
+        assert i < len(self.icon_sets_list)
         use_icon_set = set(self.icon_sets_list[i])
         self.icon_pool_total = []
         for pool in self.raw_pool:
@@ -100,7 +100,7 @@ class SimulatedAnnealing:
                 res_pool = [icon for icon in pool if icon not in use_icon_set]
                 new_pool = new_pool + random.sample(res_pool, self.pool_min_list - len(new_pool))
             self.icon_pool_total.append(new_pool)
-        
+
         self.icon_index_total = []
         for pool in self.icon_pool_total:
             index = {}
@@ -197,7 +197,7 @@ class SimulatedAnnealing:
             feat_loss /= ct
 
         return self.args[0] * ink_loss + self.args[1] * aspect_loss + self.args[2] * feat_loss, ink_loss, aspect_loss, feat_loss
-    
+
     def select(self, idx):
         cur_pos = self.select_idx_of_pool[idx]
         cur_icon = self.icon_pool[idx][cur_pos]
@@ -207,7 +207,7 @@ class SimulatedAnnealing:
         # from IPython import embed; embed(); exit()
         subpool = [self.icon_pool[idx][i] for i in indices]
         return random.choice(subpool)
-    
+
     def disturb(self, raw_icons):
         icons = raw_icons.copy()
         # idx = random.randint(0, len(icons) - 1)
@@ -286,7 +286,7 @@ class SimulatedAnnealing:
                     best_icons = new_icons
             temp *= self.dec
             iter_num += 1
-        
+
         # final_loss = self.cal_loss(best_icons)
         # print('Final loss:', final_loss)
         res = []
@@ -304,7 +304,7 @@ import numpy as np
 def hex_to_lab(hex):
     hex_color = hex_color.lstrip('#')
     rgb = np.array([
-        int(hex_color[i:i+2], 16) / 255 
+        int(hex_color[i:i+2], 16) / 255
         for i in (0, 2, 4)
     ])
     xyz = colour.sRGB_to_XYZ(rgb)
@@ -322,7 +322,7 @@ class IconSelector:
             topic_color = [hex_to_lab(color) for color in topic_color]
         self.pool = pool
         self.sa = SimulatedAnnealing(pool, topic_color = topic_color)
-        self.spe_mode = spe_mode 
+        self.spe_mode = spe_mode
 
     def select(self, sequence1, sequence2, cache_path='/data1/liduan/generation/chart/chart_pipeline/src/cache'):
         '''
@@ -342,9 +342,10 @@ class IconSelector:
                 image_path = os.path.join(cache_path, 'icons')
                 if not os.path.exists(image_path):
                     os.makedirs(image_path)
+                x_label = self.pool.chart_data['meta_data']['x_label']
                 for i in range(len(self.pool.chart_data['data'])):
-                    text = self.pool.chart_data['data'][i]['x_data']
-                    file_path = flag_icons.search_and_save(text, image_path, 600, 600)
+                    text = self.pool.chart_data['data'][i][x_label]
+                    file_path = flag_icons.search_and_save(str(text), image_path, 600, 600)
                     # res.append(file_path)
                     res.append({"file_path": file_path, "text": text})
             elif self.spe_mode == 'logo':
@@ -352,9 +353,10 @@ class IconSelector:
                 image_path = os.path.join(cache_path, 'icons')
                 if not os.path.exists(image_path):
                     os.makedirs(image_path)
+                x_label = self.pool.chart_data['meta_data']['x_label']
                 for i in range(len(self.pool.chart_data['data'])):
-                    text = self.pool.chart_data['data'][i]['x_data']
-                    file_path = logo_icons.search_and_save(text, image_path, 600, 600) # TODO size
+                    text = self.pool.chart_data['data'][i][x_label]
+                    file_path = logo_icons.search_and_save(str(text), image_path, 600, 600) # TODO size
                     # res.append(file_path)
                     res.append({"file_path": file_path, "text": text})
             else:

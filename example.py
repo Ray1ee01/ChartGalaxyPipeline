@@ -11,7 +11,8 @@ import numpy as np
 from datetime import datetime
 from src.processors.data_enricher_modules.icon_selection import CLIPMatcher
 from src.processors.data_enricher_modules.bgimage_selection import ImageSearchSystem
-from src.data.config.config import load_config
+from src.data.config.config import *
+from config import *
 
 
 
@@ -22,23 +23,46 @@ os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 # random.seed(15)
 
+data_id_config = {
+    44: {
+        'config_idx': 15,
+    },
+    683: {
+        'config_idx': 16,
+    },
+    979: {
+        'config_idx': 18,
+    },
+    2495: {
+        'config_idx': 17,
+    }
+}
+
 
 def main():
     import argparse
     
     # 创建命令行参数解析器
     parser = argparse.ArgumentParser(description='生成图表')
-    # parser.add_argument('-d', '--dataset_idx', type=int, default=0, help='数据集索引')
-    # parser.add_argument('-c', '--chart_idx', type=int, default=1, help='图表索引')
-    # parser.add_argument('-t', '--chart_type', type=str, default='bar', help='图表类型')
     parser.add_argument('-c', '--config_idx', type=int, default=0, help='配置索引')
+    parser.add_argument('-d', '--data_id', type=int, default=0, help='数据id')
+    parser.add_argument('-t', '--test_id', type=int, default=-1, help='测试集id')
     args = parser.parse_args()
 
-    configs = load_config(args.config_idx)
+
+    # configs = load_config(args.config_idx)
+    # if args.data_id in data_id_config:
+    #     config_idx = data_id_config[args.data_id]['config_idx']
+    # else:
+    #     config_idx = 17
+    config_idx = 17
+    print("config_idx: ", config_idx)
+    configs = load_config(config_idx)
     print(configs)
     
     pipeline = Pipeline(
-        data_processor=Chart2TableDataProcessor(),
+        # data_processor=Chart2TableDataProcessor(),
+        data_processor=TestDataProcessor(),
         # data_processor=VizNetDataProcessor(),
         chart_generator=VegaLiteGenerator(),
         # chart_generator=EchartGenerator(),
@@ -56,16 +80,11 @@ def main():
         'stackedbar',
         'slope',
         'pie',
-        'donut',
-        'bullet',
-        'radialbar',
         "area",
         "line",
         "stream",
         "rangedarea",
         "layeredarea",
-        "stackedarea"
-        # 'waterfall',
     ]
     
     data_sizes = {
@@ -78,8 +97,8 @@ def main():
         'stackedbar': 42,
         'slope': 1,
         'groupbar': 42,
-        'pie': 1,
-        'donut': 1,
+        'pie': 13,
+        'donut': 13,
     }
     
     
@@ -87,28 +106,70 @@ def main():
     # bgimage_searcher = ImageSearchSystem()
     bgimage_searcher = None
     
+    # date = datetime.now().strftime("%Y%m%d")
+    # valid_chart_types = configs['layout']['chart_config']['valid_type']
+    # print(f'valid_chart_types: {valid_chart_types}')
+    # for chart_type in valid_chart_types:
+    #     if chart_type not in chart_type_list:
+    #         print(f'{chart_type} is not in chart_type_list')
+    #         continue
+    #     output_dir = os.path.join(os.path.dirname(__file__),'src', f'output_{date}', chart_type)
+    #     if not os.path.exists(output_dir):
+    #         os.makedirs(output_dir)
+        # data_range = np.arange(0, 1)
+        # # data_range = np.arange(10,11)
+        # # data_range = np.arange(8,9)
+        # # data_range = np.arange(39,40)
+        # # data_range = np.arange(197,198)
+        # # data_range = np.arange(164,165)
+        # for data_idx in data_range:
+        #     time_stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        #     input_data = f'{chart_type}_{data_idx}'
+        #     result, bounding_boxes = pipeline.execute(input_data, config=configs, matcher=matcher, bgimage_searcher=bgimage_searcher)
+        #     output_filename = f'{time_stamp}_type_{chart_type}_d{data_idx}_c{args.config_idx}'
+        #     with open(os.path.join(output_dir, output_filename+'.svg'), "w", encoding='utf-8') as f:
+        #         f.write(result)
+        
+        # date = datetime.now().strftime("%Y%m%d")
+    # valid_chart_types = configs['layout']['chart_config']['valid_type']
+    # print(f'valid_chart_types: {valid_chart_types}')
+    # for chart_type in valid_chart_types:
+    #     if chart_type not in chart_type_list:
+    #         print(f'{chart_type} is not in chart_type_list')
+    #         continue
+    
+    info_dict = {}
+    # info_dict_path = "D:/VIS/Infographics/data/chart_pipeline/src/data/chart_to_table/test_set/info_new.json"
+    info_dict_path = os.path.join(chart_data_path, 'info_new.json')
+    with open(info_dict_path, "r") as f:
+        info_dict = json.load(f)
+    ids = info_dict.keys()
+    print(ids)
+        
     date = datetime.now().strftime("%Y%m%d")
-    valid_chart_types = configs['layout']['chart_config']['valid_type']
-    for chart_type in valid_chart_types:
-        if chart_type not in chart_type_list:
-            print(f'{chart_type} is not in chart_type_list')
+    
+    output_dir = os.path.join(os.path.dirname(__file__),'src', f'output_{date}')
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+    
+    # time_stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    # result, bounding_boxes = pipeline.execute(args.data_id, config=configs, matcher=matcher, bgimage_searcher=bgimage_searcher)
+    # output_filename = f'{time_stamp}_d{args.data_id}_c{args.config_idx}'
+    # with open(os.path.join(output_dir, output_filename+'.svg'), "w", encoding='utf-8') as f:
+    #     f.write(result)
+    for id in ids:
+        if args.test_id != -1 and int(id) != args.test_id:
             continue
-        output_dir = os.path.join(os.path.dirname(__file__),'src', f'output_{date}_1', chart_type)
-        if not os.path.exists(output_dir):
-            os.makedirs(output_dir)
-        data_range = np.arange(0,1)
-        # data_range = np.arange(0, data_sizes[chart_type])
-        # data_range = np.arange(6,7)
-        # data_range = np.arange(39,40)
-        # data_range = np.arange(197,198)
-        # data_range = np.arange(164,165)
-        for data_idx in data_range:
-            time_stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            input_data = f'{chart_type}_{data_idx}'
-            result, bounding_boxes = pipeline.execute(input_data, config=configs, matcher=matcher, bgimage_searcher=bgimage_searcher)
-            output_filename = f'{time_stamp}_type_{chart_type}_d{data_idx}_c{args.config_idx}'
-            with open(os.path.join(output_dir, output_filename+'.svg'), "w") as f:
-                f.write(result)
+        if int(id) <= args.data_id and args.test_id == -1:
+            continue
+        time_stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        variation_config = info_dict[id]['data']
+        configs['variation'] = variation_config
+        result, bounding_boxes = pipeline.execute(int(id), config=configs, matcher=matcher, bgimage_searcher=bgimage_searcher)
+        output_filename = f'{time_stamp}_d{id}_c{args.config_idx}'
+        with open(os.path.join(output_dir, output_filename+'.svg'), "w", encoding='utf-8') as f:
+            f.write(result)
+
 
             
     # return

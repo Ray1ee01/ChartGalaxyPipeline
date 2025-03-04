@@ -102,11 +102,7 @@
         ]
     },
     "chart_config": {
-        "valid_type": ["bar", "groupbar"],
-        "orientation": "horizontal",
-        "sort": {
-            "ascending": true,
-            "by": "x"
-        }
+        "valid_type": ["bar"]
     }
+    
 }

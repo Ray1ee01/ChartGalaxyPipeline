@@ -3,6 +3,8 @@ from sentence_transformers import SentenceTransformer
 import os, json, faiss
 import numpy as np
 
+from config import *
+
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 class SpecificIcons(ABC):
@@ -14,9 +16,14 @@ class SpecificIcons(ABC):
     def search_and_save(self, text: str, output_path: str, width: int, height: int) -> str:
         pass
 
-flag_path = '/data1/jiashu/data/flag_icons'
-model_path = "/data1/jiashu/models/models--sentence-transformers--all-MiniLM-L6-v2/snapshots/fa97f6e7cb1a59073dff9e6b13e2715cf7475ac9"
-logo_path = '/data1/jiashu/data/logo_icons/images/svg'
+# flag_path = "D:/VIS/Infographics/data/flag_icons"
+# model_path = "D:/VIS/Infographics/data/fa97f6e7cb1a59073dff9e6b13e2715cf7475ac9"
+model_path = sentence_transformer_path
+
+# logo_path = "D:\VIS\Infographics\data\svg"
+# logo_path = os.path.join(chart_data_path, 'svg')
+logo_path = logo_path
+flag_path = flag_path
 
 def svg_to_png(svg_path, output_path, width, height):
     """
@@ -69,7 +76,7 @@ class FlagIcons(SpecificIcons):
         return self.country_data[best_match_index]
 
     def search_and_save(self, text: str, output_path: str, width: int, height: int) -> str:
-        if 'USA' in text:
+        if 'USA' in str(text):
             text = 'United States of America'
         result = self.search(text)
         image = result['flag_1x1'] if width == height else result['flag_4x3']
@@ -92,7 +99,7 @@ class LogoIcons(SpecificIcons):
 
     def __load_logos(self):
         logo_names = os.listdir(logo_path)
-        self.logo_names = [name.split('.')[0] for name in logo_names if name.endswith('.svg')]
+        self.logo_names = [name.split('.')[0] for name in logo_names if name.endswith('.svg') or name.endswith('.png')]
 
     def __create_embeddings(self, texts):
         embeddings = self.model.encode(texts)
@@ -109,10 +116,14 @@ class LogoIcons(SpecificIcons):
 
     def search_and_save(self, text: str, output_path: str, width: int, height: int) -> str:
         result = self.search(text)
-        image = result + '.svg'
-        svg_path = os.path.join(logo_path, image)
-        output_file = os.path.join(output_path, image.split('.')[0] + '.png')
-        svg_to_png(svg_path, output_file, width, height)
+        try:
+            image = result + '.svg'
+            svg_path = os.path.join(logo_path, image)
+            output_file = os.path.join(output_path, image.split('.')[0] + '.png')
+            svg_to_png(svg_path, output_file, width, height)
+        except:
+            image = result + '.png'
+            output_file = os.path.join(output_path, image)
         return output_file
 
 if __name__ == '__main__':

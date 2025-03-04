@@ -25,6 +25,10 @@ class ScatterPlotTemplate(ChartTemplate):
         self.mark = PointTemplate(color_template)
         
         self.color_encoding = ColorEncodingTemplate(color_template, meta_data, data)
+        single_color_flag = self.color_encoding.encoding_data("group_label")
+        if single_color_flag:
+            self.mark.color = self.color_encoding.range[0]
+        
         self.shape_encoding = ShapeEncodingTemplate(meta_data, data)
         
         if meta_data is None:

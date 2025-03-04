@@ -12,5 +12,8 @@
     "icon": 1,
     "chart_size": 1,
     "annotation": 1,
-    "image_overlay": 6
+    "image_overlay": {
+        "bar": 6,
+        "arc": 0
+    }
 }

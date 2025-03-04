@@ -2,7 +2,13 @@ import json
 import os
 
 
-config_root = "/data1/liduan/generation/chart/chart_pipeline/src/data/config"
+# config_root = "/data1/liduan/generation/chart/chart_pipeline/src/data/config"
+# 改绝对路径为相对路径
+config_root = os.path.dirname(os.path.abspath(__file__))
+
+CONFIG = {
+    "debug": True
+}
 
 chart_type_mark_mapping = {
     "bar": "bar",
@@ -10,6 +16,32 @@ chart_type_mark_mapping = {
     "groupbar": "bar",
 }
 
+def update_configs(configs, meta_data):
+    if meta_data["axes"]["x_axis"] == "yes":
+        value = 0
+        x_axis_config_path = os.path.join(config_root, "axis", f"{value}.json")
+        with open(x_axis_config_path, 'r') as f:
+            x_axis_config = json.load(f)
+        configs["x_axis"] = x_axis_config
+    else:
+        value = 31
+        x_axis_config_path = os.path.join(config_root, "axis", f"{value}.json")
+        with open(x_axis_config_path, 'r') as f:
+            x_axis_config = json.load(f)
+        configs["x_axis"] = x_axis_config
+    if meta_data["axes"]["y_axis"] == "yes":
+        value = 27
+        y_axis_config_path = os.path.join(config_root, "axis", f"{value}.json")
+        with open(y_axis_config_path, 'r') as f:
+            y_axis_config = json.load(f)
+        configs["y_axis"] = y_axis_config
+    else:
+        value = 31
+        y_axis_config_path = os.path.join(config_root, "axis", f"{value}.json")
+        with open(y_axis_config_path, 'r') as f:
+            y_axis_config = json.load(f)
+        configs["y_axis"] = y_axis_config
+    return configs
 
 def load_config(i):
     config_path = os.path.join(config_root, "composite", f"{i}.json")
@@ -76,9 +108,12 @@ def load_config(i):
                 chart_size_config = json.load(f)
             configs[key] = chart_size_config
         elif key == "image_overlay":
-            image_overlay_config_path = os.path.join(config_root, "image_overlay", f"{value}.json")
-            with open(image_overlay_config_path, 'r') as f:
-                image_overlay_config = json.load(f)
+            image_overlay_config = {}
+            for mark_type, mark_value in value.items():
+                image_overlay_config_path = os.path.join(config_root, "image_overlay", mark_type, f"{mark_value}.json")
+                with open(image_overlay_config_path, 'r') as f:
+                    image_overlay_config = json.load(f)
+                image_overlay_config[mark_type] = image_overlay_config
             configs[key] = image_overlay_config
     return configs
 

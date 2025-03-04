@@ -13,6 +13,7 @@ import random
 import time
 from .processors.data_enricher_modules.icon_selection import CLIPMatcher
 from .processors.data_enricher_modules.bgimage_selection import ImageSearchSystem
+from .data.config.config import update_configs
 
 class Pipeline:
     def __init__(
@@ -41,9 +42,10 @@ class Pipeline:
         time_start = time.time()
         # 步骤1：数据处理
         processed_data = self.data_processor.process(input_data, layout_config['sequence'], icon_config['need_icon'], matcher, bgimage_searcher)
+        config = update_configs(config, processed_data['meta_data'])
+        print("config: ", config)
         time_end = time.time()
-        # print(processeds_data)
-        # return "", {}
+        print("processed_data: ", processed_data)
     
     
         time_start = time.time()
@@ -58,12 +60,18 @@ class Pipeline:
         # axis_config = layout_config.get('axis_config', {})
         annotation_config = config.get('annotation', {})
         # 创建模板
+        print("processed_data['meta_data']['chart_type']", processed_data['meta_data']['chart_type'])
         if processed_data['meta_data']['chart_type'] == 'bar':
-            # 如果没有指定orientation,随机选择
             if 'orientation' not in chart_config:
                 is_horizontal = random.choice([True, False])
             else:
                 is_horizontal = chart_config['orientation'] == 'horizontal'
+            if "orientation" in processed_data['meta_data']:
+                is_horizontal = processed_data['meta_data']['orientation'] == 'horizontal'
+            else:
+                is_horizontal = random.choice([True, False])
+
+
             # 使用新的工厂方法创建模板
             if is_horizontal:
                 chart_template, layout_template = TemplateFactory.create_horizontal_bar_chart_template(
@@ -275,6 +283,7 @@ class Pipeline:
         
         # 步骤2：生成图表
         svg, additional_configs = self.chart_generator.generate(processed_data, chart_template, config)
+        # print('svg: ', svg)
         time_end = time.time()
         print("chart_generator time: ", time_end - time_start)
         
@@ -301,7 +310,8 @@ class Pipeline:
         subtitle_config['fontWeight'] = subtitle_font_template.font_weight
         subtitle_config['font'] = subtitle_font_template.font
     
-        emphasis_phrases = find_emphasis_phrases(processed_data['meta_data']['title'], processed_data['meta_data'])
+        # emphasis_phrases = find_emphasis_phrases(processed_data['meta_data']['title'], processed_data['meta_data'])
+        emphasis_phrases = []
         emphasis_phrases_config = []
         if chart_template.color_encoding is not None and chart_template.color_encoding.color_with_semantics:
             for phrase in emphasis_phrases:
@@ -340,7 +350,7 @@ class Pipeline:
             "meta_data": processed_data['meta_data'],
             "data": processed_data['data'],
             "chart_config": chart_config,
-            # "style_config": style_dict,
+            "chart_type": processed_data["meta_data"]["chart_type"],
             "theme_color": theme_color
         })
         additional_configs['title_config'].update(title_config)
@@ -361,7 +371,12 @@ class Pipeline:
         additional_configs['layout_tree'] = layout_tree
         additional_configs.update(config)
         # 步骤3：SVG后处理
+        
+        print("before svg_processor.process")
         final_svg, bounding_boxes = self.svg_processor.process(svg, additional_configs, debug=False)
+        # final_svg = svg
+        bounding_boxes = {}
+        # 这里的修改是为了暂时调试
         time_end = time.time()
         return final_svg, bounding_boxes
             
