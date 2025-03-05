@@ -6,7 +6,7 @@ from typing import Tuple
 from .svg_processor_modules.elements import Path
 import cv2
 import numpy as np
-import clipper
+# import clipper
 
 class ImageProcessor:
     def __init__(self):
