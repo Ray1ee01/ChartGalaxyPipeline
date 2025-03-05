@@ -18,7 +18,7 @@ from .svg_processor_modules.tree_converter import SVGTreeConverter
 from .svg_processor_modules.elements import *
 from ..template.template import LayoutTemplate
 import time
-from .svg_processor_modules.variation import ImageChart
+from .svg_processor_modules.variation import ImageChart, BackgroundChart
 
 default_additional_configs = {
     "iconAttachConfig": {
@@ -140,11 +140,16 @@ class SVGOptimizer(SVGProcessor):
         parser = SVGParser(svg, additional_configs)
         parsed_svg, chart_element_tree, layout_graph, defs = parser.parse()
         
-        chart_element = Chart()
-        copy_children(chart_element_tree, chart_element)
-        copy_attributes(chart_element_tree, chart_element)
+        # chart_element = Chart()
+        # copy_children(chart_element_tree, chart_element)
+        # copy_attributes(chart_element_tree, chart_element)
+        chart_element = chart_element_tree
         
-
+        background_chart = BackgroundChart(chart_element)
+        config = {
+            "variation_type": "background",
+        }
+        chart_element = background_chart.process(config)
         
         image_url = "D:/VIS/Infographics/data/svg/Netflix_2015_logo.svg.png"
         base64_image = Image._getImageAsBase64(image_url)

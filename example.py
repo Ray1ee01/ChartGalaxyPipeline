@@ -158,10 +158,10 @@ def main():
     # with open(os.path.join(output_dir, output_filename+'.svg'), "w", encoding='utf-8') as f:
     #     f.write(result)
     for id in ids:
-        # if args.test_id != -1 and int(id) != args.test_id:
-        #     continue
-        # if int(id) <= args.data_id and args.test_id == -1:
-        #     continue
+        if args.test_id != -1 and int(id) != args.test_id:
+            continue
+        if int(id) <= args.data_id and args.test_id == -1:
+            continue
         time_stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         variation_config = info_dict[id]['data']
         configs['variation'] = variation_config

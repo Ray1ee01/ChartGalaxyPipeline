@@ -12,7 +12,67 @@ class VariationProcessor(ABC):
     def process(self):
         pass
     
-
+class BackgroundChart(VariationProcessor):
+    def __init__(self, chart: Chart):
+        super().__init__()
+        self.chart = chart
+        
+    def process(self, config: dict):
+        x_axis = None
+        y_axis = None
+        for child in self.chart.children:
+            if child.attributes.get("class","") == "axis X":
+                x_axis = child
+            elif child.attributes.get("class","") == "axis Y":
+                y_axis = child
+        x_axis_tick_group = None
+        x_axis_domain_group = None
+        for child in x_axis.children:
+            if child.attributes.get("class","") == 'axis_tick-group':
+                x_axis_tick_group = child
+            elif child.attributes.get("class","") == 'axis_domain-group':
+                x_axis_domain_group = child
+        y_axis_tick_group = None
+        y_axis_domain_group = None
+        for child in y_axis.children:
+            if child.attributes.get("class","") == 'axis_tick-group':
+                y_axis_tick_group = child
+            elif child.attributes.get("class","") == 'axis_domain-group':
+                y_axis_domain_group = child
+        tick_mid_x_list = []
+        x_axis_transform = x_axis.get_transform_matrix
+        for tick in x_axis_tick_group.children:
+            tick._bounding_box = tick.get_bounding_box()
+            bbox = tick._apply_transform(tick._bounding_box.minx, tick._bounding_box.miny, tick._bounding_box.maxx, tick._bounding_box.maxy, x_axis_transform)
+            tick_mid_x_list.append((bbox.minx + bbox.maxx) / 2)
+        gap_sum = 0
+        for i in range(len(tick_mid_x_list)-1):
+            gap_sum += abs(tick_mid_x_list[i+1]-tick_mid_x_list[i])
+        gap_avg = gap_sum / (len(tick_mid_x_list)-1)
+        band_width = gap_avg
+        background = Background()
+        y_axis_transform = y_axis.get_transform_matrix
+        y_axis_domain_group_bounding_box = y_axis_domain_group.get_bounding_box()
+        y_axis_domain_group_bounding_box = y_axis_domain_group._apply_transform(y_axis_domain_group_bounding_box.minx, y_axis_domain_group_bounding_box.miny, y_axis_domain_group_bounding_box.maxx, y_axis_domain_group_bounding_box.maxy, y_axis_transform)
+        band_height = y_axis_domain_group_bounding_box.height
+        min_y = y_axis_domain_group_bounding_box.miny
+        for i in range(len(tick_mid_x_list)):
+            band = Rect()
+            band.attributes['x'] = tick_mid_x_list[i]-gap_avg/2
+            band.attributes['y'] = min_y
+            band.attributes['width'] = band_width
+            band.attributes['height'] = band_height
+            if i % 2 == 0:
+                band.attributes['fill'] = '#f0f0f0'
+            else:
+                band.attributes['fill'] = '#ffffff'
+            background.children.append(band)
+        self.chart.children.insert(0, background)
+        return self.chart
+        
+        
+        
+            
 class ImageChart(VariationProcessor):
     def __init__(self, chart: Chart, image: UseImage):
         super().__init__()

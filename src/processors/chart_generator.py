@@ -98,11 +98,21 @@ class VegaLiteGenerator(ChartGenerator):
             
             axis_config = x_encoding["axis"]
             if self.template.x_axis.has_domain is not None:
-                axis_config["domain"] = self.template.x_axis.has_domain
+                # axis_config["domain"] = self.template.x_axis.has_domain
+                axis_config["domain"] = True
+                if self.template.x_axis.has_domain is True:
+                    axis_config["domainOpacity"] = 1
+                else:
+                    axis_config["domainOpacity"] = 0
             if self.template.x_axis.has_label is not None:
                 axis_config["labels"] = self.template.x_axis.has_label
             if self.template.x_axis.has_tick is not None:
-                axis_config["ticks"] = self.template.x_axis.has_tick
+                # axis_config["ticks"] = self.template.x_axis.has_tick
+                axis_config["ticks"] = True
+                if self.template.x_axis.has_tick is True:
+                    axis_config["tickOpacity"] = 1
+                else:
+                    axis_config["tickOpacity"] = 0
             if self.template.x_axis.has_title is True:
                 if self.template.x_axis.title_text is not None:
                     axis_config["title"] = self.template.x_axis.title_text
@@ -159,11 +169,21 @@ class VegaLiteGenerator(ChartGenerator):
             }
             axis_config = y_encoding["axis"]
             if self.template.y_axis.has_domain is not None:
-                axis_config["domain"] = self.template.y_axis.has_domain
+                # axis_config["domain"] = self.template.y_axis.has_domain
+                axis_config["domain"] = True
+                if self.template.y_axis.has_domain is True:
+                    axis_config["domainOpacity"] = 1
+                else:
+                    axis_config["domainOpacity"] = 0
             if self.template.y_axis.has_label is not None:
                 axis_config["labels"] = self.template.y_axis.has_label
             if self.template.y_axis.has_tick is not None:
-                axis_config["ticks"] = self.template.y_axis.has_tick
+                # axis_config["ticks"] = self.template.y_axis.has_tick
+                axis_config["ticks"] = True
+                if self.template.y_axis.has_tick is True:
+                    axis_config["tickOpacity"] = 1
+                else:
+                    axis_config["tickOpacity"] = 0
             # if self.template.y_axis.title_text is not None and self.template.y_axis.has_title is True:
             #     axis_config["title"] = self.template.y_axis.title_text
             if self.template.y_axis.has_title is True:
