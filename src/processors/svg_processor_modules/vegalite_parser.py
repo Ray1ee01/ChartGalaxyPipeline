@@ -9,7 +9,7 @@ from .layout import *
 import random
 from ..image_processor import ImageProcessor
 from .overlay_processor import OverlayProcessor
-from .readability import AxisReadabilityProcessor
+from .readability import *
 from ...utils.text_similarity import get_text_list_similarity, linear_assignment,get_text_similarity
 from .vegalite_element_parser import VegaLiteElementParser
 from datetime import datetime
@@ -115,9 +115,6 @@ class SVGParser():
         with open(f'debug/{time_stamp}/elements_tree_before_parse.svg', 'w', encoding='utf-8') as f:
             f.write(svg_left + svg + svg_right)
         
-
-         
-        
         # 使用VegaLiteElementParser解析elements_tree
         vega_lite_element_parser = VegaLiteElementParser(elements_tree)
         try:
@@ -133,17 +130,66 @@ class SVGParser():
         axis_labels = vega_lite_element_parser.axis_labels
         axes = vega_lite_element_parser.axes
         for axis in axes:
-            axis_readability_processor = AxisReadabilityProcessor(axis)
-            axis_readability_processor.avoid_label_overlap()
+            axis_label_group = None
+            for child in axis.children:
+                if child.attributes.get("class", "") == "axis_label-group":
+                    axis_label_group = child
+                    break
+            if axis_label_group is None:
+                continue
+            texts = []
+            font_size = 0
+            axis_orient = ""
+            x_list = []
+            y_list = []
+            width_constraint = None
+            height_constraint = None
+            for child in axis_label_group.children:
+                axis_orient = child.axis_orient
+                texts.append(child.children[0].content)
+                font_size = float(child.children[0].attributes.get("font-size", 0).replace("px", ""))
+                x_list.append(child.get_bounding_box().minx + child.get_bounding_box().width / 2)
+                y_list.append(child.get_bounding_box().miny + child.get_bounding_box().height / 2)
+            if axis_orient == "left" or axis_orient == "right":
+                # Note 0304: 先不处理这种label
+                continue
+            elif axis_orient == "top" or axis_orient == "bottom":
+                width_constraint = 10000
+                for i in range(len(x_list)-1):
+                    width_constraint = min(width_constraint, abs(x_list[i+1] - x_list[i]))
+            numbers = []
+            units = []
+            for text in texts:
+                number, unit = number_spliter(text)
+                numbers.append(number)
+                units.append(unit)
+            valid_text_flag = True
+            for number, unit in zip(numbers, units):
+                if number_type_judge(number) == "invalid":
+                    valid_text_flag = False
+                    break
+            if not valid_text_flag:
+                continue
+            constraints = []
+            for i in range(len(numbers)):
+                constraints.append(Constraint(width_constraint*0.9, height_constraint))
+            number_readability_processor = NumberReadabilityProcessor(numbers, units, font_size, constraints)
+            numbers, units, font_size = number_readability_processor.process()
+            for i, child in enumerate(axis_label_group.children):
+                axis_orient = child.axis_orient
+                reference_point = "center"
+                if axis_orient == "left":
+                    reference_point = "right"
+                elif axis_orient == "right":
+                    reference_point = "left"
+                elif axis_orient == "top":
+                    reference_point = "bottom"
+                elif axis_orient == "bottom":
+                    reference_point = "top"
+                apply_to_element(child.children[0], numbers[i]+units[i], font_size, reference_point)
         
-
-        # for mark in marks:
-        #     pictogram = UseImage()
-        #     pictogram_mark = PictogramMark(mark, pictogram)
-        #     mark = pictogram_mark.process(self.additional_configs['variation'])
         
         for mark in marks:
-            # print("mark", mark.dump())
             data_dict = self.extract_data_from_element(mark)
             self._bind_data_to_element(data_dict, mark)
         for axis_label in axis_labels:
@@ -153,15 +199,9 @@ class SVGParser():
         self.value_icon_map = {}
         self.value_icon_map['x'] = {}
         
-        # print("x_data_multi_url: ", self.additional_configs['x_data_multi_url'])
-        # print("marks: ", marks)
         for mark in marks:
-            # print("mark", mark.dump())
-            # print("mark.data_attributes.data_attributes['x_data']: ", mark.data_attributes.data_attributes)
             if mark.data_attributes.data_attributes.get('x_data', None) is not None:
                 if mark.data_attributes.data_attributes['x_data'] not in self.value_icon_map['x']:
-                    # self.value_icon_map['x'][mark.data_attributes.data_attributes['x_data']] = 
-                    # print("mark.data_attributes.data_attributes['x_data']: ", mark.data_attributes.data_attributes['x_data'])
                     for icon_url in self.additional_configs['x_data_multi_url']:
                         if mark.data_attributes.data_attributes['x_data'] in icon_url['text'] or mark.data_attributes.data_attributes['x_data'] == icon_url['text']:
                             self.value_icon_map['x'][mark.data_attributes.data_attributes['x_data']] = icon_url['file_path']
@@ -170,14 +210,9 @@ class SVGParser():
                         self.value_icon_map['x'][mark.data_attributes.data_attributes['x_data']] = self.additional_configs['x_data_multi_url'][random.randint(0, len(self.additional_configs['x_data_multi_url']) - 1)]
                 else:
                     self.value_icon_map['x'][mark.data_attributes.data_attributes['x_data']] = self.additional_configs['x_data_multi_url'][random.randint(0, len(self.additional_configs['x_data_multi_url']) - 1)]
-        # print("self.value_icon_map: ", self.value_icon_map)
         
         config = {
             "variation_type": "side",
-            # "direction": "bottom",
-            # "padding": 5,
-            # "side": "inside",
-            # "variation_type": "replace",
             "arc": {
                 "side": "outer"
             }
@@ -240,11 +275,13 @@ class SVGParser():
         # with open(f'debug/{time_stamp}/full.svg', 'w', encoding='utf-8') as f:
         #     f.write(svg_left + full_svg + svg_right)
         print("before flatten")
-        flattened_elements_tree = elements_tree
+        flattened_elements_tree_list = SVGTreeConverter._clean_element_tree(elements_tree)
         print("after flatten")
-        # print("flattened_elements_tree: ", flattened_elements_tree)
-        # print("flattened_elements_tree: ", flattened_elements_tree.dump())
         layout_graph = LayoutGraph()
+        chart_element = Chart()
+        chart_element.children = flattened_elements_tree_list
+        flattened_elements_tree = chart_element
+        
         
         
         print("before layout")

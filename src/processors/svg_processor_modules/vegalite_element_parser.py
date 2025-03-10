@@ -98,7 +98,6 @@ class VegaLiteElementParser:
         # 添加chart_type属性
         # self.chart_type = element.attributes.get('aria-roledescription', '').lower()
         self.chart_type = self.chart_template.chart_type
-        print("self.chart_type: ", self.chart_type)
         if "bar" in self.chart_type:
             mark_group = self._handle_bar(element)
             self.marks.extend(mark_group.children)

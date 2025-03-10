@@ -9,7 +9,7 @@
             "padding": 15,
             "direction": "down",
             "overlap": false,
-            "alignment": ["left", "left"]
+            "alignment": ["middle", "middle"]
         },
         "children": [
             {
@@ -54,10 +54,10 @@
                 "id": "group_2",
                 "layoutStrategy": {
                     "name": "vertical",
-                    "offset": -20,
+                    "offset": 0,
                     "direction": "up",
-                    "overlap": true,
-                    "alignment": ["right", "right"]
+                    "overlap": false,
+                    "alignment": ["middle", "middle"]
                 },
                 "children": [
                     {

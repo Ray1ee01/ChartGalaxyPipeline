@@ -190,6 +190,8 @@ class ColorEncodingTemplate:
         for i in range(len(self.domain)):
             self.range.append(single_color)
         self.apply_color_rules()
+        print("self.domain: ", self.domain)
+        print("self.range: ", self.range)
         single_color_flag = True
         return single_color_flag
     def apply_color_rules(self):

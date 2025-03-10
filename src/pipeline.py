@@ -276,7 +276,10 @@ class Pipeline:
         # 获取主题色
         theme_color = "#0000ff"
         try: 
-            theme_color = chart_template.color_encoding.range[0]
+            if chart_template.color_encoding is not None:
+                theme_color = chart_template.color_encoding.range[0]
+            else:
+                theme_color = chart_template.mark.fill_color_style.color
         except:
             theme_color = "#0000ff"
         
@@ -353,6 +356,8 @@ class Pipeline:
         additional_configs['title_config'].update(title_config)
         additional_configs['subtitle_config'].update(subtitle_config)
         additional_configs['topic_icon_config'].update(topic_icon_config)
+        chart_image_config = config.get('layout', {}).get('chart_image_config', {})
+        additional_configs['chart_image_config'] = chart_image_config
 
         # print("additional_configs['title_config']", additional_configs['title_config'])
         seed_text = random.randint(1, 100)

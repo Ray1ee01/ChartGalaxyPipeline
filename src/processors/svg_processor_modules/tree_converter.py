@@ -164,7 +164,37 @@ class SVGTreeConverter:
             return f"<{tag} {attrs_str}>{content}</{tag}>"
         else:
             return f"<{tag} {attrs_str}/>"
+    
+    @staticmethod
+    def element_tree_to_svg_file(element_tree: LayoutElement):
+        boundingbox = element_tree.get_bounding_box()
+        min_x = boundingbox.minx
+        min_y = boundingbox.miny
+        # 通过添加transform属性，把boundingbox的minx, miny设置为0
+        element_tree.attributes['transform'] = f"translate({-min_x},{-min_y})" + element_tree.attributes.get('transform', '') 
+        boundingbox = element_tree.get_bounding_box()
+        min_x = boundingbox.minx
+        min_y = boundingbox.miny
+        width = boundingbox.width
+        height = boundingbox.height
+        viewBox = f"{min_x} {min_y} {width} {height}"
+        svg_attrs = {
+            "width": boundingbox.maxx,
+            "height": boundingbox.maxy,
+            "viewBox": viewBox,
+            "xmlns": "http://www.w3.org/2000/svg",
+            "xmlns:xlink": "http://www.w3.org/1999/xlink"
+        }
+        attrs_list = []
+        for key, value in svg_attrs.items():
+            attrs_list.append(f'{key}="{value}"')
+        attrs_str = ' '.join(attrs_list)
+        svg_str = SVGTreeConverter.element_tree_to_svg(element_tree)
         
+        svg_left = f"<svg {attrs_str}>"
+        svg_right = f"</svg>"
+        svg_str = svg_left + svg_str + svg_right
+        return svg_str
     
     @staticmethod
     def _clean_svg_tree(node: Dict[str, Any]) -> List[Dict[str, Any]]:
@@ -492,4 +522,79 @@ class SVGTreeConverter:
         print("defs_str: ", defs_str)
         return defs_str
     
-    
+    @staticmethod
+    def _clean_element_tree(element: LayoutElement) -> List[LayoutElement]:
+        """清理SVG树中的冗余节点
+        
+        Args:
+            node: SVG节点数据
+            
+        Returns:
+            清理后的节点数据
+        """
+        # if not element:
+        #     return element
+        # 如果element没有children属性，则返回element
+        if not hasattr(element, 'children'):
+            return [element]
+        print("element: ", element.tag, element.attributes.get('class', ''))
+        # 递归清理子节点
+        children = element.children
+        if children:
+            # 过滤掉background和foreground的path
+            filtered_children = []
+            for child in children:
+                if (child.tag == 'path' and 
+                    child.attributes.get('class', '') in ['background', 'foreground']):
+                    continue
+                filtered_children.extend(SVGTreeConverter._clean_element_tree(child))
+            element.children = filtered_children
+            
+        tag = element.tag
+        attrs = element.attributes
+        
+        available_classes = ['chart', 'axis X', 'axis Y','use-image', 'title', 'description', 'background', 'axis-label', 'axis-tick', 'axis-domain', 'axis-title', 
+                             'mark', 'bar', 'line', 'area', 'point', 'arc', 'path', 'circle', 'rect', 'text', 
+                             'axis_label-group', 'axis_tick-group', 'axis_domain-group', 'axis_title-group','mark_group']
+        
+        # 如果是g标签且class不在available_classes中，把当前节点展平
+        if tag == 'g' and (('class' in attrs and attrs['class'] not in available_classes) or ('class' not in attrs)):
+            res_list = []
+            print("not in list ", "attrs: ", attrs.get('class', ''))
+            # print("node: ", node)
+            for child in element.children:
+                # 合并属性
+                child_attrs = child.attributes
+                merged_attrs = attrs.copy()
+                merged_attrs.update(child_attrs)
+                
+                # 合并transform
+                parent_transform = attrs.get('transform', '')
+                child_transform = child_attrs.get('transform', '')
+                
+                if parent_transform and child_transform:
+                    # 解析transform类型和值
+                    parent_type = parent_transform.split('(')[0].strip()
+                    child_type = child_transform.split('(')[0].strip()
+                    
+                    if parent_type == child_type:
+                        # 如果是相同类型的transform,提取数值并累加
+                        parent_values = parent_transform.split('(')[1].split(')')[0].split(',')
+                        child_values = child_transform.split('(')[1].split(')')[0].split(',')
+                        merged_values = [float(p) + float(c) for p,c in zip(parent_values, child_values)]
+                        merged_attrs['transform'] = f"{parent_type}({','.join(str(v) for v in merged_values)})"
+                    else:
+                        # 不同类型则串联
+                        merged_attrs['transform'] = f"{parent_transform} {child_transform}"
+                elif parent_transform:
+                    merged_attrs['transform'] = parent_transform
+                elif child_transform:
+                    merged_attrs['transform'] = child_transform
+                    
+                # 更新子节点属性并返回
+                child.attributes = merged_attrs
+                res_list.append(child)
+            for child in res_list:
+                print("child: ", child.tag, child.attributes.get('class', ''))
+            return res_list
+        return [element]

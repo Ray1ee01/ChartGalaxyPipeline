@@ -49,7 +49,8 @@ class PieChartTemplate(ChartTemplate):
         # 设置color编码
         self.color={
             "field": category_field,
-            "type": "nominal"
+            "type": "nominal",
+            "legend": None
         }
 
         mark_config = self.config.get('mark', {}).get('arc', {})

@@ -7,10 +7,17 @@ from PIL import Image, ImageDraw
 import cairosvg
 import numpy as np
 from lxml import etree
+import base64
 
 def parse_svg_dimensions(svg_content):
     """解析SVG中的尺寸信息"""
+    # print('svg_content: ', svg_content)
+    # for debug: 把svg_content写入文件
+    with open("svg_content.svg", "w") as f:
+        f.write(svg_content)
     root = etree.fromstring(svg_content)
+    
+
     
     # 默认值
     dimensions = {
@@ -46,6 +53,128 @@ def parse_svg_dimensions(svg_content):
         dimensions['height'] = dimensions['viewBox'][3]
     
     return dimensions
+
+def image_to_mask(image_base64: str, grid_size=10, content_threshold=0.05, sample_density=36, scale=1):
+    """
+    将图片转换为基于网格的mask
+    """
+    # print(image_base64)
+    image = Image.open(io.BytesIO(base64.b64decode(image_base64)))
+    image_data = np.array(image)
+    image_height, image_width = image.size
+    
+    print("image_width, image_height: ", image_width, image_height)
+    
+    cols = math.floor(image_width / grid_size)
+    rows = math.floor(image_height / grid_size)
+    # print("cols, rows: ", cols, rows)
+    # 创建mask矩阵和图像
+    mask_grid = np.zeros((rows, cols), dtype=bool)
+    mask_image = Image.new('RGBA', (image_width, image_height), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(mask_image)
+    
+    # 用于调试的画布
+    debug_image = image.copy()
+    debug_draw = ImageDraw.Draw(debug_image)
+    
+    # 计算采样步长
+    samples_per_row = int(math.sqrt(sample_density))
+    # print("samples_per_row: ", samples_per_row)
+    step_size = (grid_size * scale) / samples_per_row
+    # print("step_size: ", step_size)
+    
+    grid_info = {
+        'total_cells': rows * cols,
+        'filled_cells': 0,
+        'dimensions': {
+            'width': image_width,
+            'height': image_height,
+            'viewBox': [0, 0, image_width, image_height]
+        },
+        'grid_size': grid_size,
+        'rows': rows,
+        'cols': cols
+    }
+    
+    # 生成采样网格坐标
+    x_offsets = np.arange(samples_per_row) * step_size
+    y_offsets = np.arange(samples_per_row) * step_size
+    # print("x_offsets: ", x_offsets)
+    # print("y_offsets: ", y_offsets)
+    X, Y = np.meshgrid(x_offsets, y_offsets)
+    sample_offsets = np.stack([X.flatten(), Y.flatten()], axis=1)
+    # print("sample_offsets: ", sample_offsets)
+    
+    # 遍历每个网格单元
+    for y in range(rows):
+        for x in range(cols):
+            # print("x, y: ", x, y)
+            # 网格在图像上的位置
+            grid_x = int(x * grid_size * scale)
+            grid_y = int(y * grid_size * scale)
+            
+            # 绘制网格线（调试用）
+            debug_draw.rectangle(
+                [(grid_x, grid_y), (grid_x + grid_size * scale, grid_y + grid_size * scale)], 
+                outline=(200, 200, 200, 128), 
+                width=1, 
+                fill=None
+            )
+            
+            # 计算所有采样点坐标
+            sample_points = sample_offsets + [grid_x, grid_y]
+            sample_points = sample_points.astype(int)
+            # print("sample_points: ", sample_points)
+            
+            
+            # 过滤掉超出范围的点
+            valid_points = (sample_points[:, 0] >= 0) & (sample_points[:, 0] < image_height) & \
+                         (sample_points[:, 1] >= 0) & (sample_points[:, 1] < image_width)
+            valid_samples = sample_points[valid_points]
+            
+            # print("valid_samples: ", valid_samples)
+            # 获取所有有效采样点的颜色和alpha值
+            pixels = image_data[valid_samples[:, 1], valid_samples[:, 0]]
+            rgb_values = pixels[:, :3]
+            alpha_values = pixels[:, 3]
+            
+            # 判断有效点：alpha不为0且RGB不都超过250
+            is_white = np.all(rgb_values > 250, axis=1)
+            is_visible = (alpha_values > 0) & (~is_white)
+            content_points = np.sum(is_visible)
+            
+            # 计算内容比例
+            content_ratio = content_points / sample_density
+            
+            # 在调试图像上显示比例
+            text_x = grid_x + (grid_size * scale) // 2
+            text_y = grid_y + (grid_size * scale) // 2
+            text_color = (255, 0, 0, 255) if content_ratio >= content_threshold else (0, 0, 0, 255)
+            debug_draw.text((text_x, text_y), f"{int(content_ratio*100)}%", fill=text_color)
+            
+            # 如果内容比例超过阈值，则标记为有内容
+            if content_ratio >= content_threshold:
+                mask_grid[y, x] = True
+                grid_info['filled_cells'] += 1
+                
+                # 在mask图像上绘制矩形
+                draw.rectangle(
+                    [(grid_x, grid_y), (grid_x + grid_size * scale, grid_y + grid_size * scale)],
+                    fill=(0, 0, 255, 128)
+                )
+                
+                # 在调试图像上高亮有内容的网格
+                debug_draw.rectangle(
+                    [(grid_x, grid_y), (grid_x + grid_size * scale, grid_y + grid_size * scale)],
+                    outline=(255, 0, 0, 255),
+                    width=2,
+                    fill=None
+                )
+    
+    # debug_image的size
+    print("debug_image.size: ", debug_image.size)
+    return debug_image, mask_image, mask_grid, grid_info
+    
 
 def svg_to_mask(svg_content, grid_size=10, content_threshold=0.05, sample_density=36, scale=2):
     """
