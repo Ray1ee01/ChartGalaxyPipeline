@@ -164,7 +164,37 @@ class SVGTreeConverter:
             return f"<{tag} {attrs_str}>{content}</{tag}>"
         else:
             return f"<{tag} {attrs_str}/>"
+    
+    @staticmethod
+    def element_tree_to_svg_file(element_tree: LayoutElement):
+        boundingbox = element_tree.get_bounding_box()
+        min_x = boundingbox.minx
+        min_y = boundingbox.miny
+        # 通过添加transform属性，把boundingbox的minx, miny设置为0
+        element_tree.attributes['transform'] = f"translate({-min_x},{-min_y})" + element_tree.attributes.get('transform', '') 
+        boundingbox = element_tree.get_bounding_box()
+        min_x = boundingbox.minx
+        min_y = boundingbox.miny
+        width = boundingbox.width
+        height = boundingbox.height
+        viewBox = f"{min_x} {min_y} {width} {height}"
+        svg_attrs = {
+            "width": boundingbox.maxx,
+            "height": boundingbox.maxy,
+            "viewBox": viewBox,
+            "xmlns": "http://www.w3.org/2000/svg",
+            "xmlns:xlink": "http://www.w3.org/1999/xlink"
+        }
+        attrs_list = []
+        for key, value in svg_attrs.items():
+            attrs_list.append(f'{key}="{value}"')
+        attrs_str = ' '.join(attrs_list)
+        svg_str = SVGTreeConverter.element_tree_to_svg(element_tree)
         
+        svg_left = f"<svg {attrs_str}>"
+        svg_right = f"</svg>"
+        svg_str = svg_left + svg_str + svg_right
+        return svg_str
     
     @staticmethod
     def _clean_svg_tree(node: Dict[str, Any]) -> List[Dict[str, Any]]:

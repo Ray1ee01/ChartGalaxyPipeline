@@ -363,7 +363,7 @@ class TestDataProcessor(DataProcessor):
             "title": data_json['title'],
             'caption': data_json['description'],
         }
-        
+        print("chart_type: ", chart_type)
         if "Horizontal" in chart_type:
             meta_data['orientation'] = 'horizontal'
         else:
@@ -372,6 +372,8 @@ class TestDataProcessor(DataProcessor):
             meta_data['chart_type'] = 'stackedbar'
         elif "Grouped Bar Chart" in chart_type:
             meta_data['chart_type'] = 'groupbar'
+        elif "Radial Bar Chart" in chart_type:
+            meta_data['chart_type'] = 'radialbar'
         elif "Bar Chart" in chart_type:
             meta_data['chart_type'] = 'bar'
         elif "Line Graph" in chart_type:

@@ -1218,7 +1218,6 @@ class Path(Graphical):
                 current_y = points[5]
             elif command == 'A':  # 弧形命令
                 # A命令的参数: rx ry x-axis-rotation large-arc-flag sweep-flag x y
-                # print("d: ", d)
                 rx, ry = points[0], points[1]
                 x_axis_rotation = points[2]
                 large_arc_flag = points[3]
@@ -1312,6 +1311,7 @@ class Path(Graphical):
         d = attrs.get('d', '')
         if not d:
             return BoundingBox(0, 0, 0, 0, 0, 0)
+        # print("d: ", d)
 
         commands = self._parse_path(d)
         minX = float('inf')
@@ -1435,11 +1435,13 @@ class Path(Graphical):
                     self.cy = cy
                 else:
                     self.cy = (self.cy+cy)/2
-                if self.r is None:
-                    self.r = rx
-                    print("self.r: ", self.r)
-                else:
-                    self.r = min(self.r, rx)
+                # if self.r is None:
+                #     self.r = rx
+                # else:
+                #     self.r = min(self.r, rx)
+                # print("self.r: ", self.r)
+                # print("self.cx: ", self.cx)
+                # print("self.cy: ", self.cy)
                 # 处理large_arc_flag为1的情况
                 if large_arc_flag == 1:
                     # 如果角度差小于π,需要加上2π
@@ -1448,7 +1450,16 @@ class Path(Graphical):
                     # 如果角度差大于-π,需要减去2π
                     elif end_angle - start_angle > -math.pi:
                         start_angle += 2 * math.pi
-
+                elif large_arc_flag == 0:
+                    # 如果角度差大于π,需要减去2π
+                    if end_angle - start_angle > math.pi:
+                        start_angle -= 2 * math.pi
+                    # 如果角度差小于-π,需要加上2π
+                    elif end_angle - start_angle < -math.pi:
+                        end_angle += 2 * math.pi
+                # print("large_arc_flag: ", large_arc_flag)
+                # print("start_angle: ", start_angle)
+                # print("end_angle: ", end_angle)
                 # 采样点
                 num_samples = 20
                 for i in range(num_samples + 1):
@@ -1464,6 +1475,8 @@ class Path(Graphical):
                     minY = min(minY, sample_y)
                     maxX = max(maxX, sample_x)
                     maxY = max(maxY, sample_y)
+                    # if rx > 70:
+                    #     print("sample_x, sample_y: ", sample_x, sample_y)
                 # 确保起点和终点也包含在边界框内
                 minX = min(minX, current_x, end_x)
                 minY = min(minY, current_y, end_y)

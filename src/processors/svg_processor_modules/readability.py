@@ -226,8 +226,8 @@ class NumberReadabilityProcessor(ReadabilityProcessor):
         if try_bounding_box.width <= constraint.max_width:
             return number, unit, new_font_size
         elif try_bounding_box.width > constraint.max_width:
-            print("try_bounding_box.width: ", try_bounding_box.width)
-            print("constraint.max_width: ", constraint.max_width)
+            # print("try_bounding_box.width: ", try_bounding_box.width)
+            # print("constraint.max_width: ", constraint.max_width)
             special_type = special_number_judge(number)
             if special_type == "year":
                 new_number = self.process_year(number)
@@ -246,7 +246,7 @@ class NumberReadabilityProcessor(ReadabilityProcessor):
                     new_number = f"{value/1000:.2f}K"
                 else:
                     new_number = f"{value:.2f}"
-            print("new_number: ", new_number)
+            # print("new_number: ", new_number)
             try_text_element.content = new_number
             try_bounding_box = try_text_element.get_bounding_box()
             if try_bounding_box.width <= constraint.max_width:

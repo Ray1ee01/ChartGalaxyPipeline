@@ -148,12 +148,39 @@ class ImageProcessor:
         return base64.b64encode(buffered.getvalue()).decode()
 
 
+
+def segment(base64_str: str, prompt: str="the foreground of the image"):
+    url = "http://0.0.0.0:12191/process_image"
+    headers = { "Content-Type": "application/json" }
+    data = {
+        "requests": [
+            {
+                "image_b64": base64_str,
+                "prompt": prompt
+            }
+        ],
+        "threshold": 0.5
+    }
+    
+    # print(data)
+    response = requests.post(url, json=data, headers=headers)
+    if response.status_code == 200 and len(response.json()['results'][0]) > 0:
+        segmented_b64 = response.json()['results'][0][0] # 只保留第一个结果
+        seg_succeed = True
+    else:
+        segmented_b64 = base64_str # 如果没有结果，保留原图
+        seg_succeed = False
+    print(response.status_code)
+    segmented_img = Image.open(io.BytesIO(base64.b64decode(segmented_b64)))
+    # 把segmented_img保存到本地
+    segmented_img.save('segmented_img.png')
+    return segmented_b64, seg_succeed, segmented_img
+
+
 class ClipProcessor:
     def __init__(self, base64_str: str, path: Path, prompt: str):
         self.original_b64 = base64_str
         self.original_img = Image.open(io.BytesIO(base64.b64decode(self.original_b64)))
-        
-        # self.original_img.save('./output/input.png')
         
         self.segmented_b64 = None
         self.segmented_img = None
@@ -183,7 +210,7 @@ class ClipProcessor:
             self.segmented_b64 = self.original_b64 # 如果没有结果，保留原图
             
         self.segmented_img = Image.open(io.BytesIO(base64.b64decode(self.segmented_b64)))
-        # self.segmented_img.save('./output/segmented.png')
+        return self.segmented_b64
         
     def find_position_with_template_matching(self):
         # 旧版本的 segment 代码需要用到这个函数
@@ -229,7 +256,6 @@ class ClipProcessor:
     def create_mask(self):
         np_seg_img = np.array(self.segmented_img)
         mask = np_seg_img[:, :, 3] > 0
-        # cv2.imwrite("./output/mask.png", mask * 255)
         mask = np.array(mask, dtype=np.uint8)
         return mask
         

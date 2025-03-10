@@ -313,13 +313,16 @@ class TemplateFactory:
         
         annotation_config = config.get('annotation', None)
         # sort_config = config.get('sort', None)
-        sort_config = {}
-        if meta_data['orientation'] == 'horizontal':
-            sort_config['by'] = 'x'
-            sort_config['ascending'] = True
-        else:
-            sort_config['by'] = 'y'
-            sort_config['ascending'] = False
+        sort_config = config.get('layout', {}).get('chart_config', {}).get('sort', None)
+        print("get sort config: ", sort_config)
+        if sort_config is None:
+            sort_config = {}
+            if meta_data['orientation'] == 'horizontal':
+                sort_config['by'] = 'x'
+                sort_config['ascending'] = True
+            else:
+                sort_config['by'] = 'y'
+                sort_config['ascending'] = False
 
         print("sort_config: ", sort_config)
         axis_config = {
@@ -330,6 +333,7 @@ class TemplateFactory:
         chart_template = StackedBarChartTemplate()
         chart_template.create_template(data, meta_data, color_template, config)
         layout_template = LayoutTemplate()
+        print("meta_data['orientation']: ", meta_data['orientation'])
         # layout_template.add_constraint(StackedBarChartConstraint())
         if meta_data['orientation'] == 'horizontal':
             layout_template.add_constraint(HorizontalBarChartConstraint())
@@ -729,8 +733,15 @@ class TemplateFactory:
         color_template: ColorDesign = None,
         config: dict = None,
     ):
+        annotation_config = config.get('annotation', None)
+        sort_config = config.get('sort', None)
+        layout_tree = config.get('layout', {}).get('layout_tree', None)
+        axis_config = {
+            "x_axis": config.get('x_axis', {}),
+            "y_axis": config.get('y_axis', {})
+        }
         chart_template = RadialBarChartTemplate()
-        chart_template.create_template(data, meta_data, color_template)
+        chart_template.create_template(data, meta_data, color_template, config)
         layout_template = LayoutTemplate()
         # layout_template.add_constraint(RadialBarChartConstraint())
         layout_template.root = layout_template.build_template_from_tree(layout_tree)

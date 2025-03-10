@@ -11,46 +11,63 @@
             "overlap": false,
             "alignment": ["left", "left"]
         },
-        "sizeConstraint": {
-            "reference": "chart",
-            "max_width": 1.0,
-            "min_width": 0.8
-        },
         "children": [
             {
                 "tag": "g",
-                "id": "group_1",
+                "id": "group_0",
                 "layoutStrategy": {
-                    "name": "vertical",
+                    "name": "horizontal",
                     "padding": 10,
-                    "direction": "down",
-                    "overlap": false,
-                    "alignment": ["left", "left"]
+                    "direction": "right",
+                    "overlap": false
+                },
+                "sizeConstraint": {
+                    "reference": "group_1",
+                    "max_height": 1,
+                    "min_height": 0.95
                 },
                 "children": [
                     {
                         "tag": "g",
-                        "id": "title",
-                        "layoutStrategy": {
-                            "name": "vertical",
-                            "padding": 0,
-                            "direction": "down",
-                            "overlap": false,
-                            "alignment": ["left", "left"]
-                        },
+                        "id": "embellish",
                         "children": []
                     },
                     {
                         "tag": "g",
-                        "id": "subtitle",
+                        "id": "group_1",
                         "layoutStrategy": {
                             "name": "vertical",
-                            "padding": 0,
+                            "padding": 10,
                             "direction": "down",
                             "overlap": false,
                             "alignment": ["left", "left"]
                         },
-                        "children": []
+                        "children": [
+                            {
+                                "tag": "g",
+                                "id": "title",
+                                "layoutStrategy": {
+                                    "name": "vertical",
+                                    "padding": 0,
+                                    "direction": "down",
+                                    "overlap": false,
+                                    "alignment": ["left", "left"]
+                                },
+                                "children": []
+                            },
+                            {
+                                "tag": "g",
+                                "id": "subtitle",
+                                "layoutStrategy": {
+                                    "name": "vertical",
+                                    "padding": 0,
+                                    "direction": "down",
+                                    "overlap": false,
+                                    "alignment": ["left", "left"]
+                                },
+                                "children": []
+                            }
+                        ]
                     }
                 ]
             },
@@ -62,7 +79,14 @@
         ]
     },
     "chart_config": {
-        "valid_type": ["pie","scatter","line","area","bar"],
-        "orientation": "vertical"
+        "valid_type": ["bar","line","area","scatter","pie"],
+        "orientation": "vertical",
+        "sort": {
+            "ascending": true,
+            "by": "y"
+        }
+    },
+    "chart_image_config": {
+        "direction": "center"
     }
 }

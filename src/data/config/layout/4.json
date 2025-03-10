@@ -9,12 +9,7 @@
             "padding": 15,
             "direction": "down",
             "overlap": false,
-            "alignment": ["left", "left"]
-        },
-        "sizeConstraint": {
-            "reference": "chart",
-            "max_width": 1.1,
-            "min_width": 0.85
+            "alignment": ["middle", "middle"]
         },
         "children": [
             {
@@ -47,44 +42,18 @@
                             "overlap": false,
                             "alignment": ["left", "left"]
                         },
-                        "sizeConstraint": {
-                            "reference": "group_2",
-                            "max_width": 1
-                        },
                         "children": [
                             {
                                 "tag": "g",
-                                "id": "group_2",
+                                "id": "title",
                                 "layoutStrategy": {
-                                    "name": "horizontal",
-                                    "padding": 10,
-                                    "direction": "right",
+                                    "name": "vertical",
+                                    "padding": 0,
+                                    "direction": "down",
                                     "overlap": false,
-                                    "alignment": ["top", "top"]
+                                    "alignment": ["left", "left"]
                                 },
-                                "sizeConstraint": {
-                                    "reference": "title",
-                                    "max_height": 1,
-                                    "min_height": 0.8
-                                },
-                                "children": [
-                                    {
-                                        "tag": "g",
-                                        "id": "title",
-                                        "layoutStrategy": {
-                                            "name": "vertical",
-                                            "padding": 0,
-                                            "direction": "down",
-                                            "overlap": false,
-                                            "alignment": ["left", "left"]
-                                        },
-                                        "children": []
-                                    },
-                                    {
-                                        "tag": "image",
-                                        "id": "topic_icon"
-                                    }
-                                ]
+                                "children": []
                             },
                             {
                                 "tag": "g",
@@ -110,7 +79,14 @@
         ]
     },
     "chart_config": {
-        "valid_type": ["pie","scatter","line","area","bar"],
-        "orientation": "horizontal"
+        "valid_type": ["bar","line","area","scatter","pie"],
+        "orientation": "vertical",
+        "sort": {
+            "ascending": false,
+            "by": "y"
+        }
+    },
+    "chart_image_config": {
+        "direction": "top"
     }
 }

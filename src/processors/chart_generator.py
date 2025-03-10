@@ -52,6 +52,7 @@ class VegaLiteGenerator(ChartGenerator):
             print('arc')
         
         # 如果有填充颜色样式
+        print("self.template.mark.fill_color_style.color: ", self.template.mark.fill_color_style.color)
         if self.template.mark.fill_color_style.color:
             mark_specification["fill"] = self.template.mark.fill_color_style.color
             mark_specification["fillOpacity"] = self.template.mark.fill_color_style.opacity
@@ -354,7 +355,7 @@ class EchartGenerator(ChartGenerator):
         }
         return option
     
-    def generate(self, data: dict, template: ChartTemplate) -> Tuple[str, Dict, Dict]:
+    def generate(self, data: dict, template: ChartTemplate, config: Dict=None) -> Tuple[str, Dict, Dict]:
         self.data = data['data']
         self.meta_data = data['meta_data']
         data_headers = [key for key in self.data[0].keys()]

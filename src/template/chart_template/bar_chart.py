@@ -26,7 +26,7 @@ class BarChartTemplate(ChartTemplate):
         self.color_encoding = ColorEncodingTemplate(color_template, meta_data, data)
         single_color_flag = self.color_encoding.encoding_data("group_label")
         if single_color_flag:
-            self.mark.color = self.color_encoding.range[0]
+            self.mark.fill_color_style.color = self.color_encoding.range[0]
             self.color_encoding = None
         if meta_data is None:
             # set default value
@@ -158,6 +158,7 @@ class BarChartTemplate(ChartTemplate):
         """应用排序配置"""
         print("apply sort configuration")
         sort_config = self.sort
+        print("sort_config: ", sort_config)
         if sort_config is not None:
             if sort_config['by'] == 'x':
                 encoding["y"]["sort"] = "-x" if sort_config['ascending'] else "x"
@@ -421,8 +422,8 @@ class RadialBarChartTemplate(BarChartTemplate):
         super().__init__()
         self.chart_type = "radialbar"
         
-    def create_template(self, data: list, meta_data: dict=None, color_template: ColorDesign=None):
-        super().create_template(data, meta_data, color_template)
+    def create_template(self, data: list, meta_data: dict=None, color_template: ColorDesign=None, config: dict=None):
+        super().create_template(data, meta_data, color_template, config)
         self.y_axis = AngleAxisTemplate(color_template)
         self.x_axis = RadiusAxisTemplate(color_template)
         self.polar_setting = PolarSetting()
@@ -437,11 +438,13 @@ class RadialBarChartTemplate(BarChartTemplate):
             "radius": [self.polar_setting.inner_radius, self.polar_setting.outer_radius],
         }
         angleAxis = {
+            "id": "angleAxis",
             "startAngle": self.y_axis.start_angle,
             "endAngle": self.y_axis.end_angle,
             "clockwise": self.y_axis.clockwise,
         }
         radiusAxis = {
+            "id": "radiusAxis",
             "type": "category",
         }
         self.echart_option["polar"] = polar_setting

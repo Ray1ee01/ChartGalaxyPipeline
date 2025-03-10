@@ -11,7 +11,8 @@ class PieTemplate(MarkTemplate):
         self.innerRadius: Optional[float] = config.get('innerRadius', None)
         # 如果innerRadius为None，则从100到0之间随机取值
         if self.innerRadius is None:
-            self.innerRadius = random.randint(0, self.radius)
+            self.innerRadius = 50
+            # self.innerRadius = random.randint(0, self.radius)
         self.height = config
         self.width = config
         self.orientation = None # 占位

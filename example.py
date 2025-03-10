@@ -55,7 +55,8 @@ def main():
     #     config_idx = data_id_config[args.data_id]['config_idx']
     # else:
     #     config_idx = 17
-    config_idx = 17
+    # config_idx = 0
+    config_idx = args.config_idx
     print("config_idx: ", config_idx)
     configs = load_config(config_idx)
     print(configs)
