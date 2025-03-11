@@ -2,7 +2,7 @@ import json, os
 import torch
 import numpy as np
 from sentence_transformers import SentenceTransformer, util
-from ...utils.global_state import *
+from config import sentence_transformer_path, infographic_library_path, infographic_image_path
 model_path = sentence_transformer_path
 library_path = infographic_library_path
 image_root_path = infographic_image_path

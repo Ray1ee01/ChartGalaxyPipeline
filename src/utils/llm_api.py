@@ -2,7 +2,8 @@ from openai import OpenAI
 from PIL import Image
 import base64
 from io import BytesIO
-from .global_state import client_key, base_url, image_max_size, model_name
+from config import client_key, base_url
+from .global_state import image_max_size, model_name
 
 client = OpenAI(
     api_key=client_key,
