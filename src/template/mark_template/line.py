@@ -10,13 +10,6 @@ class LineTemplate(MarkTemplate):
         self.height = None
         self.width = None
         self.fill_color_style.color = None
-            # 样式属性
-        self.corner_radiuses = {
-            "top_left": None,
-            "top_right": None,
-            "bottom_left": None,
-            "bottom_right": None
-        }
         self.apply_point_styles()
         self.apply_interpolate()
     def apply_point_styles(self):
@@ -44,7 +37,30 @@ class LineTemplate(MarkTemplate):
         self.interpolate = random.choice(candidate_interpolates)
     
     def dump(self):
+        base_dict = super().dump()
         return {
+            **base_dict,
             "type": self.type,
-            "orientation": self.orientation
+            "orientation": self.orientation,
+            "interpolate": self.interpolate,
+            "fill_color_style": self.fill_color_style.dump(),
+            "stroke_color_style": self.stroke_color_style.dump(),
+            "stroke_style": self.stroke_style.dump(),
+        }
+    def dump_possible_values(self):
+        base_possible_values = super().dump_possible_values()
+        return {
+            **base_possible_values,
+            "orientation": {
+                "type": "enum",
+                "options": ["horizontal", "vertical"],
+                "default": "horizontal",
+                "note": "orientation"
+            },
+            "interpolate": {
+                "type": "enum",
+                "options": ["basis", "linear", "monotone", "step"],
+                "default": "linear",
+                "note": "interpolate"
+            }
         }

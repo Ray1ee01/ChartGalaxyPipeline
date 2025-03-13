@@ -39,5 +39,20 @@ class MarkTemplate:
             "mark_type": self.mark_type,
             "fill_color_style": self.fill_color_style.dump(),
             "stroke_color_style": self.stroke_color_style.dump(),
-            "stroke_style": self.stroke_style.dump()
+            "stroke_style": self.stroke_style.dump(),
+        }
+    def dump_possible_values(self):
+        fill_color_possible_values = self.fill_color_style.dump_possible_values()
+        stroke_color_possible_values = self.stroke_color_style.dump_possible_values()
+        stroke_style_possible_values = self.stroke_style.dump_possible_values()
+        return {
+            "fill_color_style": fill_color_possible_values,
+            "stroke_color_style": stroke_color_possible_values,
+            "stroke_style": stroke_style_possible_values,
+            "mark_type": {
+                "type": "enum",
+                "options": ["arc", "path", "area", "bar", "point"],
+                "default": "bar",
+                "note": "mark type"
+            }
         }

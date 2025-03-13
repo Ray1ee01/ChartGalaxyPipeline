@@ -20,11 +20,35 @@ class CircleTemplate(MarkTemplate):
         self.fill = None  # 填充颜色
         
     def dump(self):
+        base_dict = super().dump()
         return {
+            **base_dict,
             "type": self.type,
             "size": self.size,
             "shape": self.shape,
-            "stroke_style": {
-                "stroke_width": self.stroke_width,
+            "angle": self.angle,
+        }
+        
+    def dump_possible_values(self):
+        base_possible_values = super().dump_possible_values()
+        return {
+            **base_possible_values,
+            "size": {
+                "type": "number",
+                "range": [0, 100],
+                "default": 10,
+                "note": "size"
             },
+            "shape": {
+                "type": "enum",
+                "options": ["arrow", "circle", "square"],
+                "default": "circle",
+                "note": "shape"
+            },
+            "angle": {
+                "type": "number",
+                "range": [0, 360],
+                "default": 0,
+                "note": "angle"
+            }
         }

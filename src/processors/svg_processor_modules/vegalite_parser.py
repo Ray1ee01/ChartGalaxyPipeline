@@ -1,7 +1,7 @@
 from typing import Optional, Dict, List, Tuple, Union
 import re
 from lxml import etree
-from io import StringIO
+from io import StringIO, BytesIO
 import math
 from .tree_converter import SVGTreeConverter
 from .elements import *
@@ -1014,6 +1014,7 @@ class SVGParser():
         #         'mark-group role-scope' in group.attributes.get('class', '')
     
     
+    
     # def if_legend_group(self, group: LayoutElement) -> bool:
     #     return group.tag == 'g' and \
     #         'role-legend' in group.attributes.get('class', '') and \
@@ -1056,14 +1057,23 @@ class SVGParser():
     # def append_image(self, tree: LayoutElement, image_element: LayoutElement):
     #     tree.children.append(image_element)
         
-    def parseTree(self, svg: str) -> dict:
+    def parseTree(self, svg) -> dict:
         """
-        将字符串形式的svg文件转换成XML格式的tree
+        将字符串或字节形式的svg文件转换成XML格式的tree
         """
         # 创建解析器
         parser = etree.XMLParser(remove_comments=True, remove_blank_text=True)
-        # 将SVG字符串解析为XML树
-        tree = etree.parse(StringIO(svg), parser)
+        
+        # 将SVG解析为XML树
+        if isinstance(svg, str):
+            # 如果是字符串，移除XML声明
+            if svg.startswith('<?xml'):
+                svg = svg[svg.find('?>')+2:].strip()
+            tree = etree.parse(StringIO(svg), parser)
+        else:
+            # 如果是字节，直接解析
+            tree = etree.parse(BytesIO(svg), parser)
+        
         root = tree.getroot()
         # 递归解析节点
         return self._parse_node(root)
@@ -1178,6 +1188,7 @@ class SVGParser():
             return res
     
     
+    
     def extract_data_from_aria_label(self, aria_label: str):
         # print("aria_label: ", aria_label)
         group_value = None
@@ -1256,6 +1267,7 @@ class SVGParser():
         if y2_value != None:
             res['y2_data'] = y2_value
         return res         
+    
     
     
     def extract_data_from_axis_label(self, element: AxisLabel):

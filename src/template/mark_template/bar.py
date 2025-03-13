@@ -26,10 +26,29 @@ class BarTemplate(MarkTemplate):
         else:
             self.corner_radius = 0
     def dump(self):
+        base_dict = super().dump()
         return {
+            **base_dict,
             "type": self.type,
             "height": self.height,
             "width": self.width,
-            "orientation": self.orientation,
-            "corner_radiuses": self.corner_radiuses
+            "corner_radius_end": self.corner_radius_end,
+            "corner_radius": self.corner_radius
+        }
+    def dump_possible_values(self):
+        base_possible_values = super().dump_possible_values()
+        return {
+            **base_possible_values,
+            "corner_radius_end": {
+                "type": "number",
+                "range": [0, 100],
+                "default": 0,
+                "note": "corner radius end"
+            },
+            "corner_radius": {
+                "type": "number",
+                "range": [0, 100],
+                "default": 0,
+                "note": "corner radius"
+            }
         }

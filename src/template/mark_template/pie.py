@@ -21,10 +21,32 @@ class PieTemplate(MarkTemplate):
         # self.sort: Optional[bool] = True
 
     def dump(self) -> Dict[str, Any]:
+        base_dict = super().dump()
         config = {
+            **base_dict,
             "type": self.type,
             "radius": self.radius,
-            "innerRadius": self.innerRadius
+            "innerRadius": self.innerRadius,
+            "fill_color_style": self.fill_color_style.dump(),
+            "stroke_color_style": self.stroke_color_style.dump(),
+            "stroke_style": self.stroke_style.dump(),
         }
-        
         return config
+    
+    def dump_possible_values(self):
+        base_possible_values = super().dump_possible_values()
+        return {
+            **base_possible_values,
+            "radius": {
+                "type": "number",
+                "range": [0, 100],
+                "default": 100,
+                "note": "radius"
+            },
+            "innerRadius": {
+                "type": "number",
+                "range": [0, 100],
+                "default": 50,
+                "note": "inner radius"
+            },
+        }
