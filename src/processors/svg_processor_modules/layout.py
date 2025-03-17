@@ -317,8 +317,8 @@ class HorizontalLayoutStrategy(LayoutStrategy):
         self.overlap = False
         
     def layout(self, reference_element: LayoutElement, layout_element: LayoutElement) -> None:
-        print("reference_element: ", reference_element.tag, reference_element.id)
-        print("layout_element: ", layout_element.tag, layout_element.id)
+        # print("reference_element: ", reference_element.tag, reference_element.id)
+        # print("layout_element: ", layout_element.tag, layout_element.id)
         reference_element_bounding_box = reference_element._bounding_box
         layout_element_bounding_box = layout_element._bounding_box
         # print("reference_element_bounding_box: ", reference_element_bounding_box)

@@ -146,12 +146,15 @@ class SVGOptimizer(SVGProcessor):
         # copy_children(chart_element_tree, chart_element)
         # copy_attributes(chart_element_tree, chart_element)
         chart_element = chart_element_tree
+        background_chart = BackgroundChart(chart_element)
+        background_variation_config = {}
+        background_variation_config['type'] = additional_configs['variation']['background']
+        background_variation_config['orientation'] = additional_configs['meta_data'].get('orientation', 'vertical')
+        print("background_variation_config:", background_variation_config)
+        chart_element = background_chart.process(background_variation_config)
         
-        # background_chart = BackgroundChart(chart_element)
-        # config = {
-        #     "variation_type": "background",
-        # }
-        # chart_element = background_chart.process(config)
+        
+        
         
         # image_url = "/data1/liduan/generation/chart/chart_pipeline/src/test.png"
         # base64_image = Image._getImageAsBase64(image_url)
@@ -162,32 +165,36 @@ class SVGOptimizer(SVGProcessor):
         # # 把image保存到本地
         # image.save('image.png')
         infographics = Infographics()
-        print('additional_configs["chart_image_config"]: ', additional_configs["chart_image_config"])
-        if additional_configs.get('chart_image_config'):
-            direction = additional_configs['chart_image_config']['direction']
-            # topic_icon_url = additional_configs['topic_icon_url']['file_path']
+        # print('additional_configs["chart_image_config"]: ', additional_configs["chart_image_config"])
+        
+        image_chart_config = {}
+        image_chart_config['type'] = additional_configs['variation']['image_chart']
+        image_chart_config['direction'] = additional_configs['variation']['chart_image_position']
+        print("image_chart_config: ", image_chart_config)
+        if image_chart_config['type'] != "none":
             topic_icon_url = "/data1/liduan/generation/chart/chart_pipeline/lizhen.png"
             base64_image = Image._getImageAsBase64(topic_icon_url)
             content_type = base64_image.split(';base64,')[0]
             base64_str = base64_image.split(';base64,')[1]
-            base64_str, seg_succeed, segmented_img = segment(base64_str)
+            base64_str, seg_succeed, segmented_img = segment(base64_str, "the person")
             base64_image = f"{content_type};base64,{base64_str}"
             image_element = UseImage(base64_image)
             image_chart = ImageChart(chart_element, image_element)
-            config = {
-                # "variation_type": "behind",
-                # "variation_type": "side",
-                "variation_type": "overlay",
-                "direction": direction
-            }
-            if config['variation_type'] == "side":
-                chart_element, image_element = image_chart.process(config)
+            # config = {
+            #     # "variation_type": "behind",
+            #     # "variation_type": "side",
+            #     "variation_type": "overlay",
+            #     "direction": direction
+            # }
+            if image_chart_config['type'] == "side":
+                chart_element, image_element = image_chart.process(image_chart_config)
                 infographics.children = [chart_element, image_element]
-            elif config['variation_type'] == "overlay":
-                chart_element = image_chart.process(config)[0]
+            elif image_chart_config['type'] == "overlay":
+                chart_element = image_chart.process(image_chart_config)[0]
                 infographics.children = [chart_element]
         else:
             infographics.children = [chart_element]
+        infographics.children = [chart_element]
             # if direction == 'topleft':
             #     pass
             # elif direction == 'topright':
@@ -247,10 +254,10 @@ class SVGOptimizer(SVGProcessor):
 
         
 
-        element_list = SVGTreeConverter.flatten_tree(element_tree)
-        # element_list = SVGTreeConverter.flatten_tree(flattened_elements_tree)
-        root_element = GroupElement()
-        root_element.children = element_list
+        # element_list = SVGTreeConverter.flatten_tree(element_tree)
+        # # element_list = SVGTreeConverter.flatten_tree(flattened_elements_tree)
+        # root_element = GroupElement()
+        # root_element.children = element_list
         # # print('root_element.children: ', root_element.dump())
         
         # # 从element_tree中找到所有mark_group, legend_group, x_axis_group, y_axis_group
@@ -296,28 +303,28 @@ class SVGOptimizer(SVGProcessor):
         # print('subtitle_group_element.bounding_box: ', subtitle_group_element.get_bounding_box())
         
         
-        # 在root_element中添加多个rect，用于显示这些group的bounding_box
-        rects = []
-        points = []
-        for element in root_element.children:
-            # if not element.tag == 'path' or element.attributes.get('aria-roledescription') != 'area mark':
-            #     continue
-            # print('element: ', element.content, element._bounding_box)
-            bounding_box = element.get_bounding_box()
-            # print('bounding_box: ', bounding_box)
-            rect = Rect()
-            rect.attributes = {
-                "stroke": "red",
-                "stroke-width": 1,
-                "fill": "none",
-                "x": bounding_box.minx,
-                "y": bounding_box.miny,
-                "width": bounding_box.maxx - bounding_box.minx,
-                "height": bounding_box.maxy - bounding_box.miny,
-            }
-            rects.append(rect)
-            # if element.tag == 'path':
-            #     points.extend(element._get_path_coordinates())
+        # # 在root_element中添加多个rect，用于显示这些group的bounding_box
+        # rects = []
+        # points = []
+        # for element in root_element.children:
+        #     # if not element.tag == 'path' or element.attributes.get('aria-roledescription') != 'area mark':
+        #     #     continue
+        #     # print('element: ', element.content, element._bounding_box)
+        #     bounding_box = element.get_bounding_box()
+        #     # print('bounding_box: ', bounding_box)
+        #     rect = Rect()
+        #     rect.attributes = {
+        #         "stroke": "red",
+        #         "stroke-width": 1,
+        #         "fill": "none",
+        #         "x": bounding_box.minx,
+        #         "y": bounding_box.miny,
+        #         "width": bounding_box.maxx - bounding_box.minx,
+        #         "height": bounding_box.maxy - bounding_box.miny,
+        #     }
+        #     rects.append(rect)
+        #     # if element.tag == 'path':
+        #     #     points.extend(element._get_path_coordinates())
         # for rect in rects:
         #     root_element.children.append(rect)
         # # for point in points:

@@ -592,11 +592,11 @@ class Image(AtomElement):
             self.aspect_ratio = self.original_width / self.original_height
             # print(f"self.aspect_ratio: {self.aspect_ratio}")
         if self.attributes.get('preserveAspectRatio', 'None') == 'None':
-            width = float(self.attributes.get('width', 50))
-            height = float(self.attributes.get('height', 50))
+            width = float(self.attributes.get('width', 20))
+            height = float(self.attributes.get('height', 20))
         else:
-            set_width = float(self.attributes.get('width', 50))
-            set_height = float(self.attributes.get('height', 50))
+            set_width = float(self.attributes.get('width', 20))
+            set_height = float(self.attributes.get('height', 20))
             # 计算缩放比例,取较小值以保持横纵比
             scale = min(set_width / self.original_width, set_height / self.original_height)
             # 按比例计算实际宽高
@@ -1360,6 +1360,7 @@ class Path(Graphical):
             elif command == 'A':
                 # A命令的参数: rx ry x-axis-rotation large-arc-flag sweep-flag x y
                 # print("d: ", d)
+                print("points: ", points)
                 rx, ry = points[0], points[1]
                 x_axis_rotation = points[2]
                 large_arc_flag = points[3]
@@ -1439,9 +1440,12 @@ class Path(Graphical):
                 #     self.r = rx
                 # else:
                 #     self.r = min(self.r, rx)
-                # print("self.r: ", self.r)
-                # print("self.cx: ", self.cx)
-                # print("self.cy: ", self.cy)
+                print("rx: ", rx)
+                print("ry: ", ry)
+                print("self.cx: ", self.cx)
+                print("self.cy: ", self.cy)
+                print("start_angle: ", start_angle)
+                print("end_angle: ", end_angle)
                 # 处理large_arc_flag为1的情况
                 if large_arc_flag == 1:
                     # 如果角度差小于π,需要加上2π
@@ -1457,15 +1461,16 @@ class Path(Graphical):
                     # 如果角度差小于-π,需要加上2π
                     elif end_angle - start_angle < -math.pi:
                         end_angle += 2 * math.pi
-                # print("large_arc_flag: ", large_arc_flag)
-                # print("start_angle: ", start_angle)
-                # print("end_angle: ", end_angle)
+                print("large_arc_flag: ", large_arc_flag)
+                print("start_angle: ", start_angle)
+                print("end_angle: ", end_angle)
                 # 采样点
                 num_samples = 20
                 for i in range(num_samples + 1):
                     theta = start_angle + (end_angle - start_angle) * (i / num_samples)
                     sample_x = cx + rx * math.cos(theta)
                     sample_y = cy + ry * math.sin(theta)
+                    print("theta: ", theta)
                     if i == num_samples//2:
                         self.arcs[(current_x, current_y)]['center'] = (sample_x, sample_y)
                         # outer是沿着圆心到(sample_x, sample_y)再走过25的距离
@@ -1475,6 +1480,8 @@ class Path(Graphical):
                     minY = min(minY, sample_y)
                     maxX = max(maxX, sample_x)
                     maxY = max(maxY, sample_y)
+                    print("sample_x, sample_y: ", sample_x, sample_y)
+                    print("minX, minY, maxX, maxY: ", minX, minY, maxX, maxY)
                     # if rx > 70:
                     #     print("sample_x, sample_y: ", sample_x, sample_y)
                 # 确保起点和终点也包含在边界框内

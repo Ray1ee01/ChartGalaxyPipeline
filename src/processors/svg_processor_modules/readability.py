@@ -31,6 +31,7 @@ class AxisReadabilityProcessor(ReadabilityProcessor):
     
     def avoid_label_overlap(self):
         for child in self.axis.children:
+            print("child: ", child)
             if child.attributes.get("class", "") == "axis_label-group":
                 grand_children = child.children
                 for grand_child in grand_children:

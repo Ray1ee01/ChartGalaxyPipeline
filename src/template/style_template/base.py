@@ -23,12 +23,12 @@ class ColorTemplate:
         return {
             "color": {
                 "type": "string",
-                "options": ["#000000"]
+                "options": ["#000000"],
                 "default": "#000000"
             },
             "opacity": {
                 "type": "number",
-                "range": [0, 1]
+                "range": [0, 1],
                 "default": 1
             }
         }
@@ -43,7 +43,7 @@ class StrokeTemplate:
         return {
             "strokeWidth": {
                 "type": "number",
-                "range": [0, 50]
+                "range": [0, 50],
                 "default": 2
             }
         }
@@ -122,19 +122,19 @@ class AxisTemplate:
         return {
             "orientation": {
                 "type": "string",
-                "options": ["top", "bottom", "left", "right"]
+                "options": ["top", "bottom", "left", "right"],
                 "default": "bottom"
             },
             "field": {
                 "type": "string",
-                "options": ["x", "y"]
-                "default": "x"
+                "options": ["x", "y"],
+                "default": "x",
                 "note": "column name"
             },
             "field_type": {
                 "type": "string",
-                "options": ["nominal", "quantitative"]
-                "default": "nominal"
+                "options": ["nominal", "quantitative"],
+                "default": "nominal",
                 "note": "type of the field"
             },
             "has_domain": {
@@ -185,12 +185,12 @@ class PolarSetting():
         return {
             "inner_radius": {
                 "type": "string",
-                "options": ["0%", "10%", "20%", "30%", "40%", "50%", "60%", "70%", "80%", "90%"]
+                "options": ["0%", "10%", "20%", "30%", "40%", "50%", "60%", "70%", "80%", "90%"],
                 "default": "0%"
             },
             "outer_radius": {
                 "type": "string",
-                "options": ["0%", "10%", "20%", "30%", "40%", "50%", "60%", "70%", "80%", "90%"]
+                "options": ["0%", "10%", "20%", "30%", "40%", "50%", "60%", "70%", "80%", "90%"],
                 "default": "80%"
             }
         }
@@ -214,12 +214,12 @@ class AngleAxisTemplate(AxisTemplate):
         return {
             "start_angle": {
                 "type": "number",
-                "range": [0, 360]
+                "range": [0, 360],
                 "default": 90
             },
             "end_angle": {
                 "type": "number",
-                "range": [0, 360]
+                "range": [0, 360],
                 "default": 270
             },
             "clockwise": {
@@ -363,7 +363,7 @@ class ColorEncodingTemplate:
             },
             "field_type": {
                 "type": "string",
-                "options": ["nominal", "quantitative"]
+                "options": ["nominal", "quantitative"],
                 "default": "nominal",
                 "note": "type of the field"
             },
@@ -436,7 +436,7 @@ class ShapeEncodingTemplate:
             },
             "field_type": {
                 "type": "string",
-                "options": ["nominal", "quantitative"]
+                "options": ["nominal", "quantitative"],
                 "default": "nominal",
                 "note": "type of the field"
             },

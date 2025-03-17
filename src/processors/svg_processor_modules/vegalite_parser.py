@@ -129,9 +129,11 @@ class SVGParser():
         marks = vega_lite_element_parser.marks
         axis_labels = vega_lite_element_parser.axis_labels
         axes = vega_lite_element_parser.axes
+        print("axes: ", axes)
         for axis in axes:
             axis_label_group = None
             for child in axis.children:
+                print("child: ", child.attributes.get("class", ""))
                 if child.attributes.get("class", "") == "axis_label-group":
                     axis_label_group = child
                     break
@@ -187,7 +189,10 @@ class SVGParser():
                 elif axis_orient == "bottom":
                     reference_point = "top"
                 apply_to_element(child.children[0], numbers[i]+units[i], font_size, reference_point)
-        
+        print("avoid label overlap")
+        for axis in axes:
+            axis_readability_processor = AxisReadabilityProcessor(axis)
+            axis_readability_processor.avoid_label_overlap()
         
         for mark in marks:
             data_dict = self.extract_data_from_element(mark)
@@ -198,6 +203,7 @@ class SVGParser():
 
         self.value_icon_map = {}
         self.value_icon_map['x'] = {}
+        self.value_icon_map['group'] = {}
         
         for mark in marks:
             if mark.data_attributes.data_attributes.get('x_data', None) is not None:
@@ -210,21 +216,42 @@ class SVGParser():
                         self.value_icon_map['x'][mark.data_attributes.data_attributes['x_data']] = self.additional_configs['x_data_multi_url'][random.randint(0, len(self.additional_configs['x_data_multi_url']) - 1)]
                 else:
                     self.value_icon_map['x'][mark.data_attributes.data_attributes['x_data']] = self.additional_configs['x_data_multi_url'][random.randint(0, len(self.additional_configs['x_data_multi_url']) - 1)]
+            if mark.data_attributes.data_attributes.get('group_data', None) is not None:
+                if mark.data_attributes.data_attributes['group_data'] not in self.value_icon_map['group']:
+                    for icon_url in self.additional_configs['group_data_url']:
+                        if mark.data_attributes.data_attributes['group_data'] in icon_url['text'] or mark.data_attributes.data_attributes['group_data'] == icon_url['text']:
+                            self.value_icon_map['group'][mark.data_attributes.data_attributes['group_data']] = icon_url['file_path']
+                            break
+                    else:
+                        self.value_icon_map['group'][mark.data_attributes.data_attributes['group_data']] = self.additional_configs['group_data_url'][random.randint(0, len(self.additional_configs['group_data_url']) - 1)]
+                else:
+                    self.value_icon_map['group'][mark.data_attributes.data_attributes['group_data']] = self.additional_configs['group_data_url'][random.randint(0, len(self.additional_configs['group_data_url']) - 1)]
         
-        config = {
-            "variation_type": "side",
-            "arc": {
-                "side": "outer"
-            }
-        }
-        # print("before variation")
-        # for mark in marks:
-        #     if mark.data_attributes.data_attributes['x_data'] is not None:
-        #         base64_image = Image._getImageAsBase64(self.value_icon_map['x'][mark.data_attributes.data_attributes['x_data']])
-        #         pictogram = UseImage(base64_image)
-        #         pictogram_mark = PictogramMark(mark, pictogram)
-        #         new_mark = pictogram_mark.process(config)
-        #         mark.children = new_mark.children
+        config = self.additional_configs['variation']
+        print("config: ", config)
+        
+        pictogram_mark_config = {}
+        pictogram_mark_config['type'] = config['icon_mark']
+        # config = {
+        #     "variation": "side",
+        #     "arc": {
+        #         "side": "outer"
+        #     }
+        # }
+        for mark in marks:
+            print("mark: ", mark)
+            if mark.data_attributes.data_attributes.get("group_data", None) is not None:
+                base64_image = Image._getImageAsBase64(self.value_icon_map['group'][mark.data_attributes.data_attributes['group_data']])
+                pictogram = UseImage(base64_image)
+                pictogram_mark = PictogramMark(mark, pictogram)
+                new_mark = pictogram_mark.process(pictogram_mark_config)
+                mark.children = new_mark.children
+            elif mark.data_attributes.data_attributes.get("x_data", None) is not None:
+                base64_image = Image._getImageAsBase64(self.value_icon_map['x'][mark.data_attributes.data_attributes['x_data']])
+                pictogram = UseImage(base64_image)
+                pictogram_mark = PictogramMark(mark, pictogram)
+                new_mark = pictogram_mark.process(pictogram_mark_config)
+                mark.children = new_mark.children
         # print("after variation")
         
         # if orient == 'vertical':

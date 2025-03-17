@@ -171,16 +171,16 @@ class SVGTreeConverter:
         min_x = boundingbox.minx
         min_y = boundingbox.miny
         # 通过添加transform属性，把boundingbox的minx, miny设置为0
-        element_tree.attributes['transform'] = f"translate({-min_x},{-min_y})" + element_tree.attributes.get('transform', '') 
+        element_tree.attributes['transform'] = f"translate({-min_x:.2f},{-min_y:.2f})" + element_tree.attributes.get('transform', '') 
         boundingbox = element_tree.get_bounding_box()
         min_x = boundingbox.minx
         min_y = boundingbox.miny
         width = boundingbox.width
         height = boundingbox.height
-        viewBox = f"{min_x} {min_y} {width} {height}"
+        viewBox = f"{min_x:.2f} {min_y:.2f} {width:.2f} {height:.2f}"
         svg_attrs = {
-            "width": boundingbox.maxx,
-            "height": boundingbox.maxy,
+            "width": f"{boundingbox.maxx:.2f}",
+            "height": f"{boundingbox.maxy:.2f}",
             "viewBox": viewBox,
             "xmlns": "http://www.w3.org/2000/svg",
             "xmlns:xlink": "http://www.w3.org/1999/xlink"
@@ -537,7 +537,7 @@ class SVGTreeConverter:
         # 如果element没有children属性，则返回element
         if not hasattr(element, 'children'):
             return [element]
-        print("element: ", element.tag, element.attributes.get('class', ''))
+        # print("element: ", element.tag, element.attributes.get('class', ''))
         # 递归清理子节点
         children = element.children
         if children:
@@ -594,7 +594,7 @@ class SVGTreeConverter:
                 # 更新子节点属性并返回
                 child.attributes = merged_attrs
                 res_list.append(child)
-            for child in res_list:
-                print("child: ", child.tag, child.attributes.get('class', ''))
+            # for child in res_list:
+            #     print("child: ", child.tag, child.attributes.get('class', ''))
             return res_list
         return [element]

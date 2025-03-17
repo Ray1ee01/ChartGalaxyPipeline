@@ -361,6 +361,32 @@ class IconSelector:
                     res.append({"file_path": file_path, "text": text})
             else:
                 icon_mode.append(4)
+        if 'group_icon' in sequence2:
+            res = []
+            if self.spe_mode == 'flag':
+                flag_icons = FlagIcons()
+                image_path = os.path.join(cache_path, 'icons')
+                if not os.path.exists(image_path):
+                    os.makedirs(image_path)
+                group_label = self.pool.chart_data['meta_data']['group_label']
+                for i in range(len(self.pool.chart_data['data'])):
+                    text = self.pool.chart_data['data'][i][group_label]
+                    file_path = flag_icons.search_and_save(str(text), image_path, 600, 600)
+                    # res.append(file_path)
+                    res.append({"file_path": file_path, "text": text})
+            elif self.spe_mode == 'logo':
+                logo_icons = LogoIcons()
+                image_path = os.path.join(cache_path, 'icons')
+                if not os.path.exists(image_path):
+                    os.makedirs(image_path)
+                group_label = self.pool.chart_data['meta_data']['group_label']
+                for i in range(len(self.pool.chart_data['data'])):
+                    text = self.pool.chart_data['data'][i][group_label]
+                    file_path = logo_icons.search_and_save(str(text), image_path, 600, 600) # TODO size
+                    # res.append(file_path)
+                    res.append({"file_path": file_path, "text": text})
+            else:
+                icon_mode.append(5)
         if res:
             return self.sa.run(icon_mode), res
         return self.sa.run(icon_mode)

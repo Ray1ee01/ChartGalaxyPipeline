@@ -363,7 +363,6 @@ class TestDataProcessor(DataProcessor):
             "title": data_json['title'],
             'caption': data_json['description'],
         }
-        print("chart_type: ", chart_type)
         if "Horizontal" in chart_type:
             meta_data['orientation'] = 'horizontal'
         else:
@@ -454,7 +453,7 @@ class TestDataProcessor(DataProcessor):
         # 6. get chart relevant icons
         time_start = time.time()
         # matcher = CLIPMatcher()  # 只创建一次CLIPMatcher实例
-        icon_pool = get_icon_pool(chart_data, topic_data, matcher)
+        # icon_pool = get_icon_pool(chart_data, topic_data, matcher)
         result = {}
         result['meta_data'] = meta_data.copy()
         result['meta_data'].update(chart_data['meta_data'])
@@ -466,14 +465,14 @@ class TestDataProcessor(DataProcessor):
         result['icons'] = {}
 
         icon_pool = get_icon_pool(chart_data, topic_data, matcher)
-        # if if_has_country_name(chart_data['data']):
-        # # if True:
-        #     icon_selector = IconSelector(icon_pool, topic_color=None, spe_mode='flag')
-        #     print("has country name")
-        # else:
-        #     icon_selector = IconSelector(icon_pool, topic_color=None)
-        #     print("no country name")
-        icon_selector = IconSelector(icon_pool, topic_color=None, spe_mode='logo')
+        if if_has_country_name(chart_data['data']):
+        # if True:
+            icon_selector = IconSelector(icon_pool, topic_color=None, spe_mode='flag')
+            print("has country name")
+        else:
+            icon_selector = IconSelector(icon_pool, topic_color=None)
+            print("no country name")
+        # icon_selector = IconSelector(icon_pool, topic_color=None, spe_mode='logo')
         # icon_selector = IconSelector(icon_pool, topic_color=None)
         candidate_icons = icon_selector.select(layout_sequence, chart_image_sequence)
         # candidate_icons = [[],[]]
@@ -493,13 +492,18 @@ class TestDataProcessor(DataProcessor):
             x_multi_icon_idx = x_single_icon_idx + 1
         else:
             x_multi_icon_idx = x_single_icon_idx
+        if 'group_icon' in chart_image_sequence:
+            group_icon_idx = x_multi_icon_idx + 1
+        else:
+            group_icon_idx = x_multi_icon_idx
         
         icon_semantic = icon_pool
         icon_positions = icon_semantic.icon_positions
         
         topic_icon_pool = candidate_icons[0:topic_icon_idx+1]
         x_data_single_icon_pool = candidate_icons[topic_icon_idx+1:x_single_icon_idx+1]
-        x_data_multi_icon_pool = candidate_icons[x_multi_icon_idx:]
+        x_data_multi_icon_pool = candidate_icons[x_multi_icon_idx:group_icon_idx]
+        group_icon_pool = candidate_icons[group_icon_idx:]
         # make them always be a list
         if not isinstance(topic_icon_pool, list):
             topic_icon_pool = [topic_icon_pool]
@@ -507,6 +511,8 @@ class TestDataProcessor(DataProcessor):
             x_data_single_icon_pool = [x_data_single_icon_pool]
         if not isinstance(x_data_multi_icon_pool, list):
             x_data_multi_icon_pool = [x_data_multi_icon_pool]
+        if not isinstance(group_icon_pool, list):
+            group_icon_pool = [group_icon_pool]
         
 
         image_root = "/data1/liduan/generation/chart/iconset/colored_icons_new"
@@ -514,10 +520,7 @@ class TestDataProcessor(DataProcessor):
         # result['icons']['topic'] = [topic_image_url]
         result['icons']['x_data_single'] = [os.path.join(image_root, icon_positions[v][0], icon_positions[v][1]) if isinstance(v, int) else v for v in x_data_single_icon_pool]
         result['icons']['x_data_multi'] = [os.path.join(image_root, icon_positions[v][0], icon_positions[v][1]) if isinstance(v, int) else v for v in x_data_multi_icon_pool]
+        result['icons']['group'] = [os.path.join(image_root, icon_positions[v][0], icon_positions[v][1]) if isinstance(v, int) else v for v in group_icon_pool]
         result['icons']['background_image'] = topic_image_url
-        x_data_multi_icon_map = {}
-        # for i, data in enumerate(result['data']):
-        #     x_data_multi_icon_map[data['x_data']] = result['icons']['x_data_multi'][i]
-        result['x_data_multi_icon_map'] = x_data_multi_icon_map
         result['palettes'] = palettes
         return result
