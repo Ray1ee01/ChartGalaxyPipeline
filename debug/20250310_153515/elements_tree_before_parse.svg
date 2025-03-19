@@ -1,0 +1,54 @@
+<svg version="1.1" class="marks" width="492" height="230" viewBox="-100,-100,1000,1000" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><g ><g version="1.1" class="marks" width="492" height="230" viewBox="0 0 492 230"><g fill="none" stroke-miterlimit="10" transform="translate(37,5)"><g class="mark-group role-frame root" role="graphics-object" aria-roledescription="group mark container"><g transform="translate(0,0)" class="mark-group role-axis" role="graphics-symbol" aria-roledescription="axis" aria-label="X-axis for a discrete scale with 8 values: All media, Digital search, Digital video, Local TV, National TV, ending with Social media"><g transform="translate(0.5,200.5)" class="mark-rule role-axis-tick" pointer-events="none"><line transform="translate(32,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(87,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(142,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(197,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(252,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(307,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(362,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(417,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/></g>
+<g transform="translate(0.5,200.5)" class="mark-text role-axis-label" pointer-events="none"><text text-anchor="middle" transform="translate(32.42682926829268,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">All media
+</text>
+<text text-anchor="middle" transform="translate(87.30487804878048,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">Digital search
+</text>
+<text text-anchor="middle" transform="translate(142.1829268292683,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">Digital video
+</text>
+<text text-anchor="middle" transform="translate(197.0609756097561,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">Local TV
+</text>
+<text text-anchor="middle" transform="translate(251.9390243902439,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">National TV
+</text>
+<text text-anchor="middle" transform="translate(306.8170731707317,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">Print
+</text>
+<text text-anchor="middle" transform="translate(361.6951219512195,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">Radio
+</text>
+<text text-anchor="middle" transform="translate(416.5731707317073,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">Social media
+</text></g>
+<g transform="translate(0.5,200.5)" class="mark-rule role-axis-domain" pointer-events="none"><line transform="translate(0,0)" x2="450" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/></g></g>
+<g transform="translate(0,0)" class="mark-group role-axis" role="graphics-symbol" aria-roledescription="axis" aria-label="Y-axis for a linear scale with values from −50 to 30"><g transform="translate(0.5,0.5)" class="mark-rule role-axis-tick" pointer-events="none"><line transform="translate(0,175)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,125)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,75)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,25)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/></g>
+<g transform="translate(0.5,0.5)" class="mark-text role-axis-label" pointer-events="none"><text text-anchor="end" transform="translate(-10,178)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">−40
+</text>
+<text text-anchor="end" transform="translate(-10,128)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">−20
+</text>
+<text text-anchor="end" transform="translate(-10,78)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">0
+</text>
+<text text-anchor="end" transform="translate(-10,28)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">20
+</text></g>
+<g transform="translate(0.5,0.5)" class="mark-rule role-axis-domain" pointer-events="none"><line transform="translate(0,200)" x2="0" y2="-200" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/></g></g>
+<g transform="translate(0,0)" class="mark-rect role-mark layer_0_marks" role="graphics-object" aria-roledescription="rect mark container"><path aria-label="Media Type: All media; Percentage: 6.6; group: undefined; Timeframe: Pre-epidemic" role="graphics-symbol" aria-roledescription="bar" d="M18.439024390243894,58.5h28.975609756097565v16.5h-28.975609756097565Z" fill="#1f77b4" opacity="1"/>
+<path aria-label="Media Type: All media; Percentage: −2.8; group: undefined; Timeframe: March 2020" role="graphics-symbol" aria-roledescription="bar" d="M18.439024390243894,75h28.975609756097565v6.999999999999986h-28.975609756097565Z" fill="#17becf" opacity="1"/>
+<path aria-label="Media Type: Digital search; Percentage: 11.6; group: undefined; Timeframe: Pre-epidemic" role="graphics-symbol" aria-roledescription="bar" d="M73.3170731707317,46h28.975609756097565v29h-28.975609756097565Z" fill="#1f77b4" opacity="1"/>
+<path aria-label="Media Type: Digital search; Percentage: 4.5; group: undefined; Timeframe: March 2020" role="graphics-symbol" aria-roledescription="bar" d="M73.3170731707317,34.750000000000014h28.975609756097565v11.249999999999986h-28.975609756097565Z" fill="#17becf" opacity="1"/>
+<path aria-label="Media Type: Digital video; Percentage: 14.2; group: undefined; Timeframe: Pre-epidemic" role="graphics-symbol" aria-roledescription="bar" d="M128.1951219512195,39.5h28.975609756097565v35.5h-28.975609756097565Z" fill="#1f77b4" opacity="1"/>
+<path aria-label="Media Type: Digital video; Percentage: 8.3; group: undefined; Timeframe: March 2020" role="graphics-symbol" aria-roledescription="bar" d="M128.1951219512195,18.75h28.975609756097565v20.75h-28.975609756097565Z" fill="#17becf" opacity="1"/>
+<path aria-label="Media Type: Social media; Percentage: 17.2; group: undefined; Timeframe: Pre-epidemic" role="graphics-symbol" aria-roledescription="bar" d="M402.5853658536585,31.999999999999986h28.975609756097565v43.000000000000014h-28.975609756097565Z" fill="#1f77b4" opacity="1"/>
+<path aria-label="Media Type: Social media; Percentage: 8.7; group: undefined; Timeframe: March 2020" role="graphics-symbol" aria-roledescription="bar" d="M402.5853658536585,10.249999999999982h28.975609756097565v21.750000000000004h-28.975609756097565Z" fill="#17becf" opacity="1"/>
+<path aria-label="Media Type: National TV; Percentage: −0.4; group: undefined; Timeframe: Pre-epidemic" role="graphics-symbol" aria-roledescription="bar" d="M237.95121951219514,75h28.975609756097565v1h-28.975609756097565Z" fill="#1f77b4" opacity="1"/>
+<path aria-label="Media Type: National TV; Percentage: −12.7; group: undefined; Timeframe: March 2020" role="graphics-symbol" aria-roledescription="bar" d="M237.95121951219514,76h28.975609756097565v31.750000000000014h-28.975609756097565Z" fill="#17becf" opacity="1"/>
+<path aria-label="Media Type: Local TV; Percentage: 12.8; group: undefined; Timeframe: Pre-epidemic" role="graphics-symbol" aria-roledescription="bar" d="M183.07317073170734,43.000000000000014h28.975609756097565v31.999999999999986h-28.975609756097565Z" fill="#1f77b4" opacity="1"/>
+<path aria-label="Media Type: Local TV; Percentage: 0.9; group: undefined; Timeframe: March 2020" role="graphics-symbol" aria-roledescription="bar" d="M183.07317073170734,40.75h28.975609756097565v2.250000000000014h-28.975609756097565Z" fill="#17becf" opacity="1"/>
+<path aria-label="Media Type: Radio; Percentage: −2.3; group: undefined; Timeframe: Pre-epidemic" role="graphics-symbol" aria-roledescription="bar" d="M347.7073170731707,75h28.975609756097565v5.749999999999986h-28.975609756097565Z" fill="#1f77b4" opacity="1"/>
+<path aria-label="Media Type: Radio; Percentage: −14.1; group: undefined; Timeframe: March 2020" role="graphics-symbol" aria-roledescription="bar" d="M347.7073170731707,80.74999999999999h28.975609756097565v35.25h-28.975609756097565Z" fill="#17becf" opacity="1"/>
+<path aria-label="Media Type: Print; Percentage: −17; group: undefined; Timeframe: Pre-epidemic" role="graphics-symbol" aria-roledescription="bar" d="M292.8292682926829,75h28.975609756097565v42.5h-28.975609756097565Z" fill="#1f77b4" opacity="1"/>
+<path aria-label="Media Type: Print; Percentage: −25.4; group: undefined; Timeframe: March 2020" role="graphics-symbol" aria-roledescription="bar" d="M292.8292682926829,117.5h28.975609756097565v63.5h-28.975609756097565Z" fill="#17becf" opacity="1"/></g></g></g></g></g></svg>

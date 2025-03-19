@@ -1,0 +1,68 @@
+<svg version="1.1" class="marks" width="490" height="235" viewBox="-100,-100,1000,1000" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><g ><g version="1.1" class="marks" width="490" height="235" viewBox="0 0 490 235"><g fill="none" stroke-miterlimit="10" transform="translate(35,10)"><g class="mark-group role-frame root" role="graphics-object" aria-roledescription="group mark container"><g transform="translate(0,0)" class="mark-group role-axis" role="graphics-symbol" aria-roledescription="axis" aria-label="X-axis for a discrete scale with 9 values: Alabama, Idaho, Montana, New Mexico, North Dakota, ending with Wyoming"><g transform="translate(0.5,200.5)" class="mark-rule role-axis-tick" pointer-events="none"><line transform="translate(29,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(78,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(127,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(176,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(224,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(273,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(322,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(371,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(420,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/></g>
+<g transform="translate(0.5,200.5)" class="mark-text role-axis-label" pointer-events="none"><text text-anchor="middle" transform="translate(28.847826086956506,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">Alabama
+</text>
+<text text-anchor="middle" transform="translate(77.76086956521738,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">Idaho
+</text>
+<text text-anchor="middle" transform="translate(126.67391304347824,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">Montana
+</text>
+<text text-anchor="middle" transform="translate(175.5869565217391,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">New Mexico
+</text>
+<text text-anchor="middle" transform="translate(224.49999999999997,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">North Dakota
+</text>
+<text text-anchor="middle" transform="translate(273.4130434782609,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">Oregon
+</text>
+<text text-anchor="middle" transform="translate(322.32608695652175,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">Rhode Island
+</text>
+<text text-anchor="middle" transform="translate(371.2391304347826,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">Utah
+</text>
+<text text-anchor="middle" transform="translate(420.1521739130435,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">Wyoming
+</text></g>
+<g transform="translate(0.5,200.5)" class="mark-rule role-axis-domain" pointer-events="none"><line transform="translate(0,0)" x2="450" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/></g></g>
+<g transform="translate(0,0)" class="mark-group role-axis" role="graphics-symbol" aria-roledescription="axis" aria-label="Y-axis for a linear scale with values from 0 to 120"><g transform="translate(0.5,0.5)" class="mark-rule role-axis-tick" pointer-events="none"><line transform="translate(0,200)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,167)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,133)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,100)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,67)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,33)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,0)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/></g>
+<g transform="translate(0.5,0.5)" class="mark-text role-axis-label" pointer-events="none"><text text-anchor="end" transform="translate(-10,203)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">0
+</text>
+<text text-anchor="end" transform="translate(-10,169.66666666666669)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">20
+</text>
+<text text-anchor="end" transform="translate(-10,136.33333333333334)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">40
+</text>
+<text text-anchor="end" transform="translate(-10,103)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">60
+</text>
+<text text-anchor="end" transform="translate(-10,69.66666666666667)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">80
+</text>
+<text text-anchor="end" transform="translate(-10,36.33333333333333)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">100
+</text>
+<text text-anchor="end" transform="translate(-10,3)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">120
+</text></g>
+<g transform="translate(0.5,0.5)" class="mark-rule role-axis-domain" pointer-events="none"><line transform="translate(0,200)" x2="0" y2="-200" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/></g></g>
+<g transform="translate(0,0)" class="mark-rect role-mark layer_0_marks" role="graphics-object" aria-roledescription="rect mark container"><path aria-label="State: Alabama; Percentage: 60; group: undefined; Week: Week ending April 4 2020" role="graphics-symbol" aria-roledescription="bar" d="M16.434782608695635,13.33333333333333h25.826086956521742v100h-25.826086956521742Z" fill="#de9ed6" opacity="1"/>
+<path aria-label="State: Alabama; Percentage: 52; group: undefined; Week: Week ending March 14 2020" role="graphics-symbol" aria-roledescription="bar" d="M16.434782608695635,113.33333333333333h25.826086956521742v86.66666666666667h-25.826086956521742Z" fill="#393b79" opacity="1"/>
+<path aria-label="State: Utah; Percentage: 57; group: undefined; Week: Week ending April 4 2020" role="graphics-symbol" aria-roledescription="bar" d="M358.82608695652175,35.00000000000001h25.826086956521742v95h-25.826086956521742Z" fill="#de9ed6" opacity="1"/>
+<path aria-label="State: Utah; Percentage: 42; group: undefined; Week: Week ending March 14 2020" role="graphics-symbol" aria-roledescription="bar" d="M358.82608695652175,130h25.826086956521742v70h-25.826086956521742Z" fill="#393b79" opacity="1"/>
+<path aria-label="State: Rhode Island; Percentage: 56; group: undefined; Week: Week ending April 4 2020" role="graphics-symbol" aria-roledescription="bar" d="M309.9130434782609,23.33333333333334h25.826086956521742v93.33333333333331h-25.826086956521742Z" fill="#de9ed6" opacity="1"/>
+<path aria-label="State: Rhode Island; Percentage: 50; group: undefined; Week: Week ending March 14 2020" role="graphics-symbol" aria-roledescription="bar" d="M309.9130434782609,116.66666666666666h25.826086956521742v83.33333333333334h-25.826086956521742Z" fill="#393b79" opacity="1"/>
+<path aria-label="State: New Mexico; Percentage: 54; group: undefined; Week: Week ending April 4 2020" role="graphics-symbol" aria-roledescription="bar" d="M163.17391304347822,41.66666666666667h25.826086956521742v89.99999999999999h-25.826086956521742Z" fill="#de9ed6" opacity="1"/>
+<path aria-label="State: New Mexico; Percentage: 41; group: undefined; Week: Week ending March 14 2020" role="graphics-symbol" aria-roledescription="bar" d="M163.17391304347822,131.66666666666666h25.826086956521742v68.33333333333334h-25.826086956521742Z" fill="#393b79" opacity="1"/>
+<path aria-label="State: Montana; Percentage: 54; group: undefined; Week: Week ending April 4 2020" role="graphics-symbol" aria-roledescription="bar" d="M114.26086956521738,56.666666666666664h25.826086956521742v90.00000000000003h-25.826086956521742Z" fill="#de9ed6" opacity="1"/>
+<path aria-label="State: Montana; Percentage: 32; group: undefined; Week: Week ending March 14 2020" role="graphics-symbol" aria-roledescription="bar" d="M114.26086956521738,146.66666666666669h25.826086956521742v53.333333333333314h-25.826086956521742Z" fill="#393b79" opacity="1"/>
+<path aria-label="State: Idaho; Percentage: 53; group: undefined; Week: Week ending April 4 2020" role="graphics-symbol" aria-roledescription="bar" d="M65.3478260869565,56.666666666666664h25.826086956521742v88.33333333333334h-25.826086956521742Z" fill="#de9ed6" opacity="1"/>
+<path aria-label="State: Idaho; Percentage: 33; group: undefined; Week: Week ending March 14 2020" role="graphics-symbol" aria-roledescription="bar" d="M65.3478260869565,145h25.826086956521742v55h-25.826086956521742Z" fill="#393b79" opacity="1"/>
+<path aria-label="State: North Dakota; Percentage: 51; group: undefined; Week: Week ending April 4 2020" role="graphics-symbol" aria-roledescription="bar" d="M212.0869565217391,85.00000000000001h25.826086956521742v84.99999999999999h-25.826086956521742Z" fill="#de9ed6" opacity="1"/>
+<path aria-label="State: North Dakota; Percentage: 18; group: undefined; Week: Week ending March 14 2020" role="graphics-symbol" aria-roledescription="bar" d="M212.0869565217391,170h25.826086956521742v30h-25.826086956521742Z" fill="#393b79" opacity="1"/>
+<path aria-label="State: Wyoming; Percentage: 50; group: undefined; Week: Week ending April 4 2020" role="graphics-symbol" aria-roledescription="bar" d="M407.7391304347826,75h25.826086956521742v83.33333333333331h-25.826086956521742Z" fill="#de9ed6" opacity="1"/>
+<path aria-label="State: Wyoming; Percentage: 25; group: undefined; Week: Week ending March 14 2020" role="graphics-symbol" aria-roledescription="bar" d="M407.7391304347826,158.33333333333331h25.826086956521742v41.666666666666686h-25.826086956521742Z" fill="#393b79" opacity="1"/>
+<path aria-label="State: Oregon; Percentage: 48; group: undefined; Week: Week ending April 4 2020" role="graphics-symbol" aria-roledescription="bar" d="M261,58.33333333333333h25.826086956521742v80.00000000000001h-25.826086956521742Z" fill="#de9ed6" opacity="1"/>
+<path aria-label="State: Oregon; Percentage: 37; group: undefined; Week: Week ending March 14 2020" role="graphics-symbol" aria-roledescription="bar" d="M261,138.33333333333334h25.826086956521742v61.66666666666666h-25.826086956521742Z" fill="#393b79" opacity="1"/></g></g></g></g></g></svg>

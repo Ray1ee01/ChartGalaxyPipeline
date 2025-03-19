@@ -1,0 +1,422 @@
+import os
+import json
+import subprocess
+import tempfile
+from utils.file_utils import create_temp_file, create_temp_dir, cleanup_temp_file, cleanup_temp_dir
+from utils.html_to_svg import html_to_svg  # Import the html_to_svg utility
+
+def _save_to_file(content, output_file=None, chart_type="custom", prefix="", suffix=".html"):
+    """
+    Helper function to save content to a file, creating a temporary file if needed
+    
+    Args:
+        content: Content to write to the file
+        output_file: Path to save the file (optional)
+        chart_type: Type of chart for the temp file name
+        prefix: Prefix for temp filename
+        suffix: Suffix for temp filename
+        
+    Returns:
+        Path to the created file
+    """
+    if output_file is None:
+        prefix = f"{chart_type.replace(' ', '_')}{prefix}_"
+        output_file = create_temp_file(prefix=prefix, suffix=suffix, content=content)
+    else:
+        with open(output_file, 'w', encoding='utf-8') as f:
+            f.write(content)
+    
+    return output_file
+
+def _get_dimensions(options, default_width=1200, default_height=800):
+    """
+    Helper function to extract width and height from options
+    
+    Args:
+        options: Chart options
+        default_width: Default width if not specified in options
+        default_height: Default height if not specified in options
+        
+    Returns:
+        Tuple of (width, height)
+    """
+    if not isinstance(options, dict) or "variables" not in options:
+        return default_width, default_height
+    
+    width = options["variables"].get("width", default_width)
+    height = options["variables"].get("height", default_height)
+    return width, height
+
+def _load_js_code(js_file, base_dirs=None, chart_type="custom"):
+    """
+    Helper function to load JavaScript code from a file
+    
+    Args:
+        js_file: Path to the JavaScript file (optional)
+        base_dirs: List of base directories to search for JavaScript files
+        chart_type: Type of chart, used for finding the appropriate file
+        
+    Returns:
+        String containing the JavaScript code
+    """
+    # If js_file is provided and exists, use it
+    if js_file and os.path.exists(js_file):
+        with open(js_file, 'r', encoding='utf-8') as f:
+            return f.read()
+    
+    # If no explicit directories are provided, use standard locations
+    if base_dirs is None:
+        base_dirs = [
+            os.path.join(os.path.dirname(os.path.dirname(__file__)), 'template')
+        ]
+    
+    # Try to find the JavaScript file in the specified directories
+    for base_dir in base_dirs:
+        for framework_dir in ['echarts-js', 'd3-js', 'js']:
+            # Format chart_type as needed (lowercase, replace spaces)
+            formatted_chart_type = chart_type.lower().replace(" ", "_")
+            
+            # Try specific file for chart type first
+            js_path = os.path.join(base_dir, framework_dir, f'{formatted_chart_type}_impl.js')
+            if os.path.exists(js_path):
+                with open(js_path, 'r', encoding='utf-8') as f:
+                    return f.read()
+            
+            # Try alternate file naming
+            js_path = os.path.join(base_dir, framework_dir, f'{formatted_chart_type}.js')
+            if os.path.exists(js_path):
+                with open(js_path, 'r', encoding='utf-8') as f:
+                    return f.read()
+    
+    # If no JavaScript file is found, raise an error
+    raise ValueError(f"No JavaScript file found for chart type: {chart_type}. Please provide a valid JS file.")
+
+def _create_html_with_chart(template, json_data, js_code, width, height):
+    """
+    Helper function to create HTML with chart using the provided template
+    
+    Args:
+        template: HTML template with placeholders
+        json_data: JSON数据，包含图表数据和配置
+        js_code: JavaScript code to include in the HTML
+        width: Chart width
+        height: Chart height
+        
+    Returns:
+        String containing the formatted HTML
+    """
+    # Replace placeholders with actual data
+    formatted_html = template % (width, height)
+    formatted_html = formatted_html.replace('JSON_DATA_PLACEHOLDER', json.dumps(json_data))
+    formatted_html = formatted_html.replace('JS_CODE_PLACEHOLDER', js_code)
+    
+    return formatted_html
+
+def load_js_echarts(json_data=None, output_file=None, js_file=None):
+    """
+    Generate an ECharts chart using JavaScript.
+    This function directly generates an HTML file with the JavaScript code.
+    
+    Args:
+        json_data: Dict containing the JSON data for the chart
+        output_file: Path to save the HTML output file (optional, will create a temp file if None)
+        js_file: Path to the JavaScript file containing the make_option function
+        
+    Returns:
+        Path to the generated HTML file
+    """
+    if json_data is None:
+        raise ValueError("JSON data must be provided")
+    
+    width, height = _get_dimensions(json_data)
+        
+    # Default HTML template
+    html_template = """
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <title>ECharts Chart</title>
+        <script src="file://%s"></script>
+        <style>
+            #chart-container {
+                width: %dpx;
+                height: %dpx;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="chart-container"></div>
+        <script>
+            // 立即初始化图表，使用SVG渲染器并禁用所有动画
+            var chart = echarts.init(document.getElementById('chart-container'), null, {
+                renderer: 'svg',
+                animation: false,
+                useUTC: true
+            });
+            
+            // 禁用全局动画
+            echarts.disableAllAnimation = true;
+            
+            // 准备数据
+            const jsonData = JSON_DATA_PLACEHOLDER;
+            
+            JS_CODE_PLACEHOLDER
+            
+            // 创建图表选项
+            let option;
+            try {
+                option = make_option(jsonData);
+                
+                // 禁用所有动画
+                option.animation = false;
+                option.animationDuration = 0;
+                option.animationDurationUpdate = 0;
+                option.animationDelay = 0;
+                option.animationDelayUpdate = 0;
+                
+            } catch (e) {
+                console.error("Error creating chart:", e);
+                option = {
+                    title: { text: "Error: " + e.message, left: 'center' }
+                };
+            }
+            
+            // 立即设置选项并渲染
+            chart.setOption(option);
+            
+            // 导出SVG的优化函数
+            function exportSvg() {
+                try {
+                    chart.setOption(option, {notMerge: true});
+                    
+                    const svgContent = chart.renderToSVGString();
+                    
+                    if (svgContent && svgContent.length > 0) {
+                        const svgContainer = document.createElement('div');
+                        svgContainer.id = 'svg-output';
+                        svgContainer.style.display = 'none';
+                        svgContainer.innerHTML = svgContent;
+                        document.body.appendChild(svgContainer);
+                    }
+                } catch (e) {
+                    console.error("Error exporting SVG:", e);
+                }
+            }
+            
+            // 立即尝试导出
+            exportSvg();
+            
+            // 设置备用导出计时器，500ms后再尝试一次
+            setTimeout(exportSvg, 500);
+        </script>
+    </body>
+    </html>
+    """
+    
+    # 获取本地库文件的绝对路径
+    echarts_lib_path = os.path.abspath(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static', 'lib', 'echarts.min.js'))
+    
+    # Load JavaScript code
+    chart_type = json_data.get("chart_type", "custom")
+    js_code = _load_js_code(js_file, chart_type=chart_type)
+    
+    # Create HTML content
+    formatted_html = html_template % (echarts_lib_path, width, height)
+    formatted_html = formatted_html.replace('JSON_DATA_PLACEHOLDER', json.dumps(json_data))
+    formatted_html = formatted_html.replace('JS_CODE_PLACEHOLDER', js_code)
+    
+    # Save the HTML to a file
+    output_file = _save_to_file(formatted_html, output_file, chart_type)
+    
+    # 简化日志输出
+    return output_file
+
+def load_d3js(json_data=None, output_file=None, js_file=None):
+    """
+    Generate a D3.js chart using JavaScript.
+    This function generates an HTML file with the D3.js code.
+    
+    Args:
+        json_data: Dict containing the JSON data for the chart
+        output_file: Path to save the HTML output file (optional, will create a temp file if None)
+        js_file: Path to the JavaScript file containing the D3.js implementation
+        
+    Returns:
+        Path to the generated HTML file
+    """
+    if json_data is None:
+        raise ValueError("JSON data must be provided")
+    
+    width, height = _get_dimensions(json_data, default_width=800, default_height=600)
+        
+    # Default HTML template for D3.js - use %% to escape % characters
+    html_template = """
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <title>D3.js Chart</title>
+        <script src="file://%s"></script>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                margin: 20px;
+            }
+            #chart-container {
+                width: 100%%;
+                max-width: %dpx;
+                height: %dpx;
+                margin: 0 auto;
+                background-color: white;
+                border-radius: 8px;
+                overflow: hidden;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="chart-container"></div>
+        <script>
+            // 准备数据
+            const json_data = JSON_DATA_PLACEHOLDER;
+            
+            // D3.js实现
+            JS_CODE_PLACEHOLDER
+            
+            // 文档就绪时立即创建图表
+            makeChart('#chart-container', json_data);
+            
+            // 500ms后检查SVG是否已生成
+            setTimeout(function() {
+                const svg = document.querySelector('#chart-container svg');
+                if (svg) {
+                    // 创建一个包含SVG内容的容器供提取使用
+                    const svgContainer = document.createElement('div');
+                    svgContainer.id = 'svg-output';
+                    svgContainer.style.display = 'none';
+                    svgContainer.innerHTML = svg.outerHTML;
+                    document.body.appendChild(svgContainer);
+                }
+            }, 500);
+        </script>
+    </body>
+    </html>
+    """
+    
+    # 获取D3.js库文件的绝对路径
+    d3_lib_path = os.path.abspath(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static', 'lib', 'd3.min.js'))
+    
+    # Load JavaScript code
+    chart_type = json_data.get("chart_type", "").lower().replace(" ", "_")
+    if not chart_type:
+        chart_type = "grouped_bar_chart"  # Default chart type if not specified
+    
+    js_code = _load_js_code(js_file, chart_type=chart_type)
+    
+    # Create HTML content    
+    formatted_html = html_template % (d3_lib_path, width, height)
+    formatted_html = formatted_html.replace('JSON_DATA_PLACEHOLDER', json.dumps(json_data))
+    formatted_html = formatted_html.replace('JS_CODE_PLACEHOLDER', js_code)
+    
+    # Save the HTML to a file
+    output_file = _save_to_file(formatted_html, output_file, chart_type, prefix="_d3")
+    
+    # 简化日志输出
+    return output_file
+
+def load_py_echarts(json_data=None):
+    """
+    Process ECharts options for SVG conversion
+    
+    Args:
+        json_data (dict): 包含图表数据和配置的JSON数据
+        
+    Returns:
+        Dict containing the processed JSON data
+    """
+    if not json_data:
+        raise ValueError("JSON data must be provided")
+                
+    # 不需要特殊处理，直接返回处理好的选项数据
+    return json_data
+
+def render_chart_to_svg(json_data, output_svg_path, js_file=None, chart_type=None, width=None, height=None, framework="echarts"):
+    """
+    通用的图表渲染函数，支持多种图表框架
+    
+    Args:
+        json_data (dict): 完整的JSON数据，包含图表数据和配置信息
+        output_svg_path (str): SVG文件保存路径
+        js_file (str, optional): JavaScript文件路径
+        chart_type (str, optional): 图表类型，若不提供则从json_data中获取
+        width (int, optional): 图表宽度(像素)
+        height (int, optional): 图表高度(像素)
+        framework (str): 使用的图表框架，可选"echarts"或"d3"
+        
+    Returns:
+        Path to the generated SVG file
+    """
+    # 获取宽度和高度
+    if width is None or height is None:
+        w, h = _get_dimensions(json_data)
+        width = width or w
+        height = height or h
+    
+    # 确保图表类型
+    if chart_type is None:
+        chart_type = json_data.get("chart_type", "custom")
+    
+    # 为引擎创建临时目录，用于生成HTML文件
+    temp_dir = create_temp_dir(prefix=f"{framework}_svg_")
+    html_file = os.path.join(temp_dir, 'chart.html')
+    
+    try:
+        # 根据框架类型生成HTML文件
+        if framework.lower() == "echarts" or framework.lower() == "echarts-py":
+            html_content = load_js_echarts(json_data=json_data, output_file=html_file, js_file=js_file)
+        elif framework.lower() == "d3":
+            html_content = load_d3js(json_data=json_data, output_file=html_file, js_file=js_file)
+        else:
+            raise ValueError(f"Unsupported framework: {framework}")
+        
+        # 使用html_to_svg转换为SVG
+        svg_file = html_to_svg(html_file, output_svg_path, width=width, height=height)
+        
+        if svg_file is not None and os.path.exists(svg_file):
+            # 简化日志输出，只返回路径，不打印
+            return svg_file
+        else:
+            raise Exception(f"Failed to create SVG file from {framework.upper()} HTML")
+    
+    except Exception as e:
+        print(f"Error: {e}")
+        return None
+    
+    finally:
+        # 清理临时目录
+        if os.path.exists(temp_dir):
+            cleanup_temp_dir(temp_dir)
+
+# 保持向后兼容的函数
+def render_d3js_chart_to_svg(json_data, output_svg_path, js_file=None, width=None, height=None):
+    """
+    渲染D3.js图表为SVG (向后兼容函数)
+    
+    Args:
+        json_data (dict): 图表数据和选项
+        output_svg_path (str): SVG文件保存路径
+        js_file (str): D3.js实现文件的路径
+        width (int): 图表宽度(像素)
+        height (int): 图表高度(像素)
+        
+    Returns:
+        Path to the generated SVG file
+    """
+    return render_chart_to_svg(
+        json_data=json_data, 
+        output_svg_path=output_svg_path,
+        js_file=js_file,
+        width=width,
+        height=height,
+        framework="d3"
+    ) 

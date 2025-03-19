@@ -1,0 +1,45 @@
+<svg version="1.1" class="marks" width="460.58837890625" height="312.5721281642151" viewBox="0 0 560.58837890625 412.5721281642151" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><rect width="100%" height="100%" fill="#ffffff"/>
+<g transform="translate(50.0, 50.953172109865186)"><g transform="scale(1.145092524419361)"><g transform="scale(0.4328466796875)"><rect x="0" y="0" width="15" height="150" fill="#756bb1"/></g>
+<g transform="translate(16.4927001953125, 21.2926025390625)"><g ><g ><text class="chart-title-line" x="0" y="0" text-anchor="start" font-family="sans-serif" font-size="24" font-weight="700" fill="#0f2740" letter-spacing="0">Decline of Poverty Has Slowed
+</text></g></g>
+<g transform="translate(0.0, 27.0234375)"><text class="chart-subtitle-line" x="0" y="0" text-anchor="start" font-family="sans-serif" font-size="13" font-weight="400" fill="#445f7c" letter-spacing="0.25">Share of population living in poverty worldwide and in South Asia,
+</text>
+<text class="chart-subtitle-line" x="0" y="0" text-anchor="start" font-family="sans-serif" font-size="13" font-weight="400" fill="#445f7c" letter-spacing="0.25" transform="translate(0.0, 14.7138671875)">by the following poverty lines (in %)
+</text></g></g></g>
+<g class="infographics" transform="translate(-8.8154296875, 86.01934667934988)"><g class="chart"><g version="1.1" class="marks" width="485" height="230" viewBox="0 0 485 230"><g fill="none" stroke-miterlimit="10" transform="translate(30,10)"><g class="mark-group role-frame root" role="graphics-object" aria-roledescription="group mark container"><g class="axis X" transform="translate(0,0)" role="graphics-symbol" aria-roledescription="axis" aria-label="X-axis for a discrete scale with 9 values: 1990, 1995, 2000, 2005, 2010, ending with 2024*"><g class="axis_label-group" transform="translate(0.5,200.5)" pointer-events="none"><g class="axis-label"><text text-anchor="middle" transform="translate(25,13)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">1990
+</text></g>
+<g class="axis-label"><text text-anchor="middle" transform="translate(75,13)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">1995
+</text></g>
+<g class="axis-label"><text text-anchor="middle" transform="translate(125,13)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">2000
+</text></g>
+<g class="axis-label"><text text-anchor="middle" transform="translate(175,13)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">2005
+</text></g>
+<g class="axis-label"><text text-anchor="middle" transform="translate(225,13)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">2010
+</text></g>
+<g class="axis-label"><text text-anchor="middle" transform="translate(275,13)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">2015
+</text></g>
+<g class="axis-label"><text text-anchor="middle" transform="translate(325,13)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">2020
+</text></g>
+<g class="axis-label"><text text-anchor="middle" transform="translate(375,13)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">2023*
+</text></g>
+<g class="axis-label"><text text-anchor="middle" transform="translate(425,13)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">2024*
+</text></g></g></g>
+<g class="axis Y" transform="translate(0,0)" role="graphics-symbol" aria-roledescription="axis" aria-label="Y-axis for a linear scale with values from 0 to 100"><g class="axis_label-group" transform="translate(0.5,0.5)" pointer-events="none"><g class="axis-label"><text text-anchor="end" transform="translate(-5,203)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">0
+</text></g>
+<g class="axis-label"><text text-anchor="end" transform="translate(-5,163)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">20
+</text></g>
+<g class="axis-label"><text text-anchor="end" transform="translate(-5,123)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">40
+</text></g>
+<g class="axis-label"><text text-anchor="end" transform="translate(-5,83)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">60
+</text></g>
+<g class="axis-label"><text text-anchor="end" transform="translate(-5,42.99999999999999)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">80
+</text></g>
+<g class="axis-label"><text text-anchor="end" transform="translate(-5,3)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">100
+</text></g></g></g>
+<g transform="translate(0,0)" class="mark_group" role="graphics-object" aria-roledescription="group mark container"><g class="line"><path aria-label="Year: 1990; Score: 69; Poverty Line: World $6.85 per day" role="graphics-symbol" aria-roledescription="line mark" d="M25,62C41.667,62.5,58.333,63,75,64C91.667,65,108.333,66.333,125,68C141.667,69.667,158.333,71.667,175,74C191.667,76.333,208.333,79.333,225,82C241.667,84.667,258.333,87.667,275,90C291.667,92.333,308.333,94.667,325,96C341.667,97.333,358.333,97.333,375,98C391.667,98.667,408.333,99.333,425,100" stroke="#d9d9d9" stroke-width="2" opacity="1"/></g>
+<g class="line"><path aria-label="Year: 1990; Score: 94; Poverty Line: South Asia $6.85 per day" role="graphics-symbol" aria-roledescription="line mark" d="M25,12C41.667,13.333,58.333,14.667,75,16C91.667,17.333,108.333,18.667,125,20C141.667,21.333,158.333,22,175,24C191.667,26,208.333,29.333,225,32C241.667,34.667,258.333,38,275,40C291.667,42,308.333,42.533,325,44C341.667,45.467,358.333,48.8,375,48.8C391.667,48.8,408.333,48.8,425,48.8" stroke="#636363" stroke-width="2" opacity="1"/></g>
+<g class="line"><path aria-label="Year: 1990; Score: 55; Poverty Line: World $3.65 per day" role="graphics-symbol" aria-roledescription="line mark" d="M25,90C41.667,91.333,58.333,92.667,75,94C91.667,95.333,108.333,96,125,98C141.667,100,158.333,102.667,175,106C191.667,109.333,208.333,114,225,118C241.667,122,258.333,128.667,275,130C291.667,131.333,308.333,132,325,132C341.667,132,358.333,131.4,375,131.4C391.667,131.4,408.333,132.7,425,134" stroke="#31a354" stroke-width="2" opacity="1"/></g>
+<g class="line"><path aria-label="Year: 1990; Score: 83; Poverty Line: South Asia $3.65 per day" role="graphics-symbol" aria-roledescription="line mark" d="M25,34C41.667,35.167,58.333,36.333,75,38C91.667,39.667,108.333,41.667,125,44C141.667,46.333,158.333,48,175,52C191.667,56,208.333,61.667,225,68C241.667,74.333,258.333,83.667,275,90C291.667,96.333,308.333,102.2,325,106C341.667,109.8,358.333,111.867,375,112.8C391.667,113.733,408.333,113.967,425,114.2" stroke="#756bb1" stroke-width="2" opacity="1"/></g>
+<g class="line"><path aria-label="Year: 1990; Score: 36; Poverty Line: World $2.15 per day" role="graphics-symbol" aria-roledescription="line mark" d="M25,128C41.667,129.833,58.333,131.667,75,134C91.667,136.333,108.333,139.333,125,142C141.667,144.667,158.333,146.667,175,150C191.667,153.333,208.333,158,225,162C241.667,166,258.333,171,275,174C291.667,177,308.333,178.5,325,180C341.667,181.5,358.333,183,375,183C391.667,183,408.333,183,425,183" stroke="#3182bd" stroke-width="2" opacity="1"/></g>
+<g class="line"><path aria-label="Year: 1990; Score: 53; Poverty Line: South Asia $2.15 per day" role="graphics-symbol" aria-roledescription="line mark" d="M25,94C41.667,96.5,58.333,99,75,102C91.667,105,108.333,108.333,125,112C141.667,115.667,158.333,119,175,124C191.667,129,208.333,135.667,225,142C241.667,148.333,258.333,156,275,162C291.667,168,308.333,174.2,325,178C341.667,181.8,358.333,184.8,375,184.8C391.667,184.8,408.333,184.8,425,184.8" stroke="#e6550d" stroke-width="2" opacity="1"/></g></g></g></g></g></g>
+<image class="use-image" x="214.109619140625" y="89.9404296875"/></g></g></svg>

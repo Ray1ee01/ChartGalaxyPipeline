@@ -1,0 +1,67 @@
+<svg version="1.1" class="marks" width="465" height="230" viewBox="-100,-100,1000,1000" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><g ><g version="1.1" class="marks" width="465" height="230" viewBox="0 0 465 230"><g fill="none" stroke-miterlimit="10" transform="translate(10,5)"><g class="mark-group role-frame root" role="graphics-object" aria-roledescription="group mark container"><g transform="translate(0,0)" class="mark-group role-axis" role="graphics-symbol" aria-roledescription="axis" aria-label="X-axis for a discrete scale with 12 values: Armenia, Bulgaria, Czech Republic, Estonia, Georgia, ending with Ukraine"><g transform="translate(0.5,200.5)" class="mark-rule role-axis-tick" pointer-events="none"><line transform="translate(22,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(59,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(95,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(132,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(169,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(206,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(243,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(280,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(317,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(354,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(390,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(427,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/></g>
+<g transform="translate(0.5,200.5)" class="mark-text role-axis-label" pointer-events="none"><text text-anchor="middle" transform="translate(21.631147540983584,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">Armenia
+</text>
+<text text-anchor="middle" transform="translate(58.51639344262293,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">Bulgaria
+</text>
+<text text-anchor="middle" transform="translate(95.40163934426226,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">Czech Republic
+</text>
+<text text-anchor="middle" transform="translate(132.28688524590163,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">Estonia
+</text>
+<text text-anchor="middle" transform="translate(169.17213114754097,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">Georgia
+</text>
+<text text-anchor="middle" transform="translate(206.0573770491803,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">Hungary
+</text>
+<text text-anchor="middle" transform="translate(242.94262295081967,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">Latvia
+</text>
+<text text-anchor="middle" transform="translate(279.827868852459,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">Lithuania
+</text>
+<text text-anchor="middle" transform="translate(316.71311475409834,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">Poland
+</text>
+<text text-anchor="middle" transform="translate(353.5983606557377,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">Romania
+</text>
+<text text-anchor="middle" transform="translate(390.483606557377,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">Russia
+</text>
+<text text-anchor="middle" transform="translate(427.36885245901635,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">Ukraine
+</text></g>
+<g transform="translate(0.5,200.5)" class="mark-rule role-axis-domain" pointer-events="none"><line transform="translate(0,0)" x2="450" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/></g></g>
+<g transform="translate(0,0)" class="mark-group role-axis" role="graphics-symbol" aria-roledescription="axis" aria-label="Y-axis for a linear scale with values from 0 to 80"><g transform="translate(0.5,0.5)" class="mark-rule role-axis-tick" pointer-events="none"><line transform="translate(0,200)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,150)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,100)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,50)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,0)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/></g>
+<g transform="translate(0.5,0.5)" class="mark-rule role-axis-domain" pointer-events="none"><line transform="translate(0,200)" x2="0" y2="-200" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/></g></g>
+<g transform="translate(0,0)" class="mark-rect role-mark layer_0_marks" role="graphics-object" aria-roledescription="rect mark container"><path aria-label="Country: Russia; Percentage: 58; group: undefined; Approval: Stalin" role="graphics-symbol" aria-roledescription="bar" d="M381.2459016393442,55.00000000000001h19.475409836065577v145h-19.475409836065577Z" fill="#17becf" opacity="1"/>
+<path aria-label="Country: Russia; Percentage: 22; group: undefined; Approval: Gorbachev" role="graphics-symbol" aria-roledescription="bar" d="M381.2459016393442,0h19.475409836065577v55.00000000000001h-19.475409836065577Z" fill="#1f77b4" opacity="1"/>
+<path aria-label="Country: Georgia; Percentage: 57; group: undefined; Approval: Stalin" role="graphics-symbol" aria-roledescription="bar" d="M159.93442622950818,57.49999999999999h19.475409836065577v142.5h-19.475409836065577Z" fill="#17becf" opacity="1"/>
+<path aria-label="Country: Georgia; Percentage: 18; group: undefined; Approval: Gorbachev" role="graphics-symbol" aria-roledescription="bar" d="M159.93442622950818,12.5h19.475409836065577v44.99999999999999h-19.475409836065577Z" fill="#1f77b4" opacity="1"/>
+<path aria-label="Country: Armenia; Percentage: 38; group: undefined; Approval: Stalin" role="graphics-symbol" aria-roledescription="bar" d="M12.393442622950795,105h19.475409836065577v95h-19.475409836065577Z" fill="#17becf" opacity="1"/>
+<path aria-label="Country: Armenia; Percentage: 13; group: undefined; Approval: Gorbachev" role="graphics-symbol" aria-roledescription="bar" d="M12.393442622950795,72.50000000000001h19.475409836065577v32.499999999999986h-19.475409836065577Z" fill="#1f77b4" opacity="1"/>
+<path aria-label="Country: Bulgaria; Percentage: 33; group: undefined; Approval: Stalin" role="graphics-symbol" aria-roledescription="bar" d="M49.27868852459014,117.5h19.475409836065577v82.5h-19.475409836065577Z" fill="#17becf" opacity="1"/>
+<path aria-label="Country: Bulgaria; Percentage: 32; group: undefined; Approval: Gorbachev" role="graphics-symbol" aria-roledescription="bar" d="M49.27868852459014,37.5h19.475409836065577v80h-19.475409836065577Z" fill="#1f77b4" opacity="1"/>
+<path aria-label="Country: Romania; Percentage: 29; group: undefined; Approval: Stalin" role="graphics-symbol" aria-roledescription="bar" d="M344.36065573770486,127.49999999999999h19.475409836065577v72.50000000000001h-19.475409836065577Z" fill="#17becf" opacity="1"/>
+<path aria-label="Country: Romania; Percentage: 47; group: undefined; Approval: Gorbachev" role="graphics-symbol" aria-roledescription="bar" d="M344.36065573770486,10.000000000000009h19.475409836065577v117.49999999999997h-19.475409836065577Z" fill="#1f77b4" opacity="1"/>
+<path aria-label="Country: Ukraine; Percentage: 16; group: undefined; Approval: Stalin" role="graphics-symbol" aria-roledescription="bar" d="M418.13114754098353,160h19.475409836065577v40h-19.475409836065577Z" fill="#17becf" opacity="1"/>
+<path aria-label="Country: Ukraine; Percentage: 22; group: undefined; Approval: Gorbachev" role="graphics-symbol" aria-roledescription="bar" d="M418.13114754098353,105h19.475409836065577v55h-19.475409836065577Z" fill="#1f77b4" opacity="1"/>
+<path aria-label="Country: Czech Republic; Percentage: 11; group: undefined; Approval: Stalin" role="graphics-symbol" aria-roledescription="bar" d="M86.16393442622949,172.5h19.475409836065577v27.5h-19.475409836065577Z" fill="#17becf" opacity="1"/>
+<path aria-label="Country: Czech Republic; Percentage: 53; group: undefined; Approval: Gorbachev" role="graphics-symbol" aria-roledescription="bar" d="M86.16393442622949,39.99999999999999h19.475409836065577v132.5h-19.475409836065577Z" fill="#1f77b4" opacity="1"/>
+<path aria-label="Country: Latvia; Percentage: 11; group: undefined; Approval: Stalin" role="graphics-symbol" aria-roledescription="bar" d="M233.70491803278688,172.5h19.475409836065577v27.5h-19.475409836065577Z" fill="#17becf" opacity="1"/>
+<path aria-label="Country: Latvia; Percentage: 39; group: undefined; Approval: Gorbachev" role="graphics-symbol" aria-roledescription="bar" d="M233.70491803278688,75h19.475409836065577v97.5h-19.475409836065577Z" fill="#1f77b4" opacity="1"/>
+<path aria-label="Country: Estonia; Percentage: 9; group: undefined; Approval: Stalin" role="graphics-symbol" aria-roledescription="bar" d="M123.04918032786884,177.5h19.475409836065577v22.5h-19.475409836065577Z" fill="#17becf" opacity="1"/>
+<path aria-label="Country: Estonia; Percentage: 56; group: undefined; Approval: Gorbachev" role="graphics-symbol" aria-roledescription="bar" d="M123.04918032786884,37.5h19.475409836065577v140h-19.475409836065577Z" fill="#1f77b4" opacity="1"/>
+<path aria-label="Country: Hungary; Percentage: 9; group: undefined; Approval: Stalin" role="graphics-symbol" aria-roledescription="bar" d="M196.8196721311475,177.5h19.475409836065577v22.5h-19.475409836065577Z" fill="#17becf" opacity="1"/>
+<path aria-label="Country: Hungary; Percentage: 54; group: undefined; Approval: Gorbachev" role="graphics-symbol" aria-roledescription="bar" d="M196.8196721311475,42.50000000000001h19.475409836065577v135h-19.475409836065577Z" fill="#1f77b4" opacity="1"/>
+<path aria-label="Country: Lithuania; Percentage: 8; group: undefined; Approval: Stalin" role="graphics-symbol" aria-roledescription="bar" d="M270.5901639344262,180h19.475409836065577v20h-19.475409836065577Z" fill="#17becf" opacity="1"/>
+<path aria-label="Country: Lithuania; Percentage: 48; group: undefined; Approval: Gorbachev" role="graphics-symbol" aria-roledescription="bar" d="M270.5901639344262,60.00000000000001h19.475409836065577v120h-19.475409836065577Z" fill="#1f77b4" opacity="1"/>
+<path aria-label="Country: Poland; Percentage: 6; group: undefined; Approval: Stalin" role="graphics-symbol" aria-roledescription="bar" d="M307.4754098360655,185h19.475409836065577v15h-19.475409836065577Z" fill="#17becf" opacity="1"/>
+<path aria-label="Country: Poland; Percentage: 51; group: undefined; Approval: Gorbachev" role="graphics-symbol" aria-roledescription="bar" d="M307.4754098360655,57.49999999999999h19.475409836065577v127.5h-19.475409836065577Z" fill="#1f77b4" opacity="1"/></g></g></g></g></g></svg>

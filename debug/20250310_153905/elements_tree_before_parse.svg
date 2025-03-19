@@ -1,0 +1,53 @@
+<svg version="1.1" class="marks" width="490" height="235" viewBox="-100,-100,1000,1000" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><g ><g version="1.1" class="marks" width="490" height="235" viewBox="0 0 490 235"><g fill="none" stroke-miterlimit="10" transform="translate(35,10)"><g class="mark-group role-frame root" role="graphics-object" aria-roledescription="group mark container"><g transform="translate(0,0)" class="mark-group role-axis" role="graphics-symbol" aria-roledescription="axis" aria-label="X-axis for a discrete scale with 4 values: Germany, China, U.S., France"><g transform="translate(0.5,200.5)" class="mark-rule role-axis-tick" pointer-events="none"><line transform="translate(64,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(171,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(278,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(385,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/></g>
+<g transform="translate(0.5,200.5)" class="mark-text role-axis-label" pointer-events="none"><text text-anchor="middle" transform="translate(63.785714285714306,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">Germany
+</text>
+<text text-anchor="middle" transform="translate(170.92857142857144,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">China
+</text>
+<text text-anchor="middle" transform="translate(278.07142857142856,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">U.S.
+</text>
+<text text-anchor="middle" transform="translate(385.2142857142858,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">France
+</text></g>
+<g transform="translate(0.5,200.5)" class="mark-rule role-axis-domain" pointer-events="none"><line transform="translate(0,0)" x2="450" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/></g></g>
+<g transform="translate(0,0)" class="mark-group role-axis" role="graphics-symbol" aria-roledescription="axis" aria-label="Y-axis for a linear scale with values from 0 to 140"><g transform="translate(0.5,0.5)" class="mark-rule role-axis-tick" pointer-events="none"><line transform="translate(0,200)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,171)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,143)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,114)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,86)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,57)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,29)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,0)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/></g>
+<g transform="translate(0.5,0.5)" class="mark-text role-axis-label" pointer-events="none"><text text-anchor="end" transform="translate(-10,203)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">0
+</text>
+<text text-anchor="end" transform="translate(-10,174.42857142857144)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">20
+</text>
+<text text-anchor="end" transform="translate(-10,145.85714285714286)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">40
+</text>
+<text text-anchor="end" transform="translate(-10,117.28571428571428)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">60
+</text>
+<text text-anchor="end" transform="translate(-10,88.71428571428572)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">80
+</text>
+<text text-anchor="end" transform="translate(-10,60.14285714285714)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">100
+</text>
+<text text-anchor="end" transform="translate(-10,31.57142857142858)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">120
+</text>
+<text text-anchor="end" transform="translate(-10,3)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">140
+</text></g>
+<g transform="translate(0.5,0.5)" class="mark-rule role-axis-domain" pointer-events="none"><line transform="translate(0,200)" x2="0" y2="-200" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/></g></g>
+<g transform="translate(0,0)" class="mark-rect role-mark layer_0_marks" role="graphics-object" aria-roledescription="rect mark container"><path aria-label="Country: France; Score: 88; group: undefined; Retailer Type: Pharmacy" role="graphics-symbol" aria-roledescription="bar" d="M357.42857142857144,74.28571428571429h56.57142857142858v125.71428571428571h-56.57142857142858Z" fill="#fff2ae" opacity="1"/>
+<path aria-label="Country: France; Score: 10; group: undefined; Retailer Type: Online pharmacy" role="graphics-symbol" aria-roledescription="bar" d="M357.42857142857144,50h56.57142857142858v14.285714285714278h-56.57142857142858Z" fill="#b3e2cd" opacity="1"/>
+<path aria-label="Country: France; Score: 5; group: undefined; Retailer Type: Other retail shop" role="graphics-symbol" aria-roledescription="bar" d="M357.42857142857144,67.14285714285715h56.57142857142858v7.142857142857139h-56.57142857142858Z" fill="#cbd5e8" opacity="1"/>
+<path aria-label="Country: France; Score: 2; group: undefined; Retailer Type: Other online shop" role="graphics-symbol" aria-roledescription="bar" d="M357.42857142857144,64.28571428571428h56.57142857142858v2.8571428571428754h-56.57142857142858Z" fill="#cccccc" opacity="1"/>
+<path aria-label="Country: Germany; Score: 80; group: undefined; Retailer Type: Pharmacy" role="graphics-symbol" aria-roledescription="bar" d="M36.000000000000014,85.71428571428572h56.57142857142858v114.28571428571428h-56.57142857142858Z" fill="#fff2ae" opacity="1"/>
+<path aria-label="Country: Germany; Score: 38; group: undefined; Retailer Type: Online pharmacy" role="graphics-symbol" aria-roledescription="bar" d="M36.000000000000014,1.4285714285714235h56.57142857142858v54.28571428571429h-56.57142857142858Z" fill="#b3e2cd" opacity="1"/>
+<path aria-label="Country: Germany; Score: 11; group: undefined; Retailer Type: Other retail shop" role="graphics-symbol" aria-roledescription="bar" d="M36.000000000000014,70h56.57142857142858v15.714285714285722h-56.57142857142858Z" fill="#cbd5e8" opacity="1"/>
+<path aria-label="Country: Germany; Score: 10; group: undefined; Retailer Type: Other online shop" role="graphics-symbol" aria-roledescription="bar" d="M36.000000000000014,55.714285714285715h56.57142857142858v14.285714285714285h-56.57142857142858Z" fill="#cccccc" opacity="1"/>
+<path aria-label="Country: China; Score: 78; group: undefined; Retailer Type: Pharmacy" role="graphics-symbol" aria-roledescription="bar" d="M143.14285714285717,88.57142857142857h56.57142857142858v111.42857142857143h-56.57142857142858Z" fill="#fff2ae" opacity="1"/>
+<path aria-label="Country: China; Score: 32; group: undefined; Retailer Type: Online pharmacy" role="graphics-symbol" aria-roledescription="bar" d="M143.14285714285717,25.71428571428571h56.57142857142858v45.71428571428571h-56.57142857142858Z" fill="#b3e2cd" opacity="1"/>
+<path aria-label="Country: China; Score: 12; group: undefined; Retailer Type: Other online shop" role="graphics-symbol" aria-roledescription="bar" d="M143.14285714285717,71.42857142857142h56.57142857142858v17.142857142857153h-56.57142857142858Z" fill="#cccccc" opacity="1"/>
+<path aria-label="Country: U.S.; Score: 72; group: undefined; Retailer Type: Pharmacy" role="graphics-symbol" aria-roledescription="bar" d="M250.2857142857143,97.14285714285715h56.57142857142858v102.85714285714285h-56.57142857142858Z" fill="#fff2ae" opacity="1"/>
+<path aria-label="Country: U.S.; Score: 13; group: undefined; Retailer Type: Online pharmacy" role="graphics-symbol" aria-roledescription="bar" d="M250.2857142857143,28.57142857142858h56.57142857142858v18.571428571428573h-56.57142857142858Z" fill="#b3e2cd" opacity="1"/>
+<path aria-label="Country: U.S.; Score: 28; group: undefined; Retailer Type: Other retail shop" role="graphics-symbol" aria-roledescription="bar" d="M250.2857142857143,57.14285714285714h56.57142857142858v40.000000000000014h-56.57142857142858Z" fill="#cbd5e8" opacity="1"/>
+<path aria-label="Country: U.S.; Score: 7; group: undefined; Retailer Type: Other online shop" role="graphics-symbol" aria-roledescription="bar" d="M250.2857142857143,47.14285714285715h56.57142857142858v9.999999999999986h-56.57142857142858Z" fill="#cccccc" opacity="1"/></g></g></g></g></g></svg>

@@ -1,0 +1,78 @@
+<svg version="1.1" class="marks" width="485" height="230" viewBox="-100,-100,1000,1000" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><g ><g version="1.1" class="marks" width="485" height="230" viewBox="0 0 485 230"><g fill="none" stroke-miterlimit="10" transform="translate(28,5)"><g class="mark-group role-frame root" role="graphics-object" aria-roledescription="group mark container"><g transform="translate(0,0)" class="mark-group role-axis" role="graphics-symbol" aria-roledescription="axis" aria-label="X-axis for a discrete scale with 20 values: 2000, 2001, 2002, 2003, 2004, ending with 2019"><g transform="translate(0.5,200.5)" class="mark-rule role-axis-tick" pointer-events="none"><line transform="translate(11,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(34,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(56,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(79,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(101,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(124,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(146,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(169,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(191,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(214,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(236,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(259,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(281,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(304,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(326,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(349,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(371,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(394,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(416,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(439,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/></g>
+<g transform="translate(0.5,200.5)" class="mark-text role-axis-label" pointer-events="none"><text text-anchor="middle" transform="translate(11.25,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">2000
+</text>
+<text text-anchor="middle" transform="translate(33.75,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">2001
+</text>
+<text text-anchor="middle" transform="translate(56.25,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">2002
+</text>
+<text text-anchor="middle" transform="translate(78.75,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">2003
+</text>
+<text text-anchor="middle" transform="translate(101.25,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">2004
+</text>
+<text text-anchor="middle" transform="translate(123.75,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">2005
+</text>
+<text text-anchor="middle" transform="translate(146.25,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">2006
+</text>
+<text text-anchor="middle" transform="translate(168.75,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">2007
+</text>
+<text text-anchor="middle" transform="translate(191.25,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">2008
+</text>
+<text text-anchor="middle" transform="translate(213.75,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">2009
+</text>
+<text text-anchor="middle" transform="translate(236.25,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">2010
+</text>
+<text text-anchor="middle" transform="translate(258.75,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">2011
+</text>
+<text text-anchor="middle" transform="translate(281.25,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">2012
+</text>
+<text text-anchor="middle" transform="translate(303.75,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">2013
+</text>
+<text text-anchor="middle" transform="translate(326.25,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">2014
+</text>
+<text text-anchor="middle" transform="translate(348.75,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">2015
+</text>
+<text text-anchor="middle" transform="translate(371.25,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">2016
+</text>
+<text text-anchor="middle" transform="translate(393.75,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">2017
+</text>
+<text text-anchor="middle" transform="translate(416.25,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">2018
+</text>
+<text text-anchor="middle" transform="translate(438.75,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">2019
+</text></g>
+<g transform="translate(0.5,200.5)" class="mark-rule role-axis-domain" pointer-events="none"><line transform="translate(0,0)" x2="450" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/></g></g>
+<g transform="translate(0,0)" class="mark-group role-axis" role="graphics-symbol" aria-roledescription="axis" aria-label="Y-axis for a linear scale with values from 0 to 90"><g transform="translate(0.5,0.5)" class="mark-rule role-axis-tick" pointer-events="none"><line transform="translate(0,200)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,156)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,111)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,67)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,22)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/></g>
+<g transform="translate(0.5,0.5)" class="mark-text role-axis-label" pointer-events="none"><text text-anchor="end" transform="translate(-10,203)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">0
+</text>
+<text text-anchor="end" transform="translate(-10,158.55555555555557)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">20
+</text>
+<text text-anchor="end" transform="translate(-10,114.11111111111111)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">40
+</text>
+<text text-anchor="end" transform="translate(-10,69.66666666666667)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">60
+</text>
+<text text-anchor="end" transform="translate(-10,25.222222222222232)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">80
+</text></g>
+<g transform="translate(0.5,0.5)" class="mark-rule role-axis-domain" pointer-events="none"><line transform="translate(0,200)" x2="0" y2="-200" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/></g></g>
+<g transform="translate(0,0)" class="mark-line role-mark marks" role="graphics-object" aria-roledescription="line mark container"><path aria-label="Year: 2000; Exports: 0" role="graphics-symbol" aria-roledescription="line mark" d="M11.25,200L15,200C18.75,200,26.25,200,33.75,194.444C41.25,188.889,48.75,177.778,56.25,168.519C63.75,159.259,71.25,151.852,78.75,142.593C86.25,133.333,93.75,122.222,101.25,118.519C108.75,114.815,116.25,118.519,123.75,122.222C131.25,125.926,138.75,129.63,146.25,124.074C153.75,118.519,161.25,103.704,168.75,84C176.25,64.296,183.75,39.704,191.25,41.556C198.75,43.407,206.25,71.704,213.75,89.556C221.25,107.407,228.75,114.815,236.25,116.667C243.75,118.519,251.25,114.815,258.75,109.259C266.25,103.704,273.75,96.296,281.25,98.148C288.75,100,296.25,111.111,303.75,112.963C311.25,114.815,318.75,107.407,326.25,114.815C333.75,122.222,341.25,144.444,348.75,151.852C356.25,159.259,363.75,151.852,371.25,146.296C378.75,140.741,386.25,137.037,393.75,137.037C401.25,137.037,408.75,140.741,416.25,140.889C423.75,141.037,431.25,137.63,435,135.926L438.75,134.222" stroke="#4c78a8" stroke-width="2" opacity="1"/></g></g></g></g></g></svg>

@@ -1,0 +1,47 @@
+<svg version="1.1" class="marks" width="483" height="235" viewBox="-100,-100,1000,1000" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><g ><g version="1.1" class="marks" width="483" height="235" viewBox="0 0 483 235"><g fill="none" stroke-miterlimit="10" transform="translate(28,10)"><g class="mark-group role-frame root" role="graphics-object" aria-roledescription="group mark container"><g transform="translate(0,0)" class="mark-group role-axis" role="graphics-symbol" aria-roledescription="axis" aria-label="X-axis for a discrete scale with 3 values: 2021, 2022, 2023"><g transform="translate(0.5,200.5)" class="mark-rule role-axis-tick" pointer-events="none"><line transform="translate(79,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(225,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(370,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/></g>
+<g transform="translate(0.5,200.5)" class="mark-text role-axis-label" pointer-events="none"><text text-anchor="middle" transform="translate(79.33870967741937,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">2021
+</text>
+<text text-anchor="middle" transform="translate(224.5,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">2022
+</text>
+<text text-anchor="middle" transform="translate(369.66129032258067,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">2023
+</text></g>
+<g transform="translate(0.5,200.5)" class="mark-rule role-axis-domain" pointer-events="none"><line transform="translate(0,0)" x2="450" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/></g></g>
+<g transform="translate(0,0)" class="mark-group role-axis" role="graphics-symbol" aria-roledescription="axis" aria-label="Y-axis for a linear scale with values from 0 to 35"><g transform="translate(0.5,0.5)" class="mark-rule role-axis-tick" pointer-events="none"><line transform="translate(0,200)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,171)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,143)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,114)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,86)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,57)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,29)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,0)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/></g>
+<g transform="translate(0.5,0.5)" class="mark-text role-axis-label" pointer-events="none"><text text-anchor="end" transform="translate(-10,203)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">0
+</text>
+<text text-anchor="end" transform="translate(-10,174.42857142857144)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">5
+</text>
+<text text-anchor="end" transform="translate(-10,145.85714285714286)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">10
+</text>
+<text text-anchor="end" transform="translate(-10,117.28571428571428)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">15
+</text>
+<text text-anchor="end" transform="translate(-10,88.71428571428572)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">20
+</text>
+<text text-anchor="end" transform="translate(-10,60.14285714285714)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">25
+</text>
+<text text-anchor="end" transform="translate(-10,31.57142857142858)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">30
+</text>
+<text text-anchor="end" transform="translate(-10,3)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">35
+</text></g>
+<g transform="translate(0.5,0.5)" class="mark-rule role-axis-domain" pointer-events="none"><line transform="translate(0,200)" x2="0" y2="-200" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/></g></g>
+<g transform="translate(0,0)" class="mark-rect role-mark layer_0_marks" role="graphics-object" aria-roledescription="rect mark container"><path aria-label="Year: 2021; Units: 2; Export Metrics: Total Exports" role="graphics-symbol" aria-roledescription="bar" d="M36.72580645161292,188.57142857142856h86.22580645161291v11.428571428571445h-86.22580645161291Z" fill="#7570b3" opacity="1"/>
+<path aria-label="Year: 2021; Units: 0.3; Export Metrics: New energy vehicles" role="graphics-symbol" aria-roledescription="bar" d="M36.72580645161292,177.14285714285714h86.22580645161291v1.7142857142857224h-86.22580645161291Z" fill="#666666" opacity="1"/>
+<path aria-label="Year: 2021; Units: 1.7; Export Metrics: Others" role="graphics-symbol" aria-roledescription="bar" d="M36.72580645161292,178.85714285714286h86.22580645161291v9.714285714285694h-86.22580645161291Z" fill="#e6ab02" opacity="1"/>
+<path aria-label="Year: 2021; Units: 15; Export Metrics: NEV share (in )" role="graphics-symbol" aria-roledescription="bar" d="M36.72580645161292,91.42857142857143h86.22580645161291v85.71428571428571h-86.22580645161291Z" fill="#1b9e77" opacity="1"/>
+<path aria-label="Year: 2022; Units: 3.1; Export Metrics: Total Exports" role="graphics-symbol" aria-roledescription="bar" d="M181.88709677419357,182.2857142857143h86.22580645161291v17.714285714285694h-86.22580645161291Z" fill="#7570b3" opacity="1"/>
+<path aria-label="Year: 2022; Units: 0.7; Export Metrics: New energy vehicles" role="graphics-symbol" aria-roledescription="bar" d="M181.88709677419357,164.57142857142856h86.22580645161291v4.000000000000028h-86.22580645161291Z" fill="#666666" opacity="1"/>
+<path aria-label="Year: 2022; Units: 2.4; Export Metrics: Others" role="graphics-symbol" aria-roledescription="bar" d="M181.88709677419357,168.57142857142858h86.22580645161291v13.714285714285722h-86.22580645161291Z" fill="#e6ab02" opacity="1"/>
+<path aria-label="Year: 2022; Units: 22; Export Metrics: NEV share (in )" role="graphics-symbol" aria-roledescription="bar" d="M181.88709677419357,38.857142857142854h86.22580645161291v125.7142857142857h-86.22580645161291Z" fill="#1b9e77" opacity="1"/>
+<path aria-label="Year: 2023; Units: 4.9; Export Metrics: Total Exports" role="graphics-symbol" aria-roledescription="bar" d="M327.0483870967742,172h86.22580645161291v28h-86.22580645161291Z" fill="#7570b3" opacity="1"/>
+<path aria-label="Year: 2023; Units: 1.2; Export Metrics: New energy vehicles" role="graphics-symbol" aria-roledescription="bar" d="M327.0483870967742,144h86.22580645161291v6.857142857142833h-86.22580645161291Z" fill="#666666" opacity="1"/>
+<path aria-label="Year: 2023; Units: 3.7; Export Metrics: Others" role="graphics-symbol" aria-roledescription="bar" d="M327.0483870967742,150.85714285714283h86.22580645161291v21.142857142857167h-86.22580645161291Z" fill="#e6ab02" opacity="1"/>
+<path aria-label="Year: 2023; Units: 25; Export Metrics: NEV share (in )" role="graphics-symbol" aria-roledescription="bar" d="M327.0483870967742,1.1428571428571566h86.22580645161291v142.85714285714283h-86.22580645161291Z" fill="#1b9e77" opacity="1"/></g></g></g></g></g></svg>
