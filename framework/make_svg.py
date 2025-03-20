@@ -31,7 +31,8 @@ def determine_chart_type(json_data):
         String indicating the chart type
     """
     # For testing purpose - this time we want to use the JS template
-    return "Grouped Bar Chart"
+    # return "Grouped Bar Chart"
+    return "Line Chart"
     #return json_data['requirements']['chart_type'].lower()
 
 if __name__ == '__main__':
