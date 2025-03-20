@@ -1,0 +1,20 @@
+{
+  "original_file": "/home/lizhen/chartdata/new_infographics/Line Graph/22689.jpeg",
+  "index": "69",
+  "data": {
+    "chart_type": "line",
+    "background": "no",
+    "axes": {
+      "x_axis": "yes",
+      "y_axis": "yes"
+    },
+    "image_chart": "none",
+    "chart_image_position": "none",
+    "image_title": "none",
+    "title_position": "top",
+    "icon_mark": "none",
+    "axis_label": "none"
+  },
+  "basic_chart_type": "line",
+  "chart_type": "Multiple Line Graph"
+}
