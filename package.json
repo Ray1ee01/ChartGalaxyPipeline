@@ -2,6 +2,7 @@
     "dependencies": {
         "canvas": "^3.1.0",
         "echarts": "^5.6.0",
+        "puppeteer": "^24.4.0",
         "sharp": "^0.33.5",
         "text-to-svg": "^3.0.0",
         "vega": "^5.22.1",

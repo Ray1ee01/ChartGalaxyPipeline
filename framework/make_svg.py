@@ -4,8 +4,9 @@ import sys
 import random
 from template.template_registry import get_template_for_chart_type
 from utils.html_to_svg import html_to_svg
-from utils.load_charts import load_js_echarts, load_py_echarts, render_chart_to_svg, load_d3js
+from utils.load_charts import load_js_echarts, load_py_echarts, render_chart_to_svg, load_d3js, render_vegalite_specification_to_svg
 from utils.file_utils import create_temp_file, cleanup_temp_file, ensure_temp_dir, create_fallback_svg
+import importlib
 
 def load_data_from_json(json_file_path="input.json"):
     """
@@ -31,8 +32,23 @@ def determine_chart_type(json_data):
         String indicating the chart type
     """
     # For testing purpose - this time we want to use the JS template
-    return "Grouped Bar Chart"
-    #return json_data['requirements']['chart_type'].lower()
+    # return "Grouped Bar Chart"
+    # return "Horizontal Bar Chart"
+    # return "Vertical Stacked Bar Chart"
+    # return "Horizontal Stacked Bar Chart"
+    # return "Vertical Group Bar Chart"
+    # return "Horizontal Group Bar Chart"
+    # return "Line Chart"
+    # return "Spline Chart"
+    # return "Step Line Chart"
+    # return "Multiple Line Chart"
+    # return "Multiple Spline Chart"
+    # return "Multiple Step Line Chart"
+    # return "Pie Chart"
+    # return "Donut Chart"
+    # return "Group Donut Chart"
+    return "Group Pie Chart"
+    # return json_data['requirements']['chart_type'].lower()
 
 if __name__ == '__main__':
     # 只保留必要的日志输出
@@ -48,7 +64,8 @@ if __name__ == '__main__':
     
     # Get the appropriate template for this chart type
     # Prefer JavaScript template for testing
-    engine, template = get_template_for_chart_type(chart_type, engine_preference=['echarts-js', 'echarts-py', 'd3-js'])
+    engine_preference = [ 'vegalite-py']
+    engine, template = get_template_for_chart_type(chart_type, engine_preference=engine_preference)
     
     if engine is None:
         print(f"Error: No template found for chart type '{chart_type}'")
@@ -66,126 +83,167 @@ if __name__ == '__main__':
     svg_file = None
     error_message = None
     
-    try:
-        if engine == 'echarts-py':
-            # Use Python template
-            options = template.make_options(json_data)
-            
-            # 保存options到临时文件
-            echarts_options_file = create_temp_file(prefix="echarts_options_", suffix=".json", 
-                                                content=json.dumps(options, indent=2))
-            
-            # 使用echarts-js相同的渲染方式
-            print(f"Using ECharts renderer for Python-generated options")
-            
-            # 创建JS封装函数
-            js_wrapper_content = f"""
-            function make_option(jsonData) {{
-                return {json.dumps(options)};
-            }}
-            """
-            
-            js_wrapper_file = create_temp_file(prefix="echarts_wrapper_", suffix=".js", 
-                                            content=js_wrapper_content)
-            
-            try:
-                # 渲染SVG
-                svg_file = render_chart_to_svg(
-                    json_data=json_data,
-                    output_svg_path=output_svg_path,
-                    js_file=js_wrapper_file,
-                    chart_type=chart_type,
-                    width=width,
-                    height=height,
-                    framework="echarts"  # 统一使用echarts框架
-                )
-                
-                if svg_file is None:
-                    raise ValueError("SVG chart generation failed (returned None)")
-                
-                print(f"ECharts SVG chart generated successfully")
-                
-            except Exception as e:
-                error_message = str(e)
-                raise Exception(f"Failed to generate ECharts Python chart: {error_message}")
-            finally:
-                # 清理临时文件
-                cleanup_temp_file(js_wrapper_file)
-                cleanup_temp_file(echarts_options_file)
-            
-        elif engine == 'echarts-js':
-            # Use JavaScript ECharts template
-            js_file = template
-            
-            # 使用统一的render_chart_to_svg函数直接生成SVG
-            try:
-                svg_file = render_chart_to_svg(
-                    json_data=json_data,
-                    output_svg_path=output_svg_path,
-                    js_file=js_file,
-                    chart_type=chart_type,
-                    width=width,
-                    height=height,
-                    framework="echarts"
-                )
-                
-                if svg_file is None:
-                    raise ValueError("SVG chart generation failed (returned None)")
-                
-                print(f"ECharts SVG chart generated successfully")
-                
-            except Exception as e:
-                error_message = str(e)
-                raise Exception(f"Failed to generate ECharts JavaScript chart: {error_message}")
-        
-        elif engine == 'd3-js':
-            # Use D3.js template
-            js_code = template
-            
-            # Add chart_type to the data if not already present
-            if "chart_type" not in json_data:
-                json_data["chart_type"] = chart_type
-            
-            # 使用统一的render_chart_to_svg函数直接生成SVG
-            try:
-                svg_file = render_chart_to_svg(
-                    json_data=json_data,
-                    output_svg_path=output_svg_path,
-                    js_file=js_code,
-                    chart_type=chart_type,
-                    width=width,
-                    height=height,
-                    framework="d3"
-                )
-                
-                if svg_file is None:
-                    raise ValueError("SVG chart generation failed (returned None)")
-                
-                print(f"D3.js SVG chart generated successfully")
-                
-            except Exception as e:
-                error_message = str(e)
-                raise Exception(f"Failed to generate D3.js chart: {error_message}")
-                
-        else:
-            error_message = f"Unknown engine type: {engine}"
-            print(f"Error: {error_message}")
-            raise Exception(error_message)
+    # 可用的输入：engine: 名字， template: 模板对应的文件路径，chart_type: 图表类型，json_data: 图表数据
     
-    except Exception as e:
-        print(f"Error generating chart: {e}")
-        error_message = str(e)
+    # try:
+    if engine == 'echarts-py':
+        # Use Python template
+        options = template.make_options(json_data)
         
-        # Create a fallback SVG with error message as a last resort
-        if svg_file is None or not os.path.exists(svg_file):
-            print("Creating fallback SVG with error message...")
-            svg_file = create_fallback_svg(
-                output_path=output_svg_path,
+        # 保存options到临时文件
+        echarts_options_file = create_temp_file(prefix="echarts_options_", suffix=".json", 
+                                            content=json.dumps(options, indent=2))
+        
+        # 使用echarts-js相同的渲染方式
+        print(f"Using ECharts renderer for Python-generated options")
+        
+        # 创建JS封装函数
+        js_wrapper_content = f"""
+        function make_option(jsonData) {{
+            return {json.dumps(options)};
+        }}
+        """
+        
+        js_wrapper_file = create_temp_file(prefix="echarts_wrapper_", suffix=".js", 
+                                        content=js_wrapper_content)
+        
+        try:
+            # 渲染SVG
+            svg_file = render_chart_to_svg(
+                json_data=json_data,
+                output_svg_path=output_svg_path,
+                js_file=js_wrapper_file,
                 chart_type=chart_type,
                 width=width,
                 height=height,
-                error_message=error_message
+                framework="echarts"  # 统一使用echarts框架
             )
+            
+            if svg_file is None:
+                raise ValueError("SVG chart generation failed (returned None)")
+            
+            print(f"ECharts SVG chart generated successfully")
+            
+        except Exception as e:
+            error_message = str(e)
+            raise Exception(f"Failed to generate ECharts Python chart: {error_message}")
+        finally:
+            # 清理临时文件
+            cleanup_temp_file(js_wrapper_file)
+            cleanup_temp_file(echarts_options_file)
+        
+    elif engine == 'echarts-js':
+        # Use JavaScript ECharts template
+        js_file = template
+        
+        # 使用统一的render_chart_to_svg函数直接生成SVG
+        try:
+            svg_file = render_chart_to_svg(
+                json_data=json_data,
+                output_svg_path=output_svg_path,
+                js_file=js_file,
+                chart_type=chart_type,
+                width=width,
+                height=height,
+                framework="echarts"
+            )
+            
+            if svg_file is None:
+                raise ValueError("SVG chart generation failed (returned None)")
+            
+            print(f"ECharts SVG chart generated successfully")
+            
+        except Exception as e:
+            error_message = str(e)
+            raise Exception(f"Failed to generate ECharts JavaScript chart: {error_message}")
+    
+    elif engine == 'd3-js':
+        # Use D3.js template
+        js_code = template
+        
+        # Add chart_type to the data if not already present
+        if "chart_type" not in json_data:
+            json_data["chart_type"] = chart_type
+        
+        # 使用统一的render_chart_to_svg函数直接生成SVG
+        try:
+            svg_file = render_chart_to_svg(
+                json_data=json_data,
+                output_svg_path=output_svg_path,
+                js_file=js_code,
+                chart_type=chart_type,
+                width=width,
+                height=height,
+                framework="d3"
+            )
+            
+            if svg_file is None:
+                raise ValueError("SVG chart generation failed (returned None)")
+            
+            print(f"D3.js SVG chart generated successfully")
+            
+        except Exception as e:
+            error_message = str(e)
+            raise Exception(f"Failed to generate D3.js chart: {error_message}")
+    
+    elif engine == 'vegalite-py':
+        # Use VegaLite-py template
+        template_root = "template.vegalite-py"
+        general_chart_type = template.split('/')[-2]
+        module_name = template.split('/')[-1].split('.')[0]
+        print("")
+        module_path = f"{template_root}.{general_chart_type}.{module_name}"
+        print("module_path:", module_path)
+        module = importlib.import_module(module_path)
+        
+        chart_words = module_name.split('_')
+        print("chart_words:", chart_words)
+        # 把每个单词的首字母大写
+        chart_words = [word.capitalize() for word in chart_words]
+        # 把每个单词拼接起来
+        chart_type = ''.join(chart_words)
+        print("chart_type:", chart_type)
+        
+        # 获取module所有的attribute
+        # attributes = dir(module)
+        template_class = getattr(module, chart_type)
+        template_object = template_class()
+        vega_spec = template_object.make_specification(json_data)
+        print("vega_spec:", vega_spec)
+        
+        # 保存vega_spec到临时文件
+        vega_spec_file = create_temp_file(prefix="vega_spec_", suffix=".json", 
+                                            content=json.dumps(vega_spec, indent=2))
+        
+        try:
+            svg_file = render_vegalite_specification_to_svg(vega_spec, output_svg_path)
+            if svg_file is None:
+                raise ValueError("SVG chart generation failed (returned None)")
+            
+            print(f"VegaLite SVG chart generated successfully")
+            
+        except Exception as e:
+            error_message = str(e)
+            raise Exception(f"Failed to generate VegaLite chart: {error_message}")
+    else:
+        error_message = f"Unknown engine type: {engine}"
+        print(f"Error: {error_message}")
+        raise Exception(error_message)
+    
+    # except Exception as e:
+    #     print(f"Error generating chart: {e}")
+    #     error_message = str(e)
+        
+    #     # Create a fallback SVG with error message as a last resort
+    #     if svg_file is None or not os.path.exists(svg_file):
+    #         print("Creating fallback SVG with error message...")
+    #         svg_file = create_fallback_svg(
+    #             output_path=output_svg_path,
+    #             chart_type=chart_type,
+    #             width=width,
+    #             height=height,
+    #             error_message=error_message
+    #         )
     
     if svg_file is not None and os.path.exists(svg_file):
         # 使用文件名而非完整路径
