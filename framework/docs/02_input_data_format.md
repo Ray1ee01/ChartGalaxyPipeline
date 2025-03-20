@@ -53,7 +53,7 @@ ChartPipeline 框架接受结构化的 JSON 数据作为输入。正确的数据
     "importance": "primary",
     "description": "Time periods of national emergencies declared",
     "unit": "none",
-    "data_type": "time",
+    "data_type": "temporal",
     "role": "x"
   },
   // 更多列定义...
@@ -68,7 +68,7 @@ ChartPipeline 框架接受结构化的 JSON 数据作为输入。正确的数据
 | `importance` | 字符串 | 列的重要性级别 | 是 | `primary`, `secondary` |
 | `description` | 字符串 | 对列内容的描述 | 是 | |
 | `unit` | 字符串 | 数据的度量单位 | 是 | `none`, `percent`, `currency`, 等 |
-| `data_type` | 字符串 | 数据类型 | 是 | `time`, `number`, `categorical` |
+| `data_type` | 字符串 | 数据类型 | 是 | `temporal`, `numerical`, `categorical` |
 | `role` | 字符串 | 在可视化中的作用 | 是 | `x`, `y`, `group`, `size`, `color` |
 
 ### 数据记录 (data)
@@ -109,7 +109,7 @@ ChartPipeline 框架接受结构化的 JSON 数据作为输入。正确的数据
         "importance": "primary",
         "description": "Time periods of national emergencies declared",
         "unit": "none",
-        "data_type": "time",
+        "data_type": "temporal",
         "role": "x"
       },
       {
@@ -117,7 +117,7 @@ ChartPipeline 框架接受结构化的 JSON 数据作为输入。正确的数据
         "importance": "primary",
         "description": "Binary for the corresponding status",
         "unit": "none",
-        "data_type": "number",
+        "data_type": "numerical",
         "role": "y"
       },
       {
