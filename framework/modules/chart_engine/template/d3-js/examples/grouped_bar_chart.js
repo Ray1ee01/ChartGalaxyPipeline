@@ -9,7 +9,6 @@ REQUIREMENTS_BEGIN
     "supported_effects": ["shadow", "gradient", "rounded_corners", "stroke", "spacing"],
     "required_data_points": [5, 100],
     "required_image": ["people"],
-    "width": [500, 1000],
     "height": [500, 800],
     "x_range": [2, 9]
 }

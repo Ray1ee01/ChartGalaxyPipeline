@@ -3,8 +3,7 @@ import os
 import sys
 import random
 from template.template_registry import get_template_for_chart_type
-from utils.html_to_svg import html_to_svg
-from utils.load_charts import load_js_echarts, load_py_echarts, render_chart_to_svg, load_d3js
+from utils.load_charts import render_chart_to_svg
 from utils.file_utils import create_temp_file, cleanup_temp_file, ensure_temp_dir, create_fallback_svg
 
 def load_data_from_json(json_file_path="input.json"):
