@@ -91,6 +91,9 @@
             "color": "#0f223b",
             "opacity": 1.0
         }
+      },
+      "title": {
+        "text": "Retailer Preference by Country"
       }
     },
     "data_columns": [
@@ -190,5 +193,19 @@
         "Score": 7,
         "Retailer Type": "Other online shop"
       }
-    ]
+    ],
+    "images": {
+      "_comment": "图标部分，支持字段相关图标和其他图标类型",
+      "field": {
+        "France": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+PHBhdGggZD0iTTIgNmgyOHYyMEgyeiIgZmlsbD0iI2YwZjBmMCIvPjxwYXRoIGQ9Ik0yIDZoOXYyMEgyeiIgZmlsbD0iIzAwMDA3OCIvPjxwYXRoIGQ9Ik0yMSA2aDl2MjBoLTl6IiBmaWxsPSIjZTYwMDExIi8+PC9zdmc+",
+        "Germany": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+PHBhdGggZD0iTTIgNmgyOHY2SDJ6IiBmaWxsPSIjMDAwIi8+PHBhdGggZD0iTTIgMTJoMjh2NkgyeiIgZmlsbD0iI2QwMCIvPjxwYXRoIGQ9Ik0yIDE4aDI4djhIMnoiIGZpbGw9IiNmZmNlMDAiLz48L3N2Zz4=",
+        "China": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+PHBhdGggZD0iTTIgNmgyOHYyMEgyeiIgZmlsbD0iI2RlMjkxMCIvPjxwYXRoIGQ9Ik01IDEwbDEgM2wzLTEtMS42IDIuOCAyLjcgMS4yLTMgLjItLjEgM0w1LjUgMTYgMyAxOGwxLTMtMy0xIDIuNy0uOEwzIDEwaDNsMSAzIDEtM3oiIGZpbGw9IiNmZmRlMDAiLz48L3N2Zz4=",
+        "U.S.": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+PHBhdGggZD0iTTIgNmgyOHYyMEgyeiIgZmlsbD0iI2YwZjBmMCIvPjxwYXRoIGQ9Ik0yIDZoMTR2MTFIMnptMTQgMmgyOHY5SDE2eiIgZmlsbD0iIzNjM2I2ZSIvPjxwYXRoIGQ9Ik0yIDE3aDI4djlIMnptMTYtMWgyOHYxSDE2em0wLTJoMjh2MUgxNnptMC0yaDI4djFIMTZ6bTAtMmgyOHYxSDE2em0wLTJoMjh2MUgxNnpNMiAxNWgxNHYxSDJ6bTAtMmgxNHYxSDJ6bTAtMmgxNHYxSDJ6bTAtMmgxNHYxSDJ6bTAtMmgxNHYxSDJ6IiBmaWxsPSIjYjIyMjM0Ii8+PHBhdGggZD0iTTMgN2wuMSAxaC45TC0zIDlsLjUuOS42LS4zbC0uMiAxaDF2LTFMMC0zVjEwSDN6IiBmaWxsPSIjZmZmIi8+PC9zdmc+",
+        "Pharmacy": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+PHBhdGggZD0iTTggNGgxNnYyNEg4eiIgZmlsbD0iI2ZmZiIvPjxwYXRoIGQ9Ik0xMiA4aDh2MTZoLTh6IiBmaWxsPSIjMWY3N2I0Ii8+PHBhdGggZD0iTTggOHYxNmgxNlY4SDh6bTQgNGg0djRoNHY0aC00djRoLTR2LTRIOFYxNmg0di00eiIgZmlsbD0iI2ZmZiIvPjwvc3ZnPg=="
+      },
+      "other": {
+        "$topic": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+PHBhdGggZD0iTTQgNmgyNHYyMEg0eiIgZmlsbD0iI2YwZjBmMCIvPjxwYXRoIGQ9Ik0xMiA4aDh2MTZoLTh6IiBmaWxsPSIjNWY5ZWEwIi8+PHBhdGggZD0iTTggOHYxNmgxNlY4SDh6bTQgNGg0djRoNHY0aC00djRoLTR2LTRIOFYxNmg0di00eiIgZmlsbD0iI2ZmZiIvPjwvc3ZnPg==",
+        "man": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+PGNpcmNsZSBjeD0iMTYiIGN5PSI4IiByPSI2IiBmaWxsPSIjZmZkNmExIi8+PHBhdGggZD0iTTggMTZoMTZ2MTRIOHoiIGZpbGw9IiM0OThlYmEiLz48Y2lyY2xlIGN4PSIxMiIgY3k9IjgiIHI9IjEiIGZpbGw9IiMzMzMiLz48Y2lyY2xlIGN4PSIyMCIgY3k9IjgiIHI9IjEiIGZpbGw9IiMzMzMiLz48cGF0aCBkPSJNMTQgMTBoNHYyaC00eiIgZmlsbD0iI2ZmYTY4MCIvPjwvc3ZnPg=="
+      }
+    }
 }
