@@ -1,14 +1,15 @@
-from .spline_chart import SplineChart
+from .scatter_plot import ScatterPlot
 from typing import Dict
+
 
 """
 REQUIREMENTS_BEGIN
 {
     "_comment": "这些属性的值由你对特定的图表进行定义，用于要求数据的格式。完成测试后填写。",
-    "chart_type": "Multiple Spline Chart",
-    "chart_name": "multiple_spline_chart_01",
+    "chart_type": "Group Scatter Plot",
+    "chart_name": "group_scatter_plot_01",
     "required_fields": ["x", "y", "group"],
-    "required_fields_type": [["temporal","numerical"], ["numerical"], ["categorical"]],
+    "required_fields_type": [["temporal","numerical"], ["temporal","numerical"], ["categorical"]],
     "supported_effects": [],
     "required_data_points": [5, 100],
     "required_image": [],
@@ -19,16 +20,16 @@ REQUIREMENTS_BEGIN
 REQUIREMENTS_END
 """
 
-class MultipleSplineChart(SplineChart):
+class GroupScatterPlot(ScatterPlot):
     def __init__(self):
         super().__init__()
 
     def make_mark_specification(self, json_data: Dict) -> Dict:
         return super().make_mark_specification(json_data)
-    
+
     def make_axis_specification(self, json_data: Dict) -> Dict:
         return super().make_axis_specification(json_data)
-    
+        
     def make_color_specification(self, json_data: Dict) -> Dict:
         return super().make_color_specification(json_data)
     

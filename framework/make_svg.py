@@ -47,7 +47,9 @@ def determine_chart_type(json_data):
     # return "Pie Chart"
     # return "Donut Chart"
     # return "Group Donut Chart"
-    return "Group Pie Chart"
+    # return "Group Pie Chart"
+    # return "Scatter Plot"
+    return "Bubble Chart"
     # return json_data['requirements']['chart_type'].lower()
 
 if __name__ == '__main__':
@@ -56,7 +58,7 @@ if __name__ == '__main__':
     tmp_dir = ensure_temp_dir()
     
     # Load data from input.json
-    json_data = load_data_from_json()
+    json_data = load_data_from_json("input_1.json")
     
     # Determine chart type based on the JSON data
     chart_type = determine_chart_type(json_data)
