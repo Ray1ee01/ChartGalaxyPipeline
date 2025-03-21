@@ -4,86 +4,6 @@
     "description": "Number of national emergencies declared in the United States since 1976, by current status",
     "main_insight": "The number of national emergencies declared in the US has generally increased over time, with a significant number of those declared since 2000 still active."
   },
-  "data": {
-    "columns": [
-      {
-        "name": "Time Period",
-        "importance": "primary",
-        "description": "Time periods of national emergencies declared",
-        "unit": "none",
-        "data_type": "temporal",
-        "role": "x"
-      },
-      {
-        "name": "Binary",
-        "importance": "primary",
-        "description": "Binary for the corresponding status",
-        "unit": "none",
-        "data_type": "numerical",
-        "role": "y"
-      },
-      {
-        "name": "Status",
-        "importance": "primary",
-        "description": "The status of the data point",
-        "unit": "none",
-        "data_type": "categorical",
-        "role": "group"
-      }
-    ],
-    "data": [
-      {
-        "Time Period": "'76-'79",
-        "Binary": 1,
-        "Status": "Still active"
-      },
-      {
-        "Time Period": "'80-'89",
-        "Binary": 7,
-        "Status": "Ended"
-      },
-      {
-        "Time Period": "'90-'99",
-        "Binary": 6,
-        "Status": "Still active"
-      },
-      {
-        "Time Period": "'90-'99",
-        "Binary": 14,
-        "Status": "Ended"
-      },
-      {
-        "Time Period": "'00-'09",
-        "Binary": 11,
-        "Status": "Still active"
-      },
-      {
-        "Time Period": "'00-'09",
-        "Binary": 5,
-        "Status": "Ended"
-      },
-      {
-        "Time Period": "'10-'19",
-        "Binary": 15,
-        "Status": "Still active"
-      },
-      {
-        "Time Period": "'10-'19",
-        "Binary": 3,
-        "Status": "Ended"
-      },
-      {
-        "Time Period": "'20-'22",
-        "Binary": 8,
-        "Status": "Still active"
-      },
-      {
-        "Time Period": "'20-'22",
-        "Binary": 1,
-        "Status": "Ended"
-      }
-    ]
-  },
   "_extra": {
     "image_data": {
       "original_file": "/home/lizhen/chartdata/new_infographics/Bar Chart/27166.jpeg",
@@ -166,7 +86,9 @@
       "Ended": "#4269d0",
       "Still active": "#ff725c"
     },
-    "other": {},
+    "other": {
+      "primary": "#efb118"
+    },
     "available_colors": [
       "#efb118",
       "#6cc5b0",
@@ -185,6 +107,116 @@
     },
     "other": {
       "primary": "data:image/png;base64,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"
+    }
+  },
+  "data": [
+    {
+      "Time Period": "'76-'79",
+      "Binary": 1,
+      "Status": "Still active"
+    },
+    {
+      "Time Period": "'80-'89",
+      "Binary": 7,
+      "Status": "Ended"
+    },
+    {
+      "Time Period": "'90-'99",
+      "Binary": 6,
+      "Status": "Still active"
+    },
+    {
+      "Time Period": "'90-'99",
+      "Binary": 14,
+      "Status": "Ended"
+    },
+    {
+      "Time Period": "'00-'09",
+      "Binary": 11,
+      "Status": "Still active"
+    },
+    {
+      "Time Period": "'00-'09",
+      "Binary": 5,
+      "Status": "Ended"
+    },
+    {
+      "Time Period": "'10-'19",
+      "Binary": 15,
+      "Status": "Still active"
+    },
+    {
+      "Time Period": "'10-'19",
+      "Binary": 3,
+      "Status": "Ended"
+    },
+    {
+      "Time Period": "'20-'22",
+      "Binary": 8,
+      "Status": "Still active"
+    },
+    {
+      "Time Period": "'20-'22",
+      "Binary": 1,
+      "Status": "Ended"
+    }
+  ],
+  "data_columns": [
+    {
+      "name": "Time Period",
+      "importance": "primary",
+      "description": "Time periods of national emergencies declared",
+      "unit": "none",
+      "data_type": "temporal",
+      "role": "x"
+    },
+    {
+      "name": "Binary",
+      "importance": "primary",
+      "description": "Binary for the corresponding status",
+      "unit": "none",
+      "data_type": "numerical",
+      "role": "y"
+    },
+    {
+      "name": "Status",
+      "importance": "primary",
+      "description": "The status of the data point",
+      "unit": "none",
+      "data_type": "categorical",
+      "role": "group"
+    }
+  ],
+  "secondary_data": [],
+  "variables": {
+    "width": 600,
+    "height": 600,
+    "has_rounded_corners": false,
+    "has_shadow": false,
+    "has_spacing": false,
+    "has_gradient": false,
+    "has_stroke": false
+  },
+  "typography": {
+    "title": {
+      "font_family": "Arial",
+      "font_size": "28px",
+      "font_weight": 700
+    },
+    "description": {
+      "font_family": "Arial",
+      "font_size": "16px",
+      "font_weight": 500
+    },
+    "label": {
+      "font_family": "Arial",
+      "font_size": "16px",
+      "font_weight": 500
+    },
+    "annotation": {
+      "font_family": "Arial",
+      "font_size": "12px",
+      "font_weight": 400
     }
   }
 }

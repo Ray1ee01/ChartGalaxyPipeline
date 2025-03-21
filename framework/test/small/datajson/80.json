@@ -4,101 +4,6 @@
     "description": "Government figures for protesters at demonstrations against pension reforms in France (1995-2023)",
     "main_insight": "The number of protesters against pension reforms in France varies significantly across different years and days of protest. The 2023 protests saw a high initial turnout, peaking at 1.28 million on the 6th day, and declining thereafter, but seeing a resurgence by the 13th day."
   },
-  "data": {
-    "columns": [
-      {
-        "name": "Day of protest",
-        "importance": "primary",
-        "description": "Day of protest",
-        "unit": "none",
-        "data_type": "categorical",
-        "role": "x"
-      },
-      {
-        "name": "Ratio",
-        "importance": "primary",
-        "description": "Ratio for the corresponding year",
-        "unit": "none",
-        "data_type": "numerical",
-        "role": "y"
-      },
-      {
-        "name": "Year",
-        "importance": "primary",
-        "description": "The year of the data point",
-        "unit": "none",
-        "data_type": "temporal",
-        "role": "group"
-      }
-    ],
-    "data": [
-      {
-        "Day of protest": "1st",
-        "Ratio": 1.09,
-        "Year": "2023"
-      },
-      {
-        "Day of protest": "1st",
-        "Ratio": 0.8,
-        "Year": "2010"
-      },
-      {
-        "Day of protest": "1st",
-        "Ratio": 0.81,
-        "Year": "2019-2020"
-      },
-      {
-        "Day of protest": "1st",
-        "Ratio": 0.45,
-        "Year": "1995"
-      },
-      {
-        "Day of protest": "1st",
-        "Ratio": 1.0,
-        "Year": "2003"
-      },
-      {
-        "Day of protest": "6th",
-        "Ratio": 1.28,
-        "Year": "2023"
-      },
-      {
-        "Day of protest": "6th",
-        "Ratio": 1.23,
-        "Year": "2010"
-      },
-      {
-        "Day of protest": "6th",
-        "Ratio": 0.15,
-        "Year": "2019-2020"
-      },
-      {
-        "Day of protest": "6th",
-        "Ratio": 0.3,
-        "Year": "1995"
-      },
-      {
-        "Day of protest": "6th",
-        "Ratio": 0.43,
-        "Year": "2003"
-      },
-      {
-        "Day of protest": "13th",
-        "Ratio": 0.78,
-        "Year": "2023"
-      },
-      {
-        "Day of protest": "13th",
-        "Ratio": 0.38,
-        "Year": "2010"
-      },
-      {
-        "Day of protest": "13th",
-        "Ratio": 0.07,
-        "Year": "2019-2020"
-      }
-    ]
-  },
   "_extra": {
     "image_data": {
       "original_file": "/home/lizhen/chartdata/new_infographics/Line Graph/29569.jpeg",
@@ -201,6 +106,131 @@
     },
     "other": {
       "primary": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAgAAAAIACAYAAAD0eNT6AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAD71JREFUeNrs3bFuW+cZx+EjRVANx0WVLQgLhCkCVEtrDl0yhQYydQl7BT2+ArtLVydrF6dXIPYK4u4FzEwdo7YLh6DVEAUZApQFEsNQEqd8q4+A4Aq2SJHSOed9HsCQ0Kn9Kp7/j4eUWFUAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADTLliOgDaa9ejj/MnQStMBk/3g8cQw03Y4joCVi/B84BtoSAY6Aptt2BAAgAAAAAQAACAAAQAAAAAIAABAAAIAAAAAEAAAgAAAAAQAACAAAQAAAAAIAABAAAIAAAAAEAAAgAABAAAAAAgAAEABwrR7N/80cAw03Kz+r0HhbjoC2mPbqwfzL4/m/PadBQ8f/zv7x+NBRIABABGD8QQCACMD4gwAAEYDxBwEAIgDjDwIARADGHwQAiACMPwgAEAEYfxAAIAIw/iAAEAEiAOMPAgARAMYfBAAiAIw/AsARIALA+CMAQASA8UcAgAjA+IMAABGA8QcBACIA4w8CAEQAxh8EAIgAjD8IABABGH8QACACMP4gAEAEYPxBAIAIwPiDAAARgPEHAQAiAOMPAgBEAMYfBACIAIw/CAAQAcbf+IMAABFg/AEBACLA+IMAAESA8QcBAIgA4w8CAESACDD+IABABGD8QQCACMD4gwAAEYDxBwEAIgDjDwIARADGHwQAiACMPwgAEAEYfxAAIAIw/iAAoOERsPv2G4+3b+6KgDV69uRkdvLZF8YfBAA015e/H8ddgKGTWKvJ63+o7zgGWJ9tRwAAAgAAEAAAgAAAAAQAACAAAAABAAAIAABAAAAAAgAAEAAAgAAAAAQAACAAAAABAAAIAABAAAAAAgAABAAAIAAAAAEAAAgAAEAAAAACAAAQAACAAAAABAAAIAAAAAEAAAgAAEAAAAACAAAQAACAAAAABAAACAAAQAAAAAIAABAAAIAAAAAEAADQbFuOAC5u2qv35l8G83+Lr+EnZ76vdt9+Y7B9c3fPaa3Psycns5PPvjg88x/F9/858/0svu4fj2dOCwQAXGboY9D7Zdhvn/me5osgOJr/+9vi+3kYHDoWEADw/NjHuA/L0A/K93TPpARBhMFkHgVHjgQBAPme3cfIv1u+ul2f06xEwSclCNwlQABAxwZ/rwz9++Vr36lwjqMSBH8uQeD9BAgAaOHox8iPyrP8kRNhBY/OxMCR40AAQLOf6cfY36u8YY/1ipcH/hhR4M4AAgCaM/wx+r/1TJ8rvDPwp3kIPHIUCAC4+tHvl2f6deVNfFyPuBMwjjsDXiJAAMDmh39Yht+zfZp2VyBCYOIoEACw3uGPZ/oPKu/gp9niTsCH8xAYOwoEAKw++nFr/351+vq+4adtIRBvGhx70yACAJYf/rjV7/V92mxWQuAjIYAAgBePfz3/8tDw08E7Al4aQADAOcM/KsPfdxp0PAR+51cIEQAY/tO/yx/DP3QaJDIpIeDzBxAApBv+uMUf7+q/7zRI7KPq9KUB7w9AAJBi/ON2/0HldX4IR5WXBRAAJHjWH8Pvj/jA/4sAuOtuAAIAz/ohn1mJAHcDEAB41g/uBoAAoF3jH+/w/7jyq32wiqP5v9/4TQE2ZdsRsKHxj3f3f2r8YWXx2Pm0PJbAHQAaP/xu+cP6eUkAAUCjx39Qxn/gNGDtDksEeEkAAUCjxn9Ynb7e713+sDlxByDeFzBxFFyW9wCwjvGv518eG3/YuHiMPS6PORAAXOv4x9/xP3AScKUO5o+9DxwDl+ElAC4z/jH8nonA9RnvH4/vOgYEAMYfRAAIAIw/iAAQAFx++P2OP4gAOsKbAFnGQ+MPjVWXu3PgDgBrffbvtj+4E4AAwPgDIoA28xIALxv/h8YfWqcuj11wB4CVxj+G32uK0F7x2QFjx4AAYJnxjzf7fewkoPXiswMeOQYEABcZ//g0P3/bH7ohPkDojk8RRADwsvHfK+PvI32hOw5LBMwcBQveBMjzDow/dM6g8n4eBAAvePb/QeUP/UBXjXyCIGd5CYDF+A+r01v/QLfFSwETx4AAYPG6/78qb/prrBu/7Fc3ftFvxX/Xp/84qp7+/cj/ac0V7wN4y/sB8BIA4cD4QxqLD/VCAJD82f/9yuv+kM2oPPYRACQd//78ywMnASk9KNcABAAJufUPeXkpQACQ9Nl/3P4bOglIbVg+8wMBQJLxj/J36x8ID8s1AQFAhgd85dY/cGqvXBMQAHT82f9w/qV2EsAZdbk2IADo+LN/ANcGAUCiZ//xzN8H/QDnGXhDoACgm+PvdT7gpXcBvCFQANA98Wt/HtjAi+yVawUCgA49+7/nJIALuOcugADAs3/AXQAEAJ79A+4CIADw7B9wFwABgGf/gLsACAA8+wfcBUAA4Nk/0Ma7AI5AANA+I8/+gcveBfDXAQUA7ePjfgHXEgRAJuVTvfpOAliDvk8KFAC0h9ftANcUBECyZ//xzH/kJIA1GpVrCwKAJj9QHQHg2oIAyMetOsC1BQGQybRXDypv/gM2o1+uMQgAFDrgGoMAoAm8Rge4xiAAMpn2an/5D9i0vXKtQQDQIO87AsC1BgGQjyoHXGsQAJm4/Q9cIS8DCAAaxC054Cq96wgEAM0wdATAFXIHQABw3fzxH+Aa+KNAAgDP/gHXHgQA18Hr/4BrDwJAhQO49iAAOm3aqz0AAdcgBIACB3ANQgBk4HdxAdcgBID6BnANQgB0mtfeANciBEBO/ggH4FqEAEjIa2+AaxECQHUDuBYhADpt2qvjo3/7TgJogH65JiEAUNyAaxICgE0YOgLANQkBkM9tRwA0yJuOQABwNfqOAGgQLwEIADzYANckBABrN+3VHmiAaxMCICG/bgO4NiEAEho6AsC1CQGQj3fbAq5NCICE+o4AcG1CAHiQAbg2IQA8yABcmxAAnTLt1R5ggGsUAkBhA7hGIQAy8Hu2gGsUAiAhf2kLcI1CAAAAAiADHwMMuEYhABLy+hrgGoUAAAAEQAbeYAO4RiEAEnJ7DXCNQgAAAAIAABAA3TLt1UOnALTgWuV9AAIAgIS8D0AAAAACAAAQAACAAAAABADnGDoCoAX8FoAAACAhvwUgAAAAAQAACAAAQAAAAAIAABAAAIAAAAAEAAAgAAAAAQAACAAAQAAAgAAAAAQAACAAAAABAAAIAABAAAAAAgAAEAAAgAAAAAQAACAAAAABAAAIAABAAAAAAgAAEAAAgAAAAAEAAAgAAEAAQHt/yF+94RDwMwMCgExeee1W9eNf/6q6+c6+w+BC4mclfmbiZwcEALR0/G+9N6i2dneq3Z+9LgK40PjHz0r8zMTPjghAAECLx39BBHCR8V8QAQgA6MD4iwCWGX8RgACADo2/CGCZ8RcBCADo0PiLAJYZfxGAAIAOjb8IYJnxFwEIAOjQ+IsA47/M+IsABAB0aPxFgPFfhQhAAEAHxl8EGH8RgACApOMvAoy/CEAAQNLxFwHGXwQgACDp+IsA4y8CEACQdPxFgPEXAQgASDr+IsD4iwAEACQdfxFg/EUAAgCSjr8IMP4iAAEAScdfBBh/EYAAgKTjLwKMvwhAAEDS8RcBxl8EIAAg6fiLAOMvAhAAkHT8RYDxFwEIAEg6/iLA+IsABAAkHX8RYPxFAAIAko6/CDD+IgABAEnHXwQYfxGAAICk4y8CjL8IQABA0vEXAcZfBCAAIOn4iwDjLwIQAJB0/EWA8RcBCAB4/oft1Rspxl8EGP9VIyAeIyAA6JxvP/+qevLXaar/zSLA+F9UPDbiMQICgE46+eeXIgDjf874x2MDBAAiQAQYf+MPAgARIAKMv/EHAYAIEAHG3/iDAEAEiADjb/xBACACRIDxN/4gABABIsD4G38QAIgAEWD8jT8IAESACDD+xh8BACJABBh/448AABEgAoy/8UcAgAgQAcbf+CMAQASIAONv/BEAIAJEgPE3/ggAEAHZI8D4Q7PtOALaFAGLYckUAeHZN0+Nv/EHAYAIyBYBP5x815r/vj/6+U+rrd1clxbjTxt5CYBWRkC2lwPaNKjGHwQAiACMPwgAEAEYfxAAIAIw/iAAQARg/EEAgAjA+IMAABGA8QcBACIA4w8CAEQAxh8EAIgAjD8IAEQAGH8QAIgAMP4gABABYPwRACACMP4OAgEAIgDjDwIARADGHwQAiACMPwgAEAEYfxAAIAIw/iAAQARg/EEAgAjA+IMAABGA8QcBACIA4w8CAEQAxh8EAIgAjD8IABABGH8QACACMP4gAEAEGH9AAIAIMP6AAAARYPxBAAAiwPiDAABEgPEHAQCIAOMPAgBEgAgw/iAAQARg/EEAgAjA+IMAABGA8QcBACIA4w8CAEQAxh8EAIgAjD8IABABxt/4w/rtOALYTAT8cPJddfOd/Wpr18NsFXF+Mf7ffv6VwwB3AKA9Yri+/svh/4aM5cc/zs74gwCAVvr+31+LgBXHP84OEAAgAow/IABABBh/QACACDD+gAAAEWD8AQEAIsD4AwIARIDxBwQAiADjDwKABrvtCESA8ce1CgGQyLRXH8y/jJyECDD+tMCoXLNouC1H0Irxr51E973y2q3q1nuDzn52gPFPZ7x/PL7rGAQAxp/EEWD8RQACAONPsggw/iJABAgAjD/JIsD4IwIEAMafZBFg/BEBAgDjT7IIMP6IAAGA8SdZBBh/RIAAwPiTLAKMPyJAAGD8SRYBxh8RIAAw/iSLAOOPCBAAGH+SRYDxRwQIAIw/ySLA+CMCBADGn2QRYPwRAQIA40+yCDD+iAABgPEnWQQYf0SAAMD4kywCjD8iQABg/EkWAcYfESAAMP4kiwDjjwgQABh/kkWA8UcECACMP8kiwPgjAgQAxp9kEWD8EQECAONPsggw/ogAAYDxJ1kEGH9EgADA+JMsAow/IkAAYPxJFgHGHxEgADD+JIsA448IEAAYf5JFgPFHBAgAjD/JIiAYf0SAAMD4kywCgvFHBAgAjD+ACBAAGH8AESAAjL/xBxABAsD4AyACBIDxB0AECADjD4AIEADGHwARIACMPwAiQAAYfwBEgAAw/gCIAAFg/AEQAQLA+AMgAi5v28+A8Qdw7RcAAIAAAAAEAAAgAAAAAQAACAAAQAAAAAIAABAAAIAAAAAEAAAgAAAAAQAACAAAQAAAAAIAABAAACAAAAABAAAIAACgK3YcQfWhIwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACu138FGADUkQTFRVqu8gAAAABJRU5ErkJggg=="
+    }
+  },
+  "data": [
+    {
+      "Day of protest": "1st",
+      "Ratio": 1.09,
+      "Year": "2023"
+    },
+    {
+      "Day of protest": "1st",
+      "Ratio": 0.8,
+      "Year": "2010"
+    },
+    {
+      "Day of protest": "1st",
+      "Ratio": 0.81,
+      "Year": "2019-2020"
+    },
+    {
+      "Day of protest": "1st",
+      "Ratio": 0.45,
+      "Year": "1995"
+    },
+    {
+      "Day of protest": "1st",
+      "Ratio": 1.0,
+      "Year": "2003"
+    },
+    {
+      "Day of protest": "6th",
+      "Ratio": 1.28,
+      "Year": "2023"
+    },
+    {
+      "Day of protest": "6th",
+      "Ratio": 1.23,
+      "Year": "2010"
+    },
+    {
+      "Day of protest": "6th",
+      "Ratio": 0.15,
+      "Year": "2019-2020"
+    },
+    {
+      "Day of protest": "6th",
+      "Ratio": 0.3,
+      "Year": "1995"
+    },
+    {
+      "Day of protest": "6th",
+      "Ratio": 0.43,
+      "Year": "2003"
+    },
+    {
+      "Day of protest": "13th",
+      "Ratio": 0.78,
+      "Year": "2023"
+    },
+    {
+      "Day of protest": "13th",
+      "Ratio": 0.38,
+      "Year": "2010"
+    },
+    {
+      "Day of protest": "13th",
+      "Ratio": 0.07,
+      "Year": "2019-2020"
+    }
+  ],
+  "data_columns": [
+    {
+      "name": "Day of protest",
+      "importance": "primary",
+      "description": "Day of protest",
+      "unit": "none",
+      "data_type": "categorical",
+      "role": "x"
+    },
+    {
+      "name": "Ratio",
+      "importance": "primary",
+      "description": "Ratio for the corresponding year",
+      "unit": "none",
+      "data_type": "numerical",
+      "role": "y"
+    },
+    {
+      "name": "Year",
+      "importance": "primary",
+      "description": "The year of the data point",
+      "unit": "none",
+      "data_type": "temporal",
+      "role": "group"
+    }
+  ],
+  "secondary_data": [],
+  "variables": {
+    "width": 600,
+    "height": 600,
+    "has_rounded_corners": false,
+    "has_shadow": false,
+    "has_spacing": false,
+    "has_gradient": false,
+    "has_stroke": false
+  },
+  "typography": {
+    "title": {
+      "font_family": "Arial",
+      "font_size": "28px",
+      "font_weight": 700
+    },
+    "description": {
+      "font_family": "Arial",
+      "font_size": "16px",
+      "font_weight": 500
+    },
+    "label": {
+      "font_family": "Arial",
+      "font_size": "16px",
+      "font_weight": 500
+    },
+    "annotation": {
+      "font_family": "Arial",
+      "font_size": "12px",
+      "font_weight": 400
     }
   }
 }

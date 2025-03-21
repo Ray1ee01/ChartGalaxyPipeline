@@ -4,76 +4,6 @@
     "description": "Expenditure on education as a % of total public expenditure in selected countries*",
     "main_insight": "New Zealand and Mexico invest the most in education as a percentage of their total public expenditure, at 21.6% and 20.5% respectively. Italy invests the least among the listed countries, at 8.6%."
   },
-  "data": {
-    "columns": [
-      {
-        "name": "Country",
-        "importance": "primary",
-        "description": "Name of the country",
-        "unit": "none",
-        "data_type": "categorical",
-        "role": "x"
-      },
-      {
-        "name": "Education Expenditure (% of total public expenditure)",
-        "importance": "primary",
-        "description": "Expenditure on education as a percentage of the country's total public expenditure",
-        "unit": "%",
-        "data_type": "numerical",
-        "role": "y"
-      }
-    ],
-    "data": [
-      {
-        "Country": "New Zealand",
-        "Education Expenditure (% of total public expenditure)": 21.6
-      },
-      {
-        "Country": "Mexico",
-        "Education Expenditure (% of total public expenditure)": 20.5
-      },
-      {
-        "Country": "Brazil",
-        "Education Expenditure (% of total public expenditure)": 19.2
-      },
-      {
-        "Country": "South Korea",
-        "Education Expenditure (% of total public expenditure)": 16.5
-      },
-      {
-        "Country": "Switzerland",
-        "Education Expenditure (% of total public expenditure)": 15.7
-      },
-      {
-        "Country": "United States",
-        "Education Expenditure (% of total public expenditure)": 13.6
-      },
-      {
-        "Country": "United Kingdom",
-        "Education Expenditure (% of total public expenditure)": 12.2
-      },
-      {
-        "Country": "Germany",
-        "Education Expenditure (% of total public expenditure)": 11.0
-      },
-      {
-        "Country": "Russia",
-        "Education Expenditure (% of total public expenditure)": 10.9
-      },
-      {
-        "Country": "France",
-        "Education Expenditure (% of total public expenditure)": 10.2
-      },
-      {
-        "Country": "Japan",
-        "Education Expenditure (% of total public expenditure)": 9.1
-      },
-      {
-        "Country": "Italy",
-        "Education Expenditure (% of total public expenditure)": 8.6
-      }
-    ]
-  },
   "_extra": {
     "image_data": {
       "original_file": "/home/lizhen/chartdata/new_infographics/Bar Chart/3398.jpeg",
@@ -185,6 +115,106 @@
     },
     "other": {
       "primary": "data:image/png;base64,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"
+    }
+  },
+  "data": [
+    {
+      "Country": "New Zealand",
+      "Education Expenditure (% of total public expenditure)": 21.6
+    },
+    {
+      "Country": "Mexico",
+      "Education Expenditure (% of total public expenditure)": 20.5
+    },
+    {
+      "Country": "Brazil",
+      "Education Expenditure (% of total public expenditure)": 19.2
+    },
+    {
+      "Country": "South Korea",
+      "Education Expenditure (% of total public expenditure)": 16.5
+    },
+    {
+      "Country": "Switzerland",
+      "Education Expenditure (% of total public expenditure)": 15.7
+    },
+    {
+      "Country": "United States",
+      "Education Expenditure (% of total public expenditure)": 13.6
+    },
+    {
+      "Country": "United Kingdom",
+      "Education Expenditure (% of total public expenditure)": 12.2
+    },
+    {
+      "Country": "Germany",
+      "Education Expenditure (% of total public expenditure)": 11.0
+    },
+    {
+      "Country": "Russia",
+      "Education Expenditure (% of total public expenditure)": 10.9
+    },
+    {
+      "Country": "France",
+      "Education Expenditure (% of total public expenditure)": 10.2
+    },
+    {
+      "Country": "Japan",
+      "Education Expenditure (% of total public expenditure)": 9.1
+    },
+    {
+      "Country": "Italy",
+      "Education Expenditure (% of total public expenditure)": 8.6
+    }
+  ],
+  "data_columns": [
+    {
+      "name": "Country",
+      "importance": "primary",
+      "description": "Name of the country",
+      "unit": "none",
+      "data_type": "categorical",
+      "role": "x"
+    },
+    {
+      "name": "Education Expenditure (% of total public expenditure)",
+      "importance": "primary",
+      "description": "Expenditure on education as a percentage of the country's total public expenditure",
+      "unit": "%",
+      "data_type": "numerical",
+      "role": "y"
+    }
+  ],
+  "secondary_data": [],
+  "variables": {
+    "width": 600,
+    "height": 600,
+    "has_rounded_corners": false,
+    "has_shadow": false,
+    "has_spacing": false,
+    "has_gradient": false,
+    "has_stroke": false
+  },
+  "typography": {
+    "title": {
+      "font_family": "Arial",
+      "font_size": "28px",
+      "font_weight": 700
+    },
+    "description": {
+      "font_family": "Arial",
+      "font_size": "16px",
+      "font_weight": 500
+    },
+    "label": {
+      "font_family": "Arial",
+      "font_size": "16px",
+      "font_weight": 500
+    },
+    "annotation": {
+      "font_family": "Arial",
+      "font_size": "12px",
+      "font_weight": 400
     }
   }
 }

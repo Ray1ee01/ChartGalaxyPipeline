@@ -4,156 +4,6 @@
     "description": "\"Do you have a favourable or unfavourable opinion of the following...?\" (net favourabilty*)",
     "main_insight": "Boris Johnson's net favorability rating has significantly improved from July to September 2019, while Jeremy Corbyn's rating has remained largely unchanged and deeply negative."
   },
-  "data": {
-    "columns": [
-      {
-        "name": "Month",
-        "importance": "primary",
-        "description": "Time period",
-        "unit": "none",
-        "data_type": "temporal",
-        "role": "x"
-      },
-      {
-        "name": "Units",
-        "importance": "primary",
-        "description": "Units for the corresponding politicians",
-        "unit": "none",
-        "data_type": "numerical",
-        "role": "y"
-      },
-      {
-        "name": "Politicians",
-        "importance": "primary",
-        "description": "The politicians of the data point",
-        "unit": "none",
-        "data_type": "categorical",
-        "role": "group"
-      }
-    ],
-    "data": [
-      {
-        "Month": "July 17",
-        "Units": -27.0,
-        "Politicians": "Boris Johnson"
-      },
-      {
-        "Month": "July 17",
-        "Units": -48.0,
-        "Politicians": "Jeremy Corbyn"
-      },
-      {
-        "Month": "July 22",
-        "Units": -23.0,
-        "Politicians": "Boris Johnson"
-      },
-      {
-        "Month": "July 22",
-        "Units": -50.0,
-        "Politicians": "Jeremy Corbyn"
-      },
-      {
-        "Month": "July 29",
-        "Units": -18.0,
-        "Politicians": "Boris Johnson"
-      },
-      {
-        "Month": "July 29",
-        "Units": -54.0,
-        "Politicians": "Jeremy Corbyn"
-      },
-      {
-        "Month": "July 31",
-        "Units": -18.0,
-        "Politicians": "Boris Johnson"
-      },
-      {
-        "Month": "July 31",
-        "Units": -45.0,
-        "Politicians": "Jeremy Corbyn"
-      },
-      {
-        "Month": "August 5",
-        "Units": -17.0,
-        "Politicians": "Boris Johnson"
-      },
-      {
-        "Month": "August 5",
-        "Units": -48.0,
-        "Politicians": "Jeremy Corbyn"
-      },
-      {
-        "Month": "August 14",
-        "Units": -18.0,
-        "Politicians": "Boris Johnson"
-      },
-      {
-        "Month": "August 14",
-        "Units": -48.0,
-        "Politicians": "Jeremy Corbyn"
-      },
-      {
-        "Month": "August 19",
-        "Units": -18.0,
-        "Politicians": "Boris Johnson"
-      },
-      {
-        "Month": "August 19",
-        "Units": -50.0,
-        "Politicians": "Jeremy Corbyn"
-      },
-      {
-        "Month": "August 26",
-        "Units": -17.0,
-        "Politicians": "Boris Johnson"
-      },
-      {
-        "Month": "August 26",
-        "Units": -49.0,
-        "Politicians": "Jeremy Corbyn"
-      },
-      {
-        "Month": "August 28",
-        "Units": -17.0,
-        "Politicians": "Boris Johnson"
-      },
-      {
-        "Month": "August 28",
-        "Units": -49.0,
-        "Politicians": "Jeremy Corbyn"
-      },
-      {
-        "Month": "September 4",
-        "Units": -17.0,
-        "Politicians": "Boris Johnson"
-      },
-      {
-        "Month": "September 4",
-        "Units": -49.0,
-        "Politicians": "Jeremy Corbyn"
-      },
-      {
-        "Month": "September 9",
-        "Units": -17.0,
-        "Politicians": "Boris Johnson"
-      },
-      {
-        "Month": "September 9",
-        "Units": -49.0,
-        "Politicians": "Jeremy Corbyn"
-      },
-      {
-        "Month": "September 17",
-        "Units": -16.0,
-        "Politicians": "Boris Johnson"
-      },
-      {
-        "Month": "September 17",
-        "Units": -49.0,
-        "Politicians": "Jeremy Corbyn"
-      }
-    ]
-  },
   "_extra": {
     "image_data": {
       "original_file": "/home/lizhen/chartdata/new_infographics/Line Graph/19408.jpeg",
@@ -255,6 +105,186 @@
     },
     "other": {
       "primary": "data:image/png;base64,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"
+    }
+  },
+  "data": [
+    {
+      "Month": "July 17",
+      "Units": -27.0,
+      "Politicians": "Boris Johnson"
+    },
+    {
+      "Month": "July 17",
+      "Units": -48.0,
+      "Politicians": "Jeremy Corbyn"
+    },
+    {
+      "Month": "July 22",
+      "Units": -23.0,
+      "Politicians": "Boris Johnson"
+    },
+    {
+      "Month": "July 22",
+      "Units": -50.0,
+      "Politicians": "Jeremy Corbyn"
+    },
+    {
+      "Month": "July 29",
+      "Units": -18.0,
+      "Politicians": "Boris Johnson"
+    },
+    {
+      "Month": "July 29",
+      "Units": -54.0,
+      "Politicians": "Jeremy Corbyn"
+    },
+    {
+      "Month": "July 31",
+      "Units": -18.0,
+      "Politicians": "Boris Johnson"
+    },
+    {
+      "Month": "July 31",
+      "Units": -45.0,
+      "Politicians": "Jeremy Corbyn"
+    },
+    {
+      "Month": "August 5",
+      "Units": -17.0,
+      "Politicians": "Boris Johnson"
+    },
+    {
+      "Month": "August 5",
+      "Units": -48.0,
+      "Politicians": "Jeremy Corbyn"
+    },
+    {
+      "Month": "August 14",
+      "Units": -18.0,
+      "Politicians": "Boris Johnson"
+    },
+    {
+      "Month": "August 14",
+      "Units": -48.0,
+      "Politicians": "Jeremy Corbyn"
+    },
+    {
+      "Month": "August 19",
+      "Units": -18.0,
+      "Politicians": "Boris Johnson"
+    },
+    {
+      "Month": "August 19",
+      "Units": -50.0,
+      "Politicians": "Jeremy Corbyn"
+    },
+    {
+      "Month": "August 26",
+      "Units": -17.0,
+      "Politicians": "Boris Johnson"
+    },
+    {
+      "Month": "August 26",
+      "Units": -49.0,
+      "Politicians": "Jeremy Corbyn"
+    },
+    {
+      "Month": "August 28",
+      "Units": -17.0,
+      "Politicians": "Boris Johnson"
+    },
+    {
+      "Month": "August 28",
+      "Units": -49.0,
+      "Politicians": "Jeremy Corbyn"
+    },
+    {
+      "Month": "September 4",
+      "Units": -17.0,
+      "Politicians": "Boris Johnson"
+    },
+    {
+      "Month": "September 4",
+      "Units": -49.0,
+      "Politicians": "Jeremy Corbyn"
+    },
+    {
+      "Month": "September 9",
+      "Units": -17.0,
+      "Politicians": "Boris Johnson"
+    },
+    {
+      "Month": "September 9",
+      "Units": -49.0,
+      "Politicians": "Jeremy Corbyn"
+    },
+    {
+      "Month": "September 17",
+      "Units": -16.0,
+      "Politicians": "Boris Johnson"
+    },
+    {
+      "Month": "September 17",
+      "Units": -49.0,
+      "Politicians": "Jeremy Corbyn"
+    }
+  ],
+  "data_columns": [
+    {
+      "name": "Month",
+      "importance": "primary",
+      "description": "Time period",
+      "unit": "none",
+      "data_type": "temporal",
+      "role": "x"
+    },
+    {
+      "name": "Units",
+      "importance": "primary",
+      "description": "Units for the corresponding politicians",
+      "unit": "none",
+      "data_type": "numerical",
+      "role": "y"
+    },
+    {
+      "name": "Politicians",
+      "importance": "primary",
+      "description": "The politicians of the data point",
+      "unit": "none",
+      "data_type": "categorical",
+      "role": "group"
+    }
+  ],
+  "secondary_data": [],
+  "variables": {
+    "width": 600,
+    "height": 600,
+    "has_rounded_corners": false,
+    "has_shadow": false,
+    "has_spacing": false,
+    "has_gradient": false,
+    "has_stroke": false
+  },
+  "typography": {
+    "title": {
+      "font_family": "Arial",
+      "font_size": "28px",
+      "font_weight": 700
+    },
+    "description": {
+      "font_family": "Arial",
+      "font_size": "16px",
+      "font_weight": 500
+    },
+    "label": {
+      "font_family": "Arial",
+      "font_size": "16px",
+      "font_weight": 500
+    },
+    "annotation": {
+      "font_family": "Arial",
+      "font_size": "12px",
+      "font_weight": 400
     }
   }
 }

@@ -4,96 +4,6 @@
     "description": "Percentage of people who think prescription drug prices have changed since 2017",
     "main_insight": "A significant majority of US adults, and an even larger percentage across all political affiliations, believe prescription drug prices have increased since 2017."
   },
-  "data": {
-    "columns": [
-      {
-        "name": "Perception of Price Change",
-        "importance": "primary",
-        "description": "Categories of perceived change in prescription drug prices",
-        "unit": "none",
-        "data_type": "categorical",
-        "role": "x"
-      },
-      {
-        "name": "Score",
-        "importance": "primary",
-        "description": "Score for the corresponding political affiliation",
-        "unit": "none",
-        "data_type": "numerical",
-        "role": "y"
-      },
-      {
-        "name": "Political Affiliation",
-        "importance": "primary",
-        "description": "The political affiliation of the data point",
-        "unit": "none",
-        "data_type": "categorical",
-        "role": "group"
-      }
-    ],
-    "data": [
-      {
-        "Perception of Price Change": "Increase",
-        "Score": 66.0,
-        "Political Affiliation": "U.S. Adults"
-      },
-      {
-        "Perception of Price Change": "Increase",
-        "Score": 47.0,
-        "Political Affiliation": "Republicans"
-      },
-      {
-        "Perception of Price Change": "Increase",
-        "Score": 70.0,
-        "Political Affiliation": "Independents"
-      },
-      {
-        "Perception of Price Change": "Increase",
-        "Score": 81.0,
-        "Political Affiliation": "Democrats"
-      },
-      {
-        "Perception of Price Change": "Decrease",
-        "Score": 7.0,
-        "Political Affiliation": "U.S. Adults"
-      },
-      {
-        "Perception of Price Change": "Decrease",
-        "Score": 8.0,
-        "Political Affiliation": "Republicans"
-      },
-      {
-        "Perception of Price Change": "Decrease",
-        "Score": 8.0,
-        "Political Affiliation": "Independents"
-      },
-      {
-        "Perception of Price Change": "Decrease",
-        "Score": 3.0,
-        "Political Affiliation": "Democrats"
-      },
-      {
-        "Perception of Price Change": "Same",
-        "Score": 25.0,
-        "Political Affiliation": "U.S. Adults"
-      },
-      {
-        "Perception of Price Change": "Same",
-        "Score": 42.0,
-        "Political Affiliation": "Republicans"
-      },
-      {
-        "Perception of Price Change": "Same",
-        "Score": 20.0,
-        "Political Affiliation": "Independents"
-      },
-      {
-        "Perception of Price Change": "Same",
-        "Score": 13.0,
-        "Political Affiliation": "Democrats"
-      }
-    ]
-  },
   "_extra": {
     "image_data": {
       "original_file": "/home/lizhen/chartdata/new_infographics/Bar Chart/21554.jpeg",
@@ -196,6 +106,126 @@
     },
     "other": {
       "primary": "data:image/png;base64,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"
+    }
+  },
+  "data": [
+    {
+      "Perception of Price Change": "Increase",
+      "Score": 66.0,
+      "Political Affiliation": "U.S. Adults"
+    },
+    {
+      "Perception of Price Change": "Increase",
+      "Score": 47.0,
+      "Political Affiliation": "Republicans"
+    },
+    {
+      "Perception of Price Change": "Increase",
+      "Score": 70.0,
+      "Political Affiliation": "Independents"
+    },
+    {
+      "Perception of Price Change": "Increase",
+      "Score": 81.0,
+      "Political Affiliation": "Democrats"
+    },
+    {
+      "Perception of Price Change": "Decrease",
+      "Score": 7.0,
+      "Political Affiliation": "U.S. Adults"
+    },
+    {
+      "Perception of Price Change": "Decrease",
+      "Score": 8.0,
+      "Political Affiliation": "Republicans"
+    },
+    {
+      "Perception of Price Change": "Decrease",
+      "Score": 8.0,
+      "Political Affiliation": "Independents"
+    },
+    {
+      "Perception of Price Change": "Decrease",
+      "Score": 3.0,
+      "Political Affiliation": "Democrats"
+    },
+    {
+      "Perception of Price Change": "Same",
+      "Score": 25.0,
+      "Political Affiliation": "U.S. Adults"
+    },
+    {
+      "Perception of Price Change": "Same",
+      "Score": 42.0,
+      "Political Affiliation": "Republicans"
+    },
+    {
+      "Perception of Price Change": "Same",
+      "Score": 20.0,
+      "Political Affiliation": "Independents"
+    },
+    {
+      "Perception of Price Change": "Same",
+      "Score": 13.0,
+      "Political Affiliation": "Democrats"
+    }
+  ],
+  "data_columns": [
+    {
+      "name": "Perception of Price Change",
+      "importance": "primary",
+      "description": "Categories of perceived change in prescription drug prices",
+      "unit": "none",
+      "data_type": "categorical",
+      "role": "x"
+    },
+    {
+      "name": "Score",
+      "importance": "primary",
+      "description": "Score for the corresponding political affiliation",
+      "unit": "none",
+      "data_type": "numerical",
+      "role": "y"
+    },
+    {
+      "name": "Political Affiliation",
+      "importance": "primary",
+      "description": "The political affiliation of the data point",
+      "unit": "none",
+      "data_type": "categorical",
+      "role": "group"
+    }
+  ],
+  "secondary_data": [],
+  "variables": {
+    "width": 600,
+    "height": 600,
+    "has_rounded_corners": false,
+    "has_shadow": false,
+    "has_spacing": false,
+    "has_gradient": false,
+    "has_stroke": false
+  },
+  "typography": {
+    "title": {
+      "font_family": "Arial",
+      "font_size": "28px",
+      "font_weight": 700
+    },
+    "description": {
+      "font_family": "Arial",
+      "font_size": "16px",
+      "font_weight": 500
+    },
+    "label": {
+      "font_family": "Arial",
+      "font_size": "16px",
+      "font_weight": 500
+    },
+    "annotation": {
+      "font_family": "Arial",
+      "font_size": "12px",
+      "font_weight": 400
     }
   }
 }

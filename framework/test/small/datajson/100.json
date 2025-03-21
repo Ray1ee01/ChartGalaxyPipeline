@@ -4,64 +4,6 @@
     "description": "Estimated share of worldwide users by AI text generation tool in 2022",
     "main_insight": "ChatGPT had the largest market share (19.7%) among AI text generation tools in 2022, followed by Jasper Chat (13.4%) and YouChat (12.3%)."
   },
-  "data": {
-    "columns": [
-      {
-        "name": "AI Tool",
-        "importance": "primary",
-        "description": "Name of the AI text generation tool",
-        "unit": "none",
-        "data_type": "categorical",
-        "role": "x"
-      },
-      {
-        "name": "Market Share",
-        "importance": "primary",
-        "description": "Percentage of worldwide users in 2022",
-        "unit": "%",
-        "data_type": "numerical",
-        "role": "y"
-      }
-    ],
-    "data": [
-      {
-        "AI Tool": "ChatGPT",
-        "Market Share": 19.7
-      },
-      {
-        "AI Tool": "Jasper Chat",
-        "Market Share": 13.4
-      },
-      {
-        "AI Tool": "YouChat",
-        "Market Share": 12.3
-      },
-      {
-        "AI Tool": "DeepL",
-        "Market Share": 12.1
-      },
-      {
-        "AI Tool": "Perplexity",
-        "Market Share": 9.7
-      },
-      {
-        "AI Tool": "Typehero",
-        "Market Share": 9.4
-      },
-      {
-        "AI Tool": "Writesonic",
-        "Market Share": 8.7
-      },
-      {
-        "AI Tool": "Neuroflash",
-        "Market Share": 7.5
-      },
-      {
-        "AI Tool": "Simplified",
-        "Market Share": 7.1
-      }
-    ]
-  },
   "_extra": {
     "image_data": {
       "original_file": "/home/lizhen/chartdata/new_infographics/Donut Chart/31199.jpeg",
@@ -170,6 +112,94 @@
     },
     "other": {
       "primary": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAgAAAAIACAYAAAD0eNT6AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAGeVJREFUeNrs3UGMXPV9B/C/YxODG5JNFKCHKgyhUltViDXiULUHhoMPPbE+FCW5ZFbK3TYqN6zdFZZ6sFTv3lN59tAo6oX1oVIlpHrosaVkqJMoTRzzQAopSROmhYaYhKT/P/vcGrP2zsy+mXnv/T8f6Wk2BOzd3+z//77/33vvPyEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFAvh2bxh/bOnu/Fl47yfsxO//lnh8oAwKIdmdGf+9V4dJX3Yx6Mx6oyALBon1CCuer1zp7vKAMAAkB+1pQAAAFAFwAABIBcQoASACAA5OdU7+z5JWUAQADISzr5n1YGAAQAXQAAEAAy6QKsKAMAAkB+PBIIgACQoU65bTIACAC6AAAgAOTQBXAvAAACQIZOKQEAAkB+ur2z57vKAIAAkB/3AgAgAGTaBVhWBgAEgPy4FwAAASBDPioYAAEgU+4FAEAA0AUAAAEgmxCgBAAIAPnxUcEACAAZSif/08oAgACQYRdACQAQADLsAvioYAAEgDx5JBAAASBDHV0AAAQAXQAAEAAy6gJ0lQEAAUAXAAAEgAx0dQEAEAB0AQBAAMioC9BRBgAEAF0AABAAMuCjggEQAHQBAEAAyKkL4KOCARAAMuSjggEQADJ0ShcAAAEgP0u6AAAIAJl2AZQAgGkdmdGfux2Pl5pQgAe+vdTUu+qX/uqxv/3W0f++a+TXmGk98qUvKgJNU8Tj9XgMTpx7fKAc0zuUewH++vf/7mJ86flVQACARtqJx6UYBvpKMRmXAELYUAKAxlqJx8UXn3v5tXi4N0oHQBcAdADIVBGPVZcHdAB0AQDy0onH5Refe/mCUugAjNsFuBxfuiqBDgC0RuoCnDxx7nE3S+sA6AIAZKRbdgNsnCYA3N4zV58elGkRgPZYFgIEAF0AgHxDgHsCBIB9uwBDlQBond6Lz73cUwYB4E62lACglS64FCAA3KkL0A+7z5EC0C7p5O9SgABwR+4FAGindCmgowwCgC4AQH58mqoAoAsAkGMXQAkEgDtJnzBl9yiA9ll68bmXuwIAe3rm6tPp5O+JAIB2EgD8DtzRpi4AQCs9IQCgCwCQn2UBgHG6AAC0S/YbAgkA43UB+ioBgACQH48EAiAAZNgFKHQBABAAdAEAQADIqAuwoxIACAD58UggQDsMBQAm6QIM4stAJQAEAAEgP+4FAGi+lwQAdAEA8pP9PC4ATMe9AAANPvmfOPd4IQAwTRcgPQ1QqARAI20rgQBwEO4FAGieIq7++8ogABykC9DXBQBonFUlEAB0AQDykq79D5RBAKiqCzBSCQCLNgEgP54IAKi/vtW/AFC1TV0AAKt/ASAzz1x9eqQLAFDvk7/n/gUAXQCAvIzKORoBYGZdAB8VDFA/W3H1b4EmAMyU60sA9ZI2/VlXBgFg1l2AIr70VQLAwkwA8MsGwGIMbPkrAOgCAFiQIQDMnEcCARZrx6Y/AsAiugDD+OIXD2BxziiBALAoWk8Ai9G36Y8AsMguwEAXAGDuRlb/AoAuAEB+bPojANSmC1CoBMBcpPnWlr8CgC4AQG7zrdW/AFCnLkBfFwBg5oY2/REAdAEA8uPGPwFAFwAgMwOb/ggAdWZ3QACrfwEgQ6kL4OYUgIrn1rj6HyqDAFBbz1x9eqQLAFCpNK+6x0oAaIRNXQCAymzZ8lcA0AUAyG/1b9MfAaBR+koAcGBnbPojADStC1AIAQAHUtj0RwBoKjetABxg9a8EAoAuAEBe0qY/O8ogAOgCAJg7EQAa1wUYqATA2Pq2/BUAJFkAcyYCQGO7AANdAIDxTv42/REAJFqAvNj0RwDQBQDI0JZNfwSAttpWAoA9pU1/1pVBAGhrF6CffslVAuBjXCYVAPySA2RmYMtfAUAXAMDCCAHALztABqv/gTIIALlI+1u70xUghFUlEACy8czVp9PJf0slgMz1bfojAORoUxcAyFia/3zcrwCgCwCQGZv+CADZdwEAclOY/wQAXYAQ+ioBZGbD6l8AwCOBQGarf5v+CADsdgEKXQAgIx77EwDQBQAyY9MfAQBdACBDHvsTANiDjwoG2ixt+jNUhsU4pAT19jdP/v3luz/zya5KMAu/c/89isBiVp9HDo3u+dzR43b9W5wjSlBvX/izB9K9AAIAM3Hlm9cUgUXZKi91sqgQpgT1Vt4cM1AJoEXS8/42/REAGCcpKwHQIhvlpmcIAOzTBUgfFVyoBNACRTz5W/0LAEySmJUAaAGP/QkATNgF6OsCAA03iKv/HWUQANAFAMxhCACM2QVw4wzQRP24+h8ogwDA9DwRAFj9IwBkaFMXAGjavGXTHwGAAzpx7vGRLgDQICOrfwEAXQAgP1s2/REAqLYL4FEaoO7Spj/ryiAAUC0tNcA8hQCQYRegiC99lQBqKm36Y44SAJCuAfMTAgC6AEDbV/8DZRAAmK1tJQBqZlUJBABm3wVIKVvSBuqib9MfAYD5ca0NqIP0iLKP+xUA0AUAMmPTHwGARQw8JQAWqAi7u5QiADDnLsBOOQABFmHD6l8AYIEDUAmARaz+bfojALDYLkBfFwBYAI/9CQDoAgCZsemPAECNugCuwwHz4rE/AYAa8UQAMA9p05+hMggA1MemLgAwY2mOcclRAKBOTpx7fKQLAMzYli1/BQB0AYD8Vv82/REAqHEXYEclgBmw6Y8AQN0HqRIAFUub/lj9CwDUvAtQxJe+SgAV8tifAIAuAJCZtOmPS4sCALoAgAUFAgB1tq0EwAH1bfkrANC8LkAatAYuYPWPAGDwAoxt06Y/AgC6AEBebPkrANACtgcGJp43bPojAND8LkB6fKdQCWBMadOfdWUQAGgHrTzAfIEAkGEXoK8LAIwhbfrTVwYBAKkeME8gANCCLoCbeoA7rf4HyiAA0E6eCABuZ1UJBADaa1MXANhD36Y/AgAtduLc4yNdAOAWaV7wcb8CALoAQGZs+iMAkFEXwGd7A0lRLgoQAMiER32AD+cCq38BgLy6ACn191UC8l792/RHAEAXAMiPx/4EAHQBgMzY9EcAIHPbSgBZ8tifAEDmXYC0ArAKgLykTX+GyiAAgHsBIB8jY14AAF0AyM+WLX8FAPjIpKAEkMXq36Y/AgB8pAuQdga0KoB2s+kPAgB7Tw5KAK2VNv2x+kcAYM8uQF8XAFrLY38IAOgCQGbSpj8+AAwBgDtKk4RrhCDYIwCQk/Kjgj0RAO3Rt+UvAgDj2tQFAKt/BAB0AYCGhnmb/iAAME0XAGguW/4iADB1F6CvEtBYWzb9QQBgWlYP0Exp0591ZUAAYNouQKELAMI7AgAmEqD+0qY/gjsCAJV0AewgBkI7AgAZ8kggNGf1P1AGBACq6gKkCcWkAvW3qgQIAFTqW5/74fA3h3+rEFBffZv+IABQqd7Z853vvv1G791Pv6cYUE/peX8f94sAQOXW4rF09fCbKgH1ZNMfBAAqX/0vp5f09WvvvhWu3/srRYF6KYKtuxEAmIELN7745fX3wxtHfqoiUC8bVv8IAFS9+u/Gl+7N/+z7H/wofHD0N4oDNVn92/QHAYBZuHjrPxi98254415dAKgJj/0hAFD56r8XXzp7/X/fff8NXQBYPJv+IABQ+cl/Keze+b8nXQCoBY/9IQBQudO3W/3rAkAtpE1/hsqAAEDVq/9T+/17ugCwMDb9QQBgJtJjf0vj/Iv/9t5r9gWA+Vv12B8CAFWv/juh3PRnHO/+4r3wnaOvKxzMz048+ft4bgQAZrL6n8gPRm+Gn37+v1QOZq8IHvtDAGAGq/9ufFmZ9L/79QcfhH9+//vhV8d+rYgwWye1/hEAmIW1af/DdEPglWOFCsLsrLrrHwGAWaz+e+GWLX8nlS4F/OjzP1NMqN4Z2/0iAFC71f8N6VLAy+/9ILx773uqCdVJz/v7pD8EAGay+l8P+2z6M670VMC/HHE/AFR48nfTHwIAMzn5j7XpzyTeHP08/Ouxq+E3h3+rwDC9M07+CADMUtryd6nqP/SHP/tx+PZ9hRAAk0t3+a9q+zNLh5Ug+9V/J768MKs//yf/MwqH7g/hvveWwqHfHlLwmvnJt99WhPop4vHn8eT/D0qBDgCztDbrv+DKW4VOAIwn7e533KN+zMMRJch69d8NE2z5e9AQEB4I4Y/ffjAcvi53wi1utPxt74sOAO1Y/d8aAv7p2BUfHAQf1Y/HQ07+zJuLsnmv/i8v4u/+1LF7wp/e80fhvv/8jDdiwa5885oiLM4g7N7lr93PQrgEkK+Li/qL0z4B/3j91fDg5+8Px68/HI6+c5d3g9xW/NvxxD9QCgQA5r3674WKNv2ZVtoxMD0m+KOjPwvLD3wxfOGd+8Jdv/DrSGsV6aQfdjf1KZSDOnAJIL+Tf3re/7Uwg+f+D+Luo58Mf/Cp3wtf+OC+8Om3j3mj5sQlgJmf9HfK1b42PzoALNxMNv05qF9efz+8ev1a+M7h18P9n/1MuD98NjwQv817f32PSwQ0xSAe6UT/avraSh8BgDqt/juh4i1/q5YuDaRthN8MP9/9BT18OHzq0/eEY4c/Ge794Fi46xNHikdHD217N6nB6v7GCX4YT/YjJUEAoM7W6rj63y8QjN55N+zOrh+Ggo2/PPcXfW8lwMG4ByCv1f9rDf8xBv3nn33SuwlwcDYCysfFFvwMG95GAAGA8Vf/3fjSbcHqf+DdBBAAGN+FFvwMPhMdQABggtV/L74sN/zH6MfVf+HdBBAAGN9aw7//9ADAGW8jgADA+Kv/9bDgLX8rsBVX/56xBhAAGPPkn573P9XwH6OIx6Z3E0AAYHyN2/RnDxtW/wCzYSOgdq7+O6H5m/4M48n/uHcTQAeA8bXhsT83/gHoADDB6r8bXy43/Mew5S+ADgATWmvBz2D1DyAAMMHqfyU0f8vftOnP0LsJIAAwvqZf+093/PvAHwABgAlW/6dDOzb9KbybAAIA45380/P+bdjy16Y/AAIAE0ir/6Zv+nPGpj8A8+MxwOav/jvx5VsNDwBFPPk/5N0E0AFgfG3Y8tdjfwA6AEyw+l8uV/9NZtMfAB0AJtSGLX899gcgADDB6r8b2rHpz8C7CSAAML42bPlr9Q8gADDB6r/TgtX/hk1/AAQAJnOq4d+/TX8ABACmaQI0/PvfsukPwGJ5DLBpZ/7dT/x7ocE/gk1/AHQAmMJTDf/+3fgHIAAwhZUGf+9p05++txBAAGAC5c5/Td721+ofQABgCt0Gf+87Nv0BEACYzqMN/t594A+AAMCUlhu8+i+8fQACAHkFgJe8dQACAFMot/9tqoF3EEAAYDodJQBAAKBJukoAIAAwneUGf++nemfPL3kLAQQAJtfkE2gnHpeFAID6OKIEzEnqYLwWQ0DaDXAYdj8UqFAWAAGA9ksdgAs3/kcMAyoC7bMRw/26MtSfSwAAIABQYyMlAEAAyM9QCQAQAAAAASADhRIAIABkxiNzAAgA+XIfAAACgAAAAAJADl5VAgAEgPwMlAAAASAz/eef/XAPfZUAQADQBQAAASADl5QAAAEgM/3nn90JPhcAAAEgzxygBAAIAPnZUgIABIDclv+72wIPVAIAASA/G0oAgACQXxdgoAsAgACgCwAAAkBGXYAdlQBAAMjPmWBfAAAEgOy6AEVwKQAAASDLELAZ3BAIgACQpdXgUgAAAkB2XYAivpxUCQAEgPxCwCDs3hQIAAJAZiEg3Q/QVwkABID8QsCqEACAACAEAIAAIAQAIACQQwiwURAAAkCGIWA92CcAAAEgyxDQjy9PxmOoGgAIAHmFgGE8jscvN1UDQAAgvyCQNgs6rhsAIACQbzcg3RtQqAiAAEBeQaBfdgM2BAGAfBxSAm7WO3u+F19OxWNZNYApbJRPHqEDQNM6AuWlgYfC7s2CugIAOgBk2hXoxJeVeDxRdgY6qgLoAAgA5BcIlsogkI709YNCAVDaLu8tAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAmI9DSsAkTnzla934shyPB8vXTnnsZ1C+vhSPIh7DF7/x9aGKYkx9LY2fbjmOnij/cXeM/7S4MZbi8Xo5pgYqigBAVZPTcjkZPTXmpDSJURkMLsVjJ05eIxUngzG1FF9WbhpTSxX/FTfG1EDIRgBgmhVJmqBOjbm6r8qOMECLx1WvPOmvzPGvTR2C7Xj045gqvAsIANxuguqWJ/2VBX8r6eTfj8eWSYsWhOleOa6WFvzt7JRjauCdQQDg5hP/Wqi+xV+FFAQ2BAEaeOJfK0/+dTMox5QgIACQ+SR1saYn/lttxGPTpQFqPqbSKv90TVb84wSBVeFaACC/iWq9XKE0SZqozsQJa8c7SA3HVLcM1J2GfevCtQBAJpPUcjlJLTf4x9gpVy4mLOqy6l8rV/5NNSzHlKcGBABaOlH14suFUP/W5LjdgJMmLATqSqUO26Z3VgCgXRNVmqR6LfzR0qql7x1GoK5MvwwCOmwCAA2fpNLk9EJoxo1+00rXL894t5njuDpdnvzbKnXWnhQCBACaffK/HNrTnrzjqiVOVqvedeYwrtraTdsrBJz0lIAAgJO/EIBxlc/J/4ZR2Qlwr00LfUIJnPxbpFdO0DCLcXUhs5N/kuaSi+WcggBAA7yQ4cn/5hBwwa8AFZ/804n/dKY/fppLLgsBAgD1n6iasrPfLJ0uJ2yoYkyl8ZR7Z2lZDdrnsBK0bpWyrhIfWnn4kccuXbvyyn8oBQcYU52wezntbtUIfxjH1KE4pgZKoQNAvSaqlNC1vj/qBW1LDvo7FNr3nP9BrJUdEQQAauSiiepjOkHbkulD9XrI914awVoAwETVeCuxPivKwIRjKo2nNZXY05JgLQBQj4mqY6La1wUrFib9nVGCfYN1VxkEABZLEt9fCkmnlYExQ3UveJLG3CMAUPOJqmuiGtta2S2BfX9XlGC8YO1xWwEAE5V60ZZQvR52O0aMx+U1AQCr/0bo6QKwj68qwUTSyd9NtgIAc3ZKCdSNSkN1z+p/KjprAgBznKg6UveBugBalgiH1el41FYAwETVBFqW7BWq03P/9tKYnksnAgBz4gR2ME8pAU5g1c5JOmsCAPNZqXRUwmSFUK2GCABWKpisEKoXTWdNAGDGukpgssKYEqoRAPJaqaS2tRuVTPoIg3Wdo4wrAYAZcfKvzlLZ+gW/B4K1AIDBZeInsxVr+h1wQ2h1HlUCAQCDqwk6SuB3QAmEagEAk1V+nlACJywlMEcJAJisID8PKkG13FsjAEATdJXAilUJKueeCgEAqRoAAQCpGoyrHHSVQAAAqDudNQQAAEAAAAAEAIBWGikBAgBAfoZKULlCCQQAKvTiN74+UAVAAEAAABMVB+cSAAIATljqSYZeVYJq6VYKADhhNYHrvxhT1dJREQCYkZeUoFKvK4EAoARCtQCAycpkRWa0q40pAYCmMFmZ/HHSqjNdSgGAGZ2wCl0AYQq/C2qJAGCAMb1LSoBVa6WGcZHiJkABACcuQYpmiCetneDudWNKAMBklYUi1tF1X262owQHtq0EAgAmKxMVTaOzdjBDoVoAwAmsCfpKwM101sxJAgBNmawGwdMA09opn6aAW20pwVRGQrUAwHxtKIFJnko5iU0fqnVPBADm2AXoBy3LSQ1s/sMdxlQhBFiMCAAYeOqF3xH213dJTQBgMSuWzeBeAKt/qu4CbKrEWFIH8owyCAAsjgE4nlUlYIIugMtr+9ty7b/ZDitBs1278sr3Hn7ksW78sqMat5/Qy8e8YJwx9cs4pt6KX66oxm2l5/6/rAw6ANRjdSuJ32aiClq6TKi8yXagErel8ygAUJPJqjAgbx+OtCkRrCu14X6adnAJoCWuXXll+PAjj3Xil8uq8f+rFK1/DjCmRnFM/Xv88kuq8X/SzbTup9EBoI4nvLDb8mb38SStfw6kDJB+j3albshJZRAAqOdkdWOA5t62HAaXRKhuXKXfpdw7SWlOedLlNAGAek9WRRqoGYeAoYmKGVgNeXfXVn3aX/scUoJ2OvGVr6V7AS7HYymzVcpxO5MxozG1VI6p3O6zWS2fikAHgIZ0AoaZdQJurPyd/JnVmBqVYyqnlbCTvw4AOgGNOPlr+6MTUI1RefL3FI0AQAtCwMWWTliDeJx08mcB4yqNqV5LT/5PuuYvANCuVcsL8ei26MdKG5Kse3dZ4Lg6HV8uCNQIADRhwkonzLUWrFBO2o2MmoypFKpTN6AjUNMkdgLMzLUrrwwefuSxS/HLP4nH7zbwR0jXJFN78nveTWoypoo4prbjl3eX46ppUqv/y2720wEgr5XL6bIb0IQbBIuwe1OSVT917wakSwJNuN8mddK2rPoFAPKdsJbKCatX40nqjNUJDRtXvTJcd2r6LabxtOGxWQEA0oTVKSeslZp0BNLEtBGPHTckIQhUFqZ3nPgRALhTRyBNWl8Ni2ljpglq2/PHtGxcrZRjamUBf326xp/uUegL0wgAjDtpLZcT1lMzDgPpZH/Jap9MAvaNMTXLMJBO+oMyTHueHwGAA09c3Xg8UYaBdExzqaAoJ6dXw+5niw9Ul4zHVbccV4+WY6ozxR8zKsdUOl4qx5UgjQDAXCawUE5ce01eN07wIysRGGtM3Ryuu7cJ0ekIAjQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAALTJ/wowAKjANdzuBdaVAAAAAElFTkSuQmCC"
+    }
+  },
+  "data": [
+    {
+      "AI Tool": "ChatGPT",
+      "Market Share": 19.7
+    },
+    {
+      "AI Tool": "Jasper Chat",
+      "Market Share": 13.4
+    },
+    {
+      "AI Tool": "YouChat",
+      "Market Share": 12.3
+    },
+    {
+      "AI Tool": "DeepL",
+      "Market Share": 12.1
+    },
+    {
+      "AI Tool": "Perplexity",
+      "Market Share": 9.7
+    },
+    {
+      "AI Tool": "Typehero",
+      "Market Share": 9.4
+    },
+    {
+      "AI Tool": "Writesonic",
+      "Market Share": 8.7
+    },
+    {
+      "AI Tool": "Neuroflash",
+      "Market Share": 7.5
+    },
+    {
+      "AI Tool": "Simplified",
+      "Market Share": 7.1
+    }
+  ],
+  "data_columns": [
+    {
+      "name": "AI Tool",
+      "importance": "primary",
+      "description": "Name of the AI text generation tool",
+      "unit": "none",
+      "data_type": "categorical",
+      "role": "x"
+    },
+    {
+      "name": "Market Share",
+      "importance": "primary",
+      "description": "Percentage of worldwide users in 2022",
+      "unit": "%",
+      "data_type": "numerical",
+      "role": "y"
+    }
+  ],
+  "secondary_data": [],
+  "variables": {
+    "width": 600,
+    "height": 600,
+    "has_rounded_corners": false,
+    "has_shadow": false,
+    "has_spacing": false,
+    "has_gradient": false,
+    "has_stroke": false
+  },
+  "typography": {
+    "title": {
+      "font_family": "Arial",
+      "font_size": "28px",
+      "font_weight": 700
+    },
+    "description": {
+      "font_family": "Arial",
+      "font_size": "16px",
+      "font_weight": 500
+    },
+    "label": {
+      "font_family": "Arial",
+      "font_size": "16px",
+      "font_weight": 500
+    },
+    "annotation": {
+      "font_family": "Arial",
+      "font_size": "12px",
+      "font_weight": 400
     }
   }
 }

@@ -4,291 +4,6 @@
     "description": "Value of transportation infrastructure construction in Australia 1986-2018 (in billion AU$)",
     "main_insight": "Transportation infrastructure construction spending in Australia has significantly increased since 1986, with roads and bridges consistently representing the largest share. Total spending saw a large increase between 2006 and 2012, then fell until 2016 and has increased slightly since then."
   },
-  "data": {
-    "columns": [
-      {
-        "name": "Year",
-        "importance": "primary",
-        "description": "Year of construction spending",
-        "unit": "none",
-        "data_type": "temporal",
-        "role": "x"
-      },
-      {
-        "name": "Units",
-        "importance": "primary",
-        "description": "Units for the corresponding infrastructure",
-        "unit": "none",
-        "data_type": "numerical",
-        "role": "y"
-      },
-      {
-        "name": "Infrastructure",
-        "importance": "primary",
-        "description": "The infrastructure of the data point",
-        "unit": "none",
-        "data_type": "categorical",
-        "role": "group"
-      }
-    ],
-    "data": [
-      {
-        "Year": "1986-1987",
-        "Units": 5.0,
-        "Infrastructure": "Roads and bridges"
-      },
-      {
-        "Year": "1986-1987",
-        "Units": 1.5,
-        "Infrastructure": "Railways"
-      },
-      {
-        "Year": "1986-1987",
-        "Units": 1.0,
-        "Infrastructure": "Ports and habours"
-      },
-      {
-        "Year": "1988-1989",
-        "Units": 6.0,
-        "Infrastructure": "Roads and bridges"
-      },
-      {
-        "Year": "1988-1989",
-        "Units": 1.5,
-        "Infrastructure": "Railways"
-      },
-      {
-        "Year": "1988-1989",
-        "Units": 1.0,
-        "Infrastructure": "Ports and habours"
-      },
-      {
-        "Year": "1990-1991",
-        "Units": 7.5,
-        "Infrastructure": "Roads and bridges"
-      },
-      {
-        "Year": "1990-1991",
-        "Units": 2.0,
-        "Infrastructure": "Railways"
-      },
-      {
-        "Year": "1990-1991",
-        "Units": 1.0,
-        "Infrastructure": "Ports and habours"
-      },
-      {
-        "Year": "1992-1993",
-        "Units": 8.0,
-        "Infrastructure": "Roads and bridges"
-      },
-      {
-        "Year": "1992-1993",
-        "Units": 2.0,
-        "Infrastructure": "Railways"
-      },
-      {
-        "Year": "1992-1993",
-        "Units": 1.5,
-        "Infrastructure": "Ports and habours"
-      },
-      {
-        "Year": "1994-1995",
-        "Units": 9.0,
-        "Infrastructure": "Roads and bridges"
-      },
-      {
-        "Year": "1994-1995",
-        "Units": 2.5,
-        "Infrastructure": "Railways"
-      },
-      {
-        "Year": "1994-1995",
-        "Units": 1.5,
-        "Infrastructure": "Ports and habours"
-      },
-      {
-        "Year": "1996-1997",
-        "Units": 9.0,
-        "Infrastructure": "Roads and bridges"
-      },
-      {
-        "Year": "1996-1997",
-        "Units": 3.0,
-        "Infrastructure": "Railways"
-      },
-      {
-        "Year": "1996-1997",
-        "Units": 1.0,
-        "Infrastructure": "Ports and habours"
-      },
-      {
-        "Year": "1998-1999",
-        "Units": 8.0,
-        "Infrastructure": "Roads and bridges"
-      },
-      {
-        "Year": "1998-1999",
-        "Units": 2.5,
-        "Infrastructure": "Railways"
-      },
-      {
-        "Year": "1998-1999",
-        "Units": 1.0,
-        "Infrastructure": "Ports and habours"
-      },
-      {
-        "Year": "2000-2001",
-        "Units": 11.0,
-        "Infrastructure": "Roads and bridges"
-      },
-      {
-        "Year": "2000-2001",
-        "Units": 2.0,
-        "Infrastructure": "Railways"
-      },
-      {
-        "Year": "2000-2001",
-        "Units": 0.5,
-        "Infrastructure": "Ports and habours"
-      },
-      {
-        "Year": "2002-2003",
-        "Units": 12.0,
-        "Infrastructure": "Roads and bridges"
-      },
-      {
-        "Year": "2002-2003",
-        "Units": 2.5,
-        "Infrastructure": "Railways"
-      },
-      {
-        "Year": "2002-2003",
-        "Units": 1.0,
-        "Infrastructure": "Ports and habours"
-      },
-      {
-        "Year": "2004-2005",
-        "Units": 14.0,
-        "Infrastructure": "Roads and bridges"
-      },
-      {
-        "Year": "2004-2005",
-        "Units": 3.5,
-        "Infrastructure": "Railways"
-      },
-      {
-        "Year": "2004-2005",
-        "Units": 1.0,
-        "Infrastructure": "Ports and habours"
-      },
-      {
-        "Year": "2006-2007",
-        "Units": 16.0,
-        "Infrastructure": "Roads and bridges"
-      },
-      {
-        "Year": "2006-2007",
-        "Units": 4.5,
-        "Infrastructure": "Railways"
-      },
-      {
-        "Year": "2006-2007",
-        "Units": 2.0,
-        "Infrastructure": "Ports and habours"
-      },
-      {
-        "Year": "2008-2009",
-        "Units": 19.0,
-        "Infrastructure": "Roads and bridges"
-      },
-      {
-        "Year": "2008-2009",
-        "Units": 6.5,
-        "Infrastructure": "Railways"
-      },
-      {
-        "Year": "2008-2009",
-        "Units": 2.5,
-        "Infrastructure": "Ports and habours"
-      },
-      {
-        "Year": "2010-2011",
-        "Units": 18.0,
-        "Infrastructure": "Roads and bridges"
-      },
-      {
-        "Year": "2010-2011",
-        "Units": 6.0,
-        "Infrastructure": "Railways"
-      },
-      {
-        "Year": "2010-2011",
-        "Units": 9.0,
-        "Infrastructure": "Ports and habours"
-      },
-      {
-        "Year": "2012-2013",
-        "Units": 18.0,
-        "Infrastructure": "Roads and bridges"
-      },
-      {
-        "Year": "2012-2013",
-        "Units": 5.0,
-        "Infrastructure": "Railways"
-      },
-      {
-        "Year": "2012-2013",
-        "Units": 6.0,
-        "Infrastructure": "Ports and habours"
-      },
-      {
-        "Year": "2014-2015",
-        "Units": 18.0,
-        "Infrastructure": "Roads and bridges"
-      },
-      {
-        "Year": "2014-2015",
-        "Units": 3.5,
-        "Infrastructure": "Railways"
-      },
-      {
-        "Year": "2014-2015",
-        "Units": 4.0,
-        "Infrastructure": "Ports and habours"
-      },
-      {
-        "Year": "2016-2017",
-        "Units": 20.0,
-        "Infrastructure": "Roads and bridges"
-      },
-      {
-        "Year": "2016-2017",
-        "Units": 4.0,
-        "Infrastructure": "Railways"
-      },
-      {
-        "Year": "2016-2017",
-        "Units": 2.5,
-        "Infrastructure": "Ports and habours"
-      },
-      {
-        "Year": "2017-2018",
-        "Units": 22.0,
-        "Infrastructure": "Roads and bridges"
-      },
-      {
-        "Year": "2017-2018",
-        "Units": 4.5,
-        "Infrastructure": "Railways"
-      },
-      {
-        "Year": "2017-2018",
-        "Units": 4.0,
-        "Infrastructure": "Ports and habours"
-      }
-    ]
-  },
   "_extra": {
     "image_data": {
       "original_file": "/home/lizhen/chartdata/new_infographics/Area Chart/19022.jpeg",
@@ -391,6 +106,321 @@
     },
     "other": {
       "primary": "data:image/png;base64,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EAAAAAEAABAAAAABAAAQAAAAAQAAEAAAAAEAABAAAAABAAAQAAAAAQAAEAAAAAEAAAQAAEAAAAAEAABAAAAABAAAQAAAAAQAAEAAAAAEAABAAAAABAAAQAAAAAQAAEAAAAAEAABAAAAABAAAEAAAAAEAABAAAAABAAAQAAAAAQAAEAAAAAEAABAAAAABAAAQAAAAAQAAEAAAAAEAABAAAAABAAAQAABAAAAABAAAQAAAAAQAAEAAAAAEAABAAAAABAAAQAAAAAQAAEAAAAAEAABAAAAABAAAQAAAAAQAAEAAAAABAAAQAAAAAQAAEAAAAAEAABAAAAABAAAQAAAAAQAAEAAAAAEAABAAAAABAAAQAAAAAQAAEAAAAAEAABAAAEAAAAAEAABAAAAABAAAQAAAAAQAAEAAAAAEAABAAAAABAAAQAAAAAQAAEAAAAAEAABAAAAABAAAQAAAAAEAABAAAAABAAAQAAAAAQAAEAAAAAEAABAAAAABAAAQAAAAAQAAEAAAAAEAABAAAAABAAAQAAAAAQAABAAAQAAAAAQAAEAAAAAEAACgLmeOYBU/puedY+jW6AicKYuaHAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAO37twADACsIPIYdslPvAAAAAElFTkSuQmCC"
+    }
+  },
+  "data": [
+    {
+      "Year": "1986-1987",
+      "Units": 5.0,
+      "Infrastructure": "Roads and bridges"
+    },
+    {
+      "Year": "1986-1987",
+      "Units": 1.5,
+      "Infrastructure": "Railways"
+    },
+    {
+      "Year": "1986-1987",
+      "Units": 1.0,
+      "Infrastructure": "Ports and habours"
+    },
+    {
+      "Year": "1988-1989",
+      "Units": 6.0,
+      "Infrastructure": "Roads and bridges"
+    },
+    {
+      "Year": "1988-1989",
+      "Units": 1.5,
+      "Infrastructure": "Railways"
+    },
+    {
+      "Year": "1988-1989",
+      "Units": 1.0,
+      "Infrastructure": "Ports and habours"
+    },
+    {
+      "Year": "1990-1991",
+      "Units": 7.5,
+      "Infrastructure": "Roads and bridges"
+    },
+    {
+      "Year": "1990-1991",
+      "Units": 2.0,
+      "Infrastructure": "Railways"
+    },
+    {
+      "Year": "1990-1991",
+      "Units": 1.0,
+      "Infrastructure": "Ports and habours"
+    },
+    {
+      "Year": "1992-1993",
+      "Units": 8.0,
+      "Infrastructure": "Roads and bridges"
+    },
+    {
+      "Year": "1992-1993",
+      "Units": 2.0,
+      "Infrastructure": "Railways"
+    },
+    {
+      "Year": "1992-1993",
+      "Units": 1.5,
+      "Infrastructure": "Ports and habours"
+    },
+    {
+      "Year": "1994-1995",
+      "Units": 9.0,
+      "Infrastructure": "Roads and bridges"
+    },
+    {
+      "Year": "1994-1995",
+      "Units": 2.5,
+      "Infrastructure": "Railways"
+    },
+    {
+      "Year": "1994-1995",
+      "Units": 1.5,
+      "Infrastructure": "Ports and habours"
+    },
+    {
+      "Year": "1996-1997",
+      "Units": 9.0,
+      "Infrastructure": "Roads and bridges"
+    },
+    {
+      "Year": "1996-1997",
+      "Units": 3.0,
+      "Infrastructure": "Railways"
+    },
+    {
+      "Year": "1996-1997",
+      "Units": 1.0,
+      "Infrastructure": "Ports and habours"
+    },
+    {
+      "Year": "1998-1999",
+      "Units": 8.0,
+      "Infrastructure": "Roads and bridges"
+    },
+    {
+      "Year": "1998-1999",
+      "Units": 2.5,
+      "Infrastructure": "Railways"
+    },
+    {
+      "Year": "1998-1999",
+      "Units": 1.0,
+      "Infrastructure": "Ports and habours"
+    },
+    {
+      "Year": "2000-2001",
+      "Units": 11.0,
+      "Infrastructure": "Roads and bridges"
+    },
+    {
+      "Year": "2000-2001",
+      "Units": 2.0,
+      "Infrastructure": "Railways"
+    },
+    {
+      "Year": "2000-2001",
+      "Units": 0.5,
+      "Infrastructure": "Ports and habours"
+    },
+    {
+      "Year": "2002-2003",
+      "Units": 12.0,
+      "Infrastructure": "Roads and bridges"
+    },
+    {
+      "Year": "2002-2003",
+      "Units": 2.5,
+      "Infrastructure": "Railways"
+    },
+    {
+      "Year": "2002-2003",
+      "Units": 1.0,
+      "Infrastructure": "Ports and habours"
+    },
+    {
+      "Year": "2004-2005",
+      "Units": 14.0,
+      "Infrastructure": "Roads and bridges"
+    },
+    {
+      "Year": "2004-2005",
+      "Units": 3.5,
+      "Infrastructure": "Railways"
+    },
+    {
+      "Year": "2004-2005",
+      "Units": 1.0,
+      "Infrastructure": "Ports and habours"
+    },
+    {
+      "Year": "2006-2007",
+      "Units": 16.0,
+      "Infrastructure": "Roads and bridges"
+    },
+    {
+      "Year": "2006-2007",
+      "Units": 4.5,
+      "Infrastructure": "Railways"
+    },
+    {
+      "Year": "2006-2007",
+      "Units": 2.0,
+      "Infrastructure": "Ports and habours"
+    },
+    {
+      "Year": "2008-2009",
+      "Units": 19.0,
+      "Infrastructure": "Roads and bridges"
+    },
+    {
+      "Year": "2008-2009",
+      "Units": 6.5,
+      "Infrastructure": "Railways"
+    },
+    {
+      "Year": "2008-2009",
+      "Units": 2.5,
+      "Infrastructure": "Ports and habours"
+    },
+    {
+      "Year": "2010-2011",
+      "Units": 18.0,
+      "Infrastructure": "Roads and bridges"
+    },
+    {
+      "Year": "2010-2011",
+      "Units": 6.0,
+      "Infrastructure": "Railways"
+    },
+    {
+      "Year": "2010-2011",
+      "Units": 9.0,
+      "Infrastructure": "Ports and habours"
+    },
+    {
+      "Year": "2012-2013",
+      "Units": 18.0,
+      "Infrastructure": "Roads and bridges"
+    },
+    {
+      "Year": "2012-2013",
+      "Units": 5.0,
+      "Infrastructure": "Railways"
+    },
+    {
+      "Year": "2012-2013",
+      "Units": 6.0,
+      "Infrastructure": "Ports and habours"
+    },
+    {
+      "Year": "2014-2015",
+      "Units": 18.0,
+      "Infrastructure": "Roads and bridges"
+    },
+    {
+      "Year": "2014-2015",
+      "Units": 3.5,
+      "Infrastructure": "Railways"
+    },
+    {
+      "Year": "2014-2015",
+      "Units": 4.0,
+      "Infrastructure": "Ports and habours"
+    },
+    {
+      "Year": "2016-2017",
+      "Units": 20.0,
+      "Infrastructure": "Roads and bridges"
+    },
+    {
+      "Year": "2016-2017",
+      "Units": 4.0,
+      "Infrastructure": "Railways"
+    },
+    {
+      "Year": "2016-2017",
+      "Units": 2.5,
+      "Infrastructure": "Ports and habours"
+    },
+    {
+      "Year": "2017-2018",
+      "Units": 22.0,
+      "Infrastructure": "Roads and bridges"
+    },
+    {
+      "Year": "2017-2018",
+      "Units": 4.5,
+      "Infrastructure": "Railways"
+    },
+    {
+      "Year": "2017-2018",
+      "Units": 4.0,
+      "Infrastructure": "Ports and habours"
+    }
+  ],
+  "data_columns": [
+    {
+      "name": "Year",
+      "importance": "primary",
+      "description": "Year of construction spending",
+      "unit": "none",
+      "data_type": "temporal",
+      "role": "x"
+    },
+    {
+      "name": "Units",
+      "importance": "primary",
+      "description": "Units for the corresponding infrastructure",
+      "unit": "none",
+      "data_type": "numerical",
+      "role": "y"
+    },
+    {
+      "name": "Infrastructure",
+      "importance": "primary",
+      "description": "The infrastructure of the data point",
+      "unit": "none",
+      "data_type": "categorical",
+      "role": "group"
+    }
+  ],
+  "secondary_data": [],
+  "variables": {
+    "width": 600,
+    "height": 600,
+    "has_rounded_corners": false,
+    "has_shadow": false,
+    "has_spacing": false,
+    "has_gradient": false,
+    "has_stroke": false
+  },
+  "typography": {
+    "title": {
+      "font_family": "Arial",
+      "font_size": "28px",
+      "font_weight": 700
+    },
+    "description": {
+      "font_family": "Arial",
+      "font_size": "16px",
+      "font_weight": 500
+    },
+    "label": {
+      "font_family": "Arial",
+      "font_size": "16px",
+      "font_weight": 500
+    },
+    "annotation": {
+      "font_family": "Arial",
+      "font_size": "12px",
+      "font_weight": 400
     }
   }
 }

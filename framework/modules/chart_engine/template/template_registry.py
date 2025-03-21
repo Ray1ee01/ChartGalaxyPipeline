@@ -2,15 +2,16 @@ import os
 import re
 import json
 import importlib.util
+import random
 
 # Regular expression to extract requirements JSON from template files
 REQUIREMENTS_PATTERN = re.compile(r'REQUIREMENTS_BEGIN\s*({.*?})\s*REQUIREMENTS_END', re.DOTALL)
 
 # Dictionary to store template mappings
 templates = {
-    'echarts-py': {},  # chart_type -> module
-    'echarts-js': {},  # chart_type -> js_file_path
-    'd3-js': {}        # chart_type -> js_file_path
+    'echarts-py': {},  # chart_type -> {chart_name -> [engine, template]}
+    'echarts-js': {},  # chart_type -> {chart_name -> [engine, template]}
+    'd3-js': {}        # chart_type -> {chart_name -> [engine, template]}
 }
 
 # 全局标识符，用于跟踪是否已扫描过模板
@@ -70,17 +71,27 @@ def scan_directory(dir_path, engine_type, file_extension):
             if requirements and 'chart_type' in requirements:
                 chart_type = requirements['chart_type'].lower()
                 
+                # 获取chart_name，如果没有则使用文件名
+                chart_name = requirements.get('chart_name', os.path.basename(item_path).split('.')[0]).lower()
+                
+                # 如果该chart_type还不存在，初始化一个空字典
+                if chart_type not in templates[engine_type]:
+                    templates[engine_type][chart_type] = {}
+                
                 # 根据引擎类型处理不同的模板
                 if engine_type == 'echarts-py':
-                    templates[engine_type][chart_type] = load_python_template(item_path)
+                    template = load_python_template(item_path)
                 else:  # echarts-js 或 d3-js
-                    templates[engine_type][chart_type] = item_path
+                    template = item_path
+                
+                # 存储模板信息为 [engine, template]
+                templates[engine_type][chart_type][chart_name] = [engine_type, template]
                     
                 # 计算相对于模板引擎主目录的路径
                 template_dir = os.path.dirname(os.path.abspath(__file__))
                 engine_dir = os.path.join(template_dir, engine_type)
                 rel_path = os.path.relpath(item_path, engine_dir)
-                print(f"Registered {engine_type} template: {chart_type} -> {rel_path}")
+                print(f"Registered {engine_type} template: {chart_type} -> {chart_name} -> {rel_path}")
 
 def scan_templates(force=False):
     """
@@ -144,13 +155,60 @@ def get_template_for_chart_type(chart_type, engine_preference=None):
     # Try each engine in order of preference
     for engine in engine_preference:
         if chart_type in templates[engine]:
-            return engine, templates[engine][chart_type]
+            # 如果存在多个chart_name的template，随机返回一个
+            chart_names = list(templates[engine][chart_type].keys())
+            if chart_names:
+                selected_name = random.choice(chart_names)
+                return templates[engine][chart_type][selected_name]
     
     # Try partial matches
     for engine in engine_preference:
         for template_type in templates[engine]:
             if chart_type in template_type or template_type in chart_type:
-                return engine, templates[engine][template_type]
+                # 随机选择一个chart_name
+                chart_names = list(templates[engine][template_type].keys())
+                if chart_names:
+                    selected_name = random.choice(chart_names)
+                    return templates[engine][template_type][selected_name]
+    
+    return None, None
+
+def get_template_for_chart_name(chart_name, engine_preference=None):
+    """
+    Get the template for a specific chart name
+    
+    Args:
+        chart_name: The chart name to look for
+        engine_preference: Optional list of engine preferences ['echarts-py', 'echarts-js', 'd3-js']
+                          in the order of preference
+                          
+    Returns:
+        tuple of (engine, template) where template is either a module or file path
+    """
+    global _templates_scanned
+    
+    # 如果尚未扫描模板，先扫描
+    if not _templates_scanned:
+        scan_templates()
+    
+    chart_name = chart_name.lower()
+    
+    # If no preference is specified, use default order
+    if engine_preference is None:
+        engine_preference = ['echarts-py', 'echarts-js', 'd3-js']
+    
+    # Try each engine in order of preference
+    for engine in engine_preference:
+        for chart_type, chart_dict in templates[engine].items():
+            if chart_name in chart_dict:
+                return chart_dict[chart_name]
+    
+    # Try partial matches
+    for engine in engine_preference:
+        for chart_type, chart_dict in templates[engine].items():
+            for name in chart_dict:
+                if chart_name in name or name in chart_name:
+                    return chart_dict[name]
     
     return None, None
 
@@ -160,5 +218,7 @@ if __name__ == '__main__':
     print("\nAvailable templates:")
     for engine, templates_dict in templates.items():
         print(f"\n{engine}:")
-        for chart_type, template in templates_dict.items():
-            print(f"  - {chart_type}") 
+        for chart_type, chart_names_dict in templates_dict.items():
+            print(f"  - {chart_type}:")
+            for chart_name in chart_names_dict:
+                print(f"    * {chart_name}") 

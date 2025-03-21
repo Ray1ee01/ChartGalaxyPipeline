@@ -4,76 +4,6 @@
     "description": "Share of UK population saying they have never used the internet in 2018, by country/region",
     "main_insight": "In 2018, there was significant variation in the percentage of people who had never used the internet across different regions of the UK, with Northern Ireland having the highest percentage and London the lowest."
   },
-  "data": {
-    "columns": [
-      {
-        "name": "Region",
-        "importance": "primary",
-        "description": "UK country/region",
-        "unit": "none",
-        "data_type": "categorical",
-        "role": "x"
-      },
-      {
-        "name": "Non-Internet Users",
-        "importance": "primary",
-        "description": "Percentage of population who have never used the internet",
-        "unit": "%",
-        "data_type": "numerical",
-        "role": "y"
-      }
-    ],
-    "data": [
-      {
-        "Region": "Northern Ireland",
-        "Non-Internet Users": 12.8
-      },
-      {
-        "Region": "Yorkshire/Humber",
-        "Non-Internet Users": 10.2
-      },
-      {
-        "Region": "North East",
-        "Non-Internet Users": 10.0
-      },
-      {
-        "Region": "West Midlands",
-        "Non-Internet Users": 9.4
-      },
-      {
-        "Region": "East Midlands",
-        "Non-Internet Users": 9.2
-      },
-      {
-        "Region": "South West",
-        "Non-Internet Users": 9.1
-      },
-      {
-        "Region": "Scotland",
-        "Non-Internet Users": 9.1
-      },
-      {
-        "Region": "Wales",
-        "Non-Internet Users": 8.9
-      },
-      {
-        "Region": "North West",
-        "Non-Internet Users": 8.8
-      },
-      {
-        "Region": "East of England",
-        "Non-Internet Users": 7.7
-      },
-      {
-        "Region": "South East",
-        "Non-Internet Users": 6.8
-      },
-      {
-        "Region": "London",
-        "Non-Internet Users": 5.7
-      }
-    ]
-  },
   "_extra": {
     "image_data": {
       "original_file": "/home/lizhen/chartdata/new_infographics/Bar Chart/14096.jpeg",
@@ -185,6 +115,106 @@
     },
     "other": {
       "primary": "data:image/png;base64,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"
+    }
+  },
+  "data": [
+    {
+      "Region": "Northern Ireland",
+      "Non-Internet Users": 12.8
+    },
+    {
+      "Region": "Yorkshire/Humber",
+      "Non-Internet Users": 10.2
+    },
+    {
+      "Region": "North East",
+      "Non-Internet Users": 10.0
+    },
+    {
+      "Region": "West Midlands",
+      "Non-Internet Users": 9.4
+    },
+    {
+      "Region": "East Midlands",
+      "Non-Internet Users": 9.2
+    },
+    {
+      "Region": "South West",
+      "Non-Internet Users": 9.1
+    },
+    {
+      "Region": "Scotland",
+      "Non-Internet Users": 9.1
+    },
+    {
+      "Region": "Wales",
+      "Non-Internet Users": 8.9
+    },
+    {
+      "Region": "North West",
+      "Non-Internet Users": 8.8
+    },
+    {
+      "Region": "East of England",
+      "Non-Internet Users": 7.7
+    },
+    {
+      "Region": "South East",
+      "Non-Internet Users": 6.8
+    },
+    {
+      "Region": "London",
+      "Non-Internet Users": 5.7
+    }
+  ],
+  "data_columns": [
+    {
+      "name": "Region",
+      "importance": "primary",
+      "description": "UK country/region",
+      "unit": "none",
+      "data_type": "categorical",
+      "role": "x"
+    },
+    {
+      "name": "Non-Internet Users",
+      "importance": "primary",
+      "description": "Percentage of population who have never used the internet",
+      "unit": "%",
+      "data_type": "numerical",
+      "role": "y"
+    }
+  ],
+  "secondary_data": [],
+  "variables": {
+    "width": 600,
+    "height": 600,
+    "has_rounded_corners": false,
+    "has_shadow": false,
+    "has_spacing": false,
+    "has_gradient": false,
+    "has_stroke": false
+  },
+  "typography": {
+    "title": {
+      "font_family": "Arial",
+      "font_size": "28px",
+      "font_weight": 700
+    },
+    "description": {
+      "font_family": "Arial",
+      "font_size": "16px",
+      "font_weight": 500
+    },
+    "label": {
+      "font_family": "Arial",
+      "font_size": "16px",
+      "font_weight": 500
+    },
+    "annotation": {
+      "font_family": "Arial",
+      "font_size": "12px",
+      "font_weight": 400
     }
   }
 }

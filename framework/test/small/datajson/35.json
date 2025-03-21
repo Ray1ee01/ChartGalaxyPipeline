@@ -4,144 +4,6 @@
     "description": "Share of EU-28 respondents considering corruption widespread in 2017",
     "main_insight": "There is a significant difference in the perception of corruption across EU countries, with Greece having the highest percentage of respondents considering it widespread and Finland the lowest."
   },
-  "data": {
-    "columns": [
-      {
-        "name": "Country",
-        "importance": "primary",
-        "description": "EU-28 Countries",
-        "unit": "none",
-        "data_type": "categorical",
-        "role": "x"
-      },
-      {
-        "name": "Perception of Corruption",
-        "importance": "primary",
-        "description": "Percentage of respondents who consider corruption widespread",
-        "unit": "%",
-        "data_type": "numerical",
-        "role": "y"
-      }
-    ],
-    "data": [
-      {
-        "Country": "Greece",
-        "Perception of Corruption": 96.0
-      },
-      {
-        "Country": "Spain",
-        "Perception of Corruption": 94.0
-      },
-      {
-        "Country": "Cyprus",
-        "Perception of Corruption": 94.0
-      },
-      {
-        "Country": "Croatia",
-        "Perception of Corruption": 94.0
-      },
-      {
-        "Country": "Lithuania",
-        "Perception of Corruption": 93.0
-      },
-      {
-        "Country": "Portugal",
-        "Perception of Corruption": 92.0
-      },
-      {
-        "Country": "Italy",
-        "Perception of Corruption": 89.0
-      },
-      {
-        "Country": "Slovenia",
-        "Perception of Corruption": 89.0
-      },
-      {
-        "Country": "Hungary",
-        "Perception of Corruption": 86.0
-      },
-      {
-        "Country": "Slovakia",
-        "Perception of Corruption": 85.0
-      },
-      {
-        "Country": "Latvia",
-        "Perception of Corruption": 84.0
-      },
-      {
-        "Country": "Czech Republic",
-        "Perception of Corruption": 84.0
-      },
-      {
-        "Country": "Bulgaria",
-        "Perception of Corruption": 83.0
-      },
-      {
-        "Country": "Romania",
-        "Perception of Corruption": 80.0
-      },
-      {
-        "Country": "Malta",
-        "Perception of Corruption": 79.0
-      },
-      {
-        "Country": "Ireland",
-        "Perception of Corruption": 68.0
-      },
-      {
-        "Country": "EU-28",
-        "Perception of Corruption": 68.0
-      },
-      {
-        "Country": "France",
-        "Perception of Corruption": 67.0
-      },
-      {
-        "Country": "Estonia",
-        "Perception of Corruption": 67.0
-      },
-      {
-        "Country": "Belgium",
-        "Perception of Corruption": 65.0
-      },
-      {
-        "Country": "Poland",
-        "Perception of Corruption": 58.0
-      },
-      {
-        "Country": "United Kingdom",
-        "Perception of Corruption": 55.0
-      },
-      {
-        "Country": "Germany",
-        "Perception of Corruption": 51.0
-      },
-      {
-        "Country": "Austria",
-        "Perception of Corruption": 50.0
-      },
-      {
-        "Country": "Netherlands",
-        "Perception of Corruption": 44.0
-      },
-      {
-        "Country": "Luxembourg",
-        "Perception of Corruption": 40.0
-      },
-      {
-        "Country": "Sweden",
-        "Perception of Corruption": 37.0
-      },
-      {
-        "Country": "Denmark",
-        "Perception of Corruption": 22.0
-      },
-      {
-        "Country": "Finland",
-        "Perception of Corruption": 21.0
-      }
-    ]
-  },
   "_extra": {
     "image_data": {
       "original_file": "/home/lizhen/chartdata/new_infographics/Bar Chart/12223.jpeg",
@@ -270,6 +132,174 @@
     },
     "other": {
       "primary": "data:image/png;base64,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"
+    }
+  },
+  "data": [
+    {
+      "Country": "Greece",
+      "Perception of Corruption": 96.0
+    },
+    {
+      "Country": "Spain",
+      "Perception of Corruption": 94.0
+    },
+    {
+      "Country": "Cyprus",
+      "Perception of Corruption": 94.0
+    },
+    {
+      "Country": "Croatia",
+      "Perception of Corruption": 94.0
+    },
+    {
+      "Country": "Lithuania",
+      "Perception of Corruption": 93.0
+    },
+    {
+      "Country": "Portugal",
+      "Perception of Corruption": 92.0
+    },
+    {
+      "Country": "Italy",
+      "Perception of Corruption": 89.0
+    },
+    {
+      "Country": "Slovenia",
+      "Perception of Corruption": 89.0
+    },
+    {
+      "Country": "Hungary",
+      "Perception of Corruption": 86.0
+    },
+    {
+      "Country": "Slovakia",
+      "Perception of Corruption": 85.0
+    },
+    {
+      "Country": "Latvia",
+      "Perception of Corruption": 84.0
+    },
+    {
+      "Country": "Czech Republic",
+      "Perception of Corruption": 84.0
+    },
+    {
+      "Country": "Bulgaria",
+      "Perception of Corruption": 83.0
+    },
+    {
+      "Country": "Romania",
+      "Perception of Corruption": 80.0
+    },
+    {
+      "Country": "Malta",
+      "Perception of Corruption": 79.0
+    },
+    {
+      "Country": "Ireland",
+      "Perception of Corruption": 68.0
+    },
+    {
+      "Country": "EU-28",
+      "Perception of Corruption": 68.0
+    },
+    {
+      "Country": "France",
+      "Perception of Corruption": 67.0
+    },
+    {
+      "Country": "Estonia",
+      "Perception of Corruption": 67.0
+    },
+    {
+      "Country": "Belgium",
+      "Perception of Corruption": 65.0
+    },
+    {
+      "Country": "Poland",
+      "Perception of Corruption": 58.0
+    },
+    {
+      "Country": "United Kingdom",
+      "Perception of Corruption": 55.0
+    },
+    {
+      "Country": "Germany",
+      "Perception of Corruption": 51.0
+    },
+    {
+      "Country": "Austria",
+      "Perception of Corruption": 50.0
+    },
+    {
+      "Country": "Netherlands",
+      "Perception of Corruption": 44.0
+    },
+    {
+      "Country": "Luxembourg",
+      "Perception of Corruption": 40.0
+    },
+    {
+      "Country": "Sweden",
+      "Perception of Corruption": 37.0
+    },
+    {
+      "Country": "Denmark",
+      "Perception of Corruption": 22.0
+    },
+    {
+      "Country": "Finland",
+      "Perception of Corruption": 21.0
+    }
+  ],
+  "data_columns": [
+    {
+      "name": "Country",
+      "importance": "primary",
+      "description": "EU-28 Countries",
+      "unit": "none",
+      "data_type": "categorical",
+      "role": "x"
+    },
+    {
+      "name": "Perception of Corruption",
+      "importance": "primary",
+      "description": "Percentage of respondents who consider corruption widespread",
+      "unit": "%",
+      "data_type": "numerical",
+      "role": "y"
+    }
+  ],
+  "secondary_data": [],
+  "variables": {
+    "width": 600,
+    "height": 600,
+    "has_rounded_corners": false,
+    "has_shadow": false,
+    "has_spacing": false,
+    "has_gradient": false,
+    "has_stroke": false
+  },
+  "typography": {
+    "title": {
+      "font_family": "Arial",
+      "font_size": "28px",
+      "font_weight": 700
+    },
+    "description": {
+      "font_family": "Arial",
+      "font_size": "16px",
+      "font_weight": 500
+    },
+    "label": {
+      "font_family": "Arial",
+      "font_size": "16px",
+      "font_weight": 500
+    },
+    "annotation": {
+      "font_family": "Arial",
+      "font_size": "12px",
+      "font_weight": 400
     }
   }
 }

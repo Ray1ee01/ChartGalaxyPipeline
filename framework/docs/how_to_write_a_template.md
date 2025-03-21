@@ -361,9 +361,9 @@ function makeChart(containerSelector, data) {
 }
 ```
 
-## 更简单的D3.js条形图示例
+## 更简单的D3.js条形图示例 (Updated)
 
-这里是一个更简化的D3.js条形图模板示例，专注于基本功能：
+这里是一个更简化的D3.js条形图模板示例，使用新格式：
 
 ```javascript
 /*
@@ -397,6 +397,7 @@ function makeChart(containerSelector, data) {
     const variables = data.variables;
     const typography = data.typography;
     const colors = data.colors;
+    const dataColumns = data.data_columns;
     
     // 设置尺寸和边距
     const width = variables.width;
@@ -406,8 +407,8 @@ function makeChart(containerSelector, data) {
     const innerHeight = height - margin.top - margin.bottom;
     
     // 获取字段名
-    const xField = variables.x_axis.field;
-    const yField = variables.y_axis.field;
+    const xField = dataColumns[0].name;
+    const yField = dataColumns[1].name;
     
     // 获取颜色
     const barColor = colors.other.primary;
@@ -451,14 +452,16 @@ function makeChart(containerSelector, data) {
         .call(d3.axisBottom(xScale))
         .selectAll("text")
         .style("font-family", typography.label.font_family)
-        .style("font-size", typography.label.font_size);
+        .style("font-size", typography.label.font_size)
+        .style("fill", colors.text_color);
     
     // 绘制Y轴
     g.append("g")
         .call(d3.axisLeft(yScale))
         .selectAll("text")
         .style("font-family", typography.label.font_family)
-        .style("font-size", typography.label.font_size);
+        .style("font-size", typography.label.font_size)
+        .style("fill", colors.text_color);
     
     return svg.node();
 }
@@ -621,50 +624,23 @@ Templates receive a JSON object with the following structure:
 ```json
 {
     "data": [
-        {"category": "A", "value": 10},
-        {"category": "B", "value": 15},
-        {"category": "C", "value": 8}
+        {"Country": "France", "Score": 88, "Retailer Type": "Pharmacy"},
+        {"Country": "France", "Score": 10, "Retailer Type": "Online pharmacy"},
+        {"Country": "Germany", "Score": 80, "Retailer Type": "Pharmacy"}
     ],
     "data_columns": [
-        {"name": "category", "role": "dimension"}, 
-        {"name": "value", "role": "measure"}
+        {"name": "Country", "importance": "primary", "description": "Country of the respondents", "role": "dimension"},
+        {"name": "Score", "importance": "primary", "description": "Score value", "role": "measure", "unit": ""},
+        {"name": "Retailer Type", "importance": "primary", "description": "Type of retailer", "role": "group"}
     ],
     "variables": {
         "width": 800,
         "height": 500,
-        "color": {
-            "mark_color": {
-                "domain": ["A", "B", "C"],
-                "range": ["#5470c6", "#91cc75", "#fac858"]
-            },
-            "stroke_color": "#ffffff",
-            "text_color": "#333333"
-        },
-        "x_axis": {
-            "field": "category",
-            "style": {
-                "color": "#666666",
-                "opacity": 0.8
-            },
-            "has_domain": true,
-            "has_tick": true
-        },
-        "y_axis": {
-            "field": "value",
-            "style": {
-                "color": "#666666",
-                "opacity": 0.8
-            },
-            "has_domain": true,
-            "has_tick": true
-        },
-        "mark": {
-            "has_shadow": true,
-            "has_gradient": false,
-            "has_rounded_corners": true,
-            "has_stroke": true,
-            "has_spacing": true
-        },
+        "has_rounded_corners": true,
+        "has_shadow": true,
+        "has_gradient": false,
+        "has_stroke": true,
+        "has_spacing": true,
         "title": {
             "text": "Simple Bar Chart"
         }
@@ -688,29 +664,383 @@ Templates receive a JSON object with the following structure:
     },
     "images": {
         "field": {
-            "A": "data:image/svg+xml;base64,...",
-            "B": "data:image/svg+xml;base64,..."
+            "France": "data:image/svg+xml;base64,...",
+            "Germany": "data:image/svg+xml;base64,..."
         },
         "other": {
-            "primary": "data:image/svg+xml;base64,...",
-            "man": "data:image/svg+xml;base64,..."
+            "primary": "data:image/svg+xml;base64,..."
         }
     },
     "colors": {
         "field": {
-            "A": "#FF5733",
-            "B": "#33FF57",
-            "C": "#3357FF"
+            "Pharmacy": "#1f77b4",
+            "Online pharmacy": "#ff7f0e",
+            "Other retail shop": "#2ca02c"
         },
         "other": {
-            "primary": "#E63946",
-            "secondary": "#457B9D"
+            "primary": "#1f77b4",
+            "secondary": "#ff7f0e"
         },
-        "available_colors": ["#A9D700", "#FFD700", "#008080", "#4B0082"],
+        "available_colors": ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd", "#8c564b"],
         "background_color": "#FFFFFF",
-        "text_color": "#1D3557"
+        "text_color": "#0f223b"
     }
 }
+```
+
+## 重要更新：新的数据访问模式
+
+框架已进行更新，模板应使用以下模式访问数据：
+
+### 1. 数据字段访问
+
+不再使用 variables.x_axis.field 等路径，而是使用 data_columns 按顺序访问字段：
+
+```javascript
+// 旧格式 - 不要使用
+const xField = variables.x_axis.field;
+const yField = variables.y_axis.field;
+const groupField = variables.color.mark_color.field;
+
+// 新格式 - 推荐使用
+const xField = data_columns[0].name;  // 第一列
+const yField = data_columns[1].name;  // 第二列
+const groupField = data_columns[2].name;  // 第三列
+```
+
+### 2. 视觉效果属性访问
+
+视觉效果属性现在位于 variables 对象的根级别：
+
+```javascript
+// 旧格式 - 不要使用
+const hasRoundedCorners = variables.mark.has_rounded_corners;
+const hasShadow = variables.mark.has_shadow;
+
+// 新格式 - 推荐使用
+const hasRoundedCorners = variables.has_rounded_corners;
+const hasShadow = variables.has_shadow;
+```
+
+### 3. 颜色应用
+
+颜色应该使用以下模式分配：
+
+```javascript
+// 获取类别的颜色
+const getColor = (category) => {
+    return colors.field && colors.field[category] ? 
+        colors.field[category] : 
+        colors.other.primary;
+};
+```
+
+## D3.js Template Example (Updated)
+
+Here's an updated D3.js bar chart template using the new format:
+
+```javascript
+/*
+REQUIREMENTS_BEGIN
+{
+    "chart_type": "Simple Bar Chart",
+    "chart_name": "simple_bar_chart_d3",
+    "is_composite": false,
+    "required_fields": ["x", "y"],
+    "required_fields_type": [["categorical"], ["numerical"]],
+    "required_fields_range": [[2, 10], [0, 1000]],
+    "required_fields_icons": ["x"],
+    "required_other_icons": [],
+    "required_fields_colors": ["x"],
+    "required_other_colors": ["primary"],
+    "supported_effects": ["shadow", "radius_corner"],
+    "min_height": 300,
+    "min_width": 400,
+    "background": "no",
+    "icon_mark": "overlay",
+    "icon_label": "side",
+    "has_x_axis": "yes",
+    "has_y_axis": "yes"
+}
+REQUIREMENTS_END
+*/
+
+// Simple Bar Chart implementation using D3.js
+function makeChart(containerSelector, data) {
+    // Extract data from the json_data object
+    const jsonData = data;
+    const chartData = jsonData.data;
+    const variables = jsonData.variables;
+    const typography = jsonData.typography;
+    const colors = jsonData.colors || {};
+    const dataColumns = jsonData.data_columns;
+    
+    // Clear any existing content
+    d3.select(containerSelector).html("");
+    
+    // Set width and height based on variables
+    const width = variables.width;
+    const height = variables.height;
+    const margin = { top: 40, right: 20, bottom: 50, left: 60 };
+    const innerWidth = width - margin.left - margin.right;
+    const innerHeight = height - margin.top - margin.bottom;
+    
+    // Extract field names from data_columns
+    const xField = dataColumns[0].name;
+    const yField = dataColumns[1].name;
+    
+    // Create SVG inside the container
+    const svg = d3.select(containerSelector)
+        .append("svg")
+        .attr("width", "100%")
+        .attr("height", height)
+        .attr("viewBox", `0 0 ${width} ${height}`)
+        .attr("style", "max-width: 100%; height: auto;")
+        .attr("xmlns", "http://www.w3.org/2000/svg");
+    
+    // Create chart group and apply margin
+    const g = svg.append("g")
+        .attr("transform", `translate(${margin.left},${margin.top})`);
+    
+    // Create scales
+    const xScale = d3.scaleBand()
+        .domain(chartData.map(d => d[xField]))
+        .range([0, innerWidth])
+        .padding(0.3);
+    
+    const yScale = d3.scaleLinear()
+        .domain([0, d3.max(chartData, d => d[yField]) * 1.1])
+        .range([innerHeight, 0]);
+
+    // Color getter function
+    const getColor = (category) => {
+        return colors.field && colors.field[category] ? 
+            colors.field[category] : 
+            colors.other.primary;
+    };
+
+    // Add shadow filter if needed
+    if (variables.has_shadow) {
+        const defs = svg.append("defs");
+        
+        defs.append("filter")
+            .attr("id", "shadow")
+            .append("feDropShadow")
+            .attr("dx", 0)
+            .attr("dy", 2)
+            .attr("stdDeviation", 2)
+            .attr("flood-opacity", 0.3);
+    }
+    
+    // Get icons
+    const icons = jsonData.images.field;
+    
+    // Draw bars
+    g.selectAll(".bar")
+        .data(chartData)
+        .enter()
+        .append("rect")
+        .attr("class", "bar")
+        .attr("x", d => xScale(d[xField]))
+        .attr("y", d => yScale(d[yField]))
+        .attr("width", xScale.bandwidth())
+        .attr("height", d => innerHeight - yScale(d[yField]))
+        .attr("fill", d => getColor(d[xField]))
+        .attr("rx", variables.has_rounded_corners ? 4 : 0)
+        .attr("ry", variables.has_rounded_corners ? 4 : 0)
+        .style("stroke", variables.has_stroke ? colors.stroke_color : "none")
+        .style("stroke-width", variables.has_stroke ? 1 : 0)
+        .style("filter", variables.has_shadow ? "url(#shadow)" : "none");
+    
+    // Draw x-axis
+    const xAxis = g.append("g")
+        .attr("transform", `translate(0,${innerHeight})`)
+        .call(d3.axisBottom(xScale))
+    
+    // Apply typography to x-axis labels
+    xAxis.selectAll("text")
+        .style("font-family", typography.label.font_family)
+        .style("font-size", typography.label.font_size)
+        .style("font-weight", typography.label.font_weight)
+        .attr("transform", "rotate(-45)")
+        .attr("text-anchor", "end");
+    
+    // Draw y-axis
+    const yAxis = g.append("g")
+        .call(d3.axisLeft(yScale))
+    
+    // Apply typography to y-axis labels
+    yAxis.selectAll("text")
+        .style("font-family", typography.label.font_family)
+        .style("font-size", typography.label.font_size)
+        .style("font-weight", typography.label.font_weight);
+    
+    // Add icons to x-axis if available
+    chartData.forEach(d => {
+        const xValue = d[xField];
+        if (icons[xValue]) {
+            g.append("image")
+                .attr("x", xScale(xValue) + xScale.bandwidth() / 2 - 10)
+                .attr("y", innerHeight + 25)
+                .attr("width", 20)
+                .attr("height", 20)
+                .attr("xlink:href", icons[xValue]);
+        }
+    });
+    
+    // Add title if available
+    if (variables.title && variables.title.text) {
+        svg.append("text")
+            .attr("x", width / 2)
+            .attr("y", 20)
+            .attr("text-anchor", "middle")
+            .style("font-family", typography.title.font_family)
+            .style("font-size", typography.title.font_size)
+            .style("font-weight", typography.title.font_weight)
+            .style("fill", colors.text_color)
+            .text(variables.title.text);
+    }
+    
+    return svg.node();
+}
+```
+
+## ECharts Python Template Example (Updated)
+
+Here's an updated ECharts Python template using the new format:
+
+```python
+'''
+REQUIREMENTS_BEGIN
+{
+    "chart_type": "Bar Chart",
+    "chart_name": "simple_bar_chart_py",
+    "is_composite": false,
+    "required_fields": ["x", "y"],
+    "required_fields_type": [["categorical"], ["numerical"]],
+    "required_fields_range": [[2, 10], [0, 1000]],
+    "required_fields_icons": ["x"],
+    "required_other_icons": [],
+    "required_fields_colors": ["x"],
+    "required_other_colors": ["primary", "secondary"],
+    "supported_effects": ["shadow"],
+    "min_height": 300,
+    "min_width": 400,
+    "background": "styled",
+    "icon_mark": "none",
+    "icon_label": "side",
+    "has_x_axis": "yes",
+    "has_y_axis": "yes"
+}
+REQUIREMENTS_END
+'''
+
+def make_options(json_data):
+    # 提取数据
+    chart_data = json_data['data']
+    variables = json_data['variables']
+    typography = json_data['typography']
+    colors = json_data['colors']
+    data_columns = json_data['data_columns']
+    
+    # 提取字段名
+    x_field = data_columns[0]['name']
+    y_field = data_columns[1]['name']
+    
+    # 准备数据
+    x_data = [item[x_field] for item in chart_data]
+    y_data = [item[y_field] for item in chart_data]
+    
+    # 获取图标
+    icons = json_data['images']['field']
+    
+    # 获取颜色信息
+    field_colors = colors['field']
+    primary_color = colors['other']['primary']
+    secondary_color = colors['other'].get('secondary', '#ff7f0e')
+    
+    # 颜色获取函数
+    def get_color(category):
+        return field_colors.get(category, primary_color)
+    
+    # 创建ECharts选项
+    options = {
+        'title': {
+            'text': variables.get('title', {}).get('text', ''),
+            'left': 'center',
+            'textStyle': {
+                'fontSize': int(typography['title']['font_size'].replace('px', '')),
+                'fontWeight': typography['title']['font_weight'],
+                'fontFamily': typography['title']['font_family'],
+                'color': colors['text_color']
+            }
+        },
+        'xAxis': {
+            'type': 'category',
+            'data': x_data,
+            'axisLabel': {
+                'rotate': 45 if len(x_data) > 5 else 0,
+                'color': colors['text_color'],
+                'fontFamily': typography['label']['font_family'],
+                'fontSize': int(typography['label']['font_size'].replace('px', ''))
+            }
+        },
+        'yAxis': {
+            'type': 'value',
+            'name': y_field,
+            'nameTextStyle': {
+                'color': colors['text_color'],
+                'fontFamily': typography['label']['font_family'],
+                'fontSize': int(typography['label']['font_size'].replace('px', ''))
+            },
+            'axisLabel': {
+                'color': colors['text_color'],
+                'fontFamily': typography['label']['font_family'],
+                'fontSize': int(typography['label']['font_size'].replace('px', ''))
+            }
+        },
+        'series': [{
+            'name': y_field,
+            'data': [],
+            'type': 'bar',
+            'itemStyle': {
+                'color': primary_color,
+                'borderRadius': 4 if variables.get('has_rounded_corners', False) else 0,
+                'shadowBlur': 10 if variables.get('has_shadow', False) else 0,
+                'shadowColor': 'rgba(0, 0, 0, 0.3)' if variables.get('has_shadow', False) else 'transparent',
+                'borderWidth': 1 if variables.get('has_stroke', False) else 0,
+                'borderColor': colors.get('stroke_color', '#ffffff') if variables.get('has_stroke', False) else 'transparent'
+            }
+        }],
+        'tooltip': {
+            'trigger': 'item',
+            'formatter': '{b}: {c}'
+        },
+        'grid': {
+            'left': '3%',
+            'right': '4%',
+            'bottom': '8%',
+            'containLabel': True
+        },
+        'backgroundColor': colors.get('background_color', '#ffffff')
+    }
+    
+    # 为每个数据点指定颜色
+    data_with_color = []
+    for i, value in enumerate(y_data):
+        x_value = x_data[i]
+        data_item = {
+            'value': value,
+            'name': x_value
+        }
+        # 如果字段值有特定颜色，则应用
+        if x_value in field_colors:
+            data_item['itemStyle'] = {'color': get_color(x_value)}
+        data_with_color.append(data_item)
+    
+    options['series'][0]['data'] = data_with_color
+    
+    return options
 ```
 
 ## Best Practices

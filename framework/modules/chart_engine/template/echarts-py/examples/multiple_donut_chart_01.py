@@ -1,17 +1,23 @@
 '''
 REQUIREMENTS_BEGIN
 {
-    "_comment": "这些属性的值由你对特定的图表进行定义，用于要求数据的格式。完成测试后填写。",
     "chart_type": "Donut Chart",
     "chart_name": "donut_chart_01",
     "required_fields": ["x", "y", "group"],
-    "required_fields_type": ["string", "number", "string"],
-    "required_fields_": ["string", "0-1", "string"],
-    "required_data_points": [5, 100],
-    "x_values": [2, 10],
-    "group_values": [2, 8],
-    "width": [500, 1000],
-    "height": [300, 600]
+    "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
+    "required_fields_range": [[2, 10], [0, 100], [2, 8]],
+    "required_fields_icons": ["x"],
+    "required_other_icons": ["primary"],
+    "required_fields_colors": ["group"],
+    "required_other_colors": ["primary"],
+    "supported_effects": ["shadow", "radius_corner"],
+    "min_height": 400,
+    "min_width": 500,
+    "background": "no",
+    "icon_mark": "none",
+    "icon_label": "side",
+    "has_x_axis": "no",
+    "has_y_axis": "no"
 }
 REQUIREMENTS_END
 '''
@@ -57,23 +63,30 @@ def make_options(json_data):
     # Extract relevant data from json_data
     data = json_data['data']
     variables = json_data['variables']
+    typography = json_data['typography']
+    colors_data = json_data['colors']
+    images = json_data['images']
+    data_columns = json_data['data_columns']
     
-    # Extract fields directly
-    x_field = variables['x_axis']['field']
-    y_field = variables['y_axis']['field']
-    group_field = variables['color']['mark_color']['field']
-    
-    # Get colors directly
-    colors = variables['color']['mark_color']['range']
+    # Extract field names from data_columns
+    x_field = data_columns[0]['name']
+    y_field = data_columns[1]['name']
+    group_field = data_columns[2]['name']
     
     # Get unique categories and groups
     categories = sorted(list(set(item[x_field] for item in data)))
     groups = sorted(list(set(item[group_field] for item in data)))
     
+    # Create color list for groups
+    colors = []
+    for group in groups:
+        color = colors_data['field'].get(group, colors_data['other'].get('primary', '#efb118'))
+        colors.append(color)
+    
     # Define dimensions based on json_data
     canvas_width = variables['width']
     canvas_height = variables['height']
-    title_height = 40
+    title_height = 60  # Increased for larger title
     legend_height = 60
     
     # Calculate grid layout
@@ -83,15 +96,44 @@ def make_options(json_data):
     # Adjust margin based on number of columns
     chart_margin = 20 if cols == 2 else 40  # Smaller margin for 2 columns
     
+    # Create main title
+    main_title_text = variables.get('title', {}).get('text', 'Donut Chart')
+    main_title = {
+        "text": main_title_text,
+        "top": 10,
+        "left": "center",
+        "textStyle": {
+            "fontSize": int(typography['title']['font_size'].replace('px', '')),
+            "fontWeight": typography['title']['font_weight'],
+            "fontFamily": typography['title']['font_family'],
+            "color": colors_data['text_color']
+        }
+    }
+    
     options = {
-        "title": [],
-        "color": colors[:len(groups)],
+        "title": [main_title],
+        "color": colors,
         "dataset": [
             {
                 "source": data
             }
         ],
-        "series": []
+        "series": [],
+        "legend": {
+            "type": "scroll",
+            "orient": "horizontal",
+            "top": title_height,
+            "left": "center",
+            "textStyle": {
+                "fontSize": int(typography['label']['font_size'].replace('px', '')),
+                "fontFamily": typography['label']['font_family'],
+                "color": colors_data['text_color']
+            }
+        },
+        "tooltip": {
+            "trigger": "item",
+            "formatter": "{a} <br/>{b}: {c} ({d}%)"
+        }
     }
     
     # Calculate chart dimensions
@@ -142,6 +184,16 @@ def make_options(json_data):
         # Calculate center positions in pixels
         center_x = chart_margin + (col * (chart_width + chart_margin)) + (chart_width / 2)
         center_y = content_top + chart_margin + (row * (chart_height + chart_margin)) + (chart_height / 2)
+        
+        # Set pie style based on variables
+        item_style = {
+            "borderRadius": 4 if variables.get('has_rounded_corners', False) else 0,
+            "borderWidth": 2 if variables.get('has_stroke', False) else 0,
+            "borderColor": colors_data.get('stroke_color', '#ffffff') if variables.get('has_stroke', False) else 'transparent',
+            "shadowBlur": 10 if variables.get('has_shadow', False) else 0,
+            "shadowColor": 'rgba(0, 0, 0, 0.3)' if variables.get('has_shadow', False) else 'transparent'
+        }
+        
         # Add pie chart series
         options["series"].append({
             "name": category,
@@ -157,33 +209,71 @@ def make_options(json_data):
                 "show": True,
                 "position": "inside",
                 "formatter": "{@[1]}",
-                "fontSize": 14,
+                "fontSize": int(typography['label']['font_size'].replace('px', '')),
+                "fontFamily": typography['label']['font_family'],
                 "color": "white",
             },
-            "itemStyle": {
-                "borderRadius": 4,
-                "borderWidth": 2,
+            "emphasis": {
+                "label": {
+                    "show": True,
+                    "fontSize": int(typography['label']['font_size'].replace('px', '')) + 2,
+                    "fontWeight": "bold"
+                },
+                "itemStyle": {
+                    "shadowBlur": 15,
+                    "shadowColor": 'rgba(0, 0, 0, 0.5)'
+                }
             },
+            "itemStyle": item_style,
         })
-        # Add separate title component for each donut with text wrapping
+        
+        # Add separate title component for each donut
+        title_text = category
+        
+        # Add title component without using HTML
         options["title"].append({
-            "text": category,
+            "text": title_text,
             "left": center_x,
             "top": center_y,
             "textAlign": "center",
             "textVerticalAlign": "middle",
-            "width": title_width,  # Set maximum width for text wrapping
-            "overflow": "break",   # Enable text wrapping
-            "lineHeight": 20,      # Set line height for wrapped text
-            "padding": [5, 5],     # Add some padding around text
+            "width": title_width,
+            "overflow": "break",
+            "lineHeight": 24,
+            "padding": [5, 5],
             "textStyle": {
-                "fontSize": 16,
-                "fontWeight": "normal",
-                "color": "black",
-                "width": title_width,  # Also set width in textStyle
-                "overflow": "break",   # Enable wrapping in textStyle
-                "lineHeight": 20       # Set line height in textStyle
+                "fontSize": int(typography['label']['font_size'].replace('px', '')),
+                "fontWeight": typography['label']['font_weight'],
+                "fontFamily": typography['label']['font_family'],
+                "color": colors_data['text_color'],
+                "width": title_width,
+                "overflow": "break",
+                "lineHeight": 24
             }
         })
+        
+        # If country has an icon, add it as a separate image component
+        if category in images['field']:
+            options["graphic"] = options.get("graphic", [])
+            # Calculate position for icon
+            icon_width = 20
+            icon_height = 20
+            icon_x = center_x - (icon_width / 2)
+            icon_y = center_y - (icon_height / 2) - 30  # Position above the title
+            
+            options["graphic"].append({
+                "type": "image",
+                "id": f"icon-{category}",
+                "style": {
+                    "image": images['field'][category],
+                    "width": icon_width,
+                    "height": icon_height,
+                    "x": icon_x,
+                    "y": icon_y
+                },
+                "left": icon_x,
+                "top": icon_y,
+                "z": 100
+            })
     
     return options 

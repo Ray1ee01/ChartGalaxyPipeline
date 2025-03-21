@@ -88,13 +88,12 @@ def cleanup_temp_dir(dirpath):
     if os.path.exists(dirpath):
         shutil.rmtree(dirpath)
 
-def create_fallback_svg(output_path, chart_type="Unknown Chart", width=800, height=600, error_message="Failed to generate chart"):
+def create_fallback_svg(output_path, width=800, height=600, error_message="Failed to generate chart"):
     """
     Create a simple SVG file with an error message when all other methods fail
     
     Args:
         output_path: Path where to save the SVG file
-        chart_type: Type of chart that was supposed to be generated
         width: Width of the SVG
         height: Height of the SVG
         error_message: Error message to display in the SVG
@@ -105,7 +104,7 @@ def create_fallback_svg(output_path, chart_type="Unknown Chart", width=800, heig
     svg_content = f"""<svg xmlns="http://www.w3.org/2000/svg" width="{width}" height="{height}">
     <rect width="100%" height="100%" fill="#f8f9fa" />
     <text x="50%" y="40%" font-family="Arial" font-size="20px" text-anchor="middle" font-weight="bold">
-        Error Generating {chart_type}
+        Error Generating
     </text>
     <text x="50%" y="50%" font-family="Arial" font-size="16px" text-anchor="middle">
         {error_message}
