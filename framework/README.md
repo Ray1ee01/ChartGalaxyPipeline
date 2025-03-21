@@ -104,86 +104,84 @@ ChartPipeline 中的数据流遵循以下规则:
     "description": "Number of national emergencies declared in the United States since 1976, by current status",
     "main_insight": "The number of national emergencies declared in the US has generally increased over time, with a significant number of those declared since 2000 still active."
   },
-  "data": {
-    "columns": [
-      {
-        "name": "Time Period",
-        "importance": "primary",
-        "description": "Time periods of national emergencies declared",
-        "unit": "none",
-        "data_type": "time",
-        "role": "x"
-      },
-      {
-        "name": "Binary",
-        "importance": "primary",
-        "description": "Binary for the corresponding status",
-        "unit": "none",
-        "data_type": "number",
-        "role": "y"
-      },
-      {
-        "name": "Status",
-        "importance": "primary",
-        "description": "The status of the data point",
-        "unit": "none",
-        "data_type": "categorical",
-        "role": "group"
-      }
-    ],
-    "data": [
-      {
-        "Time Period": "'76-'79",
-        "Binary": 1,
-        "Status": "Still active"
-      },
-      {
-        "Time Period": "'80-'89",
-        "Binary": 7,
-        "Status": "Ended"
-      },
-      {
-        "Time Period": "'90-'99",
-        "Binary": 6,
-        "Status": "Still active"
-      },
-      {
-        "Time Period": "'90-'99",
-        "Binary": 14,
-        "Status": "Ended"
-      },
-      {
-        "Time Period": "'00-'09",
-        "Binary": 11,
-        "Status": "Still active"
-      },
-      {
-        "Time Period": "'00-'09",
-        "Binary": 5,
-        "Status": "Ended"
-      },
-      {
-        "Time Period": "'10-'19",
-        "Binary": 15,
-        "Status": "Still active"
-      },
-      {
-        "Time Period": "'10-'19",
-        "Binary": 3,
-        "Status": "Ended"
-      },
-      {
-        "Time Period": "'20-'22",
-        "Binary": 8,
-        "Status": "Still active"
-      },
-      {
-        "Time Period": "'20-'22",
-        "Binary": 1,
-        "Status": "Ended"
-      }
-    ]
-  }
+  "data_columns": [
+    {
+      "name": "Time Period",
+      "importance": "primary",
+      "description": "Time periods of national emergencies declared",
+      "unit": "none",
+      "data_type": "time",
+      "role": "x"
+    },
+    {
+      "name": "Binary",
+      "importance": "primary",
+      "description": "Binary for the corresponding status",
+      "unit": "none",
+      "data_type": "number",
+      "role": "y"
+    },
+    {
+      "name": "Status",
+      "importance": "primary",
+      "description": "The status of the data point",
+      "unit": "none",
+      "data_type": "categorical",
+      "role": "group"
+    }
+  ],
+  "data": [
+    {
+      "Time Period": "'76-'79",
+      "Binary": 1,
+      "Status": "Still active"
+    },
+    {
+      "Time Period": "'80-'89",
+      "Binary": 7,
+      "Status": "Ended"
+    },
+    {
+      "Time Period": "'90-'99",
+      "Binary": 6,
+      "Status": "Still active"
+    },
+    {
+      "Time Period": "'90-'99",
+      "Binary": 14,
+      "Status": "Ended"
+    },
+    {
+      "Time Period": "'00-'09",
+      "Binary": 11,
+      "Status": "Still active"
+    },
+    {
+      "Time Period": "'00-'09",
+      "Binary": 5,
+      "Status": "Ended"
+    },
+    {
+      "Time Period": "'10-'19",
+      "Binary": 15,
+      "Status": "Still active"
+    },
+    {
+      "Time Period": "'10-'19",
+      "Binary": 3,
+      "Status": "Ended"
+    },
+    {
+      "Time Period": "'20-'22",
+      "Binary": 8,
+      "Status": "Still active"
+    },
+    {
+      "Time Period": "'20-'22",
+      "Binary": 1,
+      "Status": "Ended"
+    }
+  ]
 }
 ```
 
