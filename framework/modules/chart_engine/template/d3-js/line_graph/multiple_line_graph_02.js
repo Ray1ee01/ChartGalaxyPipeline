@@ -2,10 +2,10 @@
 REQUIREMENTS_BEGIN
 {
     "chart_type": "Multiple Line Graph",
-    "chart_name": "multiple_line_graph_01",
+    "chart_name": "multiple_line_graph_02",
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["temporal"], ["numerical"], ["categorical"]],
-    "required_fields_range": [[5, 30], [0, 1000], [2, 8]],
+    "required_fields_range": [[5, 30], [-1000, 1000], [2, 8]],
     "required_fields_icons": [],
     "required_other_icons": [],
     "required_fields_colors": ["group"],
@@ -63,14 +63,36 @@ function makeChart(containerSelector, data) {
     const g = svg.append("g")
         .attr("transform", `translate(${margin.left},${margin.top})`);
     
-    // 添加网格背景 - 改为透明
+    // 添加渐变效果
+    const defs = svg.append("defs");
+
+    // 添加网格背景渐变
+    const gridGradientId = "grid-background-gradient";
+    const gridGradient = defs.append("linearGradient")
+        .attr("id", gridGradientId)
+        .attr("x1", "0%")
+        .attr("y1", "0%")
+        .attr("x2", "0%")
+        .attr("y2", "100%");
+        
+    gridGradient.append("stop")
+        .attr("offset", "0%")
+        .attr("stop-color", "#f0dcc1")
+        .attr("stop-opacity", 0); // 顶部完全透明
+        
+    gridGradient.append("stop")
+        .attr("offset", "100%")
+        .attr("stop-color", "#f0dcc1")
+        .attr("stop-opacity", 0.3); // 底部半透明
+
+    // 添加网格背景矩形
     g.append("rect")
         .attr("width", innerWidth)
         .attr("height", innerHeight)
-        .attr("fill", "transparent") // 透明背景
-        .attr("rx", 5)
-        .attr("ry", 5);
-    
+        .attr("fill", `url(#${gridGradientId})`) // 使用渐变填充
+        .attr("rx", 0)
+        .attr("ry", 0);
+
     // 创建比例尺 - 修改为时间比例尺
     // 首先解析年份字符串为日期对象
     const parseYear = (yearStr) => {
@@ -107,7 +129,7 @@ function makeChart(containerSelector, data) {
     const maxYPos = yScale(maxYTick);
 
     // 绘制水平网格线 - 向左延伸
-    const gridExtension = 30; // 网格线向左延伸的距离
+    const gridExtension = 5; // 网格线向左延伸的距离
     g.selectAll("line.grid-line-y")
         .data(yTicks)
         .enter()
@@ -117,9 +139,9 @@ function makeChart(containerSelector, data) {
         .attr("y1", d => yScale(d))
         .attr("x2", innerWidth)
         .attr("y2", d => yScale(d))
-        .attr("stroke", "#ffffff")
-        .attr("stroke-width", d => d === 0 ? 2 : 1) // 0刻度线加粗
-        .attr("opacity", d => d === 0 ? 1 : 0.3); // 0刻度线不透明
+        .attr("stroke", "#f0dcc1")
+        .attr("stroke-width", 1)
+        .attr("opacity", 0.2); // 半透明
 
     // 计算X轴刻度数量
     const xTickCount = xValues.length > 6 ? 6 : xValues.length;
@@ -127,22 +149,40 @@ function makeChart(containerSelector, data) {
     // 获取X轴刻度位置
     const xTicks = xScale.ticks(xTickCount);
 
-    // 绘制垂直网格线 - 确保不超过最大Y刻度，并与X轴刻度对应
+    // 添加垂直网格线渐变
+    const verticalGridGradientId = "vertical-grid-gradient";
+    const verticalGridGradient = defs.append("linearGradient")
+        .attr("id", verticalGridGradientId)
+        .attr("x1", "0%")
+        .attr("y1", "0%")
+        .attr("x2", "0%")
+        .attr("y2", "100%");
+        
+    verticalGridGradient.append("stop")
+        .attr("offset", "0%")
+        .attr("stop-color", "#f0dcc1")
+        .attr("stop-opacity", 0.1); // 顶部较透明
+        
+    verticalGridGradient.append("stop")
+        .attr("offset", "100%")
+        .attr("stop-color", "#f0dcc1")
+        .attr("stop-opacity", 0.4); // 底部较不透明
+
+    // 绘制垂直网格线 - 延伸超过Y轴最大刻度和X轴，但不包括最后一个刻度
     g.selectAll("line.grid-line-x")
-        .data(xTicks) // 使用与X轴相同的刻度
+        .data(xTicks.filter((d, i) => i > 0 && i < xTicks.length - 1)) // 移除第一个和最后一个刻度
         .enter()
         .append("line")
         .attr("class", "grid-line-x")
         .attr("x1", d => xScale(d))
-        .attr("y1", maxYPos) // 从最大Y刻度开始
+        .attr("y1", 0) // 从顶部开始，超过最大Y刻度
         .attr("x2", d => xScale(d))
-        .attr("y2", innerHeight)
-        .attr("stroke", "#ffffff")
+        .attr("y2", innerHeight + 10) // 延伸到X轴下方10像素
+        .attr("stroke", "#f0dcc1") // 使用固定颜色
         .attr("stroke-width", 1)
-        .attr("opacity", 0.3); // 降低透明度
+        .attr("opacity", 0.3); // 半透明
     
-    // 添加渐变效果
-    const defs = svg.append("defs");
+    // 为每个组添加线条渐变
     groups.forEach(group => {
         const gradientId = `line-gradient-${group.replace(/\s+/g, '-').toLowerCase()}`;
         const baseColor = getColor(group);
@@ -165,69 +205,14 @@ function makeChart(containerSelector, data) {
             .attr("stop-opacity", 0);
     });
     
-    // 创建线条生成器
+    // 创建曲线生成器（而不是折线）
     const line = d3.line()
         .x(d => xScale(parseYear(d[xField])))
-        .y(d => yScale(d[yField]));
-    
-    // 创建面积生成器（用于渐变填充）
-    const area = d3.area()
-        .x(d => xScale(parseYear(d[xField])))
-        .y0(innerHeight)
-        .y1(d => yScale(d[yField]));
-    
-    // 在绘制线条之前添加这段代码
-    console.log("Available groups:", groups);
-    groups.forEach(group => {
-        const groupData = chartData.filter(d => d[groupField] === group);
-        console.log(`Group ${group} has ${groupData.length} data points`);
-    });
-    
-    // 添加垂直参考线（最后一个年份）
-    const lastYear = xValues[xValues.length - 1];
-    const lastYearDate = parseYear(lastYear);
+        .y(d => yScale(d[yField]))
+        .curve(d3.curveMonotoneX); // 使用单调曲线插值
 
-    // 添加垂直虚线
-    g.append("line")
-        .attr("x1", xScale(lastYearDate))
-        .attr("y1", 0)
-        .attr("x2", xScale(lastYearDate))
-        .attr("y2", innerHeight)
-        .attr("stroke", "#ffffff")
-        .attr("stroke-width", 1)
-        .attr("stroke-dasharray", "4,2");
-
-    // 添加年份标签（纯白色，无边框）
-    const yearLabelGroup = g.append("g")
-        .attr("transform", `translate(${xScale(lastYearDate)}, 0)`);
-
-    // 标签背景 - 纯白色无边框
-    yearLabelGroup.append("rect")
-        .attr("x", -20)
-        .attr("y", -25)
-        .attr("width", 40)
-        .attr("height", 20)
-        .attr("fill", "#ffffff")
-        .attr("rx", 3)
-        .attr("ry", 3);
-
-    // 修正年份标签的三角形方向
-    yearLabelGroup.append("path")
-        .attr("d", "M0,0 L5,-5 L-5,-5 Z") // 创建一个向上的小三角形
-        .attr("transform", "translate(0,0)") // 位置在标签下方
-        .attr("fill", "#ffffff");
-
-    // 标签文本
-    yearLabelGroup.append("text")
-        .attr("x", 0)
-        .attr("y", -14)
-        .attr("text-anchor", "middle")
-        .attr("dominant-baseline", "middle")
-        .style("font-family", typography.label.font_family)
-        .style("font-size", "16px")
-        .style("font-weight", "bold")
-        .style("fill", "#333333")
-        .text(lastYear.split("/")[0]);
+    // 计算所有标签的固定宽度
+    const fixedLabelWidth = 30; // 固定标签宽度
 
     // 在最后的竖线上为每个组添加彩色小圆点，并创建指向它们的标签
     let labelPositions = [];
@@ -247,54 +232,33 @@ function makeChart(containerSelector, data) {
         
         labelPositions.push(labelY);
         
-        // 添加小圆点
-        g.append("circle")
-            .attr("cx", xScale(lastYearDate))
-            .attr("cy", circleY)
-            .attr("r", 5)
-            .attr("fill", getColor(group));
-        
         // 创建标签组
         const labelGroup = g.append("g")
             .attr("transform", `translate(${innerWidth + 20}, ${labelY})`);
         
-        // 计算数值文本的宽度
+        // 计算数值文本
         const valueText = `${Math.round(lastPoint[yField])}`;
-        const textWidth = valueText.length * 10 + 20; // 估算文本宽度，每个字符约10px，两边各留10px空白
         
-        // 标签背景 - 宽度自适应
+        // 标签背景 - 固定宽度，无圆角
         labelGroup.append("rect")
             .attr("x", 0)
-            .attr("y", -15)
-            .attr("width", textWidth) // 自适应宽度
-            .attr("height", 30)
+            .attr("y", -10)
+            .attr("width", fixedLabelWidth) // 固定宽度
+            .attr("height", 20)
             .attr("fill", getColor(group))
-            .attr("rx", 5)
-            .attr("ry", 5);
+            .attr("rx", 0) // 移除圆角
+            .attr("ry", 0); // 移除圆角
         
         // 计算三角形的位置
         // 计算圆点相对于标签的位置
         const relativeCircleY = circleY - labelY; // 圆点相对于标签中心的Y偏移
         
-        // 确定三角形应该贴在标签的哪个位置
-        let triangleY = 0; // 默认在中间
-        const triangleHeight = 12; // 三角形高度，标签高度(30)的40%
-        
-        if (relativeCircleY < -15) {
-            // 圆点在标签上边界上方
-            triangleY = -7; // 放在标签上部
-        } else if (relativeCircleY > 15) {
-            // 圆点在标签下边界下方
-            triangleY = 7; // 放在标签下部
-        }
-        // 否则放在中间
-        
         // 创建一个自定义的三角形路径
         // 三角形右边是垂直的，贴在标签上，左边的尖尖指向圆点
         const trianglePath = `
             M -12,${relativeCircleY} 
-            L 0,${triangleY - triangleHeight/2} 
-            L 0,${triangleY + triangleHeight/2} 
+            L 0,-10 
+            L 0,10 
             Z
         `;
         
@@ -305,41 +269,31 @@ function makeChart(containerSelector, data) {
         
         // 标签文本 - 只显示数值
         labelGroup.append("text")
-            .attr("x", textWidth / 2) // 水平居中
-            .attr("y", 2) // 修改为0以实现垂直居中
-            .attr("text-anchor", "middle")
+            .attr("x", 12) // 左对齐，留出一点间距
+            .attr("y", 2) // 垂直居中
+            .attr("text-anchor", "middle") // 左对齐
             .attr("dominant-baseline", "middle")
             .style("font-family", typography.label.font_family)
-            .style("font-size", "20px")
-            .style("font-weight", "bold")
-            .style("fill", "#ffffff")
+            .style("font-size", typography.label.font_size)
+            .style("fill", "#1c1c1c")
             .text(valueText);
         
-        // 添加图片
-        if (images.field && images.field[group]) {
-            // 获取图片的base64数据
-            const imgData = images.field[group];
-            
-            // 添加图片
-            labelGroup.append("image")
-                .attr("x", textWidth + 10) // 位于标签右侧，留出10px间距
-                .attr("y", -25) // 垂直居中
-                .attr("width", 80) // 图片宽度
-                .attr("height", 50) // 图片高度
-                .attr("xlink:href", imgData);
-        }
+        // 添加组名文本，替代图片
+        labelGroup.append("text")
+            .attr("x", fixedLabelWidth + 10) // 位于标签右侧，留出间距
+            .attr("y", 2) // 垂直居中
+            .attr("text-anchor", "start") // 左对齐
+            .attr("dominant-baseline", "middle")
+            .style("font-family", typography.label.font_family)
+            .style("font-size", typography.label.font_size)
+            .style("font-weight", "bold")
+            .style("fill", getColor(group)) // 使用与组相同的颜色
+            .text(group);
     });
     
     // 为每个组绘制线条和面积
     groups.forEach(group => {
         const groupData = chartData.filter(d => d[groupField] === group);
-        
-        // 绘制面积（渐变填充）
-        g.append("path")
-            .datum(groupData)
-            .attr("class", "area")
-            .attr("fill", `url(#line-gradient-${group.replace(/\s+/g, '-').toLowerCase()})`)
-            .attr("d", area);
         
         // 绘制线条
         g.append("path")
@@ -347,7 +301,7 @@ function makeChart(containerSelector, data) {
             .attr("class", "line")
             .attr("fill", "none")
             .attr("stroke", getColor(group))
-            .attr("stroke-width", 3)
+            .attr("stroke-width", 2)
             .attr("d", line);
     });
     
@@ -359,12 +313,12 @@ function makeChart(containerSelector, data) {
             .ticks(xTickCount) // 使用相同的刻度数量
         );
     
-    // 设置X轴样式 - 纯白色
+    // 设置X轴样式，并下移文本
     xAxis.selectAll("text")
         .style("font-family", typography.label.font_family)
         .style("font-size", typography.label.font_size)
-        .style("font-weight", "bold")
-        .style("fill", "#ffffff"); // 纯白色
+        .style("fill", "#f0dcc1")
+        .attr("dy", "1.5em"); // 下移文本
     
     // 移除X轴线和刻度
     xAxis.select(".domain").remove();
@@ -383,55 +337,61 @@ function makeChart(containerSelector, data) {
 
     // 手动添加Y轴刻度文本，放在延伸的网格线上方
     yAxis.selectAll(".tick text")
-        .attr("x", -gridExtension) // 放在延伸的网格线上方，留出一点间距
-        .attr("dy", "-0.5em") // 向上移动一点
+        .attr("x", -gridExtension - 5) // 放在延伸的网格线上方，留出一点间距
         .style("font-family", typography.label.font_family)
         .style("font-size", typography.label.font_size)
-        .style("font-weight", "bold")
-        .style("fill", "#ffffff") // 白色
-        .style("opacity", 0.8) // 稍微透明
-        .style("text-anchor", "start") // 左对齐
-        .text(function(d, i) {
-            // 获取原始文本
-            const originalText = d3.select(this).text();
-            
-            // 如果是最大刻度，添加字段名
-            if (i === yTicks.length - 1) {
-                // 获取Y轴字段名
-                const yFieldName = dataColumns.find(col => col.role === "y").name;
-                return `${originalText} ${yFieldName}`;
-            }
-            
-            return originalText;
-        });
+        .style("fill", "#f0dcc1") // 白色
+        .style("text-anchor", "end") 
+        .text(d => d);
 
-    // 为最大刻度的字段名部分添加加粗样式
-    yAxis.selectAll(".tick:last-child text")
-        .each(function() {
-            const text = d3.select(this);
-            const textContent = text.text();
-            const parts = textContent.split(' ');
-            
-            if (parts.length > 1) {
-                // 清除原始文本
-                text.text('');
-                
-                // 添加数值部分
-                text.append("tspan")
-                    .text(parts[0])
-                    .style("font-weight", "bold");
-                
-                // 添加空格
-                text.append("tspan")
-                    .text(' ');
-                
-                // 添加字段名部分（加粗）
-                text.append("tspan")
-                    .text(parts.slice(1).join(' '))
-                    .style("font-weight", "bolder")
-                    .style("opacity", 0.8);
-            }
-        });
+    // 添加Y轴编码标签
+    const labelGroup = g.append("g")
+        .attr("transform", `translate(${-margin.left + 35}, ${-margin.top/2})`);
+
+    // 计算标签宽度（根据文字长度调整）
+    const labelText = yField;
+    const labelPadding = 5;
+    const tempText = labelGroup.append("text")
+        .style("font-family", typography.label.font_family)
+        .style("font-size", typography.label.font_size)
+        .text(labelText);
+    const textWidth = tempText.node().getBBox().width;
+    tempText.remove();
+
+    const labelWidth = textWidth + 2 * labelPadding;
+    const labelHeight = 20;
+    const triangleHeight = 6;
+
+    // 创建标签形状（矩形+三角形）
+    const labelPath = `
+        M 0,0 
+        H ${labelWidth} 
+        V ${labelHeight} 
+        H ${labelWidth/2 + triangleHeight} 
+        L ${labelWidth/2},${labelHeight + triangleHeight} 
+        L ${labelWidth/2 - triangleHeight},${labelHeight} 
+        H 0 
+        Z
+    `;
+
+    // 绘制标签背景
+    labelGroup.append("path")
+        .attr("d", labelPath)
+        .attr("fill", "transparent")
+        .attr("stroke", "#f0dcc1")
+        .attr("stroke-width", 1)
+        .attr("stroke-opacity", 0.5);
+
+    // 添加文本
+    labelGroup.append("text")
+        .attr("x", labelWidth/2)
+        .attr("y", labelHeight/2 + 2)
+        .attr("text-anchor", "middle")
+        .attr("dominant-baseline", "middle")
+        .style("font-family", typography.label.font_family)
+        .style("font-size", typography.label.font_size)
+        .style("fill", "#f0dcc1")
+        .text(labelText);
     
     return svg.node();
 } 

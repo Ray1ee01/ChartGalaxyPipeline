@@ -22,3 +22,4 @@ temp_input_*.json
 config.py
 *.html
 testset2
+tmp
