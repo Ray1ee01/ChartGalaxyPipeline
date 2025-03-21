@@ -1,13 +1,21 @@
-# 核心依赖
-pyecharts>=2.0.0   # 用于Python生成ECharts配置
-lxml>=4.6.3        # 用于XML/HTML处理
-Pillow>=9.0.0      # 用于图像处理
-
-# 可选依赖
-pytest>=6.2.5      # 用于测试
-numpy>=1.20.0      # 用于数据处理
-pandas>=1.3.0      # 用于数据处理和分析
-
-# 开发工具
-black>=21.5b2      # 代码格式化
-flake8>=3.9.2      # 代码检查 
+numpy==1.24.3
+pandas==2.0.2
+matplotlib==3.7.1
+seaborn==0.12.2
+plotly==5.15.0
+scikit-learn==1.2.2
+svgwrite==1.4.3
+pillow==10.0.0
+colorsys==0.1.0
+cairosvg==2.7.0
+click==8.1.6
+tqdm==4.65.0
+loguru==0.7.0
+pyyaml==6.0
+altair==5.0.1
+vega==0.1.0
+networkx==3.1
+# Added for BERT embeddings in image recommendation
+torch>=1.13.0
+transformers>=4.27.0
+sentence-transformers>=2.2.2 
