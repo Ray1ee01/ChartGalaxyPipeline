@@ -1,0 +1,57 @@
+<svg version="1.1" class="marks" width="479" height="230" viewBox="-100,-100,1000,1000" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><g ><g version="1.1" class="marks" width="479" height="230" viewBox="0 0 479 230"><g fill="none" stroke-miterlimit="10" transform="translate(10,5)"><g class="mark-group role-frame root" role="graphics-object" aria-roledescription="group mark container"><g transform="translate(0,0)" class="mark-group role-axis" role="graphics-symbol" aria-roledescription="axis" aria-label="X-axis for a discrete scale with 10 values: France, Germany, Greece, Ireland, Italy, ending with United Kingdom"><g transform="translate(0.5,200.5)" class="mark-rule role-axis-tick" pointer-events="none"><line transform="translate(26,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(70,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(114,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(158,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(202,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(247,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(291,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(335,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(379,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(423,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/></g>
+<g transform="translate(0.5,200.5)" class="mark-text role-axis-label" pointer-events="none"><text text-anchor="middle" transform="translate(25.970588235294134,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">France
+</text>
+<text text-anchor="middle" transform="translate(70.08823529411765,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">Germany
+</text>
+<text text-anchor="middle" transform="translate(114.20588235294117,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">Greece
+</text>
+<text text-anchor="middle" transform="translate(158.3235294117647,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">Ireland
+</text>
+<text text-anchor="middle" transform="translate(202.44117647058823,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">Italy
+</text>
+<text text-anchor="middle" transform="translate(246.55882352941177,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">Latvia
+</text>
+<text text-anchor="middle" transform="translate(290.67647058823525,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">Portugal
+</text>
+<text text-anchor="middle" transform="translate(334.7941176470588,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">Spain
+</text>
+<text text-anchor="middle" transform="translate(378.9117647058823,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">Sweden
+</text>
+<text text-anchor="middle" transform="translate(423.02941176470586,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">United Kingdom
+</text></g>
+<g transform="translate(0.5,200.5)" class="mark-rule role-axis-domain" pointer-events="none"><line transform="translate(0,0)" x2="450" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/></g></g>
+<g transform="translate(0,0)" class="mark-group role-axis" role="graphics-symbol" aria-roledescription="axis" aria-label="Y-axis for a linear scale with values from 0 to 40,000"><g transform="translate(0.5,0.5)" class="mark-rule role-axis-tick" pointer-events="none"><line transform="translate(0,200)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,150)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,100)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,50)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,0)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/></g>
+<g transform="translate(0.5,0.5)" class="mark-rule role-axis-domain" pointer-events="none"><line transform="translate(0,200)" x2="0" y2="-200" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/></g></g>
+<g transform="translate(0,0)" class="mark-rect role-mark layer_0_marks" role="graphics-object" aria-roledescription="rect mark container"><path aria-label="Country: Germany; Count: 1593; group: undefined; Time Period: 2018 Season" role="graphics-symbol" aria-roledescription="bar" d="M58.941176470588246,192.035h23.294117647058822v7.965000000000003h-23.294117647058822Z" fill="#d9d9d9" opacity="1"/>
+<path aria-label="Country: Germany; Count: 40; group: undefined; Time Period: 2008-2017 average" role="graphics-symbol" aria-roledescription="bar" d="M58.941176470588246,191.835h23.294117647058822v0.19999999999998863h-23.294117647058822Z" fill="#3182bd" opacity="1"/>
+<path aria-label="Country: Latvia; Count: 2176; group: undefined; Time Period: 2018 Season" role="graphics-symbol" aria-roledescription="bar" d="M235.41176470588235,189.12h23.294117647058822v10.879999999999995h-23.294117647058822Z" fill="#d9d9d9" opacity="1"/>
+<path aria-label="Country: Latvia; Count: 10; group: undefined; Time Period: 2008-2017 average" role="graphics-symbol" aria-roledescription="bar" d="M235.41176470588235,189.07h23.294117647058822v0.05000000000001137h-23.294117647058822Z" fill="#3182bd" opacity="1"/>
+<path aria-label="Country: Ireland; Count: 2505; group: undefined; Time Period: 2018 Season" role="graphics-symbol" aria-roledescription="bar" d="M147.17647058823528,187.475h23.294117647058822v12.525000000000006h-23.294117647058822Z" fill="#d9d9d9" opacity="1"/>
+<path aria-label="Country: Ireland; Count: 4024; group: undefined; Time Period: 2008-2017 average" role="graphics-symbol" aria-roledescription="bar" d="M147.17647058823528,167.35500000000002h23.294117647058822v20.119999999999976h-23.294117647058822Z" fill="#3182bd" opacity="1"/>
+<path aria-label="Country: United Kingdom; Count: 13888; group: undefined; Time Period: 2018 Season" role="graphics-symbol" aria-roledescription="bar" d="M411.88235294117646,130.56h23.294117647058822v69.44h-23.294117647058822Z" fill="#d9d9d9" opacity="1"/>
+<path aria-label="Country: United Kingdom; Count: 3113; group: undefined; Time Period: 2008-2017 average" role="graphics-symbol" aria-roledescription="bar" d="M411.88235294117646,114.995h23.294117647058822v15.564999999999998h-23.294117647058822Z" fill="#3182bd" opacity="1"/>
+<path aria-label="Country: Sweden; Count: 18761; group: undefined; Time Period: 2018 Season" role="graphics-symbol" aria-roledescription="bar" d="M367.7647058823529,106.195h23.294117647058822v93.805h-23.294117647058822Z" fill="#d9d9d9" opacity="1"/>
+<path aria-label="Country: Sweden; Count: 454; group: undefined; Time Period: 2008-2017 average" role="graphics-symbol" aria-roledescription="bar" d="M367.7647058823529,103.925h23.294117647058822v2.269999999999996h-23.294117647058822Z" fill="#3182bd" opacity="1"/>
+<path aria-label="Country: Portugal; Count: 29523; group: undefined; Time Period: 2018 Season" role="graphics-symbol" aria-roledescription="bar" d="M279.52941176470586,52.38499999999999h23.294117647058822v147.615h-23.294117647058822Z" fill="#d9d9d9" opacity="1"/>
+<path aria-label="Country: Portugal; Count: 1327; group: undefined; Time Period: 2008-2017 average" role="graphics-symbol" aria-roledescription="bar" d="M279.52941176470586,45.75h23.294117647058822v6.634999999999991h-23.294117647058822Z" fill="#3182bd" opacity="1"/>
+<path aria-label="Country: France; Count: 2296; group: undefined; Time Period: 2018 Season" role="graphics-symbol" aria-roledescription="bar" d="M14.823529411764724,188.52h23.294117647058822v11.47999999999999h-23.294117647058822Z" fill="#d9d9d9" opacity="1"/>
+<path aria-label="Country: France; Count: 3257; group: undefined; Time Period: 2008-2017 average" role="graphics-symbol" aria-roledescription="bar" d="M14.823529411764724,172.235h23.294117647058822v16.284999999999997h-23.294117647058822Z" fill="#3182bd" opacity="1"/>
+<path aria-label="Country: Spain; Count: 32639; group: undefined; Time Period: 2018 Season" role="graphics-symbol" aria-roledescription="bar" d="M323.6470588235294,36.805h23.294117647058822v163.195h-23.294117647058822Z" fill="#d9d9d9" opacity="1"/>
+<path aria-label="Country: Spain; Count: 3639; group: undefined; Time Period: 2008-2017 average" role="graphics-symbol" aria-roledescription="bar" d="M323.6470588235294,18.609999999999992h23.294117647058822v18.195000000000007h-23.294117647058822Z" fill="#3182bd" opacity="1"/>
+<path aria-label="Country: Greece; Count: 6884; group: undefined; Time Period: 2018 Season" role="graphics-symbol" aria-roledescription="bar" d="M103.05882352941177,165.57999999999998h23.294117647058822v34.420000000000016h-23.294117647058822Z" fill="#d9d9d9" opacity="1"/>
+<path aria-label="Country: Greece; Count: 8361; group: undefined; Time Period: 2008-2017 average" role="graphics-symbol" aria-roledescription="bar" d="M103.05882352941177,123.775h23.294117647058822v41.80499999999998h-23.294117647058822Z" fill="#3182bd" opacity="1"/>
+<path aria-label="Country: Italy; Count: 23925; group: undefined; Time Period: 2018 Season" role="graphics-symbol" aria-roledescription="bar" d="M191.2941176470588,80.375h23.294117647058822v119.625h-23.294117647058822Z" fill="#d9d9d9" opacity="1"/>
+<path aria-label="Country: Italy; Count: 7358; group: undefined; Time Period: 2008-2017 average" role="graphics-symbol" aria-roledescription="bar" d="M191.2941176470588,43.58500000000001h23.294117647058822v36.78999999999999h-23.294117647058822Z" fill="#3182bd" opacity="1"/></g></g></g></g></g></svg>

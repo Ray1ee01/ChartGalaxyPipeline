@@ -48,7 +48,7 @@ class ScatterPlotTemplate(ChartTemplate):
             elif meta_data['y_type'] == "numerical":
                 meta_data['y_type'] = "quantitative"
             
-            if isinstance(data[0]['x_data'], str):
+            if isinstance(data[0][meta_data['x_label']], str):
                 meta_data['x_type'] = "temporal"
             else:
                 meta_data['x_type'] = "quantitative"
@@ -72,12 +72,12 @@ class ScatterPlotTemplate(ChartTemplate):
                 "legend": None
             }
             specification["encoding"]["shape"] = shape_encoding
-            specification["encoding"]["x"]["scale"] = {
-                "zero": False
-            }
-            specification["encoding"]["y"]["scale"] = {
-                "zero": False
-            }
+            # specification["encoding"]["x"]["scale"] = {
+            #     "zero": False
+            # }
+            # specification["encoding"]["y"]["scale"] = {
+            #     "zero": False
+            # }
         specification["mark"]["size"] = self.mark.size    
             
         return specification

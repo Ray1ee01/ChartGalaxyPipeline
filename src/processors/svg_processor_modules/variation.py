@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import numpy as np
 import scipy.signal
-from ..image_processor import segment
+from ..image_processor import *
 import cv2
 
 class VariationProcessor(ABC):
@@ -29,59 +29,115 @@ class BackgroundChart(VariationProcessor):
         self.chart = chart
         
     def process(self, config: dict):
-        x_axis = None
-        y_axis = None
-        for child in self.chart.children:
-            if child.attributes.get("class","") == "axis X":
-                x_axis = child
-            elif child.attributes.get("class","") == "axis Y":
-                y_axis = child
-        x_axis_tick_group = None
-        x_axis_domain_group = None
-        for child in x_axis.children:
-            if child.attributes.get("class","") == 'axis_tick-group':
-                x_axis_tick_group = child
-            elif child.attributes.get("class","") == 'axis_domain-group':
-                x_axis_domain_group = child
-        y_axis_tick_group = None
-        y_axis_domain_group = None
-        for child in y_axis.children:
-            if child.attributes.get("class","") == 'axis_tick-group':
-                y_axis_tick_group = child
-            elif child.attributes.get("class","") == 'axis_domain-group':
-                y_axis_domain_group = child
-        tick_mid_x_list = []
-        x_axis_transform = x_axis.get_transform_matrix
-        for tick in x_axis_tick_group.children:
-            tick._bounding_box = tick.get_bounding_box()
-            bbox = tick._apply_transform(tick._bounding_box.minx, tick._bounding_box.miny, tick._bounding_box.maxx, tick._bounding_box.maxy, x_axis_transform)
-            tick_mid_x_list.append((bbox.minx + bbox.maxx) / 2)
-        gap_sum = 0
-        for i in range(len(tick_mid_x_list)-1):
-            gap_sum += abs(tick_mid_x_list[i+1]-tick_mid_x_list[i])
-        gap_avg = gap_sum / (len(tick_mid_x_list)-1)
-        band_width = gap_avg
-        background = Background()
-        y_axis_transform = y_axis.get_transform_matrix
-        y_axis_domain_group_bounding_box = y_axis_domain_group.get_bounding_box()
-        y_axis_domain_group_bounding_box = y_axis_domain_group._apply_transform(y_axis_domain_group_bounding_box.minx, y_axis_domain_group_bounding_box.miny, y_axis_domain_group_bounding_box.maxx, y_axis_domain_group_bounding_box.maxy, y_axis_transform)
-        band_height = y_axis_domain_group_bounding_box.height
-        min_y = y_axis_domain_group_bounding_box.miny
-        for i in range(len(tick_mid_x_list)):
-            band = Rect()
-            band.attributes['x'] = tick_mid_x_list[i]-gap_avg/2
-            band.attributes['y'] = min_y
-            band.attributes['width'] = band_width
-            band.attributes['height'] = band_height
-            if i % 2 == 0:
-                band.attributes['fill'] = '#f0f0f0'
-            else:
-                band.attributes['fill'] = '#ffffff'
-            background.children.append(band)
-        self.chart.children.insert(0, background)
+        if config['type'] == 'styled':
+            return self.process_grid(config)
+        else:
+            return self.chart
+    
+    def process_grid(self, config: dict):
+        if config['orientation'] == 'vertical':
+            x_axis = None
+            y_axis = None
+            for child in self.chart.children:
+                if child.attributes.get("class","") == "axis X":
+                    x_axis = child
+                elif child.attributes.get("class","") == "axis Y":
+                    y_axis = child
+            x_axis_tick_group = None
+            x_axis_domain_group = None
+            for child in x_axis.children:
+                if child.attributes.get("class","") == 'axis_tick-group':
+                    x_axis_tick_group = child
+                elif child.attributes.get("class","") == 'axis_domain-group':
+                    x_axis_domain_group = child
+            y_axis_tick_group = None
+            y_axis_domain_group = None
+            for child in y_axis.children:
+                if child.attributes.get("class","") == 'axis_tick-group':
+                    y_axis_tick_group = child
+                elif child.attributes.get("class","") == 'axis_domain-group':
+                    y_axis_domain_group = child
+            tick_mid_x_list = []
+            x_axis_transform = x_axis.get_transform_matrix
+            for tick in x_axis_tick_group.children:
+                tick._bounding_box = tick.get_bounding_box()
+                bbox = tick._apply_transform(tick._bounding_box.minx, tick._bounding_box.miny, tick._bounding_box.maxx, tick._bounding_box.maxy, x_axis_transform)
+                tick_mid_x_list.append((bbox.minx + bbox.maxx) / 2)
+            gap_sum = 0
+            for i in range(len(tick_mid_x_list)-1):
+                gap_sum += abs(tick_mid_x_list[i+1]-tick_mid_x_list[i])
+            gap_avg = gap_sum / (len(tick_mid_x_list)-1)
+            band_width = gap_avg
+            background = Background()
+            y_axis_transform = y_axis.get_transform_matrix
+            y_axis_domain_group_bounding_box = y_axis_domain_group.get_bounding_box()
+            y_axis_domain_group_bounding_box = y_axis_domain_group._apply_transform(y_axis_domain_group_bounding_box.minx, y_axis_domain_group_bounding_box.miny, y_axis_domain_group_bounding_box.maxx, y_axis_domain_group_bounding_box.maxy, y_axis_transform)
+            band_height = y_axis_domain_group_bounding_box.height
+            min_y = y_axis_domain_group_bounding_box.miny
+            for i in range(len(tick_mid_x_list)):
+                band = Rect()
+                band.attributes['x'] = tick_mid_x_list[i]-gap_avg/2
+                band.attributes['y'] = min_y
+                band.attributes['width'] = band_width
+                band.attributes['height'] = band_height
+                if i % 2 == 0:
+                    band.attributes['fill'] = '#f0f0f0'
+                else:
+                    band.attributes['fill'] = '#ffffff'
+                background.children.append(band)
+            self.chart.children.insert(0, background)
+        elif config['orientation'] == 'horizontal':
+            y_axis = None
+            for child in self.chart.children:
+                if child.attributes.get("class","") == "axis X":
+                    x_axis = child
+                elif child.attributes.get("class","") == "axis Y":
+                    y_axis = child
+            y_axis_tick_group = None
+            y_axis_domain_group = None
+            for child in y_axis.children:
+                if child.attributes.get("class","") == 'axis_tick-group':
+                    y_axis_tick_group = child
+                elif child.attributes.get("class","") == 'axis_domain-group':
+                    y_axis_domain_group = child
+            x_axis_tick_group = None
+            x_axis_domain_group = None
+            for child in x_axis.children:
+                if child.attributes.get("class","") == 'axis_tick-group':
+                    x_axis_tick_group = child
+                elif child.attributes.get("class","") == 'axis_domain-group':
+                    x_axis_domain_group = child
+            tick_mid_y_list = []
+            y_axis_transform = y_axis.get_transform_matrix
+            for tick in y_axis_tick_group.children:
+                tick._bounding_box = tick.get_bounding_box()
+                bbox = tick._apply_transform(tick._bounding_box.minx, tick._bounding_box.miny, tick._bounding_box.maxx, tick._bounding_box.maxy, y_axis_transform)
+                tick_mid_y_list.append((bbox.miny + bbox.maxy) / 2)
+            gap_sum = 0
+            for i in range(len(tick_mid_y_list)-1):
+                gap_sum += abs(tick_mid_y_list[i+1]-tick_mid_y_list[i])
+            gap_avg = gap_sum / (len(tick_mid_y_list)-1)
+            band_height = gap_avg
+            background = Background()
+            x_axis_transform = x_axis.get_transform_matrix
+            x_axis_domain_group_bounding_box = x_axis_domain_group.get_bounding_box()
+            x_axis_domain_group_bounding_box = x_axis_domain_group._apply_transform(x_axis_domain_group_bounding_box.minx, x_axis_domain_group_bounding_box.miny, x_axis_domain_group_bounding_box.maxx, x_axis_domain_group_bounding_box.maxy, x_axis_transform)
+            band_width = x_axis_domain_group_bounding_box.width
+            min_x = x_axis_domain_group_bounding_box.minx
+            for i in range(len(tick_mid_y_list)):
+                band = Rect()
+                band.attributes['x'] = min_x
+                band.attributes['y'] = tick_mid_y_list[i]-gap_avg/2
+                band.attributes['width'] = band_width
+                band.attributes['height'] = band_height
+                if i % 2 == 0:
+                    band.attributes['fill'] = '#f0f0f0'
+                else:
+                    band.attributes['fill'] = '#ffffff'
+                background.children.append(band)
+            self.chart.children.insert(0, background)
         return self.chart
         
-
 def find_position_by_convolution(svg: str, element: LayoutElement, objectives: dict = None):
     # 获取SVG的mask信息
     debug_image, mask_image, mask_grid, grid_info = svg_to_mask(svg)
@@ -125,7 +181,7 @@ def find_position_by_convolution(svg: str, element: LayoutElement, objectives: d
         
         def find_valid_position(conv_result: np.ndarray, type: str):
             if type == 'overlay':
-                print("conv_result: ", conv_result)
+                # print("conv_result: ", conv_result)
                 # 百分之95以上为0的位置
                 return np.where(conv_result > 0.8*valid_number)
             elif type == 'side':
@@ -200,6 +256,7 @@ def find_position_by_convolution(svg: str, element: LayoutElement, objectives: d
         'topright': 2,
         'left': 3,
         'center': 4,
+        'middle': 4,
         'right': 5,
         'bottomleft': 6,
         'bottom': 7,
@@ -616,11 +673,11 @@ class ImageChart(VariationProcessor):
         self.image = image
         
     def process(self, config: dict):
-        if config['variation_type'] == 'overlay':
+        if config['type'] == 'overlay':
             return self.overlay(config)
-        elif config['variation_type'] == 'behind':
+        elif config['type'] == 'behind':
             return self.behind(config)
-        elif config['variation_type'] == 'side':
+        elif config['type'] == 'side':
             return self.side(config)
         
     def overlay(self, config: dict):
@@ -636,6 +693,7 @@ class ImageChart(VariationProcessor):
                 break
         if mark_group is not None:
             self.image = find_position(SVGTreeConverter.element_tree_to_svg_file(mark_group), self.image, method='convolution', objectives=objectives)
+            print("self.image: ", self.image)
             # 获取mark_group的transform
             old_transform = mark_group.attributes['transform']
             # 获取其中最前面的translate
@@ -668,6 +726,7 @@ class ImageChart(VariationProcessor):
     def side(self, config: dict):
         objectives = {
             'direction': config.get('direction', 'topleft'),
+            'type': 'side',
         }
         self.image = find_position(SVGTreeConverter.element_tree_to_svg_file(self.chart), self.image, method='convolution', objectives=objectives)
         
@@ -685,7 +744,7 @@ class PictogramMark(VariationProcessor):
         
     def process(self, config: dict):
         self.config = config
-        if config['variation_type'] == 'side':
+        if config['type'] == 'side':
             if isinstance(self.mark, BarMark):
                 return self.side_bar_mark(config)
             elif isinstance(self.mark, PathMark):
@@ -696,7 +755,7 @@ class PictogramMark(VariationProcessor):
                 return self.side_area_mark(config)
             elif isinstance(self.mark, PointMark):
                 return self.side_point_mark(config)
-        elif config['variation_type'] == 'overlay':
+        elif config['type'] == 'overlay':
             if isinstance(self.mark, BarMark):
                 return self.overlay_bar_mark(config)
             elif isinstance(self.mark, PathMark):
@@ -707,7 +766,7 @@ class PictogramMark(VariationProcessor):
                 return self.overlay_area_mark(config)
             elif isinstance(self.mark, PointMark):
                 return self.overlay_point_mark(config)
-        elif config['variation_type'] == 'replace':
+        elif config['type'] == 'replace':
             if isinstance(self.mark, BarMark):
                 return self.replace_bar_mark(config)
             if isinstance(self.mark, PathMark):
@@ -898,7 +957,8 @@ class PictogramMark(VariationProcessor):
         raise NotImplementedError("AreaMark is not implemented")
     
     def overlay_point_mark(self, config: dict):
-        return self.side_point_mark(config)
+        # return self.side_point_mark(config)
+        return self.replace_point_mark(config)
     
     
     def replace_bar_mark(self, config: dict):
@@ -927,7 +987,8 @@ class PictogramMark(VariationProcessor):
     
     def replace_point_mark(self, config: dict):
         self.mark._bounding_box = self.mark.get_bounding_box()
-
+        print("self.mark: ", self.mark.children[0].dump())
+        print("self.mark._bounding_box: ", self.mark._bounding_box)
         copy_attributes(self.mark, self.pictogram)
         self.pictogram.attributes['width'] = self.mark._bounding_box.width
         self.pictogram.attributes['height'] = self.mark._bounding_box.height
@@ -935,7 +996,13 @@ class PictogramMark(VariationProcessor):
         self.pictogram.attributes['y'] = self.mark._bounding_box.miny
         self.pictogram.attributes['preserveAspectRatio'] = 'none'
         
-        self.mark.children = [self.pictogram]
+        base64_image = self.pictogram.base64
+        base64 = base64_image.split('base64,')[1]
+        base64 = ImageProcessor().crop_by_circle(base64)
+        base64_image = f"data:image/png;base64,{base64}"
+        self.pictogram.base64 = base64_image
+        self.pictogram.attributes['xlink:href'] = base64_image
+        # self.mark.children = [self.pictogram]
         return self.mark
     
     def fit_in_size(self, orient: str='horizontal',size_scale: float=1.0):

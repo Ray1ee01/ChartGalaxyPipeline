@@ -1,0 +1,48 @@
+<svg version="1.1" class="marks" width="512" height="230" viewBox="-100,-100,1000,1000" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><g ><g version="1.1" class="marks" width="512" height="230" viewBox="0 0 512 230"><g fill="none" stroke-miterlimit="10" transform="translate(57,5)"><g class="mark-group role-frame root" role="graphics-object" aria-roledescription="group mark container"><g transform="translate(0,0)" class="mark-group role-axis" role="graphics-symbol" aria-roledescription="axis" aria-label="X-axis for a discrete scale with 11 values: 1925, 1930, 1940, 1950, 1960, ending with 2020"><g transform="translate(0.5,200.5)" class="mark-rule role-axis-tick" pointer-events="none"><line transform="translate(20,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(61,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(102,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(143,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(184,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(225,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(266,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(307,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(348,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(389,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(430,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/></g>
+<g transform="translate(0.5,200.5)" class="mark-text role-axis-label" pointer-events="none"><text text-anchor="middle" transform="translate(20.454545454545467,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">1925
+</text>
+<text text-anchor="middle" transform="translate(61.363636363636374,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">1930
+</text>
+<text text-anchor="middle" transform="translate(102.27272727272728,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">1940
+</text>
+<text text-anchor="middle" transform="translate(143.1818181818182,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">1950
+</text>
+<text text-anchor="middle" transform="translate(184.0909090909091,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">1960
+</text>
+<text text-anchor="middle" transform="translate(225,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">1970
+</text>
+<text text-anchor="middle" transform="translate(265.9090909090909,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">1980
+</text>
+<text text-anchor="middle" transform="translate(306.81818181818187,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">1990
+</text>
+<text text-anchor="middle" transform="translate(347.72727272727275,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">2000
+</text>
+<text text-anchor="middle" transform="translate(388.6363636363636,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">2010
+</text>
+<text text-anchor="middle" transform="translate(429.5454545454545,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">2020
+</text></g>
+<g transform="translate(0.5,200.5)" class="mark-rule role-axis-domain" pointer-events="none"><line transform="translate(0,0)" x2="450" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/></g></g>
+<g transform="translate(0,0)" class="mark-group role-axis" role="graphics-symbol" aria-roledescription="axis" aria-label="Y-axis for a linear scale with values from 0 to 180,000"><g transform="translate(0.5,0.5)" class="mark-rule role-axis-tick" pointer-events="none"><line transform="translate(0,200)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,144)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,89)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,33)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/></g>
+<g transform="translate(0.5,0.5)" class="mark-text role-axis-label" pointer-events="none"><text text-anchor="end" transform="translate(-10,203)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">0
+</text>
+<text text-anchor="end" transform="translate(-10,147.44444444444443)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">50,000
+</text>
+<text text-anchor="end" transform="translate(-10,91.88888888888889)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">100,000
+</text>
+<text text-anchor="end" transform="translate(-10,36.33333333333333)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">150,000
+</text></g>
+<g transform="translate(0.5,0.5)" class="mark-rule role-axis-domain" pointer-events="none"><line transform="translate(0,200)" x2="0" y2="-200" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/></g></g>
+<g transform="translate(0,0)" class="mark-line role-mark marks" role="graphics-object" aria-roledescription="line mark container"><path aria-label="Year: 1925; Federal Inmates: 6430" role="graphics-symbol" aria-roledescription="line mark" d="M20.455,192.856C34.091,190.508,47.727,188.161,61.364,186.111C75,184.061,88.636,180.926,102.273,180.556C115.909,180.185,129.545,180.37,143.182,180C156.818,179.63,170.455,175,184.091,175C197.727,175,211.364,177.778,225,177.778C238.636,177.778,252.273,176.296,265.909,173.333C279.545,170.37,293.182,155.741,306.818,135.556C320.455,115.37,334.091,73.889,347.727,52.222C361.364,30.556,375,5.556,388.636,5.556C402.273,5.556,415.909,28.814,429.545,52.072" stroke="#4c78a8" stroke-width="2" opacity="1"/></g></g></g></g></g></svg>

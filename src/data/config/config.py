@@ -6,6 +6,22 @@ import os
 # 改绝对路径为相对路径
 config_root = os.path.dirname(os.path.abspath(__file__))
 
+id_map = {
+    "0": "T00",
+    "1": "TL00",
+    "2": "T_L01",
+    "3": "TL_L01",
+    "4": "T_T_T01",
+    "5": "T_T_T00",
+    "6": "T_B01",
+    "7": "TL_C01",
+    "8": "T_C01",
+    "9": "T_BR01",
+    "10": "TL_R01",
+    "11": "T_R01",
+    "12": "TL_BR01"
+}
+
 CONFIG = {
     "debug": True
 }

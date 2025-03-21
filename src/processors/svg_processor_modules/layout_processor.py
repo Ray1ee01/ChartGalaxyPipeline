@@ -218,11 +218,11 @@ class LayoutProcessor:
 
                     scales = []
                     time_start_constraint = time.time()
-                    print("element.reference_id: ", element.reference_id)
+                    # print("element.reference_id: ", element.reference_id)
                     for child in element.children:
                         if not element.reference_id == child.id:
                             self.constraint_graph.add_node_with_edges(reference_element, child, element.size_constraint)
-                            print("child: ", child.id)
+                            # print("child: ", child.id)
                             for edge in self.constraint_graph.node_map[child].prevs_edges:
                                 time_start_process = time.time()
                                 scale = edge.process_layout()

@@ -1,0 +1,83 @@
+<svg version="1.1" class="marks" width="587" height="230" viewBox="-100,-100,1000,1000" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><g ><g version="1.1" class="marks" width="587" height="230" viewBox="0 0 587 230"><g fill="none" stroke-miterlimit="10" transform="translate(132,25)"><g class="mark-group role-frame root" role="graphics-object" aria-roledescription="group mark container"><g transform="translate(0,0)" class="mark-group role-axis" role="graphics-symbol" aria-roledescription="axis" aria-label="X-axis for a linear scale with values from 0 to 100"><g transform="translate(0.5,0.5)" class="mark-rule role-axis-tick" pointer-events="none"><line transform="translate(0,0)" x2="0" y2="-5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(45,0)" x2="0" y2="-5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(90,0)" x2="0" y2="-5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(135,0)" x2="0" y2="-5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(180,0)" x2="0" y2="-5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(225,0)" x2="0" y2="-5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(270,0)" x2="0" y2="-5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(315,0)" x2="0" y2="-5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(360,0)" x2="0" y2="-5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(405,0)" x2="0" y2="-5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(450,0)" x2="0" y2="-5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/></g>
+<g transform="translate(0.5,0.5)" class="mark-text role-axis-label" pointer-events="none"><text text-anchor="start" transform="translate(0,-12)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">0
+</text>
+<text text-anchor="middle" transform="translate(45,-12)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">10
+</text>
+<text text-anchor="middle" transform="translate(90,-12)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">20
+</text>
+<text text-anchor="middle" transform="translate(135,-12)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">30
+</text>
+<text text-anchor="middle" transform="translate(180,-12)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">40
+</text>
+<text text-anchor="middle" transform="translate(225,-12)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">50
+</text>
+<text text-anchor="middle" transform="translate(270,-12)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">60
+</text>
+<text text-anchor="middle" transform="translate(315,-12)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">70
+</text>
+<text text-anchor="middle" transform="translate(360,-12)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">80
+</text>
+<text text-anchor="middle" transform="translate(405,-12)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">90
+</text>
+<text text-anchor="end" transform="translate(450,-12)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">100
+</text></g>
+<g transform="translate(0.5,0.5)" class="mark-rule role-axis-domain" pointer-events="none"><line transform="translate(0,0)" x2="450" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/></g></g>
+<g transform="translate(0,0)" class="mark-group role-axis" role="graphics-symbol" aria-roledescription="axis" aria-label="Y-axis for a discrete scale with 6 values: Budget deficit, Economy, Foreign policy, Health care, Immigration, Security from terrorism"><g transform="translate(0.5,0.5)" class="mark-rule role-axis-tick" pointer-events="none"><line transform="translate(0,18)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,50)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,83)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,116)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,149)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,181)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/></g>
+<g transform="translate(0.5,0.5)" class="mark-text role-axis-label" pointer-events="none"><text text-anchor="end" transform="translate(-10,20.532786885245905)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">Budget deficit
+</text>
+<text text-anchor="end" transform="translate(-10,53.31967213114754)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">Economy
+</text>
+<text text-anchor="end" transform="translate(-10,86.10655737704917)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">Foreign policy
+</text>
+<text text-anchor="end" transform="translate(-10,118.89344262295081)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">Health care
+</text>
+<text text-anchor="end" transform="translate(-10,151.68032786885246)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">Immigration
+</text>
+<text text-anchor="end" transform="translate(-10,184.4672131147541)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">Security from terrorism
+</text></g>
+<g transform="translate(0.5,0.5)" class="mark-rule role-axis-domain" pointer-events="none"><line transform="translate(0,0)" x2="0" y2="200" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/></g></g>
+<g transform="translate(0,0)" class="mark-rect role-mark layer_0_marks" role="graphics-object" aria-roledescription="rect mark container"><path aria-label="Units: 58; Issue: Immigration; Improvement: A lot better" role="graphics-symbol" aria-roledescription="bar" d="M139.5,139.44262295081967h261v19.475409836065573h-261Z" fill="#ccebc5" opacity="1"/>
+<path aria-label="Units: 28; Issue: Immigration; Improvement: A little better" role="graphics-symbol" aria-roledescription="bar" d="M0,139.44262295081967h126.00000000000001v19.475409836065573h-126.00000000000001Z" fill="#e5d8bd" opacity="1"/>
+<path aria-label="Units: 9; Issue: Immigration; Improvement: Not much diff." role="graphics-symbol" aria-roledescription="bar" d="M409.5,139.44262295081967h40.5v19.475409836065573h-40.5Z" fill="#fed9a6" opacity="1"/>
+<path aria-label="Units: 3; Issue: Immigration; Improvement: A little worse" role="graphics-symbol" aria-roledescription="bar" d="M126.00000000000001,139.44262295081967h13.499999999999986v19.475409836065573h-13.499999999999986Z" fill="#f2f2f2" opacity="1"/>
+<path aria-label="Units: 2; Issue: Immigration; Improvement: A lot worse" role="graphics-symbol" aria-roledescription="bar" d="M400.5,139.44262295081967h9v19.475409836065573h-9Z" fill="#fbb4ae" opacity="1"/>
+<path aria-label="Units: 53; Issue: Security from terrorism; Improvement: A lot better" role="graphics-symbol" aria-roledescription="bar" d="M144,172.2295081967213h238.5v19.475409836065573h-238.5Z" fill="#ccebc5" opacity="1"/>
+<path aria-label="Units: 30; Issue: Security from terrorism; Improvement: A little better" role="graphics-symbol" aria-roledescription="bar" d="M0,172.2295081967213h135v19.475409836065573h-135Z" fill="#e5d8bd" opacity="1"/>
+<path aria-label="Units: 12; Issue: Security from terrorism; Improvement: Not much diff." role="graphics-symbol" aria-roledescription="bar" d="M391.5,172.2295081967213h54v19.475409836065573h-54Z" fill="#fed9a6" opacity="1"/>
+<path aria-label="Units: 2; Issue: Security from terrorism; Improvement: A little worse" role="graphics-symbol" aria-roledescription="bar" d="M135,172.2295081967213h9v19.475409836065573h-9Z" fill="#f2f2f2" opacity="1"/>
+<path aria-label="Units: 2; Issue: Security from terrorism; Improvement: A lot worse" role="graphics-symbol" aria-roledescription="bar" d="M382.5,172.2295081967213h9v19.475409836065573h-9Z" fill="#fbb4ae" opacity="1"/>
+<path aria-label="Units: 47; Issue: Economy; Improvement: A lot better" role="graphics-symbol" aria-roledescription="bar" d="M171,41.08196721311475h211.5v19.475409836065573h-211.5Z" fill="#ccebc5" opacity="1"/>
+<path aria-label="Units: 36; Issue: Economy; Improvement: A little better" role="graphics-symbol" aria-roledescription="bar" d="M0,41.08196721311475h162v19.475409836065573h-162Z" fill="#e5d8bd" opacity="1"/>
+<path aria-label="Units: 12; Issue: Economy; Improvement: Not much diff." role="graphics-symbol" aria-roledescription="bar" d="M391.5,41.08196721311475h54v19.475409836065573h-54Z" fill="#fed9a6" opacity="1"/>
+<path aria-label="Units: 2; Issue: Economy; Improvement: A little worse" role="graphics-symbol" aria-roledescription="bar" d="M162,41.08196721311475h9v19.475409836065573h-9Z" fill="#f2f2f2" opacity="1"/>
+<path aria-label="Units: 2; Issue: Economy; Improvement: A lot worse" role="graphics-symbol" aria-roledescription="bar" d="M382.5,41.08196721311475h9v19.475409836065573h-9Z" fill="#fbb4ae" opacity="1"/>
+<path aria-label="Units: 37; Issue: Budget deficit; Improvement: A lot better" role="graphics-symbol" aria-roledescription="bar" d="M198,8.295081967213116h166.5v19.475409836065573h-166.5Z" fill="#ccebc5" opacity="1"/>
+<path aria-label="Units: 41; Issue: Budget deficit; Improvement: A little better" role="graphics-symbol" aria-roledescription="bar" d="M0,8.295081967213116h184.5v19.475409836065573h-184.5Z" fill="#e5d8bd" opacity="1"/>
+<path aria-label="Units: 16; Issue: Budget deficit; Improvement: Not much diff." role="graphics-symbol" aria-roledescription="bar" d="M373.5,8.295081967213116h72v19.475409836065573h-72Z" fill="#fed9a6" opacity="1"/>
+<path aria-label="Units: 3; Issue: Budget deficit; Improvement: A little worse" role="graphics-symbol" aria-roledescription="bar" d="M184.5,8.295081967213116h13.5v19.475409836065573h-13.5Z" fill="#f2f2f2" opacity="1"/>
+<path aria-label="Units: 2; Issue: Budget deficit; Improvement: A lot worse" role="graphics-symbol" aria-roledescription="bar" d="M364.5,8.295081967213116h9v19.475409836065573h-9Z" fill="#fbb4ae" opacity="1"/>
+<path aria-label="Units: 33; Issue: Health care; Improvement: A lot better" role="graphics-symbol" aria-roledescription="bar" d="M184.5,106.65573770491804h148.5v19.475409836065573h-148.5Z" fill="#ccebc5" opacity="1"/>
+<path aria-label="Units: 37; Issue: Health care; Improvement: A little better" role="graphics-symbol" aria-roledescription="bar" d="M0,106.65573770491804h166.5v19.475409836065573h-166.5Z" fill="#e5d8bd" opacity="1"/>
+<path aria-label="Units: 23; Issue: Health care; Improvement: Not much diff." role="graphics-symbol" aria-roledescription="bar" d="M342,106.65573770491804h103.5v19.475409836065573h-103.5Z" fill="#fed9a6" opacity="1"/>
+<path aria-label="Units: 4; Issue: Health care; Improvement: A little worse" role="graphics-symbol" aria-roledescription="bar" d="M166.5,106.65573770491804h18v19.475409836065573h-18Z" fill="#f2f2f2" opacity="1"/>
+<path aria-label="Units: 2; Issue: Health care; Improvement: A lot worse" role="graphics-symbol" aria-roledescription="bar" d="M333,106.65573770491804h9v19.475409836065573h-9Z" fill="#fbb4ae" opacity="1"/>
+<path aria-label="Units: 29; Issue: Foreign policy; Improvement: A lot better" role="graphics-symbol" aria-roledescription="bar" d="M202.5,73.8688524590164h130.5v19.475409836065573h-130.5Z" fill="#ccebc5" opacity="1"/>
+<path aria-label="Units: 36; Issue: Foreign policy; Improvement: A little better" role="graphics-symbol" aria-roledescription="bar" d="M0,73.8688524590164h162v19.475409836065573h-162Z" fill="#e5d8bd" opacity="1"/>
+<path aria-label="Units: 21; Issue: Foreign policy; Improvement: Not much diff." role="graphics-symbol" aria-roledescription="bar" d="M351,73.8688524590164h94.5v19.475409836065573h-94.5Z" fill="#fed9a6" opacity="1"/>
+<path aria-label="Units: 9; Issue: Foreign policy; Improvement: A little worse" role="graphics-symbol" aria-roledescription="bar" d="M162,73.8688524590164h40.5v19.475409836065573h-40.5Z" fill="#f2f2f2" opacity="1"/>
+<path aria-label="Units: 4; Issue: Foreign policy; Improvement: A lot worse" role="graphics-symbol" aria-roledescription="bar" d="M333,73.8688524590164h18v19.475409836065573h-18Z" fill="#fbb4ae" opacity="1"/></g></g></g></g></g></svg>

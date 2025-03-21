@@ -1,0 +1,62 @@
+<svg version="1.1" class="marks" width="477" height="235" viewBox="-100,-100,1000,1000" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><g ><g version="1.1" class="marks" width="477" height="235" viewBox="0 0 477 235"><g fill="none" stroke-miterlimit="10" transform="translate(22,10)"><g class="mark-group role-frame root" role="graphics-object" aria-roledescription="group mark container"><g transform="translate(0,0)" class="mark-group role-axis" role="graphics-symbol" aria-roledescription="axis" aria-label="X-axis for a discrete scale with 10 values: 2011, 2012, 2013, 2014, 2015, ending with 2020"><g transform="translate(0.5,200.5)" class="mark-rule role-axis-tick" pointer-events="none"><line transform="translate(23,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(68,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(113,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(158,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(203,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(248,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(293,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(338,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(383,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(428,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/></g>
+<g transform="translate(0.5,200.5)" class="mark-text role-axis-label" pointer-events="none"><text text-anchor="middle" transform="translate(22.5,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">2011
+</text>
+<text text-anchor="middle" transform="translate(67.5,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">2012
+</text>
+<text text-anchor="middle" transform="translate(112.5,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">2013
+</text>
+<text text-anchor="middle" transform="translate(157.5,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">2014
+</text>
+<text text-anchor="middle" transform="translate(202.5,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">2015
+</text>
+<text text-anchor="middle" transform="translate(247.5,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">2016
+</text>
+<text text-anchor="middle" transform="translate(292.5,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">2017
+</text>
+<text text-anchor="middle" transform="translate(337.5,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">2018
+</text>
+<text text-anchor="middle" transform="translate(382.5,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">2019
+</text>
+<text text-anchor="middle" transform="translate(427.5,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">2020
+</text></g>
+<g transform="translate(0.5,200.5)" class="mark-rule role-axis-domain" pointer-events="none"><line transform="translate(0,0)" x2="450" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/></g></g>
+<g transform="translate(0,0)" class="mark-group role-axis" role="graphics-symbol" aria-roledescription="axis" aria-label="Y-axis for a linear scale with values from 0 to 7"><g transform="translate(0.5,0.5)" class="mark-rule role-axis-tick" pointer-events="none"><line transform="translate(0,200)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,171)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,143)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,114)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,86)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,57)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,29)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,0)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/></g>
+<g transform="translate(0.5,0.5)" class="mark-text role-axis-label" pointer-events="none"><text text-anchor="end" transform="translate(-10,203)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">0
+</text>
+<text text-anchor="end" transform="translate(-10,174.42857142857144)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">1
+</text>
+<text text-anchor="end" transform="translate(-10,145.85714285714286)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">2
+</text>
+<text text-anchor="end" transform="translate(-10,117.28571428571428)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">3
+</text>
+<text text-anchor="end" transform="translate(-10,88.71428571428572)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">4
+</text>
+<text text-anchor="end" transform="translate(-10,60.14285714285714)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">5
+</text>
+<text text-anchor="end" transform="translate(-10,31.57142857142858)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">6
+</text>
+<text text-anchor="end" transform="translate(-10,3)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">7
+</text></g>
+<g transform="translate(0.5,0.5)" class="mark-rule role-axis-domain" pointer-events="none"><line transform="translate(0,200)" x2="0" y2="-200" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/></g></g>
+<g transform="translate(0,0)" class="mark-group role-scope pathgroup" role="graphics-object" aria-roledescription="group mark container"><g transform="translate(0,0)" class="mark-line role-mark marks" role="graphics-object" aria-roledescription="line mark container"><path aria-label="Year: 2011; Ratio: 0.1; Crisis Zones: Syria" role="graphics-symbol" aria-roledescription="line mark" d="M22.5,197.143L45,197.143L45,185.714L90,185.714L90,128.571L135,128.571L135,91.429L180,91.429L180,62.857L225,62.857L225,42.857L270,42.857L270,22.857L315,22.857L315,8.571L360,8.571L360,11.429L405,11.429L405,5.714L427.5,5.714" stroke="#6a3d9a" stroke-width="2" opacity="1"/></g>
+<g transform="translate(0,0)" class="mark-line role-mark marks" role="graphics-object" aria-roledescription="line mark container"><path aria-label="Year: 2011; Ratio: 0; Crisis Zones: Venezuela" role="graphics-symbol" aria-roledescription="line mark" d="M22.5,200L45,200L45,200L90,200L90,200L135,200L135,200L180,200L180,197.143L225,197.143L225,194.286L270,194.286L270,182.857L315,182.857L315,102.857L360,102.857L360,71.429L405,71.429L405,62.857L427.5,62.857" stroke="#ff7f00" stroke-width="2" opacity="1"/></g>
+<g transform="translate(0,0)" class="mark-line role-mark marks" role="graphics-object" aria-roledescription="line mark container"><path aria-label="Year: 2011; Ratio: 2.7; Crisis Zones: Afghanistan" role="graphics-symbol" aria-roledescription="line mark" d="M22.5,122.857L45,122.857L45,125.714L90,125.714L90,125.714L135,125.714L135,125.714L180,125.714L180,122.857L225,122.857L225,128.571L270,128.571L270,125.714L315,125.714L315,122.857L360,122.857L360,122.857L405,122.857L405,120L427.5,120" stroke="#fb9a99" stroke-width="2" opacity="1"/></g>
+<g transform="translate(0,0)" class="mark-line role-mark marks" role="graphics-object" aria-roledescription="line mark container"><path aria-label="Year: 2011; Ratio: 0.3; Crisis Zones: South Sudan" role="graphics-symbol" aria-roledescription="line mark" d="M22.5,191.429L45,191.429L45,188.571L90,188.571L90,185.714L135,185.714L135,177.143L180,177.143L180,165.714L225,165.714L225,160L270,160L270,131.429L315,131.429L315,134.286L360,134.286L360,137.143L405,137.143L405,137.143L427.5,137.143" stroke="#b15928" stroke-width="2" opacity="1"/></g>
+<g transform="translate(0,0)" class="mark-line role-mark marks" role="graphics-object" aria-roledescription="line mark container"><path aria-label="Year: 2011; Ratio: 0.4; Crisis Zones: Rohinya" role="graphics-symbol" aria-roledescription="line mark" d="M22.5,188.571L45,188.571L45,188.571L90,188.571L90,185.714L135,185.714L135,185.714L180,185.714L180,182.857L225,182.857L225,180L270,180L270,165.714L315,165.714L315,165.714L360,165.714L360,168.571L405,168.571L405,168.571L427.5,168.571" stroke="#b2df8a" stroke-width="2" opacity="1"/></g>
+<g transform="translate(0,0)" class="mark-line role-mark marks" role="graphics-object" aria-roledescription="line mark container"><path aria-label="Year: 2011; Ratio: 0.4; Crisis Zones: DRC" role="graphics-symbol" aria-roledescription="line mark" d="M22.5,188.571L45,188.571L45,188.571L90,188.571L90,185.714L135,185.714L135,185.714L180,185.714L180,185.714L225,185.714L225,182.857L270,182.857L270,180L315,180L315,177.143L360,177.143L360,174.286L405,174.286L405,171.429L427.5,171.429" stroke="#a6cee3" stroke-width="2" opacity="1"/></g></g></g></g></g></g></svg>

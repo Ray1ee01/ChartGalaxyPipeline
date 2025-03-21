@@ -9,6 +9,8 @@ src/processors/data_enricher_modules/HAIChart/data
 src/processors/svg_processor_modules/__pycache__
 src/data/config/__pycache__
 src/output_jn
+framework/test/testset
+framework/test/testset.zip
 data/
 *.so
 .idea/*

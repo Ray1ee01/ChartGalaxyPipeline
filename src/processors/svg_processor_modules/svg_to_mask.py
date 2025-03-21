@@ -13,8 +13,10 @@ def parse_svg_dimensions(svg_content):
     """解析SVG中的尺寸信息"""
     # print('svg_content: ', svg_content)
     # for debug: 把svg_content写入文件
+    svg_content = svg_content.replace('&', '')
     with open("svg_content.svg", "w") as f:
         f.write(svg_content)
+    # 将&符号替换为&amp;以避免XML解析错误
     root = etree.fromstring(svg_content)
     
 
@@ -190,6 +192,7 @@ def svg_to_mask(svg_content, grid_size=10, content_threshold=0.05, sample_densit
     返回:
     tuple (原始图像, mask图像, mask网格, 网格信息)
     """
+    svg_content = svg_content.replace('&', '')
     # 解析SVG尺寸
     dimensions = parse_svg_dimensions(svg_content)
     vbx, vby, vbw, vbh = dimensions['viewBox']

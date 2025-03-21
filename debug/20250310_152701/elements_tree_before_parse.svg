@@ -1,0 +1,97 @@
+<svg version="1.1" class="marks" width="490" height="235" viewBox="-100,-100,1000,1000" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><g ><g version="1.1" class="marks" width="490" height="235" viewBox="0 0 490 235"><g fill="none" stroke-miterlimit="10" transform="translate(35,10)"><g class="mark-group role-frame root" role="graphics-object" aria-roledescription="group mark container"><g transform="translate(0,0)" class="mark-group role-axis" role="graphics-symbol" aria-roledescription="axis" aria-label="X-axis for a discrete scale with 11 values: LU, IE, KR, GB, PT, ending with AT"><g transform="translate(0.5,200.5)" class="mark-rule role-axis-tick" pointer-events="none"><line transform="translate(22,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(62,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(103,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(143,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(184,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(225,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(265,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(306,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(346,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(387,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(427,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/></g>
+<g transform="translate(0.5,200.5)" class="mark-text role-axis-label" pointer-events="none"><text text-anchor="middle" transform="translate(21.797297297297277,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">LU
+</text>
+<text text-anchor="middle" transform="translate(62.33783783783782,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">IE
+</text>
+<text text-anchor="middle" transform="translate(102.87837837837836,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">KR
+</text>
+<text text-anchor="middle" transform="translate(143.4189189189189,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">GB
+</text>
+<text text-anchor="middle" transform="translate(183.95945945945942,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">PT
+</text>
+<text text-anchor="middle" transform="translate(224.5,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">OECD average
+</text>
+<text text-anchor="middle" transform="translate(265.0405405405405,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">MX
+</text>
+<text text-anchor="middle" transform="translate(305.58108108108104,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">FR
+</text>
+<text text-anchor="middle" transform="translate(346.12162162162156,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">NL
+</text>
+<text text-anchor="middle" transform="translate(386.6621621621621,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">JP
+</text>
+<text text-anchor="middle" transform="translate(427.2027027027027,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">AT
+</text></g>
+<g transform="translate(0.5,200.5)" class="mark-rule role-axis-domain" pointer-events="none"><line transform="translate(0,0)" x2="450" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/></g></g>
+<g transform="translate(0,0)" class="mark-group role-axis" role="graphics-symbol" aria-roledescription="axis" aria-label="Y-axis for a linear scale with values from 0 to 100"><g transform="translate(0.5,0.5)" class="mark-rule role-axis-tick" pointer-events="none"><line transform="translate(0,200)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,160)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,120)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,80)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,40)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,0)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/></g>
+<g transform="translate(0.5,0.5)" class="mark-text role-axis-label" pointer-events="none"><text text-anchor="end" transform="translate(-10,203)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">0
+</text>
+<text text-anchor="end" transform="translate(-10,163)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">20
+</text>
+<text text-anchor="end" transform="translate(-10,123)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">40
+</text>
+<text text-anchor="end" transform="translate(-10,83)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">60
+</text>
+<text text-anchor="end" transform="translate(-10,42.99999999999999)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">80
+</text>
+<text text-anchor="end" transform="translate(-10,3)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">100
+</text></g>
+<g transform="translate(0.5,0.5)" class="mark-rule role-axis-domain" pointer-events="none"><line transform="translate(0,200)" x2="0" y2="-200" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/></g></g>
+<g transform="translate(0,0)" class="mark-rect role-mark layer_0_marks" role="graphics-object" aria-roledescription="rect mark container"><path aria-label="Country: LU; Percentage: 70; Likelihood: Likely" role="graphics-symbol" aria-roledescription="bar" d="M10.256756756756737,4.0000000000000036h24.08108108108108v140h-24.08108108108108Z" fill="#ffed6f" opacity="1"/>
+<path aria-label="Country: LU; Percentage: 10; Likelihood: Neutral" role="graphics-symbol" aria-roledescription="bar" d="M10.256756756756737,144h24.08108108108108v20h-24.08108108108108Z" fill="#8dd3c7" opacity="1"/>
+<path aria-label="Country: LU; Percentage: 18; Likelihood: Unlikely" role="graphics-symbol" aria-roledescription="bar" d="M10.256756756756737,164h24.08108108108108v36h-24.08108108108108Z" fill="#80b1d3" opacity="1"/>
+<path aria-label="Country: LU; Percentage: 2; Likelihood: Don't know" role="graphics-symbol" aria-roledescription="bar" d="M10.256756756756737,0h24.08108108108108v4.0000000000000036h-24.08108108108108Z" fill="#d9d9d9" opacity="1"/>
+<path aria-label="Country: IE; Percentage: 60; Likelihood: Likely" role="graphics-symbol" aria-roledescription="bar" d="M50.79729729729728,2.0000000000000018h24.08108108108108v120h-24.08108108108108Z" fill="#ffed6f" opacity="1"/>
+<path aria-label="Country: IE; Percentage: 14; Likelihood: Neutral" role="graphics-symbol" aria-roledescription="bar" d="M50.79729729729728,122h24.08108108108108v28h-24.08108108108108Z" fill="#8dd3c7" opacity="1"/>
+<path aria-label="Country: IE; Percentage: 25; Likelihood: Unlikely" role="graphics-symbol" aria-roledescription="bar" d="M50.79729729729728,150h24.08108108108108v50h-24.08108108108108Z" fill="#80b1d3" opacity="1"/>
+<path aria-label="Country: IE; Percentage: 1; Likelihood: Don't know" role="graphics-symbol" aria-roledescription="bar" d="M50.79729729729728,0h24.08108108108108v2.0000000000000018h-24.08108108108108Z" fill="#d9d9d9" opacity="1"/>
+<path aria-label="Country: KR; Percentage: 58; Likelihood: Likely" role="graphics-symbol" aria-roledescription="bar" d="M91.33783783783781,0h24.08108108108108v116.00000000000001h-24.08108108108108Z" fill="#ffed6f" opacity="1"/>
+<path aria-label="Country: KR; Percentage: 13; Likelihood: Neutral" role="graphics-symbol" aria-roledescription="bar" d="M91.33783783783781,116.00000000000001h24.08108108108108v25.999999999999986h-24.08108108108108Z" fill="#8dd3c7" opacity="1"/>
+<path aria-label="Country: KR; Percentage: 29; Likelihood: Unlikely" role="graphics-symbol" aria-roledescription="bar" d="M91.33783783783781,142h24.08108108108108v58h-24.08108108108108Z" fill="#80b1d3" opacity="1"/>
+<path aria-label="Country: KR; Percentage: 0; Likelihood: Don't know" role="graphics-symbol" aria-roledescription="bar" d="M91.33783783783781,0h24.08108108108108v0h-24.08108108108108Z" fill="#d9d9d9" opacity="1"/>
+<path aria-label="Country: GB; Percentage: 57; Likelihood: Likely" role="graphics-symbol" aria-roledescription="bar" d="M131.87837837837836,2.0000000000000018h24.08108108108108v114.00000000000001h-24.08108108108108Z" fill="#ffed6f" opacity="1"/>
+<path aria-label="Country: GB; Percentage: 12; Likelihood: Neutral" role="graphics-symbol" aria-roledescription="bar" d="M131.87837837837836,116.00000000000001h24.08108108108108v23.999999999999986h-24.08108108108108Z" fill="#8dd3c7" opacity="1"/>
+<path aria-label="Country: GB; Percentage: 30; Likelihood: Unlikely" role="graphics-symbol" aria-roledescription="bar" d="M131.87837837837836,140h24.08108108108108v60h-24.08108108108108Z" fill="#80b1d3" opacity="1"/>
+<path aria-label="Country: GB; Percentage: 1; Likelihood: Don't know" role="graphics-symbol" aria-roledescription="bar" d="M131.87837837837836,0h24.08108108108108v2.0000000000000018h-24.08108108108108Z" fill="#d9d9d9" opacity="1"/>
+<path aria-label="Country: PT; Percentage: 56; Likelihood: Likely" role="graphics-symbol" aria-roledescription="bar" d="M172.4189189189189,2.0000000000000018h24.08108108108108v112.00000000000001h-24.08108108108108Z" fill="#ffed6f" opacity="1"/>
+<path aria-label="Country: PT; Percentage: 10; Likelihood: Neutral" role="graphics-symbol" aria-roledescription="bar" d="M172.4189189189189,114.00000000000001h24.08108108108108v19.999999999999986h-24.08108108108108Z" fill="#8dd3c7" opacity="1"/>
+<path aria-label="Country: PT; Percentage: 33; Likelihood: Unlikely" role="graphics-symbol" aria-roledescription="bar" d="M172.4189189189189,134h24.08108108108108v66h-24.08108108108108Z" fill="#80b1d3" opacity="1"/>
+<path aria-label="Country: PT; Percentage: 1; Likelihood: Don't know" role="graphics-symbol" aria-roledescription="bar" d="M172.4189189189189,0h24.08108108108108v2.0000000000000018h-24.08108108108108Z" fill="#d9d9d9" opacity="1"/>
+<path aria-label="Country: OECD average; Percentage: 51; Likelihood: Likely" role="graphics-symbol" aria-roledescription="bar" d="M212.95945945945945,6.000000000000005h24.08108108108108v102h-24.08108108108108Z" fill="#ffed6f" opacity="1"/>
+<path aria-label="Country: OECD average; Percentage: 13; Likelihood: Neutral" role="graphics-symbol" aria-roledescription="bar" d="M212.95945945945945,108h24.08108108108108v26h-24.08108108108108Z" fill="#8dd3c7" opacity="1"/>
+<path aria-label="Country: OECD average; Percentage: 33; Likelihood: Unlikely" role="graphics-symbol" aria-roledescription="bar" d="M212.95945945945945,134h24.08108108108108v66h-24.08108108108108Z" fill="#80b1d3" opacity="1"/>
+<path aria-label="Country: OECD average; Percentage: 3; Likelihood: Don't know" role="graphics-symbol" aria-roledescription="bar" d="M212.95945945945945,0h24.08108108108108v6.000000000000005h-24.08108108108108Z" fill="#d9d9d9" opacity="1"/>
+<path aria-label="Country: MX; Percentage: 47; Likelihood: Likely" role="graphics-symbol" aria-roledescription="bar" d="M253.49999999999997,4.0000000000000036h24.08108108108108v94h-24.08108108108108Z" fill="#ffed6f" opacity="1"/>
+<path aria-label="Country: MX; Percentage: 16; Likelihood: Neutral" role="graphics-symbol" aria-roledescription="bar" d="M253.49999999999997,98h24.08108108108108v32h-24.08108108108108Z" fill="#8dd3c7" opacity="1"/>
+<path aria-label="Country: MX; Percentage: 35; Likelihood: Unlikely" role="graphics-symbol" aria-roledescription="bar" d="M253.49999999999997,130h24.08108108108108v70h-24.08108108108108Z" fill="#80b1d3" opacity="1"/>
+<path aria-label="Country: MX; Percentage: 2; Likelihood: Don't know" role="graphics-symbol" aria-roledescription="bar" d="M253.49999999999997,0h24.08108108108108v4.0000000000000036h-24.08108108108108Z" fill="#d9d9d9" opacity="1"/>
+<path aria-label="Country: FR; Percentage: 46; Likelihood: Likely" role="graphics-symbol" aria-roledescription="bar" d="M294.0405405405405,2.0000000000000018h24.08108108108108v92h-24.08108108108108Z" fill="#ffed6f" opacity="1"/>
+<path aria-label="Country: FR; Percentage: 13; Likelihood: Neutral" role="graphics-symbol" aria-roledescription="bar" d="M294.0405405405405,94h24.08108108108108v26h-24.08108108108108Z" fill="#8dd3c7" opacity="1"/>
+<path aria-label="Country: FR; Percentage: 40; Likelihood: Unlikely" role="graphics-symbol" aria-roledescription="bar" d="M294.0405405405405,120h24.08108108108108v80h-24.08108108108108Z" fill="#80b1d3" opacity="1"/>
+<path aria-label="Country: FR; Percentage: 1; Likelihood: Don't know" role="graphics-symbol" aria-roledescription="bar" d="M294.0405405405405,0h24.08108108108108v2.0000000000000018h-24.08108108108108Z" fill="#d9d9d9" opacity="1"/>
+<path aria-label="Country: NL; Percentage: 42; Likelihood: Likely" role="graphics-symbol" aria-roledescription="bar" d="M334.58108108108104,8.000000000000007h24.08108108108108v84h-24.08108108108108Z" fill="#ffed6f" opacity="1"/>
+<path aria-label="Country: NL; Percentage: 16; Likelihood: Neutral" role="graphics-symbol" aria-roledescription="bar" d="M334.58108108108104,92h24.08108108108108v32h-24.08108108108108Z" fill="#8dd3c7" opacity="1"/>
+<path aria-label="Country: NL; Percentage: 38; Likelihood: Unlikely" role="graphics-symbol" aria-roledescription="bar" d="M334.58108108108104,124h24.08108108108108v76h-24.08108108108108Z" fill="#80b1d3" opacity="1"/>
+<path aria-label="Country: NL; Percentage: 4; Likelihood: Don't know" role="graphics-symbol" aria-roledescription="bar" d="M334.58108108108104,0h24.08108108108108v8.000000000000007h-24.08108108108108Z" fill="#d9d9d9" opacity="1"/>
+<path aria-label="Country: JP; Percentage: 34; Likelihood: Likely" role="graphics-symbol" aria-roledescription="bar" d="M375.12162162162156,56.00000000000001h24.08108108108108v68h-24.08108108108108Z" fill="#ffed6f" opacity="1"/>
+<path aria-label="Country: JP; Percentage: 19; Likelihood: Neutral" role="graphics-symbol" aria-roledescription="bar" d="M375.12162162162156,124h24.08108108108108v38h-24.08108108108108Z" fill="#8dd3c7" opacity="1"/>
+<path aria-label="Country: JP; Percentage: 19; Likelihood: Unlikely" role="graphics-symbol" aria-roledescription="bar" d="M375.12162162162156,162h24.08108108108108v38h-24.08108108108108Z" fill="#80b1d3" opacity="1"/>
+<path aria-label="Country: JP; Percentage: 28; Likelihood: Don't know" role="graphics-symbol" aria-roledescription="bar" d="M375.12162162162156,0h24.08108108108108v56.00000000000001h-24.08108108108108Z" fill="#d9d9d9" opacity="1"/>
+<path aria-label="Country: AT; Percentage: 31; Likelihood: Likely" role="graphics-symbol" aria-roledescription="bar" d="M415.6621621621622,2.0000000000000018h24.08108108108108v61.99999999999999h-24.08108108108108Z" fill="#ffed6f" opacity="1"/>
+<path aria-label="Country: AT; Percentage: 9; Likelihood: Neutral" role="graphics-symbol" aria-roledescription="bar" d="M415.6621621621622,63.99999999999999h24.08108108108108v18.000000000000007h-24.08108108108108Z" fill="#8dd3c7" opacity="1"/>
+<path aria-label="Country: AT; Percentage: 59; Likelihood: Unlikely" role="graphics-symbol" aria-roledescription="bar" d="M415.6621621621622,82h24.08108108108108v118h-24.08108108108108Z" fill="#80b1d3" opacity="1"/>
+<path aria-label="Country: AT; Percentage: 1; Likelihood: Don't know" role="graphics-symbol" aria-roledescription="bar" d="M415.6621621621622,0h24.08108108108108v2.0000000000000018h-24.08108108108108Z" fill="#d9d9d9" opacity="1"/></g></g></g></g></g></svg>

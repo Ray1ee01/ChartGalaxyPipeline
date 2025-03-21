@@ -320,7 +320,7 @@ class VegaLiteElementParser:
                 element.children[i] = self._handle_axis_title_group(new_element)
             elif self.if_axis_label_group(child):
                 new_element = self._handle_axis_conmponent_group("axis_label", child)
-                print("new_element: ", new_element)
+                # print("new_element: ", new_element)
                 element.children[i] = self._handle_axis_label_group(new_element)
             elif self.if_axis_tick_group(child):
                 new_element = self._handle_axis_conmponent_group("axis_tick", child)

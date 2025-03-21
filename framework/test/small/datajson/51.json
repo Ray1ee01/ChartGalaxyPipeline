@@ -1,0 +1,219 @@
+{
+  "metadata": {
+    "title": "PC Growth Choked by the iPad's Arrival",
+    "description": "Year-over-year growth of global PC shipments",
+    "main_insight": "Global PC shipment growth significantly declined after the release of the iPad in April 2010, shifting from positive growth to negative growth by 2012."
+  },
+  "_extra": {
+    "image_data": {
+      "original_file": "/home/lizhen/chartdata/new_infographics/Bar Chart/1281.jpeg",
+      "index": "51",
+      "data": {
+        "chart_type": "bar",
+        "background": "no",
+        "axes": {
+          "x_axis": "yes",
+          "y_axis": "yes"
+        },
+        "image_chart": "overlay",
+        "chart_image_position": "middle",
+        "image_title": "none",
+        "title_position": "top",
+        "icon_mark": "none",
+        "axis_label": "none"
+      },
+      "basic_chart_type": "bar",
+      "chart_type": "Vertical Bar Chart"
+    }
+  },
+  "chart_type": [],
+  "datafacts": [
+    {
+      "type": "value",
+      "score": 0.95,
+      "annotation": "Q1 2010 has highest PC Shipment Growth",
+      "reason": "Q1 2010 has the highest PC Shipment Growth at 0.28"
+    },
+    {
+      "type": "value",
+      "score": 0.85,
+      "annotation": "Q1 2013 has lowest PC Shipment Growth",
+      "reason": "Q1 2013 has the lowest PC Shipment Growth at -0.13"
+    },
+    {
+      "type": "difference",
+      "score": 0.8,
+      "annotation": "Gap between highest and lowest is 0.41000000000000003",
+      "reason": "The difference between the highest value (0.28) and lowest value (-0.13) is 0.41000000000000003"
+    },
+    {
+      "type": "overview",
+      "score": 0.75,
+      "annotation": "Average PC Shipment Growth is 0.0",
+      "reason": "The average PC Shipment Growth across all Quarter values is 0.0"
+    },
+    {
+      "type": "trend",
+      "score": 0.7,
+      "annotation": "PC Shipment Growth varies significantly across Quarter",
+      "reason": "The PC Shipment Growth shows considerable variation across different Quarter values, with a range of 0.41000000000000003"
+    }
+  ],
+  "titles": {
+    "main_title": "PC Growth Choked by the iPad's Arrival",
+    "sub_title": "Year-over-year growth of global PC shipments"
+  },
+  "layout": {
+    "title_to_chart": "TL",
+    "image_to_chart": "TR",
+    "title_to_image": "L",
+    "chart_contains_title": false,
+    "chart_contains_image": false
+  },
+  "variation": {
+    "background": "no",
+    "image_chart": "overlay",
+    "image_title": "none",
+    "icon_mark": "none",
+    "axis_label": "none",
+    "axes": {
+      "x_axis": "yes",
+      "y_axis": "yes"
+    }
+  },
+  "colors": {
+    "field": {},
+    "other": {
+      "primary": "#a463f2",
+      "secondary": "#4269d0"
+    },
+    "available_colors": [
+      "#efb118",
+      "#ff725c",
+      "#6cc5b0",
+      "#3ca951",
+      "#ff8ab7",
+      "#97bbf5"
+    ],
+    "background_color": "#FFFFFF",
+    "text_color": "#000000"
+  },
+  "images": {
+    "field": {},
+    "other": {
+      "primary": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAgAAAAIACAYAAAD0eNT6AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAE5dJREFUeNrs3T+IXVd+B/D7xooUSKRGUWAGCQRejRNbU0QDwbOwjBrbxY5TeEmw0yRVmjRJmSq71bZp0mQJpFjWJovdaLZYq5EIZERgvIWcBc+yoAUjFRsVWVUSsZX3veMrj7Uja/68P/ee8/nAQ7axrTfnPr3zPef8zjlNAwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAv4w0weT90389/OvxLxe1BMBE3Pm7Pz31b5phsk5ogqn4q/HrqmYAmIgb45cAMGELmgAABAAAQAAAAAQAAEAAAAAEAABAAAAABAAAQAAAAAQAAEAAAAAEAABAAAAABAAAQAAAAAQAAEAAAAAEAAAQAAAAAQAAEAAAAAEAABAAAAABAAAQAAAAAQAAEAAAAAEAABAAAAABAAAQAAAAAQAAEAAAAAEAABAAAEAAAAAEAABAAAAABAAAQAAAAAQAAKDfTmiCuv33f/xEIwzYtzfenOvv/5PNax7CgL3yrW9rBAGAWv3v/9zTCAP2e7/j8wMcjSUAABAAAAABAAAQAAAAAQAAEAAAAAEAABAAAAABAAAQAAAAAQAAEAAAAAEAABAAAAABAAAQAAAAAQAAEAAAQAAAAAQAAEAAAAAEAABAAAAABAAAQAAAAAQAAEAAAAAEAJiuixcvNhsbbzaLi0sao3L5DPgsIABAJV59dW38hb84/uLfaNbXrzanT5/WKJXJM8+zz2cgn4X19XWNQnVOaAJqsrq6+pUOf3l5uZ0R+Pjj283t27ebR48eaaSCnTx5sllZWWkuX15p/3pvIMg/y+cABAAo8Ms/X/L7/fMrV1abS5eWm1u3tpo7d+5orAIl6GX251kzPgmHOzufCIEIAFCatbVvfmXU97R0DK+99npz7969ZmvrP5v79+9rtAKcPXu2ffaZ6n9eQMy/d/PmDY1GFdQAUIUUeWW6/2D/7mLz1lvfadeIvy4w0G95dnmGeZbP6/w7+YwkMIAZAChEpncPa299wPb2tkYc2PN+ep3/oDILsLl5TSMiAMDQpSM/6Ahwv1FkVx9w8+bN5t69uxq0xzLTk4r+4+zsyGclwU8tCAIADFjXgR9XOpRsGUt9QNaIHzx4oHF7pNvWd9Sg97QUCwoAlE4NAEXLlq9J7vNPB/P22+80a2tr6gN6EvDyLPJMJtX5d4HiKMtGYAYAejIq3G/b3yTk/7u8/FJbG2Dv+HzkGaSTnlYQy/9/Z2fHbA9mAGBoMo07zVF6N/rcrTJ3lOyspK3T5tOehZnU8hGYAYAZdxIp5JqFbBtLfUDWjHOQkBHjdGRGJ6FuVs81UkCaWQDFnwgAMBAZHc5aOqa8Pvpo27HCEx6Jp5ZjXqPxLDNsbgoACADQe/M+zCUdVdaPc5pgRo8c71k+7wTHaUtxYTcTAAIA9Hi0mA6jD+8j29K6QkFTyIftdJfakfckK/uPI5+pLPGY1aEkigApSqaK+7Q9z7XDh/P0Nb19Cpb5bIEZAOhp59HXqm3HCj/fcY7vnYV8tmwLRACAHsrIsc9cO7y/513T2yd5n9evf+ihIQBAX2TNuE9Txl/HtcO7DnpNb9/CSj5rajoogRoAChn9rw8wtNR57fBRruntk3lsMQUzALCPrBsPucCuqw+o4VjhaR/fOwuZucjP4QhoBACY82iyhEtbumOFL1++XOS1w5O4prdP8pnb2fnEtkAEAJiXeR8SM2mlXTs86Wt6+xY8t7a2/CFksNQAMFiZis30eYmGfu3wtK7p7ZOhLz2BAMCgR/+lSyfzzjt/Oaigk/ea9zytq5j7pO9bT+HrWAJgkHa3Yy1W8bN2VfO79wts9bY+IOv8GfXP8x6G2f/Mi7YFYgYAZikHstSmu3Y4Zwj0aeq5O9cg762mzv/LWYB1fyAxAwCzkkr5kqrKD2PvtcPzlkK4vh6/PAsp0sxnEQQAmJFMub733ru9Pz9+mvrQ8dba+Wf7n3sdEABgjvIFfPv27bYgsNQdAfRLLgTKEc7OAEAAgB6MxrJnPiOyoZ0tz3DUfncDAgD0Vr6YNzevtTMBmZq2R5tJyDp/6i0y8gcBAHosX9S5andlZaXa+gCOr1vnzxKT6X4EABjQl3fqAxIGMhugPoDDhsiM+od+FDMIAFRrd5vWjfYLvbZDaji8LCP1+bAlEADgkPKF/sEH77czAaVdIMTxZcYoBX7W+REAoFB76wNqPsCGL2Wq3zo/AgBUMtrr6gNypHBO1aM+CYK3bm1Z50cAgNrki//69Q/by1xqPVa41uee43ut8yMAQOW6Y4WzZTBHC6sPKFM385OtfYAAAE+kY9jZ+eTJ/QKU9WzT+VvnBwEAnjlKzDaw3W2DjhUeOsf3ggAAh9IdK5wCwRQKqg8Ylqzzp8AvhX6AAACHlg4kr5qvHR4S1/SCAAAT5drh/nNNLwgAMLXRZXescGYE1Af0Q9b5E9Bs6wMBAKbc4dxtNjfvunZ4zlzTCwIAzIVrh+fDNb0gAEAvOiPHCs+O43tBAIBe2XussGuHJ881vSAAQK+5dniyXNMLAgAMSlcf4Fjho3N8LwgAMODR69a4I/u4WV+/atvgAWVbX7ZbWucHAQAGLR1ZjhV27fDz28k1vSAAQIEjW9cO78c1vSAAQBW6a4c3Nt6sfrdAd+mSdX6YvQVNALOVJYDsELBVsGnbIG1hWQTMAECxMuXv1MDfli2TOUDJ6X4gAEBx0sHlpEAj3WeHo9yrcOnScnvSX7ZQAgIADFY3xW0L4MEkIL322uvtVsAcAJQaAUAAgEGNaNPxZ3qbw0tgeuut77QHKiUIWBYAAQB6rzv9zzr/8e2tD8hWQUAAgB6OWh30Mw176wMcFAQCAPRGOnxH/c6mnTc2NhwVDAIAzH9k6rKf2UvQevvtd1wWBAIAzJ7rfucvwWt5+SXXBYMAALMYfS6NO/41p/j1RAJYll8SBnLzovoAEABgorL+nIN8UpFO/ySQpT4gBwjlICH1ASAAwLFHmDm+N1Xo9F8CWl4ffbTtWGEQAOBoss6fjt+2vuHptg0mCKgPAAEADiTr/Knut61v2LrtmSkUzG4B9QEgAMAzO4yMHB3fW1qgW2zrAzITkBkB9QEgAMATju8tn2OFQQCAJ1zTWxfXDoMAQOVc01s31w6DAECFI0DX9NJx7TACAFQga/xZ67fOz9O6+oDUBqRGAAQAKGKU55penm93dmhtHBQvu3YYAQCGzDW9HPVz49phBAAY6EjONb0cl2uHEQBgQFzTy6S5dhgBAHo9WnNNL9Pj2mEEAOgZ1/QyS64dRgCAHozIar+mN53PvHc29OE9zEMC59LSUlsf4NphhmpBEzBEObyl1s4/nU0utXnvvXfn/l7yHvJeauwAu2OFNzbe9AcSMwAwK7/4xU6VAaCPJ9alQj6j4FpPWPzVr+74A4kAALOSDqem2/v6fmZ9Akn2zGdKvKY7FrIEks8iDJElAAYpHU46xBo6mHSsm5vXBnFhTd5j3mstB+jUuvyBGQCYq0yHZxagxK1/6VSGXGCWZ5NK+RRqljpTk1kZ5wJgBgDmJHuySww2H3zw/uBPn8t7z8+Qn6XEjjI/G5gBgLmNwu62nUsJxWeZPi/xkJluGSPPqZTDmvKzOAwIAQDmLOuw2Zc91Gnmrp6h9OnkdJiZDRj6cc211J8gAMAgRphZLx/itsCEl9oOktlbHzDEZ5bPmsI/BADoiXSily4tD+ZUutqPku3qAxIGhnSUc56XtX9KoQiQYjqUdKhD6EA2Nzeb69c/dI78F+2RtkibDKE9hvAZAzMAVCej6mzN6uMhNN2IN9PH/LbUB+RY4WwZXF1d7WV9QD5b+YyBGQDooT4WZ6XTf/fdH+n8B95W2ckAZgCgp7KVri/bAjNirOVEvEnarbLfGoeAj5v19au9mNFJIPEcEQBgALMA89wWmI4ia8Wmi4/fjjlWOM8yhYLzKvDslm9AAIABjCDnsS2w+311FpOVIJVXagPmcazw0E9kBAGAquRLe5bbAvt4TW+Jz3TW1w53Z0xAiRQBUqybN29O/ffIOn+2sGWtX+c/fd21w2nztH0JnyEwAwAT75zvTm1bYEaGOcXPbXDze7abm3fbmYAs9Uxjpmd3W6nz/jEDAAOdBbgx8RFoOv5Sb7gbmu7mxDyTSc/AOPQHMwAwYN0aborHJjEirPn43r6axrHCCRSeMwIADFw6h+Xll45cPV7qNb0lhr0cK7y4uHSsa4cTKFJsCKWzBEA1I8Sj/HdZQsgUs85/OLprh49amGk3B2YAoCBZBkjB2EFHhTVe01uao1w73J0kCWYAoCCZxn/+6PFeeymNw1/K0M3+5JkeZNvgQT4jYAYABiZTwxkR7lcklvXj7Pk21V+m7ljh1Aesr6/vu20wI3/PHwEACpUq/r0BwDW99YXA/a4d7rZ3ggAABY8E80WfNeHu3H5T/fXJs9/Z+eTJ/QJu+0MAgAqkuC/Tvb7w67b32uGHDx9qEAQAqOGL36ifjiBIrewCAAABAAAQAAAAAQAAEAAAAAEAABAAAAABAAAQAAAAAQAAEAAAAAEAABAAAAABAAAQAAAAAQAAEAAAAAEAAAQAAEAAAAAEAABAAAAABAAAQAAAAAQAAEAAAAAEAABgxk5oAhiuH/zgXzQCYAYAABAAAAABAAAQAABAAAAABAAAQAAAAAQAAEAAAAAEAABAAAAABAAAQAAAAAQAAEAAAAAEAABAAAAABAAAQAAAAAQAAEAAAAABAAAQAAAAAQAAEAAAAAEAABAAAAABAAAQAAAAAQAAEAAAAAEAABAAAAABAAAQAAAAAQAAEAAAAAEAAAQATQAAAgAAIAAAACU6oQnq9vmtbY0wQKMzp5smrzh1shmdO6tRAAGAQwSALQGgqGBwfmk3EPzh2TYUtMGgCwoAAgCU6fGnd3d//eWdr84WJAxcWGwWXrwoEAACAFQRCn7zoGnGr4SCz29stYFgNA4Co1eWLR2AAADUFAge/+x204xf7TLBOAgsvPxSu3QACABADWHg1/ebxze22lqQLA8srK1aIgABAKjGw0fN5z/faV8LLy8LAiAAALX5ShC4+k1LAyAAANUFgV/eaRaurDQLr65qECiMkwCBZ8vSwNZ289kP328ef3pPe4AAANQkxYKf/fhau40woQAQAICKfP6z220QSCAABACgttmAH77fhgFAAABqmw24sdV89uNNSwIgAADVzQZ8erf5v3/9kQJBEACA6jx89GWBICAAAHVpCwSzXVCBIAgAQF2eFAje2lYbAAIAUN1sQHd40M93NAb0lKOAgenMBvzmQfPZT280o3EY2L1yeNkFQyAAADUFgcfjEJBZgdG5s83oGxeb0fml8WtR44AAAFQRBn59/4siwe3270eZERi/Rhd2w0ACQnPq1L7/rcAAAgBQ0OxAkxmCT+9qjK+RGZMX/nxDQzBRigABQAAAAAQAAEAAAAAEAABAAAAABAAAQAAAAAQAAEAAAAAEAABAAAAABAAAQAAAAAQAAEAAAAAEAABAAAAAAQAAEAAAAAEAABAAAAABAAAQAAAAAQAAEAAAAAEAABAAAAABAAAQAAAAAQAAEAAAAAEAABAAAAABAAAEAABAAAAABAAAQAAAAAQAAEAAAAB67oQmAHrn1MlmdO4PtMMXRufOagQEAKCcDn50YbEZnTndNOPX6Mzvt78CAgBQ2Ch29MpyMzq/ZEQLAgBQuoWXl5uFtVWjexAAAB0/IAAARcn0/sIbV03zgwAAVDPqH4/4F15d1RAgAABVjPrPnG4W/ux1o34QAIBqOv8XLzYvvHG13doHCABA6cYdfjvl/ycr2gIEAKCKUb9CPxAAgLoo9AMBAKhp1J9Cv4z6zy9qDBAAAKN+QAAAyhr1n19qXnhj3Wl+IAAAtXT8GfWb7gcBANDxAwIAUFTH/+LFZuHKio4fBACg+E7/zOlmdOVyszDu/K3xgwAAlNzpnzvbjL5xsR3xO8QHBACg1A7//NJup39hsf1r5/UDAgAU1Ml3o/vmd0/u/prpfSN8QADgmR+Av/8bjQBQoQVNAAACAAAgAAAAAgAAIAAAAAIAACAAAAACAAAgAAAAAgAAIAAAAAIAACAAAAACAAAgAAAAAgAAIAAAAAIAAAgAAIAAAAAU6oQmqNuFP76iEQAEAKoLAH8kAADUyBIAAAgAAIAAAAAIAACAAAAACAAAgAAAAAgAAIAAAAAIAACAAAAACAAAgAAAAAgAAIAAAAAIAACAAAAACAAAIAAAAAIAACAAAAACAAAgAAAAAgAAIAAAAAIAACAAAAACAAAgAAAAAgAAIAAAAAIAACAAAAACAAAgAACAAAAACAAAgAAAAAgAAIAAAAAIAABAz400wTD8xT/883fHv/zjQN7u9/79+3/7XU8N/PnHDAAAIAAAAAIAACAAAAACAAAgAAAAAgAAIAAAAAIAACAAAAACAAAIAACAAAAACAAAgAAAAAgAAIAAAAAIAACAAAAACAAAwKyd0ASDccN7BX/+vVcAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACjV/wswACkhcb0SdtuDAAAAAElFTkSuQmCC"
+    }
+  },
+  "data": [
+    {
+      "Quarter": "Q1 2010",
+      "PC Shipment Growth": 0.28
+    },
+    {
+      "Quarter": "Q2 2010",
+      "PC Shipment Growth": 0.21
+    },
+    {
+      "Quarter": "Q3 2010",
+      "PC Shipment Growth": 0.08
+    },
+    {
+      "Quarter": "Q4 2010",
+      "PC Shipment Growth": 0.03
+    },
+    {
+      "Quarter": "Q1 2011",
+      "PC Shipment Growth": 0.02
+    },
+    {
+      "Quarter": "Q2 2011",
+      "PC Shipment Growth": 0.05
+    },
+    {
+      "Quarter": "Q3 2011",
+      "PC Shipment Growth": 0.08
+    },
+    {
+      "Quarter": "Q4 2011",
+      "PC Shipment Growth": 0.01
+    },
+    {
+      "Quarter": "Q1 2012",
+      "PC Shipment Growth": 0.02
+    },
+    {
+      "Quarter": "Q2 2012",
+      "PC Shipment Growth": -0.02
+    },
+    {
+      "Quarter": "Q3 2012",
+      "PC Shipment Growth": -0.08
+    },
+    {
+      "Quarter": "Q4 2012",
+      "PC Shipment Growth": -0.05
+    },
+    {
+      "Quarter": "Q1 2013",
+      "PC Shipment Growth": -0.13
+    },
+    {
+      "Quarter": "Q2 2013",
+      "PC Shipment Growth": -0.11
+    },
+    {
+      "Quarter": "Q3 2013",
+      "PC Shipment Growth": -0.08
+    }
+  ],
+  "data_columns": [
+    {
+      "name": "Quarter",
+      "importance": "primary",
+      "description": "Quarter of the year",
+      "unit": "none",
+      "data_type": "temporal",
+      "role": "x"
+    },
+    {
+      "name": "PC Shipment Growth",
+      "importance": "primary",
+      "description": "Year-over-year growth of global PC shipments",
+      "unit": "%",
+      "data_type": "numerical",
+      "role": "y"
+    }
+  ],
+  "secondary_data": [],
+  "variables": {
+    "width": 600,
+    "height": 600,
+    "has_rounded_corners": false,
+    "has_shadow": false,
+    "has_spacing": false,
+    "has_gradient": false,
+    "has_stroke": false
+  },
+  "typography": {
+    "title": {
+      "font_family": "Arial",
+      "font_size": "28px",
+      "font_weight": 700
+    },
+    "description": {
+      "font_family": "Arial",
+      "font_size": "16px",
+      "font_weight": 500
+    },
+    "label": {
+      "font_family": "Arial",
+      "font_size": "16px",
+      "font_weight": 500
+    },
+    "annotation": {
+      "font_family": "Arial",
+      "font_size": "12px",
+      "font_weight": 400
+    }
+  }
+}

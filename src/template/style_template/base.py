@@ -19,7 +19,19 @@ class ColorTemplate:
             "color": self.color,
             "opacity": self.opacity
         }
-
+    def dump_possible_values(self):
+        return {
+            "color": {
+                "type": "string",
+                "options": ["#000000"],
+                "default": "#000000"
+            },
+            "opacity": {
+                "type": "number",
+                "range": [0, 1],
+                "default": 1
+            }
+        }
 class StrokeTemplate:
     def __init__(self):
         self.stroke_width = None
@@ -27,11 +39,17 @@ class StrokeTemplate:
         return {
             "strokeWidth": self.stroke_width
         }
-
+    def dump_possible_values(self):
+        return {
+            "strokeWidth": {
+                "type": "number",
+                "range": [0, 50],
+                "default": 2
+            }
+        }
 class AxisTemplate:
     def __init__(self, color_template: ColorDesign=None):
         # 基本属性
-        self.type = None # 轴类型
         self.orientation = None # 轴方向
         self.field = None # field 名称
         self.field_type = None # 类型
@@ -72,7 +90,6 @@ class AxisTemplate:
         return copy.deepcopy(self)
     def dump(self):
         return {
-            "type": self.type,
             "orientation": self.orientation,
             "field": self.field,
             "field_type": self.field_type,
@@ -82,9 +99,72 @@ class AxisTemplate:
             "has_label": self.has_label,
             "label_color_style": self.label_color_style.dump(),
             "label_font_style": self.label_font_style.dump(),
+            "has_tick": self.has_tick,
+            "tick_color_style": self.tick_color_style.dump(),
+            "tick_stroke_style": self.tick_stroke_style.dump(),
+            "has_title": self.has_title,
+            "title_text": self.title_text,
+            "title_color_style": self.title_color_style.dump(),
+            "title_font_style": self.title_font_style.dump(),
+            "has_grid": self.has_grid
         }
+    def dump_possible_values(self):
+        domain_color_possible_values = self.domain_color_style.dump_possible_values()
+        label_color_possible_values = self.label_color_style.dump_possible_values()
+        tick_color_possible_values = self.tick_color_style.dump_possible_values()
+        title_color_possible_values = self.title_color_style.dump_possible_values()
 
-
+        domain_stroke_possible_values = self.domain_stroke_style.dump_possible_values()
+        tick_stroke_possible_values = self.tick_stroke_style.dump_possible_values()
+        title_font_possible_values = self.title_font_style.dump_possible_values()
+        label_font_possible_values = self.label_font_style.dump_possible_values()
+        
+        return {
+            "orientation": {
+                "type": "string",
+                "options": ["top", "bottom", "left", "right"],
+                "default": "bottom"
+            },
+            "field": {
+                "type": "string",
+                "options": ["x", "y"],
+                "default": "x",
+                "note": "column name"
+            },
+            "field_type": {
+                "type": "string",
+                "options": ["nominal", "quantitative"],
+                "default": "nominal",
+                "note": "type of the field"
+            },
+            "has_domain": {
+                "type": "boolean",
+                "default": True
+            },
+            "domain_color_style": domain_color_possible_values,
+            "has_label": {
+                "type": "boolean",
+                "default": True
+            },
+            "label_color_style": label_color_possible_values,
+            "label_font_style": label_font_possible_values,
+            "has_tick": {
+                "type": "boolean",
+                "default": True
+            },
+            "tick_color_style": tick_color_possible_values,
+            "tick_stroke_style": tick_stroke_possible_values,
+            "has_title": {
+                "type": "boolean",
+                "default": True
+            },
+            "title_color_style": title_color_possible_values,
+            "title_font_style": title_font_possible_values,
+            "has_grid": {
+                "type": "boolean",
+                "default": False
+            }
+        }
 class PolarSetting():
     def __init__(self):
         self.inner_radius = None
@@ -101,7 +181,19 @@ class PolarSetting():
             "inner_radius": self.inner_radius,
             "outer_radius": self.outer_radius
         }
-
+    def dump_possible_values(self):
+        return {
+            "inner_radius": {
+                "type": "string",
+                "options": ["0%", "10%", "20%", "30%", "40%", "50%", "60%", "70%", "80%", "90%"],
+                "default": "0%"
+            },
+            "outer_radius": {
+                "type": "string",
+                "options": ["0%", "10%", "20%", "30%", "40%", "50%", "60%", "70%", "80%", "90%"],
+                "default": "80%"
+            }
+        }
 
 
 class AngleAxisTemplate(AxisTemplate):
@@ -110,13 +202,47 @@ class AngleAxisTemplate(AxisTemplate):
         self.start_angle = 90
         self.end_angle = None
         self.clockwise = True
+    def dump(self):
+        base_dict = super().dump()
+        return {
+            **base_dict,
+            "start_angle": self.start_angle,
+            "end_angle": self.end_angle,
+            "clockwise": self.clockwise
+        }
+    def dump_possible_values(self):
+        return {
+            "start_angle": {
+                "type": "number",
+                "range": [0, 360],
+                "default": 90
+            },
+            "end_angle": {
+                "type": "number",
+                "range": [0, 360],
+                "default": 270
+            },
+            "clockwise": {
+                "type": "boolean",
+                "default": True
+            }
+        }
 
 
 class RadiusAxisTemplate(AxisTemplate):
     def __init__(self, color_template: ColorDesign=None):
         super().__init__(color_template)
-
-
+    def dump(self):
+        base_dict = super().dump()
+        return {
+            **base_dict,
+        }   
+    def dump_possible_values(self):
+        base_possible_values = super().dump_possible_values()
+        return {
+            **base_possible_values,
+        }
+        
 class ColorEncodingTemplate:
     def __init__(self, color_template: ColorDesign=None, meta_data: dict=None, data: list=None):
         self.field = None
@@ -228,6 +354,30 @@ class ColorEncodingTemplate:
             "domain": self.domain,
             "range": self.range
         }
+    def dump_possible_values(self):
+        return {
+            "field": {
+                "type": "string",
+                "default": "x_label",
+                "note": "column name"
+            },
+            "field_type": {
+                "type": "string",
+                "options": ["nominal", "quantitative"],
+                "default": "nominal",
+                "note": "type of the field"
+            },
+            "domain": {
+                "type": "list",
+                "default": [],
+                "note": "unique values of the field"
+            },
+            "range": {
+                "type": "list",
+                "default": [],
+                "note": "colors of the field"
+            }
+        }
 
 class ShapeEncodingTemplate:
     def __init__(self, meta_data: dict=None, data: list=None):
@@ -277,6 +427,30 @@ class ShapeEncodingTemplate:
             "domain": self.domain,
             "range": self.range
         }
+    def dump_possible_values(self):
+        return {
+            "field": {
+                "type": "string",
+                "default": "group",
+                "note": "column name"
+            },
+            "field_type": {
+                "type": "string",
+                "options": ["nominal", "quantitative"],
+                "default": "nominal",
+                "note": "type of the field"
+            },
+            "domain": {
+                "type": "list",
+                "default": [],
+                "note": "unique values of the field"
+            },
+            "range": {
+                "type": "list",
+                "default": [],
+                "note": "shapes of the field"
+            }
+        }
 
 class FontTemplate:
     def __init__(self):
@@ -293,7 +467,38 @@ class FontTemplate:
             "lineHeight": self.line_height,
             "letterSpacing": self.letter_spacing
         }
-
+    def dump_possible_values(self):
+        return {
+            "font": {
+                "type": "string",
+                "default": "sans-serif",
+                "note": "font family"
+            },
+            "fontSize": {
+                "type": "number",
+                "range": [0, 100],
+                "default": 12,
+                "note": "font size"
+            },
+            "fontWeight": {
+                "type": "number",
+                "range": [0, 1000],
+                "default": 400,
+                "note": "font weight"
+            },
+            "lineHeight": {
+                "type": "number",
+                "range": [0, 100],
+                "default": 1.2,
+                "note": "line height"
+            },
+            "letterSpacing": {
+                "type": "number",
+                "range": [-100, 100],
+                "default": 0,
+                "note": "letter spacing"
+            }
+        }
 
 class TitleFontTemplate(FontTemplate):
     """用于标题的字体模板"""

@@ -1,0 +1,38 @@
+<svg version="1.1" class="marks" width="490" height="230" viewBox="-100,-100,1000,1000" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><g ><g version="1.1" class="marks" width="490" height="230" viewBox="0 0 490 230"><g fill="none" stroke-miterlimit="10" transform="translate(35,5)"><g class="mark-group role-frame root" role="graphics-object" aria-roledescription="group mark container"><g transform="translate(0,0)" class="mark-group role-axis" role="graphics-symbol" aria-roledescription="axis" aria-label="X-axis for a discrete scale with 3 values: 2021, 2022, 2023"><g transform="translate(0.5,200.5)" class="mark-rule role-axis-tick" pointer-events="none"><line transform="translate(79,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(225,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(370,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/></g>
+<g transform="translate(0.5,200.5)" class="mark-text role-axis-label" pointer-events="none"><text text-anchor="middle" transform="translate(79.33870967741937,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">2021
+</text>
+<text text-anchor="middle" transform="translate(224.5,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">2022
+</text>
+<text text-anchor="middle" transform="translate(369.66129032258067,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">2023
+</text></g>
+<g transform="translate(0.5,200.5)" class="mark-rule role-axis-domain" pointer-events="none"><line transform="translate(0,0)" x2="450" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/></g></g>
+<g transform="translate(0,0)" class="mark-group role-axis" role="graphics-symbol" aria-roledescription="axis" aria-label="Y-axis for a linear scale with values from 0 to 180"><g transform="translate(0.5,0.5)" class="mark-rule role-axis-tick" pointer-events="none"><line transform="translate(0,200)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,144)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,89)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,33)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/></g>
+<g transform="translate(0.5,0.5)" class="mark-text role-axis-label" pointer-events="none"><text text-anchor="end" transform="translate(-10,203)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">0
+</text>
+<text text-anchor="end" transform="translate(-10,147.44444444444443)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">50
+</text>
+<text text-anchor="end" transform="translate(-10,91.88888888888889)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">100
+</text>
+<text text-anchor="end" transform="translate(-10,36.33333333333333)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">150
+</text></g>
+<g transform="translate(0.5,0.5)" class="mark-rule role-axis-domain" pointer-events="none"><line transform="translate(0,200)" x2="0" y2="-200" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/></g></g>
+<g transform="translate(0,0)" class="mark-rect role-mark layer_0_marks" role="graphics-object" aria-roledescription="rect mark container"><path aria-label="Year: 2021; Units: 25.3; Revenue/Expenditure: Tax revenue" role="graphics-symbol" aria-roledescription="bar" d="M36.72580645161292,171.88888888888889h86.22580645161291v28.111111111111114h-86.22580645161291Z" fill="#e41a1c" opacity="1"/>
+<path aria-label="Year: 2021; Units: 5.6; Revenue/Expenditure: Non-tax revenue" role="graphics-symbol" aria-roledescription="bar" d="M36.72580645161292,165.55555555555554h86.22580645161291v6.2222222222222285h-86.22580645161291Z" fill="#4daf4a" opacity="1"/>
+<path aria-label="Year: 2021; Units: 0.4; Revenue/Expenditure: Donations from foreign govs. intl. organizations/institutions" role="graphics-symbol" aria-roledescription="bar" d="M36.72580645161292,124.88888888888887h86.22580645161291v0.4444444444444713h-86.22580645161291Z" fill="#a65628" opacity="1"/>
+<path aria-label="Year: 2021; Units: 0.1; Revenue/Expenditure: Other" role="graphics-symbol" aria-roledescription="bar" d="M36.72580645161292,171.77777777777777h86.22580645161291v0.11111111111111427h-86.22580645161291Z" fill="#999999" opacity="1"/>
+<path aria-label="Year: 2021; Units: 36.2; Revenue/Expenditure: Expenditure" role="graphics-symbol" aria-roledescription="bar" d="M36.72580645161292,125.33333333333334h86.22580645161291v40.2222222222222h-86.22580645161291Z" fill="#ff7f00" opacity="1"/>
+<path aria-label="Year: 2022; Units: 28.4; Revenue/Expenditure: Tax revenue" role="graphics-symbol" aria-roledescription="bar" d="M181.88709677419357,168.44444444444443h86.22580645161291v31.55555555555557h-86.22580645161291Z" fill="#e41a1c" opacity="1"/>
+<path aria-label="Year: 2022; Units: 6.2; Revenue/Expenditure: Non-tax revenue" role="graphics-symbol" aria-roledescription="bar" d="M181.88709677419357,161h86.22580645161291v6.888888888888886h-86.22580645161291Z" fill="#4daf4a" opacity="1"/>
+<path aria-label="Year: 2022; Units: 8.2; Revenue/Expenditure: Donations from foreign govs. intl. organizations/institutions" role="graphics-symbol" aria-roledescription="bar" d="M181.88709677419357,79h86.22580645161291v9.111111111111114h-86.22580645161291Z" fill="#a65628" opacity="1"/>
+<path aria-label="Year: 2022; Units: 0.5; Revenue/Expenditure: Other" role="graphics-symbol" aria-roledescription="bar" d="M181.88709677419357,167.88888888888889h86.22580645161291v0.5555555555555429h-86.22580645161291Z" fill="#999999" opacity="1"/>
+<path aria-label="Year: 2022; Units: 65.6; Revenue/Expenditure: Expenditure" role="graphics-symbol" aria-roledescription="bar" d="M181.88709677419357,88.11111111111111h86.22580645161291v72.88888888888889h-86.22580645161291Z" fill="#ff7f00" opacity="1"/>
+<path aria-label="Year: 2023; Units: 35.4; Revenue/Expenditure: Tax revenue" role="graphics-symbol" aria-roledescription="bar" d="M327.0483870967742,160.66666666666666h86.22580645161291v39.33333333333334h-86.22580645161291Z" fill="#e41a1c" opacity="1"/>
+<path aria-label="Year: 2023; Units: 13.5; Revenue/Expenditure: Non-tax revenue" role="graphics-symbol" aria-roledescription="bar" d="M327.0483870967742,144.66666666666669h86.22580645161291v14.999999999999972h-86.22580645161291Z" fill="#4daf4a" opacity="1"/>
+<path aria-label="Year: 2023; Units: 15; Revenue/Expenditure: Donations from foreign govs. intl. organizations/institutions" role="graphics-symbol" aria-roledescription="bar" d="M327.0483870967742,19.777777777777782h86.22580645161291v16.666666666666675h-86.22580645161291Z" fill="#a65628" opacity="1"/>
+<path aria-label="Year: 2023; Units: 0.9; Revenue/Expenditure: Other" role="graphics-symbol" aria-roledescription="bar" d="M327.0483870967742,159.66666666666666h86.22580645161291v1h-86.22580645161291Z" fill="#999999" opacity="1"/>
+<path aria-label="Year: 2023; Units: 97.4; Revenue/Expenditure: Expenditure" role="graphics-symbol" aria-roledescription="bar" d="M327.0483870967742,36.44444444444446h86.22580645161291v108.22222222222223h-86.22580645161291Z" fill="#ff7f00" opacity="1"/></g></g></g></g></g></svg>
