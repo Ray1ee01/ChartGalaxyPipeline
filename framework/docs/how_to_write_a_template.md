@@ -33,12 +33,19 @@ REQUIREMENTS_BEGIN
     "required_other_colors": ["primary", "secondary"],
     "supported_effects": ["shadow", "radius_corner"],
     "min_height": 300,
-    "min_width": 400
+    "min_width": 400,
+    "background": "no",
+    "icon_mark": "none",
+    "icon_label": "none",
+    "has_x_axis": "yes",
+    "has_y_axis": "yes"
 }
 REQUIREMENTS_END
 ```
 
 ### Key Requirements Fields
+
+注意：requirement字段仅为描述用途，所有的信息都是关于你的template的描述信息。你不需要根据里面的值决定你的绘制。
 
 | Field | Description | Example |
 |-------|-------------|---------|
@@ -55,6 +62,11 @@ REQUIREMENTS_END
 | `supported_effects` | 模板支持的视觉效果，只列出实际实现的效果 | `["shadow", "radius_corner"]` |
 | `min_height` | 图表的最小高度（像素） | `300` |
 | `min_width` | 图表的最小宽度（像素） | `400` |
+| `background` | 数据可视化区域的背景风格<br>- `no`: 没有<br>- `styled`: 具有条纹、网格线或参考线 | `"no"` |
+| `icon_mark` | 如何在可视化中使用小图标与数据标记<br>- `overlay`: 小图标放置在mark上（例如，条形顶部的图标）<br>- `replace`: 使用图标代替mark（例如，用堆叠的图标表示条形）<br>- `side`: 图标放置在数据标记旁边进行注释<br>- `none`: 没有使用图标与标记 | `"none"` |
+| `icon_label` | 如何将图标集成到坐标轴标签中<br>- `side`: 图标与坐标轴文本结合使用（例如，国家名称前的国旗）<br>- `replace`: 使用图标代替文本标签<br>- `none`: 纯文本标签，没有图标 | `"none"` |
+| `has_x_axis` | 图表是否显示X轴<br>- `yes`: 显示X轴<br>- `no`: 不显示X轴 | `"yes"` |
+| `has_y_axis` | 图表是否显示Y轴<br>- `yes`: 显示Y轴<br>- `no`: 不显示Y轴 | `"yes"` |
 
 ### 图标使用说明
 
@@ -63,6 +75,7 @@ REQUIREMENTS_END
 1. **字段相关图标**：通过`dataJson["images"]["field"][value]`获取，格式为base64的ImageUrl
    ```javascript
    // 直接获取字段图标
+   // 假定required_fields_icons = ["x"], 而x的取值包括US和China
    const usIcon = dataJson.images.field["US"];
    const chinaIcon = dataJson.images.field["China"];
    ```
@@ -70,6 +83,7 @@ REQUIREMENTS_END
 2. **其他图标**：通过`dataJson["images"]["other"][iconName]`获取，格式为base64的ImageUrl
    ```javascript
    // 直接获取其他图标
+   // 假定required_other_icons = ["primary", "man"]
    const topicIcon = dataJson.images.other["primary"];
    const manIcon = dataJson.images.other["man"];
    ```
@@ -83,6 +97,7 @@ REQUIREMENTS_END
 1. **字段相关颜色**：通过`dataJson["colors"]["field"][value]`获取，为颜色代码值（如"#FF0000"或"red"）
    ```javascript
    // 直接获取颜色
+   // 假定required_fields_colors = ["x"], 而x的取值包括US和China
    const usColor = dataJson.colors.field["US"];
    const chinaColor = dataJson.colors.field["China"];
    ```
@@ -90,6 +105,7 @@ REQUIREMENTS_END
 2. **其他颜色**：通过`dataJson["colors"]["other"]`获取，为颜色代码值
    ```javascript
    // 直接获取颜色
+   // 假定required_other_colors = ["primary", "secondary"]
    const primaryColor = dataJson.colors.other.primary;
    const secondaryColor = dataJson.colors.other.secondary;
    ```
@@ -177,7 +193,12 @@ REQUIREMENTS_BEGIN
     "required_other_colors": [],
     "supported_effects": ["shadow", "radius_corner"],
     "min_height": 300,
-    "min_width": 400
+    "min_width": 400,
+    "background": "no",
+    "icon_mark": "overlay",
+    "icon_label": "side",
+    "has_x_axis": "yes",
+    "has_y_axis": "yes"
 }
 REQUIREMENTS_END
 */
@@ -360,7 +381,12 @@ REQUIREMENTS_BEGIN
     "required_other_colors": ["primary"],
     "supported_effects": [],
     "min_height": 200,
-    "min_width": 300
+    "min_width": 300,
+    "background": "no",
+    "icon_mark": "none",
+    "icon_label": "none",
+    "has_x_axis": "yes",
+    "has_y_axis": "yes"
 }
 REQUIREMENTS_END
 */
@@ -463,7 +489,12 @@ REQUIREMENTS_BEGIN
     "required_other_colors": ["primary", "secondary"],
     "supported_effects": ["shadow"],
     "min_height": 300,
-    "min_width": 400
+    "min_width": 400,
+    "background": "styled",
+    "icon_mark": "none",
+    "icon_label": "side",
+    "has_x_axis": "yes",
+    "has_y_axis": "yes"
 }
 REQUIREMENTS_END
 '''
@@ -556,7 +587,12 @@ REQUIREMENTS_BEGIN
     "required_other_colors": ["primary", "secondary"],
     "supported_effects": ["shadow", "radius_corner"],
     "min_height": 400,
-    "min_width": 500
+    "min_width": 500,
+    "background": "styled",
+    "icon_mark": "side",
+    "icon_label": "side",
+    "has_x_axis": "yes",
+    "has_y_axis": "yes"
 }
 REQUIREMENTS_END
 */
