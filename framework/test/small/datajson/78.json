@@ -4,52 +4,6 @@
     "description": "Estimated number of U.S. adults in rental housing behind on rent and their perceived eviction risk (as of July 2021)",
     "main_insight": "As of July 2021, 7.43 million US adults were behind on rent, and a significant number of them (3.65m) believed they were somewhat or very likely to be evicted in the next two months."
   },
-  "data": {
-    "columns": [
-      {
-        "name": "Likelihood of eviction in next two months",
-        "importance": "primary",
-        "description": "Categories of perceived eviction risk",
-        "unit": "none",
-        "data_type": "categorical",
-        "role": "x"
-      },
-      {
-        "name": "Number of Adults (millions)",
-        "importance": "primary",
-        "description": "Estimated number of U.S. adults in each category",
-        "unit": "millions",
-        "data_type": "numerical",
-        "role": "y"
-      }
-    ],
-    "data": [
-      {
-        "Likelihood of eviction in next two months": "Behind on rent",
-        "Number of Adults (millions)": 7.43
-      },
-      {
-        "Likelihood of eviction in next two months": "Very likely",
-        "Number of Adults (millions)": 1.4
-      },
-      {
-        "Likelihood of eviction in next two months": "Somewhat likely",
-        "Number of Adults (millions)": 2.25
-      },
-      {
-        "Likelihood of eviction in next two months": "Not very likely",
-        "Number of Adults (millions)": 2.18
-      },
-      {
-        "Likelihood of eviction in next two months": "Not likely at all",
-        "Number of Adults (millions)": 1.52
-      },
-      {
-        "Likelihood of eviction in next two months": "Did not report",
-        "Number of Adults (millions)": 0.09
-      }
-    ]
-  },
   "_extra": {
     "image_data": {
       "original_file": "/home/lizhen/chartdata/new_infographics/Bar Chart/25451.jpeg",
@@ -155,6 +109,82 @@
     },
     "other": {
       "primary": "data:image/png;base64,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"
+    }
+  },
+  "data": [
+    {
+      "Likelihood of eviction in next two months": "Behind on rent",
+      "Number of Adults (millions)": 7.43
+    },
+    {
+      "Likelihood of eviction in next two months": "Very likely",
+      "Number of Adults (millions)": 1.4
+    },
+    {
+      "Likelihood of eviction in next two months": "Somewhat likely",
+      "Number of Adults (millions)": 2.25
+    },
+    {
+      "Likelihood of eviction in next two months": "Not very likely",
+      "Number of Adults (millions)": 2.18
+    },
+    {
+      "Likelihood of eviction in next two months": "Not likely at all",
+      "Number of Adults (millions)": 1.52
+    },
+    {
+      "Likelihood of eviction in next two months": "Did not report",
+      "Number of Adults (millions)": 0.09
+    }
+  ],
+  "data_columns": [
+    {
+      "name": "Likelihood of eviction in next two months",
+      "importance": "primary",
+      "description": "Categories of perceived eviction risk",
+      "unit": "none",
+      "data_type": "categorical",
+      "role": "x"
+    },
+    {
+      "name": "Number of Adults (millions)",
+      "importance": "primary",
+      "description": "Estimated number of U.S. adults in each category",
+      "unit": "millions",
+      "data_type": "numerical",
+      "role": "y"
+    }
+  ],
+  "secondary_data": [],
+  "variables": {
+    "width": 600,
+    "height": 600,
+    "has_rounded_corners": false,
+    "has_shadow": false,
+    "has_spacing": false,
+    "has_gradient": false,
+    "has_stroke": false
+  },
+  "typography": {
+    "title": {
+      "font_family": "Arial",
+      "font_size": "28px",
+      "font_weight": 700
+    },
+    "description": {
+      "font_family": "Arial",
+      "font_size": "16px",
+      "font_weight": 500
+    },
+    "label": {
+      "font_family": "Arial",
+      "font_size": "16px",
+      "font_weight": 500
+    },
+    "annotation": {
+      "font_family": "Arial",
+      "font_size": "12px",
+      "font_weight": 400
     }
   }
 }

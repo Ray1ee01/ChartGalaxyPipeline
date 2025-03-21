@@ -4,276 +4,6 @@
     "description": "Total paid annual leave (statutory minimum leave plus public holidays)*",
     "main_insight": "The UK has one of the lowest total paid annual leave allowances compared to other European countries, and the US has significantly less."
   },
-  "data": {
-    "columns": [
-      {
-        "name": "Country",
-        "importance": "primary",
-        "description": "Country Name",
-        "unit": "none",
-        "data_type": "categorical",
-        "role": "x"
-      },
-      {
-        "name": "Units",
-        "importance": "primary",
-        "description": "Units for the corresponding leave type",
-        "unit": "none",
-        "data_type": "numerical",
-        "role": "y"
-      },
-      {
-        "name": "Leave Type",
-        "importance": "primary",
-        "description": "The leave type of the data point",
-        "unit": "none",
-        "data_type": "categorical",
-        "role": "group"
-      }
-    ],
-    "data": [
-      {
-        "Country": "Spain",
-        "Units": 22.0,
-        "Leave Type": "Paid annual leave (working days)"
-      },
-      {
-        "Country": "Spain",
-        "Units": 14.0,
-        "Leave Type": "Paid public holidays"
-      },
-      {
-        "Country": "Spain",
-        "Units": 36.0,
-        "Leave Type": "Total Paid Leave"
-      },
-      {
-        "Country": "Sweden",
-        "Units": 25.0,
-        "Leave Type": "Paid annual leave (working days)"
-      },
-      {
-        "Country": "Sweden",
-        "Units": 11.0,
-        "Leave Type": "Paid public holidays"
-      },
-      {
-        "Country": "Sweden",
-        "Units": 36.0,
-        "Leave Type": "Total Paid Leave"
-      },
-      {
-        "Country": "Austria",
-        "Units": 22.0,
-        "Leave Type": "Paid annual leave (working days)"
-      },
-      {
-        "Country": "Austria",
-        "Units": 13.0,
-        "Leave Type": "Paid public holidays"
-      },
-      {
-        "Country": "Austria",
-        "Units": 35.0,
-        "Leave Type": "Total Paid Leave"
-      },
-      {
-        "Country": "Finland",
-        "Units": 24.0,
-        "Leave Type": "Paid annual leave (working days)"
-      },
-      {
-        "Country": "Finland",
-        "Units": 11.0,
-        "Leave Type": "Paid public holidays"
-      },
-      {
-        "Country": "Finland",
-        "Units": 35.0,
-        "Leave Type": "Total Paid Leave"
-      },
-      {
-        "Country": "France",
-        "Units": 25.0,
-        "Leave Type": "Paid annual leave (working days)"
-      },
-      {
-        "Country": "France",
-        "Units": 10.0,
-        "Leave Type": "Paid public holidays"
-      },
-      {
-        "Country": "France",
-        "Units": 35.0,
-        "Leave Type": "Total Paid Leave"
-      },
-      {
-        "Country": "Denmark",
-        "Units": 25.0,
-        "Leave Type": "Paid annual leave (working days)"
-      },
-      {
-        "Country": "Denmark",
-        "Units": 9.0,
-        "Leave Type": "Paid public holidays"
-      },
-      {
-        "Country": "Denmark",
-        "Units": 34.0,
-        "Leave Type": "Total Paid Leave"
-      },
-      {
-        "Country": "Italy",
-        "Units": 20.0,
-        "Leave Type": "Paid annual leave (working days)"
-      },
-      {
-        "Country": "Italy",
-        "Units": 12.0,
-        "Leave Type": "Paid public holidays"
-      },
-      {
-        "Country": "Italy",
-        "Units": 32.0,
-        "Leave Type": "Total Paid Leave"
-      },
-      {
-        "Country": "Greece",
-        "Units": 20.0,
-        "Leave Type": "Paid annual leave (working days)"
-      },
-      {
-        "Country": "Greece",
-        "Units": 11.0,
-        "Leave Type": "Paid public holidays"
-      },
-      {
-        "Country": "Greece",
-        "Units": 31.0,
-        "Leave Type": "Total Paid Leave"
-      },
-      {
-        "Country": "Norway",
-        "Units": 21.0,
-        "Leave Type": "Paid annual leave (working days)"
-      },
-      {
-        "Country": "Norway",
-        "Units": 10.0,
-        "Leave Type": "Paid public holidays"
-      },
-      {
-        "Country": "Norway",
-        "Units": 31.0,
-        "Leave Type": "Total Paid Leave"
-      },
-      {
-        "Country": "Belgium",
-        "Units": 20.0,
-        "Leave Type": "Paid annual leave (working days)"
-      },
-      {
-        "Country": "Belgium",
-        "Units": 10.0,
-        "Leave Type": "Paid public holidays"
-      },
-      {
-        "Country": "Belgium",
-        "Units": 30.0,
-        "Leave Type": "Total Paid Leave"
-      },
-      {
-        "Country": "Germany",
-        "Units": 20.0,
-        "Leave Type": "Paid annual leave (working days)"
-      },
-      {
-        "Country": "Germany",
-        "Units": 9.0,
-        "Leave Type": "Paid public holidays"
-      },
-      {
-        "Country": "Germany",
-        "Units": 29.0,
-        "Leave Type": "Total Paid Leave"
-      },
-      {
-        "Country": "Ireland",
-        "Units": 20.0,
-        "Leave Type": "Paid annual leave (working days)"
-      },
-      {
-        "Country": "Ireland",
-        "Units": 9.0,
-        "Leave Type": "Paid public holidays"
-      },
-      {
-        "Country": "Ireland",
-        "Units": 29.0,
-        "Leave Type": "Total Paid Leave"
-      },
-      {
-        "Country": "Portugal",
-        "Units": 20.0,
-        "Leave Type": "Paid annual leave (working days)"
-      },
-      {
-        "Country": "Portugal",
-        "Units": 9.0,
-        "Leave Type": "Paid public holidays"
-      },
-      {
-        "Country": "Portugal",
-        "Units": 29.0,
-        "Leave Type": "Total Paid Leave"
-      },
-      {
-        "Country": "Netherlands",
-        "Units": 20.0,
-        "Leave Type": "Paid annual leave (working days)"
-      },
-      {
-        "Country": "Netherlands",
-        "Units": 8.0,
-        "Leave Type": "Paid public holidays"
-      },
-      {
-        "Country": "Netherlands",
-        "Units": 28.0,
-        "Leave Type": "Total Paid Leave"
-      },
-      {
-        "Country": "U.K.",
-        "Units": 20.0,
-        "Leave Type": "Paid annual leave (working days)"
-      },
-      {
-        "Country": "U.K.",
-        "Units": 8.0,
-        "Leave Type": "Paid public holidays"
-      },
-      {
-        "Country": "U.K.",
-        "Units": 28.0,
-        "Leave Type": "Total Paid Leave"
-      },
-      {
-        "Country": "Switzerland",
-        "Units": 20.0,
-        "Leave Type": "Paid annual leave (working days)"
-      },
-      {
-        "Country": "Switzerland",
-        "Units": 4.0,
-        "Leave Type": "Paid public holidays"
-      },
-      {
-        "Country": "Switzerland",
-        "Units": 24.0,
-        "Leave Type": "Total Paid Leave"
-      }
-    ]
-  },
   "_extra": {
     "image_data": {
       "original_file": "/home/lizhen/chartdata/new_infographics/Bar Chart/4388.jpeg",
@@ -389,6 +119,306 @@
     },
     "other": {
       "primary": "data:image/png;base64,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"
+    }
+  },
+  "data": [
+    {
+      "Country": "Spain",
+      "Units": 22.0,
+      "Leave Type": "Paid annual leave (working days)"
+    },
+    {
+      "Country": "Spain",
+      "Units": 14.0,
+      "Leave Type": "Paid public holidays"
+    },
+    {
+      "Country": "Spain",
+      "Units": 36.0,
+      "Leave Type": "Total Paid Leave"
+    },
+    {
+      "Country": "Sweden",
+      "Units": 25.0,
+      "Leave Type": "Paid annual leave (working days)"
+    },
+    {
+      "Country": "Sweden",
+      "Units": 11.0,
+      "Leave Type": "Paid public holidays"
+    },
+    {
+      "Country": "Sweden",
+      "Units": 36.0,
+      "Leave Type": "Total Paid Leave"
+    },
+    {
+      "Country": "Austria",
+      "Units": 22.0,
+      "Leave Type": "Paid annual leave (working days)"
+    },
+    {
+      "Country": "Austria",
+      "Units": 13.0,
+      "Leave Type": "Paid public holidays"
+    },
+    {
+      "Country": "Austria",
+      "Units": 35.0,
+      "Leave Type": "Total Paid Leave"
+    },
+    {
+      "Country": "Finland",
+      "Units": 24.0,
+      "Leave Type": "Paid annual leave (working days)"
+    },
+    {
+      "Country": "Finland",
+      "Units": 11.0,
+      "Leave Type": "Paid public holidays"
+    },
+    {
+      "Country": "Finland",
+      "Units": 35.0,
+      "Leave Type": "Total Paid Leave"
+    },
+    {
+      "Country": "France",
+      "Units": 25.0,
+      "Leave Type": "Paid annual leave (working days)"
+    },
+    {
+      "Country": "France",
+      "Units": 10.0,
+      "Leave Type": "Paid public holidays"
+    },
+    {
+      "Country": "France",
+      "Units": 35.0,
+      "Leave Type": "Total Paid Leave"
+    },
+    {
+      "Country": "Denmark",
+      "Units": 25.0,
+      "Leave Type": "Paid annual leave (working days)"
+    },
+    {
+      "Country": "Denmark",
+      "Units": 9.0,
+      "Leave Type": "Paid public holidays"
+    },
+    {
+      "Country": "Denmark",
+      "Units": 34.0,
+      "Leave Type": "Total Paid Leave"
+    },
+    {
+      "Country": "Italy",
+      "Units": 20.0,
+      "Leave Type": "Paid annual leave (working days)"
+    },
+    {
+      "Country": "Italy",
+      "Units": 12.0,
+      "Leave Type": "Paid public holidays"
+    },
+    {
+      "Country": "Italy",
+      "Units": 32.0,
+      "Leave Type": "Total Paid Leave"
+    },
+    {
+      "Country": "Greece",
+      "Units": 20.0,
+      "Leave Type": "Paid annual leave (working days)"
+    },
+    {
+      "Country": "Greece",
+      "Units": 11.0,
+      "Leave Type": "Paid public holidays"
+    },
+    {
+      "Country": "Greece",
+      "Units": 31.0,
+      "Leave Type": "Total Paid Leave"
+    },
+    {
+      "Country": "Norway",
+      "Units": 21.0,
+      "Leave Type": "Paid annual leave (working days)"
+    },
+    {
+      "Country": "Norway",
+      "Units": 10.0,
+      "Leave Type": "Paid public holidays"
+    },
+    {
+      "Country": "Norway",
+      "Units": 31.0,
+      "Leave Type": "Total Paid Leave"
+    },
+    {
+      "Country": "Belgium",
+      "Units": 20.0,
+      "Leave Type": "Paid annual leave (working days)"
+    },
+    {
+      "Country": "Belgium",
+      "Units": 10.0,
+      "Leave Type": "Paid public holidays"
+    },
+    {
+      "Country": "Belgium",
+      "Units": 30.0,
+      "Leave Type": "Total Paid Leave"
+    },
+    {
+      "Country": "Germany",
+      "Units": 20.0,
+      "Leave Type": "Paid annual leave (working days)"
+    },
+    {
+      "Country": "Germany",
+      "Units": 9.0,
+      "Leave Type": "Paid public holidays"
+    },
+    {
+      "Country": "Germany",
+      "Units": 29.0,
+      "Leave Type": "Total Paid Leave"
+    },
+    {
+      "Country": "Ireland",
+      "Units": 20.0,
+      "Leave Type": "Paid annual leave (working days)"
+    },
+    {
+      "Country": "Ireland",
+      "Units": 9.0,
+      "Leave Type": "Paid public holidays"
+    },
+    {
+      "Country": "Ireland",
+      "Units": 29.0,
+      "Leave Type": "Total Paid Leave"
+    },
+    {
+      "Country": "Portugal",
+      "Units": 20.0,
+      "Leave Type": "Paid annual leave (working days)"
+    },
+    {
+      "Country": "Portugal",
+      "Units": 9.0,
+      "Leave Type": "Paid public holidays"
+    },
+    {
+      "Country": "Portugal",
+      "Units": 29.0,
+      "Leave Type": "Total Paid Leave"
+    },
+    {
+      "Country": "Netherlands",
+      "Units": 20.0,
+      "Leave Type": "Paid annual leave (working days)"
+    },
+    {
+      "Country": "Netherlands",
+      "Units": 8.0,
+      "Leave Type": "Paid public holidays"
+    },
+    {
+      "Country": "Netherlands",
+      "Units": 28.0,
+      "Leave Type": "Total Paid Leave"
+    },
+    {
+      "Country": "U.K.",
+      "Units": 20.0,
+      "Leave Type": "Paid annual leave (working days)"
+    },
+    {
+      "Country": "U.K.",
+      "Units": 8.0,
+      "Leave Type": "Paid public holidays"
+    },
+    {
+      "Country": "U.K.",
+      "Units": 28.0,
+      "Leave Type": "Total Paid Leave"
+    },
+    {
+      "Country": "Switzerland",
+      "Units": 20.0,
+      "Leave Type": "Paid annual leave (working days)"
+    },
+    {
+      "Country": "Switzerland",
+      "Units": 4.0,
+      "Leave Type": "Paid public holidays"
+    },
+    {
+      "Country": "Switzerland",
+      "Units": 24.0,
+      "Leave Type": "Total Paid Leave"
+    }
+  ],
+  "data_columns": [
+    {
+      "name": "Country",
+      "importance": "primary",
+      "description": "Country Name",
+      "unit": "none",
+      "data_type": "categorical",
+      "role": "x"
+    },
+    {
+      "name": "Units",
+      "importance": "primary",
+      "description": "Units for the corresponding leave type",
+      "unit": "none",
+      "data_type": "numerical",
+      "role": "y"
+    },
+    {
+      "name": "Leave Type",
+      "importance": "primary",
+      "description": "The leave type of the data point",
+      "unit": "none",
+      "data_type": "categorical",
+      "role": "group"
+    }
+  ],
+  "secondary_data": [],
+  "variables": {
+    "width": 600,
+    "height": 600,
+    "has_rounded_corners": false,
+    "has_shadow": false,
+    "has_spacing": false,
+    "has_gradient": false,
+    "has_stroke": false
+  },
+  "typography": {
+    "title": {
+      "font_family": "Arial",
+      "font_size": "28px",
+      "font_weight": 700
+    },
+    "description": {
+      "font_family": "Arial",
+      "font_size": "16px",
+      "font_weight": 500
+    },
+    "label": {
+      "font_family": "Arial",
+      "font_size": "16px",
+      "font_weight": 500
+    },
+    "annotation": {
+      "font_family": "Arial",
+      "font_size": "12px",
+      "font_weight": 400
     }
   }
 }

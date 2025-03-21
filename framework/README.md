@@ -6,6 +6,51 @@
 
 ChartPipeline 是一个模块化、可扩展的数据可视化生成框架，通过一系列专业化模块，将原始数据转换为具有高度设计感和信息表达力的图表。该框架遵循数据驱动的设计原则，自动推荐最佳的图表类型、数据洞察、布局、配色方案和视觉元素，最终生成一份完整的可视化作品。
 
+## 核心模块：图表模板实现引擎 (chart_engine)
+
+**图表模板实现引擎**是ChartPipeline框架的核心渲染引擎，负责将配置信息转换为可视化图表。
+
+### 主要特点
+
+- 支持多种渲染引擎：ECharts (Python/JavaScript) 和 D3.js
+- 提供统一的SVG输出格式
+- 基于模板系统实现多种图表类型
+- 支持递归扫描的模板目录，可以轻松添加新图表类型
+
+### 基本用法
+
+1. 准备JSON格式的输入数据
+2. 运行主程序生成SVG图表:
+
+```bash
+python modules/chart_engine/chart_engine.py --input test/input.json --name donut_chart_01 --output tmp.svg
+python modules/chart_engine/chart_engine.py --input test/testset/data/55.json --name donut_chart_01 --output tmp.svg
+```
+
+参数说明:
+- `--input`: 输入JSON文件路径
+- `--name`: 图表类型名称
+- `--output`: 输出SVG文件路径
+- `--html`: 输出HTML文件路径（可选），用于调试和修改图表代码
+
+### HTML调试模式
+
+使用`--html`参数可以同时导出HTML格式的图表：
+
+```bash
+python modules/chart_engine/chart_engine.py --input test/input.json --name donut_chart_01 --html debug.html
+```
+
+HTML模式的优势:
+- 便于在浏览器中调试图表代码
+- 可以直接修改和测试图表样式和行为
+- 在开发新模板或解决复杂渲染问题时特别有用
+
+### 开发新模板
+
+如需创建自己的图表模板，请参考[如何编写图表模板](docs/how_to_write_a_template.md)文档。
+了解支持的图表类型及其数据要求，请参考[图表类型文档](docs/chart_types_documentation.md)。
+
 ## 目录
 
 - [框架架构](#框架架构)
@@ -367,6 +412,17 @@ ChartPipeline 中的数据流遵循以下规则:
 - 实现复杂的图表组件和交互元素
 - 确保图表遵循推荐的布局和设计规范
 
+**命令行使用**:
+```bash
+python modules/chart_engine/chart_engine.py --input input_data.json --output chart.svg --name chart_name
+```
+
+**程序调用**:
+```python
+from modules.chart_engine.chart_engine import process
+success = process(input='input_data.json', output='chart.svg')
+```
+
 ### 8. 标题元素生成模块 (title_styler)
 
 **功能**: 为标题和副标题生成带有样式的SVG元素。
@@ -427,7 +483,7 @@ python module_name.py --input data.json --output data.json
 
 **7号模块 (chart_engine)**:
 ```bash
-python chart_engine.py --input data.json --output chart.svg
+python modules/chart_engine/chart_engine.py --input data.json --output chart.svg --name chart_name
 ```
 
 **8号模块 (title_styler)**:
@@ -439,3 +495,33 @@ python title_styler.py --input data.json --output title.svg
 ```bash
 python layout_optimizer.py --input_chart chart.svg --input_title title.svg --output final.svg
 ```
+
+### 完整管道执行
+
+要执行完整的可视化生成管道：
+
+```bash
+python pipeline.py --input data.json --output final.svg
+```
+
+## 示例案例
+
+请参考 `test/` 目录下的示例数据和输出。
+
+## 扩展指南
+
+### 添加新的图表模板
+
+如需添加新的图表模板，请参考[如何编写图表模板](docs/how_to_write_a_template.md)文档，了解模板要求和创建过程。
+
+### 图表类型参考
+
+要了解系统支持的图表类型及其数据要求，请参考[图表类型文档](docs/chart_types_documentation.md)。
+
+## 贡献指南
+
+欢迎提交问题报告、功能请求和代码贡献。
+
+## 许可证
+
+本项目采用 MIT 许可证。详情请参阅 LICENSE 文件。

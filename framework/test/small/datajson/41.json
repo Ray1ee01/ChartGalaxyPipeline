@@ -4,126 +4,6 @@
     "description": "Frequency of dining at fast food restaurants among Americans",
     "main_insight": "The frequency of Americans eating fast food has generally decreased from 2003 to 2013, with a notable drop in those eating it several times a week or about once a week."
   },
-  "data": {
-    "columns": [
-      {
-        "name": "Frequency",
-        "importance": "primary",
-        "description": "Frequency of eating at fast food restaurants",
-        "unit": "none",
-        "data_type": "categorical",
-        "role": "x"
-      },
-      {
-        "name": "Score",
-        "importance": "primary",
-        "description": "Score for the corresponding timepoints",
-        "unit": "none",
-        "data_type": "numerical",
-        "role": "y"
-      },
-      {
-        "name": "Timepoints",
-        "importance": "primary",
-        "description": "The timepoints of the data point",
-        "unit": "none",
-        "data_type": "temporal",
-        "role": "group"
-      }
-    ],
-    "data": [
-      {
-        "Frequency": "Every Day",
-        "Score": 4.0,
-        "Timepoints": "July 2003"
-      },
-      {
-        "Frequency": "Every Day",
-        "Score": 3.0,
-        "Timepoints": "December 2006"
-      },
-      {
-        "Frequency": "Every Day",
-        "Score": 3.0,
-        "Timepoints": "July 2013"
-      },
-      {
-        "Frequency": "Several Times a Week",
-        "Score": 17.0,
-        "Timepoints": "July 2003"
-      },
-      {
-        "Frequency": "Several Times a Week",
-        "Score": 20.0,
-        "Timepoints": "December 2006"
-      },
-      {
-        "Frequency": "Several Times a Week",
-        "Score": 15.0,
-        "Timepoints": "July 2013"
-      },
-      {
-        "Frequency": "About Once a Week",
-        "Score": 31.0,
-        "Timepoints": "July 2003"
-      },
-      {
-        "Frequency": "About Once a Week",
-        "Score": 33.0,
-        "Timepoints": "December 2006"
-      },
-      {
-        "Frequency": "About Once a Week",
-        "Score": 27.0,
-        "Timepoints": "July 2013"
-      },
-      {
-        "Frequency": "Once or Twice a Month",
-        "Score": 30.0,
-        "Timepoints": "July 2003"
-      },
-      {
-        "Frequency": "Once or Twice a Month",
-        "Score": 24.0,
-        "Timepoints": "December 2006"
-      },
-      {
-        "Frequency": "Once or Twice a Month",
-        "Score": 33.0,
-        "Timepoints": "July 2013"
-      },
-      {
-        "Frequency": "A few Times a Year",
-        "Score": 13.0,
-        "Timepoints": "July 2003"
-      },
-      {
-        "Frequency": "A few Times a Year",
-        "Score": 14.0,
-        "Timepoints": "December 2006"
-      },
-      {
-        "Frequency": "A few Times a Year",
-        "Score": 15.0,
-        "Timepoints": "July 2013"
-      },
-      {
-        "Frequency": "Never",
-        "Score": 5.0,
-        "Timepoints": "July 2003"
-      },
-      {
-        "Frequency": "Never",
-        "Score": 4.0,
-        "Timepoints": "December 2006"
-      },
-      {
-        "Frequency": "Never",
-        "Score": 5.0,
-        "Timepoints": "July 2013"
-      }
-    ]
-  },
   "_extra": {
     "image_data": {
       "original_file": "/home/lizhen/chartdata/new_infographics/Bar Chart/1349.jpeg",
@@ -229,6 +109,156 @@
     },
     "other": {
       "primary": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAgAAAAIACAYAAAD0eNT6AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAADcBJREFUeNrs3U+IVecZwOEznUmNijrFMG1otceF1UXEGchQiAWv4CoLNd0X53YldKFZFLLyTmdXskizKJ1Vx27adFMlhKwSnEATaC2MYBcTU+pN0ywikUwUq40M9HzjKUZszfy5o/c77/PA4cYuivnu5L6/851zzxQFAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAzTRgCaD/Lc6Pt6qXlpUgqO7g3gtnLENvDVkCyEIa/h3LQFCz1SEAeuxrlgAABAAAIAAAAAEAAAgAAEAAAAACAAAQAACAAAAABAAAIAAAAAEAAAgAAEAAAAACAAAQAACAAAAABAAACAAAQAAAAA01ZAnotemp8nz10srh73ridHfAOwbYAQAABAAAIAAAAAEAAAgAAEAAAAACAAAQAACAAAAABAAAIAAAAAEAAAgAAEAAAAACAAAQAACAAAAAAQAACAAAQAAAAM0xZAkgC7Pr8X/6xuxCJ4d/+c0bB7uHvr/lN34MYr7/CAAIa3Dvhdn1iIDpqTKTAXCne/j4/KSfhKjvP+vBJQAAEAAAgAAAAAQAACAAAAABAAAIAABAAAAAAgAAEAAAgAAAAAQAACAAAAABAAAIAABAAAAAAgAAEAAAIAAAgCCGLAFA45X1kYxWx7AlQQAANEsa8K3q2F//86glQQAANNOx6jhavzq7RwAANPxM/6ShjwAAiKFVHZ36FQQAgMEPAgCgKcrqmDH46TXPAQDoX5PVccXwxw4AQJyz/rOFr/BhBwAgjHRX/5zhjwAAiGOyPvP3tT7WnUsAAP0h3eg3YRmwAwBg+IMAADD8QQAAGP4gAACy84rhjwAAiCUN/lOWAQEAEMdoffYPAgAgiPT9/pnC9/wRAAChdApP+EMAAITSKlz3RwAAhOO6PwIAIJh05m/rHwEAEEi64a9jGRAAAPHO/t31jwAACOakJUAAAMQy4ewfAQDg7B8EAEDDjRbu/EcAAIRz3BIgAADiOWYJEAAAsZT1AQIAwNk/CACAJjtoCRAAAPG4+x8BABBMevBPaRkQAADO/kEAAAgAEAAATePZ/wgAgIC+awkQAADxlJYAAQAACAAAQAAAAAIAABAAAIAAAAAEAAAgAAAAAQAACAAAQAAAgACwBAAgAAAAAQAACAAAQAAAAAIAABAAAIAAAAAEAAAgAAAAAQAACAAAoKeGLMHqLc6PD1cvo/Ufy/oI7/yfbpQ3by3m8h5ORn6v3phdyOLvuXnjYJnLe/Wjn/69/PiTL7JY16dHnvCBFdiAJVj2oEjDvVUd++uhn45hKwOw7mYH9144ZBnsADzKoZ+G/PF68I9aEQAEQHOHfjqrn6iOk4UtfQAEQOMHfxr2nXr4A4AAMPgBQAA0ZfCnrf5T9fAHAAEQYPi3qpeZwjV+AARAmLP+Tn3mDwACIMDwT2f7Zwtf5wOAGI8Crrf85wx/AAgSANXwn6hezhee2gcAMQKgHv4z3mYACBIAhj8ABAsAwx8AggXAl77jDwBECIAvfdUPAIgQAPVDftLwd7c/AATaAUhP+PM9fwCIEgD1dX+P9wWAKAFQb/276Q8Agu0ApDP/0lsJAEECoL7rv+NtBIBYOwCGPwBECoD67H/CWwgAsXYAnP0DQKQAqO/8d/YPAMF2AAx/AAgYACe9dQAQKAAW58fT435Lbx0AxNoBOO5tA4B4AdDytgGEsVAdL1qG3hvI6S9bf/f/ircNIMzwPzS498JFS2EHwNk/gOFPwADY7y0DMPyJFwCj3jIAwx8BAIDhT5MDoH7877C3DMDwJ9YOgLN/AMOfgAEAgOFPwAAovV0Ahj8CAADDnwABAIDhjwAAwPBHAABg+CMAADD8EQAAGP4IAAAMfwEAAIa/AAAAw18AAIDhLwAAwPAXAABg+AsAAAx/BAAAhj8CAADDHwEAgOGPAADA8EcAAGD4IwAAMPwRAAAY/ggAAAx/BAAAhj8CAADDHwEAgOEvACwBAIa/AAAAw18AAGD4IwAAMPwRAAAY/ggAAAx/BAAAhj8CAADDHwEAgOGPAADA8EcAAGD4IwAAMPwRAAAY/ggAAAx/BAAAhj8CAMDwN/wRAACGPwgAAMMfAQCA4Y8AAMDwRwAAYPjTFEOWACBvl7u3i3f+fGO4+se56akyyr92tz5S8HyYXk+c7s76aVi+gVz+oovz45PVS8dbBvDA8LcQ96QIeKc6zlVBYDdEAAAY/gGlHYJz1fFqFQNdy3E/9wAAGP5NVVbHqeq4Mj1Vnq+OliURAACGfyxp+KcISDFwzHIIAADDP96uwNl6R2BUAABg+MfbEUjfmnilOoYFAACGfyyn6hBoCQAADP9YyuLu/QGTAgAAwz+eTn1vQIhLAgIAwPDnnla9G1AKAAAM/1jStwPmmv4tAQEAYPjzoOF6J6CxESAAAAx/AkaAAAAw/Hl4BMw08cZAAQBg+PNwaQfgvAAAwPAPGAHTU+WMAADA8I9nokm/SEgAABj+LN9MU54RIAAADH+Wb+mmQAEAgOEfT6sJlwIGcvmLLs6PT1YvHT93K/fR1SeLTz//+tLrter108+fsCg8Eps2LBY7vnn77uvI7WLPzpuGv+HfFN3qGDtxuruQ67/AkPewef7178Hi4uWtxdwHW4r3/7F56c/wuMx9sPW+P6cISMfY7utLUWD4k6myuPurhCftANgB6IsP2vcuDT/wgQv96qltd4rDz35aPLdvYWmXwPAnM+nsf1euuwB2ABrgvUvfKF5/d8TWPtlJP7Ovvf108fofR4rD49eqGLjWyBAw/BtrOOddAAGQsbS9P/Pmdwx+spcuU6UIeOvC9qUQOHLgquFPLo7nGgC+BZDph+Uv/7CzePl3uwx/GhkCL03vWQpcw58MlNNT5YQA4JGc9b/0q++5zk+jpbBNgZsubRn+ZOCoAGBdvfWX7Usfiu7qJ4q0G5Djz7zhH86xHJ8OKAAyka71p5ulIJq06/Xyb/OJAMM/bgQIANZl+L97adhCEFZ6iFUuEZACgJAOCgAMfwgeAdgBEACsSdryN/xBBJCH6amyJQBYs/Rwn3TTH/BgBPze/TD0JwHA2qRf2PPa29+yEPB/pJ0xgUwfyuo+AAHQh3795rdtccJXSF8RTLEMfaQUAKxaOqtpwhPQYL2lSE6xDAJAADTiAy2d1QDLk2I53S8D/WJ6qhwVAKzq7N/WP6xMzo8LppGy+eqWAOijs//0m9CAlUm/N8AuAAJAADj7B7sA8Di5BMDKOIOBte0CuHkWBEB20q/2TR9gwBoi+q8iGgRAZi5WAQCsMaQvb7EIIAB8cEE06R4alwFAAGQjPdfczX/QG+9/JABAAOTygeWMBfz3BAIg4g7ARosAAgAEQDTu/ofe8guCQADksQPwyZMWAUQ1CIBo3AAIgAAAWCPfBAABAAAIAABAAACAAABohk0bFi0CCAAgmh0jty0CCID+99S2OxYBAAEQzfZtX1gE6KE9O29aBBAAPqwgEjtqIADy+cDa6gMLemXHyC2LAALADgD47wkQAH0q3QPgrmXojbHdNywCCABnLRBJuv7vplpYvqFc/qKDey9MVi+TTXwT2u12Wb1c8eMIq/fcvs8sAtgByMvMzEy3erloJWD1DjyzYBFAAGTpVUsAqzO2+7rtfxAA2e4CnKleulYCVu7ws9csAgiArP3MEsDKpJto3UgLAqAJuwDuBYAV+PHzH1sEEACN8KIlgOU58oOrrv2DAGjMLsBs9fILKwEPl77379o/CICmRUDaBXApAB7iJz/8sNi0YdFCgABonBeqwxeb4X9I1/09QhsEQFN3AbrVyyErAfc7sG/BU/9AADQ+AtJlgLaVgHvDv/38Py0ECIAQEXBGBIDhDwIgbgS4JwDDHxAAASPgXHH3noCu1SCSdMOf4Q8CIHoEpHsCxqrjnNWg6dJd/p3239zwB+tkyBJkFwHpMsAL7Xb7WPpjdQxbFZomPeEvPeTH9/zBDgAPhkDaBdhV3P0FQu4NoBHSL/X5+YnLxZEDVw1/sAPAV+wGTLbb7fTo4FPVcdKOADka23196Yzfb/UDAcDqQyBdGjhav0LfSs/yT9f3Dzyz4Bf6gACgByFwJh1VDAzXEXCwOkbrAx7rwN8xcmvpLH9s9w1DHwQA6x0D//3fqihIEZDCoKwPWPcz/CRd04cgZi0BAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAj9d/BBgA3kvG0w8fvtsAAAAASUVORK5CYII="
+    }
+  },
+  "data": [
+    {
+      "Frequency": "Every Day",
+      "Score": 4.0,
+      "Timepoints": "July 2003"
+    },
+    {
+      "Frequency": "Every Day",
+      "Score": 3.0,
+      "Timepoints": "December 2006"
+    },
+    {
+      "Frequency": "Every Day",
+      "Score": 3.0,
+      "Timepoints": "July 2013"
+    },
+    {
+      "Frequency": "Several Times a Week",
+      "Score": 17.0,
+      "Timepoints": "July 2003"
+    },
+    {
+      "Frequency": "Several Times a Week",
+      "Score": 20.0,
+      "Timepoints": "December 2006"
+    },
+    {
+      "Frequency": "Several Times a Week",
+      "Score": 15.0,
+      "Timepoints": "July 2013"
+    },
+    {
+      "Frequency": "About Once a Week",
+      "Score": 31.0,
+      "Timepoints": "July 2003"
+    },
+    {
+      "Frequency": "About Once a Week",
+      "Score": 33.0,
+      "Timepoints": "December 2006"
+    },
+    {
+      "Frequency": "About Once a Week",
+      "Score": 27.0,
+      "Timepoints": "July 2013"
+    },
+    {
+      "Frequency": "Once or Twice a Month",
+      "Score": 30.0,
+      "Timepoints": "July 2003"
+    },
+    {
+      "Frequency": "Once or Twice a Month",
+      "Score": 24.0,
+      "Timepoints": "December 2006"
+    },
+    {
+      "Frequency": "Once or Twice a Month",
+      "Score": 33.0,
+      "Timepoints": "July 2013"
+    },
+    {
+      "Frequency": "A few Times a Year",
+      "Score": 13.0,
+      "Timepoints": "July 2003"
+    },
+    {
+      "Frequency": "A few Times a Year",
+      "Score": 14.0,
+      "Timepoints": "December 2006"
+    },
+    {
+      "Frequency": "A few Times a Year",
+      "Score": 15.0,
+      "Timepoints": "July 2013"
+    },
+    {
+      "Frequency": "Never",
+      "Score": 5.0,
+      "Timepoints": "July 2003"
+    },
+    {
+      "Frequency": "Never",
+      "Score": 4.0,
+      "Timepoints": "December 2006"
+    },
+    {
+      "Frequency": "Never",
+      "Score": 5.0,
+      "Timepoints": "July 2013"
+    }
+  ],
+  "data_columns": [
+    {
+      "name": "Frequency",
+      "importance": "primary",
+      "description": "Frequency of eating at fast food restaurants",
+      "unit": "none",
+      "data_type": "categorical",
+      "role": "x"
+    },
+    {
+      "name": "Score",
+      "importance": "primary",
+      "description": "Score for the corresponding timepoints",
+      "unit": "none",
+      "data_type": "numerical",
+      "role": "y"
+    },
+    {
+      "name": "Timepoints",
+      "importance": "primary",
+      "description": "The timepoints of the data point",
+      "unit": "none",
+      "data_type": "temporal",
+      "role": "group"
+    }
+  ],
+  "secondary_data": [],
+  "variables": {
+    "width": 600,
+    "height": 600,
+    "has_rounded_corners": false,
+    "has_shadow": false,
+    "has_spacing": false,
+    "has_gradient": false,
+    "has_stroke": false
+  },
+  "typography": {
+    "title": {
+      "font_family": "Arial",
+      "font_size": "28px",
+      "font_weight": 700
+    },
+    "description": {
+      "font_family": "Arial",
+      "font_size": "16px",
+      "font_weight": 500
+    },
+    "label": {
+      "font_family": "Arial",
+      "font_size": "16px",
+      "font_weight": 500
+    },
+    "annotation": {
+      "font_family": "Arial",
+      "font_size": "12px",
+      "font_weight": 400
     }
   }
 }

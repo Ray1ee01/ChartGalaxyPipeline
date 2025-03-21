@@ -4,246 +4,6 @@
     "description": "Spotify's worldwide monthly active users and premium subscribers (in millions)",
     "main_insight": "Spotify's premium subscribers and MAUs have steadily increased from Q1 2015 to Q2 2018, with premium subscribers reaching 83 million by Q2 2018."
   },
-  "data": {
-    "columns": [
-      {
-        "name": "Quarter",
-        "importance": "primary",
-        "description": "Represents the quarter and year",
-        "unit": "none",
-        "data_type": "temporal",
-        "role": "x"
-      },
-      {
-        "name": "Units",
-        "importance": "primary",
-        "description": "Units for the corresponding metric",
-        "unit": "none",
-        "data_type": "numerical",
-        "role": "y"
-      },
-      {
-        "name": "Metric",
-        "importance": "primary",
-        "description": "The metric of the data point",
-        "unit": "none",
-        "data_type": "categorical",
-        "role": "group"
-      }
-    ],
-    "data": [
-      {
-        "Quarter": "Q1 2015",
-        "Units": 18.0,
-        "Metric": "Premium Subscribers"
-      },
-      {
-        "Quarter": "Q1 2015",
-        "Units": 68.0,
-        "Metric": "MAUs"
-      },
-      {
-        "Quarter": "Q1 2015",
-        "Units": 26.0,
-        "Metric": "Subscribers/MAUs"
-      },
-      {
-        "Quarter": "Q2 2015",
-        "Units": 22.0,
-        "Metric": "Premium Subscribers"
-      },
-      {
-        "Quarter": "Q2 2015",
-        "Units": 75.0,
-        "Metric": "MAUs"
-      },
-      {
-        "Quarter": "Q2 2015",
-        "Units": 29.0,
-        "Metric": "Subscribers/MAUs"
-      },
-      {
-        "Quarter": "Q3 2015",
-        "Units": 24.0,
-        "Metric": "Premium Subscribers"
-      },
-      {
-        "Quarter": "Q3 2015",
-        "Units": 83.0,
-        "Metric": "MAUs"
-      },
-      {
-        "Quarter": "Q3 2015",
-        "Units": 29.0,
-        "Metric": "Subscribers/MAUs"
-      },
-      {
-        "Quarter": "Q4 2015",
-        "Units": 28.0,
-        "Metric": "Premium Subscribers"
-      },
-      {
-        "Quarter": "Q4 2015",
-        "Units": 91.0,
-        "Metric": "MAUs"
-      },
-      {
-        "Quarter": "Q4 2015",
-        "Units": 31.0,
-        "Metric": "Subscribers/MAUs"
-      },
-      {
-        "Quarter": "Q1 2016",
-        "Units": 31.0,
-        "Metric": "Premium Subscribers"
-      },
-      {
-        "Quarter": "Q1 2016",
-        "Units": 99.0,
-        "Metric": "MAUs"
-      },
-      {
-        "Quarter": "Q1 2016",
-        "Units": 31.0,
-        "Metric": "Subscribers/MAUs"
-      },
-      {
-        "Quarter": "Q2 2016",
-        "Units": 35.0,
-        "Metric": "Premium Subscribers"
-      },
-      {
-        "Quarter": "Q2 2016",
-        "Units": 100.0,
-        "Metric": "MAUs"
-      },
-      {
-        "Quarter": "Q2 2016",
-        "Units": 35.0,
-        "Metric": "Subscribers/MAUs"
-      },
-      {
-        "Quarter": "Q3 2016",
-        "Units": 39.0,
-        "Metric": "Premium Subscribers"
-      },
-      {
-        "Quarter": "Q3 2016",
-        "Units": 111.0,
-        "Metric": "MAUs"
-      },
-      {
-        "Quarter": "Q3 2016",
-        "Units": 35.0,
-        "Metric": "Subscribers/MAUs"
-      },
-      {
-        "Quarter": "Q4 2016",
-        "Units": 43.0,
-        "Metric": "Premium Subscribers"
-      },
-      {
-        "Quarter": "Q4 2016",
-        "Units": 124.0,
-        "Metric": "MAUs"
-      },
-      {
-        "Quarter": "Q4 2016",
-        "Units": 35.0,
-        "Metric": "Subscribers/MAUs"
-      },
-      {
-        "Quarter": "Q1 2017",
-        "Units": 49.0,
-        "Metric": "Premium Subscribers"
-      },
-      {
-        "Quarter": "Q1 2017",
-        "Units": 127.0,
-        "Metric": "MAUs"
-      },
-      {
-        "Quarter": "Q1 2017",
-        "Units": 39.0,
-        "Metric": "Subscribers/MAUs"
-      },
-      {
-        "Quarter": "Q2 2017",
-        "Units": 58.0,
-        "Metric": "Premium Subscribers"
-      },
-      {
-        "Quarter": "Q2 2017",
-        "Units": 148.0,
-        "Metric": "MAUs"
-      },
-      {
-        "Quarter": "Q2 2017",
-        "Units": 39.0,
-        "Metric": "Subscribers/MAUs"
-      },
-      {
-        "Quarter": "Q3 2017",
-        "Units": 64.0,
-        "Metric": "Premium Subscribers"
-      },
-      {
-        "Quarter": "Q3 2017",
-        "Units": 148.0,
-        "Metric": "MAUs"
-      },
-      {
-        "Quarter": "Q3 2017",
-        "Units": 43.0,
-        "Metric": "Subscribers/MAUs"
-      },
-      {
-        "Quarter": "Q4 2017",
-        "Units": 71.0,
-        "Metric": "Premium Subscribers"
-      },
-      {
-        "Quarter": "Q4 2017",
-        "Units": 168.0,
-        "Metric": "MAUs"
-      },
-      {
-        "Quarter": "Q4 2017",
-        "Units": 42.0,
-        "Metric": "Subscribers/MAUs"
-      },
-      {
-        "Quarter": "Q1 2018",
-        "Units": 75.0,
-        "Metric": "Premium Subscribers"
-      },
-      {
-        "Quarter": "Q1 2018",
-        "Units": 170.0,
-        "Metric": "MAUs"
-      },
-      {
-        "Quarter": "Q1 2018",
-        "Units": 45.0,
-        "Metric": "Subscribers/MAUs"
-      },
-      {
-        "Quarter": "Q2 2018",
-        "Units": 83.0,
-        "Metric": "Premium Subscribers"
-      },
-      {
-        "Quarter": "Q2 2018",
-        "Units": 180.0,
-        "Metric": "MAUs"
-      },
-      {
-        "Quarter": "Q2 2018",
-        "Units": 46.0,
-        "Metric": "Subscribers/MAUs"
-      }
-    ]
-  },
   "_extra": {
     "image_data": {
       "original_file": "/home/lizhen/chartdata/new_infographics/Line Graph/13098.jpeg",
@@ -346,6 +106,276 @@
     },
     "other": {
       "primary": "data:image/png;base64,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"
+    }
+  },
+  "data": [
+    {
+      "Quarter": "Q1 2015",
+      "Units": 18.0,
+      "Metric": "Premium Subscribers"
+    },
+    {
+      "Quarter": "Q1 2015",
+      "Units": 68.0,
+      "Metric": "MAUs"
+    },
+    {
+      "Quarter": "Q1 2015",
+      "Units": 26.0,
+      "Metric": "Subscribers/MAUs"
+    },
+    {
+      "Quarter": "Q2 2015",
+      "Units": 22.0,
+      "Metric": "Premium Subscribers"
+    },
+    {
+      "Quarter": "Q2 2015",
+      "Units": 75.0,
+      "Metric": "MAUs"
+    },
+    {
+      "Quarter": "Q2 2015",
+      "Units": 29.0,
+      "Metric": "Subscribers/MAUs"
+    },
+    {
+      "Quarter": "Q3 2015",
+      "Units": 24.0,
+      "Metric": "Premium Subscribers"
+    },
+    {
+      "Quarter": "Q3 2015",
+      "Units": 83.0,
+      "Metric": "MAUs"
+    },
+    {
+      "Quarter": "Q3 2015",
+      "Units": 29.0,
+      "Metric": "Subscribers/MAUs"
+    },
+    {
+      "Quarter": "Q4 2015",
+      "Units": 28.0,
+      "Metric": "Premium Subscribers"
+    },
+    {
+      "Quarter": "Q4 2015",
+      "Units": 91.0,
+      "Metric": "MAUs"
+    },
+    {
+      "Quarter": "Q4 2015",
+      "Units": 31.0,
+      "Metric": "Subscribers/MAUs"
+    },
+    {
+      "Quarter": "Q1 2016",
+      "Units": 31.0,
+      "Metric": "Premium Subscribers"
+    },
+    {
+      "Quarter": "Q1 2016",
+      "Units": 99.0,
+      "Metric": "MAUs"
+    },
+    {
+      "Quarter": "Q1 2016",
+      "Units": 31.0,
+      "Metric": "Subscribers/MAUs"
+    },
+    {
+      "Quarter": "Q2 2016",
+      "Units": 35.0,
+      "Metric": "Premium Subscribers"
+    },
+    {
+      "Quarter": "Q2 2016",
+      "Units": 100.0,
+      "Metric": "MAUs"
+    },
+    {
+      "Quarter": "Q2 2016",
+      "Units": 35.0,
+      "Metric": "Subscribers/MAUs"
+    },
+    {
+      "Quarter": "Q3 2016",
+      "Units": 39.0,
+      "Metric": "Premium Subscribers"
+    },
+    {
+      "Quarter": "Q3 2016",
+      "Units": 111.0,
+      "Metric": "MAUs"
+    },
+    {
+      "Quarter": "Q3 2016",
+      "Units": 35.0,
+      "Metric": "Subscribers/MAUs"
+    },
+    {
+      "Quarter": "Q4 2016",
+      "Units": 43.0,
+      "Metric": "Premium Subscribers"
+    },
+    {
+      "Quarter": "Q4 2016",
+      "Units": 124.0,
+      "Metric": "MAUs"
+    },
+    {
+      "Quarter": "Q4 2016",
+      "Units": 35.0,
+      "Metric": "Subscribers/MAUs"
+    },
+    {
+      "Quarter": "Q1 2017",
+      "Units": 49.0,
+      "Metric": "Premium Subscribers"
+    },
+    {
+      "Quarter": "Q1 2017",
+      "Units": 127.0,
+      "Metric": "MAUs"
+    },
+    {
+      "Quarter": "Q1 2017",
+      "Units": 39.0,
+      "Metric": "Subscribers/MAUs"
+    },
+    {
+      "Quarter": "Q2 2017",
+      "Units": 58.0,
+      "Metric": "Premium Subscribers"
+    },
+    {
+      "Quarter": "Q2 2017",
+      "Units": 148.0,
+      "Metric": "MAUs"
+    },
+    {
+      "Quarter": "Q2 2017",
+      "Units": 39.0,
+      "Metric": "Subscribers/MAUs"
+    },
+    {
+      "Quarter": "Q3 2017",
+      "Units": 64.0,
+      "Metric": "Premium Subscribers"
+    },
+    {
+      "Quarter": "Q3 2017",
+      "Units": 148.0,
+      "Metric": "MAUs"
+    },
+    {
+      "Quarter": "Q3 2017",
+      "Units": 43.0,
+      "Metric": "Subscribers/MAUs"
+    },
+    {
+      "Quarter": "Q4 2017",
+      "Units": 71.0,
+      "Metric": "Premium Subscribers"
+    },
+    {
+      "Quarter": "Q4 2017",
+      "Units": 168.0,
+      "Metric": "MAUs"
+    },
+    {
+      "Quarter": "Q4 2017",
+      "Units": 42.0,
+      "Metric": "Subscribers/MAUs"
+    },
+    {
+      "Quarter": "Q1 2018",
+      "Units": 75.0,
+      "Metric": "Premium Subscribers"
+    },
+    {
+      "Quarter": "Q1 2018",
+      "Units": 170.0,
+      "Metric": "MAUs"
+    },
+    {
+      "Quarter": "Q1 2018",
+      "Units": 45.0,
+      "Metric": "Subscribers/MAUs"
+    },
+    {
+      "Quarter": "Q2 2018",
+      "Units": 83.0,
+      "Metric": "Premium Subscribers"
+    },
+    {
+      "Quarter": "Q2 2018",
+      "Units": 180.0,
+      "Metric": "MAUs"
+    },
+    {
+      "Quarter": "Q2 2018",
+      "Units": 46.0,
+      "Metric": "Subscribers/MAUs"
+    }
+  ],
+  "data_columns": [
+    {
+      "name": "Quarter",
+      "importance": "primary",
+      "description": "Represents the quarter and year",
+      "unit": "none",
+      "data_type": "temporal",
+      "role": "x"
+    },
+    {
+      "name": "Units",
+      "importance": "primary",
+      "description": "Units for the corresponding metric",
+      "unit": "none",
+      "data_type": "numerical",
+      "role": "y"
+    },
+    {
+      "name": "Metric",
+      "importance": "primary",
+      "description": "The metric of the data point",
+      "unit": "none",
+      "data_type": "categorical",
+      "role": "group"
+    }
+  ],
+  "secondary_data": [],
+  "variables": {
+    "width": 600,
+    "height": 600,
+    "has_rounded_corners": false,
+    "has_shadow": false,
+    "has_spacing": false,
+    "has_gradient": false,
+    "has_stroke": false
+  },
+  "typography": {
+    "title": {
+      "font_family": "Arial",
+      "font_size": "28px",
+      "font_weight": 700
+    },
+    "description": {
+      "font_family": "Arial",
+      "font_size": "16px",
+      "font_weight": 500
+    },
+    "label": {
+      "font_family": "Arial",
+      "font_size": "16px",
+      "font_weight": 500
+    },
+    "annotation": {
+      "font_family": "Arial",
+      "font_size": "12px",
+      "font_weight": 400
     }
   }
 }

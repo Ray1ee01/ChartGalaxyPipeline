@@ -2,7 +2,8 @@ import json
 import os
 import sys
 import random
-from template.template_registry import get_template_for_chart_type
+import argparse
+from template.template_registry import get_template_for_chart_type, get_template_for_chart_name
 from utils.load_charts import render_chart_to_svg
 from utils.file_utils import create_temp_file, cleanup_temp_file, ensure_temp_dir, create_fallback_svg
 
@@ -19,50 +20,75 @@ def load_data_from_json(json_file_path="input.json"):
     with open(json_file_path, 'r', encoding='utf-8') as f:
         return json.load(f)
 
-def determine_chart_type(json_data):
+def parse_arguments():
     """
-    Determine the appropriate chart type based on the JSON data
-    
-    Args:
-        json_data: The JSON data containing chart information
+    Parse command-line arguments
     
     Returns:
-        String indicating the chart type
+        Namespace containing the parsed arguments
     """
-    # For testing purpose - this time we want to use the JS template
-    return "Simple Bar Chart"
-    # return "Line Chart"
-    #return json_data['requirements']['chart_type'].lower()
+    parser = argparse.ArgumentParser(description='Generate chart SVG from JSON data')
+    parser.add_argument('--input', type=str, default='input.json',
+                        help='Path to input JSON file (default: input.json)')
+    parser.add_argument('--output', type=str, default=None,
+                        help='Path to output SVG file (default: auto-generated in tmp directory)')
+    parser.add_argument('--name', type=str, default=None,
+                        help='Chart name to use (default: uses value from JSON or a default name)')
+    parser.add_argument('--html', type=str, default=None,
+                        help='Path to save intermediate HTML file (default: not saved)')
+    
+    return parser.parse_args()
 
 if __name__ == '__main__':
-    # 只保留必要的日志输出
+    # Parse command-line arguments
+    args = parse_arguments()
+    
     # Ensure tmp directory exists
     tmp_dir = ensure_temp_dir()
     
-    # Load data from input.json
-    json_data = load_data_from_json("../../test/small/datajson/3.json")
+    # Load data from input JSON file
+    try:
+        json_data = load_data_from_json(args.input)
+        print(f"Loaded data from {args.input}")
+    except Exception as e:
+        print(f"Error loading JSON data from {args.input}: {e}")
+        sys.exit(1)
     
-    # Determine chart type based on the JSON data
-    chart_type = determine_chart_type(json_data)
-    print(f"Detected chart type: {chart_type}")
+    # Determine chart name (from args, JSON, or default)
+    chart_name = args.name
+    if chart_name is None:
+        # Try to get chart name from JSON data (if your JSON structure contains this info)
+        chart_name = json_data.get("chart_name", "donut_chart_01")
+    
+    print(f"Using chart name: {chart_name}")
     
     # Get the appropriate template for this chart type
     # Prefer JavaScript template for testing
-    engine, template = get_template_for_chart_type(chart_type, engine_preference=['echarts-js', 'echarts-py', 'd3-js'])
+    engine, template = get_template_for_chart_name(chart_name, engine_preference=['echarts-js', 'echarts-py', 'd3-js'])
     
     if engine is None:
-        print(f"Error: No template found for chart type '{chart_type}'")
+        print(f"Error: No template found for chart name '{chart_name}'")
         sys.exit(1)
     
-    print(f"Using {engine} template for {chart_type}")
+    print(f"Using {engine} template for {chart_name}")
     
     # Get dimensions from JSON data
     width = json_data.get("variables", {}).get("width", 1200)
     height = json_data.get("variables", {}).get("height", 800)
     print(f"Using dimensions: {width}x{height}")
     
-    # Generate a random output SVG filename
-    output_svg_path = os.path.join(tmp_dir, f"{chart_type.replace(' ', '_')}_{random.randint(1000, 9999)}.svg")
+    # Determine output SVG path
+    if args.output:
+        output_svg_path = args.output
+    else:
+        # Generate a random output SVG filename in tmp directory
+        output_svg_path = os.path.join(tmp_dir, f"{chart_name.replace(' ', '_')}_{random.randint(1000, 9999)}.svg")
+    
+    # Check if HTML output is requested
+    html_output_path = args.html
+    if html_output_path:
+        print(f"HTML output will be saved to: {html_output_path}")
+    
     svg_file = None
     error_message = None
     
@@ -94,10 +120,10 @@ if __name__ == '__main__':
                     json_data=json_data,
                     output_svg_path=output_svg_path,
                     js_file=js_wrapper_file,
-                    chart_type=chart_type,
                     width=width,
                     height=height,
-                    framework="echarts"  # 统一使用echarts框架
+                    framework="echarts",  # 统一使用echarts框架
+                    html_output_path=html_output_path,  # Pass HTML output path
                 )
                 
                 if svg_file is None:
@@ -114,19 +140,16 @@ if __name__ == '__main__':
                 cleanup_temp_file(echarts_options_file)
             
         elif engine == 'echarts-js':
-            # Use JavaScript ECharts template
-            js_file = template
-            
             # 使用统一的render_chart_to_svg函数直接生成SVG
             try:
                 svg_file = render_chart_to_svg(
                     json_data=json_data,
                     output_svg_path=output_svg_path,
-                    js_file=js_file,
-                    chart_type=chart_type,
+                    js_file=template,
                     width=width,
                     height=height,
-                    framework="echarts"
+                    framework="echarts",
+                    html_output_path=html_output_path,  # Pass HTML output path
                 )
                 
                 if svg_file is None:
@@ -139,23 +162,16 @@ if __name__ == '__main__':
                 raise Exception(f"Failed to generate ECharts JavaScript chart: {error_message}")
         
         elif engine == 'd3-js':
-            # Use D3.js template
-            js_code = template
-            
-            # Add chart_type to the data if not already present
-            if "chart_type" not in json_data or json_data["chart_type"] == []:
-                json_data["chart_type"] = chart_type
-            
             # 使用统一的render_chart_to_svg函数直接生成SVG
             try:
                 svg_file = render_chart_to_svg(
                     json_data=json_data,
                     output_svg_path=output_svg_path,
-                    js_file=js_code,
-                    chart_type=chart_type,
+                    js_file=template,
                     width=width,
                     height=height,
-                    framework="d3"
+                    framework="d3",
+                    html_output_path=html_output_path,  # Pass HTML output path
                 )
                 
                 if svg_file is None:
@@ -181,16 +197,14 @@ if __name__ == '__main__':
             print("Creating fallback SVG with error message...")
             svg_file = create_fallback_svg(
                 output_path=output_svg_path,
-                chart_type=chart_type,
                 width=width,
                 height=height,
                 error_message=error_message
             )
     
     if svg_file is not None and os.path.exists(svg_file):
-        # 使用文件名而非完整路径
-        filename = os.path.basename(svg_file)
-        print(f"Final SVG output: {filename}")
+        # Output the final SVG path
+        print(f"Final SVG output: {svg_file}")
     else:
         print("Error: No SVG file was generated")
         sys.exit(1)

@@ -4,68 +4,6 @@
     "description": "Professions of ex-NFL players listed on LinkedIn (2017)",
     "main_insight": "The most common professions for former NFL players on LinkedIn are small business/entrepreneurship and sales, while a significant portion (23%) fall under 'Other'."
   },
-  "data": {
-    "columns": [
-      {
-        "name": "Profession",
-        "importance": "primary",
-        "description": "The profession of ex-NFL players",
-        "unit": "none",
-        "data_type": "categorical",
-        "role": "x"
-      },
-      {
-        "name": "Percentage",
-        "importance": "primary",
-        "description": "Percentage of ex-NFL players in each profession",
-        "unit": "%",
-        "data_type": "numerical",
-        "role": "y"
-      }
-    ],
-    "data": [
-      {
-        "Profession": "Small business/entrepreneur",
-        "Percentage": 20.0
-      },
-      {
-        "Profession": "Sales",
-        "Percentage": 18.0
-      },
-      {
-        "Profession": "Coaching/fitness professional",
-        "Percentage": 9.0
-      },
-      {
-        "Profession": "Finance/insurance/banking",
-        "Percentage": 8.0
-      },
-      {
-        "Profession": "Campus & professional athletics",
-        "Percentage": 5.0
-      },
-      {
-        "Profession": "Media & sports broadcasting",
-        "Percentage": 3.0
-      },
-      {
-        "Profession": "Real estate",
-        "Percentage": 3.0
-      },
-      {
-        "Profession": "Education",
-        "Percentage": 3.0
-      },
-      {
-        "Profession": "Nonprofit/board member",
-        "Percentage": 2.0
-      },
-      {
-        "Profession": "Other",
-        "Percentage": 23.0
-      }
-    ]
-  },
   "_extra": {
     "image_data": {
       "original_file": "/home/lizhen/chartdata/new_infographics/Bar Chart/19179.jpeg",
@@ -175,6 +113,98 @@
     },
     "other": {
       "primary": "data:image/png;base64,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"
+    }
+  },
+  "data": [
+    {
+      "Profession": "Small business/entrepreneur",
+      "Percentage": 20.0
+    },
+    {
+      "Profession": "Sales",
+      "Percentage": 18.0
+    },
+    {
+      "Profession": "Coaching/fitness professional",
+      "Percentage": 9.0
+    },
+    {
+      "Profession": "Finance/insurance/banking",
+      "Percentage": 8.0
+    },
+    {
+      "Profession": "Campus & professional athletics",
+      "Percentage": 5.0
+    },
+    {
+      "Profession": "Media & sports broadcasting",
+      "Percentage": 3.0
+    },
+    {
+      "Profession": "Real estate",
+      "Percentage": 3.0
+    },
+    {
+      "Profession": "Education",
+      "Percentage": 3.0
+    },
+    {
+      "Profession": "Nonprofit/board member",
+      "Percentage": 2.0
+    },
+    {
+      "Profession": "Other",
+      "Percentage": 23.0
+    }
+  ],
+  "data_columns": [
+    {
+      "name": "Profession",
+      "importance": "primary",
+      "description": "The profession of ex-NFL players",
+      "unit": "none",
+      "data_type": "categorical",
+      "role": "x"
+    },
+    {
+      "name": "Percentage",
+      "importance": "primary",
+      "description": "Percentage of ex-NFL players in each profession",
+      "unit": "%",
+      "data_type": "numerical",
+      "role": "y"
+    }
+  ],
+  "secondary_data": [],
+  "variables": {
+    "width": 600,
+    "height": 600,
+    "has_rounded_corners": false,
+    "has_shadow": false,
+    "has_spacing": false,
+    "has_gradient": false,
+    "has_stroke": false
+  },
+  "typography": {
+    "title": {
+      "font_family": "Arial",
+      "font_size": "28px",
+      "font_weight": 700
+    },
+    "description": {
+      "font_family": "Arial",
+      "font_size": "16px",
+      "font_weight": 500
+    },
+    "label": {
+      "font_family": "Arial",
+      "font_size": "16px",
+      "font_weight": 500
+    },
+    "annotation": {
+      "font_family": "Arial",
+      "font_size": "12px",
+      "font_weight": 400
     }
   }
 }

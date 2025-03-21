@@ -1,14 +1,23 @@
 /*
 REQUIREMENTS_BEGIN
 {
-    "_comment": "这些属性的值由你对特定的图表进行定义，用于要求数据的格式。完成测试后填写。",
-    "chart_type": "Custom Bar Chart",
-    "chart_name": "custom_bar_chart_01",
-    "required_fields": ["Country", "Score", "Retailer Type"],
-    "required_fields_type": ["string", "number", "string"],
-    "required_data_points": [5, 100],
-    "width": [500, 1000],
-    "height": [300, 800]
+    "chart_type": "Bar Chart",
+    "chart_name": "stacked_bar_chart_01",
+    "required_fields": ["x", "y", "group"],
+    "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
+    "required_fields_range": [[2, 10], [0, 100], [2, 8]],
+    "required_fields_icons": ["x"],
+    "required_other_icons": ["primary"],
+    "required_fields_colors": ["group"],
+    "required_other_colors": ["primary"],
+    "supported_effects": ["shadow", "radius_corner"],
+    "min_height": 400,
+    "min_width": 500,
+    "background": "no",
+    "icon_mark": "none",
+    "icon_label": "side",
+    "has_x_axis": "yes",
+    "has_y_axis": "yes"
 }
 REQUIREMENTS_END
 */
@@ -27,106 +36,129 @@ function make_option(jsonData) {
     try {
         const data = jsonData.data;
         const variables = jsonData.variables;
+        const typography = jsonData.typography || {};
+        const colors = jsonData.colors || {};
+        const images = jsonData.images || { field: {}, other: {} };
+        const dataColumns = jsonData.data_columns || [];
         
-        // Extract field names from variables
-        const xField = variables.x_axis.field;
-        const yField = variables.y_axis.field;
-        const colorField = variables.color.mark_color.field;
+        // Extract field names from data_columns
+        const xField = dataColumns[0].name;
+        const yField = dataColumns[1].name;
+        const colorField = dataColumns[2].name;
         
-        // Get color range from input
-        const colorDomain = variables.color.mark_color.domain || [];
-        const colorRange = variables.color.mark_color.range || [];
-        
-        // Color mapping function
+        // Color mapping function using the colors from json_data
         const getColor = (category) => {
-            const index = colorDomain.indexOf(category);
-            return index >= 0 ? colorRange[index] : '#d10000'; // Default to red if not found
+            return colors.field && colors.field[category] ? colors.field[category] : colors.other.primary;
         };
         
         // Group data by x-axis field (e.g., Country)
         const categories = [...new Set(data.map(item => item[xField]))];
         
-        // Get all unique retailer types
-        const retailerTypes = colorDomain.length > 0 ? colorDomain : 
-            [...new Set(data.map(item => item[colorField]))];
+        // Get all unique group values
+        const groupValues = [...new Set(data.map(item => item[colorField]))];
         
         // Transform data for ECharts series
         const seriesData = {};
-        retailerTypes.forEach(type => {
+        groupValues.forEach(type => {
             seriesData[type] = [];
         });
         
-        // For each category and retailer type, find the corresponding value
+        // For each category and group value, find the corresponding value
         categories.forEach(category => {
             // Find all data points for this category
             const categoryData = data.filter(item => item[xField] === category);
             
-            // For each retailer type, find the corresponding value or use 0
-            retailerTypes.forEach(retailerType => {
-                const dataItem = categoryData.find(item => item[colorField] === retailerType);
+            // For each group value, find the corresponding value or use 0
+            groupValues.forEach(groupValue => {
+                const dataItem = categoryData.find(item => item[colorField] === groupValue);
                 const value = dataItem ? dataItem[yField] : 0;
-                seriesData[retailerType].push(value);
+                seriesData[groupValue].push(value);
             });
         });
         
         // Chart configuration based on json data
         const chartHeight = variables.height || 600;
         const chartWidth = variables.width || 800;
-        const textColor = variables.color.text_color || '#333';
+        const textColor = colors.text_color || '#333';
         
         // Create series array for ECharts
-        const series = retailerTypes.map(type => {
+        const series = groupValues.map(type => {
             return {
                 name: type,
                 type: 'bar',
                 stack: 'total',
                 emphasis: {
-                    focus: 'series'
+                    focus: 'series',
+                    itemStyle: {
+                        shadowBlur: 10,
+                        shadowColor: 'rgba(0, 0, 0, 0.5)'
+                    }
                 },
                 label: {
                     show: true,
                     position: 'inside',
                     formatter: '{c}',
                     color: '#fff',
-                    fontSize: 12
+                    fontSize: parseInt(typography.label?.font_size) || 12,
+                    fontFamily: typography.label?.font_family || 'Arial'
                 },
                 itemStyle: {
                     color: getColor(type),
-                    borderRadius: variables.mark && variables.mark.has_rounded_corners ? [0, 0, 3, 3] : 0,
-                    shadowBlur: variables.mark && variables.mark.has_shadow ? 5 : 0,
+                    borderRadius: variables.has_rounded_corners ? [0, 0, 3, 3] : 0,
+                    shadowBlur: variables.has_shadow ? 5 : 0,
                     shadowColor: 'rgba(0, 0, 0, 0.3)',
-                    borderWidth: variables.mark && variables.mark.has_stroke ? 1 : 0,
-                    borderColor: variables.color.stroke_color || '#fff'
+                    borderWidth: variables.has_stroke ? 1 : 0,
+                    borderColor: colors.stroke_color || '#fff'
                 },
                 data: seriesData[type]
             };
         });
         
+        // Create x-axis labels with icons if available
+        const xAxisLabels = categories.map(category => {
+            if (images.field && images.field[category]) {
+                return {
+                    value: category,
+                    textStyle: {
+                        rich: {
+                            img: {
+                                height: 20,
+                                align: 'center'
+                            }
+                        }
+                    }
+                };
+            }
+            return category;
+        });
+        
         // Return ECharts option object
         return {
-            backgroundColor: '#ffffff',
+            backgroundColor: colors.background_color || '#ffffff',
             title: {
-                text: 'Distribution by Retailer Type',
-                subtext: 'Data grouped by country',
+                text: variables.title && variables.title.text ? variables.title.text : 'Bar Chart',
                 left: 'center',
+                top: 10,
                 textStyle: {
                     color: textColor,
-                    fontFamily: jsonData.typography?.title?.font_family || 'Arial',
-                    fontSize: parseInt(jsonData.typography?.title?.font_size) || 18,
-                    fontWeight: jsonData.typography?.title?.font_weight || 'bold'
-                },
-                subtextStyle: {
-                    color: textColor,
-                    fontFamily: jsonData.typography?.subtitle?.font_family || 'Arial',
-                    fontSize: parseInt(jsonData.typography?.subtitle?.font_size) || 14
+                    fontFamily: typography.title?.font_family || 'Arial',
+                    fontSize: parseInt(typography.title?.font_size) || 18,
+                    fontWeight: typography.title?.font_weight || 'bold'
+                }
+            },
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'shadow'
                 }
             },
             legend: {
-                data: retailerTypes,
+                data: groupValues,
                 top: '40px',
                 textStyle: {
                     color: textColor,
-                    fontSize: 12
+                    fontSize: parseInt(typography.label?.font_size) || 12,
+                    fontFamily: typography.label?.font_family || 'Arial'
                 },
                 icon: 'roundRect'
             },
@@ -145,9 +177,30 @@ function make_option(jsonData) {
                 },
                 axisLabel: {
                     color: textColor,
-                    fontSize: 12,
+                    fontSize: parseInt(typography.label?.font_size) || 12,
+                    fontFamily: typography.label?.font_family || 'Arial',
                     interval: 0,
-                    rotate: categories.length > 5 ? 45 : 0 // Rotate labels if too many categories
+                    rotate: categories.length > 5 ? 30 : 0, // Rotate labels if too many categories
+                    formatter: function(value) {
+                        // Check if we have an icon for this category
+                        if (images.field && images.field[value]) {
+                            // Return formatted label with icon
+                            return `{img|}\n${value}`;
+                        }
+                        return value;
+                    },
+                    rich: {
+                        img: {
+                            height: 20,
+                            align: 'center',
+                            backgroundColor: {
+                                image: function(params) {
+                                    const category = params.value;
+                                    return images.field[category];
+                                }
+                            }
+                        }
+                    }
                 }
             },
             yAxis: {
@@ -155,7 +208,8 @@ function make_option(jsonData) {
                 name: yField,
                 nameTextStyle: {
                     color: textColor,
-                    fontSize: 12,
+                    fontSize: parseInt(typography.label?.font_size) || 12,
+                    fontFamily: typography.label?.font_family || 'Arial',
                     padding: [0, 0, 0, 40]
                 },
                 axisLine: {
@@ -164,7 +218,8 @@ function make_option(jsonData) {
                 },
                 axisLabel: {
                     color: textColor,
-                    fontSize: 12
+                    fontSize: parseInt(typography.label?.font_size) || 12,
+                    fontFamily: typography.label?.font_family || 'Arial'
                 },
                 splitLine: {
                     lineStyle: { color: '#eee' }

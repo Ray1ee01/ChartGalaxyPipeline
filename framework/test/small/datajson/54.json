@@ -4,156 +4,6 @@
     "description": "Market capitalization (in billion U.S. dollars)",
     "main_insight": "Google/Alphabet's market capitalization surpassed Apple's in early 2016, making it the most valuable company."
   },
-  "data": {
-    "columns": [
-      {
-        "name": "Month",
-        "importance": "primary",
-        "description": "Month of the year",
-        "unit": "none",
-        "data_type": "temporal",
-        "role": "x"
-      },
-      {
-        "name": "Units",
-        "importance": "primary",
-        "description": "Units for the corresponding company",
-        "unit": "none",
-        "data_type": "numerical",
-        "role": "y"
-      },
-      {
-        "name": "Company",
-        "importance": "primary",
-        "description": "The company of the data point",
-        "unit": "none",
-        "data_type": "categorical",
-        "role": "group"
-      }
-    ],
-    "data": [
-      {
-        "Month": "Feb. 2015",
-        "Units": 370.0,
-        "Company": "Google/Alphabet"
-      },
-      {
-        "Month": "Feb. 2015",
-        "Units": 720.0,
-        "Company": "Apple"
-      },
-      {
-        "Month": "Mar. 2015",
-        "Units": 380.0,
-        "Company": "Google/Alphabet"
-      },
-      {
-        "Month": "Mar. 2015",
-        "Units": 750.0,
-        "Company": "Apple"
-      },
-      {
-        "Month": "Apr. 2015",
-        "Units": 360.0,
-        "Company": "Google/Alphabet"
-      },
-      {
-        "Month": "Apr. 2015",
-        "Units": 730.0,
-        "Company": "Apple"
-      },
-      {
-        "Month": "May 2015",
-        "Units": 370.0,
-        "Company": "Google/Alphabet"
-      },
-      {
-        "Month": "May 2015",
-        "Units": 740.0,
-        "Company": "Apple"
-      },
-      {
-        "Month": "Jun. 2015",
-        "Units": 380.0,
-        "Company": "Google/Alphabet"
-      },
-      {
-        "Month": "Jun. 2015",
-        "Units": 700.0,
-        "Company": "Apple"
-      },
-      {
-        "Month": "Jul. 2015",
-        "Units": 450.0,
-        "Company": "Google/Alphabet"
-      },
-      {
-        "Month": "Jul. 2015",
-        "Units": 750.0,
-        "Company": "Apple"
-      },
-      {
-        "Month": "Aug. 2015",
-        "Units": 450.0,
-        "Company": "Google/Alphabet"
-      },
-      {
-        "Month": "Aug. 2015",
-        "Units": 620.0,
-        "Company": "Apple"
-      },
-      {
-        "Month": "Sep. 2015",
-        "Units": 470.0,
-        "Company": "Google/Alphabet"
-      },
-      {
-        "Month": "Sep. 2015",
-        "Units": 610.0,
-        "Company": "Apple"
-      },
-      {
-        "Month": "Oct. 2015",
-        "Units": 500.0,
-        "Company": "Google/Alphabet"
-      },
-      {
-        "Month": "Oct. 2015",
-        "Units": 630.0,
-        "Company": "Apple"
-      },
-      {
-        "Month": "Nov. 2015",
-        "Units": 540.0,
-        "Company": "Google/Alphabet"
-      },
-      {
-        "Month": "Nov. 2015",
-        "Units": 650.0,
-        "Company": "Apple"
-      },
-      {
-        "Month": "Dec. 2015",
-        "Units": 530.0,
-        "Company": "Google/Alphabet"
-      },
-      {
-        "Month": "Dec. 2015",
-        "Units": 600.0,
-        "Company": "Apple"
-      },
-      {
-        "Month": "Jan. 2016",
-        "Units": 528.01,
-        "Company": "Google/Alphabet"
-      },
-      {
-        "Month": "Jan. 2016",
-        "Units": 553.07,
-        "Company": "Apple"
-      }
-    ]
-  },
   "_extra": {
     "image_data": {
       "original_file": "/home/lizhen/chartdata/new_infographics/Line Graph/4307.jpeg",
@@ -255,6 +105,186 @@
     },
     "other": {
       "primary": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAgAAAAIACAYAAAD0eNT6AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAACKZJREFUeNrs2bFqU1Ecx/GjXrqkqb1LJU6ZWnAKdHAS4hs45AF8gjxANpc+QF+gPkDfwYCTQ+BOQjNdl4S6XMFmcalpoC9gA57D//OBi+vlnNTflyQlAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAKNlkOvv48DgJiOmFI4CY47/952r7fHjz9t2P79++Nk4FBAAQY/wfiQAQAECw8RcBIACAoOMvAkAAAEHHXwSAAACCjr8IAAEABB1/EQACAAg6/iIABAAQdPxFAAgAIOj4iwAQAEDQ8RcBIACAoOMvAkAAAEHHXwSAAACCjr8IAAEABB1/EQACAAg6/iIABAAQdPxFAAgAIOj4iwAQAEDQ8RcBIACAoOMvAkAAAEHHXwSAAACCjr8IAAEABB1/EQACAAg6/iIABAAQdPxFAAgAIOj4iwAQAEDQ8RcBIACAoOMvAkAAAEHHXwSAAACCjr8IAAEABB1/EQACAIx/0PEXASAAwPgHJwJAAIDxFwGAAADjLwIAAQDGXwQAAgCMvwgABAAYfxEACAAw/iIAEABg/EUAIADA+IsAEACOAIy/CAABABh/EQACADD+IgAEAGD8RQAIAMD4iwAQAGD8EQEgAMD4IwJAAIDxRwSAAADjjwgAAQDGHxEAAgCMPyIABAAYf0QACAAw/ogAEABg/BEBIADA+CMCQACA8RcBIgAEABh/EQAIADD+IgAEABh/4y8CQACA8UcEgAAA448IAAEAxh8RAMWqHAHBFTH+9eko1WejIg60u2lSt2xKufvP/gQQAEC2DvrHqTcYFvGum1XrwqAAzx0BAAgAAEAAAAACAAAQAACAAAAABAAAIAAAAAEAAAgAAEAAAAACAAAQAACAAAAABAAAIAAAAAEAAAgAABAAAIAAAAAEAAAgAAAAAQAACAAAQAAAAAIAABAAAIAAAAAEAAAgAAAAAQAACAAAQAAAAAIAABAAACAAAAABAAAIAABAAAAAAgAAEAAAQN6q6Acwmc7ufQzI3e1ivnsAfAMAAAgAAEAAAAACAAAQAAAgAAAAAQAACAAAQAAAAAIAABAAAIAAAAAEAAAgAAAAAQAACAAAQAAAAAIAABAAAIAAAAAEAAAgAAAAAQAAAgAAEAAAgAAAAAQAACAAAAABAAAIAABAAAAAAgAAEAAAgAAAAAQAACAAAAABAAAIAABAAAAAAgAABAAAEETlCMrQez1Mh4NhEe96t27TZtW6NPcPCACe6uE//5PzcRkvu5gbAPfv0iBzfgIAAAEAAAgAAEAAAAACAAAQAACAAAAABAAAIAAAAAEAAAgAAEAAAAACAAAQAACAAAAABAAAIAAAAAEAAAIAABAAAIAAAAAEAAAgAAAAAQAACAAAQAAAAAIAABAAAIAAAAAEAAAgAAAAAQAACAAAQAAAAAIAAAQAACAAAAABAAAIAABAAAAAAgAAyFzlCMpwt25TWszLeVfcfwEm09kXn664ri8v3gsAsrdZtbsH989ejR0BUfkJAAAEAAAgAAAAAQAACAAAQAAAAAIAABAAAIAAAAAEAAAgAAAAAQAACAAAQAAAAAIAABAAAIAAAAAEAAAIAABAAAAAAgAAEAAAgAAAAAQAACAAAAABAAAIAABAAAAAAgAAEAAAgAAAAAQAACAAAAABAAAIAAAQAACAAAAABAAAIAAAAAEAAAgAACBzlSMow6vzcTrZPiX4uZin2+2D+8f94xsAAEAAAAACAAAQAACAAAAABAAAIAAAAAEAAAgAAEAAAAACAAAEAAAgAAAAAQAACAAAQAAAAAIAABAAAIAAAAAEAAAgAAAAAQAACAAAQAAAAAIAABAAAIAAAAAEAAAIAABAAAAAAgAAEAAAgAAAAAQAACAAAAABAAAIAABAAAAAAgAAEAAAgAAAAP5R5QjK8Of3r7RZt8W8K+4f948AYA+6ZbN7cP+4f9gHPwEAgAAAAAQAACAAAAABAAAIAABAAAAAAgAAEAAAgAAAAAQAACAAAAABAAAIAABAAAAAAgAAEAAAgAAAAAEAAAgAAEAAAAACAAAQAACAAAAABAAAIAAAAAEAAAgAAEAAAAACAAAQAACAAAAABAAAIAAAAAEAAAIAABAAAIAAAAAEAAAgAAAAAQAAZK5yBGWoT0epPhsV8a7dTZO6ZePS3D/uHwHAUx30j1NvMCziXTer1oW5f9w/mfMTAAAIAABAAAAAAgAAEAAAgAAAAAQAACAAAAABAAAIAABAAAAAAgAAEAAAgAAAAAQAACAAAAABAAAIAAAQAACAAAAABAAAIAAAAAEAAAgAAEAAAAACAAAQAACAAAAABAAAIAAAAAEAAAgAAEAAAAACAAAQAAAgAAAAAQAACAAAQAAAAAIAABAAAEDmnkU/gMl0du9jABDP9eVF6A30DQAACAAAQAAAAAIAABAAAIAAAAAEAAAgAAAAAQAACAAAQAAAAAIAABAAAIAAAAAEAAAgAAAAAQAACAAAEAAAgAAAAAQAACAAAAABAAAIAABAAAAAAgAAEAAAgAAAAAQAACAAAAABAAAIAABAAAAAAgAAEAAAIAAAAAEAAAgAAEAAAAACAAAQAABA5qroB1C/PPIpAEAAhAuAo75PAQDh+AkAAAQAACAAAAABAAAIAABAAAAAAgAAEAAAgAAAAAQAACAAAAABAAAIAABAAAAAAgAAEAAAgAAAAAQAAAgAAEAAAAACAAAQAACAAAAABAAAIAAAAAEAAAgAAEAAAAACAAAQAACAAAAABAAAIAAAAAEAAAgAABAAAIAAAAAEAAAgAAAAAQAACAAAIHOVI0ifHAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADwf/0VYAAoXW+1AqqBowAAAABJRU5ErkJggg=="
+    }
+  },
+  "data": [
+    {
+      "Month": "Feb. 2015",
+      "Units": 370.0,
+      "Company": "Google/Alphabet"
+    },
+    {
+      "Month": "Feb. 2015",
+      "Units": 720.0,
+      "Company": "Apple"
+    },
+    {
+      "Month": "Mar. 2015",
+      "Units": 380.0,
+      "Company": "Google/Alphabet"
+    },
+    {
+      "Month": "Mar. 2015",
+      "Units": 750.0,
+      "Company": "Apple"
+    },
+    {
+      "Month": "Apr. 2015",
+      "Units": 360.0,
+      "Company": "Google/Alphabet"
+    },
+    {
+      "Month": "Apr. 2015",
+      "Units": 730.0,
+      "Company": "Apple"
+    },
+    {
+      "Month": "May 2015",
+      "Units": 370.0,
+      "Company": "Google/Alphabet"
+    },
+    {
+      "Month": "May 2015",
+      "Units": 740.0,
+      "Company": "Apple"
+    },
+    {
+      "Month": "Jun. 2015",
+      "Units": 380.0,
+      "Company": "Google/Alphabet"
+    },
+    {
+      "Month": "Jun. 2015",
+      "Units": 700.0,
+      "Company": "Apple"
+    },
+    {
+      "Month": "Jul. 2015",
+      "Units": 450.0,
+      "Company": "Google/Alphabet"
+    },
+    {
+      "Month": "Jul. 2015",
+      "Units": 750.0,
+      "Company": "Apple"
+    },
+    {
+      "Month": "Aug. 2015",
+      "Units": 450.0,
+      "Company": "Google/Alphabet"
+    },
+    {
+      "Month": "Aug. 2015",
+      "Units": 620.0,
+      "Company": "Apple"
+    },
+    {
+      "Month": "Sep. 2015",
+      "Units": 470.0,
+      "Company": "Google/Alphabet"
+    },
+    {
+      "Month": "Sep. 2015",
+      "Units": 610.0,
+      "Company": "Apple"
+    },
+    {
+      "Month": "Oct. 2015",
+      "Units": 500.0,
+      "Company": "Google/Alphabet"
+    },
+    {
+      "Month": "Oct. 2015",
+      "Units": 630.0,
+      "Company": "Apple"
+    },
+    {
+      "Month": "Nov. 2015",
+      "Units": 540.0,
+      "Company": "Google/Alphabet"
+    },
+    {
+      "Month": "Nov. 2015",
+      "Units": 650.0,
+      "Company": "Apple"
+    },
+    {
+      "Month": "Dec. 2015",
+      "Units": 530.0,
+      "Company": "Google/Alphabet"
+    },
+    {
+      "Month": "Dec. 2015",
+      "Units": 600.0,
+      "Company": "Apple"
+    },
+    {
+      "Month": "Jan. 2016",
+      "Units": 528.01,
+      "Company": "Google/Alphabet"
+    },
+    {
+      "Month": "Jan. 2016",
+      "Units": 553.07,
+      "Company": "Apple"
+    }
+  ],
+  "data_columns": [
+    {
+      "name": "Month",
+      "importance": "primary",
+      "description": "Month of the year",
+      "unit": "none",
+      "data_type": "temporal",
+      "role": "x"
+    },
+    {
+      "name": "Units",
+      "importance": "primary",
+      "description": "Units for the corresponding company",
+      "unit": "none",
+      "data_type": "numerical",
+      "role": "y"
+    },
+    {
+      "name": "Company",
+      "importance": "primary",
+      "description": "The company of the data point",
+      "unit": "none",
+      "data_type": "categorical",
+      "role": "group"
+    }
+  ],
+  "secondary_data": [],
+  "variables": {
+    "width": 600,
+    "height": 600,
+    "has_rounded_corners": false,
+    "has_shadow": false,
+    "has_spacing": false,
+    "has_gradient": false,
+    "has_stroke": false
+  },
+  "typography": {
+    "title": {
+      "font_family": "Arial",
+      "font_size": "28px",
+      "font_weight": 700
+    },
+    "description": {
+      "font_family": "Arial",
+      "font_size": "16px",
+      "font_weight": 500
+    },
+    "label": {
+      "font_family": "Arial",
+      "font_size": "16px",
+      "font_weight": 500
+    },
+    "annotation": {
+      "font_family": "Arial",
+      "font_size": "12px",
+      "font_weight": 400
     }
   }
 }

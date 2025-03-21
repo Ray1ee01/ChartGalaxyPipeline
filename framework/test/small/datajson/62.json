@@ -4,186 +4,6 @@
     "description": "Channels used for investment transactions in the last three months (in %)",
     "main_insight": "Online and physical bank branches are the most popular channels for investment transactions, with usage varying significantly across different regions."
   },
-  "data": {
-    "columns": [
-      {
-        "name": "Region",
-        "importance": "primary",
-        "description": "Geographic region of survey respondents",
-        "unit": "none",
-        "data_type": "categorical",
-        "role": "x"
-      },
-      {
-        "name": "Score",
-        "importance": "primary",
-        "description": "Score for the corresponding channel",
-        "unit": "none",
-        "data_type": "numerical",
-        "role": "y"
-      },
-      {
-        "name": "Channel",
-        "importance": "primary",
-        "description": "The channel of the data point",
-        "unit": "none",
-        "data_type": "categorical",
-        "role": "group"
-      }
-    ],
-    "data": [
-      {
-        "Region": "Asia-Pacific",
-        "Score": 74.0,
-        "Channel": "Online"
-      },
-      {
-        "Region": "Asia-Pacific",
-        "Score": 77.0,
-        "Channel": "Physical Bank"
-      },
-      {
-        "Region": "Asia-Pacific",
-        "Score": 36.0,
-        "Channel": "Mobile Phone"
-      },
-      {
-        "Region": "Asia-Pacific",
-        "Score": 30.0,
-        "Channel": "Phone (call center)"
-      },
-      {
-        "Region": "Asia-Pacific",
-        "Score": 21.0,
-        "Channel": "Online Investment Broker"
-      },
-      {
-        "Region": "Asia-Pacific",
-        "Score": 18.0,
-        "Channel": "Financial Planner"
-      },
-      {
-        "Region": "Europe",
-        "Score": 60.0,
-        "Channel": "Online"
-      },
-      {
-        "Region": "Europe",
-        "Score": 59.0,
-        "Channel": "Physical Bank"
-      },
-      {
-        "Region": "Europe",
-        "Score": 17.0,
-        "Channel": "Mobile Phone"
-      },
-      {
-        "Region": "Europe",
-        "Score": 19.0,
-        "Channel": "Phone (call center)"
-      },
-      {
-        "Region": "Europe",
-        "Score": 14.0,
-        "Channel": "Online Investment Broker"
-      },
-      {
-        "Region": "Europe",
-        "Score": 14.0,
-        "Channel": "Financial Planner"
-      },
-      {
-        "Region": "Latin America",
-        "Score": 58.0,
-        "Channel": "Online"
-      },
-      {
-        "Region": "Latin America",
-        "Score": 85.0,
-        "Channel": "Physical Bank"
-      },
-      {
-        "Region": "Latin America",
-        "Score": 24.0,
-        "Channel": "Mobile Phone"
-      },
-      {
-        "Region": "Latin America",
-        "Score": 31.0,
-        "Channel": "Phone (call center)"
-      },
-      {
-        "Region": "Latin America",
-        "Score": 11.0,
-        "Channel": "Online Investment Broker"
-      },
-      {
-        "Region": "Latin America",
-        "Score": 15.0,
-        "Channel": "Financial Planner"
-      },
-      {
-        "Region": "Middle East/Africa",
-        "Score": 63.0,
-        "Channel": "Online"
-      },
-      {
-        "Region": "Middle East/Africa",
-        "Score": 55.0,
-        "Channel": "Physical Bank"
-      },
-      {
-        "Region": "Middle East/Africa",
-        "Score": 34.0,
-        "Channel": "Mobile Phone"
-      },
-      {
-        "Region": "Middle East/Africa",
-        "Score": 28.0,
-        "Channel": "Phone (call center)"
-      },
-      {
-        "Region": "Middle East/Africa",
-        "Score": 17.0,
-        "Channel": "Online Investment Broker"
-      },
-      {
-        "Region": "Middle East/Africa",
-        "Score": 23.0,
-        "Channel": "Financial Planner"
-      },
-      {
-        "Region": "North America",
-        "Score": 55.0,
-        "Channel": "Online"
-      },
-      {
-        "Region": "North America",
-        "Score": 53.0,
-        "Channel": "Physical Bank"
-      },
-      {
-        "Region": "North America",
-        "Score": 21.0,
-        "Channel": "Mobile Phone"
-      },
-      {
-        "Region": "North America",
-        "Score": 30.0,
-        "Channel": "Phone (call center)"
-      },
-      {
-        "Region": "North America",
-        "Score": 27.0,
-        "Channel": "Online Investment Broker"
-      },
-      {
-        "Region": "North America",
-        "Score": 31.0,
-        "Channel": "Financial Planner"
-      }
-    ]
-  },
   "_extra": {
     "image_data": {
       "original_file": "/home/lizhen/chartdata/new_infographics/Bar Chart/467.jpeg",
@@ -288,6 +108,216 @@
     },
     "other": {
       "primary": "data:image/png;base64,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"
+    }
+  },
+  "data": [
+    {
+      "Region": "Asia-Pacific",
+      "Score": 74.0,
+      "Channel": "Online"
+    },
+    {
+      "Region": "Asia-Pacific",
+      "Score": 77.0,
+      "Channel": "Physical Bank"
+    },
+    {
+      "Region": "Asia-Pacific",
+      "Score": 36.0,
+      "Channel": "Mobile Phone"
+    },
+    {
+      "Region": "Asia-Pacific",
+      "Score": 30.0,
+      "Channel": "Phone (call center)"
+    },
+    {
+      "Region": "Asia-Pacific",
+      "Score": 21.0,
+      "Channel": "Online Investment Broker"
+    },
+    {
+      "Region": "Asia-Pacific",
+      "Score": 18.0,
+      "Channel": "Financial Planner"
+    },
+    {
+      "Region": "Europe",
+      "Score": 60.0,
+      "Channel": "Online"
+    },
+    {
+      "Region": "Europe",
+      "Score": 59.0,
+      "Channel": "Physical Bank"
+    },
+    {
+      "Region": "Europe",
+      "Score": 17.0,
+      "Channel": "Mobile Phone"
+    },
+    {
+      "Region": "Europe",
+      "Score": 19.0,
+      "Channel": "Phone (call center)"
+    },
+    {
+      "Region": "Europe",
+      "Score": 14.0,
+      "Channel": "Online Investment Broker"
+    },
+    {
+      "Region": "Europe",
+      "Score": 14.0,
+      "Channel": "Financial Planner"
+    },
+    {
+      "Region": "Latin America",
+      "Score": 58.0,
+      "Channel": "Online"
+    },
+    {
+      "Region": "Latin America",
+      "Score": 85.0,
+      "Channel": "Physical Bank"
+    },
+    {
+      "Region": "Latin America",
+      "Score": 24.0,
+      "Channel": "Mobile Phone"
+    },
+    {
+      "Region": "Latin America",
+      "Score": 31.0,
+      "Channel": "Phone (call center)"
+    },
+    {
+      "Region": "Latin America",
+      "Score": 11.0,
+      "Channel": "Online Investment Broker"
+    },
+    {
+      "Region": "Latin America",
+      "Score": 15.0,
+      "Channel": "Financial Planner"
+    },
+    {
+      "Region": "Middle East/Africa",
+      "Score": 63.0,
+      "Channel": "Online"
+    },
+    {
+      "Region": "Middle East/Africa",
+      "Score": 55.0,
+      "Channel": "Physical Bank"
+    },
+    {
+      "Region": "Middle East/Africa",
+      "Score": 34.0,
+      "Channel": "Mobile Phone"
+    },
+    {
+      "Region": "Middle East/Africa",
+      "Score": 28.0,
+      "Channel": "Phone (call center)"
+    },
+    {
+      "Region": "Middle East/Africa",
+      "Score": 17.0,
+      "Channel": "Online Investment Broker"
+    },
+    {
+      "Region": "Middle East/Africa",
+      "Score": 23.0,
+      "Channel": "Financial Planner"
+    },
+    {
+      "Region": "North America",
+      "Score": 55.0,
+      "Channel": "Online"
+    },
+    {
+      "Region": "North America",
+      "Score": 53.0,
+      "Channel": "Physical Bank"
+    },
+    {
+      "Region": "North America",
+      "Score": 21.0,
+      "Channel": "Mobile Phone"
+    },
+    {
+      "Region": "North America",
+      "Score": 30.0,
+      "Channel": "Phone (call center)"
+    },
+    {
+      "Region": "North America",
+      "Score": 27.0,
+      "Channel": "Online Investment Broker"
+    },
+    {
+      "Region": "North America",
+      "Score": 31.0,
+      "Channel": "Financial Planner"
+    }
+  ],
+  "data_columns": [
+    {
+      "name": "Region",
+      "importance": "primary",
+      "description": "Geographic region of survey respondents",
+      "unit": "none",
+      "data_type": "categorical",
+      "role": "x"
+    },
+    {
+      "name": "Score",
+      "importance": "primary",
+      "description": "Score for the corresponding channel",
+      "unit": "none",
+      "data_type": "numerical",
+      "role": "y"
+    },
+    {
+      "name": "Channel",
+      "importance": "primary",
+      "description": "The channel of the data point",
+      "unit": "none",
+      "data_type": "categorical",
+      "role": "group"
+    }
+  ],
+  "secondary_data": [],
+  "variables": {
+    "width": 600,
+    "height": 600,
+    "has_rounded_corners": false,
+    "has_shadow": false,
+    "has_spacing": false,
+    "has_gradient": false,
+    "has_stroke": false
+  },
+  "typography": {
+    "title": {
+      "font_family": "Arial",
+      "font_size": "28px",
+      "font_weight": 700
+    },
+    "description": {
+      "font_family": "Arial",
+      "font_size": "16px",
+      "font_weight": 500
+    },
+    "label": {
+      "font_family": "Arial",
+      "font_size": "16px",
+      "font_weight": 500
+    },
+    "annotation": {
+      "font_family": "Arial",
+      "font_size": "12px",
+      "font_weight": 400
     }
   }
 }

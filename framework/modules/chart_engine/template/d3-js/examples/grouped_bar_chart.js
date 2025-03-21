@@ -1,16 +1,23 @@
 /*
 REQUIREMENTS_BEGIN
 {
-    "_comment": "这些属性的值由你对特定的图表进行定义，用于要求数据的格式。完成测试后填写。",
     "chart_type": "Grouped Bar Chart",
     "chart_name": "grouped_bar_chart_01",
     "required_fields": ["x", "y", "group"],
-    "required_fields_type": ["string", "number", "string"],
-    "supported_effects": ["shadow", "gradient", "rounded_corners", "stroke", "spacing"],
-    "required_data_points": [5, 100],
-    "required_image": ["people"],
-    "height": [500, 800],
-    "x_range": [2, 9]
+    "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
+    "required_fields_range": [[2, 10], [0, 100], [2, 8]],
+    "required_fields_icons": ["x"],
+    "required_other_icons": ["primary"],
+    "required_fields_colors": ["group"],
+    "required_other_colors": ["primary"],
+    "supported_effects": ["shadow", "gradient", "radius_corner"],
+    "min_height": 400,
+    "min_width": 500,
+    "background": "no",
+    "icon_mark": "none",
+    "icon_label": "side",
+    "has_x_axis": "yes",
+    "has_y_axis": "yes"
 }
 REQUIREMENTS_END
 */
@@ -20,8 +27,10 @@ function makeChart(containerSelector, data) {
     const jsonData = data;
     const chartData = jsonData.data;
     const variables = jsonData.variables;
-    const constants = jsonData.constants;
     const typography = jsonData.typography;
+    const colors = jsonData.colors || {};
+    const images = jsonData.images || { field: {}, other: {} };
+    const dataColumns = jsonData.data_columns || [];
 
     d3.select(containerSelector).html("");
     
@@ -32,19 +41,19 @@ function makeChart(containerSelector, data) {
     const innerWidth = width - margin.left - margin.right;
     const innerHeight = height - margin.top - margin.bottom;
     
-    // Extract axis fields
-    const xField = variables.x_axis.field;
-    const yField = variables.y_axis.field;
-    const groupField = jsonData.data_columns.find(col => col.role === "group").name;
+    // Extract axis fields based on data_columns order
+    const xField = dataColumns[0].name;
+    const yField = dataColumns[1].name;
+    const groupField = dataColumns[2].name;
     
     // Get unique x values and groups
     const xValues = [...new Set(chartData.map(d => d[xField]))];
-    const groups = [...new Set(chartData.map(d => d[groupField]))];
+    const groupValues = [...new Set(chartData.map(d => d[groupField]))];
     
-    // Create color scale
-    const colorScale = d3.scaleOrdinal()
-      .domain(variables.color.mark_color.domain)
-      .range(variables.color.mark_color.range);
+    // Create color scale using colors from json_data
+    const getColor = (group) => {
+        return colors.field && colors.field[group] ? colors.field[group] : colors.other.primary;
+    };
     
     // Create SVG inside the chart-container div
     const svg = d3.select(containerSelector)
@@ -55,9 +64,23 @@ function makeChart(containerSelector, data) {
       .attr("style", "max-width: 100%; height: auto;")
       .attr("xmlns", "http://www.w3.org/2000/svg");
     
+    // Add title if it exists in variables
+    if (variables.title && variables.title.text) {
+        svg.append("text")
+          .attr("x", width / 2)
+          .attr("y", margin.top / 2)
+          .attr("text-anchor", "middle")
+          .style("font-family", typography.title.font_family)
+          .style("font-size", typography.title.font_size)
+          .style("font-weight", typography.title.font_weight)
+          .style("fill", colors.text_color)
+          .text(variables.title.text);
+    }
+    
     // Create chart group and apply margin
     const g = svg.append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`);
+      
     // Create scales
     const xScale = d3.scaleBand()
       .domain(xValues)
@@ -65,65 +88,58 @@ function makeChart(containerSelector, data) {
       .padding(0.2);
     
     const xGroupScale = d3.scaleBand()
-      .domain(groups)
+      .domain(groupValues)
       .range([0, xScale.bandwidth()])
-      .padding(variables.mark.has_spacing ? 0.1 : 0.05);
+      .padding(variables.has_spacing ? 0.1 : 0.05);
     
     const yScale = d3.scaleLinear()
       .domain([0, d3.max(chartData, d => d[yField]) * 1.1])
       .range([innerHeight, 0]);
     
-    // Draw axes
-    if (constants.has_x_axis) {
-      const xAxis = g.append("g")
-        .attr("transform", `translate(0,${innerHeight})`)
-        .call(d3.axisBottom(xScale))
-        .style("color", variables.x_axis.style.color)
-        .style("opacity", variables.x_axis.style.opacity);
-      
-      // Style the domain and ticks
-      if (!variables.x_axis.has_domain) {
-        xAxis.select(".domain").remove();
-      }
-      
-      if (!variables.x_axis.has_tick) {
-        xAxis.selectAll(".tick line").remove();
-      }
-      
-      // Apply typography to x-axis labels
-      xAxis.selectAll("text")
-        .style("font-family", typography.label.font_family)
-        .style("font-size", typography.label.font_size)
-        .style("font-weight", typography.label.font_weight);
-    }
+    // Draw x-axis
+    const xAxis = g.append("g")
+      .attr("transform", `translate(0,${innerHeight})`)
+      .call(d3.axisBottom(xScale))
+      .style("color", colors.text_color);
     
-    if (constants.has_y_axis) {
-      const yAxis = g.append("g")
-        .call(d3.axisLeft(yScale))
-        .style("color", variables.y_axis.style.color)
-        .style("opacity", variables.y_axis.style.opacity);
-      
-      // Style the domain and ticks
-      if (!variables.y_axis.has_domain) {
-        yAxis.select(".domain").remove();
-      }
-      
-      if (!variables.y_axis.has_tick) {
-        yAxis.selectAll(".tick line").remove();
-      }
-      
-      // Apply typography to y-axis labels
-      yAxis.selectAll("text")
-        .style("font-family", typography.label.font_family)
-        .style("font-size", typography.label.font_size)
-        .style("font-weight", typography.label.font_weight);
-    }
+    // Apply typography to x-axis labels
+    xAxis.selectAll("text")
+      .style("font-family", typography.label.font_family)
+      .style("font-size", typography.label.font_size)
+      .style("font-weight", typography.label.font_weight);
     
-    // Create gradient defs
-    if (variables.mark.has_gradient) {
+    // Add icons to x-axis if available
+    xValues.forEach(value => {
+      if (images.field && images.field[value]) {
+        const xPos = xScale(value) + xScale.bandwidth() / 2;
+        
+        g.append("image")
+          .attr("href", images.field[value])
+          .attr("x", xPos - 10)
+          .attr("y", innerHeight + 5)
+          .attr("width", 20)
+          .attr("height", 20)
+          .attr("text-anchor", "middle");
+      }
+    });
+    
+    // Draw y-axis
+    const yAxis = g.append("g")
+      .call(d3.axisLeft(yScale))
+      .style("color", colors.text_color);
+    
+    // Apply typography to y-axis labels
+    yAxis.selectAll("text")
+      .style("font-family", typography.label.font_family)
+      .style("font-size", typography.label.font_size)
+      .style("font-weight", typography.label.font_weight);
+    
+    // Create gradient defs if needed
+    if (variables.has_gradient) {
       const defs = svg.append("defs");
-      groups.forEach(group => {
+      groupValues.forEach(group => {
         const gradientId = `gradient-${group.replace(/\s+/g, '-').toLowerCase()}`;
+        const baseColor = getColor(group);
         
         const gradient = defs.append("linearGradient")
           .attr("id", gradientId)
@@ -135,16 +151,16 @@ function makeChart(containerSelector, data) {
         
         gradient.append("stop")
           .attr("offset", "0%")
-          .attr("stop-color", d3.rgb(colorScale(group)).brighter(0.5));
+          .attr("stop-color", d3.rgb(baseColor).brighter(0.5));
         
         gradient.append("stop")
           .attr("offset", "100%")
-          .attr("stop-color", colorScale(group));
+          .attr("stop-color", baseColor);
       });
     }
     
     // Add shadow filter if needed
-    if (variables.mark.has_shadow) {
+    if (variables.has_shadow) {
       const defs = svg.select("defs").size() ? svg.select("defs") : svg.append("defs");
       
       defs.append("filter")
@@ -167,7 +183,7 @@ function makeChart(containerSelector, data) {
     // Add bars for each group
     barGroups.selectAll(".bar")
       .data(d => {
-        return groups.map(group => {
+        return groupValues.map(group => {
           const match = chartData.find(item => item[xField] === d && item[groupField] === group);
           return {
             x: d,
@@ -185,43 +201,79 @@ function makeChart(containerSelector, data) {
       .attr("height", d => innerHeight - yScale(d.value))
       .attr("fill", d => {
         // Apply gradient if needed
-        if (variables.mark.has_gradient) {
+        if (variables.has_gradient) {
           const gradientId = `gradient-${d.group.replace(/\s+/g, '-').toLowerCase()}`;
           return `url(#${gradientId})`;
         } else {
-          return colorScale(d.group);
+          return getColor(d.group);
         }
       })
-      .attr("rx", variables.mark.has_rounded_corners ? 4 : 0)
-      .attr("ry", variables.mark.has_rounded_corners ? 4 : 0)
-      .style("stroke", variables.mark.has_stroke ? variables.color.stroke_color : "none")
-      .style("stroke-width", variables.mark.has_stroke ? 1 : 0)
-      .style("filter", variables.mark.has_shadow ? "url(#shadow)" : "none");
+      .attr("rx", variables.has_rounded_corners ? 4 : 0)
+      .attr("ry", variables.has_rounded_corners ? 4 : 0)
+      .style("stroke", variables.has_stroke ? colors.stroke_color : "none")
+      .style("stroke-width", variables.has_stroke ? 1 : 0)
+      .style("filter", variables.has_shadow ? "url(#shadow)" : "none")
+      .on("mouseover", function(event, d) {
+        d3.select(this)
+          .transition()
+          .duration(100)
+          .attr("opacity", 0.8);
+      })
+      .on("mouseout", function(event, d) {
+        d3.select(this)
+          .transition()
+          .duration(100)
+          .attr("opacity", 1);
+      });
+    
+    // Add data labels
+    barGroups.selectAll(".label")
+      .data(d => {
+        return groupValues.map(group => {
+          const match = chartData.find(item => item[xField] === d && item[groupField] === group);
+          return {
+            x: d,
+            group: group,
+            value: match ? match[yField] : 0
+          };
+        }).filter(d => d.value > 0); // Only add labels for bars with values
+      })
+      .enter()
+      .append("text")
+      .attr("class", "label")
+      .attr("x", d => xGroupScale(d.group) + xGroupScale.bandwidth() / 2)
+      .attr("y", d => yScale(d.value) + 15)
+      .attr("text-anchor", "middle")
+      .style("font-family", typography.label.font_family)
+      .style("font-size", "10px")
+      .style("fill", "white")
+      .style("pointer-events", "none")
+      .text(d => d.value);
     
     // Add legend
     const legend = svg.append("g")
       .attr("transform", `translate(${width - margin.right + 20}, ${margin.top})`);
     
-    groups.forEach((group, i) => {
+    groupValues.forEach((group, i) => {
       const legendRow = legend.append("g")
         .attr("transform", `translate(0, ${i * 25})`);
       
       legendRow.append("rect")
         .attr("width", 15)
         .attr("height", 15)
-        .attr("fill", colorScale(group))
-        .attr("rx", variables.mark.has_rounded_corners ? 2 : 0)
-        .attr("ry", variables.mark.has_rounded_corners ? 2 : 0);
+        .attr("fill", getColor(group))
+        .attr("rx", variables.has_rounded_corners ? 2 : 0)
+        .attr("ry", variables.has_rounded_corners ? 2 : 0);
       
       legendRow.append("text")
         .attr("x", 20)
         .attr("y", 12)
         .text(group)
-        .style("font-family", typography.annotation.font_family)
-        .style("font-size", typography.annotation.font_size)
-        .style("font-weight", typography.annotation.font_weight)
-        .style("fill", variables.color.text_color);
+        .style("font-family", typography.label.font_family)
+        .style("font-size", typography.label.font_size)
+        .style("font-weight", typography.label.font_weight)
+        .style("fill", colors.text_color);
     });
     
     return svg.node();
-  } 
+} 

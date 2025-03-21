@@ -4,171 +4,6 @@
     "description": "Year-over-year change of selected consumer price indices in urban India",
     "main_insight": "Inflation in India, as measured by various consumer price indices, saw significant shifts between 2015 and 2024. General inflation initially rose, then decreased after 2020, and finally rose again, while housing inflation peaked in 2018-2019 and then declined."
   },
-  "data": {
-    "columns": [
-      {
-        "name": "Fiscal Year",
-        "importance": "primary",
-        "description": "Fiscal year from April of the former to March of the latter",
-        "unit": "none",
-        "data_type": "temporal",
-        "role": "x"
-      },
-      {
-        "name": "Units",
-        "importance": "primary",
-        "description": "Units for the corresponding inflation metric",
-        "unit": "none",
-        "data_type": "numerical",
-        "role": "y"
-      },
-      {
-        "name": "Inflation Metric",
-        "importance": "primary",
-        "description": "The inflation metric of the data point",
-        "unit": "none",
-        "data_type": "categorical",
-        "role": "group"
-      }
-    ],
-    "data": [
-      {
-        "Fiscal Year": "2015-2016",
-        "Units": 4.9,
-        "Inflation Metric": "General"
-      },
-      {
-        "Fiscal Year": "2015-2016",
-        "Units": 4.1,
-        "Inflation Metric": "General excl. food & fuel"
-      },
-      {
-        "Fiscal Year": "2015-2016",
-        "Units": 3.9,
-        "Inflation Metric": "Housing"
-      },
-      {
-        "Fiscal Year": "2016-2017",
-        "Units": 4.5,
-        "Inflation Metric": "General"
-      },
-      {
-        "Fiscal Year": "2016-2017",
-        "Units": 4.2,
-        "Inflation Metric": "General excl. food & fuel"
-      },
-      {
-        "Fiscal Year": "2016-2017",
-        "Units": 5.0,
-        "Inflation Metric": "Housing"
-      },
-      {
-        "Fiscal Year": "2017-2018",
-        "Units": 3.6,
-        "Inflation Metric": "General"
-      },
-      {
-        "Fiscal Year": "2017-2018",
-        "Units": 4.7,
-        "Inflation Metric": "General excl. food & fuel"
-      },
-      {
-        "Fiscal Year": "2017-2018",
-        "Units": 6.7,
-        "Inflation Metric": "Housing"
-      },
-      {
-        "Fiscal Year": "2018-2019",
-        "Units": 3.4,
-        "Inflation Metric": "General"
-      },
-      {
-        "Fiscal Year": "2018-2019",
-        "Units": 5.9,
-        "Inflation Metric": "General excl. food & fuel"
-      },
-      {
-        "Fiscal Year": "2018-2019",
-        "Units": 5.9,
-        "Inflation Metric": "Housing"
-      },
-      {
-        "Fiscal Year": "2019-2020",
-        "Units": 4.8,
-        "Inflation Metric": "General"
-      },
-      {
-        "Fiscal Year": "2019-2020",
-        "Units": 4.0,
-        "Inflation Metric": "General excl. food & fuel"
-      },
-      {
-        "Fiscal Year": "2019-2020",
-        "Units": 4.9,
-        "Inflation Metric": "Housing"
-      },
-      {
-        "Fiscal Year": "2020-2021",
-        "Units": 6.2,
-        "Inflation Metric": "General"
-      },
-      {
-        "Fiscal Year": "2020-2021",
-        "Units": 5.3,
-        "Inflation Metric": "General excl. food & fuel"
-      },
-      {
-        "Fiscal Year": "2020-2021",
-        "Units": 3.5,
-        "Inflation Metric": "Housing"
-      },
-      {
-        "Fiscal Year": "2021-2022",
-        "Units": 5.5,
-        "Inflation Metric": "General"
-      },
-      {
-        "Fiscal Year": "2021-2022",
-        "Units": 5.9,
-        "Inflation Metric": "General excl. food & fuel"
-      },
-      {
-        "Fiscal Year": "2021-2022",
-        "Units": 3.5,
-        "Inflation Metric": "Housing"
-      },
-      {
-        "Fiscal Year": "2022-2023",
-        "Units": 6.7,
-        "Inflation Metric": "General"
-      },
-      {
-        "Fiscal Year": "2022-2023",
-        "Units": 6.0,
-        "Inflation Metric": "General excl. food & fuel"
-      },
-      {
-        "Fiscal Year": "2022-2023",
-        "Units": 4.2,
-        "Inflation Metric": "Housing"
-      },
-      {
-        "Fiscal Year": "2023-2024",
-        "Units": 5.1,
-        "Inflation Metric": "General"
-      },
-      {
-        "Fiscal Year": "2023-2024",
-        "Units": 4.2,
-        "Inflation Metric": "General excl. food & fuel"
-      },
-      {
-        "Fiscal Year": "2023-2024",
-        "Units": 3.9,
-        "Inflation Metric": "Housing"
-      }
-    ]
-  },
   "_extra": {
     "image_data": {
       "original_file": "/home/lizhen/chartdata/new_infographics/Line Graph/32962.jpeg",
@@ -271,6 +106,201 @@
     },
     "other": {
       "primary": "data:image/png;base64,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"
+    }
+  },
+  "data": [
+    {
+      "Fiscal Year": "2015-2016",
+      "Units": 4.9,
+      "Inflation Metric": "General"
+    },
+    {
+      "Fiscal Year": "2015-2016",
+      "Units": 4.1,
+      "Inflation Metric": "General excl. food & fuel"
+    },
+    {
+      "Fiscal Year": "2015-2016",
+      "Units": 3.9,
+      "Inflation Metric": "Housing"
+    },
+    {
+      "Fiscal Year": "2016-2017",
+      "Units": 4.5,
+      "Inflation Metric": "General"
+    },
+    {
+      "Fiscal Year": "2016-2017",
+      "Units": 4.2,
+      "Inflation Metric": "General excl. food & fuel"
+    },
+    {
+      "Fiscal Year": "2016-2017",
+      "Units": 5.0,
+      "Inflation Metric": "Housing"
+    },
+    {
+      "Fiscal Year": "2017-2018",
+      "Units": 3.6,
+      "Inflation Metric": "General"
+    },
+    {
+      "Fiscal Year": "2017-2018",
+      "Units": 4.7,
+      "Inflation Metric": "General excl. food & fuel"
+    },
+    {
+      "Fiscal Year": "2017-2018",
+      "Units": 6.7,
+      "Inflation Metric": "Housing"
+    },
+    {
+      "Fiscal Year": "2018-2019",
+      "Units": 3.4,
+      "Inflation Metric": "General"
+    },
+    {
+      "Fiscal Year": "2018-2019",
+      "Units": 5.9,
+      "Inflation Metric": "General excl. food & fuel"
+    },
+    {
+      "Fiscal Year": "2018-2019",
+      "Units": 5.9,
+      "Inflation Metric": "Housing"
+    },
+    {
+      "Fiscal Year": "2019-2020",
+      "Units": 4.8,
+      "Inflation Metric": "General"
+    },
+    {
+      "Fiscal Year": "2019-2020",
+      "Units": 4.0,
+      "Inflation Metric": "General excl. food & fuel"
+    },
+    {
+      "Fiscal Year": "2019-2020",
+      "Units": 4.9,
+      "Inflation Metric": "Housing"
+    },
+    {
+      "Fiscal Year": "2020-2021",
+      "Units": 6.2,
+      "Inflation Metric": "General"
+    },
+    {
+      "Fiscal Year": "2020-2021",
+      "Units": 5.3,
+      "Inflation Metric": "General excl. food & fuel"
+    },
+    {
+      "Fiscal Year": "2020-2021",
+      "Units": 3.5,
+      "Inflation Metric": "Housing"
+    },
+    {
+      "Fiscal Year": "2021-2022",
+      "Units": 5.5,
+      "Inflation Metric": "General"
+    },
+    {
+      "Fiscal Year": "2021-2022",
+      "Units": 5.9,
+      "Inflation Metric": "General excl. food & fuel"
+    },
+    {
+      "Fiscal Year": "2021-2022",
+      "Units": 3.5,
+      "Inflation Metric": "Housing"
+    },
+    {
+      "Fiscal Year": "2022-2023",
+      "Units": 6.7,
+      "Inflation Metric": "General"
+    },
+    {
+      "Fiscal Year": "2022-2023",
+      "Units": 6.0,
+      "Inflation Metric": "General excl. food & fuel"
+    },
+    {
+      "Fiscal Year": "2022-2023",
+      "Units": 4.2,
+      "Inflation Metric": "Housing"
+    },
+    {
+      "Fiscal Year": "2023-2024",
+      "Units": 5.1,
+      "Inflation Metric": "General"
+    },
+    {
+      "Fiscal Year": "2023-2024",
+      "Units": 4.2,
+      "Inflation Metric": "General excl. food & fuel"
+    },
+    {
+      "Fiscal Year": "2023-2024",
+      "Units": 3.9,
+      "Inflation Metric": "Housing"
+    }
+  ],
+  "data_columns": [
+    {
+      "name": "Fiscal Year",
+      "importance": "primary",
+      "description": "Fiscal year from April of the former to March of the latter",
+      "unit": "none",
+      "data_type": "temporal",
+      "role": "x"
+    },
+    {
+      "name": "Units",
+      "importance": "primary",
+      "description": "Units for the corresponding inflation metric",
+      "unit": "none",
+      "data_type": "numerical",
+      "role": "y"
+    },
+    {
+      "name": "Inflation Metric",
+      "importance": "primary",
+      "description": "The inflation metric of the data point",
+      "unit": "none",
+      "data_type": "categorical",
+      "role": "group"
+    }
+  ],
+  "secondary_data": [],
+  "variables": {
+    "width": 600,
+    "height": 600,
+    "has_rounded_corners": false,
+    "has_shadow": false,
+    "has_spacing": false,
+    "has_gradient": false,
+    "has_stroke": false
+  },
+  "typography": {
+    "title": {
+      "font_family": "Arial",
+      "font_size": "28px",
+      "font_weight": 700
+    },
+    "description": {
+      "font_family": "Arial",
+      "font_size": "16px",
+      "font_weight": 500
+    },
+    "label": {
+      "font_family": "Arial",
+      "font_size": "16px",
+      "font_weight": 500
+    },
+    "annotation": {
+      "font_family": "Arial",
+      "font_size": "12px",
+      "font_weight": 400
     }
   }
 }

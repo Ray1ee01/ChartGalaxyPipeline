@@ -38,33 +38,36 @@ framework/
 
 ### 基本用法
 
-1. 准备JSON格式的输入数据（参考`input.json`）
+1. 准备JSON格式的输入数据
 2. 运行主程序生成SVG图表:
 
 ```bash
-python make_svg.py
+python modules/chart_engine/chart_engine.py --input test/input.json --name donut_chart_01 --output tmp.svg
+python modules/chart_engine/chart_engine.py --input test/testset/data/55.json --name donut_chart_01 --output tmp.svg
 ```
 
-默认情况下，程序将读取`input.json`文件并生成SVG输出到`tmp/`目录。
+参数说明:
+- `--input`: 输入JSON文件路径
+- `--name`: 图表类型名称
+- `--output`: 输出SVG文件路径
+- `--html`: 输出HTML文件路径（可选），用于调试和修改图表代码
+
+### HTML调试模式
+
+使用`--html`参数可以同时导出HTML格式的图表：
+
+```bash
+python modules/chart_engine/chart_engine.py --input test/input.json --name donut_chart_01 --html debug.html
+```
+
+HTML模式的优势:
+- 便于在浏览器中调试图表代码
+- 可以直接修改和测试图表样式和行为
+- 在开发新模板或解决复杂渲染问题时特别有用
 
 ### 添加新模板
 
-1. 根据图表类型，在相应的模板目录（`echarts-py/`、`echarts-js/`或`d3-js/`）中创建新模板文件
-2. 确保模板文件包含以下格式的要求声明:
-
-```
-REQUIREMENTS_BEGIN
-{
-    "chart_type": "你的图表类型",
-    "description": "图表描述",
-    "min_width": 400,
-    "min_height": 300
-}
-REQUIREMENTS_END
-```
-
-3. 实现创建图表选项的函数（对于`echarts-py`）或完整的渲染代码（对于JavaScript模板）
-4. 模板文件可以放在子目录下，系统会自动递归扫描
+如需了解如何创建新的图表模板，请参考文档 `docs/how_to_write_a_template.md`
 
 ## 依赖项
 
@@ -74,17 +77,8 @@ REQUIREMENTS_END
 
 ## 开发指南
 
-### 调试
-
-可以通过设置环境变量来控制日志级别:
-
-```bash
-export DEBUG=True
-python make_svg.py
-```
 
 ### 添加新的渲染引擎
 
 1. 在`utils/load_charts.py`中添加新的加载函数
-2. 在`template_registry.py`中添加新的模板类型
-3. 更新`render_chart_to_svg`函数以支持新的引擎 
+2. 更新`render_chart_to_svg`函数以支持新的引擎 

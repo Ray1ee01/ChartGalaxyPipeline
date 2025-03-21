@@ -4,86 +4,6 @@
     "description": "Attitudes towards direct democracy in selected countries",
     "main_insight": "A majority of respondents in all listed countries view direct democracy positively, with Germany showing the highest positive attitude and Sweden the highest negative view."
   },
-  "data": {
-    "columns": [
-      {
-        "name": "Country",
-        "importance": "primary",
-        "description": "The country where the survey was conducted.",
-        "unit": "none",
-        "data_type": "categorical",
-        "role": "x"
-      },
-      {
-        "name": "Points",
-        "importance": "primary",
-        "description": "Points for the corresponding sentiment",
-        "unit": "none",
-        "data_type": "numerical",
-        "role": "y"
-      },
-      {
-        "name": "Sentiment",
-        "importance": "primary",
-        "description": "The sentiment of the data point",
-        "unit": "none",
-        "data_type": "temporal",
-        "role": "group"
-      }
-    ],
-    "data": [
-      {
-        "Country": "Germany",
-        "Points": 74.0,
-        "Sentiment": "Good"
-      },
-      {
-        "Country": "Germany",
-        "Points": 23.0,
-        "Sentiment": "Bad"
-      },
-      {
-        "Country": "United States",
-        "Points": 67.0,
-        "Sentiment": "Good"
-      },
-      {
-        "Country": "United States",
-        "Points": 31.0,
-        "Sentiment": "Bad"
-      },
-      {
-        "Country": "Canada",
-        "Points": 67.0,
-        "Sentiment": "Good"
-      },
-      {
-        "Country": "Canada",
-        "Points": 30.0,
-        "Sentiment": "Bad"
-      },
-      {
-        "Country": "United Kingdom",
-        "Points": 56.0,
-        "Sentiment": "Good"
-      },
-      {
-        "Country": "United Kingdom",
-        "Points": 38.0,
-        "Sentiment": "Bad"
-      },
-      {
-        "Country": "Sweden",
-        "Points": 57.0,
-        "Sentiment": "Good"
-      },
-      {
-        "Country": "Sweden",
-        "Points": 41.0,
-        "Sentiment": "Bad"
-      }
-    ]
-  },
   "_extra": {
     "image_data": {
       "original_file": "/home/lizhen/chartdata/new_infographics/Bar Chart/12086.jpeg",
@@ -188,6 +108,116 @@
     },
     "other": {
       "primary": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAgAAAAIACAYAAAD0eNT6AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAHIhJREFUeNrs3T9vHOe1B+CRbQWICpuOCrlw4GVjXMSF6NJF5NWkSGn5E5jsbmeLbQrJX4CWunRafwLLQIAgt1jRcsEmgOnCjYosDREBVRCRaUACzCJ3Djnr0AqXXC53dmfmfR5gsE4cO+IZkvN7z/tnsgwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAGixPM8XimtZJQDq7YISMMWH/43i415xLRTXVnF92u/3eyoDIADQ0lF/+eC/cczf3iyum0UQWFcpAAGAdo76T3K/DAJbqgYgANDOUf8oT4vrbhECbqsggABAe0f9o0QXYMW0AIAAQHtH/SfpZYfTAk9VF0AAoJ2j/lGelt2A+6oMIADQ3lH/KPfLIKAbACAA0NJRv24AgABAwqN+3QAAAYBER/0ndQM+tFMAQACg3aP+Ue4UIeCmOwQgANDeUf8ocZxwTAlsulsAAgDtHfUfJ6YEbnq5EIAAQLtH/aP0MocHAQgAtHrUP0pMBXzoxUIAk3tJCZIb9Q8a/vAPS8X1Tfn1AKADQItH/aN86u2CAAIAx4/6mzjXfxYODgIQAEhg1H8c6wIABACj/gRG/ceJDsB15wUACABG/WlacV4AwMleVoJWjfofZIcr5FN3Y3Fx8cJgMFhXCgAdAKP+9PT6/f6KMgAIAG0c9ac4138WdggACABG/YmKRYHXhQAAAcCoXwgAEAAw6k/EVnZ4VoBtgoAAoARG/YlxVgCAAGDULwQACAAY9QsBAAIARv1CAIAAgFG/EAAgAGDULwQACAAY9QsBAAIARv2NDQHvFiFgSymAtntJCeY26h94+NdOhLIvynAGoAOAUX9iHBsM6ABg1J+gpegEKAOgA4BRf5p6/X5/RRmANnpZCSof9T8oR5Q0sBOwuLh4YTAYrCsFoAOAUX96Vvr9fk8ZAAGAE/3pT3+KUX+3iX/23d3dnz/39/ezvb09N/TQu84IANrkFSWYvsuXL7fqzx5h4OiVqAd5njsjABAASCvQDINBdAWePHmS7ezsHFwJGZ4RYHsgIACQnosXL2ZvvvnmwRVhYHt7OxsMBtmzZ89S+PJjMednxWVnANB4zgHgXGFgcXExFj1mS0tL2aVLl1L4speLr/cTdx8QAKAQHYGEgsBnxdfaddcBAQCOBIHf//732dtvv932L9U7AwABAI6KqYEIANeuXcteffXVtn6ZB4sC3W1AAIAXxMM/QkCsE2ipbp7nt91pQACAY7zzzjsHawOiM9BCt6wHAAQAGCHWBrz33nttDQH3rAcABAAYIaYEYqdAC9cFdLLDdz8ACABwnOgARCeghSHgRvn2RwABABILAaYCAAEAxgkBLVsTMHwNNIAAAImFAFMBgAAAp4lpgNgm2DKmAgABAE4TWwRbdlhQPPw/c2cBAQBOEV2Ali0KXHZAECAAwBjitMCW0QUABAA4TXQAWvYWwSXvCgAEABhDrAW4dOlSm76kjy0IBAQAOMXwVcItYkEgIADAOGJXQMu6ALEgcMmdBQQAOEXLugCZLgAgAECaXYCubYGAAABjaNnhQLoAgAAA43YBWia2BS67s4AAACeIHQFvvPFG276sW+4sIADAKVoYADq6AIAAAKe4cuVKG78sXQBAAICTxDTA5cuXdQEABABS08IAED5yZwEBANILAM4FAAQASDAABGsBAAEAThKvCm5pF6Dj7gICAIwQiwF1AQAEABLT4mmAG3meL7jDgAAAaYmH/w1lAAQASKsDED52hwEBANITLwlaUgZAAID06AIAAgAkyDoAQACABC3keS4EADPzihKc39raWqccwb2/v7/fzQ5XdsNZxfsB7isDMAsXlGDih/5S+Qs7HvwdFanW7u5utrGxkcKX+nq/33/qjgM6APUb6S+XD34PfaoQgbKnDIAAUI8Hf7d86C+rxvw6AIn4SAAAZsEUwOkP/jirvasa8/Xo0aODKxFPyxBwt9/vb7n7gAAwuwd/p/i458FfHzH/n1AX4Kj7ZRBY910ACADVPfgXyhH/J6pRLw8fPsz29vZSLsFmGQR6vhsAAWC6D/9YfPVZZnFfLf3lL39RhENbxXWzCAK2CwICwBRG/fHgX/btUE8JbQE8i/Xi+tTUADCplxN/+Mde/geZuf5a297eTnX+/ySdCK2Li4ud4vp2MBg4OwA4k2SPAi4e/jHi/ybT8m9EB4CRDr6P8zy3bgU4kySnAIqH/71My78R9vf3s7/97W8KMZ5YKLjS7/c3lQIQAH754Dff3zDR/t/c9Dw7o1gkeEcZAAHgPw//mO9fctub4+9//3u2s7OjEGe3Xlwfeq8AMEoSawA8/Jsp2v8e/hPrFtcgz/OuUgBJBgAP/+aK9j/ncvC9b4EgkGoH4J6HfzMNBgNFmI7PihBwTxmAo1q9BsBq/2aP/i3+m7oo6HXrAoBWdwCKh/8nHv7NldCb/2bp4OCrPM87SgG0MgCUr/H9zO1t7uj/2bNnClFdCIiDg0yLgQDQuod/LHz6wq1tplj5b/RfueHiQCEABIBW+aL8BUcDxcI/o38hABAAzjr6j3n/rtvaTHt7e0b/QgAwI63ZBVA8/DvZ4ct9jP4b6uHDhwchgJmLXQGLdgeADkBT3fPwb67vvvvOw3/+nQA/PyAANG703820/hsrVv079GfuDrYIKgMIAE0c/dNAMeqP0T/1CAFODAQBoEmj/+Xio+NWNk9s+dvY2Dj4pDaWixCwrAwgADTBLbfRw5+pumdnAAgARv9U9vC36K/WvrAoEAQAo388/NMTwdp6AGixlxs8+r9RfPyvW9gc8dD/+uuvs+fPnytGM/zP4uLi94PBwGsZQQegVj5y+5ojtvqZ82+kz7w9EASAOo3+4xfSDbevGWKb3+bmpod/M8U6AFMBIADUhod/A0TLP473dchP43XzPPczBwJALWj/19jwlb7O9m+Ve3YFQLu80rQ/cNn+t0e5pmKuPx7+XunbOvHwj7dt3lYK0AGYl67bVs8Hf7/fP5jr9/BvrVsWBIIOwDx94LbVQ7T6hy/y8dBPJwQU14oyQPNdaNofeG1t7V+Z1/7O9aH/5MmTbGdn5+AiSdf7/f66MoAOwCwf/kse/rO3u7v7iwtdgOISAEAAmCmL/yp4uB/3n+MzRvtW8XOM2Ba41O/3nRAIAsDMXHXLpitO54MJfJxZCwCN1rRdADoAUA/LdgSAACAAQLpdAEAAmAkLAKFGXQAlAAGgcuUOAKBGgTzPcyEABACjf0iQ93KAAAAkqGsxIAgAVTMFAPXkVcEgAFTKFADUk2kAEACABC2ZBgABAEiTaQAQAIAEva8EIAAAOgCAADA1W24X1Fee511VAAFAAID0CAAgAAAJsg4ABAAdAEiQw7pAAJi+1dVVAQDqbcF5ACAA6AKALgAgAAgAIAAAAsDkvnLLoNbeUgIQAKqw6ZZBrXWUAASAKqy7ZVBrpgBAAJi+1dXVp5l1AFBnXtsNAkA1Ll68+Fe3DerLVkAQACqxv7//f27bdDx//lwRqIIAAALA9K2urt5326bj2bNnigAgADSKEDAFe3t7igAgADTHjz/++KVbJwBQW10lAAGgErdu3eoVH0/dvvP54YcfFAFAAGicnts3uf39fR0AAAGgke66fZN78uSJIgAIAM0Trwf+6aef1t3Cyezu7ioCgADQTL/61a8+dQsns7OzowgAAkBjuwDRAdAFmODhH2sAABAAmkwX4Iy2t7cVAUAAaLayC+BgoDHF8b/a/wC81JKv46ZbOZ7Hjx8rAgDtCACxIyAzFXCqmPcfDAYKAUBrOgARAm4XH5tu6Wjx8Lf4D4BWBYDSiltq9A9AYgFgdXU1OgCmAoz+AUisAzCcClh3a/8jVv4/evRIIQBobwAofZh5W+DPvvvuO0UAoP0BYHV1NR7+14WAw1P/7PsHIJUOwHA9QNLnA8Sc/7fffuu7HIB0AkAZAnpZwjsD4uFv4R8AyQWAIyEguZ0Bsepf6x+AZANAGQJuFx93Urmpe3t7Fv4BIACUISDWA7R+OiBa/hsbG76zARAAjoSAXptDwPDhb94fAAHg+BDQyi2Csegv2v8AIAAcHwLWi493sxa9PCge/hb9ASAAnB4CtspOQOMXB8bD//Hjx76bARAAxgwBT8vFgY09OtjDHwABYPIgcL/4WCyunoc/AAJAet2A2CEQ0wK1XhsQq/wfPnzo4Q+AADDFILBeXLFAMMLAVt3+fLHK/+uvv7baHwABoKIg0CuuxToFge3t7YN9/s+ePXODADiXC0ownrW1teXi46Pi6s76/3v4Vj/b/GiIT/v9/m1lAAGgbUGgU3x8XFw3iqtT9f9fPPS91Q8BABAA6hUGlo50BZam+e8evtBnd3dXoREAgKl7RQkmt7q6GrsFNo90BiIIXC3DQHeSf2c88L3KFwAdgGZ3CCIUdMpAsFBcrx3XKfjpp5+yf/7zn9n333+f/fjjjy/+7YVpdxegYuvF9ZUyHHiaHdlW3O/315UEAYCx5Hl+r/hYVglolQgFW8X1bfnXm0U42FIWBACGD//oHgxUApLpFkSHILon60Ug2FQSBIB0A8Dt4uOWSkCSoiMQx5R/VYSB+8qBAJBWAPhXdrgGANAd6BXX5zoDCADtf/gvFx/3VAJ4QQSAu0UQ6CkFAkA7A8A3mdX/wMldgbvFdacIA0+VAwGgHQ//ePB/oxKAIEBVvAyonj5WAmBMsU4oFgsPisHDJ8qBDkBzR//xwzzILP4DJrNVXCsOHUIHoHluePgD59AprgfFYOKLckABAkBDaP8D0xpMxLTADaXgOKYAasTiP6AicZDQikWC6ADU10dKAFTUDfimHGSAAFBDy0oAVKRThgC/ZxAA6qScp7NgB6javfItowgA1MQHSgDMyLJdAlgEWI/Rf/wQ/kslgBmL9wpctzhQB4D5sU0HmIdYFPhAJ0AAYH60/wEhgJkyBTBnxQ9dJzs8+hdgnkwH6AAwY9r/gE4AAkCCHP4D1CkE2CIoAFC1sv3vZC6gTm44J0AAYAY/aEoA1NCyEwMFAKql/Q/U1T3vDmg3uwDmxOp/oAG2iutdOwN0AJgu7X+g7mKgYj2AAMCUva8EQBMGK+XLymgZUwBz4Ox/oGFiCmDRVIAOAFNI1EoANEgMWkwFCABMgbP/gcYNXPI87yqDAMD5+CECmkgXQABgUuViGmdtA03UKX6HfaIMAgCTsfofaLJbXhgkADAZCwCBJouHvy5AC9gGOEPlsZrfqATQcLYF6gBwRl0lAHQBEADSY/sf0BYfK4EAwBjKRTM6AEBrugBeGSwAMB4Pf0AXAAEgQdr/QNsslYubEQDQAQAS85ESCACMUCTkTnb4Xm2AtllWAgGA0Rz+A7TVQnnEOQIAx3D8L+B3HAJAgrpKALSYDoAAwIvK92d7cQbQZh27AQQAjP4Bv+sQAMjMjQF+1yEASMUAftchALRcOf8PkIKF8swTBAAkYiAxFgIKAJTMiQECAAKADgBAq11VAgEgeeb/gQR1lEAAwOgfSI8pAAGAzPw/AAKADgBACkx/CgB+AABAADD6BwABoP1shQFSZSGgAKADAJAgrz8XANJUvhPbDwAAAkBitL8AEAASZP8/AAJAgrpKAIAAkJA8z2Puv6MSAAgARv8AIAC0nAWAAAgACbIAEAABQAcAAASAVnMAEAACgNE/AAgAifACIAAEAB0AABAAUtBVAgAEgITkee7hD4AAkCDtfwAEgARZAAiAAKADAAACgAAAAAJAu1gACIAAYPQPAAJAIiwABEAASFBHCQAQANLTVYL6uHjxYvbHP/4xe/XVVxUDQACoRvkKYGrkjTfeOAgB7733nhAAIABURgComStXrvzcCbh27Vr229/+VlEABICpswCwRuKhHx2AX9ygq1ezpaWlg78HgACgA9BCLz78h958801TAgACgADQVsP2/3Hi4R9TAouLiwoFIABMLs/zTvGxoBL1cFz7/zjvvPPOQRDQDQAEACbVUYL6GOfh/2I3IMKAtQFAql5Rgol1laA+Tmr/jxLTAbE+YDAYZI8ePVJEQAeAsdgBUBPjtv9H/bNvv/129oc//MGWQUAAYCwdJaiHSR/+R/36178+2DIoCACpMAUwOTsAamKS9v9pQeB3v/vdwdRAXPv7+4oMCAA4ArhOLl26NJUOwIuGUwNxbW9vZ//4xz+yvb09BQcEAKN/2jb6HyUWCsYVASA6Ajs7O7oCgACQqI4S1MMs5+tj++BweuDJkycHQSAuAAEgHe8rwfxF+38eB/rE9MCwK/D8+fODEPD48WNTBIAAoAPALMyi/X+aWDQY5wnENQwDu7u7OgOAACAAUJW6bdc7GgZijUBMEwzDgDUDgADQcHmed1Vh/ubV/h/X0WmCWDcQ0wPDMBCfAAKA0T8TqEP7/ywirMQ1fBthhIDhFeFAhwAQAAQAxtD00/ouX758cA0NOwTx+cMPP1hQCAgANWQHwJzVvf1/ng7BUHQEhqEgFhcKBTSI96Q0xAUlOJs8zwe6APMVbfR4lW+KhoHg2bNnv/hrqJlev99fUQYdgLbx8J+zlF/Wc3Ta4MVgMOwaDEOBtQXM0XIxWMqEAB2ANo3+u8XHA5WYn2iTX7t2TSHO2DU4+jkMBroH6AToAGD0b/SfQNdgVPdg2DkIR0PB0Q6CbgI6AQKAAMBcVfHmv9TFmQWjwsFpXYVR/3nUfzek+yAEIAA0jdWtcxTt/zhtj/p0FUb952mLMLGxsaHwQgBT9JIS6AA0hfY/ND4E3FMGAaCplpRgfrT/QQhAAJi54pvW6H+OtP9BCEAAmBcBYI60/0EIQACYl64SzI/2PwgBCADz8poSzIf2PwgBCADzZAHgnGj/gxCAADBPHSWYD+1/EAIQAASABB/+2v8gBCAAzEX5EiCM/gEhQABIzIISzMeVK1cUAYQABIC5sQBwTqP/eFENIAQgAMzLW0ownwAACAEIAPPUUYLZ+81vfvNUFUAIUAYBYJ5MAczB9vb2u8XHHZUAIUAZBIB5sQhw9np//vOft1ZXV28Wf329uLaUBIQABICZKb7pjP7n48vhXxQhYL24Fou//FRZQAhAADD6b6+n/X7//ov/ZRECbhcfEQTWlQiEAASAqnWVYOZ6o/5GEQJiWiCmBEwLgBCAAFApbwGcvc9P+x8cmRZYEQRACEAAqII1ALO11e/3N8f9HxchILoFsVsg1gfYNghCAALA1FgDMFt3z/oPFCHg6ZH1AYIACAEIADoADXR/0n/wmCCwpZwgBHC8C0owWvFN1Sk+BioxM+v9fv/6NP+Fa2try8XHx4Jcs+3u7mYbGxsKwUl6xe+PFWXQAZiWjhLM1OfT/hfGGoHiijUCESx6Sgw6AQgAAkD93K/qX1zuGojRgekBEALITAGcqPhGul183FKJmZh5+25tbe1G8fFBccWnxZ41ZgqAuv8+0QFoH68Bnp0vZ/1/uLq6ev9IVyA+77sNoBOgA0B0AB5kTgKchTj69/U6/EHW1tYWyo7AsDOADgA6Aa30ihKcqKMEs/khrcsfJLYSln+eXhkGumUY6Pp+gEZ2AjIhQAdgkg7Av1VhJt49y+l/c+wOLJVB4H3dAR0AdAIEgPY+/GO05wyA6sXRv4tN/IMXgaB7JBBEOLCQUABACGgMUwCjdZRgJu429Q8eWwuzI68mLjsEcV0tP7tuL9SG6QABQAComdasvC8CQUxjbL7QJRiGgk7ZKej43gIhQAAQAFIXR/9utfkLPC4UHAkGw0WGr2X/mUJwZDEIAQLAnDkDoHqfp/qFl8HgIAQd9/fL9QXZC6HgtWMCQte3EQgBk7AIcARnAMzE68UPoFf3Ms7PY/wsPlAJpqn4/ZP0M9BJgKNZ0V2tnoc/gABQR+Ziq/WlEgAIALWS57nRf7Xi6F/n7nMWXSUAAcDov/l6SgAgAJCez5UAQACoo64SVGarCef+AwgAMF13lQBAAKirq0pQGYv/AASA2rILoBqtP/qXyjgzAgSAmegoQSUs/mNS1o2AACAANJj2P4AAUE8OAaqMo38BBIBacwhQNRz9y3mYAgABgAZy9C/nonsEAoAOQDP1lIBpBEklAAGgStYATJ/V/0yDaQAQACr1lhJMlaN/mdr3khKAAFCljhJMlaN/mZbvlQAEAJrD4j+mZV0JQACoUlcJpvcL29G/TJHvJRAAaAiL/5iaMkzaCQACwPTled5RhanS/mfaLCgFAaASAsD0OPqXKnylBCAAUG+O/qUK60oAAkAVnAI4HY7+pSqmAEAAqIRTAKejpwRUoZxWEgJAAJi615RgKqz+p0qml0AAmDpTAOfn6F+qZnoJBABqyNG/VKoMmHaYgAAwVR0lMDrD9xkIAAIAZ+PoX2bFOgAQAKgRi/+YiXKbqbAJAsD55XluAeD5acvi+w0EgMZxBsD5OPqXWdNxAgGAGjAny0yVuwFsOQUB4NxMAUzO0b/Mi22nIACcmymAyfWUgDl1AeJ7z9QTCADMiblYdAFAAGisq0owEUf/Mm93lAAEgPMwBWD0RQOVu096KgECALNl8R918KkSgAAwKbsAzs7Rv9SlC7ClCwACwKRMAZydxX/Uyc3MjgAQAJgJ7X/q1AWIh781KSAAjC/P844qnJmjf6mj2BGwpQwgAIxLADg7R/9S1y6ABYEgAFARR/9S5xDQKz7WVQIEgHFYAHg2PSWg5laUAASAcdgCeDZW/1P3LsBWZioABACmytG/NCUE3M68LhgEAKbGNiuaJKYC7FYBAWAkLwIan8V/NKkLEB0AUwEgAIxkEeB4HP1LE0PAHcEVBADOx+I/miqmAoRXEACYkFEUTe0CxDqADzPrAUAAeEFXCU7l6F+aHgJiPcBNlQABgLNx9C9tCAG9zKJAEAAYm6N/aVMIuJ05zRIEAMbilyVtCwGxKFCoRQBIWZ7nXd8Gp7L6nzaKEOCkQAQAGMHRv7S1CxCLWq8LAQgAcDxH/yIEgABAgsyTIgSAANBKXgU8mqN/SS0ECLwIAAnxHoDRLP4jqRBQXHFaYE81EABIndEQKQaB2B3gsCAEAJLl6F9SDgG3s8Ntgn4GEABIjqN/ST0E9LLDdQFbqoEA0E7vK8F/cfQvZD+/QOjdzHQYAgCJ6CkB/BwChosD402CpgQQAGg1q//hv4PAncx5AQgAtJijf2F0CNgsrpgSsEsAAYDWcfQvnB4Ebhcfi8W1rhoIAM3VUYJfsNgJxgsB0S2LKYHYLrilIggAAkCTOfoXzh4EetnhToGYFrBIEAGARrL4DyYLAU+PTAv0VAQBgKbR/ofzB4EVQQABgCZx9C9MLwhslUHg9czUAAIANefoX6imI3C7uCIIRCCwxRYBgFpx9C9UHwZ65RkCccWhQluqwjy9ogRk5iphlkFgs+wE3Mzz/Ebx+UFxxeeC6iAAMGtW/8N8wkB03uJaKcLAUhkEIhAsqQ5Vu5B6AYofun8nXoJYrLToRwFq9XtpoQwB3ezwjaVLOgSVBLCkn4E6ADj6F+r3YIpdA+vZkaOGi1DQyQ4PLotQ8Fb514IBAsA5pP5SD4v/oBmhYCs7XDi4fkLHYGgYFgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgMb4fwEGAMFtCi8Tl4DKAAAAAElFTkSuQmCC"
+    }
+  },
+  "data": [
+    {
+      "Country": "Germany",
+      "Points": 74.0,
+      "Sentiment": "Good"
+    },
+    {
+      "Country": "Germany",
+      "Points": 23.0,
+      "Sentiment": "Bad"
+    },
+    {
+      "Country": "United States",
+      "Points": 67.0,
+      "Sentiment": "Good"
+    },
+    {
+      "Country": "United States",
+      "Points": 31.0,
+      "Sentiment": "Bad"
+    },
+    {
+      "Country": "Canada",
+      "Points": 67.0,
+      "Sentiment": "Good"
+    },
+    {
+      "Country": "Canada",
+      "Points": 30.0,
+      "Sentiment": "Bad"
+    },
+    {
+      "Country": "United Kingdom",
+      "Points": 56.0,
+      "Sentiment": "Good"
+    },
+    {
+      "Country": "United Kingdom",
+      "Points": 38.0,
+      "Sentiment": "Bad"
+    },
+    {
+      "Country": "Sweden",
+      "Points": 57.0,
+      "Sentiment": "Good"
+    },
+    {
+      "Country": "Sweden",
+      "Points": 41.0,
+      "Sentiment": "Bad"
+    }
+  ],
+  "data_columns": [
+    {
+      "name": "Country",
+      "importance": "primary",
+      "description": "The country where the survey was conducted.",
+      "unit": "none",
+      "data_type": "categorical",
+      "role": "x"
+    },
+    {
+      "name": "Points",
+      "importance": "primary",
+      "description": "Points for the corresponding sentiment",
+      "unit": "none",
+      "data_type": "numerical",
+      "role": "y"
+    },
+    {
+      "name": "Sentiment",
+      "importance": "primary",
+      "description": "The sentiment of the data point",
+      "unit": "none",
+      "data_type": "temporal",
+      "role": "group"
+    }
+  ],
+  "secondary_data": [],
+  "variables": {
+    "width": 600,
+    "height": 600,
+    "has_rounded_corners": false,
+    "has_shadow": false,
+    "has_spacing": false,
+    "has_gradient": false,
+    "has_stroke": false
+  },
+  "typography": {
+    "title": {
+      "font_family": "Arial",
+      "font_size": "28px",
+      "font_weight": 700
+    },
+    "description": {
+      "font_family": "Arial",
+      "font_size": "16px",
+      "font_weight": 500
+    },
+    "label": {
+      "font_family": "Arial",
+      "font_size": "16px",
+      "font_weight": 500
+    },
+    "annotation": {
+      "font_family": "Arial",
+      "font_size": "12px",
+      "font_weight": 400
     }
   }
 }

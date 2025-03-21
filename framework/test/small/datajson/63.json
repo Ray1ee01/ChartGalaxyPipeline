@@ -4,116 +4,6 @@
     "description": "Main recipients of Covid-19 vaccine R&D investments as of March 2021 (in million U.S. dollars)",
     "main_insight": "Moderna Therapeutics, Janssen, and Pfizer/BioNTech were the top three recipients of COVID-19 R&D funding as of March 2021, all receiving over $800 million, primarily from public sources."
   },
-  "data": {
-    "columns": [
-      {
-        "name": "Recipient",
-        "importance": "primary",
-        "description": "Name of the company or organization",
-        "unit": "none",
-        "data_type": "categorical",
-        "role": "x"
-      },
-      {
-        "name": "Units",
-        "importance": "primary",
-        "description": "Units for the corresponding funding source",
-        "unit": "none",
-        "data_type": "numerical",
-        "role": "y"
-      },
-      {
-        "name": "Funding Source",
-        "importance": "primary",
-        "description": "The funding source of the data point",
-        "unit": "none",
-        "data_type": "categorical",
-        "role": "group"
-      }
-    ],
-    "data": [
-      {
-        "Recipient": "Moderna Therapeutics",
-        "Units": 956.3,
-        "Funding Source": "Public"
-      },
-      {
-        "Recipient": "Moderna Therapeutics",
-        "Units": 956.3,
-        "Funding Source": "Total"
-      },
-      {
-        "Recipient": "Janssen",
-        "Units": 910.6,
-        "Funding Source": "Public"
-      },
-      {
-        "Recipient": "Janssen",
-        "Units": 910.6,
-        "Funding Source": "Total"
-      },
-      {
-        "Recipient": "Pfizer/BioNTech",
-        "Units": 800.3,
-        "Funding Source": "Public"
-      },
-      {
-        "Recipient": "Pfizer/BioNTech",
-        "Units": 800.3,
-        "Funding Source": "Total"
-      },
-      {
-        "Recipient": "Curevac",
-        "Units": 741.7,
-        "Funding Source": "Public"
-      },
-      {
-        "Recipient": "Curevac",
-        "Units": 741.7,
-        "Funding Source": "Total"
-      },
-      {
-        "Recipient": "Novavax",
-        "Units": 508.0,
-        "Funding Source": "CEPI"
-      },
-      {
-        "Recipient": "Novavax",
-        "Units": 508.0,
-        "Funding Source": "Total"
-      },
-      {
-        "Recipient": "AstraZeneca/University of Oxford",
-        "Units": 501.0,
-        "Funding Source": "CEPI"
-      },
-      {
-        "Recipient": "AstraZeneca/University of Oxford",
-        "Units": 501.0,
-        "Funding Source": "Total"
-      },
-      {
-        "Recipient": "Sichuan Clover Biopharmaceuticals",
-        "Units": 328.0,
-        "Funding Source": "CEPI"
-      },
-      {
-        "Recipient": "Sichuan Clover Biopharmaceuticals",
-        "Units": 328.0,
-        "Funding Source": "Total"
-      },
-      {
-        "Recipient": "Sinopharm",
-        "Units": 145.0,
-        "Funding Source": "Public"
-      },
-      {
-        "Recipient": "Sinopharm",
-        "Units": 145.0,
-        "Funding Source": "Total"
-      }
-    ]
-  },
   "_extra": {
     "image_data": {
       "original_file": "/home/lizhen/chartdata/new_infographics/Bar Chart/24806.jpeg",
@@ -221,6 +111,146 @@
     },
     "other": {
       "primary": "data:image/png;base64,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"
+    }
+  },
+  "data": [
+    {
+      "Recipient": "Moderna Therapeutics",
+      "Units": 956.3,
+      "Funding Source": "Public"
+    },
+    {
+      "Recipient": "Moderna Therapeutics",
+      "Units": 956.3,
+      "Funding Source": "Total"
+    },
+    {
+      "Recipient": "Janssen",
+      "Units": 910.6,
+      "Funding Source": "Public"
+    },
+    {
+      "Recipient": "Janssen",
+      "Units": 910.6,
+      "Funding Source": "Total"
+    },
+    {
+      "Recipient": "Pfizer/BioNTech",
+      "Units": 800.3,
+      "Funding Source": "Public"
+    },
+    {
+      "Recipient": "Pfizer/BioNTech",
+      "Units": 800.3,
+      "Funding Source": "Total"
+    },
+    {
+      "Recipient": "Curevac",
+      "Units": 741.7,
+      "Funding Source": "Public"
+    },
+    {
+      "Recipient": "Curevac",
+      "Units": 741.7,
+      "Funding Source": "Total"
+    },
+    {
+      "Recipient": "Novavax",
+      "Units": 508.0,
+      "Funding Source": "CEPI"
+    },
+    {
+      "Recipient": "Novavax",
+      "Units": 508.0,
+      "Funding Source": "Total"
+    },
+    {
+      "Recipient": "AstraZeneca/University of Oxford",
+      "Units": 501.0,
+      "Funding Source": "CEPI"
+    },
+    {
+      "Recipient": "AstraZeneca/University of Oxford",
+      "Units": 501.0,
+      "Funding Source": "Total"
+    },
+    {
+      "Recipient": "Sichuan Clover Biopharmaceuticals",
+      "Units": 328.0,
+      "Funding Source": "CEPI"
+    },
+    {
+      "Recipient": "Sichuan Clover Biopharmaceuticals",
+      "Units": 328.0,
+      "Funding Source": "Total"
+    },
+    {
+      "Recipient": "Sinopharm",
+      "Units": 145.0,
+      "Funding Source": "Public"
+    },
+    {
+      "Recipient": "Sinopharm",
+      "Units": 145.0,
+      "Funding Source": "Total"
+    }
+  ],
+  "data_columns": [
+    {
+      "name": "Recipient",
+      "importance": "primary",
+      "description": "Name of the company or organization",
+      "unit": "none",
+      "data_type": "categorical",
+      "role": "x"
+    },
+    {
+      "name": "Units",
+      "importance": "primary",
+      "description": "Units for the corresponding funding source",
+      "unit": "none",
+      "data_type": "numerical",
+      "role": "y"
+    },
+    {
+      "name": "Funding Source",
+      "importance": "primary",
+      "description": "The funding source of the data point",
+      "unit": "none",
+      "data_type": "categorical",
+      "role": "group"
+    }
+  ],
+  "secondary_data": [],
+  "variables": {
+    "width": 600,
+    "height": 600,
+    "has_rounded_corners": false,
+    "has_shadow": false,
+    "has_spacing": false,
+    "has_gradient": false,
+    "has_stroke": false
+  },
+  "typography": {
+    "title": {
+      "font_family": "Arial",
+      "font_size": "28px",
+      "font_weight": 700
+    },
+    "description": {
+      "font_family": "Arial",
+      "font_size": "16px",
+      "font_weight": 500
+    },
+    "label": {
+      "font_family": "Arial",
+      "font_size": "16px",
+      "font_weight": 500
+    },
+    "annotation": {
+      "font_family": "Arial",
+      "font_size": "12px",
+      "font_weight": 400
     }
   }
 }

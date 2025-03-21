@@ -4,64 +4,6 @@
     "description": "Who makes the most positive/negative contribution to political debate? (%)",
     "main_insight": "Russell Brand has the highest negative contribution percentage among the listed celebrities, significantly higher than his positive contribution percentage.  Most celebrities receive higher positive than negative contribution responses."
   },
-  "data": {
-    "columns": [
-      {
-        "name": "Celebrity",
-        "importance": "primary",
-        "description": "Name of the celebrity",
-        "unit": "none",
-        "data_type": "categorical",
-        "role": "x"
-      },
-      {
-        "name": "Positive",
-        "importance": "primary",
-        "description": "Percentage of respondents who believe the celebrity makes a positive contribution to political debate",
-        "unit": "%",
-        "data_type": "numerical",
-        "role": "y"
-      }
-    ],
-    "data": [
-      {
-        "Celebrity": "Angelina Jolie",
-        "Positive": 28.0
-      },
-      {
-        "Celebrity": "Bob Geldof",
-        "Positive": 28.0
-      },
-      {
-        "Celebrity": "Emma Watson",
-        "Positive": 16.0
-      },
-      {
-        "Celebrity": "Eddie Izzard",
-        "Positive": 18.0
-      },
-      {
-        "Celebrity": "George Clooney",
-        "Positive": 11.0
-      },
-      {
-        "Celebrity": "Leonardo DiCaprio",
-        "Positive": 7.0
-      },
-      {
-        "Celebrity": "Bono",
-        "Positive": 9.0
-      },
-      {
-        "Celebrity": "Russell Brand",
-        "Positive": 13.0
-      },
-      {
-        "Celebrity": "Jeremy Clarkson",
-        "Positive": 7.0
-      }
-    ]
-  },
   "_extra": {
     "image_data": {
       "original_file": "/home/lizhen/chartdata/new_infographics/Bar Chart/2960.jpeg",
@@ -170,6 +112,94 @@
     },
     "other": {
       "primary": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAgAAAAIACAYAAAD0eNT6AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAGZhJREFUeNrs3c1vXNd5B+BLmXWRxKnZum1sGHXGCVI0K9H9BzRCgQJCI5j2OoDIf6Cidt6R3BnogvSuO5KF1hINtRDajYaLLgtRqwBGjEwcGLb7EdOpkjROHPUc8owyZkiJHN6Zueee5wEuKOdDnntmeN/fee+5Z6oKAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIBmmTEEMLpHd6/OhR/z6R+7RoQM9QfHzJU7fcMhAAAnF/yFcFxKBb9jVGiR/XD0wrEbjh2BQAAAhf/u1VjoV1LxnzMiFGIvHO+EILBlKAQAKHHGv5yKP5QqdgLWBAEBAEop/vHe/mb1u3v8oCNQVUshCOwZCgEA2lz871Xa/XCcJd0AAQAUfyjTVggBS4YhXxcMASj+MILF8PuybhgEAGiLTcUfTm05hIBFwyAAQO6z/9XKgj84q/X0mCwCAGRZ/OMFzKN+cHaxY7ZpGAQAyJXiD6PrhhDdNQwCAOQ2+48zmEUjAedy3RAIAJAbxR/Ob8FaAAEAcnPNEEA9IcAQCACQhTRjsfIf6nHJEAgAkIuuIQC/TwIAlOeiIYDazFkHIABALrT/oV4CgAAAWegaAqi3C2AIBAAAyqOrJgBAs6UNgAAEAABAAIBWm7lyZ98oAAIAACAAAAACAAAgAAAAAgAAIAAAAAIAACAAAAACAAAgAAAAAgAAIAAAAAIAACAAAAACAAAgAAAAAgAACAAAgAAAAAgAAIAAAAAIAACAAAAACAAAgAAAAAgAAIAAAAAIAACAAAAACAAAgAAAAAgAAIAAAAAIAAAgAAAAAgAAIAAAAAIAACAAAAACAACQgxlDQN0e3b26GH50Mnm5K94xqFUvHLtZFMArd1ZLfqNmfVYZg2vh6BoGKFI3o9//ogOAWwAAIAAAAAIAACAAAAACAAAgAAAAAgAAIAAAAAIAACAAAAACAAAgAAAAAgAAIAAAAAIAACAAAAACAAAgAACAAAAACAAAgAAAAAgAAIAAAAAIAACAAAAACAAAgAAAAAgAAIAAAAAIAACAAAAACAAAgAAAAAgAAIAAAAACAAAgAAAAAgAAIAAAAAIAACAAAAANN2sIGIPtcOzm8EI3PvneircL6vOdP/yo93dz/7FrJJpvxhBQslfe/vCRUYBarX3w1surhqH53AIAAAEAABAAAOBs9g2BAABAefYMgQAAAAgA0EjalYAAAAXSrgQEAAA4jw/eerlnFAQAAEAAgEayZSnUp28IBAAABAAEAGgsiwChPp6qEQDABQsK9MAQCACgAwACNQIANNMHb72876IFArUAAC5agN8lAQAK0TcEcG77qaOGAADZsHAJzP4FAHDhAvwetd/sef+CjZu35sKP+fSP3SP/9X76UOwvf//NVn44nH8rzt+FC85PJy0zMyNe8BfCcSld8DtnvND2wrGda0F0/u08/1fe/vD+UJABzu61D956WZhuYwAIF/54oV9JF/+5Gv7d/XCshUKwlUnhc/4tPv8QADbDj0WXBBhNKP4zRqFlASDN+JbTxX8cYiG4EQrBToNnvMWefxqD1baffwgA8T1ed0mAkfRCALhsGFoUAMKFP7ZE48xoEq3RrVQIGvMYifMv5/xDAIjneN8lAUayFgLAqmFoSQBIF/97VT3t3tOK948uN6EIOv/yzj+EgE8nfL7QFpdDAOgZhrxcaNDFv0ozzXup7V5a8XP+0z9/FzAYgeLfkgAwxYv/cBG4XWDxc/7TP/93XRJAcC65A7BZTb8N2k0Lz6bB+Zd7/i5kIDiXGQDSRbcpz0KvpNnoJGe/zr/g8//grZf7lU2BQHAuLQAMPefdJBN7LMv5l33+LmYwkr7Nf9rRAVhp4OuLreDupGaczr/o8x/YdlmAU9sxBJkHgLTqerGhr3Hshcn5l33+w9Jspu/SAAJzKR2AxQa/xm5qT4+T8y/7/M1q4Oy0/1sSAK41/HUujPnvd/5ln79ZDQjK5QWANLtq+regja1AOf+yz/84bgOAoFxKB6CbweucH+PucM6/7PM3u4Gz0/5vSQC4mMlrHdcs1fmXff4necflAfx+tD0AzGfyWsc1U3X+ZZ//sdKmQD2XCDiWDllLAkA3k9f6fBsKi/Nv3Pk/iXuccEzxTwGZFgSAXMwX/l45/wkLF7mt8GO/AoZp/wsA4GIHhen76l8BAEqxZQjgsTVDIABAEdK9TiEADm+HWfwnAIBZDxTmnRCIrYkRAKC4LkDPSFD47H/DMAgAoAsAZv8IAFBEF6CnC4DZPwIA6AKA2T8CABTUBbAKGrN/BAAo0A1DgNk/AgCU1wXoV/YFoAx9s38BAPj9LoBZEW23ZvYvAABf7gLEi6IFgbRZL30ZFgIAcCQExNbonpGgpax1EQAAF0kKsxECrnArAABP6AL0KoukaJd+5faWAACcSrxYWihFW9yw8E8AAE7XBYgXyyUjQQvshM+zja4EAOAMISBeNLeMBBkTZAUAYERxQWDfMJCpN7T+BQBgtC6AGRS52kgLWhEAgBFDQLyIWkFNTvbC59bjrAIAUEMIWA0/zKbIga6VAADU7I3Ko4E03w0b/ggAQL1dgP0UAqCpNuz1jwAA4wkBvUp7lWbque+PAADjDQFxhmWWRZP0K90pBACYSAiIXYCekaABDm5Ned4fAQAmJ864LLZi6p9Di/4QAGCyXYDBokAzL6ZlyWY/CAAwnRDQDz8uCwFMqfhvGQYEAJheCNgTApiwLcUfAQCEAMor/h5FRQCAhoUAz2Gj+CMAQIEhYKs63ChIJwDFHwEACgwBbgeg+CMAQIEhwJoA6rKm+CMAgBBAWZbSV1GDAAAZhoDXKjsGcjb7lef8EQAg+xDQT52AntHglMX/suKPAADtCAH74YghwEWdJznoGNnbHwEA2hcE4mIuC7o4zk6a+fcNBQIAtDMExC6AxYEMiyv9faUvAgAUEAJ64cerlXUBpRvc7181FAgAUE4IGKwLWDMaRToIgb7OFwEAyg0CcfYXg0DfaBQjtvwva/kjAIAQEGeBcb+ALaPRaoNV/quGgnGZNQSQXQg42Pzllbc/fDf83AzHnFFp3axf4UcHADgxCMTHweICwQ2jYdYPOgBQXjfgRuoGrIdj3qhkZz/N+gU5dACAMweBXjji2oAblX0DcrJVHa7wV/wRAIBzBYFYSF6tLBJsul51+Fz/khX+CABAXSFgP20lHIPAjhFplH443kiP9vUMB9NkDQC0NwgcFJtX3v6wG36uhKNrVKZa+Nd8cx8CADDJIBBnmj1BQOEHAQDKDgKdFAQWjcrYxLHeVvgRAIAmBYE4K40bCa2lEHC9splQXbZS4e8ZCgQAoMlBYDUeIQzEIHCtcntgFHEct2PxT2MKAgCQTRiIM9etdHsgdgQWwtExMieKj+7FJyzeTTsyggAAZN8ViJsJxd0F51NXQBj4nYOiH396fh8BAGhrGIh70+8dCQPdqqzthveHin5P0UcAAEoNA1W6TRCDwOvpZ9sWEPbCsZtm+XvefQQAgOrxbYKtdFSpOxCPS+lnTh2C/VTwH6QZfs87jAAAcLbuwNbgP0ubDsUgcLE6XD8w34BOQXyN/VTsD16zVfsIAAD1hoJemll/SQoGc0NdgotDweA8IWGv+t23IMY/f5aK/cGh0IMAAEw/GEQenYMp822AACAAAAACAAAgAAAAAgAAIAAAAAIAACAAAAACAAAgAAAAAgAAIAAAAAIAACAAAAACAAAgAAAAAgAAIAAAgAAAAAgAAIAAQOts3Lw1bxQABADKM2cIAASAput6uwBABwAAKCEAuGddO+MJIABkoeMtq1VOawD2vV0A9QaAnhlrsS5l9FofeLsAyu0AXPKW1aprCADKDQB7ORWsjZu3PLpWgzCOuRV/twAAag4An2X2mhe8bbW4ltnr3fOWAZTbAcixcDVx9j+XYZDSAQCoOQD0M3vN3Qzb102zXGW2C+Dy99/UAQCoMwBkemFd8dada/Z/PbOX3ffOAdTfAYh6GXYBFr19I4en3BZSCgAAYwoAOXYB1kMI6HgLzzT7j6FpOcOXvuvdAxhPAMhxk5U4i73tscBTF/+4idJmpi/f/X+AMQWAXqavPxa1e0LAU4t/XPF/L+NTEAAAxhEAlr//Zr/K9z5rDAH3fVHQicV/Nfy4XeV3339gP30+AajR7NCfd6o87w9HnRQC1mLNCwWj+GfG06OS61X+35/Q82sKMN4AsJtxABiIK9yvh+L3TqlBILX742N+3ZackgWAAOMMAKFY7oTi0YZzmktBYCWcT+xqvBtnkW1tI6cnIeIs//XqcHe/tq2H2PFrClC/mSPF5HbV3r32YzdgL/18cKRrkIMYYLbTny+mQj/fwoL/pXMOwe1Vv6bt9Oju1cFn+KhOOk77O/17n5uZK3f6RhhO2QFI3m1xAIgXm276c47n2KnK2wHR7D+fYj5ctIeD6cWhP59U8Mfxeo6G5+FAMHxbqfd4NnTlTs87SckBIF5w11s+qyQf24agUbP0QYD+Zir2EyvoNYTn4Y5Cd+jPK8eEhuHAMAgLg+6h7gKtMXP0P9i4eStuFrNoaJgy7f/JFvjBz+eP/DMnfD7TMbilOLgdISCQbQdgMOsSAJi2dwxBbUV+MAMeFPZLx8yEGb2rsHBkvIcDQgwFn1WHtxr2QziwqRXN7QCkLsCPqtMtwoFxedUGQGcu9N2hmfvg3rsi39zuwe5Q52AvhIN9Q8O0OwBR3FBn0/AwJVuK/1ML/WAGeqk6/ap5mtU96B55Xx+HgXD8WDBgWgHAYkCmyeK/6nHrfn5oRj/4Z9pp0LE5KRjsps7BnlsJ1GHmpP8i7SG/YoiYsLhp0+UCi/1woR/8WQDnSQbdggcpFPQMCXV0AA4yQHW4payLEJO0VmCx73rbGcHgczT4XAkF1NMB0AXA7L+WYt8ZulBfUuyZYqdgt3L7gFN2AHQBMPs/o+23V7p/860fzr/89Z9dSkW/422lIZ2CxaFOQewM7P7Le3+19z+//Grv2ltrFhrqAOgCYPZ/hmI/WLT1pdn9xRc/qi5+4yPvKI33Tw/++rguQQwEfaMjAAxCgH0BGLfGP/cfCn7nSLE/dkW+AECGAeCo/pFA4LZBC82e8n93Ixy3DRdjstbE4p8Kfneo4AvBlKKTjoX0uxBvEfQEggI7AKkLcK+ygIn6xcL/WggAU78HOdTSf+IM/2l0AGhBB+BpBoHg3cotg9Z3AKKlcNyvLAikXkvTLP5x0V4q9q9XNtmB05pL3YFBh6B/JBBYVNimDkDqAixXhzsEQh1i6391wgW/M1Twu+MItDoAFNABeJrhMOB2QRsCQAoBt6sj334FI9gLxf+1CRX9+fSZncgsXwBAAPiSx92BEAZ2jHpzzI7w/1ka18yJYsT24Fgf+QtFf2Folt8x5DA18fdvMR7h9zL+807qDuy4VZBZByB1AeJF9Z7hY0Rx0V/tbcGhor8wzYCqA4AOwKn1hsJA3zuSQQBIIcB6AEYRF/1tta3oCwAIAOcWJwXbwkAGASCFgM0qbS8Jp3AjFP+NNhZ9AQABoPbOwCAMuE3QxACQQoD9ATiNrVD8l0a+Gvzj38//eP+Pr6XA2ej1JwIAAkCtdl74yi+2v3f9HywgrNlsDX/HG9XhegDPUFNr8U/fpBdn+dcffPJ/nR8bRyjRwh8889uFcD2InYAYArZ9zXFDAkDcxGXj5q3LQgB1FP/wSz7YYOS6zxMwJF4bFuMRrhP9FAbeCWGgb2hGc6GOvyTt5BZDgA0fGHbjtMU//ELHhB/XlHwajk3FH3iCTiw94fhRuG7cD8dimjww6QAgBHCMpact+Ist/nCshiN+2+TtyoJS4Ozm06QhhoHNcHQNyYQDwJEQ0DO0xYqfgdee9Khfmu3Hgh8L/0plox7g/Aa3CO7FSUU4lnUFnmxmXH+xRwSLFLs/bxz31b7pFzG27K6NUvAffPJS9eDjl7IYBE8BkItMngKoXnzuYfW3335v1AnJYK2A7vQ4OwBHugHx3u+SIS7GRtzb/2jxD4V/fujevtk+MI2uQFwnEDsDJqWTCAApBGyFH/ELX/qGurXie3s5vNc3jhT+uCgnPhlyv9IJAqavG47NdHtg1e2BMQeAFAL2UgiwiUMLZ/3V4f3+Xir6c6nwx3v7m5UNooDm6VSH3cjBosFOqQMxO4l/SVoc+MbGzVsLqTBYmJH/rH9puPBXh/f3r3tvgUwM7yuwVRW4TuDCJP9loWDELsCraeZIfmKQi8/2vxqLf3qML34h1GA1v+IP5CgGgcE6ga4AMMZuQLpfHG8L9Hzusin8azG8xWf7U+HfTIV/WeEHWiIW/3ulBIEL0/oXx7UB4Yh7Btg3II/Cv3r9hc25ocK/aHgAQUAAOE8Q6AkCjdMPx42hwh/v868q/IAg0B4zTXtBGzdvxW0d42KyRn7Xe8sdfNNWWqvRqMV9NgKC+hWwEVDdtsKx1pYvIJpp6gsLQWDwrXDXKo+TjVNc9bodi//wJj5pw4z1poQwAQAEgAaJQeBGCAL7AsD4w0AnhYDXUyjg/DP93aNFPxX+OM7xPn+nSS9YAAABoGFi8Y+PDq4KAJMNBN0UCC5Vh98E5VbBk/VSwe8Nnt0/Km2Gsd7UgCUAgADQUP3UDchus7vZHD+0qYj1jnQI5tNxMQWCEoPBXkqlu+lDuZd2YjzR0H3+FZdDgDOL9ed2uJbGmrSU0/qA2TaMfmpjx2PnmG5Bp/pyO/toMMil8MXz2z4yq39c+NNui2fS1HY/MH4//eVXDEK94vU0bi+8lsttgZnS37EQEB5l8lIHj0ueW5r1x8KfzXoKtwCgXp88/Hr1r+9/J4vX2vBbACdN2GI3oNfkF3nBr0FZ0ur+H1UWUwKMS6c63D9gvcnfOigAlFP4O+nreX0Z0wRmVgDV4fqq+03dREgAKKP4x9n+/cp+CkBiDYBugADQ7sIf9+6/Hf5426x/cj5++JxBoPE+/+0zBmE63YB5AYBxF//5NOt3r9/sCn6PW1VT6wbEELAsADCu4r+ain/HaLi4wnF0qqZqPX3B0FQ7swJAuwr/oOVvU59pX1x/7uKKgMoTdavDfQOmdktAAGhP8dfyb5CffDZXff6Fe6w00w8//ROD0AyxA3A/PZ4tADBS8Y8fnviIX8doNMf7P33BINA4MZjGgEqjbIbr+KYAwFmL/2rl2f5G+sF//7lBoJGfS92pRloM1/P7k1wXIADkXfxj4Xe/v6Eefv5s9YP/EgJo1uzfZ7LR4q3ce5NaFyAA5Fn442K/eL9/0Wg0W/wOA7MtfB5pYggQADIs/tXh/f55o5HHjKvX/7aBYOrimhSz/2zMpRAw1kmeAJBX8Z9X/PMTn7f+959800AwNXFjKp/BLEPA5jhDgACQyyfhmZ91FP+8Z18uwExDXPH/b+//pYHI19hCgACQiecu/KJTWemffQi41/+We7BMTLzn7zMnBAgA0JDZ2D+/913PYTNWcae/+Dl78PFLBkMIONGsMYXJio8HxlnZi889rL77p/9Z/cXz+waF2gJmfM7fPv+tDgHVzJU7WwIAZCxepOPx3LOfH4SAF7/2sPrGc/9bPfvMFwaHU4fJT3/51eqDnz1v++myQkA/hICeAAAtuIjHx7MGj2jFQBCPrz37q4OfMCyu6P/1F7MHPxX8Yt0OIeByCAF7AgC0LBDEI0QBgwEcZ7BPwGshBPRH/UssAgSAPEPA7fN8d4AAAAB5ivvCrAsAAFCe+C2CywIAAJRnfZQvDxIAACB/Z14PIAAAQP464dgUAACgPAuP7l5dEAAAoDybp70VIAAAQHvE4n+qRwMFAABol/hoYFcAAIDyPLULIAAAQPvMP7p7dVEAAIACuwBPWhAoAABAO8XivywAAEB5rp/UBRAAAKDdXYBFAQAACuwCCAAAUJ7OcU8ECAAA0H7XBAAAKE/30d2rHQEAAMpzXQAAgPIsCAAAUJ64GHBeAACA8lwTAACgPF0BAADKMz/YGlgAAICyLAgAAFCeiwIAAJSnKwAAQHnmBQAAKNCju1e7AgAAlKcjAACAAAAAFOCiAAAA5ZkTAACgPG4BAIAAAAAUQQAAAAEAABAAAIBWmjUEUK+ff7Zf/eY3vzYQNN7zL/yZQRAAgLrE4v/rX/3KQACN5hYAAAgAAIAAAAAIAACAAAAACAAAgAAAAAgAAIAAAAAIAACAAAAACAAAgAAAAAgAAIAAAAAIAACAAAAACAAAIAAAAAIAACAAAAACAAAgAAAAAgAAIAAAAAIAACAAAAACAAAgAAAAAgAAIAAAAAIAACAAAAACAAAgAACAAAAACAAAgAAAAAgAAIAAAAAIAACAAAAACAAAgAAAAAgAAIAAAAAIAACAAAAACAAAgAAAAAgAAIAAAAACAAAgAAAAAgAAIAAAAAIAACAAAAACAAAgAAAAAgAAIAAAAJMxawjy8PC3X+2HH9tGAgABoCD7X/xRf+bKnVUjAUAd3AIAAAEAABAAAAABAAAQAAAAAQAAEAAAAAEAABAAAAABAAAQAAAAAQAAEAAAAAEAABAAAAABAAAQAAAAAQAABAAAQAAAAAQAAEAAAAAEAABAAAAABAAAQAAAAAQAAEAAAAAEAABAAAAABAAAQAAAAAQAAEAAAAAEAAAQAAAAAQAAEAAAAAEAABAAAAABAABouP8XYAA2Ri8HyoTU1wAAAABJRU5ErkJggg=="
+    }
+  },
+  "data": [
+    {
+      "Celebrity": "Angelina Jolie",
+      "Positive": 28.0
+    },
+    {
+      "Celebrity": "Bob Geldof",
+      "Positive": 28.0
+    },
+    {
+      "Celebrity": "Emma Watson",
+      "Positive": 16.0
+    },
+    {
+      "Celebrity": "Eddie Izzard",
+      "Positive": 18.0
+    },
+    {
+      "Celebrity": "George Clooney",
+      "Positive": 11.0
+    },
+    {
+      "Celebrity": "Leonardo DiCaprio",
+      "Positive": 7.0
+    },
+    {
+      "Celebrity": "Bono",
+      "Positive": 9.0
+    },
+    {
+      "Celebrity": "Russell Brand",
+      "Positive": 13.0
+    },
+    {
+      "Celebrity": "Jeremy Clarkson",
+      "Positive": 7.0
+    }
+  ],
+  "data_columns": [
+    {
+      "name": "Celebrity",
+      "importance": "primary",
+      "description": "Name of the celebrity",
+      "unit": "none",
+      "data_type": "categorical",
+      "role": "x"
+    },
+    {
+      "name": "Positive",
+      "importance": "primary",
+      "description": "Percentage of respondents who believe the celebrity makes a positive contribution to political debate",
+      "unit": "%",
+      "data_type": "numerical",
+      "role": "y"
+    }
+  ],
+  "secondary_data": [],
+  "variables": {
+    "width": 600,
+    "height": 600,
+    "has_rounded_corners": false,
+    "has_shadow": false,
+    "has_spacing": false,
+    "has_gradient": false,
+    "has_stroke": false
+  },
+  "typography": {
+    "title": {
+      "font_family": "Arial",
+      "font_size": "28px",
+      "font_weight": 700
+    },
+    "description": {
+      "font_family": "Arial",
+      "font_size": "16px",
+      "font_weight": 500
+    },
+    "label": {
+      "font_family": "Arial",
+      "font_size": "16px",
+      "font_weight": 500
+    },
+    "annotation": {
+      "font_family": "Arial",
+      "font_size": "12px",
+      "font_weight": 400
     }
   }
 }

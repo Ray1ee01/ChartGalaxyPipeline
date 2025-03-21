@@ -4,126 +4,6 @@
     "description": "Revenue figures excluding traffic acquisition costs. Operating income excluding stock-based compensation expenses and other gains and expenses that aren't indicative of ongoing operating results.",
     "main_insight": "Yahoo's financial performance, measured by various revenue streams and operating income, generally declined under Marissa Mayer's leadership between Q2 2012 and Q2 2016, with the exception of the Stock Price, although the number of Employees also shrunk."
   },
-  "data": {
-    "columns": [
-      {
-        "name": "Category",
-        "importance": "primary",
-        "description": "The category of revenue, income, stock price, or employees",
-        "unit": "none",
-        "data_type": "categorical",
-        "role": "x"
-      },
-      {
-        "name": "Units",
-        "importance": "primary",
-        "description": "Units for the corresponding metric",
-        "unit": "none",
-        "data_type": "numerical",
-        "role": "y"
-      },
-      {
-        "name": "Metric",
-        "importance": "primary",
-        "description": "The metric of the data point",
-        "unit": "none",
-        "data_type": "categorical",
-        "role": "group"
-      }
-    ],
-    "data": [
-      {
-        "Category": "Search revenue",
-        "Units": 386.0,
-        "Metric": "Q2 2012"
-      },
-      {
-        "Category": "Search revenue",
-        "Units": 319.0,
-        "Metric": "Q2 2016"
-      },
-      {
-        "Category": "Search revenue",
-        "Units": -0.17,
-        "Metric": "% Change"
-      },
-      {
-        "Category": "Display revenue",
-        "Units": 473.0,
-        "Metric": "Q2 2012"
-      },
-      {
-        "Category": "Display revenue",
-        "Units": 396.0,
-        "Metric": "Q2 2016"
-      },
-      {
-        "Category": "Display revenue",
-        "Units": -0.16,
-        "Metric": "% Change"
-      },
-      {
-        "Category": "Other revenue",
-        "Units": 222.0,
-        "Metric": "Q2 2012"
-      },
-      {
-        "Category": "Other revenue",
-        "Units": 126.0,
-        "Metric": "Q2 2016"
-      },
-      {
-        "Category": "Other revenue",
-        "Units": -0.43,
-        "Metric": "% Change"
-      },
-      {
-        "Category": "Operating income",
-        "Units": 190.0,
-        "Metric": "Q2 2012"
-      },
-      {
-        "Category": "Operating income",
-        "Units": 39.0,
-        "Metric": "Q2 2016"
-      },
-      {
-        "Category": "Operating income",
-        "Units": -0.8,
-        "Metric": "% Change"
-      },
-      {
-        "Category": "Stock price",
-        "Units": 15.83,
-        "Metric": "Q2 2012"
-      },
-      {
-        "Category": "Stock price",
-        "Units": 37.56,
-        "Metric": "Q2 2016"
-      },
-      {
-        "Category": "Stock price",
-        "Units": 1.37,
-        "Metric": "% Change"
-      },
-      {
-        "Category": "Employees",
-        "Units": 12000.0,
-        "Metric": "Q2 2012"
-      },
-      {
-        "Category": "Employees",
-        "Units": 8800.0,
-        "Metric": "Q2 2016"
-      },
-      {
-        "Category": "Employees",
-        "Units": -0.27,
-        "Metric": "% Change"
-      }
-    ]
-  },
   "_extra": {
     "image_data": {
       "original_file": "/home/lizhen/chartdata/new_infographics/Bar Chart/5297.jpeg",
@@ -229,6 +109,156 @@
     },
     "other": {
       "primary": "data:image/png;base64,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"
+    }
+  },
+  "data": [
+    {
+      "Category": "Search revenue",
+      "Units": 386.0,
+      "Metric": "Q2 2012"
+    },
+    {
+      "Category": "Search revenue",
+      "Units": 319.0,
+      "Metric": "Q2 2016"
+    },
+    {
+      "Category": "Search revenue",
+      "Units": -0.17,
+      "Metric": "% Change"
+    },
+    {
+      "Category": "Display revenue",
+      "Units": 473.0,
+      "Metric": "Q2 2012"
+    },
+    {
+      "Category": "Display revenue",
+      "Units": 396.0,
+      "Metric": "Q2 2016"
+    },
+    {
+      "Category": "Display revenue",
+      "Units": -0.16,
+      "Metric": "% Change"
+    },
+    {
+      "Category": "Other revenue",
+      "Units": 222.0,
+      "Metric": "Q2 2012"
+    },
+    {
+      "Category": "Other revenue",
+      "Units": 126.0,
+      "Metric": "Q2 2016"
+    },
+    {
+      "Category": "Other revenue",
+      "Units": -0.43,
+      "Metric": "% Change"
+    },
+    {
+      "Category": "Operating income",
+      "Units": 190.0,
+      "Metric": "Q2 2012"
+    },
+    {
+      "Category": "Operating income",
+      "Units": 39.0,
+      "Metric": "Q2 2016"
+    },
+    {
+      "Category": "Operating income",
+      "Units": -0.8,
+      "Metric": "% Change"
+    },
+    {
+      "Category": "Stock price",
+      "Units": 15.83,
+      "Metric": "Q2 2012"
+    },
+    {
+      "Category": "Stock price",
+      "Units": 37.56,
+      "Metric": "Q2 2016"
+    },
+    {
+      "Category": "Stock price",
+      "Units": 1.37,
+      "Metric": "% Change"
+    },
+    {
+      "Category": "Employees",
+      "Units": 12000.0,
+      "Metric": "Q2 2012"
+    },
+    {
+      "Category": "Employees",
+      "Units": 8800.0,
+      "Metric": "Q2 2016"
+    },
+    {
+      "Category": "Employees",
+      "Units": -0.27,
+      "Metric": "% Change"
+    }
+  ],
+  "data_columns": [
+    {
+      "name": "Category",
+      "importance": "primary",
+      "description": "The category of revenue, income, stock price, or employees",
+      "unit": "none",
+      "data_type": "categorical",
+      "role": "x"
+    },
+    {
+      "name": "Units",
+      "importance": "primary",
+      "description": "Units for the corresponding metric",
+      "unit": "none",
+      "data_type": "numerical",
+      "role": "y"
+    },
+    {
+      "name": "Metric",
+      "importance": "primary",
+      "description": "The metric of the data point",
+      "unit": "none",
+      "data_type": "categorical",
+      "role": "group"
+    }
+  ],
+  "secondary_data": [],
+  "variables": {
+    "width": 600,
+    "height": 600,
+    "has_rounded_corners": false,
+    "has_shadow": false,
+    "has_spacing": false,
+    "has_gradient": false,
+    "has_stroke": false
+  },
+  "typography": {
+    "title": {
+      "font_family": "Arial",
+      "font_size": "28px",
+      "font_weight": 700
+    },
+    "description": {
+      "font_family": "Arial",
+      "font_size": "16px",
+      "font_weight": 500
+    },
+    "label": {
+      "font_family": "Arial",
+      "font_size": "16px",
+      "font_weight": 500
+    },
+    "annotation": {
+      "font_family": "Arial",
+      "font_size": "12px",
+      "font_weight": 400
     }
   }
 }
