@@ -89,7 +89,7 @@ def load_js_echarts(json_data=None, output_file=None, js_file=None):
     <head>
         <meta charset="utf-8">
         <title>ECharts Chart</title>
-        <script src="file://%s"></script>
+        <script src="%s"></script>
         <style>
             #chart-container {
                 width: %dpx;
@@ -169,11 +169,14 @@ def load_js_echarts(json_data=None, output_file=None, js_file=None):
     # 获取本地库文件的绝对路径
     echarts_lib_path = os.path.abspath(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static', 'lib', 'echarts.min.js'))
     
+    # 使用文件协议的URL (用于SVG渲染)
+    echarts_lib_url = f"file://{echarts_lib_path}"
+    
     # Load JavaScript code
     js_code = _load_js_code(js_file)
     
     # Create HTML content
-    formatted_html = html_template % (echarts_lib_path, width, height)
+    formatted_html = html_template % (echarts_lib_url, width, height)
     formatted_html = formatted_html.replace('JSON_DATA_PLACEHOLDER', json.dumps(json_data))
     formatted_html = formatted_html.replace('JS_CODE_PLACEHOLDER', js_code)
     
@@ -208,7 +211,7 @@ def load_d3js(json_data=None, output_file=None, js_file=None):
     <head>
         <meta charset="utf-8">
         <title>D3.js Chart</title>
-        <script src="file://%s"></script>
+        <script src="%s"></script>
         <style>
             body {
                 font-family: Arial, sans-serif;
@@ -257,10 +260,13 @@ def load_d3js(json_data=None, output_file=None, js_file=None):
     # 获取D3.js库文件的绝对路径
     d3_lib_path = os.path.abspath(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static', 'lib', 'd3.min.js'))
     
+    # 使用文件协议的URL (用于SVG渲染)
+    d3_lib_url = f"file://{d3_lib_path}"
+    
     js_code = _load_js_code(js_file)
     
     # Create HTML content    
-    formatted_html = html_template % (d3_lib_path, width, height)
+    formatted_html = html_template % (d3_lib_url, width, height)
     formatted_html = formatted_html.replace('JSON_DATA_PLACEHOLDER', json.dumps(json_data))
     formatted_html = formatted_html.replace('JS_CODE_PLACEHOLDER', js_code)
     
@@ -286,7 +292,7 @@ def load_py_echarts(json_data=None):
     # 不需要特殊处理，直接返回处理好的选项数据
     return json_data
 
-def render_chart_to_svg(json_data, output_svg_path, js_file=None, width=None, height=None, framework="echarts"):
+def render_chart_to_svg(json_data, output_svg_path, js_file=None, width=None, height=None, framework="echarts", html_output_path=None):
     """
     通用的图表渲染函数，支持多种图表框架
     
@@ -297,6 +303,7 @@ def render_chart_to_svg(json_data, output_svg_path, js_file=None, width=None, he
         width (int, optional): 图表宽度(像素)
         height (int, optional): 图表高度(像素)
         framework (str): 使用的图表框架，可选"echarts"或"d3"
+        html_output_path (str, optional): 保存中间HTML文件的路径
         
     Returns:
         Path to the generated SVG file
@@ -320,6 +327,38 @@ def render_chart_to_svg(json_data, output_svg_path, js_file=None, width=None, he
         else:
             raise ValueError(f"Unsupported framework: {framework}")
         
+        # 如果指定了HTML输出路径，创建HTML文件副本并处理CDN URL
+        if html_output_path and os.path.exists(html_file):
+            import shutil
+            import re
+            
+            # 确保目标目录存在
+            os.makedirs(os.path.dirname(os.path.abspath(html_output_path)), exist_ok=True)
+            
+            # 读取HTML内容
+            with open(html_file, 'r', encoding='utf-8') as f:
+                html_content = f.read()
+            
+            # 确定库文件名
+            lib_file = 'echarts.min.js' if framework.lower().startswith('echarts') else 'd3.min.js'
+            
+            # 替换file://路径为CDN URL (使用通用的CDN)
+            file_pattern = r'file://.*?/' + lib_file
+            
+            # 确定CDN URL
+            if framework.lower().startswith('echarts'):
+                cdn_url = "https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"
+            else:  # D3.js
+                cdn_url = "https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"
+            
+            html_content = re.sub(file_pattern, cdn_url, html_content)
+            
+            # 将处理后的HTML内容写入到输出文件
+            with open(html_output_path, 'w', encoding='utf-8') as f:
+                f.write(html_content)
+                
+            print(f"Saved intermediate HTML file to: {html_output_path}")
+        
         # 使用html_to_svg转换为SVG
         svg_file = html_to_svg(html_file, output_svg_path, width=width, height=height)
         
@@ -339,7 +378,7 @@ def render_chart_to_svg(json_data, output_svg_path, js_file=None, width=None, he
             cleanup_temp_dir(temp_dir)
 
 # 保持向后兼容的函数
-def render_d3js_chart_to_svg(json_data, output_svg_path, js_file=None, width=None, height=None):
+def render_d3js_chart_to_svg(json_data, output_svg_path, js_file=None, width=None, height=None, html_output_path=None):
     """
     渲染D3.js图表为SVG (向后兼容函数)
     
@@ -347,17 +386,20 @@ def render_d3js_chart_to_svg(json_data, output_svg_path, js_file=None, width=Non
         json_data (dict): 图表数据和选项
         output_svg_path (str): SVG文件保存路径
         js_file (str): D3.js实现文件的路径
-        width (int): 图表宽度(像素)
-        height (int): 图表高度(像素)
+        width (int, optional): 图表宽度(像素)
+        height (int, optional): 图表高度(像素)
+        html_output_path (str, optional): 保存中间HTML文件的路径
         
     Returns:
         Path to the generated SVG file
     """
+    # 调用统一的渲染函数
     return render_chart_to_svg(
-        json_data=json_data, 
+        json_data=json_data,
         output_svg_path=output_svg_path,
         js_file=js_file,
         width=width,
         height=height,
-        framework="d3"
+        framework="d3",
+        html_output_path=html_output_path
     ) 

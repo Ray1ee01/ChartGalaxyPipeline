@@ -17,15 +17,34 @@ ChartPipeline 是一个模块化、可扩展的数据可视化生成框架，通
 - 基于模板系统实现多种图表类型
 - 支持递归扫描的模板目录，可以轻松添加新图表类型
 
-### 使用方法
+### 基本用法
+
+1. 准备JSON格式的输入数据
+2. 运行主程序生成SVG图表:
 
 ```bash
-# 使用指定的图表名称生成SVG
-python modules/chart_engine/chart_engine.py --input input_data.json --name donut_chart_01 --output chart.svg
-
-# 使用特定测试数据
+python modules/chart_engine/chart_engine.py --input test/input.json --name donut_chart_01 --output tmp.svg
 python modules/chart_engine/chart_engine.py --input test/testset/data/55.json --name donut_chart_01 --output tmp.svg
 ```
+
+参数说明:
+- `--input`: 输入JSON文件路径
+- `--name`: 图表类型名称
+- `--output`: 输出SVG文件路径
+- `--html`: 输出HTML文件路径（可选），用于调试和修改图表代码
+
+### HTML调试模式
+
+使用`--html`参数可以同时导出HTML格式的图表：
+
+```bash
+python modules/chart_engine/chart_engine.py --input test/input.json --name donut_chart_01 --html debug.html
+```
+
+HTML模式的优势:
+- 便于在浏览器中调试图表代码
+- 可以直接修改和测试图表样式和行为
+- 在开发新模板或解决复杂渲染问题时特别有用
 
 ### 开发新模板
 

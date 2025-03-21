@@ -50,6 +50,20 @@ python modules/chart_engine/chart_engine.py --input test/testset/data/55.json --
 - `--input`: 输入JSON文件路径
 - `--name`: 图表类型名称
 - `--output`: 输出SVG文件路径
+- `--html`: 输出HTML文件路径（可选），用于调试和修改图表代码
+
+### HTML调试模式
+
+使用`--html`参数可以同时导出HTML格式的图表：
+
+```bash
+python modules/chart_engine/chart_engine.py --input test/input.json --name donut_chart_01 --html debug.html
+```
+
+HTML模式的优势:
+- 便于在浏览器中调试图表代码
+- 可以直接修改和测试图表样式和行为
+- 在开发新模板或解决复杂渲染问题时特别有用
 
 ### 添加新模板
 
@@ -63,17 +77,8 @@ python modules/chart_engine/chart_engine.py --input test/testset/data/55.json --
 
 ## 开发指南
 
-### 调试
-
-可以通过设置环境变量来控制日志级别:
-
-```bash
-export DEBUG=True
-python make_svg.py
-```
 
 ### 添加新的渲染引擎
 
 1. 在`utils/load_charts.py`中添加新的加载函数
-2. 在`template_registry.py`中添加新的模板类型
-3. 更新`render_chart_to_svg`函数以支持新的引擎 
+2. 更新`render_chart_to_svg`函数以支持新的引擎 

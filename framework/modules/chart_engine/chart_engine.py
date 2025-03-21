@@ -34,6 +34,8 @@ def parse_arguments():
                         help='Path to output SVG file (default: auto-generated in tmp directory)')
     parser.add_argument('--name', type=str, default=None,
                         help='Chart name to use (default: uses value from JSON or a default name)')
+    parser.add_argument('--html', type=str, default=None,
+                        help='Path to save intermediate HTML file (default: not saved)')
     
     return parser.parse_args()
 
@@ -82,6 +84,11 @@ if __name__ == '__main__':
         # Generate a random output SVG filename in tmp directory
         output_svg_path = os.path.join(tmp_dir, f"{chart_name.replace(' ', '_')}_{random.randint(1000, 9999)}.svg")
     
+    # Check if HTML output is requested
+    html_output_path = args.html
+    if html_output_path:
+        print(f"HTML output will be saved to: {html_output_path}")
+    
     svg_file = None
     error_message = None
     
@@ -115,7 +122,8 @@ if __name__ == '__main__':
                     js_file=js_wrapper_file,
                     width=width,
                     height=height,
-                    framework="echarts"  # 统一使用echarts框架
+                    framework="echarts",  # 统一使用echarts框架
+                    html_output_path=html_output_path,  # Pass HTML output path
                 )
                 
                 if svg_file is None:
@@ -140,7 +148,8 @@ if __name__ == '__main__':
                     js_file=template,
                     width=width,
                     height=height,
-                    framework="echarts"
+                    framework="echarts",
+                    html_output_path=html_output_path,  # Pass HTML output path
                 )
                 
                 if svg_file is None:
@@ -161,7 +170,8 @@ if __name__ == '__main__':
                     js_file=template,
                     width=width,
                     height=height,
-                    framework="d3"
+                    framework="d3",
+                    html_output_path=html_output_path,  # Pass HTML output path
                 )
                 
                 if svg_file is None:
