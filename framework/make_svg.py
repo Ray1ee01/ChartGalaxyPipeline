@@ -34,7 +34,7 @@ def determine_chart_type(json_data):
     # For testing purpose - this time we want to use the JS template
     # return "Grouped Bar Chart"
     # return "Horizontal Bar Chart"
-    # return "Vertical Stacked Bar Chart"
+    return "Vertical Stacked Bar Chart"
     # return "Horizontal Stacked Bar Chart"
     # return "Vertical Group Bar Chart"
     # return "Horizontal Group Bar Chart"
@@ -49,7 +49,7 @@ def determine_chart_type(json_data):
     # return "Group Donut Chart"
     # return "Group Pie Chart"
     # return "Scatter Plot"
-    return "Bubble Chart"
+    # return "Bubble Chart"
     # return json_data['requirements']['chart_type'].lower()
 
 if __name__ == '__main__':
@@ -58,7 +58,7 @@ if __name__ == '__main__':
     tmp_dir = ensure_temp_dir()
     
     # Load data from input.json
-    json_data = load_data_from_json("input_1.json")
+    json_data = load_data_from_json("input_2.json")
     
     # Determine chart type based on the JSON data
     chart_type = determine_chart_type(json_data)
@@ -209,24 +209,31 @@ if __name__ == '__main__':
         # 获取module所有的attribute
         # attributes = dir(module)
         template_class = getattr(module, chart_type)
-        template_object = template_class()
+        template_object = template_class(json_data)
         vega_spec = template_object.make_specification(json_data)
         print("vega_spec:", vega_spec)
-        
         # 保存vega_spec到临时文件
         vega_spec_file = create_temp_file(prefix="vega_spec_", suffix=".json", 
                                             content=json.dumps(vega_spec, indent=2))
         
-        try:
-            svg_file = render_vegalite_specification_to_svg(vega_spec, output_svg_path)
-            if svg_file is None:
-                raise ValueError("SVG chart generation failed (returned None)")
+        # try:
+        svg_file, svg_content = template_object.specification_to_svg(vega_spec, output_svg_path)
+        print("template_object:", template_object)
+        if svg_file is None:
+            raise ValueError("SVG chart generation failed (returned None)")
+        # print("svg_content:", svg_content)
+        element_tree = template_object.svg_to_element_tree(svg_content)
+        print("element_tree:", element_tree)
+        template_object.apply_variation(json_data)
+        svg_file = output_svg_path
+        svg_content = template_object.element_tree_to_svg(element_tree)
+        with open(output_svg_path, 'w', encoding='utf-8') as f:
+            f.write(svg_content)
+        print(f"VegaLite SVG chart generated successfully")
             
-            print(f"VegaLite SVG chart generated successfully")
-            
-        except Exception as e:
-            error_message = str(e)
-            raise Exception(f"Failed to generate VegaLite chart: {error_message}")
+        # except Exception as e:
+        #     error_message = str(e)
+        #     raise Exception(f"Failed to generate VegaLite chart: {error_message}")
     else:
         error_message = f"Unknown engine type: {engine}"
         print(f"Error: {error_message}")

@@ -20,8 +20,8 @@ REQUIREMENTS_END
 """
 
 class LineChart(VegaLiteTemplate):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, json_data: Dict):
+        super().__init__(json_data)
 
     def make_mark_specification(self, json_data: Dict) -> Dict:
         mark_styles = json_data['variables']['mark']

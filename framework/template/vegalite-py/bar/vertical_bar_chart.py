@@ -20,8 +20,8 @@ REQUIREMENTS_END
 """
 
 class VerticalBarChart(VegaLiteTemplate):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, json_data: Dict):
+        super().__init__(json_data)
 
     def make_mark_specification(self, json_data: Dict) -> Dict:
         mark_styles = json_data['variables']['mark']
@@ -141,3 +141,15 @@ class VerticalBarChart(VegaLiteTemplate):
         }
         specification['encoding'] = encoding
         return specification
+
+    # def apply_icon_mark_side(self, json_data: Dict):
+    #     data_columns = json_data['data_columns']
+    #     images = json_data['images']
+    #     field_image_map = images['field']
+    #     x_column = None
+    #     for data_column in data_columns:
+    #         if data_column['name'] == 'x':
+    #             x_column = data_column
+    #     x_image_map = field_image_map['x']
+    #     for mark in self.marks:
+            
