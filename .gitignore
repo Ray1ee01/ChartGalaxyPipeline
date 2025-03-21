@@ -20,3 +20,4 @@ connectivity.c
 temp_input_*.json
 .vscode
 config.py
+*.html
