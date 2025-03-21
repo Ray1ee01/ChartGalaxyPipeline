@@ -30,8 +30,8 @@ def determine_chart_type(json_data):
         String indicating the chart type
     """
     # For testing purpose - this time we want to use the JS template
-    # return "Grouped Bar Chart"
-    return "Line Chart"
+    return "Simple Bar Chart"
+    # return "Line Chart"
     #return json_data['requirements']['chart_type'].lower()
 
 if __name__ == '__main__':
@@ -40,7 +40,7 @@ if __name__ == '__main__':
     tmp_dir = ensure_temp_dir()
     
     # Load data from input.json
-    json_data = load_data_from_json()
+    json_data = load_data_from_json("../../test/small/datajson/3.json")
     
     # Determine chart type based on the JSON data
     chart_type = determine_chart_type(json_data)
@@ -143,7 +143,7 @@ if __name__ == '__main__':
             js_code = template
             
             # Add chart_type to the data if not already present
-            if "chart_type" not in json_data:
+            if "chart_type" not in json_data or json_data["chart_type"] == []:
                 json_data["chart_type"] = chart_type
             
             # 使用统一的render_chart_to_svg函数直接生成SVG
