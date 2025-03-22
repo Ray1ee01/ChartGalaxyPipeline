@@ -11,6 +11,7 @@ from .data_enricher_modules.data_clean import clean_df
 from .data_enricher_modules.HAI_extract import extract_chart
 from .data_enricher_modules.topic_generate import check_topic_and_caption, generate_bgimage_search_keywords, if_has_country_name
 from .data_enricher_modules.image_search import search_image
+from ..data.config.config import CONFIG
 
 from .data_enricher_modules.icon_selection import get_icon_pool, CLIPMatcher
 from .icon_selection_modules.icon_selection import IconSelector
@@ -20,11 +21,8 @@ from .data_enricher_modules.bgimage_selection import ImageSearchSystem
 from .data_enricher_modules.datafact_generator import DataFactGenerator
 from .data_enricher_modules.palette_extractor import extract_palette
 from .data_enricher_modules.data_fact_detector import DataFactDetector
-
-data_save_dir = './src/data'
-cache_dir = './src/cache'
-image_root = "D:/VIS/Infographics/data/check_202501022351"
-
+from config import image_root_path as image_root
+from config import data_save_dir, cache_dir
 
 class CSVDataProcessor(DataProcessor):
     def process(self, raw_data: str) -> List[Dict]:
@@ -45,11 +43,11 @@ class VizNetDataProcessor(DataProcessor):
 
         dataloader = VizNetDataLoader()
         number = raw_data.split('_')[-1]
-        
+
         # df, raw_meta_data = dataloader.load(raw_data)
         df, raw_meta_data = dataloader.load(number)
         print(df, raw_meta_data)
-        
+
         _,__ = GPTChartExtractor().extract(df, options={
             "x_type": "categorical",
             "y_type": "numerical",
@@ -59,23 +57,23 @@ class VizNetDataProcessor(DataProcessor):
         chart_extractor = HAIChartExtractor()
         data, meta_data = chart_extractor.extract(df)
         meta_data.update(raw_meta_data)
-        
-        
+
+
         # 3. generate topic and description
-        topic_data = check_topic_and_caption(df, meta_data) 
-        
+        topic_data = check_topic_and_caption(df, meta_data)
+
         chart_data = {
             "data": data,
             "meta_data": meta_data,
         }
-        
+
         # # 4. get data facts
         # data_fact_generator = DataFactGenerator(chart_data, topic_data)
         # data_fact = data_fact_generator.generate_data_fact()
 
         # data_fact_detector = DataFactDetector()
         # data_fact, data_fact_icon = data_fact_detector.detect_data_facts(chart_data)
-        
+
         # 5. get topic relevant images
         # topic_images_query = search_image(meta['topic'])
         topic_images_query = {}
@@ -86,12 +84,12 @@ class VizNetDataProcessor(DataProcessor):
         # 6. get chart relevant icons
         time_start = time.time()
         # matcher = CLIPMatcher()  # 只创建一次CLIPMatcher实例
-        
+
         # icon_pool = get_icon_pool(chart_data, topic_data, matcher)
         with open('./src/processors/style_design_modules/image_paths.json') as f:
             image_paths = json.load(f)
         default_image_path = '/data1/jiashu/ChartPipeline/src/processors/style_design_modules/default.png'
-        
+
         palettes = extract_palette(topic_data, cache_dir, image_root, image_paths, default_image_path)
 
         result = {}
@@ -101,7 +99,7 @@ class VizNetDataProcessor(DataProcessor):
         result['data'] = chart_data['data']
         result['data_facts'] = data_fact
         result['icons'] = {}
-        
+
         icon_selector = IconSelector(icon_pool, topic_color=None, spe_mode='flag')
         candidate_icons = icon_selector.select(layout_sequence, chart_image_sequence)
 
@@ -118,7 +116,7 @@ class VizNetDataProcessor(DataProcessor):
             x_multi_icon_idx = x_single_icon_idx + 1
         else:
             x_multi_icon_idx = x_single_icon_idx
-        
+
         topic_icon_pool = candidate_icons[0:topic_icon_idx+1]
         x_data_single_icon_pool = candidate_icons[topic_icon_idx+1:x_single_icon_idx+1]
         x_data_multi_icon_pool = candidate_icons[x_multi_icon_idx:]
@@ -129,35 +127,34 @@ class VizNetDataProcessor(DataProcessor):
             x_data_single_icon_pool = [x_data_single_icon_pool]
         if not isinstance(x_data_multi_icon_pool, list):
             x_data_multi_icon_pool = [x_data_multi_icon_pool]
-        
+
         icon_semantic = icon_pool
         icon_positions = icon_semantic.icon_positions
-        icon_root = "/data1/liduan/generation/chart/iconset/colored_icons_new"
-        result['icons']['topic'] = [os.path.join(icon_root, icon_positions[v][0], icon_positions[v][1]) for v in topic_icon_pool]
-        result['icons']['x_data_single'] = [os.path.join(icon_root, icon_positions[v][0], icon_positions[v][1]) for v in x_data_single_icon_pool]
-        result['icons']['x_data_multi'] = [os.path.join(icon_root, icon_positions[v][0], icon_positions[v][1]) for v in x_data_multi_icon_pool]
-        
+        image_root = "/data1/liduan/generation/chart/iconset/colored_icons_new"
+        result['icons']['topic'] = [os.path.join(image_root, icon_positions[v][0], icon_positions[v][1]) for v in topic_icon_pool]
+        result['icons']['x_data_single'] = [os.path.join(image_root, icon_positions[v][0], icon_positions[v][1]) for v in x_data_single_icon_pool]
+        result['icons']['x_data_multi'] = [os.path.join(image_root, icon_positions[v][0], icon_positions[v][1]) for v in x_data_multi_icon_pool]
+
         result['palettes'] = palettes
         return result
-    
+
 class Chart2TableDataProcessor(DataProcessor):
     def process(self, raw_data: str, layout_sequence: List[str], chart_image_sequence: List[str], matcher: CLIPMatcher, bgimage_searcher: ImageSearchSystem = None) -> List[Dict]:
         chart_type = raw_data.split('_')[0]
         dataloader = Chart2TableDataLoader()
         df, raw_meta_data = dataloader.load(raw_data)
-        
+
         chart_extractor = NaiveChartExtractor()
         data, meta_data = chart_extractor.extract(df)
         meta_data.update(raw_meta_data)
-        
+
         # 3. generate topic and description
         topic_data = check_topic_and_caption(df, meta_data)
-        
+
         chart_data = {
             "data": data,
             "meta_data": meta_data,
         }
-        
         # # 4. get data facts
         # data_fact_generator = DataFactGenerator(chart_data, topic_data)
         # data_fact = data_fact_generator.generate_data_fact()
@@ -168,11 +165,19 @@ class Chart2TableDataProcessor(DataProcessor):
         data_fact = {}
         
         
+        
         # # 4.5. get palettes
-        default_image_path = '/data1/jiashu/ChartPipeline/src/processors/style_design_modules/default.png'
-        with open('./src/processors/style_design_modules/image_paths.json') as f:
-            image_paths = json.load(f)
-        palettes = extract_palette(topic_data, cache_dir, image_root, image_paths, default_image_path)
+        if CONFIG['debug']:
+            palettes = {
+                'color_list': ['#A4C2C7', '#A5CBC8', '#E8B097', '#EBD071', '#E26D9B', '#CB6497', '#8C8D89'],
+                'bcg': 'EDEFE6'
+            }
+        else:
+            default_image_path = '/data1/jiashu/ChartPipeline/src/processors/style_design_modules/default.png'
+            with open('./src/processors/style_design_modules/image_paths.json') as f:
+                image_paths = json.load(f)
+            palettes = extract_palette(topic_data, cache_dir, image_root, image_paths, default_image_path)
+        # print(palettes)
         
         
         topic_image_url = ""
@@ -187,14 +192,14 @@ class Chart2TableDataProcessor(DataProcessor):
         #     # topic_image_urls = search_image(chinese_keyword, engine='baidu')
         #     # topic_image_url = topic_image_urls[0]
         #     topic_image_url = ""
-        
-        
+
+
 
         # topic_image_url = np.random.choice(topic_image_urls)
-        
+
         # print("topic_images_query: ", topic_image_query)
         # topic_image_url = topic_image_query['images_results'][0]['original']
-        # return 
+        # return
         # topic_images_query = {}
         # if need more images, search for meta['keywords']
 
@@ -239,10 +244,10 @@ class Chart2TableDataProcessor(DataProcessor):
             x_multi_icon_idx = x_single_icon_idx + 1
         else:
             x_multi_icon_idx = x_single_icon_idx
-        
+
         icon_semantic = icon_pool
         icon_positions = icon_semantic.icon_positions
-        
+
         topic_icon_pool = candidate_icons[0:topic_icon_idx+1]
         x_data_single_icon_pool = candidate_icons[topic_icon_idx+1:x_single_icon_idx+1]
         x_data_multi_icon_pool = candidate_icons[x_multi_icon_idx:]
@@ -253,17 +258,269 @@ class Chart2TableDataProcessor(DataProcessor):
             x_data_single_icon_pool = [x_data_single_icon_pool]
         if not isinstance(x_data_multi_icon_pool, list):
             x_data_multi_icon_pool = [x_data_multi_icon_pool]
-        
 
-        icon_root = "/data1/liduan/generation/chart/iconset/colored_icons_new"
-        result['icons']['topic'] = [os.path.join(icon_root, icon_positions[v][0], icon_positions[v][1]) if isinstance(v, int) else v for v in topic_icon_pool]
+
+        image_root = "/data1/liduan/generation/chart/iconset/colored_icons_new"
+        result['icons']['topic'] = [os.path.join(image_root, icon_positions[v][0], icon_positions[v][1]) if isinstance(v, int) else v for v in topic_icon_pool]
         # result['icons']['topic'] = [topic_image_url]
-        result['icons']['x_data_single'] = [os.path.join(icon_root, icon_positions[v][0], icon_positions[v][1]) if isinstance(v, int) else v for v in x_data_single_icon_pool]
-        result['icons']['x_data_multi'] = [os.path.join(icon_root, icon_positions[v][0], icon_positions[v][1]) if isinstance(v, int) else v for v in x_data_multi_icon_pool]
+        result['icons']['x_data_single'] = [os.path.join(image_root, icon_positions[v][0], icon_positions[v][1]) if isinstance(v, int) else v for v in x_data_single_icon_pool]
+        result['icons']['x_data_multi'] = [os.path.join(image_root, icon_positions[v][0], icon_positions[v][1]) if isinstance(v, int) else v for v in x_data_multi_icon_pool]
         result['icons']['background_image'] = topic_image_url
         x_data_multi_icon_map = {}
         # for i, data in enumerate(result['data']):
         #     x_data_multi_icon_map[data['x_data']] = result['icons']['x_data_multi'][i]
         result['x_data_multi_icon_map'] = x_data_multi_icon_map
+        result['palettes'] = palettes
+        return result
+    
+class TestDataProcessor(DataProcessor):
+    def process(self, raw_data: str, layout_sequence: List[str], chart_image_sequence: List[str], matcher: CLIPMatcher, bgimage_searcher: ImageSearchSystem = None) -> List[Dict]:
+        # chart_type = raw_data.split('_')[0]
+        # dataloader = Chart2TableDataLoader()
+        dataloader = TestDataLoader()
+        data_json, basic_chart_type, chart_type, variation_info = dataloader.load(raw_data)
+        # chart_extractor = NaiveChartExtractor()
+        # data, meta_data = chart_extractor.extract(df)
+        # meta_data.update(raw_meta_data)
+        columns = data_json['columns']
+        meta_data = {
+            "x_type": "categorical", 
+            "y_type": "numerical",
+        }
+        meta_data['axes'] = variation_info['axes']
+        data = data_json['data']
+        for column in columns:
+            role = column['role']
+            if role == 'x':
+                meta_data['x_label'] = column['name'].replace('"', '')
+                meta_data['x_axis'] = column['name'].replace('"', '')
+            elif role == 'y':
+                meta_data['y_label'] = column['name'].replace('"', '')
+                meta_data['y_axis'] = column['name'].replace('"', '')
+            elif role == 'group':
+                meta_data['group_label'] = column['name'].replace('"', '')
+                meta_data['group_axis'] = column['name'].replace('"', '')
+            elif role == 'size':
+                meta_data['size_label'] = column['name'].replace('"', '')
+                meta_data['size_axis'] = column['name'].replace('"', '')
+            elif role == 'order':
+                meta_data['order_label'] = column['name'].replace('"', '')
+                meta_data['order_axis'] = column['name'].replace('"', '')
+        # 为了避免标注文字在后面的合法性处理被简化，这里先单独留空
+        for item in data:
+            item['annotate_data'] = item[meta_data['y_label']]
+            # 同样从key中去掉"
+            keys_to_update = []
+            for key in item.keys():
+                if isinstance(key, str) and '"' in key:
+                    keys_to_update.append(key)
+            for key in keys_to_update:
+                item[key.replace('"', '')] = item[key]
+                del item[key]
+                    
+        # if len(columns) == 2:
+        #     x_label = columns[0]['name']
+        #     y_label = columns[1]['name']
+            # 把data的key换成x_data和y_data
+        #     for item in data:
+        #         item['x_data'] = item[x_label]
+        #         item['y_data'] = item[y_label]
+        #         item['annotate_data'] = item[y_label]
+        #         del item[x_label]
+        #         del item[y_label]
+        #     meta_data['x_label'] = x_label
+        #     meta_data['y_label'] = y_label
+        #     meta_data['x_type'] = 'categorical'
+        #     meta_data['y_type'] = 'numerical'
+        #     meta_data['x_axis'] = x_label
+        #     meta_data['y_axis'] = y_label
+        # elif len(columns) == 3:
+        #     x_label = columns[0]['name']
+        #     y_label = columns[1]['name']
+        #     group_label = columns[2]['name']
+        #     # 把data的key换成x_data和y_data
+        #     for item in data:
+        #         item['x_data'] = item[x_label]
+        #         item['y_data'] = item[y_label]
+        #         item['group'] = item[group_label]
+        #         item['annotate_data'] = item[y_label]
+        #         del item[x_label]
+        #         del item[y_label]
+        #         del item[group_label]
+        #     meta_data['x_label'] = x_label
+        #     meta_data['y_label'] = y_label
+        #     meta_data['group_label'] = group_label
+        #     meta_data['x_type'] = 'categorical'
+        #     meta_data['y_type'] = 'numerical'
+        #     meta_data['group_type'] = 'categorical'
+        #     meta_data['x_axis'] = x_label
+        #     meta_data['y_axis'] = y_label
+        # else:
+        #     raise ValueError(f"columns length is not 2 or 3")
+        topic_data = {
+            "topic": data_json['title'],
+            "keywords": data_json['title'],
+            "title": data_json['title'],
+            'caption': data_json['description'],
+        }
+        if "Horizontal" in chart_type:
+            meta_data['orientation'] = 'horizontal'
+        else:
+            meta_data['orientation'] = 'vertical'
+        if "Stacked Bar Chart" in chart_type:
+            meta_data['chart_type'] = 'stackedbar'
+        elif "Grouped Bar Chart" in chart_type:
+            meta_data['chart_type'] = 'groupbar'
+        elif "Radial Bar Chart" in chart_type:
+            meta_data['chart_type'] = 'radialbar'
+        elif "Bar Chart" in chart_type:
+            meta_data['chart_type'] = 'bar'
+        elif "Line Graph" in chart_type:
+            meta_data['chart_type'] = 'line'
+        elif "Stacked Area Chart" in chart_type:
+            meta_data['chart_type'] = 'stackedarea'
+        elif "stacked" in chart_type:
+            meta_data['chart_type'] = 'stackedbar'
+        elif basic_chart_type == 'scatter':
+            meta_data['chart_type'] = 'scatter'
+        else:
+            meta_data['chart_type'] = basic_chart_type
+        # # 3. generate topic and description
+        # topic_data = check_topic_and_caption(df, meta_data)
+        # 从data中去掉'%'
+        for item in data:
+            for key, value in item.items():
+                if isinstance(value, str) and '%' in value and key != 'annotate_data':
+                    item[key] = value.replace('%', '')
+                if isinstance(value, str) and ',' in value and key != 'annotate_data':
+                    item[key] = value.replace(',', '')
+                if isinstance(value, str) and '"' in value:
+                    item[key] = value.replace('"', '')
+                
+        chart_data = {
+            "data": data,
+            "meta_data": meta_data,
+        }
+        
+        # # 4. get data facts
+        # data_fact_generator = DataFactGenerator(chart_data, topic_data)
+        # data_fact = data_fact_generator.generate_data_fact()
+        # data_fact = {} # 这里可以去掉了
+
+        # data_fact_detector = DataFactDetector()
+        # data_fact, data_fact_icon = data_fact_detector.detect_data_facts(chart_data, chart_type)
+        data_fact = {}
+        
+        
+        
+        # # 4.5. get palettes
+        if CONFIG['debug']:
+            palettes = {
+                'color_list': ['#A4C2C7', '#A5CBC8', '#E8B097', '#EBD071', '#E26D9B', '#CB6497', '#8C8D89'],
+                'bcg': 'EDEFE6'
+            }
+        else:
+            default_image_path = '/data1/jiashu/ChartPipeline/src/processors/style_design_modules/default.png'
+            with open('./src/processors/style_design_modules/image_paths.json') as f:
+                image_paths = json.load(f)
+            palettes = extract_palette(topic_data, cache_dir, image_root, image_paths, default_image_path)
+        # print(palettes)
+        
+        
+        topic_image_url = ""
+        # # 5. get topic relevant images
+        # key_words = generate_bgimage_search_keywords(df, meta_data)
+        # key_word = key_words[0][0]
+        # chinese_keyword = key_words[1][0]
+        # if bgimage_searcher is not None:
+        #     topic_image = bgimage_searcher.search(key_word, chinese_keyword, palettes)
+        #     topic_image_url = topic_image['path']
+        # else:
+        #     # topic_image_urls = search_image(chinese_keyword, engine='baidu')
+        #     # topic_image_url = topic_image_urls[0]
+        #     topic_image_url = ""
+        
+        
+
+        # topic_image_url = np.random.choice(topic_image_urls)
+        
+        # print("topic_images_query: ", topic_image_query)
+        # topic_image_url = topic_image_query['images_results'][0]['original']
+        # return 
+        # topic_images_query = {}
+        # if need more images, search for meta['keywords']
+
+        # 6. get chart relevant icons
+        time_start = time.time()
+        # matcher = CLIPMatcher()  # 只创建一次CLIPMatcher实例
+        # icon_pool = get_icon_pool(chart_data, topic_data, matcher)
+        result = {}
+        result['meta_data'] = meta_data.copy()
+        result['meta_data'].update(chart_data['meta_data'])
+        result['meta_data'].update(topic_data)
+        # result['meta_data']['chart_type'] = 'bar'
+        # result['meta_data']['chart_type'] = basic_chart_type
+        result['data'] = chart_data['data']
+        result['data_facts'] = data_fact
+        result['icons'] = {}
+
+        icon_pool = get_icon_pool(chart_data, topic_data, matcher)
+        if if_has_country_name(chart_data['data']):
+        # if True:
+            icon_selector = IconSelector(icon_pool, topic_color=None, spe_mode='flag')
+            print("has country name")
+        else:
+            icon_selector = IconSelector(icon_pool, topic_color=None)
+            print("no country name")
+        # icon_selector = IconSelector(icon_pool, topic_color=None, spe_mode='logo')
+        # icon_selector = IconSelector(icon_pool, topic_color=None)
+        candidate_icons = icon_selector.select(layout_sequence, chart_image_sequence)
+        # candidate_icons = [[],[]]
+        if isinstance(candidate_icons, tuple):
+            candidate_icons = candidate_icons[0] + candidate_icons[1]
+        # print("candidate_icons: ", candidate_icons)
+        topic_icon_idx = -1
+        x_single_icon_idx = -1
+        x_multi_icon_idx = -1
+        if 'topic_icon' in layout_sequence:
+            topic_icon_idx = 0
+        if 'x_single_icon' in chart_image_sequence:
+            x_single_icon_idx = topic_icon_idx + 1
+        else:
+            x_single_icon_idx = topic_icon_idx
+        if 'x_multiple_icon' in chart_image_sequence:
+            x_multi_icon_idx = x_single_icon_idx + 1
+        else:
+            x_multi_icon_idx = x_single_icon_idx
+        if 'group_icon' in chart_image_sequence:
+            group_icon_idx = x_multi_icon_idx + 1
+        else:
+            group_icon_idx = x_multi_icon_idx
+        
+        icon_semantic = icon_pool
+        icon_positions = icon_semantic.icon_positions
+        
+        topic_icon_pool = candidate_icons[0:topic_icon_idx+1]
+        x_data_single_icon_pool = candidate_icons[topic_icon_idx+1:x_single_icon_idx+1]
+        x_data_multi_icon_pool = candidate_icons[x_multi_icon_idx:group_icon_idx]
+        group_icon_pool = candidate_icons[group_icon_idx:]
+        # make them always be a list
+        if not isinstance(topic_icon_pool, list):
+            topic_icon_pool = [topic_icon_pool]
+        if not isinstance(x_data_single_icon_pool, list):
+            x_data_single_icon_pool = [x_data_single_icon_pool]
+        if not isinstance(x_data_multi_icon_pool, list):
+            x_data_multi_icon_pool = [x_data_multi_icon_pool]
+        if not isinstance(group_icon_pool, list):
+            group_icon_pool = [group_icon_pool]
+        
+
+        image_root = "/data1/liduan/generation/chart/iconset/colored_icons_new"
+        result['icons']['topic'] = [os.path.join(image_root, icon_positions[v][0], icon_positions[v][1]) if isinstance(v, int) else v for v in topic_icon_pool]
+        # result['icons']['topic'] = [topic_image_url]
+        result['icons']['x_data_single'] = [os.path.join(image_root, icon_positions[v][0], icon_positions[v][1]) if isinstance(v, int) else v for v in x_data_single_icon_pool]
+        result['icons']['x_data_multi'] = [os.path.join(image_root, icon_positions[v][0], icon_positions[v][1]) if isinstance(v, int) else v for v in x_data_multi_icon_pool]
+        result['icons']['group'] = [os.path.join(image_root, icon_positions[v][0], icon_positions[v][1]) if isinstance(v, int) else v for v in group_icon_pool]
+        result['icons']['background_image'] = topic_image_url
         result['palettes'] = palettes
         return result

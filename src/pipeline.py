@@ -13,6 +13,7 @@ import random
 import time
 from .processors.data_enricher_modules.icon_selection import CLIPMatcher
 from .processors.data_enricher_modules.bgimage_selection import ImageSearchSystem
+from .data.config.config import update_configs
 
 class Pipeline:
     def __init__(
@@ -41,9 +42,10 @@ class Pipeline:
         time_start = time.time()
         # 步骤1：数据处理
         processed_data = self.data_processor.process(input_data, layout_config['sequence'], icon_config['need_icon'], matcher, bgimage_searcher)
+        config = update_configs(config, processed_data['meta_data'])
+        print("config: ", config)
         time_end = time.time()
-        # print(processeds_data)
-        # return "", {}
+        print("processed_data: ", processed_data)
     
     
         time_start = time.time()
@@ -58,12 +60,18 @@ class Pipeline:
         # axis_config = layout_config.get('axis_config', {})
         annotation_config = config.get('annotation', {})
         # 创建模板
+        print("processed_data['meta_data']['chart_type']", processed_data['meta_data']['chart_type'])
         if processed_data['meta_data']['chart_type'] == 'bar':
-            # 如果没有指定orientation,随机选择
             if 'orientation' not in chart_config:
                 is_horizontal = random.choice([True, False])
             else:
                 is_horizontal = chart_config['orientation'] == 'horizontal'
+            if "orientation" in processed_data['meta_data']:
+                is_horizontal = processed_data['meta_data']['orientation'] == 'horizontal'
+            else:
+                is_horizontal = random.choice([True, False])
+
+
             # 使用新的工厂方法创建模板
             if is_horizontal:
                 chart_template, layout_template = TemplateFactory.create_horizontal_bar_chart_template(
@@ -268,7 +276,10 @@ class Pipeline:
         # 获取主题色
         theme_color = "#0000ff"
         try: 
-            theme_color = chart_template.color_encoding.range[0]
+            if chart_template.color_encoding is not None:
+                theme_color = chart_template.color_encoding.range[0]
+            else:
+                theme_color = chart_template.mark.fill_color_style.color
         except:
             theme_color = "#0000ff"
         
@@ -302,7 +313,8 @@ class Pipeline:
         subtitle_config['fontWeight'] = subtitle_font_template.font_weight
         subtitle_config['font'] = subtitle_font_template.font
     
-        emphasis_phrases = find_emphasis_phrases(processed_data['meta_data']['title'], processed_data['meta_data'])
+        # emphasis_phrases = find_emphasis_phrases(processed_data['meta_data']['title'], processed_data['meta_data'])
+        emphasis_phrases = []
         emphasis_phrases_config = []
         if chart_template.color_encoding is not None and chart_template.color_encoding.color_with_semantics:
             for phrase in emphasis_phrases:
@@ -328,25 +340,24 @@ class Pipeline:
             "topic_icon_config": {},
             "background_config": {},
             "topic_icon_url": processed_data['icons']['topic'][0] if len(processed_data['icons']['topic']) > 0 else None,
-            # "x_label_icon_url": processed_data['icons']['x_label'][0],
-            # "y_label_icon_url": processed_data['icons']['y_label'][0],
             'x_data_single_url': processed_data['icons']['x_data_single'][0] if len(processed_data['icons']['x_data_single']) > 0 else None,
-            # "x_data_multi_url": [icon[i] for i, icon in enumerate(processed_data['icons']['x_data_multi'])],
             "x_data_multi_url": processed_data['icons']['x_data_multi'],
+            "group_data_url": processed_data['icons']['group'],
             "background_image": {"url": processed_data['icons']['background_image']},
-            "x_data_multi_icon_map": processed_data['x_data_multi_icon_map'],
             "layout_template": layout_template,
             "annotation_config": annotation_config,
             "chart_template": chart_template,
             "meta_data": processed_data['meta_data'],
             "data": processed_data['data'],
             "chart_config": chart_config,
-            # "style_config": style_dict,
+            "chart_type": processed_data["meta_data"]["chart_type"],
             "theme_color": theme_color
         })
         additional_configs['title_config'].update(title_config)
         additional_configs['subtitle_config'].update(subtitle_config)
         additional_configs['topic_icon_config'].update(topic_icon_config)
+        chart_image_config = config.get('layout', {}).get('chart_image_config', {})
+        additional_configs['chart_image_config'] = chart_image_config
 
         # print("additional_configs['title_config']", additional_configs['title_config'])
         seed_text = random.randint(1, 100)
@@ -362,6 +373,8 @@ class Pipeline:
         additional_configs['layout_tree'] = layout_tree
         additional_configs.update(config)
         # 步骤3：SVG后处理
+        
+        print("before svg_processor.process")
         final_svg, bounding_boxes = self.svg_processor.process(svg, additional_configs, debug=False)
         # final_svg = svg
         bounding_boxes = {}

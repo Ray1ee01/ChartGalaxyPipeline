@@ -1,0 +1,80 @@
+<svg version="1.1" class="marks" width="512" height="230" viewBox="-100,-100,1000,1000" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><g ><g version="1.1" class="marks" width="512" height="230" viewBox="0 0 512 230"><g fill="none" stroke-miterlimit="10" transform="translate(57,5)"><g class="mark-group role-frame root" role="graphics-object" aria-roledescription="group mark container"><g transform="translate(0,0)" class="mark-group role-axis" role="graphics-symbol" aria-roledescription="axis" aria-label="X-axis for a discrete scale with 11 values: Colorado, Illinois, Indiana, Kentucky, Montana, ending with Wyoming"><g transform="translate(0.5,200.5)" class="mark-rule role-axis-tick" pointer-events="none"><line transform="translate(24,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(64,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(104,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(144,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(184,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(225,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(265,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(305,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(345,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(385,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(425,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/></g>
+<g transform="translate(0.5,200.5)" class="mark-text role-axis-label" pointer-events="none"><text text-anchor="middle" transform="translate(23.607142857142875,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">Colorado
+</text>
+<text text-anchor="middle" transform="translate(63.785714285714306,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">Illinois
+</text>
+<text text-anchor="middle" transform="translate(103.96428571428572,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">Indiana
+</text>
+<text text-anchor="middle" transform="translate(144.14285714285717,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">Kentucky
+</text>
+<text text-anchor="middle" transform="translate(184.32142857142856,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">Montana
+</text>
+<text text-anchor="middle" transform="translate(224.5,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">North Dakota
+</text>
+<text text-anchor="middle" transform="translate(264.67857142857144,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">Ohio
+</text>
+<text text-anchor="middle" transform="translate(304.8571428571428,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">Pennsylvania
+</text>
+<text text-anchor="middle" transform="translate(345.0357142857142,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">Texas
+</text>
+<text text-anchor="middle" transform="translate(385.21428571428567,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">West Virginia
+</text>
+<text text-anchor="middle" transform="translate(425.3928571428571,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">Wyoming
+</text></g>
+<g transform="translate(0.5,200.5)" class="mark-rule role-axis-domain" pointer-events="none"><line transform="translate(0,0)" x2="450" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/></g></g>
+<g transform="translate(0,0)" class="mark-group role-axis" role="graphics-symbol" aria-roledescription="axis" aria-label="Y-axis for a linear scale with values from −100,000 to 700,000"><g transform="translate(0.5,0.5)" class="mark-rule role-axis-tick" pointer-events="none"><line transform="translate(0,175)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,125)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,75)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,25)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/></g>
+<g transform="translate(0.5,0.5)" class="mark-text role-axis-label" pointer-events="none"><text text-anchor="end" transform="translate(-10,178)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">0
+</text>
+<text text-anchor="end" transform="translate(-10,128)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">200,000
+</text>
+<text text-anchor="end" transform="translate(-10,78)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">400,000
+</text>
+<text text-anchor="end" transform="translate(-10,28)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">600,000
+</text></g>
+<g transform="translate(0.5,0.5)" class="mark-rule role-axis-domain" pointer-events="none"><line transform="translate(0,200)" x2="0" y2="-200" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/></g></g>
+<g transform="translate(0,0)" class="mark-rect role-mark layer_0_marks" role="graphics-object" aria-roledescription="rect mark container"><path aria-label="State: Wyoming; Dollars: 375800; group: undefined; Production Metrics: 2015 Production" role="graphics-symbol" aria-roledescription="bar" d="M415.2857142857143,6.749999999999989h21.21428571428571v93.95000000000003h-21.21428571428571Z" fill="#666666" opacity="1"/>
+<path aria-label="State: Wyoming; Dollars: 297200; group: undefined; Production Metrics: 2016 Production" role="graphics-symbol" aria-roledescription="bar" d="M415.2857142857143,100.70000000000002h21.21428571428571v74.29999999999998h-21.21428571428571Z" fill="#386cb0" opacity="1"/>
+<path aria-label="State: Wyoming; Dollars: −20.9; group: undefined; Production Metrics: Percent Change" role="graphics-symbol" aria-roledescription="bar" d="M415.2857142857143,175h21.21428571428571v0.005224999999995816h-21.21428571428571Z" fill="#7fc97f" opacity="1"/>
+<path aria-label="State: West Virginia; Dollars: 95600; group: undefined; Production Metrics: 2015 Production" role="graphics-symbol" aria-roledescription="bar" d="M375.10714285714283,131.15h21.21428571428571v23.900000000000006h-21.21428571428571Z" fill="#666666" opacity="1"/>
+<path aria-label="State: West Virginia; Dollars: 79800; group: undefined; Production Metrics: 2016 Production" role="graphics-symbol" aria-roledescription="bar" d="M375.10714285714283,155.05h21.21428571428571v19.94999999999999h-21.21428571428571Z" fill="#386cb0" opacity="1"/>
+<path aria-label="State: West Virginia; Dollars: −16.6; group: undefined; Production Metrics: Percent Change" role="graphics-symbol" aria-roledescription="bar" d="M375.10714285714283,175h21.21428571428571v0.004150000000009868h-21.21428571428571Z" fill="#7fc97f" opacity="1"/>
+<path aria-label="State: Pennsylvania; Dollars: 50000; group: undefined; Production Metrics: 2015 Production" role="graphics-symbol" aria-roledescription="bar" d="M294.74999999999994,151.07500000000002h21.21428571428571v12.5h-21.21428571428571Z" fill="#666666" opacity="1"/>
+<path aria-label="State: Pennsylvania; Dollars: 45700; group: undefined; Production Metrics: 2016 Production" role="graphics-symbol" aria-roledescription="bar" d="M294.74999999999994,163.57500000000002h21.21428571428571v11.424999999999983h-21.21428571428571Z" fill="#386cb0" opacity="1"/>
+<path aria-label="State: Pennsylvania; Dollars: −8.6; group: undefined; Production Metrics: Percent Change" role="graphics-symbol" aria-roledescription="bar" d="M294.74999999999994,175h21.21428571428571v0.0021500000000003183h-21.21428571428571Z" fill="#7fc97f" opacity="1"/>
+<path aria-label="State: Illinois; Dollars: 56100; group: undefined; Production Metrics: 2015 Production" role="graphics-symbol" aria-roledescription="bar" d="M53.678571428571445,150.125h21.21428571428571v14.025000000000006h-21.21428571428571Z" fill="#666666" opacity="1"/>
+<path aria-label="State: Illinois; Dollars: 43400; group: undefined; Production Metrics: 2016 Production" role="graphics-symbol" aria-roledescription="bar" d="M53.678571428571445,164.15h21.21428571428571v10.849999999999994h-21.21428571428571Z" fill="#386cb0" opacity="1"/>
+<path aria-label="State: Illinois; Dollars: −22.6; group: undefined; Production Metrics: Percent Change" role="graphics-symbol" aria-roledescription="bar" d="M53.678571428571445,175h21.21428571428571v0.005650000000002819h-21.21428571428571Z" fill="#7fc97f" opacity="1"/>
+<path aria-label="State: Kentucky; Dollars: 61400; group: undefined; Production Metrics: 2015 Production" role="graphics-symbol" aria-roledescription="bar" d="M134.0357142857143,148.92499999999998h21.21428571428571v15.350000000000023h-21.21428571428571Z" fill="#666666" opacity="1"/>
+<path aria-label="State: Kentucky; Dollars: 42900; group: undefined; Production Metrics: 2016 Production" role="graphics-symbol" aria-roledescription="bar" d="M134.0357142857143,164.275h21.21428571428571v10.724999999999994h-21.21428571428571Z" fill="#386cb0" opacity="1"/>
+<path aria-label="State: Kentucky; Dollars: −30.2; group: undefined; Production Metrics: Percent Change" role="graphics-symbol" aria-roledescription="bar" d="M134.0357142857143,175h21.21428571428571v0.007549999999980628h-21.21428571428571Z" fill="#7fc97f" opacity="1"/>
+<path aria-label="State: Texas; Dollars: 35900; group: undefined; Production Metrics: 2015 Production" role="graphics-symbol" aria-roledescription="bar" d="M334.9285714285714,156.27285h21.21428571428571v8.974999999999994h-21.21428571428571Z" fill="#666666" opacity="1"/>
+<path aria-label="State: Texas; Dollars: 39000; group: undefined; Production Metrics: 2016 Production" role="graphics-symbol" aria-roledescription="bar" d="M334.9285714285714,165.24785h21.21428571428571v9.75h-21.21428571428571Z" fill="#386cb0" opacity="1"/>
+<path aria-label="State: Texas; Dollars: 8.6; group: undefined; Production Metrics: Percent Change" role="graphics-symbol" aria-roledescription="bar" d="M334.9285714285714,174.99785h21.21428571428571v0.0021500000000003183h-21.21428571428571Z" fill="#7fc97f" opacity="1"/>
+<path aria-label="State: Montana; Dollars: 41900; group: undefined; Production Metrics: 2015 Production" role="graphics-symbol" aria-roledescription="bar" d="M174.21428571428572,156.45h21.21428571428571v10.474999999999994h-21.21428571428571Z" fill="#666666" opacity="1"/>
+<path aria-label="State: Montana; Dollars: 32300; group: undefined; Production Metrics: 2016 Production" role="graphics-symbol" aria-roledescription="bar" d="M174.21428571428572,166.92499999999998h21.21428571428571v8.075000000000017h-21.21428571428571Z" fill="#386cb0" opacity="1"/>
+<path aria-label="State: Montana; Dollars: −22.8; group: undefined; Production Metrics: Percent Change" role="graphics-symbol" aria-roledescription="bar" d="M174.21428571428572,175h21.21428571428571v0.005699999999990268h-21.21428571428571Z" fill="#7fc97f" opacity="1"/>
+<path aria-label="State: Indiana; Dollars: 34300; group: undefined; Production Metrics: 2015 Production" role="graphics-symbol" aria-roledescription="bar" d="M93.85714285714286,159.225h21.21428571428571v8.574999999999989h-21.21428571428571Z" fill="#666666" opacity="1"/>
+<path aria-label="State: Indiana; Dollars: 28800; group: undefined; Production Metrics: 2016 Production" role="graphics-symbol" aria-roledescription="bar" d="M93.85714285714286,167.79999999999998h21.21428571428571v7.200000000000017h-21.21428571428571Z" fill="#386cb0" opacity="1"/>
+<path aria-label="State: Indiana; Dollars: −16.1; group: undefined; Production Metrics: Percent Change" role="graphics-symbol" aria-roledescription="bar" d="M93.85714285714286,175h21.21428571428571v0.004025000000012824h-21.21428571428571Z" fill="#7fc97f" opacity="1"/>
+<path aria-label="State: North Dakota; Dollars: 28800; group: undefined; Production Metrics: 2015 Production" role="graphics-symbol" aria-roledescription="bar" d="M214.39285714285714,160.775h21.21428571428571v7.199999999999989h-21.21428571428571Z" fill="#666666" opacity="1"/>
+<path aria-label="State: North Dakota; Dollars: 28100; group: undefined; Production Metrics: 2016 Production" role="graphics-symbol" aria-roledescription="bar" d="M214.39285714285714,167.975h21.21428571428571v7.025000000000006h-21.21428571428571Z" fill="#386cb0" opacity="1"/>
+<path aria-label="State: North Dakota; Dollars: −2.4; group: undefined; Production Metrics: Percent Change" role="graphics-symbol" aria-roledescription="bar" d="M214.39285714285714,175h21.21428571428571v0.0005999999999914962h-21.21428571428571Z" fill="#7fc97f" opacity="1"/>
+<path aria-label="State: Colorado; Dollars: 18900; group: undefined; Production Metrics: 2015 Production" role="graphics-symbol" aria-roledescription="bar" d="M13.50000000000002,167.125h21.21428571428571v4.725000000000023h-21.21428571428571Z" fill="#666666" opacity="1"/>
+<path aria-label="State: Colorado; Dollars: 12600; group: undefined; Production Metrics: 2016 Production" role="graphics-symbol" aria-roledescription="bar" d="M13.50000000000002,171.85000000000002h21.21428571428571v3.1499999999999773h-21.21428571428571Z" fill="#386cb0" opacity="1"/>
+<path aria-label="State: Colorado; Dollars: −33.1; group: undefined; Production Metrics: Percent Change" role="graphics-symbol" aria-roledescription="bar" d="M13.50000000000002,175h21.21428571428571v0.00827499999999759h-21.21428571428571Z" fill="#7fc97f" opacity="1"/>
+<path aria-label="State: Ohio; Dollars: 17000; group: undefined; Production Metrics: 2015 Production" role="graphics-symbol" aria-roledescription="bar" d="M254.57142857142858,167.6h21.21428571428571v4.250000000000028h-21.21428571428571Z" fill="#666666" opacity="1"/>
+<path aria-label="State: Ohio; Dollars: 12600; group: undefined; Production Metrics: 2016 Production" role="graphics-symbol" aria-roledescription="bar" d="M254.57142857142858,171.85000000000002h21.21428571428571v3.1499999999999773h-21.21428571428571Z" fill="#386cb0" opacity="1"/>
+<path aria-label="State: Ohio; Dollars: −26.3; group: undefined; Production Metrics: Percent Change" role="graphics-symbol" aria-roledescription="bar" d="M254.57142857142858,175h21.21428571428571v0.006574999999997999h-21.21428571428571Z" fill="#7fc97f" opacity="1"/></g></g></g></g></g></svg>

@@ -18,8 +18,11 @@ class BubblePlotTemplate(ChartTemplate):
         self.y_axis.field_type = "quantitative"
         self.y_axis.field = meta_data['y_label']
         self.mark = CircleTemplate(color_template)
-        # self.color_encoding = ColorEncodingTemplate(color_template, meta_data, data)
-        self.color_encoding = None
+        self.color_encoding = ColorEncodingTemplate(color_template, meta_data, data)
+        single_color_flag = self.color_encoding.encoding_data("group_label")
+        if single_color_flag:
+            self.mark.fill_color_style.color = self.color_encoding.range[0]
+            self.color_encoding = None
         
         if meta_data is None:
             # set default value

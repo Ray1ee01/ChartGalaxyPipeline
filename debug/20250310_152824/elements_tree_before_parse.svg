@@ -1,0 +1,85 @@
+<svg version="1.1" class="marks" width="531" height="230" viewBox="-100,-100,1000,1000" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><g ><g version="1.1" class="marks" width="531" height="230" viewBox="0 0 531 230"><g fill="none" stroke-miterlimit="10" transform="translate(76,25)"><g class="mark-group role-frame root" role="graphics-object" aria-roledescription="group mark container"><g transform="translate(0,0)" class="mark-group role-axis" role="graphics-symbol" aria-roledescription="axis" aria-label="X-axis for a linear scale with values from 0 to 100"><g transform="translate(0.5,0.5)" class="mark-rule role-axis-tick" pointer-events="none"><line transform="translate(0,0)" x2="0" y2="-5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(45,0)" x2="0" y2="-5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(90,0)" x2="0" y2="-5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(135,0)" x2="0" y2="-5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(180,0)" x2="0" y2="-5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(225,0)" x2="0" y2="-5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(270,0)" x2="0" y2="-5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(315,0)" x2="0" y2="-5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(360,0)" x2="0" y2="-5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(405,0)" x2="0" y2="-5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(450,0)" x2="0" y2="-5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/></g>
+<g transform="translate(0.5,0.5)" class="mark-text role-axis-label" pointer-events="none"><text text-anchor="start" transform="translate(0,-12)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">0
+</text>
+<text text-anchor="middle" transform="translate(45,-12)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">10
+</text>
+<text text-anchor="middle" transform="translate(90,-12)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">20
+</text>
+<text text-anchor="middle" transform="translate(135,-12)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">30
+</text>
+<text text-anchor="middle" transform="translate(180,-12)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">40
+</text>
+<text text-anchor="middle" transform="translate(225,-12)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">50
+</text>
+<text text-anchor="middle" transform="translate(270,-12)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">60
+</text>
+<text text-anchor="middle" transform="translate(315,-12)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">70
+</text>
+<text text-anchor="middle" transform="translate(360,-12)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">80
+</text>
+<text text-anchor="middle" transform="translate(405,-12)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">90
+</text>
+<text text-anchor="end" transform="translate(450,-12)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">100
+</text></g>
+<g transform="translate(0.5,0.5)" class="mark-rule role-axis-domain" pointer-events="none"><line transform="translate(0,0)" x2="450" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/></g></g>
+<g transform="translate(0,0)" class="mark-group role-axis" role="graphics-symbol" aria-roledescription="axis" aria-label="Y-axis for a discrete scale with 10 values: France, Germany, Greece, Hungary, Italy, ending with UK"><g transform="translate(0.5,0.5)" class="mark-rule role-axis-tick" pointer-events="none"><line transform="translate(0,10)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,30)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,50)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,70)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,90)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,109)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,129)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,149)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,169)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,189)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/></g>
+<g transform="translate(0.5,0.5)" class="mark-text role-axis-label" pointer-events="none"><text text-anchor="end" transform="translate(-10,13.391089108910887)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">France
+</text>
+<text text-anchor="end" transform="translate(-10,33.19306930693069)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">Germany
+</text>
+<text text-anchor="end" transform="translate(-10,52.99504950495049)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">Greece
+</text>
+<text text-anchor="end" transform="translate(-10,72.79702970297029)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">Hungary
+</text>
+<text text-anchor="end" transform="translate(-10,92.5990099009901)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">Italy
+</text>
+<text text-anchor="end" transform="translate(-10,112.4009900990099)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">Netherlands
+</text>
+<text text-anchor="end" transform="translate(-10,132.20297029702968)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">Poland
+</text>
+<text text-anchor="end" transform="translate(-10,152.00495049504948)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">Spain
+</text>
+<text text-anchor="end" transform="translate(-10,171.8069306930693)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">Sweden
+</text>
+<text text-anchor="end" transform="translate(-10,191.6089108910891)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">UK
+</text></g>
+<g transform="translate(0.5,0.5)" class="mark-rule role-axis-domain" pointer-events="none"><line transform="translate(0,0)" x2="0" y2="200" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/></g></g>
+<g transform="translate(0,0)" class="mark-rect role-mark layer_0_marks" role="graphics-object" aria-roledescription="rect mark container"><path aria-label="Score: 92; Country: Greece; Approval Rating: Disapprove" role="graphics-symbol" aria-roledescription="bar" d="M27,44.61386138613861h414v11.762376237623764h-414Z" fill="#1f77b4" opacity="1"/>
+<path aria-label="Score: 6; Country: Greece; Approval Rating: Approve" role="graphics-symbol" aria-roledescription="bar" d="M0,44.61386138613861h27v11.762376237623764h-27Z" fill="#9edae5" opacity="1"/>
+<path aria-label="Score: 68; Country: Italy; Approval Rating: Disapprove" role="graphics-symbol" aria-roledescription="bar" d="M99,84.2178217821782h306v11.762376237623764h-306Z" fill="#1f77b4" opacity="1"/>
+<path aria-label="Score: 22; Country: Italy; Approval Rating: Approve" role="graphics-symbol" aria-roledescription="bar" d="M0,84.2178217821782h99v11.762376237623764h-99Z" fill="#9edae5" opacity="1"/>
+<path aria-label="Score: 66; Country: France; Approval Rating: Disapprove" role="graphics-symbol" aria-roledescription="bar" d="M121.50000000000001,5.009900990099005h297v11.762376237623764h-297Z" fill="#1f77b4" opacity="1"/>
+<path aria-label="Score: 27; Country: France; Approval Rating: Approve" role="graphics-symbol" aria-roledescription="bar" d="M0,5.009900990099005h121.50000000000001v11.762376237623764h-121.50000000000001Z" fill="#9edae5" opacity="1"/>
+<path aria-label="Score: 65; Country: Spain; Approval Rating: Disapprove" role="graphics-symbol" aria-roledescription="bar" d="M126.00000000000001,143.6237623762376h292.5v11.762376237623764h-292.5Z" fill="#1f77b4" opacity="1"/>
+<path aria-label="Score: 28; Country: Spain; Approval Rating: Approve" role="graphics-symbol" aria-roledescription="bar" d="M0,143.6237623762376h126.00000000000001v11.762376237623764h-126.00000000000001Z" fill="#9edae5" opacity="1"/>
+<path aria-label="Score: 59; Country: Sweden; Approval Rating: Disapprove" role="graphics-symbol" aria-roledescription="bar" d="M153,163.4257425742574h265.5v11.762376237623764h-265.5Z" fill="#1f77b4" opacity="1"/>
+<path aria-label="Score: 34; Country: Sweden; Approval Rating: Approve" role="graphics-symbol" aria-roledescription="bar" d="M0,163.4257425742574h153v11.762376237623764h-153Z" fill="#9edae5" opacity="1"/>
+<path aria-label="Score: 55; Country: UK; Approval Rating: Disapprove" role="graphics-symbol" aria-roledescription="bar" d="M126.00000000000001,183.22772277227722h247.5v11.762376237623764h-247.5Z" fill="#1f77b4" opacity="1"/>
+<path aria-label="Score: 28; Country: UK; Approval Rating: Approve" role="graphics-symbol" aria-roledescription="bar" d="M0,183.22772277227722h126.00000000000001v11.762376237623764h-126.00000000000001Z" fill="#9edae5" opacity="1"/>
+<path aria-label="Score: 49; Country: Netherlands; Approval Rating: Disapprove" role="graphics-symbol" aria-roledescription="bar" d="M189,104.01980198019801h220.5v11.762376237623764h-220.5Z" fill="#1f77b4" opacity="1"/>
+<path aria-label="Score: 42; Country: Netherlands; Approval Rating: Approve" role="graphics-symbol" aria-roledescription="bar" d="M0,104.01980198019801h189v11.762376237623764h-189Z" fill="#9edae5" opacity="1"/>
+<path aria-label="Score: 48; Country: Hungary; Approval Rating: Disapprove" role="graphics-symbol" aria-roledescription="bar" d="M171,64.4158415841584h216v11.762376237623764h-216Z" fill="#1f77b4" opacity="1"/>
+<path aria-label="Score: 38; Country: Hungary; Approval Rating: Approve" role="graphics-symbol" aria-roledescription="bar" d="M0,64.4158415841584h171v11.762376237623764h-171Z" fill="#9edae5" opacity="1"/>
+<path aria-label="Score: 38; Country: Germany; Approval Rating: Disapprove" role="graphics-symbol" aria-roledescription="bar" d="M211.5,24.811881188118807h171v11.762376237623764h-171Z" fill="#1f77b4" opacity="1"/>
+<path aria-label="Score: 47; Country: Germany; Approval Rating: Approve" role="graphics-symbol" aria-roledescription="bar" d="M0,24.811881188118807h211.5v11.762376237623764h-211.5Z" fill="#9edae5" opacity="1"/>
+<path aria-label="Score: 33; Country: Poland; Approval Rating: Disapprove" role="graphics-symbol" aria-roledescription="bar" d="M211.5,123.8217821782178h148.5v11.762376237623764h-148.5Z" fill="#1f77b4" opacity="1"/>
+<path aria-label="Score: 47; Country: Poland; Approval Rating: Approve" role="graphics-symbol" aria-roledescription="bar" d="M0,123.8217821782178h211.5v11.762376237623764h-211.5Z" fill="#9edae5" opacity="1"/></g></g></g></g></g></svg>

@@ -11,7 +11,7 @@ class ScatterPlotTemplate(ChartTemplate):
         self.chart_type = "scatterplot"
         self.sort = None
     
-    def create_template(self, data: list, meta_data: dict=None, color_template: ColorDesign=None):
+    def create_template(self, data: list, meta_data: dict=None, color_template: ColorDesign=None, config: dict=None):
         self.x_axis = AxisTemplate(color_template)
         # self.x_axis.field_type = "quantitative"
         self.x_axis.field_type = None
@@ -25,6 +25,10 @@ class ScatterPlotTemplate(ChartTemplate):
         self.mark = PointTemplate(color_template)
         
         self.color_encoding = ColorEncodingTemplate(color_template, meta_data, data)
+        single_color_flag = self.color_encoding.encoding_data("group_label")
+        if single_color_flag:
+            self.mark.color = self.color_encoding.range[0]
+        
         self.shape_encoding = ShapeEncodingTemplate(meta_data, data)
         
         if meta_data is None:
@@ -44,7 +48,7 @@ class ScatterPlotTemplate(ChartTemplate):
             elif meta_data['y_type'] == "numerical":
                 meta_data['y_type'] = "quantitative"
             
-            if isinstance(data[0]['x_data'], str):
+            if isinstance(data[0][meta_data['x_label']], str):
                 meta_data['x_type'] = "temporal"
             else:
                 meta_data['x_type'] = "quantitative"
@@ -64,9 +68,18 @@ class ScatterPlotTemplate(ChartTemplate):
                 "scale": {
                     "domain": self.shape_encoding.domain,
                     "range": self.shape_encoding.range
-                }
+                },
+                "legend": None
             }
             specification["encoding"]["shape"] = shape_encoding
+            # specification["encoding"]["x"]["scale"] = {
+            #     "zero": False
+            # }
+            # specification["encoding"]["y"]["scale"] = {
+            #     "zero": False
+            # }
+        specification["mark"]["size"] = self.mark.size    
+            
         return specification
     
     def dump(self):

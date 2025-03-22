@@ -1,0 +1,199 @@
+{
+  "metadata": {
+    "title": "Going Global Comes at a Price for Netflix",
+    "description": "Average monthly operating profit/loss per subscriber",
+    "main_insight": "Netflix consistently makes a profit per subscriber in the United States, but incurs a loss per international subscriber, although the international losses have been decreasing."
+  },
+  "_extra": {
+    "image_data": {
+      "original_file": "/home/lizhen/chartdata/new_infographics/Bar Chart/6113.jpeg",
+      "index": "86",
+      "data": {
+        "chart_type": "bar",
+        "background": "styled",
+        "axes": {
+          "x_axis": "yes",
+          "y_axis": "yes"
+        },
+        "image_chart": "overlay",
+        "chart_image_position": "middle",
+        "image_title": "none",
+        "title_position": "top",
+        "icon_mark": "none",
+        "axis_label": "none"
+      },
+      "basic_chart_type": "bar",
+      "chart_type": "Vertical Bar Chart"
+    }
+  },
+  "chart_type": [],
+  "datafacts": [
+    {
+      "type": "value",
+      "score": 0.95,
+      "annotation": "Q1 2016 has highest United States",
+      "reason": "Q1 2016 has the highest United States at 3.0"
+    },
+    {
+      "type": "value",
+      "score": 0.85,
+      "annotation": "Q1 2014 has lowest United States",
+      "reason": "Q1 2014 has the lowest United States at 1.9"
+    },
+    {
+      "type": "difference",
+      "score": 0.8,
+      "annotation": "Gap between highest and lowest is 1.1",
+      "reason": "The difference between the highest value (3.0) and lowest value (1.9) is 1.1"
+    },
+    {
+      "type": "overview",
+      "score": 0.75,
+      "annotation": "Average United States is 2.5",
+      "reason": "The average United States across all Quarter values is 2.5"
+    },
+    {
+      "type": "trend",
+      "score": 0.7,
+      "annotation": "United States varies significantly across Quarter",
+      "reason": "The United States shows considerable variation across different Quarter values, with a range of 1.1"
+    }
+  ],
+  "titles": {
+    "main_title": "Going Global Comes at a Price for Netflix",
+    "sub_title": "Average monthly operating profit/loss per subscriber"
+  },
+  "layout": {
+    "title_to_chart": "TL",
+    "image_to_chart": "L",
+    "title_to_image": "T",
+    "chart_contains_title": true,
+    "chart_contains_image": true
+  },
+  "variation": {
+    "background": "styled",
+    "image_chart": "overlay",
+    "image_title": "none",
+    "icon_mark": "none",
+    "axis_label": "none",
+    "axes": {
+      "x_axis": "yes",
+      "y_axis": "yes"
+    }
+  },
+  "colors": {
+    "field": {},
+    "other": {
+      "primary": "#4269d0",
+      "secondary": "#ff725c"
+    },
+    "available_colors": [
+      "#efb118",
+      "#6cc5b0",
+      "#3ca951",
+      "#ff8ab7",
+      "#a463f2",
+      "#97bbf5"
+    ],
+    "background_color": "#FFFFFF",
+    "text_color": "#000000"
+  },
+  "images": {
+    "field": {},
+    "other": {
+      "primary": "data:image/png;base64,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"
+    }
+  },
+  "data": [
+    {
+      "Quarter": "Q1 2014",
+      "United States": 1.9
+    },
+    {
+      "Quarter": "Q2 2014",
+      "United States": 2.0
+    },
+    {
+      "Quarter": "Q3 2014",
+      "United States": 2.3
+    },
+    {
+      "Quarter": "Q4 2014",
+      "United States": 2.1
+    },
+    {
+      "Quarter": "Q1 2015",
+      "United States": 2.5
+    },
+    {
+      "Quarter": "Q2 2015",
+      "United States": 2.8
+    },
+    {
+      "Quarter": "Q3 2015",
+      "United States": 2.9
+    },
+    {
+      "Quarter": "Q4 2015",
+      "United States": 2.8
+    },
+    {
+      "Quarter": "Q1 2016",
+      "United States": 3.0
+    },
+    {
+      "Quarter": "Q2 2016",
+      "United States": 2.8
+    }
+  ],
+  "data_columns": [
+    {
+      "name": "Quarter",
+      "importance": "primary",
+      "description": "Quarter of the year",
+      "unit": "none",
+      "data_type": "temporal",
+      "role": "x"
+    },
+    {
+      "name": "United States",
+      "importance": "primary",
+      "description": "Average monthly operating profit/loss per subscriber in the United States",
+      "unit": "none",
+      "data_type": "numerical",
+      "role": "y"
+    }
+  ],
+  "secondary_data": [],
+  "variables": {
+    "width": 600,
+    "height": 600,
+    "has_rounded_corners": false,
+    "has_shadow": false,
+    "has_spacing": false,
+    "has_gradient": false,
+    "has_stroke": false
+  },
+  "typography": {
+    "title": {
+      "font_family": "Arial",
+      "font_size": "28px",
+      "font_weight": 700
+    },
+    "description": {
+      "font_family": "Arial",
+      "font_size": "16px",
+      "font_weight": 500
+    },
+    "label": {
+      "font_family": "Arial",
+      "font_size": "16px",
+      "font_weight": 500
+    },
+    "annotation": {
+      "font_family": "Arial",
+      "font_size": "12px",
+      "font_weight": 400
+    }
+  }
+}

@@ -9,11 +9,14 @@ src/processors/data_enricher_modules/HAIChart/data
 src/processors/svg_processor_modules/__pycache__
 src/data/config/__pycache__
 src/output_jn
+framework/test/testset
+framework/test/testset.zip
 data/
 *.so
 .idea/*
 *.o
 *.pyc
+*.svg
 connectivity.c
 temp_input_*.json
 .vscode
@@ -21,3 +24,4 @@ temp_input_*.json
 src/processors/title_generator_modules/*
 !src/processors/title_generator_modules/rag_title_generator.py
 !src/processors/title_generator_modules/data_facts_detector
+config.py

@@ -1,0 +1,80 @@
+<svg version="1.1" class="marks" width="613" height="230" viewBox="-100,-100,1000,1000" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><g ><g version="1.1" class="marks" width="613" height="230" viewBox="0 0 613 230"><g fill="none" stroke-miterlimit="10" transform="translate(158,25)"><g class="mark-group role-frame root" role="graphics-object" aria-roledescription="group mark container"><g transform="translate(0,0)" class="mark-group role-axis" role="graphics-symbol" aria-roledescription="axis" aria-label="X-axis for a linear scale with values from 0 to 35"><g transform="translate(0.5,0.5)" class="mark-rule role-axis-tick" pointer-events="none"><line transform="translate(0,0)" x2="0" y2="-5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(26,0)" x2="0" y2="-5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(51,0)" x2="0" y2="-5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(77,0)" x2="0" y2="-5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(103,0)" x2="0" y2="-5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(129,0)" x2="0" y2="-5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(154,0)" x2="0" y2="-5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(180,0)" x2="0" y2="-5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(206,0)" x2="0" y2="-5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(231,0)" x2="0" y2="-5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(257,0)" x2="0" y2="-5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(283,0)" x2="0" y2="-5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(309,0)" x2="0" y2="-5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(334,0)" x2="0" y2="-5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(360,0)" x2="0" y2="-5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(386,0)" x2="0" y2="-5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(411,0)" x2="0" y2="-5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(437,0)" x2="0" y2="-5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/></g>
+<g transform="translate(0.5,0.5)" class="mark-text role-axis-label" pointer-events="none"><text text-anchor="start" transform="translate(0,-12)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">0
+</text>
+<text text-anchor="middle" transform="translate(25.71428571428571,-12)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">2
+</text>
+<text text-anchor="middle" transform="translate(51.42857142857142,-12)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">4
+</text>
+<text text-anchor="middle" transform="translate(77.14285714285714,-12)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">6
+</text>
+<text text-anchor="middle" transform="translate(102.85714285714285,-12)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">8
+</text>
+<text text-anchor="middle" transform="translate(128.57142857142856,-12)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">10
+</text>
+<text text-anchor="middle" transform="translate(154.28571428571428,-12)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">12
+</text>
+<text text-anchor="middle" transform="translate(180,-12)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">14
+</text>
+<text text-anchor="middle" transform="translate(205.7142857142857,-12)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">16
+</text>
+<text text-anchor="middle" transform="translate(231.42857142857142,-12)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">18
+</text>
+<text text-anchor="middle" transform="translate(257.1428571428571,-12)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">20
+</text>
+<text text-anchor="middle" transform="translate(282.85714285714283,-12)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">22
+</text>
+<text text-anchor="middle" transform="translate(308.57142857142856,-12)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">24
+</text>
+<text text-anchor="middle" transform="translate(334.2857142857143,-12)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">26
+</text>
+<text text-anchor="middle" transform="translate(360,-12)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">28
+</text>
+<text text-anchor="middle" transform="translate(385.71428571428567,-12)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">30
+</text>
+<text text-anchor="middle" transform="translate(411.4285714285714,-12)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">32
+</text>
+<text text-anchor="middle" transform="translate(437.1428571428571,-12)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">34
+</text></g>
+<g transform="translate(0.5,0.5)" class="mark-rule role-axis-domain" pointer-events="none"><line transform="translate(0,0)" x2="450" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/></g></g>
+<g transform="translate(0,0)" class="mark-group role-axis" role="graphics-symbol" aria-roledescription="axis" aria-label="Y-axis for a discrete scale with 6 values: Felt depressed, Felt anxious, Lesbian gay or bisexual, Women, Suicidal thoughts or feelings, Men"><g transform="translate(0.5,0.5)" class="mark-rule role-axis-tick" pointer-events="none"><line transform="translate(0,18)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,50)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,83)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,116)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,149)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,181)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/></g>
+<g transform="translate(0.5,0.5)" class="mark-text role-axis-label" pointer-events="none"><text text-anchor="end" transform="translate(-10,20.532786885245905)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">Felt depressed
+</text>
+<text text-anchor="end" transform="translate(-10,53.31967213114754)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">Felt anxious
+</text>
+<text text-anchor="end" transform="translate(-10,86.10655737704917)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">Lesbian gay or bisexual
+</text>
+<text text-anchor="end" transform="translate(-10,118.89344262295081)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">Women
+</text>
+<text text-anchor="end" transform="translate(-10,151.68032786885246)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">Suicidal thoughts or feelings
+</text>
+<text text-anchor="end" transform="translate(-10,184.4672131147541)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">Men
+</text></g>
+<g transform="translate(0.5,0.5)" class="mark-rule role-axis-domain" pointer-events="none"><line transform="translate(0,0)" x2="0" y2="200" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/></g></g>
+<g transform="translate(0,0)" class="mark-rect role-mark layer_0_marks" role="graphics-object" aria-roledescription="rect mark container"><path aria-label="Percentage: 34; Feelings/Demographic: Felt anxious" role="graphics-symbol" aria-roledescription="bar" d="M0,41.08196721311475h437.1428571428571v19.475409836065573h-437.1428571428571Z" fill="#a6cee3" opacity="1"/>
+<path aria-label="Percentage: 35; Feelings/Demographic: Felt depressed" role="graphics-symbol" aria-roledescription="bar" d="M0,8.295081967213116h450v19.475409836065573h-450Z" fill="#a6cee3" opacity="1"/>
+<path aria-label="Percentage: 13; Feelings/Demographic: Suicidal thoughts or feelings" role="graphics-symbol" aria-roledescription="bar" d="M0,139.44262295081967h167.14285714285714v19.475409836065573h-167.14285714285714Z" fill="#a6cee3" opacity="1"/>
+<path aria-label="Percentage: 11; Feelings/Demographic: Men" role="graphics-symbol" aria-roledescription="bar" d="M0,172.2295081967213h141.42857142857142v19.475409836065573h-141.42857142857142Z" fill="#a6cee3" opacity="1"/>
+<path aria-label="Percentage: 15; Feelings/Demographic: Women" role="graphics-symbol" aria-roledescription="bar" d="M0,106.65573770491804h192.85714285714283v19.475409836065573h-192.85714285714283Z" fill="#a6cee3" opacity="1"/>
+<path aria-label="Percentage: 33; Feelings/Demographic: Lesbian gay or bisexual" role="graphics-symbol" aria-roledescription="bar" d="M0,73.8688524590164h424.2857142857143v19.475409836065573h-424.2857142857143Z" fill="#a6cee3" opacity="1"/></g></g></g></g></g></svg>

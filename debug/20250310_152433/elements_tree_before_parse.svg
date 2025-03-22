@@ -1,0 +1,31 @@
+<svg version="1.1" class="marks" width="465" height="230" viewBox="-100,-100,1000,1000" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><g ><g version="1.1" class="marks" width="465" height="230" viewBox="0 0 465 230"><g fill="none" stroke-miterlimit="10" transform="translate(10,5)"><g class="mark-group role-frame root" role="graphics-object" aria-roledescription="group mark container"><g transform="translate(0,0)" class="mark-group role-axis" role="graphics-symbol" aria-roledescription="axis" aria-label="X-axis for a discrete scale with 5 values: Samsung, Apple, Lenovo, Huawei, Xiaomi"><g transform="translate(0.5,200.5)" class="mark-rule role-axis-tick" pointer-events="none"><line transform="translate(51,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(138,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(225,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(311,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(398,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/></g>
+<g transform="translate(0.5,200.5)" class="mark-text role-axis-label" pointer-events="none"><text text-anchor="middle" transform="translate(51.423076923076934,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">Samsung
+</text>
+<text text-anchor="middle" transform="translate(137.96153846153845,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">Apple
+</text>
+<text text-anchor="middle" transform="translate(224.5,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">Lenovo
+</text>
+<text text-anchor="middle" transform="translate(311.03846153846155,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">Huawei
+</text>
+<text text-anchor="middle" transform="translate(397.5769230769231,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">Xiaomi
+</text></g>
+<g transform="translate(0.5,200.5)" class="mark-rule role-axis-domain" pointer-events="none"><line transform="translate(0,0)" x2="450" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/></g></g>
+<g transform="translate(0,0)" class="mark-group role-axis" role="graphics-symbol" aria-roledescription="axis" aria-label="Y-axis for a linear scale with values from 0 to 160"><g transform="translate(0.5,0.5)" class="mark-rule role-axis-tick" pointer-events="none"><line transform="translate(0,200)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,138)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,75)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,13)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/></g>
+<g transform="translate(0.5,0.5)" class="mark-rule role-axis-domain" pointer-events="none"><line transform="translate(0,200)" x2="0" y2="-200" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/></g></g>
+<g transform="translate(0,0)" class="mark-rect role-mark layer_0_marks" role="graphics-object" aria-roledescription="rect mark container"><path aria-label="Vendor: Apple; Score: 74.8; group: undefined; Sales Quarter: Q4 2014 Sales" role="graphics-symbol" aria-roledescription="bar" d="M115.61538461538463,106.5h45.69230769230769v93.5h-45.69230769230769Z" fill="#b3b3b3" opacity="1"/>
+<path aria-label="Vendor: Apple; Score: 50.2; group: undefined; Sales Quarter: Q4 2013 Sales" role="graphics-symbol" aria-roledescription="bar" d="M115.61538461538463,43.75h45.69230769230769v62.75h-45.69230769230769Z" fill="#66c2a5" opacity="1"/>
+<path aria-label="Vendor: Samsung; Score: 73; group: undefined; Sales Quarter: Q4 2014 Sales" role="graphics-symbol" aria-roledescription="bar" d="M29.076923076923087,108.74999999999999h45.69230769230769v91.25000000000001h-45.69230769230769Z" fill="#b3b3b3" opacity="1"/>
+<path aria-label="Vendor: Samsung; Score: 83.3; group: undefined; Sales Quarter: Q4 2013 Sales" role="graphics-symbol" aria-roledescription="bar" d="M29.076923076923087,4.62499999999999h45.69230769230769v104.125h-45.69230769230769Z" fill="#66c2a5" opacity="1"/>
+<path aria-label="Vendor: Lenovo; Score: 24.3; group: undefined; Sales Quarter: Q4 2014 Sales" role="graphics-symbol" aria-roledescription="bar" d="M202.15384615384616,169.625h45.69230769230769v30.375h-45.69230769230769Z" fill="#b3b3b3" opacity="1"/>
+<path aria-label="Vendor: Lenovo; Score: 16.5; group: undefined; Sales Quarter: Q4 2013 Sales" role="graphics-symbol" aria-roledescription="bar" d="M202.15384615384616,149h45.69230769230769v20.625h-45.69230769230769Z" fill="#66c2a5" opacity="1"/>
+<path aria-label="Vendor: Huawei; Score: 21; group: undefined; Sales Quarter: Q4 2014 Sales" role="graphics-symbol" aria-roledescription="bar" d="M288.6923076923077,173.75h45.69230769230769v26.25h-45.69230769230769Z" fill="#b3b3b3" opacity="1"/>
+<path aria-label="Vendor: Huawei; Score: 16.1; group: undefined; Sales Quarter: Q4 2013 Sales" role="graphics-symbol" aria-roledescription="bar" d="M288.6923076923077,153.625h45.69230769230769v20.125h-45.69230769230769Z" fill="#66c2a5" opacity="1"/>
+<path aria-label="Vendor: Xiaomi; Score: 18.6; group: undefined; Sales Quarter: Q4 2014 Sales" role="graphics-symbol" aria-roledescription="bar" d="M375.2307692307692,176.75h45.69230769230769v23.25h-45.69230769230769Z" fill="#b3b3b3" opacity="1"/>
+<path aria-label="Vendor: Xiaomi; Score: 5.6; group: undefined; Sales Quarter: Q4 2013 Sales" role="graphics-symbol" aria-roledescription="bar" d="M375.2307692307692,169.75h45.69230769230769v7h-45.69230769230769Z" fill="#66c2a5" opacity="1"/></g></g></g></g></g></svg>

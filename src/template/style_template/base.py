@@ -8,7 +8,7 @@ from sentence_transformers import SentenceTransformer, util
 from ...utils.color_statics import StaticPalettes
 
 # model_path = "/data1/jiashu/models/models--sentence-transformers--all-MiniLM-L6-v2/snapshots/fa97f6e7cb1a59073dff9e6b13e2715cf7475ac9"
-model_path = "D:/VIS/Infographics/data/fa97f6e7cb1a59073dff9e6b13e2715cf7475ac9"
+from config import sentence_transformer_path as model_path
 
 class ColorTemplate:
     def __init__(self):
@@ -19,7 +19,19 @@ class ColorTemplate:
             "color": self.color,
             "opacity": self.opacity
         }
-
+    def dump_possible_values(self):
+        return {
+            "color": {
+                "type": "string",
+                "options": ["#000000"],
+                "default": "#000000"
+            },
+            "opacity": {
+                "type": "number",
+                "range": [0, 1],
+                "default": 1
+            }
+        }
 class StrokeTemplate:
     def __init__(self):
         self.stroke_width = None
@@ -27,11 +39,17 @@ class StrokeTemplate:
         return {
             "strokeWidth": self.stroke_width
         }
-
+    def dump_possible_values(self):
+        return {
+            "strokeWidth": {
+                "type": "number",
+                "range": [0, 50],
+                "default": 2
+            }
+        }
 class AxisTemplate:
     def __init__(self, color_template: ColorDesign=None):
         # 基本属性
-        self.type = None # 轴类型
         self.orientation = None # 轴方向
         self.field = None # field 名称
         self.field_type = None # 类型
@@ -46,20 +64,20 @@ class AxisTemplate:
         self.domain_color_style = ColorTemplate()
         self.domain_color_style.color = stroke_color
         self.domain_stroke_style = StrokeTemplate()
-        
+
         ## label 样式
         self.has_label = True
         self.label_color_style = ColorTemplate()
         self.label_color_style.color = "#000d2a"
         # self.label_font_style = FontTemplate()
         self.label_font_style = LabelFontTemplate()
-        
+
         ## tick 样式
         self.has_tick = True
         self.tick_color_style = ColorTemplate()
         self.tick_color_style.color = stroke_color
         self.tick_stroke_style = StrokeTemplate()
-        
+
         ## title 样式
         self.has_title = True
         self.title_text = None
@@ -72,7 +90,6 @@ class AxisTemplate:
         return copy.deepcopy(self)
     def dump(self):
         return {
-            "type": self.type,
             "orientation": self.orientation,
             "field": self.field,
             "field_type": self.field_type,
@@ -82,14 +99,77 @@ class AxisTemplate:
             "has_label": self.has_label,
             "label_color_style": self.label_color_style.dump(),
             "label_font_style": self.label_font_style.dump(),
+            "has_tick": self.has_tick,
+            "tick_color_style": self.tick_color_style.dump(),
+            "tick_stroke_style": self.tick_stroke_style.dump(),
+            "has_title": self.has_title,
+            "title_text": self.title_text,
+            "title_color_style": self.title_color_style.dump(),
+            "title_font_style": self.title_font_style.dump(),
+            "has_grid": self.has_grid
         }
+    def dump_possible_values(self):
+        domain_color_possible_values = self.domain_color_style.dump_possible_values()
+        label_color_possible_values = self.label_color_style.dump_possible_values()
+        tick_color_possible_values = self.tick_color_style.dump_possible_values()
+        title_color_possible_values = self.title_color_style.dump_possible_values()
 
-
+        domain_stroke_possible_values = self.domain_stroke_style.dump_possible_values()
+        tick_stroke_possible_values = self.tick_stroke_style.dump_possible_values()
+        title_font_possible_values = self.title_font_style.dump_possible_values()
+        label_font_possible_values = self.label_font_style.dump_possible_values()
+        
+        return {
+            "orientation": {
+                "type": "string",
+                "options": ["top", "bottom", "left", "right"],
+                "default": "bottom"
+            },
+            "field": {
+                "type": "string",
+                "options": ["x", "y"],
+                "default": "x",
+                "note": "column name"
+            },
+            "field_type": {
+                "type": "string",
+                "options": ["nominal", "quantitative"],
+                "default": "nominal",
+                "note": "type of the field"
+            },
+            "has_domain": {
+                "type": "boolean",
+                "default": True
+            },
+            "domain_color_style": domain_color_possible_values,
+            "has_label": {
+                "type": "boolean",
+                "default": True
+            },
+            "label_color_style": label_color_possible_values,
+            "label_font_style": label_font_possible_values,
+            "has_tick": {
+                "type": "boolean",
+                "default": True
+            },
+            "tick_color_style": tick_color_possible_values,
+            "tick_stroke_style": tick_stroke_possible_values,
+            "has_title": {
+                "type": "boolean",
+                "default": True
+            },
+            "title_color_style": title_color_possible_values,
+            "title_font_style": title_font_possible_values,
+            "has_grid": {
+                "type": "boolean",
+                "default": False
+            }
+        }
 class PolarSetting():
     def __init__(self):
         self.inner_radius = None
         self.outer_radius = None
-    
+
         # randomly inner_radius has 1/3 probability to be 0 and 2/3 probability to be a random value between 0 and 0.5
         if random.random() < 1/3:
             self.inner_radius = "0%"
@@ -101,8 +181,20 @@ class PolarSetting():
             "inner_radius": self.inner_radius,
             "outer_radius": self.outer_radius
         }
-        
-        
+    def dump_possible_values(self):
+        return {
+            "inner_radius": {
+                "type": "string",
+                "options": ["0%", "10%", "20%", "30%", "40%", "50%", "60%", "70%", "80%", "90%"],
+                "default": "0%"
+            },
+            "outer_radius": {
+                "type": "string",
+                "options": ["0%", "10%", "20%", "30%", "40%", "50%", "60%", "70%", "80%", "90%"],
+                "default": "80%"
+            }
+        }
+
 
 class AngleAxisTemplate(AxisTemplate):
     def __init__(self, color_template: ColorDesign=None):
@@ -110,12 +202,46 @@ class AngleAxisTemplate(AxisTemplate):
         self.start_angle = 90
         self.end_angle = None
         self.clockwise = True
-        
-        
+    def dump(self):
+        base_dict = super().dump()
+        return {
+            **base_dict,
+            "start_angle": self.start_angle,
+            "end_angle": self.end_angle,
+            "clockwise": self.clockwise
+        }
+    def dump_possible_values(self):
+        return {
+            "start_angle": {
+                "type": "number",
+                "range": [0, 360],
+                "default": 90
+            },
+            "end_angle": {
+                "type": "number",
+                "range": [0, 360],
+                "default": 270
+            },
+            "clockwise": {
+                "type": "boolean",
+                "default": True
+            }
+        }
+
+
 class RadiusAxisTemplate(AxisTemplate):
     def __init__(self, color_template: ColorDesign=None):
         super().__init__(color_template)
-        
+    def dump(self):
+        base_dict = super().dump()
+        return {
+            **base_dict,
+        }   
+    def dump_possible_values(self):
+        base_possible_values = super().dump_possible_values()
+        return {
+            **base_possible_values,
+        }
         
 class ColorEncodingTemplate:
     def __init__(self, color_template: ColorDesign=None, meta_data: dict=None, data: list=None):
@@ -123,49 +249,77 @@ class ColorEncodingTemplate:
         self.field_type = None
         self.domain = None
         self.range = None
+        self.data = data
         self.meta_data = meta_data
         self.color_template = color_template
         self.show_legend = True
         self.embedding_model = SentenceTransformer(model_path)
         self.color_with_semantics = False
-        if 'group' in data[0].keys():
-            print("color encoding template: ", data[0])
-            self.field = 'group'
-            self.field_type = 'nominal'
-            # domain是data列表中每个item的['group']的值的unique值
-            self.domain = list(set([str(item['group']) for item in data]))
-            # static_palettes = StaticPalettes()
+        self.palette = StaticPalettes()
+
+        # if 'group_label' in meta_data.keys():
+        #     print("color encoding template: ", data[0])
+        #     self.field = meta_data['group_label']
+        #     self.field_type = 'nominal'
+        #     # domain是data列表中每个item的['group_label']的值的unique值
+        #     self.domain = list(set([str(item[self.field]) for item in data]))
             # self.range = static_palettes.get_colors(len(self.domain))
             # self.range = static_palettes.get_colors_from_cmap('Pastel1', len(self.domain))
-            colors = self.color_template.get_color('marks', number = 1, group = len(self.domain), seed_mark=1)
-            print("pool: ", self.color_template.pool)
-            print("colors: ", colors)
-            self.range = []
-            for i in range(1, len(self.domain)+1):
-                self.range.append(colors['group'+str(i)][0])
-            print("range: ", self.range)
-            self.apply_color_rules()
-            self.color_with_semantics = True
+            # colors = self.color_template.get_color('marks', number = 1, group = len(self.domain), seed_mark=1)
+            # print("pool: ", self.color_template.pool)
+            # print("colors: ", colors)
+            # self.range = []
+            # for i in range(1, len(self.domain)+1):
+            #     self.range.append(colors['group'+str(i)][0])
+            # print("range: ", self.range)
+            # self.apply_color_rules()
+            # self.color_with_semantics = True
             # self.show_legend = True
-        elif self.color_template is not None:
-            self.domain = list(set([item['x_data'] for item in data]))
-            self.field = meta_data['x_label']
-            single_color = self.color_template.get_color('marks', number = 1, group = 1, seed_mark=1)['group1'][0]
-            print("single_color: ", single_color)
-            # self.range = [single_color] * len(self.domain)
-            self.range = []
-            for i in range(len(self.domain)):
-                self.range.append(single_color)
-            # self.show_legend = False
-            self.color_with_semantics = False
-        # elif self.color_template is not None and not self.color_template.mode == 'monochromatic':
-        #     if data is not None:
-        #         self.domain = list(set([row['x_data'] for row in data]))
-        #         self.field = meta_data['x_label']
-        #         seed_mark = 1
-        #         colors = self.color_template.get_color('marks', len(self.domain), seed_mark=seed_mark)
-        #         self.range = colors
-        #         self.show_legend = True
+        # elif self.color_template is not None:
+        #     self.domain = list(set([item[meta_data['x_label']] for item in data]))
+        #     self.field = meta_data['x_label']
+        #     # single_color = self.color_template.get_color('marks', number = 1, group = 1, seed_mark=1)['group1'][0]
+        #     # print("single_color: ", single_color)
+        #     static_palettes = StaticPalettes()
+        #     single_color = static_palettes.get_colors(1)[0]
+        #     self.range = []
+        #     for i in range(len(self.domain)):
+        #         self.range.append(single_color)
+        #     # self.show_legend = False
+        #     self.color_with_semantics = False
+    def encoding_data(self, data_name: str=""):
+        single_color_flag = True
+        # 根据data_name可以是x_label, group_label
+        if data_name == 'x_label':
+            self.field = self.meta_data['x_label']
+            self.domain = list(set([item[self.field] for item in self.data]))
+            self.range = self.palette.get_colors(len(self.domain))
+            self.apply_color_rules()
+            single_color_flag = False
+            return single_color_flag
+        elif data_name == 'group_label':
+            if "group_label" in self.meta_data.keys():
+                self.field = self.meta_data['group_label']
+                self.domain = list(set([item[self.field] for item in self.data]))
+                self.range = self.palette.get_colors(len(self.domain))
+                self.apply_color_rules()
+                single_color_flag = False
+                return single_color_flag
+            else:
+                print("group_label not in meta_data")
+
+        # 如果不encode，则使用单色
+        self.field = self.meta_data['x_label']
+        self.domain = list(set([item[self.field] for item in self.data]))
+        single_color = self.palette.get_colors(1)[0]
+        self.range = []
+        for i in range(len(self.domain)):
+            self.range.append(single_color)
+        self.apply_color_rules()
+        print("self.domain: ", self.domain)
+        print("self.range: ", self.range)
+        single_color_flag = True
+        return single_color_flag
     def apply_color_rules(self):
         text = self.meta_data['title'] + " " + self.meta_data['caption']
         text_embedding = self.embedding_model.encode(text)
@@ -174,8 +328,8 @@ class ColorEncodingTemplate:
         self.domain_embeddings = self.embedding_model.encode(self.domain)
         # 计算text_embedding和self.domain的相似度
         similarity = util.cos_sim(text_embedding, self.domain_embeddings).flatten()
-        
-        
+
+
         # 按相似度排序
         sorted_domain = sorted(self.domain, key=lambda x: similarity[self.domain.index(x)], reverse=True)
         sorted_colors = self.color_template.rank_color_by_contrast(self.range)
@@ -183,7 +337,7 @@ class ColorEncodingTemplate:
         self.domain = sorted_domain
         print("sorted_domain: ", sorted_domain)
         print("sorted_colors: ", sorted_colors)
-    
+
     def find_color_by_semantics(self, text):
         text_embedding = self.embedding_model.encode(text)
         # 计算text_embedding和self.domain的相似度
@@ -192,13 +346,37 @@ class ColorEncodingTemplate:
         sorted_domain = sorted(self.domain, key=lambda x: similarity[self.domain.index(x)], reverse=True)
         # 返回相似度最高的domain对应的color
         return self.range[self.domain.index(sorted_domain[0])]
-    
+
     def dump(self):
         return {
             "field": self.field,
             "field_type": self.field_type,
             "domain": self.domain,
             "range": self.range
+        }
+    def dump_possible_values(self):
+        return {
+            "field": {
+                "type": "string",
+                "default": "x_label",
+                "note": "column name"
+            },
+            "field_type": {
+                "type": "string",
+                "options": ["nominal", "quantitative"],
+                "default": "nominal",
+                "note": "type of the field"
+            },
+            "domain": {
+                "type": "list",
+                "default": [],
+                "note": "unique values of the field"
+            },
+            "range": {
+                "type": "list",
+                "default": [],
+                "note": "colors of the field"
+            }
         }
 
 class ShapeEncodingTemplate:
@@ -209,20 +387,20 @@ class ShapeEncodingTemplate:
         self.range = None
         self.meta_data = meta_data
         self.candidate_shapes = [
-          "arrow",
+        #   "arrow",
           "circle",
-          "square",
-          "cross",
-          "diamond",
-          "triangle",
-          "triangle-up",
-          "triangle-down",
-          "triangle-right",
-          "triangle-left",
-          "wedge",
-          "stroke",
-          "M-1,-1H1V1H-1Z",
-          "M0,.5L.6,.8L.5,.1L1,-.3L.3,-.4L0,-1L-.3,-.4L-1,-.3L-.5,.1L-.6,.8L0,.5Z"
+        #   "square",
+        #   "cross",
+        #   "diamond",
+        #   "triangle",
+        #   "triangle-up",
+        #   "triangle-down",
+        #   "triangle-right",
+        #   "triangle-left",
+        #   "wedge",
+        #   "stroke",
+        #   "M-1,-1H1V1H-1Z",
+        #   "M0,.5L.6,.8L.5,.1L1,-.3L.3,-.4L0,-1L-.3,-.4L-1,-.3L-.5,.1L-.6,.8L0,.5Z"
         ]
         if len(data[0].keys()) == 3:
             self.field = 'group'
@@ -239,7 +417,7 @@ class ShapeEncodingTemplate:
             #         seed_mark = 1
             #         colors = self.color_template.get_color('marks', len(self.domain), seed_mark=seed_mark)
             #         self.range = colors
-        
+
     def dump(self):
         if self.field is None:
             return None
@@ -248,6 +426,30 @@ class ShapeEncodingTemplate:
             "field_type": self.field_type,
             "domain": self.domain,
             "range": self.range
+        }
+    def dump_possible_values(self):
+        return {
+            "field": {
+                "type": "string",
+                "default": "group",
+                "note": "column name"
+            },
+            "field_type": {
+                "type": "string",
+                "options": ["nominal", "quantitative"],
+                "default": "nominal",
+                "note": "type of the field"
+            },
+            "domain": {
+                "type": "list",
+                "default": [],
+                "note": "unique values of the field"
+            },
+            "range": {
+                "type": "list",
+                "default": [],
+                "note": "shapes of the field"
+            }
         }
 
 class FontTemplate:
@@ -265,7 +467,38 @@ class FontTemplate:
             "lineHeight": self.line_height,
             "letterSpacing": self.letter_spacing
         }
-
+    def dump_possible_values(self):
+        return {
+            "font": {
+                "type": "string",
+                "default": "sans-serif",
+                "note": "font family"
+            },
+            "fontSize": {
+                "type": "number",
+                "range": [0, 100],
+                "default": 12,
+                "note": "font size"
+            },
+            "fontWeight": {
+                "type": "number",
+                "range": [0, 1000],
+                "default": 400,
+                "note": "font weight"
+            },
+            "lineHeight": {
+                "type": "number",
+                "range": [0, 100],
+                "default": 1.2,
+                "note": "line height"
+            },
+            "letterSpacing": {
+                "type": "number",
+                "range": [-100, 100],
+                "default": 0,
+                "note": "letter spacing"
+            }
+        }
 
 class TitleFontTemplate(FontTemplate):
     """用于标题的字体模板"""

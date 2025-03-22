@@ -9,6 +9,7 @@ from .layout import *
 from openai import OpenAI
 from ...template.template import *
 import time
+from ...processors.image_processor import ImageProcessor
 
 default_topic_icon_config = {
     "iconUrl": "/data1/liduan/generation/chart/chart_pipeline/testicon/robotarm2.png"
@@ -71,12 +72,7 @@ class LayoutProcessor:
         # group = self._createDescriptionGroup()
         # self.layout_template.root.children.append(group)
         return self.layout_template.root
-        # return self.process_node(self.layout_tree)
         
-    # def process(self) -> LayoutElement:
-    #     self._createTitleTextGroup(self.element_tree.layoutStrategy.title)
-    #     self._createSubtitleTextGroup(self.element_tree.layoutStrategy.subtitle)
-    
     def _createDescriptionGroup(self) -> LayoutElement:
         description_group = GroupElement()
         description_group.attributes['class'] = 'description'
@@ -222,11 +218,11 @@ class LayoutProcessor:
 
                     scales = []
                     time_start_constraint = time.time()
-                    print("element.reference_id: ", element.reference_id)
+                    # print("element.reference_id: ", element.reference_id)
                     for child in element.children:
                         if not element.reference_id == child.id:
                             self.constraint_graph.add_node_with_edges(reference_element, child, element.size_constraint)
-                            print("child: ", child.id)
+                            # print("child: ", child.id)
                             for edge in self.constraint_graph.node_map[child].prevs_edges:
                                 time_start_process = time.time()
                                 scale = edge.process_layout()
@@ -276,49 +272,6 @@ class LayoutProcessor:
         time_end = time.time()
         # print(f'process node {element.id} time cost: {time_end - time_start}s')
         
-    def process_node(self, tree: dict):
-        # 自顶向下递归地创建layout element, 并应用布局
-        if tree.get('tag') == 'g':
-            if tree.get('id') == 'chart':
-                self.chart_element._bounding_box = self.chart_element.get_bounding_box()
-                return self.chart_element
-            if tree.get('id') == 'title_text':
-                title_text_group = self._createTitleTextGroup(title_config)
-                self.element_id_map['title_text'] = title_text_group
-                return title_text_group
-            if tree.get('id') == 'subtitle_text':
-                subtitle_text_group = self._createSubtitleTextGroup(subtitle_config)
-                self.element_id_map['subtitle_text'] = subtitle_text_group
-                return subtitle_text_group
-            else:
-                layout_element = GroupElement()
-                layout_element.children = [self.process_node(child) for child in tree.get('children', [])]
-                for child in layout_element.children:
-                    self.layout_graph.add_node(Node(child))
-                    child._bounding_box = child.get_bounding_box()
-                layout_element.layoutStrategy = self.dict_to_layout_strategy(tree.get('layoutStrategy', {}))
-                for i in range(1,len(layout_element.children)):
-                    node_map = self.layout_graph.node_map
-                    self.layout_graph.add_edge(node_map[layout_element.children[i-1]], node_map[layout_element.children[i]], layout_element.layoutStrategy)
-                    old_node_min_x = float(node_map[layout_element.children[i]].value._bounding_box.minx)
-                    old_node_min_y = float(node_map[layout_element.children[i]].value._bounding_box.miny)
-                    layout_element.layoutStrategy.layout(node_map[layout_element.children[i-1]].value, node_map[layout_element.children[i]].value)
-                    node_map[layout_element.children[i]].value.update_pos(old_node_min_x, old_node_min_y)
-                layout_element._bounding_box = layout_element.get_bounding_box()
-                self.element_id_map[tree.get('id')] = layout_element
-                return layout_element
-        elif tree.get('tag') == 'image' and tree.get('id') == 'topic_icon':
-            topic_icon = self._createTopicIcon(topic_icon_config)
-            self.element_id_map['topic_icon'] = topic_icon
-            return topic_icon
-        elif tree.get('tag') == 'image' and tree.get('id') == 'topic_icon2':
-            topic_icon2 = self._createTopicIcon2(topic_icon2_config)
-            self.element_id_map['topic_icon2'] = topic_icon2
-            return topic_icon2
-
-        else:
-            # 其他情况，直接返回None
-            return None
     def _createRectElement(self, rect_config: dict, element: LayoutElement):
         element.attributes['fill'] = '#3d85e0'
         element.attributes['width'] = 20
@@ -327,15 +280,15 @@ class LayoutProcessor:
     
     
     def _createTitleTextGroup(self, title_config: Dict) -> Optional[dict]:
-            """创建主标题组，支持多行文本
-            
-            Args:
-                title_config: 主标题配置信息
-            """
-            title_text_group = GroupElement()
-            self._createTitleTextElement(title_config, title_text_group)
-            # self.subtitle_config['max_width'] = title_text_group.get_bounding_box().width *1.2
-            return title_text_group
+        """创建主标题组，支持多行文本
+        
+        Args:
+            title_config: 主标题配置信息
+        """
+        title_text_group = GroupElement()
+        self._createTitleTextElement(title_config, title_text_group)
+        self.subtitle_config['max_width'] = title_text_group.get_bounding_box().width *1.5
+        return title_text_group
 
     def _createTitleTextElement(self, title_config: Dict, element: LayoutElement):
         """创建主标题文本元素
@@ -481,7 +434,7 @@ class LayoutProcessor:
             line_groups.append(line_group)
             max_width = max(max_width, line_width)
 
-        self.subtitle_config['max_width'] = max_width
+        self.subtitle_config['max_width'] = max_width * 1.2
         element.children = line_groups
         
         # 应用布局 - 现在是对line groups应用
@@ -648,6 +601,13 @@ class LayoutProcessor:
             return None
         
         image_data = Image._getImageAsBase64(topic_icon_config['iconUrl']['file_path'])
+        image_processor = ImageProcessor()
+        # if config.get('crop', '') == 'circle':
+        content_type = image_data.split(';base64,')[0]
+        base64 = image_data.split(';base64,')[1]
+        base64 = image_processor.crop_by_circle(base64)
+        base64 = image_processor.apply_alpha(base64, 0.75)
+        image_data = f"{content_type};base64,{base64}"
         if not image_data:
             return None
         

@@ -32,13 +32,9 @@ class OverlayProcessor:
             }
             """
 
-            # 计算reference_element的bounding_box
             self.reference_element.bounding_box = self.reference_element.get_bounding_box()
-            # 计算target_element的bounding_box
             self.target_element.bounding_box = self.target_element.get_bounding_box()
             
-            print("self.reference_element.bounding_box: ", self.reference_element.bounding_box)
-            print("self.target_element.bounding_box: ", self.target_element.bounding_box)
 
             self.fit_in_size(self.config.get('orient', 'horizontal'), self.config.get('size_ratio', 1.0))
             
@@ -132,7 +128,7 @@ class OverlayProcessor:
     def process_replace_single(self):
         new_element = GroupElement()
         new_element.children = [self.target_element]
-        if self.reference_element.tag == 'path' and self.reference_element._is_rect() or self.reference_element.tag == 'rect':
+        if self.reference_element.tag == 'path' or self.reference_element.tag == 'rect' :
             width = self.reference_element.get_bounding_box().width
             height = self.reference_element.get_bounding_box().height
             original_width = self.target_element.get_bounding_box().width
@@ -146,34 +142,34 @@ class OverlayProcessor:
             else:
                 scale = height_scale *100
                 hrz = 'false'
-            self.target_element.attributes['width'] = width
-            self.target_element.attributes['height'] = height
+            self.target_element.attributes['width'] = width*1.5
+            self.target_element.attributes['height'] = height*1.5
             self.target_element.attributes['preserveAspectRatio'] = 'none'
             self.target_element.attributes['x'] = self.reference_element.get_bounding_box().minx
             self.target_element.attributes['y'] = self.reference_element.get_bounding_box().miny
-            
             # url = "https://c858-112-98-18-9.ngrok-free.app/scale"
-            url = "http://166.111.81.24:5000/scale"
-            base64_image = self.target_element.base64
-            response = requests.post(url, data={'image': base64_image, 'scale': scale, 'hrz': hrz})
-            print("response: ", response.status_code, response.content)
-            if response.status_code == 200:
-                print(f"response: {response.content}")
-                new_base64 = response.content.decode('utf-8')
-                self.target_element.base64 = new_base64
-                self.target_element.attributes["xlink:href"] =  f"data:{new_base64}"
-                # 把原图和新的图标都保存下来
-                time_stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-                original_image_path = os.path.join(os.path.dirname(__file__), '..', '..', 'output', f'original_image_{time_stamp}.png')
-                new_image_path = os.path.join(os.path.dirname(__file__), '..', '..', 'output', f'new_image_{time_stamp}.png')
-                print(f"original_image_path: {original_image_path}")
-                print(f"new_image_path: {new_image_path}")
-                image_data = base64.b64decode(base64_image.split(';base64,')[1])
-                image = PILImage.open(io.BytesIO(image_data))
-                image.save(original_image_path)
-                image_data = base64.b64decode(new_base64.split(';base64,')[1])
-                image = PILImage.open(io.BytesIO(image_data))
-                image.save(new_image_path)
+            # url = "http://166.111.81.24:5000/scale"
+            # base64_image = self.target_element.base64
+            
+            # response = requests.post(url, data={'image': base64_image, 'scale': scale, 'hrz': hrz})
+            # print("response: ", response.status_code, response.content)
+            # if response.status_code == 200:
+            #     print(f"response: {response.content}")
+            #     new_base64 = response.content.decode('utf-8')
+            #     self.target_element.base64 = new_base64
+            #     self.target_element.attributes["xlink:href"] =  f"data:{new_base64}"
+            #     # 把原图和新的图标都保存下来
+            #     time_stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            #     original_image_path = os.path.join(os.path.dirname(__file__), '..', '..', 'output', f'original_image_{time_stamp}.png')
+            #     new_image_path = os.path.join(os.path.dirname(__file__), '..', '..', 'output', f'new_image_{time_stamp}.png')
+            #     print(f"original_image_path: {original_image_path}")
+            #     print(f"new_image_path: {new_image_path}")
+            #     image_data = base64.b64decode(base64_image.split(';base64,')[1])
+            #     image = PILImage.open(io.BytesIO(image_data))
+            #     image.save(original_image_path)
+            #     image_data = base64.b64decode(new_base64.split(';base64,')[1])
+            #     image = PILImage.open(io.BytesIO(image_data))
+            #     image.save(new_image_path)
             return new_element
         else:
             return None

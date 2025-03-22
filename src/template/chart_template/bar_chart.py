@@ -24,8 +24,10 @@ class BarChartTemplate(ChartTemplate):
         self.mark = BarTemplate(color_template, mark_config)
         
         self.color_encoding = ColorEncodingTemplate(color_template, meta_data, data)
-        print(self.color_encoding.dump())
-
+        single_color_flag = self.color_encoding.encoding_data("group_label")
+        if single_color_flag:
+            self.mark.fill_color_style.color = self.color_encoding.range[0]
+            self.color_encoding = None
         if meta_data is None:
             # set default value
             self.x_axis.field = "category"
@@ -62,15 +64,15 @@ class BarChartTemplate(ChartTemplate):
         if self.mark.corner_radius is not None:
             specification["mark"]["cornerRadius"] = self.mark.corner_radius
 
-        # 创建注释规范
-        annotation_specification = self._create_annotation_specification()
+        # # 创建注释规范
+        # annotation_specification = self._create_annotation_specification()
         
         # 处理方向相关的配置
         if self.mark.orientation == "horizontal":
             self._apply_horizontal_orientation(encoding, mark_specification)
-            self._configure_horizontal_annotation(annotation_specification)
-        else:
-            self._configure_vertical_annotation(annotation_specification)
+            # self._configure_horizontal_annotation(annotation_specification)
+        # else:
+            # self._configure_vertical_annotation(annotation_specification)
 
         # 处理排序
         self._apply_sort_configuration(encoding)
@@ -78,13 +80,13 @@ class BarChartTemplate(ChartTemplate):
         specification["encoding"] = encoding
         
         # 添加图层
-        if self.has_annotation:
-            specification["layer"] = [
-                {"mark": mark_specification, "encoding": encoding},
-                annotation_specification
-            ]
-        else:
-            specification["layer"] = [{"mark": mark_specification}]
+        # if self.has_annotation:
+        #     specification["layer"] = [
+        #         {"mark": mark_specification, "encoding": encoding},
+        #         annotation_specification
+        #     ]
+        # else:
+        specification["layer"] = [{"mark": mark_specification}]
         
         return specification
 
@@ -96,8 +98,7 @@ class BarChartTemplate(ChartTemplate):
             },
             "encoding": {
                 "text": {
-                    "field": self.y_axis.field,
-                    "type": self.y_axis.field_type
+                    "field": "annotate_data",
                 },
             }
         }
@@ -155,12 +156,22 @@ class BarChartTemplate(ChartTemplate):
             annotation_specification["mark"]["dx"] = 3
     def _apply_sort_configuration(self, encoding: dict) -> None:
         """应用排序配置"""
-        if self.config.get('layout', {}).get('chart_config', {}).get('sort', {}):
-            sort_config = self.config.get('layout', {}).get('chart_config', {}).get('sort', {})
-            if sort_config.get('by', 'y') == 'x':
-                encoding["y"]["sort"] = "-x" if sort_config.get('ascending', True) else "x"
+        print("apply sort configuration")
+        sort_config = self.sort
+        print("sort_config: ", sort_config)
+        if sort_config is not None:
+            if sort_config['by'] == 'x':
+                encoding["y"]["sort"] = "-x" if sort_config['ascending'] else "x"
             else:
-                encoding["x"]["sort"] = "y" if sort_config.get('ascending', True) else "-y"
+                encoding["x"]["sort"] = "y" if sort_config['ascending'] else "-y"
+        # if self.config.get('layout', {}).get('chart_config', {}).get('sort', {}):
+        #     sort_config = self.config.get('layout', {}).get('chart_config', {}).get('sort', {})
+        #     print("sort_config: ", sort_config)
+        #     if sort_config.get('by', 'y') == 'x':
+        #         encoding["y"]["sort"] = "-x" if sort_config.get('ascending', True) else "x"
+        #     else:
+        #         encoding["x"]["sort"] = "y" if sort_config.get('ascending', True) else "-y"
+        
 
     def dump(self):
         result = {
@@ -241,7 +252,6 @@ class StackedBarChartTemplate(BarChartTemplate):
         # 这里是bar chart相关的配置，通用配置放在chart generator中    
         """更新规范"""
         encoding = specification["encoding"]
-        mark_specification = specification["mark"]
         if self.mark.orientation == "horizontal":
             encoding["xOffset"] = {"field": "group"}
         else:
@@ -412,8 +422,8 @@ class RadialBarChartTemplate(BarChartTemplate):
         super().__init__()
         self.chart_type = "radialbar"
         
-    def create_template(self, data: list, meta_data: dict=None, color_template: ColorDesign=None):
-        super().create_template(data, meta_data, color_template)
+    def create_template(self, data: list, meta_data: dict=None, color_template: ColorDesign=None, config: dict=None):
+        super().create_template(data, meta_data, color_template, config)
         self.y_axis = AngleAxisTemplate(color_template)
         self.x_axis = RadiusAxisTemplate(color_template)
         self.polar_setting = PolarSetting()
@@ -428,11 +438,13 @@ class RadialBarChartTemplate(BarChartTemplate):
             "radius": [self.polar_setting.inner_radius, self.polar_setting.outer_radius],
         }
         angleAxis = {
+            "id": "angleAxis",
             "startAngle": self.y_axis.start_angle,
             "endAngle": self.y_axis.end_angle,
             "clockwise": self.y_axis.clockwise,
         }
         radiusAxis = {
+            "id": "radiusAxis",
             "type": "category",
         }
         self.echart_option["polar"] = polar_setting

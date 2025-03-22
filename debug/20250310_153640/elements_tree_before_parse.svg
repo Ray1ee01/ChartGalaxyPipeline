@@ -1,0 +1,44 @@
+<svg version="1.1" class="marks" width="477" height="235" viewBox="-100,-100,1000,1000" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><g ><g version="1.1" class="marks" width="477" height="235" viewBox="0 0 477 235"><g fill="none" stroke-miterlimit="10" transform="translate(22,10)"><g class="mark-group role-frame root" role="graphics-object" aria-roledescription="group mark container"><g transform="translate(0,0)" class="mark-group role-axis" role="graphics-symbol" aria-roledescription="axis" aria-label="X-axis for a discrete scale with 6 values: U.S., India, China, UK, Germany, South Korea"><g transform="translate(0.5,200.5)" class="mark-rule role-axis-tick" pointer-events="none"><line transform="translate(40,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(114,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(188,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(261,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(335,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(409,0)" x2="0" y2="5" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/></g>
+<g transform="translate(0.5,200.5)" class="mark-text role-axis-label" pointer-events="none"><text text-anchor="middle" transform="translate(40.07377049180325,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">U.S.
+</text>
+<text text-anchor="middle" transform="translate(113.84426229508193,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">India
+</text>
+<text text-anchor="middle" transform="translate(187.61475409836063,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">China
+</text>
+<text text-anchor="middle" transform="translate(261.38524590163934,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">UK
+</text>
+<text text-anchor="middle" transform="translate(335.155737704918,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">Germany
+</text>
+<text text-anchor="middle" transform="translate(408.9262295081967,18)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">South Korea
+</text></g>
+<g transform="translate(0.5,200.5)" class="mark-rule role-axis-domain" pointer-events="none"><line transform="translate(0,0)" x2="450" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/></g></g>
+<g transform="translate(0,0)" class="mark-group role-axis" role="graphics-symbol" aria-roledescription="axis" aria-label="Y-axis for a linear scale with values from 0 to 5"><g transform="translate(0.5,0.5)" class="mark-rule role-axis-tick" pointer-events="none"><line transform="translate(0,200)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,160)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,120)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,80)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,40)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/>
+<line transform="translate(0,0)" x2="-5" y2="0" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/></g>
+<g transform="translate(0.5,0.5)" class="mark-text role-axis-label" pointer-events="none"><text text-anchor="end" transform="translate(-10,203)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">0
+</text>
+<text text-anchor="end" transform="translate(-10,163)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">1
+</text>
+<text text-anchor="end" transform="translate(-10,123)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">2
+</text>
+<text text-anchor="end" transform="translate(-10,83)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">3
+</text>
+<text text-anchor="end" transform="translate(-10,42.99999999999999)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">4
+</text>
+<text text-anchor="end" transform="translate(-10,3)" font-family="sans-serif" font-size="10px" fill="#000d2a" opacity="1">5
+</text></g>
+<g transform="translate(0.5,0.5)" class="mark-rule role-axis-domain" pointer-events="none"><line transform="translate(0,200)" x2="0" y2="-200" stroke="#0f223b" stroke-opacity="0" stroke-width="1" opacity="1"/></g></g>
+<g transform="translate(0,0)" class="mark-rect role-mark layer_0_marks" role="graphics-object" aria-roledescription="rect mark container"><path aria-label="Country: U.S.; Production Capabilities: 4.69" role="graphics-symbol" aria-roledescription="bar" d="M18.66393442622948,12.399999999999988h43.81967213114754v187.60000000000002h-43.81967213114754Z" fill="#393b79" opacity="1"/>
+<path aria-label="Country: India; Production Capabilities: 3.13" role="graphics-symbol" aria-roledescription="bar" d="M92.43442622950818,74.8h43.81967213114754v125.2h-43.81967213114754Z" fill="#393b79" opacity="1"/>
+<path aria-label="Country: China; Production Capabilities: 1.9" role="graphics-symbol" aria-roledescription="bar" d="M166.20491803278685,124h43.81967213114754v76h-43.81967213114754Z" fill="#393b79" opacity="1"/>
+<path aria-label="Country: UK; Production Capabilities: 0.95" role="graphics-symbol" aria-roledescription="bar" d="M239.97540983606555,162h43.81967213114754v38h-43.81967213114754Z" fill="#393b79" opacity="1"/>
+<path aria-label="Country: Germany; Production Capabilities: 0.5" role="graphics-symbol" aria-roledescription="bar" d="M313.74590163934425,180h43.81967213114754v20h-43.81967213114754Z" fill="#393b79" opacity="1"/>
+<path aria-label="Country: South Korea; Production Capabilities: 0.35" role="graphics-symbol" aria-roledescription="bar" d="M387.5163934426229,186h43.81967213114754v14h-43.81967213114754Z" fill="#393b79" opacity="1"/></g></g></g></g></g></svg>

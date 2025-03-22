@@ -9,12 +9,7 @@
             "padding": 15,
             "direction": "down",
             "overlap": false,
-            "alignment": ["left", "left"]
-        },
-        "sizeConstraint": {
-            "reference": "group_2",
-            "max_width": 1.0,
-            "min_width": 0.8
+            "alignment": ["middle", "middle"]
         },
         "children": [
             {
@@ -59,10 +54,10 @@
                 "id": "group_2",
                 "layoutStrategy": {
                     "name": "vertical",
-                    "offset": -20,
+                    "offset": 0,
                     "direction": "up",
-                    "overlap": true,
-                    "alignment": ["right", "right"]
+                    "overlap": false,
+                    "alignment": ["middle", "middle"]
                 },
                 "children": [
                     {
@@ -79,7 +74,11 @@
         ]
     },
     "chart_config": {
-        "valid_type": ["pie","scatter","line","area","bar"],
-        "orientation": "vertical"
+        "valid_type": ["groupbar"],
+        "orientation": "vertical",
+        "sort": {
+            "ascending": true,
+            "by": "y"
+        }
     }
 }

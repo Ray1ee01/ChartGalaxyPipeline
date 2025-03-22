@@ -12,9 +12,34 @@ class AreaTemplate(MarkTemplate):
         self.orientation = None  # 和 bar 一样，由轴配置推理得到
     
     def dump(self):
+        base_dict = super().dump()  
         return {
+            **base_dict,
             "type": self.type,
             "opacity": self.opacity,
             "interpolate": self.interpolate,
-            "orientation": self.orientation
+            "orientation": self.orientation,
+        }
+    def dump_possible_values(self):
+        base_possible_values = super().dump_possible_values()
+        return {
+            **base_possible_values,
+            "opacity": {
+                "type": "number",
+                "range": [0, 1],
+                "default": 0.7,
+                "note": "opacity"
+            },
+            "interpolate": {
+                "type": "enum",
+                "options": ["linear", "monotone", "step-after", "step-before"],
+                "default": "linear",
+                "note": "interpolation method"
+            },
+            "orientation": {
+                "type": "enum",
+                "options": ["horizontal", "vertical"],
+                "default": "horizontal",
+                "note": "orientation"
+            }
         }

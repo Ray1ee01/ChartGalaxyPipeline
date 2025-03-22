@@ -36,10 +36,11 @@ class BumpChartTemplate(ChartTemplate):
         
         self.mark = LineTemplate(color_template)
         
-        if len(data[0].keys()) == 2: # single line
+        self.color_encoding = ColorEncodingTemplate(color_template, meta_data, data)
+        single_color_flag = self.color_encoding.encoding_data("group_label")
+        if single_color_flag:
+            self.mark.color = self.color_encoding.range[0]
             self.color_encoding = None
-        else:
-            self.color_encoding = ColorEncodingTemplate(color_template, meta_data, data)
     
     def update_specification(self, specification: dict) -> None:
         specification["encoding"]["order"] = {
