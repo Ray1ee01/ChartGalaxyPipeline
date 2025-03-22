@@ -134,13 +134,14 @@ class TitleGenerator:
     def generate(self):
         self.main_title_svg, self.main_title_bounding_box = self.generate_main_title()
         self.description_svg, self.description_bounding_box = self.generate_description()
-        self.embellishment_svg, self.embellishment_bounding_box = self.generate_embellishment()
+        primary_color = self.json_data['colors']['other']['primary']
+        self.embellishment_svg, self.embellishment_bounding_box = self.generate_embellishment(primary_color)
         return self.composite()
 
     def composite(self):
         # 首先以main_title_svg为基准，通过调整description_svg的位置，使他们两个boundingbox的min_x相同，同时description_svg的min_y比main_title_svg的max_y大10
         description_shift_x = self.main_title_bounding_box['min_x'] - self.description_bounding_box['min_x']
-        description_shift_y = self.main_title_bounding_box['max_y'] + 10 - self.description_bounding_box['min_y']
+        description_shift_y = self.main_title_bounding_box['max_y'] + 5 - self.description_bounding_box['min_y']
         # 通过添加transform属性，调整description_svg的位置
         description_transform = f'translate({description_shift_x}, {description_shift_y})'
         self.description_svg = self.description_svg.replace('transform="', f'transform="{description_transform} ')
