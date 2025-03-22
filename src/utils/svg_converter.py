@@ -2,8 +2,6 @@ from cairosvg import svg2png
 from PIL import Image
 from lxml import etree
 from io import StringIO
-from svglib.svglib import svg2rlg
-from reportlab.graphics import renderPM
 def get_svg_size(svg_string):
     # 创建解析器
     parser = etree.XMLParser(remove_comments=True, remove_blank_text=True)
