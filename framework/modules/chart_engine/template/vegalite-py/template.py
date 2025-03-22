@@ -3,10 +3,13 @@ import subprocess
 import json
 import os
 import random
+import sys
+import pathlib
 from utils.element_tool.vegalite_parser import SVGParser
 from utils.element_tool.tree_converter import SVGTreeConverter
 from utils.element_tool.vegalite_element_parser import VegaLiteElementParser
 from utils.element_tool.data_binder import *
+
 class VegaLiteTemplate:
     def __init__(self, json_data: Dict):
         self.json_data = json_data
