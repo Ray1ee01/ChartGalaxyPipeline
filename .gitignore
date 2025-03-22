@@ -17,3 +17,7 @@ data/
 connectivity.c
 temp_input_*.json
 .vscode
+
+src/processors/title_generator_modules/*
+!src/processors/title_generator_modules/rag_title_generator.py
+!src/processors/title_generator_modules/data_facts_detector
