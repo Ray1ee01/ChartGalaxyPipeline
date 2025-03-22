@@ -10,8 +10,8 @@ import json
 import logging
 import argparse
 from typing import Dict, List, Any, Tuple
-from .color_framework import ColorFramework
-from .color_template import ColorDesign
+from color_framework import ColorFramework
+from color_template import ColorDesign
 
 # 配置日志
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")

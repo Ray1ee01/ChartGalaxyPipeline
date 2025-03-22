@@ -65,8 +65,7 @@ if __name__ == '__main__':
     
     # Get the appropriate template for this chart type
     # Prefer JavaScript template for testing
-    engine_preference = [ 'vegalite-py']
-    engine, template = get_template_for_chart_name(chart_name, engine_preference=engine_preference)
+    engine, template = get_template_for_chart_name(chart_name)
     
     if engine is None:
         print(f"Error: No template found for chart name '{chart_name}'")
@@ -124,7 +123,6 @@ if __name__ == '__main__':
                 json_data=json_data,
                 output_svg_path=output_svg_path,
                 js_file=js_wrapper_file,
-                chart_type=chart_type,
                 width=width,
                 height=height,
                 framework="echarts"  # 统一使用echarts框架

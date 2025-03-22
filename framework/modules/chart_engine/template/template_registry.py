@@ -127,8 +127,8 @@ def scan_templates(force=False):
     scan_directory(d3_js_dir, 'd3-js', '.js')
     
     # 扫描 vegalite-py 目录及子目录
-    vegalite_py_dir = os.path.join(template_dir, 'vegalite-py')
-    scan_directory(vegalite_py_dir, 'vegalite-py', '.py')
+    # vegalite_py_dir = os.path.join(template_dir, 'vegalite-py')
+    # scan_directory(vegalite_py_dir, 'vegalite-py', '.py')
     
     # 标记已完成扫描
     _templates_scanned = True
