@@ -69,6 +69,7 @@ function makeChart(containerSelector, data) {
     // 添加网格背景渐变
     const gridGradientId = "grid-background-gradient";
     const gridGradient = defs.append("linearGradient")
+        .attr("class", "background")
         .attr("id", gridGradientId)
         .attr("x1", "0%")
         .attr("y1", "0%")
