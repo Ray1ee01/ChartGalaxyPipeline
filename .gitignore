@@ -21,3 +21,5 @@ connectivity.c
 temp_input_*.json
 .vscode
 config.py
+/debug/
+/src/output_*/
