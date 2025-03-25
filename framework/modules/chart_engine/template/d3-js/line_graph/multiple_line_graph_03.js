@@ -396,7 +396,7 @@ function makeChart(containerSelector, data) {
     }
     
     // 动态规划标签放置算法
-    function placeLabelsDP(points) {
+    function placeLabelsDP(points, avoidYPositions = []) {
         // 每个格点的高度（像素）
         const GRID_SIZE = 3;
         // 圆点周围的保护区域（格点数）
@@ -418,6 +418,15 @@ function makeChart(containerSelector, data) {
         // 标记圆点周围的保护区域为已占用
         points.forEach(point => {
             const gridY = Math.floor(point.y / GRID_SIZE);
+            for (let i = Math.max(0, gridY - PROTECTION_RADIUS); i <= Math.min(gridCount - 1, gridY + PROTECTION_RADIUS); i++) {
+                occupied[i] = true;
+            }
+        });
+        
+        // 标记需要避开的Y轴刻度位置为已占用
+        avoidYPositions.forEach(yPos => {
+            const gridY = Math.floor(yPos / GRID_SIZE);
+            // 为每个刻度值添加一些保护区域
             for (let i = Math.max(0, gridY - PROTECTION_RADIUS); i <= Math.min(gridCount - 1, gridY + PROTECTION_RADIUS); i++) {
                 occupied[i] = true;
             }
@@ -566,8 +575,10 @@ function makeChart(containerSelector, data) {
     }
 
     // 分别对起点和终点应用动态规划
-    const startLabelPositions = placeLabelsDP(startPoints);
-    const endLabelPositions = placeLabelsDP(endPoints);
+    // 获取Y轴刻度位置用于避开
+    const yTickPositions = filteredYTicks.map(tick => yScale(tick));
+    const startLabelPositions = placeLabelsDP(startPoints, yTickPositions); // 起点需要避开Y轴刻度
+    const endLabelPositions = placeLabelsDP(endPoints, []); // 终点不需要避开Y轴刻度
 
     // 分别处理起点和终点标签
     startLabelPositions.forEach(placement => {
