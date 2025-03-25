@@ -16,9 +16,6 @@ class VegaLiteGenerator(ChartGenerator):
 
     def template_to_spec(self):
         """将ChartTemplate转换为Vega-Lite规范"""
-        
-        
-        
         # 基础规范
         specification = {
             "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
@@ -62,27 +59,7 @@ class VegaLiteGenerator(ChartGenerator):
             mark_specification["stroke"] = self.template.mark.stroke_color_style.color
             mark_specification["strokeOpacity"] = self.template.mark.stroke_color_style.opacity
             mark_specification["strokeWidth"] = self.template.mark.stroke_style.stroke_width
-        
-        # additional_mark_specification = {}
-        # if self.template.mark.type == "line":
-        #     additional_mark_specification["type"] = "area"
-        #     mark_specification["type"] = "line"
-        #     # additional_mark_specification["fill"] = self.template.mark.stroke_color_style.color
-        #     additional_mark_specification["fillOpacity"] = 0.3
-        #     # additional_mark_specification["stroke"] = self.template.mark.stroke_color_style.color
-        #     # additional_mark_specification["strokeOpacity"] = self.template.mark.stroke_color_style.opacity
-        #     # additional_mark_specification["strokeWidth"] = self.template.mark.stroke_style.stroke_width
-        #     # additional_mark_specification["transform"] = [
-        #     #     {"filter": "datum.group == 'Chile'"}
-        #     # ]
-        
-        # if self.template.mark.point:
-        #     mark_specification["point"] = self.template.mark.point
-        # if self.template.mark.interpolate:
-        #     mark_specification["interpolate"] = self.template.mark.interpolate
-        
-
-        
+            
         # 编码配置
         encoding = {}
         

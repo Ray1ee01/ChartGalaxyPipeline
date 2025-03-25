@@ -9,9 +9,10 @@ REQUIREMENTS_PATTERN = re.compile(r'REQUIREMENTS_BEGIN\s*({.*?})\s*REQUIREMENTS_
 
 # Dictionary to store template mappings
 templates = {
-    'echarts-py': {},  # chart_type -> {chart_name -> [engine, template]}
-    'echarts-js': {},  # chart_type -> {chart_name -> [engine, template]}
-    'd3-js': {}        # chart_type -> {chart_name -> [engine, template]}
+    'echarts-py': {},  # chart_type -> module
+    'echarts-js': {},  # chart_type -> js_file_path
+    'd3-js': {},        # chart_type -> js_file_path
+    'vegalite-py': {}   # chart_type -> module
 }
 
 # 全局标识符，用于跟踪是否已扫描过模板
@@ -125,6 +126,10 @@ def scan_templates(force=False):
     d3_js_dir = os.path.join(template_dir, 'd3-js')
     scan_directory(d3_js_dir, 'd3-js', '.js')
     
+    # 扫描 vegalite-py 目录及子目录
+    # vegalite_py_dir = os.path.join(template_dir, 'vegalite-py')
+    # scan_directory(vegalite_py_dir, 'vegalite-py', '.py')
+    
     # 标记已完成扫描
     _templates_scanned = True
 
@@ -148,6 +153,7 @@ def get_template_for_chart_type(chart_type, engine_preference=None):
     
     chart_type = chart_type.lower()
     
+    print("engine_preference:", engine_preference)
     # If no preference is specified, use default order
     if engine_preference is None:
         engine_preference = ['echarts-py', 'echarts-js', 'd3-js']

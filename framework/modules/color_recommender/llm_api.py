@@ -3,7 +3,9 @@ from PIL import Image
 import base64
 from io import BytesIO
 from config import client_key, base_url
-from .global_state import image_max_size, model_name
+
+image_max_size = 512
+model_name = 'gemini-2.0-flash'
 
 client = OpenAI(
     api_key=client_key,

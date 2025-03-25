@@ -1,9 +1,21 @@
 import colour, json, random, os
 import numpy as np
+from pathlib import Path
+import sys
+
+# 获取当前文件的绝对路径
+current_file = Path(__file__).resolve()
+
+# 获取项目根目录路径 (假设config.py在根目录)
+project_root = current_file.parent.parent.parent
+
+# 将项目根目录添加到Python路径中
+if str(project_root) not in sys.path:
+    sys.path.append(str(project_root))
+
 from config import sentence_transformer_path, infographic_library_path, infographic_image_path, color_cache_path, test_c2t_root
-from ..utils.llm_api import ask, ask_image
-from ..processors.style_design_modules.infographic_retrieve_v2 import InfographicRetriever
-# from ..processors.style_design_modules.infographic_palette import get_palette
+from llm_api import ask, ask_image
+from infographic_retrieve import InfographicRetriever
 
 ifg_retriever = InfographicRetriever(sentence_transformer_path, infographic_library_path, infographic_image_path)
 
@@ -133,7 +145,7 @@ class ColorFramework(object):
                     if column['role'] == option:
                         column_id = i
                         break
-            if column_id == -1:
+            if column_id == -2:
                 print('No column name existed')
                 return None
             res.append({

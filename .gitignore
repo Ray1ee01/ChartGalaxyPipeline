@@ -16,6 +16,7 @@ data/
 .idea/*
 *.o
 *.pyc
+*.svg
 connectivity.c
 temp_input_*.json
 .vscode
@@ -23,3 +24,5 @@ config.py
 *.html
 testset2
 tmp
+/debug/
+/src/output_*/

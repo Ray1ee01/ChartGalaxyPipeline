@@ -192,13 +192,7 @@ function make_option(jsonData) {
                     rich: {
                         img: {
                             height: 20,
-                            align: 'center',
-                            backgroundColor: {
-                                image: function(params) {
-                                    const category = params.value;
-                                    return images.field[category];
-                                }
-                            }
+                            align: 'center'
                         }
                     }
                 }

@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import numpy as np
 import scipy.signal
-from ..image_processor import *
+from .image_processor import *
 import cv2
 
 class VariationProcessor(ABC):
@@ -622,8 +622,8 @@ class PictogramMark(VariationProcessor):
         self.pictogram._bounding_box = self.pictogram.get_bounding_box()
 
         direction = config.get('direction', 'right')
-        padding = config.get('padding', 10)
-        side = config.get('side', 'inside')
+        padding = config.get('padding', 0)
+        side = config.get('side', 'half')
         
         if direction == 'top' or direction == 'bottom':
             height = self.mark.get_bounding_box().height
