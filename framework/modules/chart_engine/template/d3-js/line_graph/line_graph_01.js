@@ -74,6 +74,7 @@ function makeChart(containerSelector, data) {
         .attr("width", "100%")
         .attr("height", "100%")
         .attr("preserveAspectRatio", "xMidYMid slice")
+        .attr("class", "background")
         .attr("x", 0)
         .attr("y", 0);
     
