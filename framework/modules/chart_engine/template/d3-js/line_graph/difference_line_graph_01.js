@@ -1,11 +1,11 @@
 /*
 REQUIREMENTS_BEGIN
 {
-    "chart_type": "Line Graph",
-    "chart_name": "line_graph_01",
-    "required_fields": ["x", "y"],
-    "required_fields_type": [["temporal"], ["numerical"]],
-    "required_fields_range": [[5, 50], [-60, 60]],
+    "chart_type": "Multiple Line Graph",
+    "chart_name": "difference_line_graph_01",
+    "required_fields": ["x", "y", "group"],
+    "required_fields_type": [["temporal"], ["numerical"], ["categorical"]],
+    "required_fields_range": [[5, 50], [-60, 60], [2, 2]],
     "required_fields_icons": [],
     "required_other_icons": [],
     "required_fields_colors": [],
@@ -49,6 +49,7 @@ function makeChart(containerSelector, data) {
     // 获取字段名
     const xField = dataColumns[0].name;
     const yField = dataColumns[1].name;
+    const groupField = dataColumns[2].name;
     
     // 设置尺寸和边距
     const width = variables.width;
@@ -61,7 +62,7 @@ function makeChart(containerSelector, data) {
         .attr("width", "100%")
         .attr("height", height)
         .attr("viewBox", `0 0 ${width} ${height}`)
-        .attr("style", "max-width: 100%; height: auto;") // 浅灰色背景
+        .attr("style", "max-width: 100%; height: auto;")
         .attr("xmlns", "http://www.w3.org/2000/svg");
     
     // 创建图表区域
@@ -81,19 +82,47 @@ function makeChart(containerSelector, data) {
     const g = svg.append("g")
         .attr("transform", `translate(${margin.left}, ${margin.top})`);    
     
+    // 分离两个组的数据
+    const groupNames = [...new Set(chartData.map(d => d[groupField]))];
+    const group1Data = chartData.filter(d => d[groupField] === groupNames[0]);
+    const group2Data = chartData.filter(d => d[groupField] === groupNames[1]);
+    
+    // 创建一个新的数据集，计算两组之间的差异
+    const diffData = [];
+    
+    // 确保两组数据按年份排序
+    group1Data.sort((a, b) => parseYear(a[xField]) - parseYear(b[xField]));
+    group2Data.sort((a, b) => parseYear(a[xField]) - parseYear(b[xField]));
+    
+    // 计算差异
+    for (let i = 0; i < group1Data.length; i++) {
+        const year = group1Data[i][xField];
+        const group1Value = group1Data[i][yField];
+        const group2Item = group2Data.find(d => d[xField] === year);
+        
+        if (group2Item) {
+            const group2Value = group2Item[yField];
+            const diff = group1Value - group2Value;
+            diffData.push({
+                [xField]: year,
+                [yField]: diff
+            });
+        }
+    }
+    
     // 确定全局x轴范围
-    const allDates = chartData.map(d => parseYear(d[xField]));
+    const allDates = diffData.map(d => parseYear(d[xField]));
     const xMin = d3.min(allDates);
     const xMax = d3.max(allDates);
 
     // 创建x轴比例尺
     const xScale = d3.scaleTime()
         .domain([xMin, xMax])
-        .range([40, chartWidth]); // 将起点从0改为20,整体右移20像素
+        .range([40, chartWidth]); // 将起点从0改为40,整体右移40像素
     
     // 创建y轴比例尺
-    const yMin = d3.min(chartData, d => d[yField]);
-    const yMax = d3.max(chartData, d => d[yField]);
+    const yMin = d3.min(diffData, d => d[yField]);
+    const yMax = d3.max(diffData, d => d[yField]);
     const yPadding = Math.max(Math.abs(yMin), Math.abs(yMax)) * 0.1;
     
     const yScale = d3.scaleLinear()
@@ -209,14 +238,14 @@ function makeChart(containerSelector, data) {
 
     // 绘制线条
     g.append("path")
-        .datum(chartData)
+        .datum(diffData)
         .attr("fill", "none")
         .attr("stroke", "url(#lineGradient)")
         .attr("stroke-width", 3)
         .attr("d", line);
     
     // 添加最大值和最小值标注
-    const maxPoint = chartData.reduce((max, p) => p[yField] > max[yField] ? p : max, chartData[0]);
+    const maxPoint = diffData.reduce((max, p) => p[yField] > max[yField] ? p : max, diffData[0]);
     g.append("circle")
         .attr("cx", xScale(parseYear(maxPoint[xField])))
         .attr("cy", yScale(maxPoint[yField]))
@@ -224,7 +253,7 @@ function makeChart(containerSelector, data) {
         .attr("fill", "#ffffff")
         .attr("stroke", "#ef9522")
         .attr("stroke-width", 2.5);
-    
+
     g.append("text")
         .attr("x", xScale(parseYear(maxPoint[xField])))
         .attr("y", yScale(maxPoint[yField]) - 15)
@@ -234,8 +263,8 @@ function makeChart(containerSelector, data) {
         .style("font-weight", "bold")
         .style("fill", "#ef9522")
         .text(Math.round(maxPoint[yField]) + "%");
-    
-    const minPoint = chartData.reduce((min, p) => p[yField] < min[yField] ? p : min, chartData[0]);
+
+    const minPoint = diffData.reduce((min, p) => p[yField] < min[yField] ? p : min, diffData[0]);
     g.append("circle")
         .attr("cx", xScale(parseYear(minPoint[xField])))
         .attr("cy", yScale(minPoint[yField]))
@@ -243,7 +272,7 @@ function makeChart(containerSelector, data) {
         .attr("fill", "#ffffff")
         .attr("stroke", "#9a8abe")
         .attr("stroke-width", 2.5);
-    
+
     g.append("text")
         .attr("x", xScale(parseYear(minPoint[xField])))
         .attr("y", yScale(minPoint[yField]) + 20)
@@ -253,27 +282,29 @@ function makeChart(containerSelector, data) {
         .style("font-weight", "bold")
         .style("fill", "#9a8abe")
         .text(Math.round(minPoint[yField]) + "%");
-    
+
     // 添加最新值标注
-    const lastPoint = chartData[chartData.length - 1];
-    g.append("circle")
-        .attr("cx", xScale(parseYear(lastPoint[xField])))
-        .attr("cy", yScale(lastPoint[yField]))
-        .attr("r", 6)
-        .attr("fill", "#ffffff")
-        .attr("stroke", lastPoint[yField] >= 0 ? "#ef9522" : "#9a8abe")
-        .attr("stroke-width", 2.5);
-    
-    g.append("text")
-        .attr("x", xScale(parseYear(lastPoint[xField])))
-        .attr("y", yScale(lastPoint[yField]) + 20)
-        .attr("text-anchor", "middle")
-        .attr("dominant-baseline", "middle")
-        .style("font-family", "Century Gothic")
-        .style("font-size", "14px")
-        .style("font-weight", "bold")
-        .style("fill", lastPoint[yField] >= 0 ? "#ef9522" : "#9a8abe")
-        .text(Math.round(lastPoint[yField]) + "%");
+    const lastPoint = diffData[diffData.length - 1];
+    if (lastPoint !== maxPoint && lastPoint !== minPoint) {
+        g.append("circle")
+            .attr("cx", xScale(parseYear(lastPoint[xField])))
+            .attr("cy", yScale(lastPoint[yField]))
+            .attr("r", 6)
+            .attr("fill", "#ffffff")
+            .attr("stroke", lastPoint[yField] >= 0 ? "#ef9522" : "#9a8abe")
+            .attr("stroke-width", 2.5);
+
+        g.append("text")
+            .attr("x", xScale(parseYear(lastPoint[xField])))
+            .attr("y", yScale(lastPoint[yField]) + 20)
+            .attr("text-anchor", "middle")
+            .attr("dominant-baseline", "middle")
+            .style("font-family", "Century Gothic")
+            .style("font-size", "14px")
+            .style("font-weight", "bold")
+            .style("fill", lastPoint[yField] >= 0 ? "#ef9522" : "#9a8abe")
+            .text(Math.round(lastPoint[yField]) + "%");
+    }
     
     // 添加说明文本
     const wrapText = (text, width) => {
@@ -297,7 +328,7 @@ function makeChart(containerSelector, data) {
         return lines;
     };
 
-    const nameLines = wrapText(dataColumns[1].name.toUpperCase(), 140);
+    const nameLines = wrapText(dataColumns[1].name.toUpperCase() + " DIFFERENCE", 140);
     nameLines.forEach((line, i) => {
         g.append("text")
             .attr("x", 20)
@@ -310,7 +341,7 @@ function makeChart(containerSelector, data) {
             .text(line);
     });
 
-    const descLines = wrapText(dataColumns[1].description, 160);
+    const descLines = wrapText(groupNames[0] + " and " + groupNames[1], 160);
     descLines.forEach((line, i) => {
         g.append("text")
             .attr("x", 20)
@@ -328,8 +359,8 @@ function makeChart(containerSelector, data) {
         const arrowSize = 100; // 箭头大小为100x100像素
         const stepSize = 10; // 每10像素尝试一次
         
-        let bestX = isUpArrow ? 260 : 245; // 默认位置
-        let bestY = isUpArrow ? 10 : 265;
+        let bestX = 0;
+        let bestY = 0;
         let bestCenterDistance = Infinity;
         
         // 图表中心点
@@ -340,7 +371,7 @@ function makeChart(containerSelector, data) {
         for (let x = 40; x <= chartWidth - arrowSize; x += stepSize) {
             for (let y = 0; y <= chartHeight - arrowSize; y += stepSize) {
                 // 检查是否在正确的区域（上箭头在零线上方，下箭头在零线下方）
-                if ((isUpArrow && y + arrowSize > zeroY) || (!isUpArrow && y < zeroY)) {
+                if ((isUpArrow && y + arrowSize + 20 > zeroY) || (!isUpArrow && y - 20 < zeroY)) {
                     continue;
                 }
                 
@@ -348,30 +379,36 @@ function makeChart(containerSelector, data) {
                 let overlapsLine = false;
                 for (let testX = x; testX < x + arrowSize; testX += 10) {
                     for (let testY = y; testY < y + arrowSize; testY += 10) {
-                        // 获取测试点对应的数据点
-                        const xValue = xScale.invert(testX);
-                        const yValue = yScale.invert(testY);
-                        
                         // 检查是否在数据线附近
-                        for (let i = 0; i < chartData.length - 1; i++) {
-                            const x1 = xScale(parseYear(chartData[i][xField]));
-                            const y1 = yScale(chartData[i][yField]);
-                            const x2 = xScale(parseYear(chartData[i + 1][xField]));
-                            const y2 = yScale(chartData[i + 1][yField]);
+                        for (let i = 0; i < diffData.length - 1; i++) {
+                            const x1 = xScale(parseYear(diffData[i][xField]));
+                            const y1 = yScale(diffData[i][yField]);
+                            const x2 = xScale(parseYear(diffData[i + 1][xField]));
+                            const y2 = yScale(diffData[i + 1][yField]);
                             
-                            // 计算点到线段的距离
-                            const distance = Math.abs(
-                                (y2 - y1) * testX - (x2 - x1) * testY + x2 * y1 - y2 * x1
-                            ) / Math.sqrt(Math.pow(y2 - y1, 2) + Math.pow(x2 - x1, 2));
-                            
-                            if (distance < 20) { // 如果距离小于20像素，认为重叠
-                                overlapsLine = true;
-                                break;
+                            // 检查测试点是否在线段的范围内
+                            if (testX >= Math.min(x1, x2) && testX <= Math.max(x1, x2)) {
+                                // 计算点到线段的距离
+                                const A = y2 - y1;
+                                const B = x1 - x2;
+                                const C = x2 * y1 - x1 * y2;
+                                
+                                const distance = Math.abs(A * testX + B * testY + C) / 
+                                               Math.sqrt(A * A + B * B);
+                                
+                                if (distance < 5) { // 如果距离小于20像素，认为重叠
+                                    overlapsLine = true;
+                                    break;
+                                }
                             }
                         }
                         if (overlapsLine) break;
                     }
                     if (overlapsLine) break;
+                }
+                
+                if (isUpArrow) {
+                    console.log("x:", x, "y:", y, "overlapsLine:", overlapsLine);
                 }
                 
                 if (!overlapsLine) {
@@ -396,23 +433,28 @@ function makeChart(containerSelector, data) {
     const upArrowPos = findBestArrowPosition(true);
     const downArrowPos = findBestArrowPosition(false);
 
+    const leftOffset = 20;
+
     // 添加向上的箭头和向下的箭头
     g.append("image")
         .attr("xlink:href", 'https://www.yczddgj.com/infographic_assets/line_graph_01_UpArrow.png')
         .attr("width", "60")
         .attr("height", "60")
-        .attr("x", upArrowPos.x)
+        .attr("x", upArrowPos.x + leftOffset)
         .attr("y", upArrowPos.y);
+    
+    // 根据文本长度计算背景宽度
+    const upLabelWidth = Math.max(groupNames[0].toUpperCase().length * 8 + 5, 100); // 每个字符10px宽度,两边各加20px边距
     
     g.append("image")
         .attr("xlink:href", 'https://www.yczddgj.com/infographic_assets/line_graph_01_UpLabelBG.png')
-        .attr("width", "100")
-        .attr("height", "30")
-        .attr("x", upArrowPos.x - 20)
+        .attr("width", upLabelWidth)
+        .attr("height", "30") 
+        .attr("x", upArrowPos.x + leftOffset - upLabelWidth/2 + 30)
         .attr("y", upArrowPos.y + 65)
         .attr("preserveAspectRatio", "none");
     g.append("text")
-        .attr("x", upArrowPos.x + 30)
+        .attr("x", upArrowPos.x + leftOffset + 30)
         .attr("y", upArrowPos.y + 85)
         .attr("text-anchor", "middle")
         .style("font-family", "Century Gothic")
@@ -420,9 +462,9 @@ function makeChart(containerSelector, data) {
         .style("font-weight", "bold")
         .style("fill", "#111111")
         .style("opacity", 0.8)
-        .text("U.S. EQUITIES");
+        .text(groupNames[0].toUpperCase());
     g.append("text")
-        .attr("x", upArrowPos.x + 30)
+        .attr("x", upArrowPos.x + leftOffset + 30)
         .attr("y", upArrowPos.y + 102)
         .attr("text-anchor", "middle")
         .style("font-family", "Century Gothic")
@@ -436,28 +478,30 @@ function makeChart(containerSelector, data) {
         .attr("xlink:href", 'https://www.yczddgj.com/infographic_assets/line_graph_01_DownArrow.png')
         .attr("width", "60")
         .attr("height", "60")
-        .attr("x", downArrowPos.x)
+        .attr("x", downArrowPos.x + leftOffset)
         .attr("y", downArrowPos.y);
     
+    // 根据文本长度计算背景宽度
+    const downLabelWidth = Math.max(groupNames[1].toUpperCase().length * 8 + 5, 100); // 每个字符10px宽度,两边各加20px边距
     g.append("image")
         .attr("xlink:href", 'https://www.yczddgj.com/infographic_assets/line_graph_01_DownLabelBG.png')
-        .attr("width", "100")
+        .attr("width", downLabelWidth)
         .attr("height", "30")
-        .attr("x", downArrowPos.x - 20)
+        .attr("x", downArrowPos.x + leftOffset - downLabelWidth/2 + 30)
         .attr("y", downArrowPos.y + 65)
         .attr("preserveAspectRatio", "none");
     g.append("text")
-        .attr("x", downArrowPos.x + 30)
+        .attr("x", downArrowPos.x + leftOffset + 30)
         .attr("y", downArrowPos.y + 85)
         .attr("text-anchor", "middle")
         .style("font-family", "Century Gothic")
-        .style("font-size", "12px")
+        .style("font-size", "14px")
         .style("font-weight", "bold")
         .style("fill", "#111111")
         .style("opacity", 0.8)
-        .text("GLOBAL EQUITIES");
+        .text(groupNames[1].toUpperCase());
     g.append("text")
-        .attr("x", downArrowPos.x + 30)
+        .attr("x", downArrowPos.x + leftOffset + 30)
         .attr("y", downArrowPos.y + 102)
         .attr("text-anchor", "middle")
         .style("font-family", "Century Gothic")
