@@ -3,12 +3,12 @@ import os
 import json
 from typing import Union, Dict
 
-from util import DataFact
-from value_fact import ValueFact, ValueFactGenerator
-from trend_fact import TrendFact, TrendFactGenerator
-from proportion_fact import ProportionFact, ProportionFactGenerator
-from difference_fact import DifferenceFact, DifferenceFactGenerator
-from framework.modules.datafact_generator.correlation_fact import CorrelationFact, CorrelationFactGenerator
+from .util import DataFact
+from .value_fact import ValueFact, ValueFactGenerator
+from .trend_fact import TrendFact, TrendFactGenerator
+from .proportion_fact import ProportionFact, ProportionFactGenerator
+from .difference_fact import DifferenceFact, DifferenceFactGenerator
+from .correlation_fact import CorrelationFact, CorrelationFactGenerator
 
 class DatafactGenerator:
     def __init__(self, data: dict, topk: int=5):

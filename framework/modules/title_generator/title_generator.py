@@ -10,11 +10,6 @@ from typing import Any, Dict, List, Tuple, Union
 from openai import OpenAI
 from sentence_transformers import SentenceTransformer
 
-client = OpenAI(
-    api_key="sk-7TndhZHnyzdeSVpL4755335348B4425cB64bF8Ea80379073",
-    base_url="https://aihubmix.com/v1"
-)
-
 class RagTitleGenerator:
     """
     RagTitleGenerator is a class that handles both:
@@ -26,7 +21,9 @@ class RagTitleGenerator:
         self,
         index_path: str = "faiss_infographics.index",
         data_path: str = "infographics_data.npy",
-        embed_model_path=""
+        embed_model_path="",
+        api_key: str="",
+        base_url: str=""
     ) -> None:
         """
         Initialize the RagTitleGenerator. It attempts to load any existing FAISS index
@@ -36,14 +33,25 @@ class RagTitleGenerator:
         Args:
             index_path (str, optional): Path where the FAISS index file is or will be stored.
             data_path (str, optional): Path where the training data embeddings are stored.
-            embed_model: Custom embedding model. If None, defaults to SentenceTransformer("all-MiniLM-L6-v2").
+            embed_model_path: Custom embedding model. If None, defaults to SentenceTransformer("all-MiniLM-L6-v2").
         """
         self.index_path = index_path
         self.data_path = data_path
-        self.embed_model = embed_model_path or SentenceTransformer("all-MiniLM-L6-v2")
+        if embed_model_path:
+            self.embed_model = SentenceTransformer(embed_model_path)
+        else:
+            self.embed_model = SentenceTransformer("all-MiniLM-L6-v2")
 
         self.index = None
         self.training_data = []  # List of tuples: (input_text, title, description)
+
+        print(api_key, base_url)
+        self.client = OpenAI(
+            api_key=api_key,
+            # "sk-7TndhZHnyzdeSVpL4755335348B4425cB64bF8Ea80379073",
+            base_url=base_url
+            # "https://aihubmix.com/v1"
+        )
 
         # Try loading an existing FAISS index and data
         if os.path.exists(self.index_path) and os.path.exists(self.data_path):
@@ -71,8 +79,8 @@ class RagTitleGenerator:
         if not os.path.exists(data_json_path):
             raise ValueError(f"Provided data_json_path {data_json_path} does not exist.")
 
-        # Clear any existing FAISS data from memory and disk
-        self.clear_faiss_data(in_memory_only=False)
+        # Remove existing index
+        self.clear_faiss_data()
 
         # Load the entire dataset from JSON
         with open(data_json_path, "r", encoding="utf-8") as f:
@@ -86,6 +94,16 @@ class RagTitleGenerator:
             self.add_training_data(processed_text, title, description)
 
         print("FAISS index building completed!")
+
+    def clear_faiss_data(self) -> None:
+        """Remove existing FAISS index and training data from disk."""
+        if os.path.exists(self.index_path):
+            os.remove(self.index_path)
+        if os.path.exists(self.data_path):
+            os.remove(self.data_path)
+        self.index = None
+        self.training_data = []
+        print("Original FAISS has been cleared.")
 
     def process_single_data(
         self,
@@ -135,15 +153,15 @@ class RagTitleGenerator:
 
         # Data sample (limit to first few rows)
         data_text = "Data Sample:\n"
-        for row in chart_data[:5]:
+        for row in chart_data:
             row_text = ", ".join([f"{k}: {v}" for k, v in row.items()])
             data_text += f"{row_text}\n"
 
         final_text = (
-            f"{chart_type_text}"
-            f"{datafacts_text}"
-            f"{main_insight_text}"
-            f"{column_text}"
+            f"{chart_type_text}\n"
+            f"{datafacts_text}\n"
+            f"{main_insight_text}\n"
+            f"{column_text}\n"
             f"{data_text}"
         )
         return final_text
@@ -244,22 +262,20 @@ class RagTitleGenerator:
                     f"Title: {rt if rt else ''}\n"
                     f"Description: {rd if rd else ''}\n"
                 )
-
         title_prompt = (
             f"{example_text}\n"
             "Based on the above examples (if any), please generate a clear and concise TITLE for the following data.\n"
             f"{processed_text}\n\n"
             "Important instructions:\n"
-            "1. The title should focus on the most significant feature of the data. "
-            "You can choose one or more key insights from the Data Facts that best "
-            "illustrate the issue, or identify the most notable feature yourself.\n"
+            "1. The title should focus solely on what the data is about, without analyzing specific "
+            "data characteristics, trends, distributions, or comparisons.\n"
             f"2. The title should be strictly under {max_title_words} words.\n"
             "3. Use exact terminology from the data sources.\n"
             "4. Do NOT use these verbs: show, reveal, illustrate, analyze.\n"
             "5. ONLY return the title as a string, no extra text."
         )
 
-        response_title = client.chat.completions.create(
+        response_title = self.client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
                 {"role": "system", "content": "You are an AI assistant that generates infographic titles."},
@@ -274,8 +290,9 @@ class RagTitleGenerator:
             "Based on the above examples (if any), please generate a precise DESCRIPTION for the following data.\n"
             f"{processed_text}\n\n"
             "Important instructions:\n"
-            "1. The description should focus solely on what the data is about, without analyzing specific "
-            "data characteristics, trends, distributions, or comparisons.\n"
+            "1. The description should focus on the most significant feature of the data. "
+            "You can choose one or more key insights from the Data Facts that best "
+            "illustrate the issue, or identify the most notable feature yourself.\n"
             "2. Do NOT describe statistical properties (e.g., highest/lowest values, changes over time, "
             "ratios, percentages). Simply summarize what the dataset reports.\n"
             "3. Use one of the following structured templates where applicable (choose the highest-priority one that fits):\n"
@@ -290,7 +307,7 @@ class RagTitleGenerator:
             "8. ONLY return the description as a string, no extra text."
         )
 
-        response_description = client.chat.completions.create(
+        response_description = self.client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[
                 {"role": "system", "content": "You are an AI assistant that generates infographic descriptions."},
@@ -302,23 +319,6 @@ class RagTitleGenerator:
 
         return generated_title, generated_description
 
-    def clear_faiss_data(self, in_memory_only: bool = False) -> None:
-        """
-        Clear the FAISS index and training data from both memory and disk.
-
-        Args:
-            in_memory_only (bool): If True, only clear data in memory but do not delete files on disk.
-        """
-        if not in_memory_only:
-            if os.path.exists(self.index_path):
-                os.remove(self.index_path)
-            if os.path.exists(self.data_path):
-                os.remove(self.data_path)
-
-        self.index = None
-        self.training_data = []
-        print("FAISS index has been cleared (in_memory_only = {})".format(in_memory_only))
-
 
 def process(
     input: str = None,
@@ -327,7 +327,9 @@ def process(
     index_path: str = "faiss_infographics.index",
     data_path: str = "infographics_data.npy",
     topk: int = 7,
-    embed_model_path = ""
+    embed_model_path = "",
+    api_key: str="",
+    base_url: str=""
 ) -> Union[bool, Dict]:
     """
     Process function for generating the title and subtitle for a single data object.
@@ -347,7 +349,13 @@ def process(
     """
     try:
         # Initialize the generator and load any existing index/data
-        generator = RagTitleGenerator(index_path=index_path, data_path=data_path, embed_model_path=embed_model_path)
+        generator = RagTitleGenerator(
+            index_path=index_path,
+            data_path=data_path,
+            embed_model_path=embed_model_path,
+            api_key=api_key,
+            base_url=base_url
+        )
 
         # Load the single data object
         if input_data is None:
@@ -370,7 +378,7 @@ def process(
                 json.dump(data, f, ensure_ascii=False, indent=2)
             return True
 
-        return data
+        return True
 
     except Exception as e:
         print(f"Error in title generation: {str(e)}")
@@ -385,6 +393,8 @@ def main():
     parser.add_argument('--data_path', type=str, default='infographics_data.npy', help='Training data path.')
     parser.add_argument('--topk', type=int, default=3, help='Number of similar examples to retrieve.')
     parser.add_argument('--embed_model_path', type=str, default='', help='Sentence transformer path')
+    parser.add_argument('--api_key', type=str, default='', help='API key for LLM.')
+    parser.add_argument('--base_url', type=str, default='', help='Base URL for LLM.')
     
     args = parser.parse_args()
     
@@ -394,7 +404,9 @@ def main():
         index_path=args.index_path,
         data_path=args.data_path,
         topk=args.topk,
-        embed_model_path=args.embed_model_path
+        embed_model_path=args.embed_model_path,
+        api_key=args.api_key,
+        base_url=args.base_url
     )
     
     if success:

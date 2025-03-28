@@ -131,16 +131,23 @@
   - increase: 上升趋势
   - decrease: 下降趋势
   - stable: 稳定趋势
-  - fluctuation: 波动趋势
+  - increase_then_decrease: 先升后降
+  - increase_then_decrease: 先降后升
 - **proportion（比例）**
-  - majority: 多数
-  - minority: 少数
-- **outlier（异常值）**
-  - high: 高异常值
-  - low: 低异常值
+  - value_majority: 单个样本多数
+  - value_minority: 单个样本少数
+  - total_majority: 样本总和多数
+  - total_minority: 样本总和少数
 - **difference（差异）**
-  - maximum: 最大差异
-  - minimum: 最小差异
+  - maximum_large: 最大值较大
+  - maximum_small: 最大值较小
+  - minimum_large: 最小值较大
+  - minimum_small: 最小值较小
+  - average_large: 平均值较大
+  - average_small: 平均值较小
+  - sudden_increase: 时序数据陡增
+  - sudden_decrease: 时序数据陡降
+  - sudden_change: 类别数据差异明显
 - **value（数值）**
   - total: 总和
   - average: 平均值
@@ -170,7 +177,7 @@ python -m modules.datafact_generator.datafact_generator --input input_data.json 
 ```python
 from modules.datafact_generator.datafact_generator import process
 
-success = process(input='input_data.json', output='output_data.json')
+success = process(input_data='input_data.json', output='output_data.json')
 if success:
     print("数据洞察生成完成")
 else:

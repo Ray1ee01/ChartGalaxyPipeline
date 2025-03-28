@@ -1,5 +1,5 @@
-from util import DataFact, DataFactGenerator
-from value_fact import ValueFact
+from .util import DataFact, DataFactGenerator
+from .value_fact import ValueFact
 from typing import Any
 
 class ProportionFact(DataFact):

@@ -1,4 +1,4 @@
-from util import DataFact, DataFactGenerator
+from .util import DataFact, DataFactGenerator
 import numpy as np
 from sklearn.linear_model import LinearRegression
 from scipy.special import expit
