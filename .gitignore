@@ -24,3 +24,5 @@ config.py
 *.html
 testset2
 tmp
+/debug/
+/src/output_*/
