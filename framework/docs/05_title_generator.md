@@ -50,7 +50,7 @@
 ### 命令行调用
 
 ```bash
-python -m modules.title_generator.title_generator --input input_data.json --output output_data.json
+python -m modules.title_generator.title_generator --input input_data.json --output output_data.json --index_path faiss_infographics.index --data_path infographics_data.npy --topk 3 --api_key your_api_key --base_url your_base_url
 ```
 
 ### 程序调用
@@ -58,9 +58,64 @@ python -m modules.title_generator.title_generator --input input_data.json --outp
 ```python
 from modules.title_generator.title_generator import process
 
-success = process(input='input_data.json', output='output_data.json')
+success = process(
+    input='input_data.json', 
+    output='output_data',
+    index_path='faiss_infographics.index',
+    data_path='infographics_data.npy',
+    topk=3,
+    api_key='your_api_key',
+    base_url='your_base_url'
+)
 if success:
     print("数据洞察生成完成")
 else:
     print("数据洞察生成失败")
+```
+
+## 构建标题生成所需的向量索引
+标题生成模块使用一个基于 FAISS 的向量索引来支持检索增强生成（RAG）。该索引需要通过历史图表数据构建，一般仅需在首次使用或数据更新时运行一次。
+
+### 数据格式
+
+构建索引的训练数据应为JSON格式，结构如下：
+```json
+{
+  "chart_id_1": {
+    "metadata": {
+      "title": "图表标题",
+      "description": "图表描述",
+      "main_insight": "图标洞察"
+    },
+    "chart_type": ["图表类型"],
+    "datafacts": [{"annotation": "数据洞察"}],
+    "data_columns": [{"name": "列名", "type": "列类型"}],
+    "data": [{"列名": "值"}]
+  },
+  "chart_id_2": {
+    // 其他图表数据...
+  }
+}
+```
+
+### 使用方式
+
+#### 命令行调用
+```bash
+python -m modules.title_generator.build_title_index --data training_data.json --index_path faiss_infographics.index --data_path infographics_data.npy
+```
+
+#### 程序调用
+```python
+from modules.title_generator.build_title_index import process
+
+success = process(
+    data='training_data.json',
+    index_path='faiss_infographics.index',
+    data_path='infographics_data.npy'
+)
+if success:
+    print("索引构建完成")
+else:
+    print("索引构建失败")
 ```
