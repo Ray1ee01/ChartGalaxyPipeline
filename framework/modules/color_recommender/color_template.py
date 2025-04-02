@@ -1,7 +1,7 @@
 import random
 import colour
 import numpy as np
-from .color_static import palette_iteration, StaticPalettes
+from color_static import palette_iteration, StaticPalettes
 
 static_palettes = StaticPalettes()
 
