@@ -29,7 +29,7 @@ function makeChart(containerSelector, data) {
     
     // 提取数据和配置
     const jsonData = data;                          // 完整的JSON数据对象
-    const chartData = jsonData.data;                // 实际数据点数组
+    const chartData = jsonData.data.data;                // 实际数据点数组
     const variables = jsonData.variables || {};     // 图表配置
     const typography = jsonData.typography || {     // 字体设置，如果不存在则使用默认值
         title: { font_family: "Arial", font_size: "18px", font_weight: "bold" },
@@ -39,7 +39,7 @@ function makeChart(containerSelector, data) {
     };
     const colors = jsonData.colors || { text_color: "#333333" };  // 颜色设置
     const images = jsonData.images || { field: {}, other: {} };  // 图像设置
-    const dataColumns = jsonData.data_columns || []; // 数据列定义
+    const dataColumns = jsonData.data.columns || []; // 数据列定义
     
     // 设置视觉效果变量的默认值
     variables.has_rounded_corners = variables.has_rounded_corners || false;

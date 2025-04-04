@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 """
@@ -13,6 +12,21 @@ import logging
 from datetime import datetime
 from importlib import import_module
 from pathlib import Path
+from config import (
+    sentence_transformer_path,
+    base_url,
+    api_key,
+    embed_model_path,
+    topk,
+    text_data_path,
+    text_index_path,
+    color_data_path,
+    color_index_path,
+    image_data_path,
+    image_index_path,
+    image_list_path,
+    image_resource_path
+)
 
 # 配置日志
 logging.basicConfig(
@@ -23,6 +37,18 @@ logger = logging.getLogger("ChartPipeline")
 
 # 模块配置
 MODULES = [
+    {
+        "name": "create_index",
+        "description": "索引创建模块",
+        "input_type": "none",
+        "output_type": "none"
+    },
+    {
+        "name": "preprocess",
+        "description": "数据预处理模块",
+        "input_type": "json",
+        "output_type": "json"
+    },
     {
         "name": "chart_type_recommender",
         "description": "图表类型推荐模块",
@@ -80,34 +106,103 @@ MODULES = [
 ]
 
 
-def run_pipeline(input_path, output_path, temp_dir=None, modules_to_run=None):
+def run_pipeline(input_path, output_path=None, temp_dir=None, modules_to_run=None):
     """
     执行完整的图表生成管道
     
     Args:
-        input_path (str): 输入数据文件路径
-        output_path (str): 最终输出SVG文件路径
-        temp_dir (str, optional): 临时文件目录，默认使用时间戳创建
+        input_path (str): 输入数据文件路径(可以是文件或目录)
+        output_path (str, optional): 输出文件路径(可以是文件或目录)，如果为None则原地修改
+        temp_dir (str, optional): 临时文件目录，默认使用./tmp
         modules_to_run (list, optional): 要运行的模块列表，默认运行所有模块
+    """
+    try:
+        input_path = Path(input_path)
+        # 如果output_path为None，则使用input_path
+        output_path = Path(output_path) if output_path else input_path
+        temp_dir = Path(temp_dir) if temp_dir else Path("./tmp")
+        
+        if input_path.is_dir():
+            # 如果指定了输出目录且不同于输入目录，创建输出目录
+            if output_path != input_path:
+                output_path.mkdir(parents=True, exist_ok=True)
+            
+            # 获取输入目录下所有JSON文件
+            input_files = list(input_path.glob('*.json'))
+            success = True
+            
+            for input_file in input_files:
+                # 如果是inplace处理，输出路径就是输入路径
+                if output_path == input_path:
+                    output_file = input_file
+                else:
+                    # 确保输出文件保持相同的文件名
+                    output_file = output_path / input_file.name
+                
+                success &= run_single_file(
+                    input_path=input_file,
+                    output_path=output_file,
+                    temp_dir=temp_dir,
+                    modules_to_run=modules_to_run
+                )
+            
+            return success
+        else:
+            # 单文件处理
+            if output_path == input_path:
+                output_file = input_path
+            else:
+                # 如果指定了不同的输出路径，确保它的父目录存在
+                output_path.parent.mkdir(parents=True, exist_ok=True)
+                output_file = output_path
+
+            return run_single_file(
+                input_path=input_path,
+                output_path=output_file,
+                temp_dir=temp_dir,
+                modules_to_run=modules_to_run
+            )
+            
+    except Exception as e:
+        logger.error(f"管道执行失败: {str(e)}")
+        return False
+
+def run_single_file(input_path, output_path, temp_dir=None, modules_to_run=None):
+    """
+    处理单个文件的管道逻辑
     
-    Returns:
-        bool: 执行成功返回True，否则返回False
+    Args:
+        input_path (Path): 输入JSON文件路径
+        output_path (Path): 输出路径
+        temp_dir (Path): 临时文件目录，默认为./tmp
+        modules_to_run (list): 要运行的模块列表
     """
     try:
         # 创建临时目录
-        if not temp_dir:
-            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            temp_dir = f"temp_{timestamp}"
+        if temp_dir is None:
+            temp_dir = Path("./tmp")
+        temp_dir.mkdir(parents=True, exist_ok=True)
         
-        os.makedirs(temp_dir, exist_ok=True)
-        logger.info(f"临时文件将存储在: {temp_dir}")
+        # 确保输出目录存在
+        output_path.parent.mkdir(parents=True, exist_ok=True)
         
-        # 复制输入文件到临时目录
+        # 当前输入文件
         current_input = input_path
         
         # 确定要运行的模块
         if not modules_to_run:
             modules_to_run = [m["name"] for m in MODULES]
+        
+        # 获取最后一个模块的配置
+        last_module = [m for m in MODULES if m["name"] in modules_to_run][-1]
+        
+        # 根据最后一个模块的输出类型决定最终输出文件的扩展名
+        if last_module["name"] in ["chart_engine", "title_styler"]:
+            final_output = output_path.with_suffix('.svg')
+        elif last_module["name"] == "layout_optimizer":
+            final_output = output_path.parent / f"{output_path.stem}_final.svg"
+        else:
+            final_output = output_path.with_suffix('.json')
         
         # 记录执行过程
         processing_log = []
@@ -118,80 +213,159 @@ def run_pipeline(input_path, output_path, temp_dir=None, modules_to_run=None):
             module_desc = module_config["description"]
             logger.info(f"执行模块 {i+1}/{len(modules_to_run)}: {module_name} - {module_desc}")
             
-            # 为模块创建输出文件路径
-            if module_config["output_type"] == "json":
-                output_file = os.path.join(temp_dir, f"{i+1}_{module_name}.json")
-            else:
-                output_file = os.path.join(temp_dir, f"{i+1}_{module_name}.svg")
-            
-            # 特殊处理layout_optimizer模块
-            if module_name == "layout_optimizer":
-                chart_svg = os.path.join(temp_dir, f"{i-1}_chart_engine.svg")
-                title_svg = os.path.join(temp_dir, f"{i}_title_styler.svg")
+            # 特殊处理create_index模块
+            if module_name == "create_index":
+                # 依次调用三个模块的create_index
+                for module_type in ['title', 'color', 'image']:
+                    if module_type == 'title':
+                        module = import_module('modules.title_generator.create_index')
+                        if not should_skip_module(module_name, output_path):
+                            module.process(
+                                data=text_data_path,
+                                index_path=text_index_path,
+                                data_path=text_data_path,
+                                embed_model_path=embed_model_path
+                            )
+                    elif module_type == 'color':
+                        module = import_module('modules.color_recommender.create_index')
+                        if not should_skip_module(module_name, output_path):
+                            module.main(
+                                input=color_data_path,
+                                output=color_index_path,
+                                embed_model_path=embed_model_path
+                            )
+                    else:  # image
+                        module = import_module('modules.image_recommender.create_index')
+                        if not should_skip_module(module_name, output_path):
+                            module.main(
+                                image_list_path=image_list_path,
+                                image_resource_path=image_resource_path,
+                                index_path=image_index_path,
+                                data_path=image_data_path,
+                                embed_model_path=embed_model_path
+                            )
+                continue
                 
-                # 调用布局优化模块
-                start_time = datetime.now()
-                try:
-                    module = import_module(f"modules.{module_name}")
+            # 特殊处理title_generator模块，传入配置参数
+            if module_name == "title_generator":
+                module = import_module(f"modules.{module_name}.{module_name}")
+                if not should_skip_module(module_name, output_path):
                     module.process(
-                        input_chart=chart_svg,
-                        input_title=title_svg,
-                        output=output_file
+                        input=str(current_input), 
+                        output=str(output_path),
+                        base_url=base_url,
+                        api_key=api_key,
+                        embed_model_path=embed_model_path,
+                        topk=topk,
+                        data_path=text_data_path,
+                        index_path=text_index_path
                     )
-                    duration_ms = (datetime.now() - start_time).total_seconds() * 1000
-                    processing_log.append({
-                        "module": module_name,
-                        "timestamp": datetime.now().isoformat(),
-                        "duration_ms": round(duration_ms, 2)
-                    })
-                    logger.info(f"模块 {module_name} 完成，耗时: {duration_ms:.2f}ms")
-                except Exception as e:
-                    logger.error(f"模块 {module_name} 执行失败: {str(e)}")
-                    raise
-                    
-                # 将最终输出复制到指定路径
-                with open(output_file, 'r') as f_in:
-                    with open(output_path, 'w') as f_out:
-                        f_out.write(f_in.read())
-                        
-                logger.info(f"最终图表已生成: {output_path}")
+                current_input = output_path
+            elif module_name == "color_recommender":
+                module = import_module(f"modules.{module_name}.{module_name}")
+                if not should_skip_module(module_name, output_path):
+                    module.process(
+                        input=str(current_input), 
+                        output=str(output_path),
+                        base_url=base_url,
+                        api_key=api_key,
+                        embed_model_path=embed_model_path,
+                        data_path=color_data_path,
+                        index_path=color_index_path
+                    )
+                current_input = output_path
+            elif module_name == "image_recommender":
+                module = import_module(f"modules.{module_name}.{module_name}")
+                if not should_skip_module(module_name, output_path):
+                    module.process(
+                        input=str(current_input), 
+                        output=str(output_path),
+                        base_url=base_url,
+                        api_key=api_key,
+                        embed_model_path=embed_model_path,
+                        data_path=image_data_path,
+                        index_path=image_index_path
+                    )
+                current_input = output_path
+            elif module_name == "chart_engine":
+                # 输入是JSON，输出是SVG
+                module = import_module(f"modules.{module_name}.{module_name}")
+                svg_output = output_path.with_suffix('.svg')
+                if not svg_output.exists():
+                    module.process(input=str(current_input), output=str(svg_output))
+                current_input = current_input  # 保持JSON作为下一个模块的输入
+                
+            elif module_name == "title_styler":
+                # 输入是JSON，输出是SVG
+                module = import_module(f"modules.{module_name}.{module_name}")
+                title_svg = output_path.parent / f"{output_path.stem}_title.svg"
+                if not title_svg.exists():
+                    module.process(input=str(current_input), output=str(title_svg))
+                current_input = current_input  # 保持JSON作为下一个模块的输入
+                
+            elif module_name == "layout_optimizer":
+                # 输入包括JSON和同名SVG，输出是最终SVG
+                module = import_module(f"modules.{module_name}.{module_name}")
+                final_svg = output_path.parent / f"{output_path.stem}_final.svg"
+                if not final_svg.exists():
+                    chart_svg = output_path.with_suffix('.svg')
+                    title_svg = output_path.parent / f"{output_path.stem}_title.svg"
+                    module.process(
+                        input_json=str(current_input),
+                        input_chart=str(chart_svg),
+                        input_title=str(title_svg),
+                        output=str(final_svg)
+                    )
+                current_input = current_input  # 保持JSON作为下一个模块的输入
                 
             else:
-                # 普通模块处理
-                start_time = datetime.now()
-                try:
-                    module = import_module(f"modules.{module_name}")
-                    module.process(input=current_input, output=output_file)
-                    current_input = output_file
-                    duration_ms = (datetime.now() - start_time).total_seconds() * 1000
-                    processing_log.append({
-                        "module": module_name,
-                        "timestamp": datetime.now().isoformat(),
-                        "duration_ms": round(duration_ms, 2)
-                    })
-                    logger.info(f"模块 {module_name} 完成，耗时: {duration_ms:.2f}ms")
-                except Exception as e:
-                    logger.error(f"模块 {module_name} 执行失败: {str(e)}")
-                    raise
-        
-        # 保存处理日志
-        log_file = os.path.join(temp_dir, "processing_log.json")
-        with open(log_file, 'w') as f:
-            json.dump(processing_log, f, indent=2)
-        
-        logger.info(f"管道执行完成，处理日志已保存至: {log_file}")
+                # 普通模块：输入JSON，输出JSON
+                module = import_module(f"modules.{module_name}.{module_name}")
+                if not should_skip_module(module_name, output_path):
+                    module.process(input=str(current_input), output=str(output_path))
+                current_input = output_path
+            
         return True
         
     except Exception as e:
-        logger.error(f"管道执行失败: {str(e)}")
+        logger.error(f"文件处理失败 {input_path}: {str(e)}")
+        return False
+
+def should_skip_module(module_name: str, output_path: Path) -> bool:
+    """检查是否需要跳过模块执行"""
+    try:
+        if not output_path.exists():
+            return False
+            
+        # 检查JSON文件中的特定字段
+        with open(output_path) as f:
+            data = json.load(f)
+            
+        skip_conditions = {
+            "preprocess": lambda d: "metadata" in d and "data" in d,
+            "chart_type_recommender": lambda d: "chart_type" in d,
+            "datafact_generator": lambda d: "datafacts" in d,
+            "title_generator": lambda d: "titles" in d,
+            "layout_recommender": lambda d: "variation" in d,
+            "color_recommender": lambda d: "colors" in d,
+            "image_recommender": lambda d: "images" in d
+        }
+        
+        if module_name in skip_conditions:
+            return skip_conditions[module_name](data)
+            
+        return False
+        
+    except Exception as e:
+        logger.warning(f"检查跳过条件时出错: {str(e)}")
         return False
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="ChartPipeline: 数据可视化生成管道")
-    parser.add_argument("--input", required=True, help="输入数据文件路径")
-    parser.add_argument("--output", required=True, help="输出SVG文件路径")
-    parser.add_argument("--temp-dir", help="临时文件目录")
+    parser.add_argument("--input", required=True, help="输入数据文件或目录路径")
+    parser.add_argument("--output", help="输出文件或目录路径，不指定则原地修改")
+    parser.add_argument("--temp-dir", default="./tmp", help="临时文件目录")
     parser.add_argument("--modules", help="要运行的模块，用逗号分隔")
     
     args = parser.parse_args()

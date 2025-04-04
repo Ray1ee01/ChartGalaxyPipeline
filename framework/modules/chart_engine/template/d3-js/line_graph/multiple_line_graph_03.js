@@ -25,11 +25,11 @@ REQUIREMENTS_END
 function makeChart(containerSelector, data) {
     // 提取数据
     const jsonData = data;
-    const chartData = jsonData.data;
+    const chartData = jsonData.data.data;
     const variables = jsonData.variables;
     const typography = jsonData.typography;
     const colors = jsonData.colors || {};
-    const dataColumns = jsonData.data_columns || [];
+    const dataColumns = jsonData.data.columns || [];
     const images = jsonData.images || {};
     // 清空容器
     d3.select(containerSelector).html("");

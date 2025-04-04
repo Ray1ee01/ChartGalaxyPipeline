@@ -54,8 +54,8 @@ class DataFactGenerator:
     def __init__(self, data: dict):
         self.data = data
 
-        self.data_columns: dict[str, Any] = self.data["data_columns"]
-        self.tabular_data: list[dict[str, Any]] = self.data["data"] # 原始数据
+        self.data_columns: dict[str, Any] = self.data["data"]["columns"]
+        self.tabular_data: list[dict[str, Any]] = self.data["data"]["data"] # 原始数据
 
         self.grouped_data = divide_data_by_group(self.data_columns, self.tabular_data)
 

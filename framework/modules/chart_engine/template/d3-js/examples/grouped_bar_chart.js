@@ -25,12 +25,12 @@ REQUIREMENTS_END
 function makeChart(containerSelector, data) {
     // Extract data from the json_data object
     const jsonData = data;
-    const chartData = jsonData.data;
+    const chartData = jsonData.data.data;
     const variables = jsonData.variables;
     const typography = jsonData.typography;
     const colors = jsonData.colors || {};
     const images = jsonData.images || { field: {}, other: {} };
-    const dataColumns = jsonData.data_columns || [];
+    const dataColumns = jsonData.data.columns || [];
 
     d3.select(containerSelector).html("");
     

@@ -177,6 +177,7 @@ class ColorFramework(object):
         # print(len(filter_palettes))
         # print(filter_palettes)
         # print(results_f)
+        print('filter_palettes:', filter_palettes)
 
         # 3. judge the palette score
         scores = []

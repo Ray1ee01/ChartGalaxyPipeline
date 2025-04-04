@@ -89,8 +89,10 @@ else:
     },
     "chart_type": ["图表类型"],
     "datafacts": [{"annotation": "数据洞察"}],
-    "data_columns": [{"name": "列名", "type": "列类型"}],
-    "data": [{"列名": "值"}]
+    "data": {
+      "columns": [{"name": "列名", "type": "列类型"}],
+      "data": [{"列名": "值"}]
+    }
   },
   "chart_id_2": {
     // 其他图表数据...

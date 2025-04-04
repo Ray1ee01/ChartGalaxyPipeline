@@ -13,6 +13,7 @@ tqdm==4.65.0
 loguru==0.7.0
 pyyaml==6.0
 altair==5.0.1
+faiss-cpu==1.7.4
 vega==0.1.0
 networkx==3.1
 # Added for BERT embeddings in image recommendation

@@ -27,7 +27,7 @@ REQUIREMENTS_END
 function makeChart(containerSelector, data) {
     // ---------- 1. 数据准备 ----------
     const jsonData = data;                          
-    const chartData = jsonData.data;                
+    const chartData = jsonData.data.data;                
     const variables = jsonData.variables || {};     
     const typography = jsonData.typography || {     
         title: { font_family: "Arial", font_size: "18px", font_weight: "bold" },
@@ -37,7 +37,7 @@ function makeChart(containerSelector, data) {
     };
     const colors = jsonData.colors || { text_color: "#333333" };
     const images = jsonData.images || { field: {}, other: {} };
-    const dataColumns = jsonData.data_columns || [];
+    const dataColumns = jsonData.data.columns || [];
     
     // 设置图表视觉效果
     variables.has_rounded_corners = variables.has_rounded_corners || false;

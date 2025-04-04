@@ -45,23 +45,26 @@ class ProportionFactGenerator(DataFactGenerator):
         any_group = next(iter(self.grouped_data.values()))
         x_list = any_group["x_list"]
         num_items = len(x_list)
-        for i in range(num_items):
-            # 对于某一个 x 值，把对应的 index, group_value, y 聚合起来
-            info = {}
-            for group_value, group_info in self.grouped_data.items():
-                y_list = group_info["y_list"]
-                indices = group_info["indices"]
+        try:
+            for i in range(num_items):
+                # 对于某一个 x 值，把对应的 index, group_value, y 聚合起来
+                info = {}
+                for group_value, group_info in self.grouped_data.items():
+                    y_list = group_info["y_list"]
+                    indices = group_info["indices"]
 
-                info[group_value] = { # 构建一个 y 值和 index 的 dict 作传参
-                    "y": y_list[i],
-                    "index": indices[i]
-                }
+                    info[group_value] = { # 构建一个 y 值和 index 的 dict 作传参
+                        "y": y_list[i],
+                        "index": indices[i]
+                    }
 
-            x_value = x_list[i]
+                x_value = x_list[i]
 
-            value_max_fact, value_min_fact = self._extract_value_based_facts(x_value, info)
-            proportion_facts.append(value_max_fact)
-            proportion_facts.append(value_min_fact)
+                value_max_fact, value_min_fact = self._extract_value_based_facts(x_value, info)
+                proportion_facts.append(value_max_fact)
+                proportion_facts.append(value_min_fact)
+        except Exception as e:
+            print(e)
 
         # 直接依赖 value facts
         total_majority_fact, total_minority_fact = self._extract_total_based_facts(self.total_facts)

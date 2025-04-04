@@ -138,6 +138,7 @@ class ColorDesign:
         self.rgb_pool = self.rgb_pool[seed_order:] + self.rgb_pool[:seed_order]
         self.rgb_pool_hex = [rgb_to_hex(*rgb) for rgb in self.rgb_pool]
         self.main_color_hex = self.rgb_pool_hex
+        self.middle_color = None
 
         black = (0, 0, 0)
         white = (255, 255, 255)
