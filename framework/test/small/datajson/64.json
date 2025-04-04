@@ -83,10 +83,10 @@
   },
   "colors": {
     "field": {
-      "Somewhat willing": "#4269d0",
-      "Somewhat unwilling": "#ff725c",
-      "Very willing": "#3ca951",
-      "Very unwilling": "#a463f2"
+      "Very willing": "#87bc24",
+      "Somewhat willing": "#486d03",
+      "Somewhat unwilling": "#c8640c",
+      "Very unwilling": "#a60a0b"
     },
     "other": {},
     "available_colors": [
@@ -262,7 +262,7 @@
   "secondary_data": [],
   "variables": {
     "width": 600,
-    "height": 600,
+    "height": 400,
     "has_rounded_corners": false,
     "has_shadow": false,
     "has_spacing": false,
@@ -287,7 +287,7 @@
     },
     "annotation": {
       "font_family": "Arial",
-      "font_size": "12px",
+      "font_size": "16px",
       "font_weight": 400
     }
   }

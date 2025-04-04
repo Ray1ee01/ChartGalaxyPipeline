@@ -26,3 +26,10 @@ def find_element_with_aria_label(element):
             if found:
                 return found
     return None
+
+def get_content_from_axis_label(axis_label: AxisLabel):
+    if axis_label.children is not None:
+        for child in axis_label.children:
+            if child.tag == 'text':
+                return child.content
+    return None

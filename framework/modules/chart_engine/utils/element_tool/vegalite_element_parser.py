@@ -15,6 +15,7 @@ class VegaLiteElementParser:
         self.marks = []
         self.axis_labels = []
         self.axes = []
+        self.legend_group = None
         # 仅用于bar相关的chart type
         self.orient = 'vertical'
         self.chart_template = None
@@ -32,7 +33,8 @@ class VegaLiteElementParser:
 
         # 根据当前的元素类型调用对应的处理逻辑
         if self.if_legend_group(element):
-            return self._handle_group("legend_group", element, "legend_group")
+            self.legend_group = self._handle_group("legend_group", element, "legend_group")
+            return self.legend_group
         elif self.if_mark_group(element):
             return self._handle_group("mark_group", element, "mark_groups", is_list=True)
         elif self.if_x_axis_group(element):
@@ -124,7 +126,14 @@ class VegaLiteElementParser:
             
     def _handle_bar(self, element):
         for i, child in enumerate(element.children):
-            if child.tag=='g':
+            print("child: ", child.dump())
+            if child.tag=='g' and 'clip-path' in child.attributes:
+                bar_mark = BarMark(child.children[0].children[0])
+                bar_mark.attributes['transform'] = child.attributes['transform'] + bar_mark.attributes.get('transform', '')
+                bar_mark.attributes['clip-path'] = child.attributes['clip-path']
+                bar_mark.orient = self.orient
+                element.children[i] = bar_mark
+            elif child.tag=='g':
                 bar_mark = BarMark(child.children[0])
                 bar_mark.orient = self.orient
                 element.children[i] = bar_mark
@@ -283,8 +292,10 @@ class VegaLiteElementParser:
             self.axis_labels.append(new_element)
             if current_context == 'x_axis_group':
                 new_element.axis_orient = "bottom"
+                new_element.axis_type = "x"
             elif current_context == 'y_axis_group':
                 new_element.axis_orient = "left"
+                new_element.axis_type = "y"
             # print("new_element.axis_orient: ", new_element.axis_orient)
         return element
     

@@ -1,9 +1,9 @@
 # 抽象类
+from .tree_converter import *
 from abc import ABC, abstractmethod
 from .elements import *
 from .layout import *
 from .svg_to_mask import *
-from .tree_converter import *
 import math
 import random
 import matplotlib.pyplot as plt
@@ -36,7 +36,8 @@ class BackgroundChart(VariationProcessor):
         if config['orientation'] == 'vertical':
             x_axis = None
             y_axis = None
-            for child in self.chart.children:
+            for child in self.chart.children[0].children[0].children:
+                print(child.attributes.get("class",""))
                 if child.attributes.get("class","") == "axis X":
                     x_axis = child
                 elif child.attributes.get("class","") == "axis Y":
@@ -83,7 +84,7 @@ class BackgroundChart(VariationProcessor):
                 else:
                     band.attributes['fill'] = '#ffffff'
                 background.children.append(band)
-            self.chart.children.insert(0, background)
+            self.chart.children[0].children[0].children.insert(0, background)
         elif config['orientation'] == 'horizontal':
             y_axis = None
             for child in self.chart.children:
@@ -133,7 +134,7 @@ class BackgroundChart(VariationProcessor):
                 else:
                     band.attributes['fill'] = '#ffffff'
                 background.children.append(band)
-            self.chart.children.insert(0, background)
+            self.chart.children[0].children[0].children.insert(0, background)
         return self.chart
         
 def find_position_by_convolution(svg: str, element: LayoutElement, objectives: dict = None):
@@ -783,9 +784,9 @@ class AxisLabelMark(VariationProcessor):
         self.pictogram = pictogram
         
     def process(self, config: dict):
-        if config['variation_type'] == 'replace':
+        if config['type'] == 'replace':
             return self.replace(config)
-        elif config['variation_type'] == 'side':
+        elif config['type'] == 'side':
             return self.side(config)
 
 
@@ -834,6 +835,13 @@ class AxisLabelMark(VariationProcessor):
         for edge in layout_graph.node_map[self.axislabel].nexts_edges:
             edge.process_layout()
         self.pictogram._bounding_box = self.pictogram.get_bounding_box()
+        if self.config.get('add_circle', True):
+            cx = self.pictogram._bounding_box.minx + self.pictogram._bounding_box.width / 2
+            cy = self.pictogram._bounding_box.miny + self.pictogram._bounding_box.height / 2
+            r = min(self.pictogram._bounding_box.width, self.pictogram._bounding_box.height) / 2
+            circle = Circle(cx, cy, r)
+            circle.attributes['fill'] = '#ffffff'
+            self.axislabel.children.append(circle)
         old_bounding_box = self.axislabel._bounding_box
         # print("old_bounding_box: ", old_bounding_box)
         self.axislabel.children.append(self.pictogram)
@@ -843,14 +851,33 @@ class AxisLabelMark(VariationProcessor):
         
         shift_x = 0
         shift_y = 0
-        # if self.axislabel.axis_orient == "left":
-        shift_x = old_bounding_box.maxx - new_bounding_box.maxx
-        # elif self.axislabel.axis_orient == "right":
-        #     shift_x = old_bounding_box.minx - new_bounding_box.minx
-        # elif self.axislabel.axis_orient == "top":
-        #     shift_y = old_bounding_box.maxy - new_bounding_box.maxy
-        # elif self.axislabel.axis_orient == "bottom":
-        shift_y = old_bounding_box.miny - new_bounding_box.miny
+        if self.config.get('adjust', True):
+            if self.axislabel.axis_orient == "left":
+                shift_x = old_bounding_box.maxx - new_bounding_box.maxx
+                old_mid_y = old_bounding_box.miny + (old_bounding_box.maxy - old_bounding_box.miny) / 2
+                new_mid_y = new_bounding_box.miny + (new_bounding_box.maxy - new_bounding_box.miny) / 2
+                shift_y = old_mid_y - new_mid_y
+            elif self.axislabel.axis_orient == "right":
+                shift_x = old_bounding_box.minx - new_bounding_box.minx
+                old_mid_y = old_bounding_box.miny + (old_bounding_box.maxy - old_bounding_box.miny) / 2
+                new_mid_y = new_bounding_box.miny + (new_bounding_box.maxy - new_bounding_box.miny) / 2
+                shift_y = old_mid_y - new_mid_y
+            elif self.axislabel.axis_orient == "top":
+                shift_y = old_bounding_box.maxy - new_bounding_box.maxy
+                old_mid_x = old_bounding_box.minx + (old_bounding_box.maxx - old_bounding_box.minx) / 2
+                new_mid_x = new_bounding_box.minx + (new_bounding_box.maxx - new_bounding_box.minx) / 2 
+                shift_x = old_mid_x - new_mid_x
+            elif self.axislabel.axis_orient == "bottom":
+                shift_y = old_bounding_box.miny - new_bounding_box.miny
+                old_mid_x = old_bounding_box.minx + (old_bounding_box.maxx - old_bounding_box.minx) / 2
+                new_mid_x = new_bounding_box.minx + (new_bounding_box.maxx - new_bounding_box.minx) / 2 
+                shift_x = old_mid_x - new_mid_x
+        else:
+            if self.axislabel.axis_orient == "bottom":
+                shift_y = self.pictogram._bounding_box.height/2
+                old_mid_x = old_bounding_box.minx + (old_bounding_box.maxx - old_bounding_box.minx) / 2
+                new_mid_x = new_bounding_box.minx + (new_bounding_box.maxx - new_bounding_box.minx) / 2 
+                shift_x = old_mid_x - new_mid_x
         old_transform = self.axislabel.attributes.get('transform', "")
         print("shift_x: ", shift_x)
         print("shift_y: ", shift_y)
@@ -869,8 +896,12 @@ class AxisLabelMark(VariationProcessor):
     def fit_in_size(self, orient: str='horizontal',size_scale: float=1.0):
         if isinstance(self.axislabel, AxisLabel):
             font_size = float(self.axislabel.children[0].attributes['font-size'].split('px')[0])*2
-            origin_width, origin_height = Image.get_image_size(self.pictogram.base64)
-            aspect_ratio = origin_width / origin_height
+            print("self.pictogram: ", self.pictogram)
+            if isinstance(self.pictogram, UseImage):
+                origin_width, origin_height = Image.get_image_size(self.pictogram.base64)
+                aspect_ratio = origin_width / origin_height
+            else:
+                aspect_ratio = self.pictogram.get_bounding_box().width / self.pictogram.get_bounding_box().height
             if self.config['direction'] == 'left' or self.config['direction'] == 'right':
                 self.pictogram.attributes['height'] = font_size
                 self.pictogram.attributes['width'] = font_size * aspect_ratio

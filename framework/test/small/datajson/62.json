@@ -83,12 +83,12 @@
   },
   "colors": {
     "field": {
-      "Phone (call center)": "#4269d0",
-      "Mobile Phone": "#ff725c",
-      "Online Investment Broker": "#3ca951",
-      "Financial Planner": "#a463f2",
-      "Physical Bank": "#efb118",
-      "Online": "#97bbf5"
+      "Phone (call center)": "#a00608",
+      "Mobile Phone": "#de9200",
+      "Online Investment Broker": "#77c301",
+      "Financial Planner": "#931791",
+      "Physical Bank": "#0088de",
+      "Online": "#05283f"
     },
     "other": {},
     "available_colors": [
@@ -290,8 +290,8 @@
   ],
   "secondary_data": [],
   "variables": {
-    "width": 600,
-    "height": 600,
+    "width": 700,
+    "height": 300,
     "has_rounded_corners": false,
     "has_shadow": false,
     "has_spacing": false,

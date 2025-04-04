@@ -88,8 +88,8 @@
       "secondary": "#97bbf5"
     },
     "available_colors": [
+      "#f78200",
       "#4269d0",
-      "#efb118",
       "#ff725c",
       "#3ca951",
       "#ff8ab7",
@@ -187,8 +187,8 @@
   ],
   "secondary_data": [],
   "variables": {
-    "width": 600,
-    "height": 600,
+    "width": 300,
+    "height": 450,
     "has_rounded_corners": false,
     "has_shadow": false,
     "has_spacing": false,
@@ -213,7 +213,7 @@
     },
     "annotation": {
       "font_family": "Arial",
-      "font_size": "12px",
+      "font_size": "16px",
       "font_weight": 400
     }
   }

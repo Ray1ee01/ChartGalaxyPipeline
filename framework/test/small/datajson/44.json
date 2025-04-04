@@ -83,8 +83,8 @@
   },
   "colors": {
     "field": {
-      "Other Smartphones": "#4269d0",
-      "iPhone": "#ff725c"
+      "Other Smartphones": "#a00608",
+      "iPhone": "#04283e"
     },
     "other": {},
     "available_colors": [
@@ -191,7 +191,7 @@
   "secondary_data": [],
   "variables": {
     "width": 600,
-    "height": 600,
+    "height": 300,
     "has_rounded_corners": false,
     "has_shadow": false,
     "has_spacing": false,
@@ -216,7 +216,7 @@
     },
     "annotation": {
       "font_family": "Arial",
-      "font_size": "12px",
+      "font_size": "16px",
       "font_weight": 400
     }
   }

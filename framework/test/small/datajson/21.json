@@ -23,7 +23,7 @@
         "axis_label": "side"
       },
       "basic_chart_type": "bar",
-      "chart_type": "Horizontal Bar Chart"
+      "chart_type": "Horizontal Stacked Bar Chart"
     }
   },
   "chart_type": [],
@@ -177,7 +177,7 @@
   ],
   "secondary_data": [],
   "variables": {
-    "width": 600,
+    "width": 500,
     "height": 600,
     "has_rounded_corners": false,
     "has_shadow": false,

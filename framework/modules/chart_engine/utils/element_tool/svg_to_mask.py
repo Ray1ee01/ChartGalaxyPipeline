@@ -3,7 +3,7 @@ import os
 import io
 import argparse
 import math
-from PIL import Image, ImageDraw
+from PIL import Image as PILImage, ImageDraw
 import cairosvg
 import numpy as np
 from lxml import etree
@@ -61,7 +61,7 @@ def image_to_mask(image_base64: str, grid_size=10, content_threshold=0.05, sampl
     将图片转换为基于网格的mask
     """
     # print(image_base64)
-    image = Image.open(io.BytesIO(base64.b64decode(image_base64)))
+    image = PILImage.open(io.BytesIO(base64.b64decode(image_base64)))
     image_data = np.array(image)
     image_height, image_width = image.size
     
@@ -72,7 +72,7 @@ def image_to_mask(image_base64: str, grid_size=10, content_threshold=0.05, sampl
     # print("cols, rows: ", cols, rows)
     # 创建mask矩阵和图像
     mask_grid = np.zeros((rows, cols), dtype=bool)
-    mask_image = Image.new('RGBA', (image_width, image_height), (0, 0, 0, 0))
+    mask_image = PILImage.new('RGBA', (image_width, image_height), (0, 0, 0, 0))
     draw = ImageDraw.Draw(mask_image)
     
     # 用于调试的画布
@@ -212,12 +212,12 @@ def svg_to_mask(svg_content, grid_size=10, content_threshold=0.05, sample_densit
     )
     
     # 加载图像
-    image = Image.open(io.BytesIO(png_data))
+    image = PILImage.open(io.BytesIO(png_data))
     image_data = np.array(image)
     
     # 创建mask矩阵和图像
     mask_grid = np.zeros((rows, cols), dtype=bool)
-    mask_image = Image.new('RGBA', (canvas_width, canvas_height), (0, 0, 0, 0))
+    mask_image = PILImage.new('RGBA', (canvas_width, canvas_height), (0, 0, 0, 0))
     draw = ImageDraw.Draw(mask_image)
     
     # 用于调试的画布

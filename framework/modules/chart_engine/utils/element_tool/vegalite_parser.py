@@ -85,7 +85,7 @@ class SVGParser():
         # self.order_values = list(set(self.order_values))
         # self.size_values = list(set(self.size_values))
         # self.y2_values = list(set(self.y2_values))
-        # self.defs = None
+        self.defs = None
         
     def parse(self) -> dict:
         # 解析SVG为树结构

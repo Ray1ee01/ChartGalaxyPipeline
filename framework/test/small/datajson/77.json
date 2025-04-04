@@ -83,10 +83,10 @@
   },
   "colors": {
     "field": {
-      "Independents": "#4269d0",
-      "U.S. Adults": "#ff725c",
-      "Republicans": "#3ca951",
-      "Democrats": "#a463f2"
+      "Independents": "#a07fc6",
+      "U.S. Adults": "#075f6b",
+      "Republicans": "#e02e44",
+      "Democrats": "#3885d3"
     },
     "other": {},
     "available_colors": [
@@ -199,7 +199,7 @@
   "secondary_data": [],
   "variables": {
     "width": 600,
-    "height": 600,
+    "height": 300,
     "has_rounded_corners": false,
     "has_shadow": false,
     "has_spacing": false,

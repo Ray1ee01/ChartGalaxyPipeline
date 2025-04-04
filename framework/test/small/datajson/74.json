@@ -83,9 +83,9 @@
   },
   "colors": {
     "field": {
-      "White": "#4269d0",
-      "Hispanic": "#ff725c",
-      "Black": "#3ca951"
+      "White": "#39b7b3",
+      "Hispanic": "#e02e44",
+      "Black": "#eac52e"
     },
     "other": {},
     "available_colors": [
@@ -110,32 +110,32 @@
   },
   "data": [
     {
-      "Month": "March",
+      "Month": 3,
       "Units": 49.0,
       "Race/Ethnicity": "Hispanic"
     },
     {
-      "Month": "March",
+      "Month": 3,
       "Units": 36.0,
       "Race/Ethnicity": "Black"
     },
     {
-      "Month": "March",
+      "Month": 3,
       "Units": 29.0,
       "Race/Ethnicity": "White"
     },
     {
-      "Month": "April",
+      "Month": 4,
       "Units": 61.0,
       "Race/Ethnicity": "Hispanic"
     },
     {
-      "Month": "April",
+      "Month": 4,
       "Units": 44.0,
       "Race/Ethnicity": "Black"
     },
     {
-      "Month": "April",
+      "Month": 4,
       "Units": 38.0,
       "Race/Ethnicity": "White"
     }
@@ -168,8 +168,8 @@
   ],
   "secondary_data": [],
   "variables": {
-    "width": 600,
-    "height": 600,
+    "width": 300,
+    "height": 300,
     "has_rounded_corners": false,
     "has_shadow": false,
     "has_spacing": false,
@@ -194,8 +194,8 @@
     },
     "annotation": {
       "font_family": "Arial",
-      "font_size": "12px",
-      "font_weight": 400
+      "font_size": "16px",
+      "font_weight": 600
     }
   }
 }

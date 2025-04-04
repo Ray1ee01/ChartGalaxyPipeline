@@ -83,9 +83,9 @@
   },
   "colors": {
     "field": {
-      "Public": "#4269d0",
-      "Total": "#ff725c",
-      "CEPI": "#3ca951"
+      "Public": "#0a3b7e",
+      "Total": "#5ed16a",
+      "CEPI": "#ef902a"
     },
     "other": {},
     "available_colors": [
@@ -224,7 +224,7 @@
   "secondary_data": [],
   "variables": {
     "width": 600,
-    "height": 600,
+    "height": 400,
     "has_rounded_corners": false,
     "has_shadow": false,
     "has_spacing": false,
@@ -249,8 +249,8 @@
     },
     "annotation": {
       "font_family": "Arial",
-      "font_size": "12px",
-      "font_weight": 400
+      "font_size": "16px",
+      "font_weight": 600
     }
   }
 }

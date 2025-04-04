@@ -84,11 +84,11 @@
   "colors": {
     "field": {},
     "other": {
-      "primary": "#97bbf5",
-      "secondary": "#ff8ab7"
+      "primary": "#088064",
+      "secondary": "#c1dfd8"
     },
     "available_colors": [
-      "#4269d0",
+      "#088064",
       "#efb118",
       "#ff725c",
       "#6cc5b0",
@@ -188,7 +188,7 @@
   "secondary_data": [],
   "variables": {
     "width": 600,
-    "height": 600,
+    "height": 400,
     "has_rounded_corners": false,
     "has_shadow": false,
     "has_spacing": false,

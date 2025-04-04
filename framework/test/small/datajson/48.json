@@ -83,8 +83,8 @@
   },
   "colors": {
     "field": {
-      "2016 Users": "#4269d0",
-      "2012 Users": "#ff725c"
+      "2016 Users": "#4088dc",
+      "2012 Users": "#10293d"
     },
     "other": {},
     "available_colors": [
@@ -202,7 +202,7 @@
   "secondary_data": [],
   "variables": {
     "width": 600,
-    "height": 600,
+    "height": 300,
     "has_rounded_corners": false,
     "has_shadow": false,
     "has_spacing": false,
