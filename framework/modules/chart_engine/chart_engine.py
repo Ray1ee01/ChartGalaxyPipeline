@@ -65,7 +65,7 @@ if __name__ == '__main__':
     
     # Get the appropriate template for this chart type
     # Prefer JavaScript template for testing
-    engine_preference = [ 'vegalite-py']
+    engine_preference = ['echarts-js']
     engine, template = get_template_for_chart_name(chart_name, engine_preference=engine_preference)
     
     if engine is None:
@@ -84,7 +84,7 @@ if __name__ == '__main__':
         output_svg_path = args.output
     else:
         # Generate a random output SVG filename in tmp directory
-        output_svg_path = os.path.join(tmp_dir, f"{chart_name.replace(' ', '_')}_{random.randint(1000, 9999)}.svg")
+        output_svg_path = os.path.join(tmp_dir, args.input.split('.')[0].split('/')[-1] + "_" + f"{chart_name.replace(' ', '_')}.svg")
     
     # Check if HTML output is requested
     html_output_path = args.html
@@ -189,16 +189,17 @@ if __name__ == '__main__':
             
     elif engine == 'vegalite-py':
         # Use VegaLite-py template
+        print("template:", template)
         template_root = "template.vegalite-py"
         general_chart_type = template.split('/')[-2]
         module_name = template.split('/')[-1].split('.')[0]
+        print("module_name:", module_name)
         print("")
         module_path = f"{template_root}.{general_chart_type}.{module_name}"
         print("module_path:", module_path)
         module = importlib.import_module(module_path)
         
         chart_words = module_name.split('_')
-        print("chart_words:", chart_words)
         # 把每个单词的首字母大写
         chart_words = [word.capitalize() for word in chart_words]
         # 把每个单词拼接起来
@@ -210,14 +211,14 @@ if __name__ == '__main__':
         template_class = getattr(module, chart_type)
         template_object = template_class(json_data)
         vega_spec = template_object.make_specification(json_data)
-        print("vega_spec:", vega_spec)
         # 保存vega_spec到临时文件
         vega_spec_file = create_temp_file(prefix="vega_spec_", suffix=".json", 
                                             content=json.dumps(vega_spec, indent=2))
         
         # try:
         svg_file, svg_content = template_object.specification_to_svg(vega_spec, output_svg_path)
-        print("template_object:", template_object)
+        with open("debug.svg", "w", encoding='utf-8') as f:
+            f.write(svg_content)
         if svg_file is None:
             raise ValueError("SVG chart generation failed (returned None)")
         # print("svg_content:", svg_content)
@@ -225,7 +226,7 @@ if __name__ == '__main__':
         print("element_tree:", element_tree)
         template_object.apply_variation(json_data)
         svg_file = output_svg_path
-        svg_content = template_object.element_tree_to_svg(element_tree)
+        svg_content = template_object.element_tree_to_svg(template_object.elements_tree)
         with open(output_svg_path, 'w', encoding='utf-8') as f:
             f.write(svg_content)
         print(f"VegaLite SVG chart generated successfully")

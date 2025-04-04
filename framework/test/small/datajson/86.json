@@ -82,7 +82,10 @@
     }
   },
   "colors": {
-    "field": {},
+    "field": {
+      "United States":"#469377",
+      "International": "#c63310"
+    },
     "other": {
       "primary": "#4269d0",
       "secondary": "#ff725c"
@@ -107,43 +110,103 @@
   "data": [
     {
       "Quarter": "Q1 2014",
-      "United States": 1.9
+      "Price": 1.9,
+      "Country": "United States"
+    },
+    {
+      "Quarter": "Q1 2014",
+      "Price": -0.9,
+      "Country": "International"
     },
     {
       "Quarter": "Q2 2014",
-      "United States": 2.0
+      "Price": 2.0,
+      "Country": "United States"
+    },
+    {
+      "Quarter": "Q2 2014",
+      "Price": -0.4,
+      "Country": "International"
     },
     {
       "Quarter": "Q3 2014",
-      "United States": 2.3
+      "Price": 2.3,
+      "Country": "United States"
+    },
+    {
+      "Quarter": "Q3 2014",
+      "Price": -0.7,
+      "Country": "International"
     },
     {
       "Quarter": "Q4 2014",
-      "United States": 2.1
+      "Price": 2.1,
+      "Country": "United States"
+    },
+    {
+      "Quarter": "Q4 2014",
+      "Price": -1.5,
+      "Country": "International"
     },
     {
       "Quarter": "Q1 2015",
-      "United States": 2.5
+      "Price": 2.5,
+      "Country": "United States"
+    },
+    {
+      "Quarter": "Q1 2015",
+      "Price": -1.8,
+      "Country": "International"
     },
     {
       "Quarter": "Q2 2015",
-      "United States": 2.8
+      "Price": 2.8,
+      "Country": "United States"
+    },
+    {
+      "Quarter": "Q2 2015",
+      "Price": -1.2,
+      "Country": "International"
     },
     {
       "Quarter": "Q3 2015",
-      "United States": 2.9
+      "Price": 2.9,
+      "Country": "United States"
+    },
+    {
+      "Quarter": "Q3 2015",
+      "Price": -1.1,
+      "Country": "International"
     },
     {
       "Quarter": "Q4 2015",
-      "United States": 2.8
+      "Price": 2.8,
+      "Country": "United States"
+    },
+    {
+      "Quarter": "Q4 2015",
+      "Price": -1.0,
+      "Country": "International"
     },
     {
       "Quarter": "Q1 2016",
-      "United States": 3.0
+      "Price": 3.0,
+      "Country": "United States"
+    },
+    {
+      "Quarter": "Q1 2016",
+      "Price": -1.8,
+      "Country": "International"
     },
     {
       "Quarter": "Q2 2016",
-      "United States": 2.8
+      "Price": 2.8,
+      "Country": "United States"
+    },
+    {
+      "Quarter": "Q2 2016",
+      "Price": -1.2,
+      "Country": "International"
     }
   ],
   "data_columns": [
@@ -156,18 +219,26 @@
       "role": "x"
     },
     {
-      "name": "United States",
+      "name": "Price",
       "importance": "primary",
       "description": "Average monthly operating profit/loss per subscriber in the United States",
       "unit": "none",
       "data_type": "numerical",
       "role": "y"
+    },
+    {
+      "name": "Country",
+      "importance": "primary",
+      "description": "Country of the data",
+      "unit": "none",
+      "data_type": "categorical",
+      "role": "group"
     }
   ],
   "secondary_data": [],
   "variables": {
     "width": 600,
-    "height": 600,
+    "height": 300,
     "has_rounded_corners": false,
     "has_shadow": false,
     "has_spacing": false,

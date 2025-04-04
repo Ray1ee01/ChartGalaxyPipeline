@@ -83,9 +83,9 @@
   },
   "colors": {
     "field": {
-      "Railways": "#4269d0",
-      "Roads and bridges": "#ff725c",
-      "Ports and habours": "#3ca951"
+      "Railways": "#008f5b",
+      "Roads and bridges": "#eb9e05",
+      "Ports and habours": "#1b6ae3"
     },
     "other": {},
     "available_colors": [
@@ -394,7 +394,7 @@
   "secondary_data": [],
   "variables": {
     "width": 600,
-    "height": 600,
+    "height": 300,
     "has_rounded_corners": false,
     "has_shadow": false,
     "has_spacing": false,

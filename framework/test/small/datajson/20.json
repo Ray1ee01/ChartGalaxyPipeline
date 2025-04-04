@@ -83,8 +83,8 @@
   },
   "colors": {
     "field": {
-      "Bad": "#4269d0",
-      "Good": "#ff725c"
+      "Bad": "#df4732",
+      "Good": "#75c699"
     },
     "other": {},
     "available_colors": [
@@ -191,7 +191,7 @@
   "secondary_data": [],
   "variables": {
     "width": 600,
-    "height": 600,
+    "height": 300,
     "has_rounded_corners": false,
     "has_shadow": false,
     "has_spacing": false,
@@ -216,7 +216,7 @@
     },
     "annotation": {
       "font_family": "Arial",
-      "font_size": "12px",
+      "font_size": "16px",
       "font_weight": 400
     }
   }

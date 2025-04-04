@@ -225,9 +225,9 @@ class SVGTreeConverter:
         attrs = node.get('attributes', {})
         
         # 如果是g标签且只有transform属性或者没有属性
-        if (tag == 'g') and (len(node.get('attributes', {})) == 1 and 'transform' in node.get('attributes', {})) or (len(node.get('attributes', {})) == 0):
+        if (tag == 'g') and \
+            (len(node.get('attributes', {})) == 1 and 'transform' in node.get('attributes', {})) or (len(node.get('attributes', {})) == 0) or "stroke-miterlimit" in node.get('attributes', {}):
             res_list = []
-            # print("node: ", node)
             for child in node['children']:
                 # 合并属性
                 child_attrs = child.get('attributes', {})

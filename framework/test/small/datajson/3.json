@@ -83,8 +83,8 @@
   },
   "colors": {
     "field": {
-      "Ended": "#4269d0",
-      "Still active": "#ff725c"
+      "Ended": "#a5a5a5",
+      "Still active": "#d61822"
     },
     "other": {
       "primary": "#efb118"
@@ -189,8 +189,8 @@
   ],
   "secondary_data": [],
   "variables": {
-    "width": 600,
-    "height": 600,
+    "width": 450,
+    "height": 250,
     "has_rounded_corners": false,
     "has_shadow": false,
     "has_spacing": false,
@@ -215,7 +215,7 @@
     },
     "annotation": {
       "font_family": "Arial",
-      "font_size": "12px",
+      "font_size": "16px",
       "font_weight": 400
     }
   }

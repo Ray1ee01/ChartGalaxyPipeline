@@ -210,11 +210,32 @@ def get_template_for_chart_name(chart_name, engine_preference=None):
                 return chart_dict[chart_name]
     
     # Try partial matches
+    # for engine in engine_preference:
+    #     for chart_type, chart_dict in templates[engine].items():
+    #         for name in chart_dict:
+    #             if chart_name in name or name in chart_name:
+    #                 return chart_dict[name]
+    
+    # 找到重叠最多的匹配
+    best_match = None
+    max_overlap = 0
+    best_result = None
+    # print("chart_dict:", templates[engine])
+    
     for engine in engine_preference:
         for chart_type, chart_dict in templates[engine].items():
             for name in chart_dict:
-                if chart_name in name or name in chart_name:
-                    return chart_dict[name]
+                # 计算两个字符串的重叠长度
+                overlap = len(set(chart_name) & set(name))
+                if overlap > max_overlap:
+                    print("overlap:", overlap)
+                    max_overlap = overlap
+                    best_match = name
+                    print("best_match:", best_match)
+                    best_result = chart_dict[name]
+                    print("best_result:", best_result)
+    if best_result:
+        return best_result
     
     return None, None
 
