@@ -13,10 +13,10 @@ from datetime import datetime
 from importlib import import_module
 from pathlib import Path
 from config import (
-    sentence_transformer_path,
     base_url,
     api_key,
     embed_model_path,
+    data_resource_path,
     topk,
     text_data_path,
     text_index_path,
@@ -27,6 +27,7 @@ from config import (
     image_list_path,
     image_resource_path
 )
+import random
 
 # 配置日志
 logging.basicConfig(
@@ -117,6 +118,16 @@ def run_pipeline(input_path, output_path=None, temp_dir=None, modules_to_run=Non
         modules_to_run (list, optional): 要运行的模块列表，默认运行所有模块
     """
     try:
+        print("modules_to_run: ", modules_to_run)
+        # 如果是create_index模块，单独处理
+        if modules_to_run and 'create_index' in modules_to_run:
+            return run_single_file(
+                input_path=input_path,
+                output_path=output_path,
+                temp_dir=temp_dir,
+                modules_to_run=modules_to_run
+            )
+            
         input_path = Path(input_path)
         # 如果output_path为None，则使用input_path
         output_path = Path(output_path) if output_path else input_path
@@ -178,6 +189,43 @@ def run_single_file(input_path, output_path, temp_dir=None, modules_to_run=None)
         modules_to_run (list): 要运行的模块列表
     """
     try:
+        # 如果要运行create_index，单独处理并直接返回
+        if 'create_index' in modules_to_run:
+            logger.info("执行create_index模块")
+            # 依次调用三个模块的create_index
+            for module_type in ['title', 'color', 'image']:
+                if module_type == 'title':
+                    print("Running modules.title_generator.create_index")
+                    module = import_module('modules.title_generator.create_index')
+                    if not Path(text_index_path).exists():
+                        module.process(
+                            data=text_data_path,
+                            index_path=text_index_path,
+                            data_path=text_data_path,
+                            embed_model_path=embed_model_path
+                        )
+                elif module_type == 'color':
+                    print("Running modules.color_recommender.create_index")
+                    module = import_module('modules.color_recommender.create_index')
+                    if not Path(color_index_path).exists():
+                        module.main(
+                            input=color_data_path,
+                            output=color_index_path,
+                            embed_model_path=embed_model_path
+                        )
+                else:  # image
+                    print("Running modules.image_recommender.create_index")
+                    module = import_module('modules.image_recommender.create_index')
+                    if not Path(image_index_path).exists():
+                        module.main(
+                            image_list_path=image_list_path,
+                            image_resource_path=image_resource_path,
+                            index_path=image_index_path,
+                            data_path=image_data_path,
+                            embed_model_path=embed_model_path
+                        )
+            return True
+
         # 创建临时目录
         if temp_dir is None:
             temp_dir = Path("./tmp")
@@ -206,46 +254,12 @@ def run_single_file(input_path, output_path, temp_dir=None, modules_to_run=None)
         
         # 记录执行过程
         processing_log = []
-        
         # 依次执行各模块
         for i, module_config in enumerate([m for m in MODULES if m["name"] in modules_to_run]):
             module_name = module_config["name"]
             module_desc = module_config["description"]
             logger.info(f"执行模块 {i+1}/{len(modules_to_run)}: {module_name} - {module_desc}")
             
-            # 特殊处理create_index模块
-            if module_name == "create_index":
-                # 依次调用三个模块的create_index
-                for module_type in ['title', 'color', 'image']:
-                    if module_type == 'title':
-                        module = import_module('modules.title_generator.create_index')
-                        if not should_skip_module(module_name, output_path):
-                            module.process(
-                                data=text_data_path,
-                                index_path=text_index_path,
-                                data_path=text_data_path,
-                                embed_model_path=embed_model_path
-                            )
-                    elif module_type == 'color':
-                        module = import_module('modules.color_recommender.create_index')
-                        if not should_skip_module(module_name, output_path):
-                            module.main(
-                                input=color_data_path,
-                                output=color_index_path,
-                                embed_model_path=embed_model_path
-                            )
-                    else:  # image
-                        module = import_module('modules.image_recommender.create_index')
-                        if not should_skip_module(module_name, output_path):
-                            module.main(
-                                image_list_path=image_list_path,
-                                image_resource_path=image_resource_path,
-                                index_path=image_index_path,
-                                data_path=image_data_path,
-                                embed_model_path=embed_model_path
-                            )
-                continue
-                
             # 特殊处理title_generator模块，传入配置参数
             if module_name == "title_generator":
                 module = import_module(f"modules.{module_name}.{module_name}")
@@ -284,7 +298,8 @@ def run_single_file(input_path, output_path, temp_dir=None, modules_to_run=None)
                         api_key=api_key,
                         embed_model_path=embed_model_path,
                         data_path=image_data_path,
-                        index_path=image_index_path
+                        index_path=image_index_path,
+                        resource_path=image_resource_path
                     )
                 current_input = output_path
             elif module_name == "chart_engine":
@@ -360,23 +375,37 @@ def should_skip_module(module_name: str, output_path: Path) -> bool:
         logger.warning(f"检查跳过条件时出错: {str(e)}")
         return False
 
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="ChartPipeline: 数据可视化生成管道")
-    parser.add_argument("--input", required=True, help="输入数据文件或目录路径")
-    parser.add_argument("--output", help="输出文件或目录路径，不指定则原地修改")
-    parser.add_argument("--temp-dir", default="./tmp", help="临时文件目录")
-    parser.add_argument("--modules", help="要运行的模块，用逗号分隔")
-    
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--input', type=str, help='Input json file path', default=None)
+    parser.add_argument('--output', type=str, help='Output json file path', default=None)
+    parser.add_argument('--temp-dir', type=str, default='temp')
+    parser.add_argument('--modules', type=str, nargs='+', help='Modules to run', required=True)
     args = parser.parse_args()
+    # 如果没有指定input，从data_resource_path随机选择
+    if args.input is None and 'create_index' not in args.modules:
+        json_files = [f for f in os.listdir(data_resource_path) if f.endswith('.json')]
+        if not json_files:
+            raise ValueError(f"在 {data_resource_path} 目录下没有找到json文件")
+        args.input = os.path.join(data_resource_path, random.choice(json_files))
+        print(f"随机选择输入文件: {args.input}")
+        args.output = "tmp.json"
+        print(f"使用默认输出文件: {args.output}")
     
+    return args
+
+def main():
+    args = parse_args()
     modules_to_run = None
     if args.modules:
-        modules_to_run = [m.strip() for m in args.modules.split(",")]
+        modules_to_run = [m.strip() for m in args.modules]
     
     run_pipeline(
         input_path=args.input,
         output_path=args.output,
         temp_dir=args.temp_dir,
         modules_to_run=modules_to_run
-    ) 
+    )
+
+if __name__ == "__main__":
+    main() 

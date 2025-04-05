@@ -25,53 +25,66 @@ class ImageRecommender:
         """Create FAISS index from image embeddings"""
         # Read image paths
         with open(image_list_path, 'r') as f:
-            self.image_paths = [line.strip() for line in f.readlines()]
+            self.image_paths = [line.strip().split(',') for line in f.readlines()]
             
         # Load and process each image's data
         embeddings = []
-        for idx, image_path in enumerate(tqdm(self.image_paths)):
+        for idx, (image_path, json_path) in enumerate(tqdm(self.image_paths)):
             # Construct full path to the image's JSON data
-            json_path = os.path.join(image_resource_path, f'results/{idx}.json')
+            #json_path = os.path.join(image_resource_path, f'results/{idx}.json')
             
             if not os.path.exists(json_path):
                 continue
-                
-            with open(json_path, 'r') as f:
-                image_info = json.load(f)
-                
-            # Combine multiple fields for better semantic representation
-            semantic_text = ""
-            try:
-                image_content = image_info.get('image_content', '')
-                topic = image_info.get('topic', '')
-                explanation = image_info.get('explanation', '')
-                
-                if image_content:
-                    semantic_text += f"{image_content}"
-                if topic:
-                    semantic_text += f". {topic}"
-                if explanation:
-                    semantic_text += f". {explanation}"
-                
-                if not semantic_text:
+            
+            try:    
+                with open(json_path, 'r') as f:
+                    try:
+                        image_info = json.load(f)
+                    except json.JSONDecodeError as e:
+                        print(f"Error decoding JSON at index {idx}: {str(e)}")
+                        continue
+                    
+                # Combine multiple fields for better semantic representation
+                semantic_text = ""
+                try:
+                    image_content = image_info.get('image_content', '')
+                    topic = image_info.get('topic', '')
+                    explanation = image_info.get('explanation', '')
+                    
+                    if image_content:
+                        semantic_text += f"{image_content}"
+                    if topic:
+                        semantic_text += f". {topic}"
+                    if explanation:
+                        semantic_text += f". {explanation}"
+                    
+                    if not semantic_text:
+                        semantic_text = "Image without description"
+                        print(f"Warning: Missing semantic information for image at index {idx}")
+                except Exception as e:
                     semantic_text = "Image without description"
-                    print(f"Warning: Missing semantic information for image at index {idx}")
+                    print(f"Error processing semantic text at index {idx}: {str(e)}")
+                
+                # Generate embedding
+                try:
+                    embedding = self.model.encode(semantic_text)
+                    embeddings.append(embedding)
+                    self.image_data.append(image_info)
+                    
+                    # Store indices based on image type
+                    if image_info.get('icon_or_clipart') == 'icon':
+                        self.icon_indices.append(len(embeddings) - 1)
+                    elif image_info.get('icon_or_clipart') == 'clipart':
+                        self.clipart_indices.append(len(embeddings) - 1)
+                except Exception as e:
+                    print(f"Error generating embedding at index {idx}: {str(e)}")
+                    continue
+                    
             except Exception as e:
-                semantic_text = "Image without description"
                 print(f"Error processing image at index {idx}: {str(e)}")
+                continue
             
-            # Generate embedding
-            embedding = self.model.encode(semantic_text)
-            embeddings.append(embedding)
-            self.image_data.append(image_info)
-            
-            # Store indices based on image type
-            if image_info.get('icon_or_clipart') == 'icon':
-                self.icon_indices.append(len(embeddings) - 1)
-            elif image_info.get('icon_or_clipart') == 'clipart':
-                self.clipart_indices.append(len(embeddings) - 1)
-            
-        # Convert to numpy array
+        self.image_paths = [image_path for image_path, _ in self.image_paths]
         embeddings = np.array(embeddings).astype('float32')
         
         # Create and train FAISS index
