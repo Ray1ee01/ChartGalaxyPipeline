@@ -2,10 +2,10 @@
 REQUIREMENTS_BEGIN
 {
     "chart_type": "Multiple Line Graph",
-    "chart_name": "multiple_line_graph_09",
+    "chart_name": "difference_line_graph_03",
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["temporal"], ["numerical"], ["categorical"]],
-    "required_fields_range": [[5, 30], [0, 100], [2, 10]],
+    "required_fields_range": [[5, 30], [0, 100], [2, 2]],
     "required_fields_icons": ["group"],
     "required_other_icons": [],
     "required_fields_colors": ["group"],
@@ -45,7 +45,7 @@ function makeChart(containerSelector, data) {
     // 设置尺寸和边距
     const width = variables.width;
     const height = variables.height;
-    const margin = { top: 20, right: 30, bottom: 40, left: 50 };
+    const margin = { top: 100, right: 30, bottom: 100, left: 50 };
     
     // 创建SVG
     const svg = d3.select(containerSelector)
@@ -91,6 +91,38 @@ function makeChart(containerSelector, data) {
     // 获取唯一的组值
     const groups = [...new Set(chartData.map(d => d[groupField]))];
     
+    // 按组分组数据
+    const groupedData = d3.group(chartData, d => d[groupField]);
+    
+    // 计算每个组的平均值，找出最高和最低的组
+    const groupAverages = new Map();
+    
+    groupedData.forEach((values, group) => {
+        const sum = values.reduce((acc, d) => acc + d[yField], 0);
+        const avg = sum / values.length;
+        groupAverages.set(group, avg);
+    });
+    
+    // 找出平均值最高和最低的组
+    let highestGroup = null;
+    let lowestGroup = null;
+    let highestAvg = -Infinity;
+    let lowestAvg = Infinity;
+    
+    groupAverages.forEach((avg, group) => {
+        if (avg > highestAvg) {
+            highestAvg = avg;
+            highestGroup = group;
+        }
+        if (avg < lowestAvg) {
+            lowestAvg = avg;
+            lowestGroup = group;
+        }
+    });
+    
+    // 只保留最高和最低的两个组
+    const selectedGroups = [highestGroup, lowestGroup];
+    
     // 创建x轴比例尺 - 扩宽范围
     const xExtent = d3.extent(chartData, d => parseDate(d[xField]));
     const xRange = xExtent[1] - xExtent[0];
@@ -133,6 +165,12 @@ function makeChart(containerSelector, data) {
     // 计算最大Y刻度的位置
     const maxYTickPosition = yScale(maxYTick);
     
+    // 添加图例 - 整体居中，放在最大Y轴刻度上方
+    const legendY = maxYTickPosition - 60; // 最大Y轴刻度上方20像素
+    
+    // 计算比值圆形的Y位置
+    const ratioCircleY = maxYTickPosition - 30;
+    
     // 添加条纹背景 - 使用更合适的时间间隔
     // 根据数据范围选择合适的时间间隔
     let timeInterval;
@@ -152,6 +190,7 @@ function makeChart(containerSelector, data) {
     const xTicks = xScale.ticks(timeInterval);
     
     // 为每个X轴刻度创建条纹背景，使条纹以刻度为中心
+    // 条纹背景要覆盖到圆形区域
     for (let i = 0; i < xTicks.length - 1; i++) {
         // 获取相邻两个刻度
         const currentTick = xTicks[i];
@@ -165,33 +204,29 @@ function makeChart(containerSelector, data) {
         if (i % 2 === 0) {
             g.append("rect")
                 .attr("x", x1)
-                .attr("y", maxYTickPosition) // 从最大Y刻度开始
+                .attr("y", legendY + 10) // 从legend下方20像素开始
                 .attr("width", x2 - x1)
-                .attr("height", chartHeight - maxYTickPosition + xAxisTextHeight) // 延伸到X轴文本下方
+                .attr("height", chartHeight + xAxisTextHeight - (legendY + 10)) // 高度需要减去legend的位置
                 .attr("fill", "#ececec")
                 .attr("opacity", 0.8);
         }
     }
     
-    
     // 将条纹背景移到最底层
     g.selectAll("rect").lower();
     
-    // 添加图标水印（如果有）
-    if (images && images.field) {
-        // 创建一个滤镜使图像黑白化并变淡
+    // 添加图标水印（如果有）- 放在最高Y刻度之下
+    if (images && images.other && images.other.primary) {
+        // 创建一个滤镜使图像变淡
         const defs = svg.append("defs");
         
-        // 添加淡灰色滤镜 - 修改参数使颜色变淡
-        const lightGrayFilter = defs.append("filter")
+        lightGrayFilter = defs.append("filter")
             .attr("id", "lightgray");
-        
-        // 先转为灰度
+            
         lightGrayFilter.append("feColorMatrix")
             .attr("type", "matrix")
             .attr("values", "0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0");
         
-        // 再提亮颜色 - 使用亮度组件
         lightGrayFilter.append("feComponentTransfer")
             .append("feFuncR")
             .attr("type", "linear")
@@ -210,82 +245,20 @@ function makeChart(containerSelector, data) {
             .attr("slope", "0.6")
             .attr("intercept", "0.4");
         
-        // 计算每个组的线条中心位置
-        const groupCenters = new Map();
+        // 添加整个图表的水印 - 放在最高Y刻度之下
+        const iconSize = 120;
+        const watermark = g.append("image")
+            .attr("x", 20)
+            .attr("y", maxYTickPosition + 20) // 放在最高Y刻度下方20像素
+            .attr("width", iconSize)
+            .attr("height", iconSize)
+            .attr("href", images.other.primary)
+            .attr("opacity", 0.3)
+            .attr("preserveAspectRatio", "xMidYMid meet")
+            .attr("filter", "url(#lightgray)");
         
-        // 按组分组数据
-        const groupedData = d3.group(chartData, d => d[groupField]);
-        
-        groupedData.forEach((values, group) => {
-            // 确保数据按日期排序
-            values.sort((a, b) => parseDate(a[xField]) - parseDate(b[xField]));
-            
-            // 计算该组线条的中心点
-            const xPoints = values.map(d => xScale(parseDate(d[xField])));
-            const yPoints = values.map(d => yScale(d[yField]));
-            
-            // 找到线条的中间点
-            const midIndex = Math.floor(values.length / 2);
-            const centerX = xPoints[midIndex];
-            const centerY = yPoints[midIndex];
-            
-            // 存储中心点
-            groupCenters.set(group, { x: centerX, y: centerY });
-        });
-        
-        // 添加组图标水印 - 均匀分布在X轴上，Y位置对应X位置处的线条值
-        groups.forEach((group, groupIndex) => {
-            if (images.field[group]) {
-                const values = groupedData.get(group);
-                if (!values || values.length === 0) return;
-                
-                // 确保数据按日期排序
-                values.sort((a, b) => parseDate(a[xField]) - parseDate(b[xField]));
-                
-                const iconSize = 120;
-                
-                // 计算X轴位置 - 将X轴均匀分成组数量的区域，但避开边缘
-                // 使用更窄的区域，避开起止点标签
-                const usableWidth = chartWidth * 0.7; // 使用70%的图表宽度
-                const margin = (chartWidth - usableWidth) / 2; // 两侧边距
-                
-                const sectionWidth = usableWidth / groups.length;
-                const xPos = margin + sectionWidth * (groupIndex + 0.5); // 区域中心点
-                
-                // 找到最接近xPos的数据点
-                // 首先将xPos转换回日期域
-                const xDate = xScale.invert(xPos);
-                
-                // 找到最接近该日期的数据点
-                let closestPoint = values[0];
-                let minDistance = Math.abs(parseDate(closestPoint[xField]) - xDate);
-                
-                for (let i = 1; i < values.length; i++) {
-                    const distance = Math.abs(parseDate(values[i][xField]) - xDate);
-                    if (distance < minDistance) {
-                        minDistance = distance;
-                        closestPoint = values[i];
-                    }
-                }
-                
-                // 使用最接近点的Y值
-                const yPos = yScale(closestPoint[yField]);
-                
-                const watermark = g.append("image")
-                    .attr("x", xPos - iconSize / 2) // 水印中心与区域中心对齐
-                    .attr("y", yPos - iconSize / 2) // 使用对应X位置处的Y值
-                    .attr("width", iconSize)
-                    .attr("height", iconSize)
-                    .attr("href", images.field[group])
-                    .attr("opacity", 1) // 保持完全不透明
-                    .attr("preserveAspectRatio", "xMidYMid meet")
-                    .attr("filter", "url(#lightgray)"); // 使用淡灰色滤镜
-                
-                // 确保水印在条纹背景上方，线条下方
-                watermark.lower();
-                g.selectAll("rect").lower();
-            }
-        });
+        watermark.lower();
+        g.selectAll("rect").lower();
     }
     
     // 添加水平网格线
@@ -300,9 +273,6 @@ function makeChart(containerSelector, data) {
             .attr("stroke-dasharray", "2,2");
     });
     
-    // 按组分组数据
-    const groupedData = d3.group(chartData, d => d[groupField]);
-    
     // 定义线条粗细
     const lineWidth = 4;
     
@@ -312,8 +282,76 @@ function makeChart(containerSelector, data) {
         .y(d => yScale(d[yField]))
         .curve(d3.curveLinear);
     
-    // 绘制每个组的线条
-    groupedData.forEach((values, group) => {
+    // 为每个X刻度创建插值函数，计算比值
+    const highValues = groupedData.get(highestGroup);
+    const lowValues = groupedData.get(lowestGroup);
+    
+    // 确保数据按日期排序
+    highValues.sort((a, b) => parseDate(a[xField]) - parseDate(b[xField]));
+    lowValues.sort((a, b) => parseDate(a[xField]) - parseDate(b[xField]));
+    
+    // 创建插值函数
+    const highInterpolator = d3.scaleTime()
+        .domain(highValues.map(d => parseDate(d[xField])))
+        .range(highValues.map(d => d[yField]))
+        .clamp(true);
+    
+    const lowInterpolator = d3.scaleTime()
+        .domain(lowValues.map(d => parseDate(d[xField])))
+        .range(lowValues.map(d => d[yField]))
+        .clamp(true);
+    
+    // 计算每个X刻度的比值（转为百分比）
+    const ratios = xTicks.map(tick => {
+        const highVal = highInterpolator(tick);
+        const lowVal = lowInterpolator(tick);
+        return {
+            date: tick,
+            ratio: (lowVal / highVal) * 100 // 转为百分比
+        };
+    });
+    
+    // 找出最大和最小的百分比值
+    const minRatio = d3.min(ratios, d => d.ratio);
+    const maxRatio = d3.max(ratios, d => d.ratio);
+    
+    // 创建圆形大小的比例尺
+    const radiusScale = d3.scaleLinear()
+        .domain([minRatio, maxRatio])
+        .range([12, 20]); // 最小半径10，最大半径20
+    
+    // 获取两个组的颜色
+    const highColor = colorScale(highestGroup);
+    const lowColor = colorScale(lowestGroup);
+    
+    // 判断哪个颜色更浅
+    const highColorRGB = d3.rgb(highColor);
+    const lowColorRGB = d3.rgb(lowColor);
+    
+    // 计算颜色的亮度（简单方法：R+G+B的总和）
+    const highBrightness = highColorRGB.r + highColorRGB.g + highColorRGB.b;
+    const lowBrightness = lowColorRGB.r + lowColorRGB.g + lowColorRGB.b;
+    
+    // 确定浅色和深色
+    let lightColor, darkColor;
+    if (highBrightness >= lowBrightness) {
+        lightColor = highColorRGB;
+        darkColor = lowColorRGB;
+    } else {
+        lightColor = lowColorRGB;
+        darkColor = highColorRGB;
+    }
+    
+    // 计算圆的颜色：浅色变得更浅
+    const circleR = Math.min(255, lightColor.r + (255 - lightColor.r) * 0.7);
+    const circleG = Math.min(255, lightColor.g + (255 - lightColor.g) * 0.7); 
+    const circleB = Math.min(255, lightColor.b + (255 - lightColor.b) * 0.7);
+    
+    const circleColor = d3.rgb(circleR, circleG, circleB);
+    
+    // 绘制只选中的两个组的线条
+    selectedGroups.forEach(group => {
+        const values = groupedData.get(group);
         // 确保数据按日期排序
         values.sort((a, b) => parseDate(a[xField]) - parseDate(b[xField]));
         
@@ -351,7 +389,7 @@ function makeChart(containerSelector, data) {
             }
         });
         
-        // 添加起点和终点标注 - 简化为直接文本
+        // 添加起点和终点标注
         const firstPoint = values[0];
         const lastPoint = values[values.length - 1];
         
@@ -401,17 +439,16 @@ function makeChart(containerSelector, data) {
     });
     
     // 添加图例 - 整体居中，放在最大Y轴刻度上方
-    const legendY = maxYTickPosition - 20; // 最大Y轴刻度上方20像素
     const legendItemWidth = 120; // 每个图例项的宽度
     
     // 计算图例的总宽度
-    const totalLegendWidth = groups.length * legendItemWidth;
+    const totalLegendWidth = selectedGroups.length * legendItemWidth;
     
     // 计算图例的起始X位置，使其居中
     const legendStartX = (chartWidth - totalLegendWidth) / 2;
     
-    // 为每个组添加图例
-    groups.forEach((group, i) => {
+    // 为选中的两个组添加图例
+    selectedGroups.forEach((group, i) => {
         const color = colorScale(group);
         const legendX = legendStartX + i * legendItemWidth;
         
@@ -430,20 +467,99 @@ function makeChart(containerSelector, data) {
             .text(group);
     });
     
-    // 添加数据标注函数 - 文本放在线条上方，不加粗
+    // 添加比值图例
+    const ratioLegendY = legendY;
+    const ratioLegendX = legendStartX + totalLegendWidth + 10; // 在组图例右侧40像素处
+    
+    // 添加比值图例的圆形示例
+    const sampleRadius = 6;
+    g.append("circle")
+        .attr("cx", ratioLegendX)
+        .attr("cy", ratioLegendY)
+        .attr("r", sampleRadius)
+        .attr("fill", circleColor.toString());
+    
+    // 添加比值图例的文本
+    g.append("text")
+        .attr("x", ratioLegendX + sampleRadius + 10)
+        .attr("y", ratioLegendY)
+        .attr("dominant-baseline", "middle")
+        .attr("fill", "#333")
+        .style("font-size", "14px")
+        .text(`${lowestGroup}/${highestGroup}`);
+    
+    // 添加每个X刻度的比值，使用圆形背景
+    ratios.forEach((ratio, i) => {
+        if (i === 0) {
+            return;
+        }
+        const x = xScale(ratio.date) - (xScale(ratio.date) - xScale(ratios[i-1].date)) / 2;
+        const y = ratioCircleY;
+        const radius = radiusScale(ratio.ratio);
+        
+        // 添加圆形背景
+        g.append("circle")
+            .attr("cx", x)
+            .attr("cy", y)
+            .attr("r", radius)
+            .attr("fill", circleColor.toString());
+        
+        // 添加百分比文本
+        g.append("text")
+            .attr("x", x)
+            .attr("y", y)
+            .attr("text-anchor", "middle")
+            .attr("dominant-baseline", "middle")
+            .attr("fill", "#333")
+            .style("font-size", "12px")
+            .text(`${ratio.ratio.toFixed(0)}%`);
+    });
+    
+    // 添加数据标注函数 - 使用圆角矩形和倒三角
     function addDataLabel(point, isStart) {
         const x = xScale(parseDate(point[xField]));
         const y = yScale(point[yField]);
         
-        // 添加文本 - 放在数据点上方，使用黑色
+        // 获取点所属的组
+        const group = point[groupField];
+        const color = colorScale(group);
+        
+        // 计算标签文本
+        const labelText = point[yField].toFixed(0);
+        
+        // 计算标签宽度和高度
+        const labelWidth = labelText.length * 8 + 16; // 根据文本长度计算宽度
+        const labelHeight = 24;
+        
+        // 计算标签位置 - 放在数据点上方
+        const labelY = y - 30;
+        
+        // 添加圆角矩形背景
+        g.append("rect")
+            .attr("x", x - labelWidth / 2)
+            .attr("y", labelY - labelHeight / 2)
+            .attr("width", labelWidth)
+            .attr("height", labelHeight)
+            .attr("rx", 4)
+            .attr("ry", 4)
+            .attr("fill", color);
+        
+        // 添加倒三角形
+        const triangleSize = 8;
+        g.append("path")
+            .attr("d", `M${x-triangleSize/2},${labelY+labelHeight/2} L${x+triangleSize/2},${labelY+labelHeight/2} L${x},${labelY+labelHeight/2+triangleSize} Z`)
+            .attr("fill", color);
+        
+        // 添加文本 - 白色粗体
         g.append("text")
             .attr("x", x)
-            .attr("y", y + 20) // 放在数据点上方
+            .attr("y", labelY)
             .attr("text-anchor", "middle")
-            .attr("fill", "#000") // 黑色文本
-            .attr("font-weight", "normal") // 移除加粗
+            .attr("dominant-baseline", "middle")
+            .attr("fill", "#fff") // 白色文本
+            .attr("font-weight", "bold") // 粗体
             .style("font-size", "12px")
-            .text(point[yField].toFixed(2));
+            .text(labelText);
     }
     
     return svg.node();
