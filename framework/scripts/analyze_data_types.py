@@ -84,7 +84,7 @@ def main():
     """
     Main function to analyze data type combinations in JSON files
     """
-    input_dir = '/data/lizhen/input_data/data2'
+    input_dir = '/data/lizhen/resources/data'
     
     # Analyze data type combinations
     combinations, details = analyze_data_type_combinations(input_dir)
