@@ -41,10 +41,10 @@
       "reason": "1990/92 has the lowest Score at 10.0"
     },
     {
-      "type": "Annual Return Difference",
+      "type": "Bitcoin Difference",
       "score": 0.8,
       "annotation": "Gap between highest and lowest is 153.0",
-      "reason": "The Annual Return Difference between the highest value (163.0) and lowest value (10.0) is 153.0"
+      "reason": "The Bitcoin Difference between the highest value (163.0) and lowest value (10.0) is 153.0"
     },
     {
       "type": "overview",
@@ -110,14 +110,14 @@
     }
   },
   "data": [
-    { "Year": "2011", "Annual Return": 5},
-    { "Year": "2012", "Annual Return": 57},
-    { "Year": "2013", "Annual Return": 196},
-    { "Year": "2014", "Annual Return": 254},
-    { "Year": "2015", "Annual Return": 357},
-    { "Year": "2016", "Annual Return": 566},
-    { "Year": "2017", "Annual Return": 707},
-    { "Year": "2018", "Annual Return": 603}
+    { "Year": "2011", "Bitcoin": 130},
+    { "Year": "2012", "Bitcoin": 157},
+    { "Year": "2013", "Bitcoin": 196},
+    { "Year": "2014", "Bitcoin": 254},
+    { "Year": "2015", "Bitcoin": 357},
+    { "Year": "2016", "Bitcoin": 566},
+    { "Year": "2017", "Bitcoin": 707},
+    { "Year": "2018", "Bitcoin": 603}
   ],
   "data_columns": [
     {
@@ -129,7 +129,7 @@
       "role": "x"
     },
     {
-      "name": "Annual Return",
+      "name": "Bitcoin",
       "importance": "primary",
       "description": "S&P 500 and MSCI All World (Excluding U.S.)",
       "unit": "none",
