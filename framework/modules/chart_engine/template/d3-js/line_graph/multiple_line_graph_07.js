@@ -49,7 +49,7 @@ function makeChart(containerSelector, data) {
     // 获取唯一的组值和X值
     const groups = [...new Set(chartData.map(d => d[groupField]))];
     const xValues = [...new Set(chartData.map(d => d[xField]))].sort();
-
+    
     // 创建比例尺 - 修改为时间比例尺
     // 首先解析年份字符串为日期对象
     const parseYear = (yearStr) => {
@@ -300,7 +300,7 @@ function makeChart(containerSelector, data) {
             .attr("stop-color", getColor(highestEndGroup))
             .attr("stop-opacity", 0);
     });
-    
+
     groups.forEach(group => {
         const groupData = chartData.filter(d => d[groupField] === group);
 

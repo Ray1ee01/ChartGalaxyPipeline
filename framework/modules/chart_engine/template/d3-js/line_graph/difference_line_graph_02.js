@@ -1,7 +1,7 @@
 /*
 REQUIREMENTS_BEGIN
 {
-    "chart_type": "Difference Line Graph",
+    "chart_type": "Multiple Line Graph",
     "chart_name": "difference_line_graph_02",
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["temporal"], ["numerical"], ["categorical"]],
@@ -17,7 +17,8 @@ REQUIREMENTS_BEGIN
     "icon_mark": "none",
     "icon_label": "none",
     "has_x_axis": "yes",
-    "has_y_axis": "yes"
+    "has_y_axis": "yes",
+    "chart_for": "comparison"
 }
 REQUIREMENTS_END
 */
