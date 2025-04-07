@@ -251,7 +251,7 @@ function makeChart(containerSelector, data) {
             
             // 计算标签位置
             const labelX = barX + barWidth / 2;
-            const labelY = y + height / 2;
+            const labelY = y + height - 10;
             const labelText = `${value.toFixed(1)}%`;
             
             if (height >= minHeightForLabel) {
