@@ -2,9 +2,9 @@ import os
 import sys
 import json
 import numpy as np
-from sentence_transformers import SentenceTransformer
 import faiss
 from tqdm import tqdm
+from utils.model_loader import ModelLoader
 
 # Add the project root directory to Python path
 project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -14,7 +14,7 @@ from typing import Optional, List, Dict, Union
 
 class ImageRecommender:
     def __init__(self, embed_model_path: str):
-        self.model = SentenceTransformer(embed_model_path)
+        self.model = ModelLoader.get_model(embed_model_path)
         self.index = None
         self.image_paths = []
         self.image_data = []

@@ -5,11 +5,9 @@ import numpy as np
 from tqdm import tqdm
 import argparse
 import logging
-
 from typing import Any, Dict, List, Tuple, Union
-
 from openai import OpenAI
-from sentence_transformers import SentenceTransformer
+from utils.model_loader import ModelLoader
 
 # 配置日志
 logging.basicConfig(
@@ -46,7 +44,7 @@ class RagTitleGenerator:
         self.index_path = index_path
         self.data_path = data_path
         if embed_model_path:
-            self.embed_model = SentenceTransformer(embed_model_path)
+            self.embed_model = ModelLoader.get_model(embed_model_path)
         else:
             print("fuck")
         #else:

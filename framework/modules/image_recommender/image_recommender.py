@@ -4,7 +4,7 @@ import requests
 from typing import Dict, List, Optional
 import pandas as pd
 from logging import getLogger
-from sentence_transformers import SentenceTransformer
+from utils.model_loader import ModelLoader
 logger = getLogger(__name__)
 
 class ImageRecommender:
@@ -14,7 +14,7 @@ class ImageRecommender:
             from .create_index import ImageRecommender as IndexBuilder
             self.index_builder = IndexBuilder(embed_model_path)
             self.index_builder.load_index(index_path, data_path)
-        self.model = SentenceTransformer(embed_model_path)
+        self.model = ModelLoader.get_model(embed_model_path)
         self.base_url = base_url
         self.request_url = self.base_url + '/chat/completions'
         self.api_key = api_key
@@ -40,7 +40,7 @@ class ImageRecommender:
         column_names = [col["name"] for col in columns]
         candidate_group_col = None
         
-        if combination == "categorical + numerical":
+        if combination == "categorical + numerical" or combination == "categorical + numerical + numerical":
             candidate_group_col = column_names[0]
         elif combination == "categorical + numerical + categorical":
             candidate_group_col = column_names[2]

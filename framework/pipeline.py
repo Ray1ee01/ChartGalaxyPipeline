@@ -274,7 +274,7 @@ def run_single_file(input_path, output_path, temp_dir=None, modules_to_run=None)
                         data_path=text_data_path,
                         index_path=text_index_path
                     )
-                current_input = output_path
+                    current_input = output_path
             elif module_name == "color_recommender":
                 module = import_module(f"modules.{module_name}.{module_name}")
                 if not should_skip_module(module_name, output_path):
@@ -287,7 +287,7 @@ def run_single_file(input_path, output_path, temp_dir=None, modules_to_run=None)
                         data_path=color_data_path,
                         index_path=color_index_path
                     )
-                current_input = output_path
+                    current_input = output_path
             elif module_name == "image_recommender":
                 module = import_module(f"modules.{module_name}.{module_name}")
                 if not should_skip_module(module_name, output_path):
@@ -301,14 +301,14 @@ def run_single_file(input_path, output_path, temp_dir=None, modules_to_run=None)
                         index_path=image_index_path,
                         resource_path=image_resource_path
                     )
-                current_input = output_path
+                    current_input = output_path
             elif module_name == "chart_engine":
                 # 输入是JSON，输出是SVG
                 module = import_module(f"modules.{module_name}.{module_name}")
                 svg_output = output_path.with_suffix('.svg')
                 if not svg_output.exists():
                     module.process(input=str(current_input), output=str(svg_output))
-                current_input = current_input  # 保持JSON作为下一个模块的输入
+                current_input = svg_output  # 更新为SVG文件作为下一个模块的输入
                 
             elif module_name == "title_styler":
                 # 输入是JSON，输出是SVG
@@ -316,7 +316,7 @@ def run_single_file(input_path, output_path, temp_dir=None, modules_to_run=None)
                 title_svg = output_path.parent / f"{output_path.stem}_title.svg"
                 if not title_svg.exists():
                     module.process(input=str(current_input), output=str(title_svg))
-                current_input = current_input  # 保持JSON作为下一个模块的输入
+                current_input = title_svg  # 更新为标题SVG作为下一个模块的输入
                 
             elif module_name == "layout_optimizer":
                 # 输入包括JSON和同名SVG，输出是最终SVG
@@ -331,14 +331,14 @@ def run_single_file(input_path, output_path, temp_dir=None, modules_to_run=None)
                         input_title=str(title_svg),
                         output=str(final_svg)
                     )
-                current_input = current_input  # 保持JSON作为下一个模块的输入
+                current_input = final_svg  # 更新为最终SVG作为下一个模块的输入
                 
             else:
                 # 普通模块：输入JSON，输出JSON
                 module = import_module(f"modules.{module_name}.{module_name}")
                 if not should_skip_module(module_name, output_path):
                     module.process(input=str(current_input), output=str(output_path))
-                current_input = output_path
+                    current_input = output_path
             
         return True
         

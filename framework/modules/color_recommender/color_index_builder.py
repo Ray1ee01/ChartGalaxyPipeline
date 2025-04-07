@@ -1,18 +1,17 @@
 import json
 import numpy as np
 import faiss
-from sentence_transformers import SentenceTransformer
 from typing import Dict, List, Optional
 import os
+from utils.model_loader import ModelLoader
 
 class ColorIndexBuilder:
     def __init__(self, data_path: str = "./static/color_palette.json", index_path: str = "./static/color_palette.index", embed_model_path: str = "all-MiniLM-L6-v2"):
         # Convert relative path to absolute path
         current_dir = os.path.dirname(os.path.abspath(__file__))
         self.color_palette_path = data_path
-        # Initialize the SentenceTransformer model without the show_progress_bar parameter
-        # which was causing an error: "got an unexpected keyword argument 'show_progress_bar'"
-        self.model = SentenceTransformer(embed_model_path)
+        # Use the global ModelLoader to get the model instance
+        self.model = ModelLoader.get_model(embed_model_path)
         self.index = None
         self.color_palettes = None
         self.index_path = index_path

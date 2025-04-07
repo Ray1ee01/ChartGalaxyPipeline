@@ -84,7 +84,7 @@ class ColorRecommender:
         """
         column_names = [col["name"] for col in columns]
         
-        if combination == "categorical + numerical":
+        if combination == "categorical + numerical" or combination == "categorical + numerical + numerical":
             return column_names[0]
         elif combination == "categorical + numerical + categorical":
             return column_names[2]
@@ -151,12 +151,12 @@ class ColorRecommender:
         # Filter palettes that have enough colors
         suitable_palettes = [
             p for p in similar_palettes 
-            if len(p['palette']['main_color']) >= required_color_num + 1
+            if 'main_color' in p['palette'] and len(p['palette']['main_color']) >= required_color_num + 1
         ]
         
-        if not suitable_palettes:
+        if len(suitable_palettes) == 0:
             # If no palette has enough colors, use the most similar one
-            suitable_palettes = similar_palettes
+            return random.choice(similar_palettes[:3])['palette']
             
         # TODO: Implement custom selection logic based on requirements
         return random.choice(suitable_palettes[:3])['palette']
@@ -193,6 +193,9 @@ class ColorRecommender:
         similar_palettes = self.index_builder.find_similar_palettes(query_text, k=25)
         # Step 5: Select a suitable palette
         selected_palette = self.select_suitable_palette(similar_palettes, required_color_num)
+
+        if len(selected_palette["main_color"]) <= required_color_num:
+            by_group = None
         
         '''
          {
@@ -228,34 +231,32 @@ class ColorRecommender:
         '''
         # Step 6: Create the color scheme
         color_scheme = {
-            "colors": {
-                "field": {},
-                "other": {
-                    "primary": None,
-                },
-                "available_colors": [],
-                "background_color": selected_palette["bcg"],
-                "text_color": self.basic_colors_hex[0]
-            }
+            "field": {},
+            "other": {
+                "primary": None,
+            },
+            "available_colors": [],
+            "background_color": selected_palette["bcg"],
+            "text_color": self.basic_colors_hex[0]
         }
         
         colors = selected_palette["main_color"] + selected_palette["context_colors"]
         if by_group:
             unique_values = data[by_group].unique()
-            color_scheme["colors"]["other"]["primary"] = selected_palette["main_color"][0]
+            color_scheme["other"]["primary"] = selected_palette["main_color"][0]
             for i, value in enumerate(unique_values):
-                color_scheme["colors"]["field"][str(value)] = selected_palette["main_color"][i]
+                color_scheme["field"][str(value)] = selected_palette["main_color"][i]
             if required_color_num < len(colors):
-                color_scheme["colors"]["other"]["secondary"] = colors[required_color_num]
+                color_scheme["other"]["secondary"] = colors[required_color_num]
                 for i in range(required_color_num + 1, len(colors)):
-                    color_scheme["colors"]["available_colors"].append(colors[i])
+                    color_scheme["available_colors"].append(colors[i])
         else:
             required_color_num = 1
-            color_scheme["colors"]["other"]["primary"] = selected_palette["main_color"][0]
+            color_scheme["other"]["primary"] = selected_palette["main_color"][0]
             if required_color_num < len(colors):
-                color_scheme["colors"]["other"]["secondary"] = colors[required_color_num]
+                color_scheme["other"]["secondary"] = colors[required_color_num]
                 for i in range(required_color_num + 1, len(colors)):
-                    color_scheme["colors"]["available_colors"].append(colors[i])
+                    color_scheme["available_colors"].append(colors[i])
         
         return color_scheme
 
@@ -281,7 +282,7 @@ def process(input: str, output: str, embed_model_path: str = "all-MiniLM-L6-v2",
         color_result = recommender.recommend_colors(processed_data)
         
         # 添加颜色方案到数据中
-        processed_data["color_scheme"] = color_result
+        processed_data["colors"] = color_result
         
         # 保存结果
         with open(output, "w", encoding="utf-8") as f:

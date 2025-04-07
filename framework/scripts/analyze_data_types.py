@@ -1,14 +1,20 @@
 import os
 import json
+import sys
 from collections import Counter
 from typing import Dict, List, Set, Tuple
 
-def analyze_data_type_combinations(directory: str) -> Tuple[Dict[str, int], Dict[str, List[Dict[str, List[str]]]]]:
+# Add parent directory to Python path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from config import data_resource_path
+
+def analyze_data_type_combinations(directory: str, subdir: str = None) -> Tuple[Dict[str, int], Dict[str, List[Dict[str, List[str]]]]]:
     """
     Analyze the data type combinations in JSON files in the specified directory.
     
     Args:
-        directory: Path to the directory containing JSON files
+        directory: Base directory path
+        subdir: Optional subdirectory to scan (relative to base directory)
         
     Returns:
         Tuple containing:
@@ -21,21 +27,27 @@ def analyze_data_type_combinations(directory: str) -> Tuple[Dict[str, int], Dict
     # Dictionary to store file details for each combination
     combination_details = {}
     
-    # Get all JSON files in the directory
-    json_files = [f for f in os.listdir(directory) if f.endswith('.json')]
+    # Construct the full path to scan
+    scan_path = os.path.join(directory, subdir) if subdir else directory
+    
+    # Get all JSON files recursively
+    json_files = []
+    for root, _, files in os.walk(scan_path):
+        for file in files:
+            if file.endswith('.json'):
+                json_files.append(os.path.join(root, file))
     
     print(f"Found {len(json_files)} JSON files to analyze")
     
     # Process each JSON file
-    for json_file in json_files:
-        file_path = os.path.join(directory, json_file)
+    for file_path in json_files:
         try:
             with open(file_path, 'r', encoding='utf-8') as f:
                 data = json.load(f)
             
             # Check if the file has the expected structure
             if 'data' not in data or 'columns' not in data['data']:
-                print(f"File {json_file} does not have the expected structure")
+                print(f"File {file_path} does not have the expected structure")
                 continue
             
             # Get all data types from the columns
@@ -52,9 +64,6 @@ def analyze_data_type_combinations(directory: str) -> Tuple[Dict[str, int], Dict
                         column_details[data_type] = []
                     column_details[data_type].append(column['name'])
             
-            # Sort data types to ensure consistent ordering
-            # data_types.sort()
-            
             # Create a combination key
             combination = " + ".join(data_types)
             
@@ -65,8 +74,10 @@ def analyze_data_type_combinations(directory: str) -> Tuple[Dict[str, int], Dict
             if combination not in combination_details:
                 combination_details[combination] = []
             
+            # Store relative path for display
+            relative_path = os.path.relpath(file_path, directory)
             combination_details[combination].append({
-                'filename': json_file,
+                'filename': relative_path,
                 'columns': column_details
             })
             
@@ -76,7 +87,7 @@ def analyze_data_type_combinations(directory: str) -> Tuple[Dict[str, int], Dict
                 json.dump(data, f, indent=2)
             
         except Exception as e:
-            print(f"Error processing {json_file}: {e}")
+            print(f"Error processing {file_path}: {e}")
     
     return data_type_combinations, combination_details
 
@@ -84,10 +95,14 @@ def main():
     """
     Main function to analyze data type combinations in JSON files
     """
-    input_dir = '/data/lizhen/resources/data'
+    # Use data_resource_path from config
+    input_dir = data_resource_path
+    
+    # You can specify a subdirectory here, or leave it as None to scan all
+    subdir = None  # Example: "specific_folder"
     
     # Analyze data type combinations
-    combinations, details = analyze_data_type_combinations(input_dir)
+    combinations, details = analyze_data_type_combinations(input_dir, subdir)
     
     # Print results
     print("\nData Type Combinations Analysis:")
@@ -104,7 +119,8 @@ def main():
             print("  Detailed information:")
             for file_info in details[combination]:
                 # Remove the file using os.remove
-                os.remove(os.path.join(input_dir, file_info['filename']))
+                full_path = os.path.join(input_dir, file_info['filename'])
+                os.remove(full_path)
                 print(f"  - Filename: {file_info['filename']}")
                 print("    Columns by data type:")
                 for data_type, column_names in file_info['columns'].items():
