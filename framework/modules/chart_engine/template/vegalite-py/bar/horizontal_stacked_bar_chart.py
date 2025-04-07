@@ -36,7 +36,7 @@ class HorizontalStackedBarChart(HorizontalBarChart):
     def make_specification(self, json_data: Dict) -> Dict:
         specification = super().make_specification(json_data)
         encoding = specification['encoding']
-        data_columns = json_data['data_columns']
+        data_columns = json_data['data']['columns']
         group_column = None
         for column in data_columns:
             if column['role'] == 'group':

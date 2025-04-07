@@ -657,11 +657,11 @@ REQUIREMENTS_END
 
 def make_options(json_data):
     # 提取数据
-    chart_data = json_data['data']
+    chart_data = json_data['data']['data']
     variables = json_data['variables']
     typography = json_data['typography']
     colors = json_data['colors']
-    data.columns = json_data['data.columns']
+    data.columns = json_data['data']['columns']
     
     # 提取字段名
     x_field = data.columns[0]['name']

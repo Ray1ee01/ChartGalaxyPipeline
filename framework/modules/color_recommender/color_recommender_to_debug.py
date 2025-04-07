@@ -44,7 +44,7 @@ def process(input: str, output: str) -> bool:
             "title": data["metadata"]["title"],
             "description": data["metadata"]["description"],
             "main_insight": data["metadata"]["main_insight"],
-            "columns": data["data_columns"],
+            "columns": data["data"]["columns"],
             "data_facts": data["datafacts"]
         }
         

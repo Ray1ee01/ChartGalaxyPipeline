@@ -42,7 +42,7 @@ class PieChart(VegaLiteTemplate):
     def make_axis_specification(self, json_data: Dict) -> Dict:
         variables = json_data['variables']
         constants = json_data['constants']
-        data_columns = json_data['data_columns']
+        data_columns = json_data['data']['columns']
         y_column = None
         for column in data_columns:
             if column['role'] == 'y':

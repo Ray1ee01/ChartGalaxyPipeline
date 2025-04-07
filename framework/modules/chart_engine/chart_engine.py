@@ -65,7 +65,7 @@ if __name__ == '__main__':
     
     # Get the appropriate template for this chart type
     # Prefer JavaScript template for testing
-    engine_preference = []
+    engine_preference = None
     engine, template = get_template_for_chart_name(chart_name, engine_preference=engine_preference)
     
     if engine is None:

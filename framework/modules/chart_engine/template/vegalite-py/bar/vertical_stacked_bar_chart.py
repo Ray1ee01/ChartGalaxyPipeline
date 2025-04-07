@@ -38,7 +38,7 @@ class VerticalStackedBarChart(VerticalBarChart):
     def make_specification(self, json_data: Dict) -> Dict:
         specification = super().make_specification(json_data)
         encoding = specification['encoding']
-        data_columns = json_data['data_columns']
+        data_columns = json_data['data']['columns']
         group_column = None
         for column in data_columns:
             if column['role'] == 'group':
@@ -51,7 +51,7 @@ class VerticalStackedBarChart(VerticalBarChart):
         return specification
 
     def apply_icon_mark_side(self, json_data: Dict):
-        data_columns = json_data['data_columns']
+        data_columns = json_data['data']['columns']
         images = json_data['images']
         field_image_map = images['field']
         group_column = None
@@ -70,7 +70,7 @@ class VerticalStackedBarChart(VerticalBarChart):
 
     def apply_icon_mark_overlay(self, json_data: Dict):
         print("apply_icon_mark_overlay")
-        data_columns = json_data['data_columns']
+        data_columns = json_data['data']['columns']
         images = json_data['variables']['images']
         field_image_map = images['field']
         group_column = None

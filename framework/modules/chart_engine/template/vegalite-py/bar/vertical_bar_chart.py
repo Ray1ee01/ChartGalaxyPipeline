@@ -143,7 +143,7 @@ class VerticalBarChart(VegaLiteTemplate):
         return specification
 
     # def apply_icon_mark_side(self, json_data: Dict):
-    #     data_columns = json_data['data_columns']
+    #     data_columns = json_data['data']['columns']
     #     images = json_data['images']
     #     field_image_map = images['field']
     #     x_column = None

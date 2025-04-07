@@ -235,11 +235,20 @@ class TitleGenerator:
         return text_left + text + text_right
     
     
-
 if __name__ == '__main__':
-    with open('/data1/liduan/generation/chart/chart_pipeline/framework/test/small/datajson/3.json', 'r') as f:
+    import argparse
+    
+    parser = argparse.ArgumentParser(description='Generate title for a chart')
+    parser.add_argument('--input', '-i', type=str, required=True, help='Input JSON file path')
+    parser.add_argument('--output', '-o', type=str, help='Output SVG file path')
+    args = parser.parse_args()
+    
+    with open(args.input, 'r') as f:
         json_data = json.load(f)
+    
     title_generator = TitleGenerator(json_data)
     result = title_generator.generate()
-    # with open('result.svg', 'w') as f:
-    #     f.write(result[0])
+    
+    if args.output:
+        with open(args.output, 'w') as f:
+            f.write(result[0])

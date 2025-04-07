@@ -21,7 +21,7 @@ class VegaLiteTemplate:
                 "view": {"stroke": None}
             },
             "data": {
-                "values": json_data['data']
+                "values": json_data['data']['data']
             }
         }
         variables = json_data['variables']
@@ -76,7 +76,7 @@ class VegaLiteTemplate:
         self.marks = element_parser.marks
         self.axes = element_parser.axes
         self.axis_labels = element_parser.axis_labels
-        data_columns = self.json_data['data_columns']
+        data_columns = self.json_data['data']['columns']
         for mark in self.marks:
             element_with_data = find_element_with_aria_label(mark)
             data_dict = extract_data_from_aria_label(element_with_data.attributes.get('aria-label', ''), data_columns)
