@@ -94,6 +94,7 @@ function makeChart(containerSelector, data) {
         .attr("d", `M 0,0 L ${width},0 L ${width},${height} L 0,0 Z`)
         .attr("fill", "#f4f6f8")
         .attr("fill-opacity", 1)
+        .attr("class", "background")
         .attr("stroke", "none");
     
     // 添加背景 - 下方三角形（深色）
@@ -101,6 +102,7 @@ function makeChart(containerSelector, data) {
         .attr("d", `M 0,0 L 0,${height} L ${width},${height} L 0,0 Z`)
         .attr("fill", "#e6e3db")
         .attr("fill-opacity", 1)
+        .attr("class", "background")
         .attr("stroke", "none");
     
     // 添加网格线覆盖整个SVG
@@ -109,6 +111,7 @@ function makeChart(containerSelector, data) {
         .attr("height", height)
         .attr("fill", "url(#grid-pattern)")
         .attr("fill-opacity", 1)
+        .attr("class", "background")
         .attr("stroke", "none");
     
     const g = svg.append("g")
