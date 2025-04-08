@@ -32,7 +32,7 @@ class VerticalGroupBarChart(VerticalBarChart):
     
     def make_color_specification(self, json_data: Dict) -> Dict:
         group_column = None 
-        for column in json_data['data_columns']:
+        for column in json_data['data']['columns']:
             if column['role'] == 'group':
                 group_column = column['name']
                 break
@@ -54,7 +54,7 @@ class VerticalGroupBarChart(VerticalBarChart):
     def make_specification(self, json_data: Dict) -> Dict:
         specification = super().make_specification(json_data)
         encoding = specification['encoding']
-        data_columns = json_data['data_columns']
+        data_columns = json_data['data']['columns']
         group_column = None
         for column in data_columns:
             if column['role'] == 'group':

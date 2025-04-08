@@ -40,7 +40,7 @@ class StackedAreaChart(AreaChart):
     
     def make_color_specification(self, json_data: Dict) -> Dict:
         group_column = None 
-        for column in json_data['data_columns']:
+        for column in json_data['data']['columns']:
             if column['role'] == 'group':
                 group_column = column['name']
                 break

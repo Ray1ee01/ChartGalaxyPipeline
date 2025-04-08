@@ -58,7 +58,7 @@ class VerticalGroupBarChart1(VerticalGroupBarChart0):
             "baseline": "middle",
             "align": "right"
         }
-        data_columns = json_data['data_columns']
+        data_columns = json_data['data']['columns']
         x_column = None
         y_column = None
         group_column = None

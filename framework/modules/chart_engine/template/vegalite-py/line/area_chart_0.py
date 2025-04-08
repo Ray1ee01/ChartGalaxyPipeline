@@ -42,7 +42,7 @@ class AreaChart0(AreaChart):
     def make_specification(self, json_data: Dict) -> Dict:
         specification = super().make_specification(json_data)
         y_column = None
-        for data_column in json_data['data_columns']:
+        for data_column in json_data['data']['columns']:
             if data_column['role'] == 'y':
                 y_column = data_column
         transfrom = [

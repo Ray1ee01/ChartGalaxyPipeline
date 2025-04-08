@@ -48,7 +48,7 @@ class VerticalGroupBarChart2(VerticalGroupBarChart0):
             "dy": -10,
             "dx": 5
         }
-        data_columns = json_data['data_columns']
+        data_columns = json_data['data']['columns']
         x_column = None
         y_column = None
         group_column = None

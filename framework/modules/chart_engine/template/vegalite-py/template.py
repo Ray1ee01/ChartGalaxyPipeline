@@ -78,7 +78,7 @@ class VegaLiteTemplate:
         self.marks = element_parser.marks
         self.axes = element_parser.axes
         self.axis_labels = element_parser.axis_labels
-        data_columns = self.json_data['data_columns']
+        data_columns = self.json_data['data']['columns']
         x_column = None
         for data_column in data_columns:
             if data_column['role'] == 'x':

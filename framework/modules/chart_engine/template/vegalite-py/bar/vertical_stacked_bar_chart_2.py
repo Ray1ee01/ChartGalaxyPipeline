@@ -60,7 +60,7 @@ class VerticalStackedBarChart2(VerticalStackedBarChart1):
             "fontWeight": annotation_typography['font_weight'],
             "color": "#ffffff"
         }
-        data_columns = json_data['data_columns']
+        data_columns = json_data['data']['columns']
         x_column = None
         y_column = None
         group_column = None

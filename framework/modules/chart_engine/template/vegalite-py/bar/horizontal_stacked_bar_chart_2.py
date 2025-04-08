@@ -67,7 +67,7 @@ class HorizontalStackedBarChart2(HorizontalStackedBarChart1):
             "fontWeight": annotation_typography['font_weight'],
             "color": "#ffffff"
         }
-        data_columns = json_data['data_columns']
+        data_columns = json_data['data']['columns']
         x_column = None
         y_column = None
         for column in data_columns:
@@ -104,7 +104,7 @@ class HorizontalStackedBarChart2(HorizontalStackedBarChart1):
         specification['layer'].append(new_annotation_spec)
         
         y_column = None
-        for column in json_data['data_columns']:
+        for column in json_data['data']['columns']:
             if column['role'] == 'y':
                 y_column = column
         sort_config = {
@@ -122,7 +122,7 @@ class HorizontalStackedBarChart2(HorizontalStackedBarChart1):
         
     def apply_axis_label_side(self, json_data: Dict):
         print("apply_icon_mark_overlay")
-        data_columns = json_data['data_columns']
+        data_columns = json_data['data']['columns']
         x_column = None
         for data_column in data_columns:
             if data_column['role'] == 'x':

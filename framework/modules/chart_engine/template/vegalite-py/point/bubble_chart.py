@@ -32,7 +32,7 @@ class BubbleChart(ScatterPlot):
     
     def make_size_specification(self, json_data: Dict) -> Dict:
 <<<<<<< HEAD
-        data_columns = json_data['data_columns']
+        data_columns = json_data['data']['columns']
 =======
         data_columns = json_data['data']['columns']
 >>>>>>> origin/dev

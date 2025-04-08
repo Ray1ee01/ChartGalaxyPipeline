@@ -51,7 +51,7 @@ class LineChart(VegaLiteTemplate):
         label_color = json_data['colors']['text_color']
 
         print(label_typography)
-        data_columns = json_data['data_columns']
+        data_columns = json_data['data']['columns']
         x_axis_config = None
         y_axis_config = None
         for data_column in data_columns:

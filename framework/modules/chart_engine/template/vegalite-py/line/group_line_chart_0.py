@@ -84,7 +84,7 @@ class GroupLineChart0(GroupLineChart):
         return specification
     
     def make_annotation_specification_right(self, json_data: Dict) -> Dict:
-        data_columns = json_data['data_columns']
+        data_columns = json_data['data']['columns']
         x_column = None
         y_column = None
         group_column = None
@@ -119,7 +119,7 @@ class GroupLineChart0(GroupLineChart):
         return annotation_encoding_spec
     
     def make_annotation_specification_left(self, json_data: Dict) -> Dict:
-        data_columns = json_data['data_columns']
+        data_columns = json_data['data']['columns']
         x_column = None
         y_column = None
         group_column = None

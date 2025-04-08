@@ -52,7 +52,7 @@ class HorizontalBarChart4(HorizontalBarChart1):
     
     def apply_axis_label_side(self, json_data: Dict):
         print("apply_icon_mark_overlay")
-        data_columns = json_data['data_columns']
+        data_columns = json_data['data']['columns']
         x_column = None
         for data_column in data_columns:
             if data_column['role'] == 'x':

@@ -27,7 +27,7 @@ class VerticalBarChart1(VerticalBarChart):
         return super().make_mark_specification(json_data)
     def make_axis_specification(self, json_data: Dict) -> Dict:
         y_column = None
-        for data_column in json_data['data_columns']:
+        for data_column in json_data['data']['columns']:
             if data_column['role'] == 'y':
                 y_column = data_column
         x_encoding_specification, y_encoding_specification = super().make_axis_specification(json_data)
@@ -60,7 +60,7 @@ class VerticalBarChart1(VerticalBarChart):
     def make_specification(self, json_data: Dict) -> Dict:
         specification = super().make_specification(json_data)
         y_column = None
-        for data_column in json_data['data_columns']:
+        for data_column in json_data['data']['columns']:
             if data_column['role'] == 'y':
                 y_column = data_column
         transfrom = [
@@ -73,7 +73,7 @@ class VerticalBarChart1(VerticalBarChart):
         return specification
 
     # def apply_icon_mark_side(self, json_data: Dict):
-    #     data_columns = json_data['data_columns']
+    #     data_columns = json_data['data']['columns']
     #     images = json_data['images']
     #     field_image_map = images['field']
     #     x_column = None

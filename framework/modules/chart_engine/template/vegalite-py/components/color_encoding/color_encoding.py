@@ -12,13 +12,13 @@ def available_first(json_data: Dict) -> Dict:
 def x_gradient_to_half(json_data: Dict, target_color: str) -> Dict:
     # 将颜色转换为RGB值            
     x_column = None
-    data_columns = json_data['data_columns']
+    data_columns = json_data['data']['columns']
     for data_column in data_columns:
         if data_column['role'] == 'x':
             x_column = data_column['name']
             break
     x_values = []
-    for item in json_data['data']:
+    for item in json_data['data']['data']:
         x_values.append(item[x_column])
     # 使用dict.fromkeys()保持原有顺序
     x_values = list(dict.fromkeys(x_values))
@@ -43,13 +43,13 @@ def x_gradient_to_half(json_data: Dict, target_color: str) -> Dict:
 def x_one_lighter(json_data: Dict) -> Dict:
     # 将颜色转换为RGB值            
     x_column = None
-    data_columns = json_data['data_columns']
+    data_columns = json_data['data']['columns']
     for data_column in data_columns:
         if data_column['role'] == 'x':
             x_column = data_column['name']
             break
     x_values = []
-    for item in json_data['data']:
+    for item in json_data['data']['data']:
         x_values.append(item[x_column])
     # 使用dict.fromkeys()保持原有顺序
     x_values = list(dict.fromkeys(x_values))
@@ -72,13 +72,13 @@ def x_one_lighter(json_data: Dict) -> Dict:
 
 def gridient_primary_secondary_y(json_data: Dict) -> Dict:
     y_column = None
-    for data_column in json_data['data_columns']:
+    for data_column in json_data['data']['columns']:
         if data_column['role'] == 'y':
             y_column = data_column['name']
     primary_color = json_data['colors']['othter']['primary']
     secondary_color = json_data['colors']['othter']['secondary']
     y_values = []
-    for item in json_data['data']:
+    for item in json_data['data']['data']:
         y_values.append(item[y_column])
     y_max = max(y_values)
     y_min = min(y_values)
@@ -99,13 +99,13 @@ def gridient_primary_secondary_y(json_data: Dict) -> Dict:
 def x_gradient_primary_secondary(json_data: Dict) -> Dict:
     # 将颜色转换为RGB值
     x_column = None
-    data_columns = json_data['data_columns']
+    data_columns = json_data['data']['columns']
     for data_column in data_columns:
         if data_column['role'] == 'x':
             x_column = data_column['name']
             break
     x_values = []
-    for item in json_data['data']:
+    for item in json_data['data']['data']:
         x_values.append(item[x_column])
     x_values = list(dict.fromkeys(x_values))
             

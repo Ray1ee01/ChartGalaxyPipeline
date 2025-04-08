@@ -73,7 +73,7 @@ class HorizontalBarChart3(HorizontalBarChart1):
     def make_number_specification(self, json_data: Dict) -> Dict:
         y_column = None
         x_column = None
-        for data_column in json_data['data_columns']:
+        for data_column in json_data['data']['columns']:
             if data_column['role'] == 'y':
                 y_column = data_column['name']
             if data_column['role'] == 'x':
@@ -119,7 +119,7 @@ class HorizontalBarChart3(HorizontalBarChart1):
     
     def apply_axis_label_side(self, json_data: Dict):
         print("apply_icon_mark_overlay")
-        data_columns = json_data['data_columns']
+        data_columns = json_data['data']['columns']
         x_column = None
         for data_column in data_columns:
             if data_column['role'] == 'x':

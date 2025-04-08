@@ -43,7 +43,7 @@ class HorizontalStackedBarChart0(HorizontalBarChart):
     
     def make_color_specification(self, json_data: Dict) -> Dict:
         group_column = None
-        data_columns = json_data['data_columns']
+        data_columns = json_data['data']['columns']
         for data_column in data_columns:
             if data_column['role'] == 'group':
                 group_column = data_column['name']
@@ -85,7 +85,7 @@ class HorizontalStackedBarChart0(HorizontalBarChart):
             "fontWeight": annotation_typography['font_weight'],
             "color": "#ffffff"
         }
-        data_columns = json_data['data_columns']
+        data_columns = json_data['data']['columns']
         x_column = None
         y_column = None
         for column in data_columns:
@@ -168,7 +168,7 @@ class HorizontalStackedBarChart0(HorizontalBarChart):
         
     def apply_axis_label_side(self, json_data: Dict):
         print("apply_icon_mark_overlay")
-        data_columns = json_data['data_columns']
+        data_columns = json_data['data']['columns']
         x_column = None
         for data_column in data_columns:
             if data_column['role'] == 'x':

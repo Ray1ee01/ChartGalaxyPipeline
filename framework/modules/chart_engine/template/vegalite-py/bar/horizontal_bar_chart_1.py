@@ -58,7 +58,7 @@ class HorizontalBarChart1(HorizontalBarChart):
             "fontWeight": annotation_typography['font_weight'],
             "color": text_color
         }
-        data_columns = json_data['data_columns']
+        data_columns = json_data['data']['columns']
         x_column = None
         y_column = None
         for column in data_columns:

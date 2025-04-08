@@ -54,7 +54,7 @@ class VerticalGroupBarChart4(VerticalGroupBarChart3):
         super().adjust_legend_position()
         
     def apply_axis_label_side(self, json_data: Dict):
-        data_columns = json_data['data_columns']
+        data_columns = json_data['data']['columns']
         x_column = None
         for data_column in data_columns:
             if data_column['role'] == 'x':

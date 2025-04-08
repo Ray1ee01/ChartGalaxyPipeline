@@ -52,7 +52,7 @@ class VerticalBarChart(VegaLiteTemplate):
         label_color = json_data['colors']['text_color']
         label_typography = json_data['typography']['label']
         print(label_typography)
-        data_columns = json_data['data_columns']
+        data_columns = json_data['data']['columns']
         x_axis_config = None
         y_axis_config = None
         for data_column in data_columns:
@@ -186,7 +186,7 @@ class VerticalBarChart(VegaLiteTemplate):
         return specification
 
     # def apply_icon_mark_side(self, json_data: Dict):
-    #     data_columns = json_data['data_columns']
+    #     data_columns = json_data['data']['columns']
     #     images = json_data['images']
     #     field_image_map = images['field']
     #     x_column = None

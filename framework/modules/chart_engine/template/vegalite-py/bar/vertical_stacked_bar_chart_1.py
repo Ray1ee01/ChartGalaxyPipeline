@@ -66,7 +66,7 @@ class VerticalStackedBarChart1(VerticalStackedBarChart):
             "fontWeight": annotation_typography['font_weight'],
             "color": text_color
         }
-        data_columns = json_data['data_columns']
+        data_columns = json_data['data']['columns']
         x_column = None
         y_column = None
         group_column = None
@@ -106,7 +106,7 @@ class VerticalStackedBarChart1(VerticalStackedBarChart):
         x_column = None 
         y_column = None
         group_column = None
-        for column in json_data['data_columns']:
+        for column in json_data['data']['columns']:
             if column['role'] == 'y':
                 y_column = column
             if column['role'] == 'group':

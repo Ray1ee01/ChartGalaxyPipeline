@@ -40,13 +40,13 @@ class VerticalBarChart0(VerticalBarChart):
         darker_color = interpolate_color2(main_color, "#000000", 5)[1]
         darker_color = "#e2632c"
         x_column = None
-        data_columns = json_data['data_columns']
+        data_columns = json_data['data']['columns']
         for data_column in data_columns:
             if data_column['role'] == 'x':
                 x_column = data_column['name']
                 break
         x_values = []
-        for item in json_data['data']:
+        for item in json_data['data']['data']:
             x_values.append(item[x_column])
         x_values = list(dict.fromkeys(x_values))
         # 只有第一个颜色使用darker_color，其他使用main_color
@@ -72,7 +72,7 @@ class VerticalBarChart0(VerticalBarChart):
             "fontWeight": annotation_typography['font_weight'],
             "color": text_color
         }
-        data_columns = json_data['data_columns']
+        data_columns = json_data['data']['columns']
         x_column = None
         y_column = None
         for column in data_columns:
@@ -123,7 +123,7 @@ class VerticalBarChart0(VerticalBarChart):
         return specification
 
     # def apply_icon_mark_side(self, json_data: Dict):
-    #     data_columns = json_data['data_columns']
+    #     data_columns = json_data['data']['columns']
     #     images = json_data['images']
     #     field_image_map = images['field']
     #     x_column = None

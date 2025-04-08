@@ -33,13 +33,13 @@ class DonutChart0(DonutChart):
 
     def make_order_specification(self, json_data: Dict) -> Dict:
         x_column = None
-        data_columns = json_data['data_columns']
+        data_columns = json_data['data']['columns']
         for data_column in data_columns:
             if data_column['role'] == 'x':
                 x_column = data_column['name']
                 break
         x_values = []
-        for item in json_data['data']:
+        for item in json_data['data']['data']:
             x_values.append(item[x_column])
         x_values = list(dict.fromkeys(x_values))
         
@@ -48,13 +48,13 @@ class DonutChart0(DonutChart):
     def make_color_specification(self, json_data: Dict) -> Dict:
         # 将颜色转换为RGB值            
         x_column = None
-        data_columns = json_data['data_columns']
+        data_columns = json_data['data']['columns']
         for data_column in data_columns:
             if data_column['role'] == 'x':
                 x_column = data_column['name']
                 break
         x_values = []
-        for item in json_data['data']:
+        for item in json_data['data']['data']:
             x_values.append(item[x_column])
         x_values = list(dict.fromkeys(x_values))
 
@@ -88,12 +88,12 @@ class DonutChart0(DonutChart):
         y_values = []
         y_max = -1000000
         y_min = 1000000
-        for column in json_data['data_columns']:
+        for column in json_data['data']['columns']:
             if column['role'] == 'y':
                 y_column = column['name']
             if column['role'] == 'x':
                 x_column = column['name']
-        for item in json_data['data']:
+        for item in json_data['data']['data']:
             y_value = item[y_column]
             y_values.append(y_value)
         y_median = sorted(y_values)[len(y_values) // 2]
