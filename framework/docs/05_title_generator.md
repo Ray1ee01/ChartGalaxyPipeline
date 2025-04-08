@@ -45,127 +45,79 @@
 3. **相似案例检索**: 基于输入数据的语义特征，检索训练集中最相似的图表及其标题
 4. **大模型增强生成**: 结合检索到的案例和当前数据特征，通过大语言模型生成适合的标题和副标题
 
-### 核心组件
-
-#### SentenceBERT 编码器
-
-使用预训练的SentenceBERT模型（`all-MiniLM-L6-v2`）将文本内容转换为语义向量，以进行语义相似度比较。
-
-#### FAISS 索引
-
-高性能向量索引库，用于存储和检索训练数据的语义嵌入表示，支持高效的最近邻搜索。
-
-#### 标题生成引擎
-
-基于OpenAI的大语言模型，结合检索到的相似案例生成标题和副标题，确保生成内容符合主题、简洁明了且信息准确。
-
-## 数据处理流程
-
-### 训练数据处理
-
-1. **数据预处理**: 处理输入数据，包括图表类型、列名、数据内容和数据洞察
-2. **向量化**: 使用SentenceBERT将处理后的文本转换为向量表示
-3. **索引构建**: 将向量及其对应的标题、描述信息保存到FAISS索引中
-
-### 标题生成流程
-
-1. **输入处理**: 将待生成标题的图表数据处理成与训练数据相同的格式
-2. **向量化**: 对处理后的文本进行向量化
-3. **相似案例检索**: 使用FAISS检索topk个最相似的案例
-4. **提示词构建**: 将检索到的案例与当前输入组合成提示词
-5. **标题生成**: 使用大语言模型基于提示词生成标题和副标题
-
-## 数据洞察生成
-
-模块能够从输入数据中识别和提取多种类型的数据洞察（Data Facts），包括：
-
-1. **聚合类洞察**: 最大值、最小值、平均值、总和等聚合操作
-2. **比较类洞察**: 两个数据点之间的差异比较
-3. **趋势类洞察**: 时间序列数据的变化趋势
-4. **合并类洞察**: 将多个相关的数据事实合并为一个
-5. **组合类洞察**: 组合多个不同内容的数据事实
-6. **概览类洞察**: 提供数据整体特征的概述
-
-## 参数配置
-
-模块支持以下参数配置：
-
-| 参数 | 类型 | 描述 | 默认值 |
-|------|------|------|--------|
-| `topk` | 整数 | 检索最相似样例的数量 | 3 |
-| `train_ratio` | 浮点数 | 训练集占比 | 0.8 |
-| `index_path` | 字符串 | FAISS索引保存路径 | "faiss_infographics.index" |
-| `data_path` | 字符串 | 训练数据保存路径 | "infographics_data.npy" |
-
-## 评估方法
-
-模块提供了基于BLEU得分的评估方法，用于测量生成标题与参考标题之间的相似度。评估过程包括：
-
-1. **验证集划分**: 按比例将数据集划分为训练集和验证集
-2. **RAG消融实验**: 通过调整topk值（0-9）评估检索案例数量对生成质量的影响
-3. **BLEU评分**: 使用BLEU-4评分计算生成标题与参考标题的相似度
-
 ## 使用示例
 
-### 初始化与训练
+### 命令行调用
+
+```bash
+python -m modules.title_generator.title_generator --input input_data.json --output output_data.json --index_path faiss_infographics.index --data_path infographics_data.npy --topk 3 --api_key your_api_key --base_url your_base_url
+```
+
+### 程序调用
 
 ```python
-from modules.title_generator.rag_title_generator import RagTitleGenerator
+from modules.title_generator.title_generator import process
 
-# 初始化生成器
-generator = RagTitleGenerator(
-    json_path="path/to/training_data.json",
-    train_ratio=0.8
+success = process(
+    input='input_data.json', 
+    output='output_data',
+    index_path='faiss_infographics.index',
+    data_path='infographics_data.npy',
+    topk=3,
+    api_key='your_api_key',
+    base_url='your_base_url'
 )
-
-# 处理训练数据
-generator.process_json()
+if success:
+    print("数据洞察生成完成")
+else:
+    print("数据洞察生成失败")
 ```
 
-### 生成标题
+## 构建标题生成所需的向量索引
+标题生成模块使用一个基于 FAISS 的向量索引来支持检索增强生成（RAG）。该索引需要通过历史图表数据构建，一般仅需在首次使用或数据更新时运行一次。
 
+### 数据格式
+
+构建索引的训练数据应为JSON格式，结构如下：
+```json
+{
+  "chart_id_1": {
+    "metadata": {
+      "title": "图表标题",
+      "description": "图表描述",
+      "main_insight": "图标洞察"
+    },
+    "chart_type": ["图表类型"],
+    "datafacts": [{"annotation": "数据洞察"}],
+    "data": {
+      "columns": [{"name": "列名", "type": "列类型"}],
+      "data": [{"列名": "值"}]
+    }
+  },
+  "chart_id_2": {
+    // 其他图表数据...
+  }
+}
+```
+
+### 使用方式
+
+#### 命令行调用
+```bash
+python -m modules.title_generator.build_title_index --data training_data.json --index_path faiss_infographics.index --data_path infographics_data.npy
+```
+
+#### 程序调用
 ```python
-# 准备输入数据
-input_data = (image_name, {
-    "chart_type": "line",
-    "columns": [...],
-    "data": [...],
-    "data_facts": [...]
-})
+from modules.title_generator.build_title_index import process
 
-# 生成标题和描述
-title, description = generator.generate_title_description(input_data, topk=3)
-print(f"生成标题: {title}")
-print(f"生成描述: {description}")
+success = process(
+    data='training_data.json',
+    index_path='faiss_infographics.index',
+    data_path='infographics_data.npy'
+)
+if success:
+    print("索引构建完成")
+else:
+    print("索引构建失败")
 ```
-
-### 性能评估
-
-```python
-# 评估不同topk设置下的生成质量
-bleu_score = generator.evaluate_bleu()
-```
-
-## 扩展指南
-
-如需扩展RAG标题生成功能，可以考虑以下方向：
-
-1. **向量模型优化**: 使用不同的语义嵌入模型，如更大规模的BERT或其他最新模型
-2. **检索策略改进**: 实现混合检索策略，结合关键词匹配和语义搜索
-3. **数据洞察提取**: 增强数据洞察提取逻辑，支持更多领域特定的洞察类型
-4. **多语言支持**: 扩展支持多语言标题生成能力
-5. **样式定制**: 添加对不同风格标题的支持，如新闻式、问题式等
-
-## 常见问题
-
-**Q: 如何提高标题生成的相关性？**  
-A: 可以通过增加训练数据样本数量、优化向量编码模型、调整topk参数或使用更强大的生成模型来提高相关性。
-
-**Q: 如何处理特定领域的图表标题生成？**  
-A: 可以使用特定领域的训练数据进行索引构建，并调整数据洞察提取过程以关注该领域的重要特征。
-
-**Q: 系统对新数据格式的适应能力如何？**  
-A: 系统的数据预处理组件设计为灵活处理各种输入格式，但对于全新的数据格式可能需要调整预处理逻辑。
-
-**Q: RAG方法相比纯生成模型有什么优势？**  
-A: RAG方法结合了检索和生成的优点，能够基于历史案例生成更准确、更相关的标题，并且更好地保持领域特定的表达风格和术语。 

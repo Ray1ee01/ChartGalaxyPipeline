@@ -86,7 +86,11 @@ def scan_directory(dir_path, engine_type, file_extension):
                     template = item_path
                 
                 # 存储模板信息为 [engine, template]
-                templates[engine_type][chart_type][chart_name] = [engine_type, template]
+                templates[engine_type][chart_type][chart_name] = {
+                    'engine_type': engine_type,
+                    'template': template,
+                    'requirements': requirements
+                }
                     
                 # 计算相对于模板引擎主目录的路径
                 template_dir = os.path.dirname(os.path.abspath(__file__))
@@ -127,8 +131,8 @@ def scan_templates(force=False):
     scan_directory(d3_js_dir, 'd3-js', '.js')
     
     # 扫描 vegalite-py 目录及子目录
-    vegalite_py_dir = os.path.join(template_dir, 'vegalite-py')
-    scan_directory(vegalite_py_dir, 'vegalite-py', '.py')
+    # vegalite_py_dir = os.path.join(template_dir, 'vegalite-py')
+    # scan_directory(vegalite_py_dir, 'vegalite-py', '.py')
     
     # 标记已完成扫描
     _templates_scanned = True
@@ -165,7 +169,8 @@ def get_template_for_chart_type(chart_type, engine_preference=None):
             chart_names = list(templates[engine][chart_type].keys())
             if chart_names:
                 selected_name = random.choice(chart_names)
-                return templates[engine][chart_type][selected_name]
+                template_info = templates[engine][chart_type][selected_name]
+                return template_info['engine_type'], template_info['template']
     
     # Try partial matches
     for engine in engine_preference:
@@ -175,7 +180,8 @@ def get_template_for_chart_type(chart_type, engine_preference=None):
                 chart_names = list(templates[engine][template_type].keys())
                 if chart_names:
                     selected_name = random.choice(chart_names)
-                    return templates[engine][template_type][selected_name]
+                    template_info = templates[engine][template_type][selected_name]
+                    return template_info['engine_type'], template_info['template']
     
     return None, None
 
@@ -207,7 +213,8 @@ def get_template_for_chart_name(chart_name, engine_preference=None):
     for engine in engine_preference:
         for chart_type, chart_dict in templates[engine].items():
             if chart_name in chart_dict:
-                return chart_dict[chart_name]
+                template_info = chart_dict[chart_name]
+                return template_info['engine_type'], template_info['template']
     
     # Try partial matches
     # for engine in engine_preference:
@@ -232,7 +239,8 @@ def get_template_for_chart_name(chart_name, engine_preference=None):
                     max_overlap = overlap
                     best_match = name
                     print("best_match:", best_match)
-                    best_result = chart_dict[name]
+                    template_info = chart_dict[name]
+                    best_result = (template_info['engine_type'], template_info['template'])
                     print("best_result:", best_result)
     if best_result:
         return best_result

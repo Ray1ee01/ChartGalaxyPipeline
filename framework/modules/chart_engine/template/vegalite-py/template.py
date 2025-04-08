@@ -21,7 +21,7 @@ class VegaLiteTemplate:
                 "view": {"stroke": None}
             },
             "data": {
-                "values": json_data['data']
+                "values": json_data['data']['data']
             }
         }
         variables = json_data['variables']
@@ -96,7 +96,6 @@ class VegaLiteTemplate:
             element_with_data = find_element_with_aria_label(mark)
             data_dict = extract_data_from_aria_label(element_with_data.attributes.get('aria-label', ''), data_columns)
             bind_data_to_element(mark, data_dict)
-
         return elements_tree
 
     def element_tree_to_svg(self, element_tree):

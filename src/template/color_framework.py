@@ -1,6 +1,6 @@
 import colour, json, random, os
 import numpy as np
-from ..utils.global_state import *
+from config import sentence_transformer_path, infographic_library_path, infographic_image_path, color_cache_path, test_c2t_root
 from ..utils.llm_api import ask, ask_image
 from ..processors.style_design_modules.infographic_retrieve_v2 import InfographicRetriever
 # from ..processors.style_design_modules.infographic_palette import get_palette

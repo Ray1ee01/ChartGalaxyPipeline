@@ -65,7 +65,7 @@ if __name__ == '__main__':
     
     # Get the appropriate template for this chart type
     # Prefer JavaScript template for testing
-    engine_preference = ['echarts-js']
+    engine_preference = None
     engine, template = get_template_for_chart_name(chart_name, engine_preference=engine_preference)
     
     if engine is None:
@@ -124,7 +124,6 @@ if __name__ == '__main__':
                 json_data=json_data,
                 output_svg_path=output_svg_path,
                 js_file=js_wrapper_file,
-                chart_type=chart_type,
                 width=width,
                 height=height,
                 framework="echarts"  # 统一使用echarts框架

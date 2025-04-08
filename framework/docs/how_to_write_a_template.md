@@ -208,11 +208,11 @@ REQUIREMENTS_END
 
 function makeChart(containerSelector, data) {
     // 提取数据
-    const chartData = data.data;
+    const chartData = data.data.data;
     const variables = data.variables;
     const typography = data.typography;
     const colors = data.colors;
-    const dataColumns = data.data_columns;
+    const dataColumns = data.data.columns;
     
     // 设置尺寸和边距
     const width = variables.width;
@@ -341,16 +341,18 @@ Templates receive a JSON object with the following structure:
 
 ```json
 {
-    "data": [
-        {"Country": "France", "Score": 88, "Retailer Type": "Pharmacy"},
-        {"Country": "France", "Score": 10, "Retailer Type": "Online pharmacy"},
-        {"Country": "Germany", "Score": 80, "Retailer Type": "Pharmacy"}
-    ],
-    "data_columns": [
-        {"name": "Country", "importance": "primary", "description": "Country of the respondents", "role": "dimension"},
-        {"name": "Score", "importance": "primary", "description": "Score value", "role": "measure", "unit": ""},
-        {"name": "Retailer Type", "importance": "primary", "description": "Type of retailer", "role": "group"}
-    ],
+    "data": {
+        "data": [
+            {"Country": "France", "Score": 88, "Retailer Type": "Pharmacy"},
+            {"Country": "France", "Score": 10, "Retailer Type": "Online pharmacy"},
+            {"Country": "Germany", "Score": 80, "Retailer Type": "Pharmacy"}
+        ],
+        "columns": [
+            {"name": "Country", "importance": "primary", "description": "Country of the respondents", "role": "dimension"},
+            {"name": "Score", "importance": "primary", "description": "Score value", "role": "measure", "unit": ""},
+            {"name": "Retailer Type", "importance": "primary", "description": "Type of retailer", "role": "group"}
+        ],
+    },
     "variables": {
         "width": 800,
         "height": 500,
@@ -412,7 +414,7 @@ Templates receive a JSON object with the following structure:
 
 ### 1. 数据字段访问
 
-不再使用 variables.x_axis.field 等路径，而是使用 data_columns 按顺序访问字段：
+不再使用 variables.x_axis.field 等路径，而是使用 data.columns 按顺序访问字段：
 
 ```javascript
 // 旧格式 - 不要使用
@@ -421,9 +423,9 @@ const yField = variables.y_axis.field;
 const groupField = variables.color.mark_color.field;
 
 // 新格式 - 推荐使用
-const xField = data_columns[0].name;  // 第一列
-const yField = data_columns[1].name;  // 第二列
-const groupField = data_columns[2].name;  // 第三列
+const xField = data.columns[0].name;  // 第一列
+const yField = data.columns[1].name;  // 第二列
+const groupField = data.columns[2].name;  // 第三列
 ```
 
 ### 2. 视觉效果属性访问
@@ -487,11 +489,11 @@ REQUIREMENTS_END
 function makeChart(containerSelector, data) {
     // Extract data from the json_data object
     const jsonData = data;
-    const chartData = jsonData.data;
+    const chartData = jsonData.data.data;
     const variables = jsonData.variables;
     const typography = jsonData.typography;
     const colors = jsonData.colors || {};
-    const dataColumns = jsonData.data_columns;
+    const dataColumns = jsonData.data.columns;
     
     // Clear any existing content
     d3.select(containerSelector).html("");
@@ -503,7 +505,7 @@ function makeChart(containerSelector, data) {
     const innerWidth = width - margin.left - margin.right;
     const innerHeight = height - margin.top - margin.bottom;
     
-    // Extract field names from data_columns
+    // Extract field names from data.columns
     const xField = dataColumns[0].name;
     const yField = dataColumns[1].name;
     
@@ -655,15 +657,15 @@ REQUIREMENTS_END
 
 def make_options(json_data):
     # 提取数据
-    chart_data = json_data['data']
+    chart_data = json_data['data']['data']
     variables = json_data['variables']
     typography = json_data['typography']
     colors = json_data['colors']
-    data_columns = json_data['data_columns']
+    data.columns = json_data['data']['columns']
     
     # 提取字段名
-    x_field = data_columns[0]['name']
-    y_field = data_columns[1]['name']
+    x_field = data.columns[0]['name']
+    y_field = data.columns[1]['name']
     
     # 准备数据
     x_data = [item[x_field] for item in chart_data]

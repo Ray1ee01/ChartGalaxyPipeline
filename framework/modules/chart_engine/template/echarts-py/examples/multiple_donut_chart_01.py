@@ -61,12 +61,12 @@ def make_options(json_data):
         ECharts options dictionary
     """
     # Extract relevant data from json_data
-    data = json_data['data']
+    data = json_data['data']['data']
     variables = json_data['variables']
     typography = json_data['typography']
     colors_data = json_data['colors']
     images = json_data['images']
-    data_columns = json_data['data_columns']
+    data_columns = json_data['data']['columns']
     
     # Extract field names from data_columns
     x_field = data_columns[0]['name']

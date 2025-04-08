@@ -34,12 +34,12 @@ function make_option(jsonData) {
     }
     
     try {
-        const data = jsonData.data;
+        const data = jsonData.data.data;
         const variables = jsonData.variables;
         const typography = jsonData.typography || {};
         const colors = jsonData.colors || {};
         const images = jsonData.images || { field: {}, other: {} };
-        const dataColumns = jsonData.data_columns || [];
+        const dataColumns = jsonData.data.columns || [];
         
         // Extract field names from data_columns
         const xField = dataColumns[0].name;
@@ -192,13 +192,7 @@ function make_option(jsonData) {
                     rich: {
                         img: {
                             height: 20,
-                            align: 'center',
-                            backgroundColor: {
-                                image: function(params) {
-                                    const category = params.value;
-                                    return images.field[category];
-                                }
-                            }
+                            align: 'center'
                         }
                     }
                 }
