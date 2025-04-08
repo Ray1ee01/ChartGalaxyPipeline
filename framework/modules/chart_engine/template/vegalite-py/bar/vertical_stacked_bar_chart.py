@@ -33,12 +33,31 @@ class VerticalStackedBarChart(VerticalBarChart):
         return super().make_axis_specification(json_data)
     
     def make_color_specification(self, json_data: Dict) -> Dict:
-        return super().make_color_specification(json_data)
+        # return super().make_color_specification(json_data)
+        group_column = None
+        data_columns = json_data['data_columns']
+        for data_column in data_columns:
+            if data_column['role'] == 'group':
+                group_column = data_column['name']
+                break
+        ranges = []
+        domains = []
+        for value, color in json_data['colors']['field'].items():
+            ranges.append(color)
+            domains.append(value)
+        color_spec = {
+            "field": group_column,
+            "scale": {
+                "domain": domains,
+                "range": ranges
+            }
+        }
+        return color_spec
     
     def make_specification(self, json_data: Dict) -> Dict:
         specification = super().make_specification(json_data)
         encoding = specification['encoding']
-        data_columns = json_data['data']['columns']
+        data_columns = json_data['data_columns']
         group_column = None
         for column in data_columns:
             if column['role'] == 'group':
@@ -51,7 +70,7 @@ class VerticalStackedBarChart(VerticalBarChart):
         return specification
 
     def apply_icon_mark_side(self, json_data: Dict):
-        data_columns = json_data['data']['columns']
+        data_columns = json_data['data_columns']
         images = json_data['images']
         field_image_map = images['field']
         group_column = None
@@ -70,7 +89,7 @@ class VerticalStackedBarChart(VerticalBarChart):
 
     def apply_icon_mark_overlay(self, json_data: Dict):
         print("apply_icon_mark_overlay")
-        data_columns = json_data['data']['columns']
+        data_columns = json_data['data_columns']
         images = json_data['variables']['images']
         field_image_map = images['field']
         group_column = None

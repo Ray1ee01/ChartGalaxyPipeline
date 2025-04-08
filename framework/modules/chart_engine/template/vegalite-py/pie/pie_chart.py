@@ -24,10 +24,11 @@ class PieChart(VegaLiteTemplate):
         super().__init__(json_data)
 
     def make_mark_specification(self, json_data: Dict) -> Dict:
-        mark_styles = json_data['variables']['mark']
+        mark_styles = json_data["variables"]
         mark_spec = {
             "type": "arc",
-            "innerRadius": 0
+            "innerRadius": 0,
+            "outerRadius": 300
         }
         if mark_styles['has_gradient']:
             print("Vega-lite does not support gradient")
@@ -40,9 +41,7 @@ class PieChart(VegaLiteTemplate):
         return mark_spec
 
     def make_axis_specification(self, json_data: Dict) -> Dict:
-        variables = json_data['variables']
-        constants = json_data['constants']
-        data_columns = json_data['data']['columns']
+        data_columns = json_data['data_columns']
         y_column = None
         for column in data_columns:
             if column['role'] == 'y':
@@ -52,7 +51,9 @@ class PieChart(VegaLiteTemplate):
             raise ValueError("No numerical column found in data_columns")
         theta = {
             "field": y_column,
-            "type": "quantitative"
+            "type": "quantitative",
+            "sort": None,
+            "stack": True
         }
         return theta
     

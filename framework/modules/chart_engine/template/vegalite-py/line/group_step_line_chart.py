@@ -1,16 +1,14 @@
-
-
-from .horizontal_bar_chart import HorizontalBarChart
+from .step_line_chart import StepLineChart
 from typing import Dict
 
 """
 REQUIREMENTS_BEGIN
 {
     "_comment": "这些属性的值由你对特定的图表进行定义，用于要求数据的格式。完成测试后填写。",
-    "chart_type": "Horizontal Group Bar Chart",
-    "chart_name": "horizontal_group_bar_chart",
-    "required_fields": ["x","y", "group"],
-    "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
+    "chart_type": "Multiple Step Line Chart",
+    "chart_name": "multiple_step_line_chart_01",
+    "required_fields": ["x", "y", "group"],
+    "required_fields_type": [["temporal","numerical"], ["numerical"], ["categorical"]],
     "supported_effects": [],
     "required_data_points": [5, 100],
     "required_image": [],
@@ -21,7 +19,7 @@ REQUIREMENTS_BEGIN
 REQUIREMENTS_END
 """
 
-class HorizontalGroupBarChart(HorizontalBarChart):
+class MultipleStepLineChart(StepLineChart):
     def __init__(self, json_data: Dict):
         super().__init__(json_data)
 
@@ -33,18 +31,6 @@ class HorizontalGroupBarChart(HorizontalBarChart):
     
     def make_color_specification(self, json_data: Dict) -> Dict:
         return super().make_color_specification(json_data)
-
+    
     def make_specification(self, json_data: Dict) -> Dict:
-        specification = super().make_specification(json_data)
-        encoding = specification['encoding']
-        data_columns = json_data['data']['columns']
-        group_column = None
-        for column in data_columns:
-            if column['role'] == 'group':
-                group_column = column['name']
-                break
-        if group_column is not None:
-            encoding['yOffset'] = {'field': group_column}
-        else:
-            raise ValueError("Group column not found in data columns")
-        return specification
+        return super().make_specification(json_data)
