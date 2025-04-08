@@ -220,52 +220,6 @@ function makeChart(containerSelector, data) {
     // 将条纹背景移到最底层
     g.selectAll("rect").lower();
     
-    // 添加图标水印（如果有）- 放在最高Y刻度之下
-    if (images && images.other && images.other.primary) {
-        // 创建一个滤镜使图像变淡
-        const defs = svg.append("defs");
-        
-        lightGrayFilter = defs.append("filter")
-            .attr("id", "lightgray");
-            
-        lightGrayFilter.append("feColorMatrix")
-            .attr("type", "matrix")
-            .attr("values", "0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0");
-        
-        lightGrayFilter.append("feComponentTransfer")
-            .append("feFuncR")
-            .attr("type", "linear")
-            .attr("slope", "0.6")
-            .attr("intercept", "0.4");
-        
-        lightGrayFilter.append("feComponentTransfer")
-            .append("feFuncG")
-            .attr("type", "linear")
-            .attr("slope", "0.6")
-            .attr("intercept", "0.4");
-        
-        lightGrayFilter.append("feComponentTransfer")
-            .append("feFuncB")
-            .attr("type", "linear")
-            .attr("slope", "0.6")
-            .attr("intercept", "0.4");
-        
-        // 添加整个图表的水印 - 放在最高Y刻度之下
-        const iconSize = 120;
-        const watermark = g.append("image")
-            .attr("x", 20)
-            .attr("y", maxYTickPosition + 20) // 放在最高Y刻度下方20像素
-            .attr("width", iconSize)
-            .attr("height", iconSize)
-            .attr("href", images.other.primary)
-            .attr("opacity", 0.3)
-            .attr("preserveAspectRatio", "xMidYMid meet")
-            .attr("filter", "url(#lightgray)");
-        
-        watermark.lower();
-        g.selectAll("rect").lower();
-    }
-    
     // 添加水平网格线
     yTicks.forEach(tick => {
         g.append("line")

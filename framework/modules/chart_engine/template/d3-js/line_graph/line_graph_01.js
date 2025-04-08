@@ -157,26 +157,6 @@ function makeChart(containerSelector, data) {
     // 将条纹背景移到最底层
     g.selectAll("rect").lower();
     
-    // 添加图像水印（如果有）
-    if (images && images.other && images.other.primary) {
-        // 创建水印图像 - 放在最大Y刻度下方
-        const watermarkSize = 100;
-        const watermarkMargin = 50;
-        
-        const watermark = g.append("image")
-            .attr("x", watermarkMargin) // 左侧边距
-            .attr("y", maxYTickPosition + 20) // 放在最大Y刻度下方
-            .attr("width", watermarkSize)
-            .attr("height", watermarkSize)
-            .attr("href", images.other.primary)
-            .attr("opacity", 0.3) // 稍微透明
-            .attr("preserveAspectRatio", "xMidYMid meet");
-        
-        // 确保水印在条纹背景之上，但在数据区域之下
-        watermark.lower(); // 先降到底层
-        g.selectAll("rect").lower(); // 再将条纹背景降到更底层
-    }
-    
     // 添加水平网格线
     yTicks.forEach(tick => {
         // 判断是否为0刻度，为0时使用实线，否则使用虚线
