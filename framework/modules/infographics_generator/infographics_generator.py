@@ -1,12 +1,45 @@
 import json
 import os
-from typing import Dict, Optional
+import sys
+from typing import Dict, Optional, List, Tuple
 from logging import getLogger
-from modules.chart_engine.chart_engine import load_data_from_json, get_template_for_chart_name, render_chart_to_svg
+
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from modules.chart_engine.chart_engine import load_data_from_json, get_template_for_chart_type, render_chart_to_svg
+from modules.chart_engine.template.template_registry import scan_templates
 
 logger = getLogger(__name__)
 
-def process(input: str, output: str) -> bool:
+def analyze_templates(templates: Dict) -> Tuple[int, Dict[str, str]]:
+    """Analyze templates and return count and data requirements"""
+    template_count = 0
+    template_requirements = {}
+    
+    for engine, templates_dict in templates.items():
+        for chart_type, chart_names_dict in templates_dict.items():
+            for chart_name, template_info in chart_names_dict.items():
+                template_count += 1
+                if 'requirements' in template_info and 'required_fields_type' in template_info['requirements']:
+                    data_type = ' + '.join([item[0] for item in template_info['requirements']['required_fields_type']])
+                    template_requirements[f"{engine}/{chart_type}/{chart_name}"] = data_type
+                    
+    return template_count, template_requirements
+
+def check_template_compatibility(data: Dict, templates: Dict) -> List[str]:
+    """Check which templates are compatible with the given data"""
+    compatible_templates = []
+    
+    for engine, templates_dict in templates.items():
+        for chart_type, chart_names_dict in templates_dict.items():
+            for chart_name, template_info in chart_names_dict.items():
+                if 'requirements' in template_info and 'required_fields' in template_info['requirements']:
+                    required_fields = template_info['requirements']['required_fields']
+                    if all(field in data for field in required_fields):
+                        compatible_templates.append(f"{engine}/{chart_type}/{chart_name}")
+                        
+    return compatible_templates
+
+def process(input: str, output: str, base_url: str, api_key: str) -> bool:
     """
     Pipeline入口函数，处理单个文件的信息图生成
     
@@ -18,17 +51,37 @@ def process(input: str, output: str) -> bool:
         bool: 处理是否成功
     """
     try:
+        print("infographics_generator")
         # 读取输入文件
         with open(input, "r", encoding="utf-8") as f:
             data = json.load(f)
             
-        # 获取图表名称
-        chart_name = data.get("chart_name", "donut_chart_01")
+        # 扫描并获取所有可用的模板
+        templates = scan_templates()
+        
+        # Analyze templates and get requirements
+        template_count, template_requirements = analyze_templates(templates)
+        logger.info(f"Total number of templates: {template_count}")
+        
+        # Log template requirements
+        logger.info("\nTemplate data requirements:")
+        for template_name, data_type in template_requirements.items():
+            logger.info(f"{template_name}: {data_type}")
+            
+        # Check compatibility with current data
+        compatible_templates = check_template_compatibility(data, templates)
+        logger.info(f"\nNumber of compatible templates: {len(compatible_templates)}")
+        logger.info("Compatible templates:")
+        for template in compatible_templates:
+            logger.info(f"- {template}")
+        
+        # 从数据中获取图表类型
+        chart_type = data.get("chart_type", "bar")  # 默认使用bar类型
         
         # 获取图表模板
-        engine, template = get_template_for_chart_name(chart_name)
+        engine, template = get_template_for_chart_type(chart_type)
         if engine is None or template is None:
-            logger.error(f"No template found for chart name: {chart_name}")
+            logger.error(f"No template found for chart type: {chart_type}")
             return False
             
         # 生成图表SVG

@@ -136,6 +136,7 @@ def scan_templates(force=False):
     
     # 标记已完成扫描
     _templates_scanned = True
+    return templates
 
 def get_template_for_chart_type(chart_type, engine_preference=None):
     """

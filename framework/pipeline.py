@@ -87,6 +87,12 @@ MODULES = [
         "output_type": "json"
     },
     {
+        "name": "infographics_generator",
+        "description": "信息图表生成模块",
+        "input_type": "json",
+        "output_type": "json"
+    },
+    {
         "name": "chart_engine",
         "description": "图表模板实现引擎",
         "input_type": "json",
@@ -300,6 +306,19 @@ def run_single_file(input_path, output_path, temp_dir=None, modules_to_run=None)
                         data_path=image_data_path,
                         index_path=image_index_path,
                         resource_path=image_resource_path
+                    )
+                    current_input = output_path
+            elif module_name == "infographics_generator":
+                print("Running modules.infographics_generator.process 0000")
+                module = import_module(f"modules.{module_name}.{module_name}")
+                print("Running modules.infographics_generator.process 1111")
+                if not should_skip_module(module_name, output_path):
+                    print("Running modules.infographics_generator.process 2222")
+                    module.process(
+                        input=str(current_input), 
+                        output=str(output_path),
+                        base_url=base_url,
+                        api_key=api_key
                     )
                     current_input = output_path
             elif module_name == "chart_engine":
