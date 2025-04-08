@@ -160,38 +160,6 @@ function makeChart(containerSelector, data) {
     // 将条纹背景移到最底层
     g.selectAll("rect").lower();
     
-    // 添加图像水印（如果有）
-    if (images && images.other && images.other.primary) {
-        // 创建一个滤镜使图像黑白化
-        const defs = svg.append("defs");
-        
-        // 添加灰度滤镜
-        const grayscaleFilter = defs.append("filter")
-            .attr("id", "grayscale");
-            
-        grayscaleFilter.append("feColorMatrix")
-            .attr("type", "matrix")
-            .attr("values", "0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0");
-        
-        // 创建水印图像 - 放在左下角
-        const watermarkSize = 100;
-        const watermarkMargin = 20;
-        
-        const watermark = g.append("image")
-            .attr("x", watermarkMargin) // 左侧边距
-            .attr("y", chartHeight - watermarkSize - watermarkMargin) // 底部边距
-            .attr("width", watermarkSize)
-            .attr("height", watermarkSize)
-            .attr("href", images.other.primary)
-            .attr("opacity", 0.3) // 稍微透明
-            .attr("preserveAspectRatio", "xMidYMid meet")
-            .attr("filter", "url(#grayscale)"); // 应用灰度滤镜
-        
-        // 确保水印在条纹背景之上，但在数据区域之下
-        watermark.lower(); // 先降到底层
-        g.selectAll("rect").lower(); // 再将条纹背景降到更底层
-    }
-    
     // 添加水平网格线
     yTicks.forEach(tick => {
         g.append("line")

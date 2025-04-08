@@ -120,50 +120,6 @@ function makeChart(containerSelector, data) {
         .attr("stop-color", primaryColor)
         .attr("stop-opacity", 0.0);
     
-    // 添加图标水印（如果有）
-    if (images && images.other && images.other.primary) {
-        // 创建一个滤镜使图像加深而不是变淡
-        const darkFilter = defs.append("filter")
-            .attr("id", "darkfilter");
-            
-        // 先转为灰度
-        darkFilter.append("feColorMatrix")
-            .attr("type", "matrix")
-            .attr("values", "0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0.3333 0.3333 0.3333 0 0 0 0 0 1 0");
-        
-        // 降低亮度，加深颜色
-        darkFilter.append("feComponentTransfer")
-            .append("feFuncR")
-            .attr("type", "linear")
-            .attr("slope", "0.7")
-            .attr("intercept", "-0.1");
-        
-        darkFilter.append("feComponentTransfer")
-            .append("feFuncG")
-            .attr("type", "linear")
-            .attr("slope", "0.7")
-            .attr("intercept", "-0.1");
-        
-        darkFilter.append("feComponentTransfer")
-            .append("feFuncB")
-            .attr("type", "linear")
-            .attr("slope", "0.7")
-            .attr("intercept", "-0.1");
-        
-        // 添加图标水印 - 放在左上角
-        const iconSize = 200;
-        const watermark = g.append("image")
-            .attr("x", 20)
-            .attr("y", 20)
-            .attr("width", iconSize)
-            .attr("height", iconSize)
-            .attr("href", images.other.primary)
-            .attr("opacity", 0.3)
-            .attr("preserveAspectRatio", "xMidYMid meet")
-            .attr("filter", "url(#darkfilter)");
-        
-        watermark.lower();
-    }
     
     // 创建面积生成器
     const area = d3.area()
