@@ -75,17 +75,20 @@ function makeChart(containerSelector, data) {
     // 解析日期 - 只解析年份
     const parseDate = d => {
         if (d instanceof Date) return d;
-        if (typeof d === 'number') return new Date(d);
+        if (typeof d === 'number') {
+            // 数字表示年份,创建该年1月1日的日期对象
+            return new Date(d, 0, 1);
+        }
         if (typeof d === 'string') {
-            // 提取年份 - 支持YYYY/... 或 YYYY-...格式
-            const yearMatch = d.match(/^(\d{4})[/-]/);
+            // 提取年份 - 支持YYYY/... 或 YYYY-...格式 或 YYYY格式
+            const yearMatch = d.match(/^(\d{4})(?:[/-]|$)/); // 匹配YYYY/... 或 YYYY-... 或 纯YYYY格式
             if (yearMatch) {
                 const year = parseInt(yearMatch[1]);
                 return new Date(year, 0, 1); // 设置为该年的1月1日
             }
         }
         console.warn("无法解析日期:", d);
-        return new Date(0); // 返回默认日期作为后备
+        return new Date(0); // 返回默认日期作为后备 
     };
     
     // 获取唯一的组值
@@ -127,6 +130,8 @@ function makeChart(containerSelector, data) {
     const xExtent = d3.extent(chartData, d => parseDate(d[xField]));
     const xRange = xExtent[1] - xExtent[0];
     const xPadding = xRange * 0.05; // 添加5%的填充
+
+    console.log(xExtent);
     
     const xScale = d3.scaleTime()
         .domain([
@@ -493,6 +498,12 @@ function makeChart(containerSelector, data) {
         if (i === 0) {
             return;
         }
+        
+        // 跳过无效比值
+        if (ratio.invalid) {
+            return;
+        }
+        
         const x = xScale(ratio.date) - (xScale(ratio.date) - xScale(ratios[i-1].date)) / 2;
         const y = ratioCircleY;
         const radius = radiusScale(ratio.ratio);
