@@ -309,11 +309,8 @@ def run_single_file(input_path, output_path, temp_dir=None, modules_to_run=None)
                     )
                     current_input = output_path
             elif module_name == "infographics_generator":
-                print("Running modules.infographics_generator.process 0000")
                 module = import_module(f"modules.{module_name}.{module_name}")
-                print("Running modules.infographics_generator.process 1111")
                 if not should_skip_module(module_name, output_path):
-                    print("Running modules.infographics_generator.process 2222")
                     module.process(
                         input=str(current_input), 
                         output=str(output_path),

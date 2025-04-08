@@ -4,7 +4,7 @@ REQUIREMENTS_BEGIN
     "chart_type": "Horizontal Bar Chart",
     "chart_name": "horizontal_bar_chart_04",
     "is_composite": false,
-    "required_fields": ["x
+    "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],
     "required_fields_range": [[2, 30], [0, 100]],
     "required_fields_icons": ["dimension"],

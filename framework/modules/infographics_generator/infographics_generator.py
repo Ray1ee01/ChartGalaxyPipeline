@@ -1,14 +1,38 @@
 import json
 import os
 import sys
-from typing import Dict, Optional, List, Tuple
+from typing import Dict, Optional, List, Tuple, Set, Union
 from logging import getLogger
+import random
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from modules.chart_engine.chart_engine import load_data_from_json, get_template_for_chart_type, render_chart_to_svg
+from modules.chart_engine.chart_engine import load_data_from_json, get_template_for_chart_name, render_chart_to_svg
 from modules.chart_engine.template.template_registry import scan_templates
 
 logger = getLogger(__name__)
+
+def get_unique_fields_and_types(required_fields: Union[List[str], List[List[str]]], required_fields_type: List[List[str]]) -> Tuple[List[str], Dict[str, str]]:
+    """Extract unique fields and their corresponding types from nested structure"""
+    field_order = ['x', 'y', 'y2', 'group']  # Define the order of fields
+    field_types = {}
+    
+    # Check if required_fields is a list of lists
+    if required_fields and isinstance(required_fields[0], list):
+        # Handle list of lists case
+        for fields_group, types_group in zip(required_fields, required_fields_type):
+            for field, type_list in zip(fields_group, types_group):
+                if field not in field_types:
+                    field_types[field] = type_list[0]  # Use first type from the list
+    else:
+        # Handle simple list case
+        for field, type_list in zip(required_fields, required_fields_type):
+            if field not in field_types:
+                field_types[field] = type_list[0]  # Use first type from the list
+    
+    # Order fields according to field_order, keeping only those that exist
+    ordered_fields = [field for field in field_order if field in field_types]
+    
+    return ordered_fields, field_types
 
 def analyze_templates(templates: Dict) -> Tuple[int, Dict[str, str]]:
     """Analyze templates and return count and data requirements"""
@@ -19,9 +43,16 @@ def analyze_templates(templates: Dict) -> Tuple[int, Dict[str, str]]:
         for chart_type, chart_names_dict in templates_dict.items():
             for chart_name, template_info in chart_names_dict.items():
                 template_count += 1
-                if 'requirements' in template_info and 'required_fields_type' in template_info['requirements']:
-                    data_type = ' + '.join([item[0] for item in template_info['requirements']['required_fields_type']])
-                    template_requirements[f"{engine}/{chart_type}/{chart_name}"] = data_type
+                if 'requirements' in template_info:
+                    req = template_info['requirements']
+                    if 'required_fields' in req and 'required_fields_type' in req:
+                        ordered_fields, field_types = get_unique_fields_and_types(
+                            req['required_fields'],
+                            req['required_fields_type']
+                        )
+                        # Convert to format: "type1 + type2 + ..."
+                        data_type_str = ' + '.join([field_types[field] for field in ordered_fields])
+                        template_requirements[f"{engine}/{chart_type}/{chart_name}"] = data_type_str
                     
     return template_count, template_requirements
 
@@ -29,13 +60,32 @@ def check_template_compatibility(data: Dict, templates: Dict) -> List[str]:
     """Check which templates are compatible with the given data"""
     compatible_templates = []
     
+    # Get the combination type from the data
+    combination_type = data.get("data", {}).get("type_combination", "")
+    if not combination_type:
+        return compatible_templates
+    
     for engine, templates_dict in templates.items():
+        # Skip vegalite-py templates
+        if engine == 'vegalite-py':
+            continue
+            
         for chart_type, chart_names_dict in templates_dict.items():
             for chart_name, template_info in chart_names_dict.items():
-                if 'requirements' in template_info and 'required_fields' in template_info['requirements']:
-                    required_fields = template_info['requirements']['required_fields']
-                    if all(field in data for field in required_fields):
-                        compatible_templates.append(f"{engine}/{chart_type}/{chart_name}")
+                template_key = f"{engine}/{chart_type}/{chart_name}"
+                
+                if 'requirements' in template_info:
+                    req = template_info['requirements']
+                    if 'required_fields' in req and 'required_fields_type' in req:
+                        ordered_fields, field_types = get_unique_fields_and_types(
+                            req['required_fields'],
+                            req['required_fields_type']
+                        )
+                        data_type_str = ' + '.join([field_types[field] for field in ordered_fields])
+                        
+                        # If the combination type matches the template's data type, it's compatible
+                        if combination_type == data_type_str:
+                            compatible_templates.append(template_key)
                         
     return compatible_templates
 
@@ -59,9 +109,16 @@ def process(input: str, output: str, base_url: str, api_key: str) -> bool:
         # 扫描并获取所有可用的模板
         templates = scan_templates()
         
+        # Count total templates
+        total_templates = 0
+        for engine, templates_dict in templates.items():
+            for chart_type, chart_names_dict in templates_dict.items():
+                total_templates += len(chart_names_dict)
+        logger.info(f"\nTotal number of templates: {total_templates}")
+        
         # Analyze templates and get requirements
         template_count, template_requirements = analyze_templates(templates)
-        logger.info(f"Total number of templates: {template_count}")
+        logger.info(f"Number of templates with requirements: {template_count}")
         
         # Log template requirements
         logger.info("\nTemplate data requirements:")
@@ -69,19 +126,22 @@ def process(input: str, output: str, base_url: str, api_key: str) -> bool:
             logger.info(f"{template_name}: {data_type}")
             
         # Check compatibility with current data
+        print("check compatibility")
         compatible_templates = check_template_compatibility(data, templates)
         logger.info(f"\nNumber of compatible templates: {len(compatible_templates)}")
-        logger.info("Compatible templates:")
-        for template in compatible_templates:
-            logger.info(f"- {template}")
         
-        # 从数据中获取图表类型
-        chart_type = data.get("chart_type", "bar")  # 默认使用bar类型
+        if not compatible_templates:
+            logger.error("No compatible templates found for the given data")
+            return False
+            
+        # 随机选择一个兼容的模板
+        selected_template = random.choice(compatible_templates)
+        engine, chart_type, chart_name = selected_template.split('/')
         
         # 获取图表模板
-        engine, template = get_template_for_chart_type(chart_type)
-        if engine is None or template is None:
-            logger.error(f"No template found for chart type: {chart_type}")
+        engine_obj, template = get_template_for_chart_name(chart_name)
+        if engine_obj is None or template is None:
+            logger.error(f"Failed to load template: {selected_template}")
             return False
             
         # 生成图表SVG
