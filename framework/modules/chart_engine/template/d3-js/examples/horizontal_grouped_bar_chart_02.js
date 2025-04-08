@@ -4,7 +4,7 @@ REQUIREMENTS_BEGIN
     "chart_type": "Horizontal Bar Chart",
     "chart_name": "horizontal_grouped_bar_chart_02",
     "is_composite": false,
-    "required_fields": ["dimension", "value", "group"],
+    "required_fields": ["x", "y", "group"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
     "required_fields_range": [[2, 100], [0, 100], [2, 10]],
     "required_fields_icons": ["dimension"],
@@ -14,7 +14,7 @@ REQUIREMENTS_BEGIN
     "supported_effects": ["shadow", "radius_corner", "gradient", "stroke", "spacing"],
     "min_height": 400,
     "min_width": 600,
-    "background": "none",
+    "background": "no",
     "icon_mark": "side",
     "icon_label": "side",
     "has_x_axis": "no",
@@ -27,7 +27,7 @@ REQUIREMENTS_END
 function makeChart(containerSelector, data) {
     // ---------- 1. 数据准备 ----------
     const jsonData = data;                          
-    const chartData = jsonData.data.data;                
+    const chartData = jsonData.data.data                
     const variables = jsonData.variables || {};     
     const typography = jsonData.typography || {     
         title: { font_family: "Arial", font_size: "18px", font_weight: "bold" },

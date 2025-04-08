@@ -2,7 +2,7 @@
 REQUIREMENTS_BEGIN
 {
     "chart_type": "Horizontal Grouped Bar Chart",
-    "chart_name": "horizontal_grouped_bar_chart_01",
+    "chart_name": "horizontal_grouped_bar_chart_03",
     "is_composite": false,
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
@@ -14,7 +14,7 @@ REQUIREMENTS_BEGIN
     "supported_effects": ["shadow", "radius_corner", "gradient", "stroke", "spacing"],
     "min_height": 400,
     "min_width": 600,
-    "background": "styled",
+    "background": "no",
     "icon_mark": "none",
     "icon_label": "side",
     "has_x_axis": "no",
@@ -74,28 +74,42 @@ function makeChart(containerSelector, data) {
     // ---------- 3. 提取字段名和单位 ----------
     
     // 根据数据列顺序提取字段名
-    const dimensionField = dataColumns.length > 0 ? dataColumns[0].name : "dimension";
-    const valueField = dataColumns.length > 1 ? dataColumns[1].name : "value";
-    const groupField = dataColumns.length > 2 ? dataColumns[2].name : "group";
+    let dimensionField = '', valueField = '', groupField = '';
     
-    // 获取所有字段的单位（如果存在且不是"none"）
+    try {
+        dimensionField = dataColumns.find(col => col.role === "x").name;
+        valueField = dataColumns.find(col => col.role === "y").name;
+        groupField = dataColumns.find(col => col.role === "group").name;
+    } catch (error) {
+        console.error("数据列定义有误", error);
+        // 使用默认值防止出错
+        dimensionField = dimensionField || "country";
+        valueField = valueField || "value";
+        groupField = groupField || "group";
+    }
+    
+    // 获取字段单位（如果存在）
     let dimensionUnit = "";
-    let valueUnit = "";
+    let valueUnit = ""; 
     let groupUnit = "";
     
-    // 维度字段的单位
-    if (dataColumns.length > 0 && dataColumns[0].unit && dataColumns[0].unit !== "none") {
-        dimensionUnit = dataColumns[0].unit;
-    }
-    
-    // 数值字段的单位
-    if (dataColumns.length > 1 && dataColumns[1].unit && dataColumns[1].unit !== "none") {
-        valueUnit = dataColumns[1].unit;
-    }
-    
-    // 分组字段的单位
-    if (dataColumns.length > 2 && dataColumns[2].unit && dataColumns[2].unit !== "none") {
-        groupUnit = dataColumns[2].unit;
+    try {
+        if (dataColumns.find(col => col.role === "x") && 
+            dataColumns.find(col => col.role === "x").unit !== "none") {
+            dimensionUnit = dataColumns.find(col => col.role === "x").unit;
+        }
+        
+        if (dataColumns.find(col => col.role === "y") && 
+            dataColumns.find(col => col.role === "y").unit !== "none") {
+            valueUnit = dataColumns.find(col => col.role === "y").unit;
+        }
+        
+        if (dataColumns.find(col => col.role === "group") && 
+            dataColumns.find(col => col.role === "group").unit !== "none") {
+            groupUnit = dataColumns.find(col => col.role === "group").unit; 
+        }
+    } catch (error) {
+        console.error("获取单位时出错", error);
     }
     
     // ---------- 4. 数据处理 ----------
@@ -162,10 +176,7 @@ function makeChart(containerSelector, data) {
     const barHeight = (groupHeight - groupPadding) / dimensions.length;
     const actualBarHeight = variables.has_spacing ? barHeight * 0.65 : barHeight * 0.75;   // 实际条形高度
     
-    // 标志尺寸
-    const iconWidth = actualBarHeight * 0.9;
-    const iconHeight = iconWidth;
-    const iconRightPadding = iconWidth * 0.4;  // 图标右侧到柱子的间距
+
     
     // ---------- 6. 创建SVG容器 ----------
     
@@ -281,50 +292,90 @@ function makeChart(containerSelector, data) {
         return "#333333"; // 默认颜色
     };
     
-    // ========== 9. 添加交替行背景（新增） ==========
-    if (jsonData.variation?.background === "styled") {
-        // 每个 group 下有若干维度，故在每个 group 里为维度的“行”画背景
-        groups.forEach((group, groupIndex) => {
-            const groupStartY = groupIndex * groupHeight;
-            dimensions.forEach((dimension, dimIndex) => {
-                // 偶数行添加背景
-                if (dimIndex % 2 === 0) {
-                    g.append("rect")
-                        .attr("x", 0)
-                        .attr("y", groupStartY + dimIndex * barHeight)
-                        .attr("width", innerWidth)
-                        .attr("height", barHeight)
-                        .attr("class","background")
-                        .attr("fill", "#f5f5f5")
-                        .attr("opacity", 0.8);
-                }
-            });
-        });
-    }
+    
     
     // ---------- 10. 绘制图表 ----------
-    
     // 为每个组创建一个分组
     groups.forEach((group, groupIndex) => {
         // 计算该组的垂直位置
         const groupStartY = groupIndex * (groupHeight);
         
-        // === 修改点：组标签与条形标签右对齐，而非原先居中 ===
-        const groupLabelOffsetX = -(iconWidth + iconRightPadding + 5);
-        g.append("text")
-            .attr("x", groupLabelOffsetX)     
-            .attr("y", groupStartY - 10)      // 略微上移
-            .attr("dy", "0.35em")
-            .attr("text-anchor", "end")       // 右对齐
+        // Create a group element for the label and its background
+        const groupLabelGroup = g.append("g")
+            .attr("transform", `translate(0, ${groupStartY - 10})`);
+        
+        // Create a temporary hidden text to measure dimensions
+        const tempText = groupLabelGroup.append("text")
+            .style("visibility", "hidden")
             .style("font-family", typography.label.font_family)
             .style("font-size", typography.label.font_size)
             .style("font-weight", typography.label.font_weight)
-            .style("fill", colors.text_color || "#333")
+            .text(group);
+        
+        // Get the text dimensions
+        const textWidth = tempText.node().getBBox().width;
+        const textHeight = tempText.node().getBBox().height;
+        tempText.remove(); // Remove the temporary text
+        
+        // Add padding for the rectangle
+        const rectPadding = { x: 4, y: 2 };
+        const shadowOffset = { x: 3, y: 3 }; // Shadow offset
+        
+        // Create rectangle dimensions
+        const rectX = -margin.left;
+        const rectY = -textHeight/2 - rectPadding.y;
+        const rectWidth = textWidth + rectPadding.x * 2 ;
+        const rectHeight = textHeight + rectPadding.y * 2;
+        const cornerRadius = rectPadding.y*2;
+
+        // Create a path for a rectangle with rounded right corners
+        const createRoundedRectPath = (x, y, width, height, radius) => {
+            return [
+                `M ${x} ${y}`,                                        // Start at top-left
+                `H ${x + width - radius}`,                           // Line to top-right minus corner radius
+                `Q ${x + width} ${y} ${x + width} ${y + radius}`,    // Top-right corner
+                `V ${y + height - radius}`,                          // Line to bottom-right minus corner radius
+                `Q ${x + width} ${y + height} ${x + width - radius} ${y + height}`,  // Bottom-right corner
+                `H ${x}`,                                            // Line to bottom-left
+                `V ${y}`,                                            // Line to top-left
+                'Z'                                                  // Close path
+            ].join(' ');
+        };
+
+        // Create the shadow rectangle
+        const shadowPath = createRoundedRectPath(
+            rectX + shadowOffset.x, 
+            rectY + shadowOffset.y, 
+            rectWidth, 
+            rectHeight, 
+            cornerRadius
+        );
+        
+        groupLabelGroup.append("path")
+            .attr("d", shadowPath)
+            .attr("fill", "#cccccc"); // Gray shadow color
+        
+        // Create the main white rectangle
+        const mainPath = createRoundedRectPath(rectX, rectY, rectWidth, rectHeight, cornerRadius);
+        
+        groupLabelGroup.append("path")
+            .attr("d", mainPath)
+            .attr("fill", "#ffffff"); // White background color
+        
+        // Add the label text LAST so it's on top
+        groupLabelGroup.append("text")
+            .attr("x", -margin.left + 10)     // Position text 10px from left margin
+            .attr("y", 0)
+            .attr("dy", "0.35em")
+            .attr("text-anchor", "start")     // Left-align text
+            .style("font-family", typography.label.font_family)
+            .style("font-size", typography.label.font_size)
+            .style("font-weight", typography.label.font_weight)
+            .style("fill", "#000000")         // Black text color
             .text(group);
         
         // 筛选该组的数据
         const groupData = chartData.filter(d => d[groupField] === group);
-        
         // 为每个维度绘制条形
         dimensions.forEach((dimension, dimIndex) => {
             // 查找数据点
@@ -341,20 +392,11 @@ function makeChart(containerSelector, data) {
                 const labelGroup = g.append("g")
                     .attr("transform", `translate(0, ${barY + barHeight/2})`);
                 
-                // 绘制图标
-                if (images.field && images.field[dimension]) {
-                    // 图标位置：紧贴条形左侧
-                    labelGroup.append("image")
-                        .attr("x", -iconWidth - iconRightPadding)
-                        .attr("y", -iconHeight/2)
-                        .attr("width", iconWidth)
-                        .attr("height", iconHeight)
-                        .attr("xlink:href", images.field[dimension]);
-                }
+                
                 
                 // 绘制维度标签（右对齐，与图标的左边缘对齐）
                 labelGroup.append("text")
-                    .attr("x", -iconWidth - iconRightPadding - 5) // 图标左侧5像素
+                    .attr("x",  - 5) // 左侧5像素
                     .attr("y", 0)
                     .attr("dy", "0.35em")
                     .attr("text-anchor", "end") // 右对齐
@@ -404,15 +446,13 @@ function makeChart(containerSelector, data) {
                 // 删除临时文本
                 tempText.remove();
                 
-                // 计算文本位置 - 默认在条形中间
-                let textX = barWidth / 2;
+                // 检查文本是否适合条形的宽度（考虑内边距）
+                const padding = 3; // 每侧5px内边距
                 
-                // 确保文本末尾不超出条形右侧边界
-                if (textX + textWidth/2 > barWidth) {
-                    textX = barWidth - textWidth/2 - 2; 
-                }
-                g.append("text")
-                        .attr("x", barWidth + 8) // 条形右侧5像素处
+                // 如果条形太窄，无法容纳文本，则放在条形外部
+                if (barWidth < textWidth + padding) {
+                    g.append("text")
+                        .attr("x", barWidth + 5) // 条形右侧5像素处
                         .attr("y", barY + actualBarHeight / 2)
                         .attr("dy", "0.35em")
                         .attr("text-anchor", "start")
@@ -422,36 +462,20 @@ function makeChart(containerSelector, data) {
                         .style("font-weight", typography.annotation.font_weight)
                         .style("pointer-events", "none")
                         .text(formattedValue);
-                // // 检查文本是否适合条形的宽度（考虑内边距）
-                // const padding = 3; // 每侧5px内边距
-                
-                // // 如果条形太窄，无法容纳文本，则放在条形外部
-                // if (barWidth < textWidth + padding) {
-                //     g.append("text")
-                //         .attr("x", barWidth + 5) // 条形右侧5像素处
-                //         .attr("y", barY + actualBarHeight / 2)
-                //         .attr("dy", "0.35em")
-                //         .attr("text-anchor", "start")
-                //         .style("fill", colors.text_color || "#333") 
-                //         .style("font-family", typography.annotation.font_family)
-                //         .style("font-size", typography.annotation.font_size)
-                //         .style("font-weight", typography.annotation.font_weight)
-                //         .style("pointer-events", "none")
-                //         .text(formattedValue);
-                // } else {
-                //     // 文本适合放在条形内部，使用居中定位
-                //     g.append("text")
-                //         .attr("x", textX)
-                //         .attr("y", barY + actualBarHeight / 2)
-                //         .attr("dy", "0.35em")
-                //         .attr("text-anchor", "middle")
-                //         .style("fill", "#ffffff") 
-                //         .style("font-family", typography.annotation.font_family)
-                //         .style("font-size", typography.annotation.font_size)
-                //         .style("font-weight", typography.annotation.font_weight)
-                //         .style("pointer-events", "none")
-                //         .text(formattedValue);
-                // }
+                } else {
+                    // 文本适合放在条形内部
+                    g.append("text")
+                        .attr("x", barWidth - 5)
+                        .attr("y", barY + actualBarHeight / 2)
+                        .attr("dy", "0.35em")
+                        .attr("text-anchor", "end")
+                        .style("fill", "#ffffff") 
+                        .style("font-family", typography.annotation.font_family)
+                        .style("font-size", typography.annotation.font_size)
+                        .style("font-weight", typography.annotation.font_weight)
+                        .style("pointer-events", "none")
+                        .text(formattedValue);
+                }
             }
         });
     });

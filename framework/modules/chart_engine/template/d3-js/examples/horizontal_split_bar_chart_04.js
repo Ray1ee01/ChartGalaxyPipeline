@@ -2,13 +2,13 @@
 REQUIREMENTS_BEGIN
 {
     "chart_type": "Horizontal Split Bar Chart",
-    "chart_name": "horizontal_split_bar_chart_02",
+    "chart_name": "horizontal_split_bar_chart_04",
     "chart_for": "comparison",
     "is_composite": false,
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
-    "required_fields_range": [[2, 20], [0, 100], [2, 5]],
-    "required_fields_icons": ["dimension"],
+    "required_fields_range": [[2, 20], [0, 100], [2, 2]],
+    "required_fields_icons": [],
     "required_other_icons": [],
     "required_fields_colors": ["group"],
     "required_other_colors": ["primary"],
@@ -58,7 +58,7 @@ function makeChart(containerSelector, data) {
     const width = variables.width;                  // 图表总宽度
     const height = variables.height;                // 图表总高度
     // 边距：top-顶部，right-右侧，bottom-底部，left-左侧
-    const margin = { top: 100, right: 70, bottom: 40, left: 70 };
+    const margin = { top: 100, right: 10, bottom: 40, left: 10 };
     
     // 计算实际绘图区域尺寸
     const innerWidth = width - margin.left - margin.right;    // 绘图区宽度
@@ -67,10 +67,8 @@ function makeChart(containerSelector, data) {
     // 设置各部分位置参数
     const centerX = margin.left + innerWidth / 2;   // 图表中心X坐标
     const topAreaHeight = 60;                       // 标题和标签区域高度
-    const barPadding = 8;                           // 条形图之间的间距
     
     // ---------- 3. 提取字段名和单位 ----------
-    
     // 根据数据列顺序提取字段名
     const dimensionField = dataColumns.find(col => col.role === "x").name;
     const valueField = dataColumns.find(col => col.role === "y").name;
@@ -88,8 +86,80 @@ function makeChart(containerSelector, data) {
     if (dataColumns.find(col => col.role === "y").unit !== "none") {
         valueUnit = dataColumns.find(col => col.role === "y").unit;
     }
-    if (dataColumns.find(col => col.role === "group").unit!== "none") {
+    if (dataColumns.find(col => col.role === "group").unit !== "none") {
         groupUnit = dataColumns.find(col => col.role === "group").unit; 
+    }
+    
+    // ---------- 辅助函数：获取文本宽度 ----------
+    function getTextWidth(text, fontFamily, fontSize, fontWeight) {
+        // 创建临时SVG元素来测量文本宽度
+        const tempText = d3.select(containerSelector)
+            .append("svg")
+            .attr("width", 0)
+            .attr("height", 0)
+            .style("visibility", "hidden")
+            .append("text")
+            .style("font-family", fontFamily)
+            .style("font-size", fontSize)
+            .style("font-weight", fontWeight)
+            .text(text);
+        
+        const width = tempText.node().getBBox().width;
+        tempText.remove();
+        return width;
+    }
+    
+    // 添加文本换行函数
+    function wrapText(text, maxWidth, fontFamily, fontSize, fontWeight) {
+        // 如果文本不需要换行，直接返回
+        const textWidth = getTextWidth(text, fontFamily, fontSize, fontWeight);
+        if (textWidth <= maxWidth) {
+            return [text];
+        }
+        
+        // 分割文本为词语数组
+        const words = text.split(/\s+/);
+        const lines = [];
+        let currentLine = words[0];
+        
+        for (let i = 1; i < words.length; i++) {
+            const word = words[i];
+            const width = getTextWidth(currentLine + " " + word, fontFamily, fontSize, fontWeight);
+            
+            if (width <= maxWidth) {
+                currentLine += " " + word;
+            } else {
+                lines.push(currentLine);
+                currentLine = word;
+            }
+        }
+        
+        // 添加最后一行
+        lines.push(currentLine);
+        
+        // 如果没有空格分隔词（如中文），则按字符分割
+        if (lines.length === 1 && getTextWidth(lines[0], fontFamily, fontSize, fontWeight) > maxWidth) {
+            const chars = text.split('');
+            lines.length = 0;
+            currentLine = chars[0];
+            
+            for (let i = 1; i < chars.length; i++) {
+                const char = chars[i];
+                const width = getTextWidth(currentLine + char, fontFamily, fontSize, fontWeight);
+                
+                if (width <= maxWidth) {
+                    currentLine += char;
+                } else {
+                    lines.push(currentLine);
+                    currentLine = char;
+                }
+            }
+            
+            // 添加最后一行
+            lines.push(currentLine);
+        }
+        
+        return lines;
     }
     
     // ---------- 4. 数据处理 ----------
@@ -105,10 +175,7 @@ function makeChart(containerSelector, data) {
     const leftGroup = groups[0];   // 左侧分组
     const rightGroup = groups[1];  // 右侧分组
     
-    // 如果存在第三个分组，可以用作总计分组（用于显示右侧的总数值）
-    const totalGroup = groups.length > 2 ? groups[2] : null;
-    
-    // ---------- 5. 动态计算维度标签区域宽度 ----------
+    // ---------- 5. 动态计算标签区域宽度 ----------
     
     // 创建临时SVG容器用于测量文本宽度
     const tempSvg = d3.select(containerSelector)
@@ -117,9 +184,7 @@ function makeChart(containerSelector, data) {
         .attr("height", 0)
         .style("visibility", "hidden");
     
-
-    
-    // 计算最大标签宽度
+    // 计算最大维度标签宽度
     let maxLabelWidth = 0;
     dimensions.forEach(dimension => {
         // 格式化维度名称（附加单位，如果有）
@@ -141,11 +206,41 @@ function makeChart(containerSelector, data) {
         tempText.remove();
     });
     
+    // 计算最大数值标签宽度 - 左侧和右侧
+    let maxLeftValueWidth = 0;
+    let maxRightValueWidth = 0;
+    
+    chartData.forEach(d => {
+        const formattedValue = valueUnit ? 
+            `${d[valueField]}${valueUnit}` : 
+            `${d[valueField]}`;
+            
+        const tempText = tempSvg.append("text")
+            .style("font-family", typography.annotation.font_family)
+            .style("font-size", typography.annotation.font_size)
+            .style("font-weight", typography.annotation.font_weight)
+            .text(formattedValue);
+        
+        const textWidth = tempText.node().getBBox().width;
+        
+        if (d[groupField] === leftGroup) {
+            maxLeftValueWidth = Math.max(maxLeftValueWidth, textWidth + 10); // 添加边距
+        } else if (d[groupField] === rightGroup) {
+            maxRightValueWidth = Math.max(maxRightValueWidth, textWidth + 10); // 添加边距
+        }
+        
+        tempText.remove();
+    });
+    
     // 删除临时SVG
     tempSvg.remove();
     
     // 为计算出的宽度添加边距，确保有足够空间
     const dimensionLabelWidth = Math.max(maxLabelWidth + 5, 80);  // 最小值为80像素
+    
+    // 为左右两侧的值标签预留空间
+    const leftValueLabelPadding = maxLeftValueWidth;   // 左侧值标签空间
+    const rightValueLabelPadding = maxRightValueWidth; // 右侧值标签空间
     
     // ---------- 6. 创建SVG容器 ----------
     
@@ -225,85 +320,84 @@ function makeChart(containerSelector, data) {
             .attr("stop-color", d3.rgb(rightBaseColor).darker(0.7));
     }
 
-// ---------- 7. 添加左右组标签 ----------
-    
-    // 图例方块尺寸
-    const legendSquareSize = 12;
-    const legendSpacing = 5;
-    
-    // 创建临时SVG容器用于测量组标签文本宽度
-    const tempLabelSvg = d3.select(containerSelector)
-        .append("svg")
-        .attr("width", 0)
-        .attr("height", 0)
-        .style("visibility", "hidden");
+    // ---------- 7. 添加左右组标签 ----------
     
     // 格式化组标签
     const formattedLeftGroup = groupUnit ? `${leftGroup}${groupUnit}` : `${leftGroup}`;
     const formattedRightGroup = groupUnit ? `${rightGroup}${groupUnit}` : `${rightGroup}`;
     
-    // 测量左侧组标签宽度
-    const tempLeftText = tempLabelSvg.append("text")
-        .style("font-family", typography.label.font_family)
-        .style("font-size", "14px")
-        .style("font-weight", "bold")
-        .text(formattedLeftGroup);
-    const leftTextWidth = tempLeftText.node().getBBox().width;
+    // 计算左侧标签区域宽度 - 从左边缘到左侧条形的右边缘
+    const leftLabelMaxWidth = innerWidth / 2 - dimensionLabelWidth / 2 + 40;
     
-    // 测量右侧组标签宽度
-    const tempRightText = tempLabelSvg.append("text")
-        .style("font-family", typography.label.font_family)
-        .style("font-size", "14px")
-        .style("font-weight", "bold")
-        .text(formattedRightGroup);
-    const rightTextWidth = tempRightText.node().getBBox().width;
+    // 计算右侧标签区域宽度 - 从右侧条形的左边缘到右边缘
+    const rightLabelMaxWidth = innerWidth / 2 - dimensionLabelWidth / 2 + 40;
     
-    // 清除临时SVG
-    tempLabelSvg.remove();
+    // 计算左侧标签的文本行
+    const leftLines = wrapText(
+        formattedLeftGroup, 
+        leftLabelMaxWidth, 
+        typography.label.font_family, 
+        typography.label.font_size, 
+        typography.label.font_weight
+    );
     
-    // 左侧组标签组
+    // 计算右侧标签的文本行
+    const rightLines = wrapText(
+        formattedRightGroup, 
+        rightLabelMaxWidth, 
+        typography.label.font_family, 
+        typography.label.font_size, 
+        typography.label.font_weight
+    );
+    
+    // 计算行高 (基于字体大小的近似值)
+    const fontSize = parseInt(typography.label.font_size);
+    const lineHeight = fontSize * 1.2;
+    
+    // 调整标签垂直位置，考虑到多行文本
+    const leftLabelHeight = leftLines.length * lineHeight;
+    const rightLabelHeight = rightLines.length * lineHeight;
+    
+    // 为了垂直居中，我们需要考虑到标签的高度
+    const leftLabelYOffset = margin.top + 10 - leftLabelHeight ; 
+    const rightLabelYOffset = margin.top + 10 - rightLabelHeight ;
+    
+    // 左侧组标签组 - 位置从左边缘开始，左对齐
     const leftLabelGroup = svg.append("g")
-        .attr("transform", `translate(${margin.left + innerWidth / 4 - (leftTextWidth + legendSquareSize + legendSpacing) / 2}, ${margin.top - 10})`);
+        .attr("transform", `translate(${margin.left}, ${leftLabelYOffset})`);
     
-    // 左侧图例方块
-    leftLabelGroup.append("rect")
-        .attr("width", legendSquareSize)
-        .attr("height", legendSquareSize)
-        .attr("y", -legendSquareSize/2)
-        .attr("fill", getColor(leftGroup));
+    // 绘制左侧标签的每一行
+    leftLines.forEach((line, i) => {
+        leftLabelGroup.append("text")
+            .attr("x", 0)
+            .attr("y", i * lineHeight)
+            .attr("text-anchor", "start")
+            .style("font-family", typography.label.font_family)
+            .style("font-size", typography.label.font_size)
+            .style("font-weight", typography.label.font_weight)
+            .style("fill", colors.text_color)
+            .text(line);
+    });
     
-    // 左侧标签文本
-    leftLabelGroup.append("text")
-        .attr("x", legendSquareSize + legendSpacing)
-        .attr("dy", "0.35em")
-        .attr("text-anchor", "start")
-        .style("font-family", typography.label.font_family)
-        .style("font-size", typography.label.font_size)
-        .style("font-weight", typography.label.font_weight)
-        .style("fill", colors.text_color)
-        .text(formattedLeftGroup);
+    // 计算右侧条形的起始位置
+    const rightBarStartX = margin.left + innerWidth / 2 + dimensionLabelWidth / 2;
     
-    // 右侧组标签组
+    // 右侧组标签组 - 位置从右侧条形的左边缘开始，左对齐
     const rightLabelGroup = svg.append("g")
-        .attr("transform", `translate(${margin.left + innerWidth * 3 / 4 - (rightTextWidth + legendSquareSize + legendSpacing) / 2}, ${margin.top - 10})`);
+        .attr("transform", `translate(${rightBarStartX}, ${rightLabelYOffset})`);
     
-    // 右侧图例方块
-    rightLabelGroup.append("rect")
-        .attr("width", legendSquareSize)
-        .attr("height", legendSquareSize)
-        .attr("y", -legendSquareSize/2)
-        .attr("fill", getColor(rightGroup));
-    
-    // 右侧标签文本
-    rightLabelGroup.append("text")
-        .attr("x", legendSquareSize + legendSpacing)
-        .attr("dy", "0.35em")
-        .attr("text-anchor", "start")
-        .style("font-family", typography.label.font_family)
-        .style("font-size", typography.label.font_size)
-        .style("font-weight", typography.label.font_weight)
-        .style("fill", colors.text_color)
-        .text(formattedRightGroup);
+    // 绘制右侧标签的每一行
+    rightLines.forEach((line, i) => {
+        rightLabelGroup.append("text")
+            .attr("x", 0)
+            .attr("y", i * lineHeight)
+            .attr("text-anchor", "start")
+            .style("font-family", typography.label.font_family)
+            .style("font-size", typography.label.font_size)
+            .style("font-weight", typography.label.font_weight)
+            .style("fill", colors.text_color)
+            .text(line);
+    });
     
     // ---------- 8. 创建绘图组 ----------
     
@@ -322,11 +416,11 @@ function makeChart(containerSelector, data) {
     
     const leftXScale = d3.scaleLinear()
         .domain([0, maxLeftValue])
-        .range([innerWidth / 2 - dimensionLabelWidth/2, 0]);
+        .range([innerWidth / 2 - dimensionLabelWidth/2, leftValueLabelPadding + 10]); // 调整左侧范围，为标签腾出空间
     
     const rightXScale = d3.scaleLinear()
         .domain([0, maxRightValue])
-        .range([0, innerWidth / 2 - dimensionLabelWidth/2]);
+        .range([0, innerWidth / 2 - dimensionLabelWidth/2 - rightValueLabelPadding - 10]); // 调整右侧范围，为标签腾出空间
     
     const getStrokeColor = () => {
         if (colors.stroke_color) return colors.stroke_color;
@@ -337,26 +431,84 @@ function makeChart(containerSelector, data) {
     
     // ---------- 9. 添加交替行背景 ----------
     if (jsonData.variation?.background === "styled") {
+        // 获取左右两侧组的基础颜色
+        const leftBaseColor = getColor(leftGroup);
+        const rightBaseColor = getColor(rightGroup);
+        
+        // 创建左右两侧背景的渐变
+        const leftBgGradientId = "left-bg-gradient";
+        const rightBgGradientId = "right-bg-gradient";
+        
+        // 创建左侧背景渐变 - 从淡蓝色到接近白色
+        const leftBgGradient = defs.append("linearGradient")
+            .attr("id", leftBgGradientId)
+            .attr("x1", "0%")
+            .attr("y1", "0%")
+            .attr("x2", "100%")
+            .attr("y2", "0%");
+        
+        leftBgGradient.append("stop")
+            .attr("offset", "0%")
+            .attr("stop-color", d3.rgb(leftBaseColor).brighter(0.5));
+        
+        leftBgGradient.append("stop")
+            .attr("offset", "100%")
+            .attr("stop-color", d3.rgb(leftBaseColor).brighter(3.0));
+        
+        // 创建右侧背景渐变 - 从淡红色到接近白色
+        const rightBgGradient = defs.append("linearGradient")
+            .attr("id", rightBgGradientId)
+            .attr("x1", "100%")
+            .attr("y1", "0%")
+            .attr("x2", "0%")
+            .attr("y2", "0%");
+        
+        rightBgGradient.append("stop")
+            .attr("offset", "0%")
+            .attr("stop-color", d3.rgb(rightBaseColor).brighter(0.5));
+        
+        rightBgGradient.append("stop")
+            .attr("offset", "100%")
+            .attr("stop-color", d3.rgb(rightBaseColor).brighter(3.0));
+        
+        // 使用与yScale相同的padding值来计算额外间距
+        const paddingValue = variables.has_spacing ? 0.4 : 0.3;
+        // 计算每个条形之间的间距像素值
+        const step = innerHeight / dimensions.length;
+        // 额外内边距 = 条形之间间距的一半
+        const extraPadding = (step * paddingValue) / 2;
+        // 中心位置
+        const centerX = innerWidth / 2;
+        
         dimensions.forEach((dimension, i) => {
             if (i % 2 === 0) {
+                // 左侧背景
                 g.append("rect")
                     .attr("x", -margin.left/2)
-                    .attr("y", yScale(dimension))
-                    .attr("width", innerWidth + margin.left/2 + margin.right/2)
-                    .attr("height", yScale.bandwidth())
-                    .attr("class","background")
-                    .attr("fill", "#f5f5f5")
-                    .attr("opacity", 0.8);
+                    .attr("y", yScale(dimension) - extraPadding)
+                    .attr("width", centerX + margin.left/2)
+                    .attr("height", yScale.bandwidth() + (extraPadding * 2))
+                    .attr("class", "background-left")
+                    .attr("fill", `url(#${leftBgGradientId})`)
+                    .attr("opacity", 0.3);
+                
+                // 右侧背景
+                g.append("rect")
+                    .attr("x", centerX)
+                    .attr("y", yScale(dimension) - extraPadding)
+                    .attr("width", centerX + margin.right/2)
+                    .attr("height", yScale.bandwidth() + (extraPadding * 2))
+                    .attr("class", "background-right")
+                    .attr("fill", `url(#${rightBgGradientId})`)
+                    .attr("opacity", 0.3);
             }
         });
     }
     
-// ---------- 10. 绘制维度标签和图标 ----------
+    // ---------- 10. 绘制维度标签和图标 ----------
     
     dimensions.forEach(dimension => {
         const yPos = yScale(dimension) + yScale.bandwidth() / 2;
-        
-        
         
         const formattedDimension = dimensionUnit ? `${dimension}${dimensionUnit}` : `${dimension}`;
         
@@ -386,6 +538,14 @@ function makeChart(containerSelector, data) {
             .text(formattedDimension);
         
     });
+
+    // ---------- 计算标签位置 ----------
+    
+    // 计算左侧标签位置 - 使用固定位置，不依赖于条形长度
+    const leftLabelX = leftValueLabelPadding ; // 左侧标签固定位置
+    
+    // 计算右侧标签位置 - 使用固定位置，不依赖于条形长度
+    const rightLabelX = (innerWidth/2 + dimensionLabelWidth/2) + rightXScale(maxRightValue) + rightValueLabelPadding; // 右侧标签固定位置
     
     // ---------- 11. 绘制左侧条形图 ----------
     
@@ -436,71 +596,19 @@ function makeChart(containerSelector, data) {
             `${dataPoint[valueField]}${valueUnit}` : 
             `${dataPoint[valueField]}`;
                 
-            // 创建临时文本元素来计算数值文本的宽度
-            const tempText = g.append("text")
+            // 绘制左侧标签 - 使用统一的位置和右对齐
+            g.append("text")
+                .attr("class", "label")
+                .attr("x", leftLabelX) // 使用统一的最左侧位置
+                .attr("y", yPos + yScale.bandwidth()/2)
+                .attr("dy", "0.35em")
+                .attr("text-anchor", "end") // 右对齐文本
+                .style("fill", colors.text_color)
                 .style("font-family", typography.annotation.font_family)
                 .style("font-size", typography.annotation.font_size)
                 .style("font-weight", typography.annotation.font_weight)
-                .style("visibility", "hidden")
+                .style("pointer-events", "none")
                 .text(formattedValue);
-            
-            // 获取文本宽度
-            const textWidth = tempText.node().getBBox().width;
-            
-            // 删除临时文本
-            tempText.remove();
-            
-            // 计算文本位置 - 默认在条形中间
-            let textX = leftXScale(dataPoint[valueField]) + barWidth/2;
-            
-            // 确保文本末尾不超出条形右侧边界
-            // 如果文本一半宽度超出右边界，则调整位置
-            const rightBoundary = leftXScale(dataPoint[valueField]) + barWidth;
-            if (textX + textWidth/2 > rightBoundary) {
-                textX = rightBoundary - textWidth/2 - 2; // 减去2像素的安全边距
-            }
-            g.append("text")
-                    .attr("class", "label")
-                    .attr("x", leftXScale(dataPoint[valueField])-3) // 条形左边缘（不加偏移，确保紧挨）
-                    .attr("y", yPos + yScale.bandwidth()/2)
-                    .attr("dy", "0.35em")
-                    .attr("text-anchor", "end") // 右对齐，使文本右边缘与x点对齐
-                    .style("fill", colors.text_color) // 使用普通文本颜色
-                    .style("font-family", typography.annotation.font_family)
-                    .style("font-size", typography.annotation.font_size)
-                    .style("font-weight", typography.annotation.font_weight)
-                    .style("pointer-events", "none")
-                    .text(formattedValue);
-            // 如果条形太窄，无法容纳文本（小于文本宽度），则不显示文本
-            // if (barWidth < textWidth) {
-            //     // 将文本放在条形外部左侧，文本右边缘紧挨条形左边缘
-            //     g.append("text")
-            //         .attr("class", "label")
-            //         .attr("x", leftXScale(dataPoint[valueField])-3) // 条形左边缘（不加偏移，确保紧挨）
-            //         .attr("y", yPos + yScale.bandwidth()/2)
-            //         .attr("dy", "0.35em")
-            //         .attr("text-anchor", "end") // 右对齐，使文本右边缘与x点对齐
-            //         .style("fill", colors.text_color) // 使用普通文本颜色
-            //         .style("font-family", typography.annotation.font_family)
-            //         .style("font-size", typography.annotation.font_size)
-            //         .style("font-weight", typography.annotation.font_weight)
-            //         .style("pointer-events", "none")
-            //         .text(formattedValue);
-            // } else {
-            //     // 正常在条形内显示文本
-            //     g.append("text")
-            //         .attr("class", "label")
-            //         .attr("x", textX)
-            //         .attr("y", yPos + yScale.bandwidth()/2)
-            //         .attr("dy", "0.35em")
-            //         .attr("text-anchor", "middle")
-            //         .style("fill", "#ffffff") // 白色文本
-            //         .style("font-family", typography.annotation.font_family)
-            //         .style("font-size", typography.annotation.font_size)
-            //         .style("font-weight", typography.annotation.font_weight)
-            //         .style("pointer-events", "none")
-            //         .text(formattedValue);
-            // }
         }
     });
     
@@ -556,69 +664,19 @@ function makeChart(containerSelector, data) {
             `${dataPoint[valueField]}${valueUnit}` : 
             `${dataPoint[valueField]}`;
                 
-            // 创建临时文本元素来计算数值文本的宽度
-            const tempText = g.append("text")
+            // 绘制右侧标签 - 使用统一的位置和左对齐
+            g.append("text")
+                .attr("class", "label")
+                .attr("x", rightLabelX) // 使用统一的最右侧位置
+                .attr("y", yPos + yScale.bandwidth()/2)
+                .attr("dy", "0.35em")
+                .attr("text-anchor", "end") // 左对齐文本
+                .style("fill", colors.text_color)
                 .style("font-family", typography.annotation.font_family)
                 .style("font-size", typography.annotation.font_size)
                 .style("font-weight", typography.annotation.font_weight)
-                .style("visibility", "hidden")
+                .style("pointer-events", "none")
                 .text(formattedValue);
-            
-            // 获取文本宽度
-            const textWidth = tempText.node().getBBox().width;
-            
-            // 删除临时文本
-            tempText.remove();
-            
-            // 计算文本位置 - 默认在条形中间
-            let textX = barLeft + barWidth/2;
-            
-            // 确保文本起始位置不超出条形左侧边界
-            if (textX - textWidth/2 < barLeft) {
-                textX = barLeft + textWidth/2 + 2; // 加上2像素的安全边距
-            }
-            g.append("text")
-                    .attr("class", "label")
-                    .attr("x", barLeft + barWidth + 5) // 条形右边缘（不加偏移，确保紧挨）
-                    .attr("y", yPos + yScale.bandwidth()/2)
-                    .attr("dy", "0.35em")
-                    .attr("text-anchor", "start") // 左对齐，使文本左边缘与x点对齐
-                    .style("fill", colors.text_color) // 使用普通文本颜色
-                    .style("font-family", typography.annotation.font_family)
-                    .style("font-size", typography.annotation.font_size)
-                    .style("font-weight", typography.annotation.font_weight)
-                    .style("pointer-events", "none")
-                    .text(formattedValue);
-            // 如果条形太窄，无法容纳文本（小于文本宽度），则不显示文本
-            // if (barWidth < textWidth) {
-            //     // 将文本放在条形外部右侧，文本左边缘紧挨条形右边缘
-            //     g.append("text")
-            //         .attr("class", "label")
-            //         .attr("x", barLeft + barWidth + 5) // 条形右边缘（不加偏移，确保紧挨）
-            //         .attr("y", yPos + yScale.bandwidth()/2)
-            //         .attr("dy", "0.35em")
-            //         .attr("text-anchor", "start") // 左对齐，使文本左边缘与x点对齐
-            //         .style("fill", colors.text_color) // 使用普通文本颜色
-            //         .style("font-family", typography.annotation.font_family)
-            //         .style("font-size", typography.annotation.font_size)
-            //         .style("font-weight", typography.annotation.font_weight)
-            //         .style("pointer-events", "none")
-            //         .text(formattedValue);
-            // } else {
-            //     // 正常在条形内显示文本
-            //     g.append("text")
-            //         .attr("class", "label")
-            //         .attr("x", textX)
-            //         .attr("y", yPos + yScale.bandwidth()/2)
-            //         .attr("dy", "0.35em")
-            //         .attr("text-anchor", "middle")
-            //         .style("fill", "#ffffff") // 白色文本
-            //         .style("font-family", typography.annotation.font_family)
-            //         .style("font-size", typography.annotation.font_size)
-            //         .style("font-weight", typography.annotation.font_weight)
-            //         .style("pointer-events", "none")
-            //         .text(formattedValue);
-            // }
         }
     });
 

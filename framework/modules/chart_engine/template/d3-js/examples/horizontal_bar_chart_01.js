@@ -2,9 +2,9 @@
 REQUIREMENTS_BEGIN
 {
     "chart_type": "Horizontal Bar Chart",
-    "chart_name": "horizontal_bar_chart",
+    "chart_name": "horizontal_bar_chart_01",
     "is_composite": false,
-    "required_fields": ["dimension", "value"],
+    "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],
     "required_fields_range": [[2, 30], [0, 100]],
     "required_fields_icons": ["dimension"],
@@ -29,7 +29,7 @@ function makeChart(containerSelector, data) {
     
     // 提取数据和配置
     const jsonData = data;                           // 完整的JSON数据对象
-    const chartData = jsonData.data;                 // 实际数据点数组  
+    const chartData = jsonData.data.data                 // 实际数据点数组  
     const variables = jsonData.variables || {};      // 图表配置
     const typography = jsonData.typography || {      // 字体设置，如果不存在则使用默认值
         title: { font_family: "Arial", font_size: "18px", font_weight: "bold" },
@@ -39,7 +39,7 @@ function makeChart(containerSelector, data) {
     };
     const colors = jsonData.colors || { text_color: "#333333" };  // 颜色设置
     const images = jsonData.images || { field: {}, other: {} };   // 图像设置
-    const dataColumns = jsonData.data_columns || []; // 数据列定义
+    const dataColumns = jsonData.data.columns || []; // 数据列定义
     
     // 设置视觉效果变量的默认值
     variables.has_rounded_corners = variables.has_rounded_corners || false;
@@ -68,19 +68,19 @@ function makeChart(containerSelector, data) {
     // ---------- 3. 提取字段名和单位 ----------
     
     // 根据数据列顺序提取字段名
-    const dimensionField = dataColumns.length > 0 ? dataColumns[0].name : "dimension";
-    const valueField = dataColumns.length > 1 ? dataColumns[1].name : "value";
+    const dimensionField = dataColumns.find(col => col.role === "x").name;
+    const valueField = dataColumns.find(col => col.role === "y").name;
     
     // 获取字段单位（如果存在）
     let dimensionUnit = "";
-    let valueUnit = ""; 
+    let valueUnit = ""; // 默认为百分比
     
-    if (dataColumns.length > 0 && dataColumns[0].unit && dataColumns[0].unit !== "none") {
-        dimensionUnit = dataColumns[0].unit;
+    if (dataColumns.find(col => col.role === "x").unit !== "none") {
+        dimensionUnit = dataColumns.find(col => col.role === "x").unit;
     }
     
-    if (dataColumns.length > 1 && dataColumns[1].unit && dataColumns[1].unit !== "none") {
-        valueUnit = dataColumns[1].unit;
+    if (dataColumns.find(col => col.role === "y").unit !== "none") {
+        valueUnit = dataColumns.find(col => col.role === "y").unit;
     }
     
     // ---------- 4. 数据处理 ----------
@@ -230,35 +230,7 @@ function makeChart(containerSelector, data) {
     const xScale = d3.scaleLinear()
         .domain([0, d3.max(chartData, d => +d[valueField]) * 1.05]) // 添加5%边距
         .range([0, innerWidth]);
-    
-    // ---------- 8. 添加标题和副标题 ----------
-    
-    // 添加标题（如果有）
-    if (variables.title && variables.title.text) {
-        svg.append("text")
-            .attr("x", margin.left)
-            .attr("y", margin.top / 2)
-            .attr("text-anchor", "start")
-            .style("font-family", typography.title.font_family)
-            .style("font-size", typography.title.font_size)
-            .style("font-weight", typography.title.font_weight)
-            .style("fill", colors.text_color)
-            .text(variables.title.text);
-    }
-    
-    // 添加副标题（如果有）
-    if (variables.subtitle && variables.subtitle.text) {
-        svg.append("text")
-            .attr("x", margin.left)
-            .attr("y", margin.top / 2 + 20)
-            .attr("text-anchor", "start")
-            .style("font-family", typography.description.font_family)
-            .style("font-size", typography.description.font_size)
-            .style("font-weight", typography.description.font_weight)
-            .style("fill", colors.text_color)
-            .text(variables.subtitle.text);
-    }
-    
+
     // ---------- 9. 创建主图表组 ----------
     
     const g = svg.append("g")

@@ -2,7 +2,7 @@
 REQUIREMENTS_BEGIN
 {
     "chart_type": "Dual Direction Horizontal Bar Chart",
-    "chart_name": "dual_direction_horizontal_bar_chart",
+    "chart_name": "dual_direction_horizontal_bar_chart_01",
     "is_composite": false,
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],
@@ -14,7 +14,7 @@ REQUIREMENTS_BEGIN
     "supported_effects": ["shadow", "radius_corner", "gradient", "stroke", "spacing"],
     "min_height": 400,
     "min_width": 600,
-    "background": "none",
+    "background": "no",
     "icon_mark": "none",
     "icon_label": "none",
     "has_x_axis": "no",
@@ -207,10 +207,10 @@ function makeChart(containerSelector, data) {
         .attr("xmlns", "http://www.w3.org/2000/svg")
         .attr("xmlns:xlink", "http://www.w3.org/1999/xlink");
     
-    // 如果有背景颜色设置，添加背景
-    if (colors.background_color) {
-        svg.style("background-color", colors.background_color);
-    }
+    // // 如果有背景颜色设置，添加背景
+    // if (colors.background_color) {
+    //     svg.style("background-color", colors.background_color);
+    // }
     
     // 添加defs用于视觉效果
     const defs = svg.append("defs");
