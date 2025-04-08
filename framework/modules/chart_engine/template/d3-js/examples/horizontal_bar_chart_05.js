@@ -294,7 +294,7 @@ function makeChart(containerSelector, data) {
     
     // 添加Y轴名称文本 - 右对齐
     g.append("text")
-        .attr("x", innerWidth - 10) // 右边缘减去一点padding
+        .attr("x", innerWidth - 5) // 右边缘减去一点padding
         .attr("y", titleBarY + titleBarHeight/2)
         .attr("dy", "0.35em") // 垂直居中
         .attr("text-anchor", "end") // 右对齐

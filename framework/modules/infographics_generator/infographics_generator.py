@@ -4,10 +4,16 @@ import sys
 from typing import Dict, Optional, List, Tuple, Set, Union
 from logging import getLogger
 import random
+from lxml import etree
+from PIL import Image
+import cairosvg
+import io
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from modules.chart_engine.chart_engine import load_data_from_json, get_template_for_chart_name, render_chart_to_svg
 from modules.chart_engine.template.template_registry import scan_templates
+from modules.title_styler.title_styler import process as title_styler_process
+from modules.title_styler.utils.svg_to_mask import svg_to_mask
 
 logger = getLogger(__name__)
 
@@ -67,8 +73,8 @@ def check_template_compatibility(data: Dict, templates: Dict) -> List[str]:
     
     for engine, templates_dict in templates.items():
         # Skip vegalite-py templates
-        if engine == 'vegalite-py':
-            continue
+        #if engine == 'vegalite-py':
+        #    continue
             
         for chart_type, chart_names_dict in templates_dict.items():
             for chart_name, template_info in chart_names_dict.items():
@@ -114,16 +120,16 @@ def process(input: str, output: str, base_url: str, api_key: str) -> bool:
         for engine, templates_dict in templates.items():
             for chart_type, chart_names_dict in templates_dict.items():
                 total_templates += len(chart_names_dict)
-        logger.info(f"\nTotal number of templates: {total_templates}")
+        # logger.info(f"\nTotal number of templates: {total_templates}")
         
         # Analyze templates and get requirements
         template_count, template_requirements = analyze_templates(templates)
-        logger.info(f"Number of templates with requirements: {template_count}")
+        # logger.info(f"Number of templates with requirements: {template_count}")
         
         # Log template requirements
-        logger.info("\nTemplate data requirements:")
-        for template_name, data_type in template_requirements.items():
-            logger.info(f"{template_name}: {data_type}")
+        # logger.info("\nTemplate data requirements:")
+        # for template_name, data_type in template_requirements.items():
+        #     logger.info(f"{template_name}: {data_type}")
             
         # Check compatibility with current data
         print("check compatibility")
@@ -138,6 +144,12 @@ def process(input: str, output: str, base_url: str, api_key: str) -> bool:
         selected_template = random.choice(compatible_templates)
         engine, chart_type, chart_name = selected_template.split('/')
         
+        # 打印选择的模板信息
+        logger.info(f"\nSelected template: {selected_template}")
+        logger.info(f"Engine: {engine}")
+        logger.info(f"Chart type: {chart_type}")
+        logger.info(f"Chart name: {chart_name}\n")
+        
         # 获取图表模板
         engine_obj, template = get_template_for_chart_name(chart_name)
         if engine_obj is None or template is None:
@@ -145,7 +157,7 @@ def process(input: str, output: str, base_url: str, api_key: str) -> bool:
             return False
             
         # 生成图表SVG
-        chart_svg_path = output
+        chart_svg_path = output + ".chart.tmp"
         try:
             render_chart_to_svg(
                 json_data=data,
@@ -159,24 +171,97 @@ def process(input: str, output: str, base_url: str, api_key: str) -> bool:
             
         # 读取生成的SVG内容
         with open(chart_svg_path, "r", encoding="utf-8") as f:
-            svg_content = f.read()
+            chart_svg_content = f.read()
+        chart_height = data["variables"]["height"]
+        chart_width = data["variables"]["width"]
             
-        # 创建完整的信息图SVG（目前只包含图表部分）
-        final_svg = f"""<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800">
-    <!-- Chart Section -->
-    <g transform="translate(0, 0)">
-        {svg_content}
+        # 生成标题SVG
+        title_svg_content = title_styler_process(input_data=data, max_width=chart_width)
+        if not title_svg_content:
+            logger.error("Failed to generate title SVG")
+            return False
+            
+        # 解析标题SVG的高度
+        title_svg_root = etree.fromstring(title_svg_content)
+        title_height = float(title_svg_root.get('height', '100'))
+        padding = 50
+        
+        # 提取SVG内部元素
+        def extract_svg_content(svg_str):
+            root = etree.fromstring(svg_str)
+            inner_content = ''.join(etree.tostring(child, encoding='unicode') for child in root)
+            return inner_content
+            
+        # 提取内部元素
+        title_inner_content = extract_svg_content(title_svg_content)
+        chart_inner_content = extract_svg_content(chart_svg_content)
+            
+        # 创建完整的信息图SVG
+        final_svg = f"""<svg xmlns="http://www.w3.org/2000/svg" width="{chart_width + padding * 2}" height="{title_height + chart_height + padding * 2}">
+    <!-- Title Section -->
+    <g transform="translate({padding}, {padding})" >
+        {title_inner_content}
     </g>
     
-    <!-- Title Section (placeholder) -->
-    <g transform="translate(0, 0)">
-        <!-- Title will be added here in future -->
+    <!-- Chart Section -->
+    <g transform="translate({padding}, {padding + title_height})">
+        {chart_inner_content}
     </g>
 </svg>"""
         
         # 保存最终SVG
         with open(output, "w", encoding="utf-8") as f:
             f.write(final_svg)
+            
+        # 生成PNG
+        png_file = f"{os.path.splitext(output)[0]}.png"
+        # 使用2倍的分辨率来确保高质量输出
+        png_width = (chart_width + padding * 2) * 2
+        png_height = (title_height + chart_height + padding * 2) * 2
+        
+        # 使用cairosvg生成高质量PNG
+        png_data = cairosvg.svg2png(
+            bytestring=final_svg.encode('utf-8'),
+            output_width=png_width,
+            output_height=png_height,
+            dpi=300  # 使用300dpi以获得更好的打印质量
+        )
+        
+        # 保存PNG文件
+        with open(png_file, 'wb') as f:
+            f.write(png_data)
+            
+        # 生成mask
+        debug_image, mask_image, mask_grid, grid_info = svg_to_mask(
+            final_svg,
+            grid_size=10,
+            content_threshold=0.05,
+            sample_density=36,
+            scale=2
+        )
+        
+        # 生成输出文件路径
+        base_name = os.path.splitext(output)[0]
+        debug_file = f"{base_name}_debug.png"
+        mask_file = f"{base_name}_mask.png"
+        info_file = f"{base_name}_info.txt"
+        
+        # 保存结果
+        debug_image.save(debug_file)
+        mask_image.save(mask_file)
+        
+        # 生成信息文件
+        dimensions = grid_info['dimensions']
+        with open(info_file, 'w', encoding='utf-8') as f:
+            f.write(f"SVG尺寸: {dimensions['width']}x{dimensions['height']}\n")
+            f.write(f"ViewBox: {dimensions['viewBox']}\n")
+            f.write(f"网格: {grid_info['cols']}×{grid_info['rows']}, 共{grid_info['filled_cells']}/{grid_info['total_cells']}个单元格被标记 ")
+            f.write(f"({grid_info['filled_cells']/grid_info['total_cells']*100:.1f}%)\n")
+            f.write(f"阈值: 5%\n")
+            f.write(f"白色阈值: 250\n")
+            
+        # 清理临时文件
+        os.remove(chart_svg_path)
             
         return True
             

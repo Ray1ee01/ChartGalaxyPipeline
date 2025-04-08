@@ -96,7 +96,7 @@ def scan_directory(dir_path, engine_type, file_extension):
                 template_dir = os.path.dirname(os.path.abspath(__file__))
                 engine_dir = os.path.join(template_dir, engine_type)
                 rel_path = os.path.relpath(item_path, engine_dir)
-                print(f"Registered {engine_type} template: {chart_type} -> {chart_name} -> {rel_path}")
+                # print(f"Registered {engine_type} template: {chart_type} -> {chart_name} -> {rel_path}")
 
 def scan_templates(force=False):
     """
