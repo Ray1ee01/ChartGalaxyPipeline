@@ -9,6 +9,7 @@ REQUIREMENTS_BEGIN
     "chart_name": "vertical_bar_chart_base",
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],
+    "required_other_colors": [],
     "supported_effects": [],
     "required_data_points": [5, 100],
     "required_image": [],
@@ -46,12 +47,13 @@ class VerticalBarChart(VegaLiteTemplate):
         return mark_spec
     def make_axis_specification(self, json_data: Dict) -> Dict:
         variables = json_data['variables']
-        # constants = json_data['constants']
-        axes_config = json_data['variation']['axes']
-        # label_color = variables['color'].get('label_color', "#000000")
+        # axes_config = json_data['variation']['axes']
+        axes_config = {
+            "x_axis": "yes",
+            "y_axis": "yes"
+        }
         label_color = json_data['colors']['text_color']
         label_typography = json_data['typography']['label']
-        print(label_typography)
         data_columns = json_data['data']['columns']
         x_axis_config = None
         y_axis_config = None

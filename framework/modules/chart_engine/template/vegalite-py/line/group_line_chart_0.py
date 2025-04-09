@@ -9,6 +9,7 @@ REQUIREMENTS_BEGIN
     "chart_name": "group_line_chart_0",
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["temporal","numerical"], ["numerical"], ["categorical"]],
+    "required_other_colors": [],
     "supported_effects": [],
     "required_data_points": [5, 100],
     "required_image": [],
@@ -35,9 +36,6 @@ class GroupLineChart0(GroupLineChart):
         x_encoding_spec['axis']['tickOpacity'] = 0
         x_encoding_spec['axis']['labels'] = True
         x_encoding_spec['axis']['grid'] = False
-        x_encoding_spec['scale'] = {
-            "domain": [2.5, 4.5]
-        }
 
         y_encoding_spec['axis']['domainOpacity'] = 0
         y_encoding_spec['axis']['tickOpacity'] = 0

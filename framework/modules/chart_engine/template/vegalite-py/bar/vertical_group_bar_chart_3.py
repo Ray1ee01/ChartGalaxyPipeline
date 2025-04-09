@@ -1,7 +1,7 @@
 
 from .vertical_group_bar_chart_2 import VerticalGroupBarChart2
 from typing import Dict
-from utils.element_tool.elements import BoundingBox
+from modules.chart_engine.utils.element_tool.elements import BoundingBox
 """
 REQUIREMENTS_BEGIN
 {
@@ -10,6 +10,7 @@ REQUIREMENTS_BEGIN
     "chart_name": "vertical_group_bar_chart_3",
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
+    "required_other_colors": [],
     "supported_effects": [],
     "required_data_points": [5, 100],
     "required_image": [],

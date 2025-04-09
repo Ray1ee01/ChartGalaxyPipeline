@@ -12,6 +12,7 @@ REQUIREMENTS_BEGIN
     "chart_name": "horizontal_bar_chart_4",
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],
+    "required_other_colors": [],
     "supported_effects": [],
     "required_data_points": [5, 100],
     "required_image": [],

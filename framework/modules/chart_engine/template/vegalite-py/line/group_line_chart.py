@@ -10,6 +10,7 @@ REQUIREMENTS_BEGIN
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["temporal","numerical"], ["numerical"], ["categorical"]],
     "supported_effects": [],
+    "required_other_colors": [],
     "required_data_points": [5, 100],
     "required_image": [],
     "width": [500, 1000],

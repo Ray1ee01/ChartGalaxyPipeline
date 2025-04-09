@@ -1,7 +1,7 @@
 
 from .vertical_group_bar_chart import VerticalGroupBarChart
 from typing import Dict
-from utils.element_tool.elements import BoundingBox
+from modules.chart_engine.utils.element_tool.elements import BoundingBox
 """
 REQUIREMENTS_BEGIN
 {
@@ -10,6 +10,7 @@ REQUIREMENTS_BEGIN
     "chart_name": "vertical_group_bar_chart_0",
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
+    "required_other_colors": [],
     "supported_effects": [],
     "required_data_points": [5, 100],
     "required_image": [],
@@ -49,7 +50,7 @@ class VerticalGroupBarChart0(VerticalGroupBarChart):
             'symbolSize': 200,
             'title': None
         }
-        if len(color_spec['scale']['domain']) > 5:
+        if color_spec.get('scale', None) and len(color_spec['scale']['domain']) > 5:
             color_spec['legend']['columns'] = len(color_spec['scale']['domain'])//2
         return color_spec
 

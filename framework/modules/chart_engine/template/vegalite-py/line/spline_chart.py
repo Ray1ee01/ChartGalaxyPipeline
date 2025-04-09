@@ -9,6 +9,7 @@ REQUIREMENTS_BEGIN
     "chart_name": "spline_chart_base",
     "required_fields": ["x", "y"],
     "required_fields_type": [["temporal","numerical"], ["numerical"]],
+    "required_other_colors": [],
     "supported_effects": [],
     "required_data_points": [5, 100],
     "required_image": [],

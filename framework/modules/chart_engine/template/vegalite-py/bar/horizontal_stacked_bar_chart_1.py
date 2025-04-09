@@ -1,8 +1,8 @@
 from .horizontal_stacked_bar_chart_0 import HorizontalStackedBarChart0
 from typing import Dict
-from utils.element_tool.elements import *
-from utils.element_tool.variation import AxisLabelMark
-from utils.element_tool.data_binder import get_content_from_axis_label, bind_data_to_element
+from modules.chart_engine.utils.element_tool.elements import *
+from modules.chart_engine.utils.element_tool.variation import AxisLabelMark
+from modules.chart_engine.utils.element_tool.data_binder import get_content_from_axis_label, bind_data_to_element
 """
 REQUIREMENTS_BEGIN
 {
@@ -11,6 +11,7 @@ REQUIREMENTS_BEGIN
     "chart_name": "horizontal_stacked_bar_chart_1",
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
+    "required_other_colors": [],
     "supported_effects": [],
     "required_data_points": [5, 100],
     "required_image": [],

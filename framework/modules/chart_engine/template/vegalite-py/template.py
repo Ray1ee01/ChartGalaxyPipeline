@@ -183,7 +183,6 @@ class VegaLiteTemplate:
         for axis in self.axes:
             axis_label_group = None
             for child in axis.children:
-                print("child: ", child.attributes.get("class", ""))
                 if child.attributes.get("class", "") == "axis_label-group":
                     axis_label_group = child
                     break
@@ -247,13 +246,19 @@ class VegaLiteTemplate:
     
     def apply_variation(self, json_data: Dict):
         # constants = json_data['constants']
-        variation = json_data['variation']
-        print("apply variation: ", variation)
-        if variation['icon_mark'] != "none":
-            self.apply_icon_mark(json_data)
-        if variation['axis_label'] != "none":
-            self.apply_axis_label(json_data)
-        if variation['background'] != "none":
-            self.apply_background(json_data)
-        self.adjust_legend_position()
-        self.adjust_axis_readability()
+        # variation = json_data['variation']
+        # print("apply variation: ", variation)
+        # if variation['icon_mark'] != "none":
+        #     self.apply_icon_mark(json_data)
+        # if variation['axis_label'] != "none":
+        #     self.apply_axis_label(json_data)
+        # if variation['background'] != "none":
+        #     self.apply_background(json_data)
+        try:
+            self.adjust_legend_position()
+        except Exception as e:
+            print("adjust legend position error: ", e)
+        try:
+            self.adjust_axis_readability()
+        except Exception as e:
+            print("adjust axis readability error: ", e)

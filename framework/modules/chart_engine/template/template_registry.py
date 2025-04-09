@@ -111,7 +111,7 @@ def scan_templates(force=False):
     
     # 如果已经扫描过且不强制重新扫描，则直接返回
     if _templates_scanned and not force:
-        return
+        return templates
     
     # 清空现有模板
     templates['echarts-py'].clear()

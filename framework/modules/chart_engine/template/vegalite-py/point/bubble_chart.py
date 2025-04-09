@@ -10,6 +10,7 @@ REQUIREMENTS_BEGIN
     "chart_name": "bubble_chart_01",
     "required_fields": ["x", "y", "size"],
     "required_fields_type": [["temporal","numerical"], ["temporal","numerical"], ["numerical"]],
+    "required_other_colors": [],
     "supported_effects": [],
     "required_data_points": [5, 100],
     "required_image": [],
@@ -31,11 +32,7 @@ class BubbleChart(ScatterPlot):
         return super().make_axis_specification(json_data)
     
     def make_size_specification(self, json_data: Dict) -> Dict:
-<<<<<<< HEAD
         data_columns = json_data['data']['columns']
-=======
-        data_columns = json_data['data']['columns']
->>>>>>> origin/dev
         size_column = None
         for column in data_columns:
             if column['name'] == 'size':

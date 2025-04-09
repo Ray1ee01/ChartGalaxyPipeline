@@ -1,5 +1,3 @@
-
-
 from .horizontal_bar_chart import HorizontalBarChart
 from typing import Dict
 
@@ -11,6 +9,7 @@ REQUIREMENTS_BEGIN
     "chart_name": "horizontal_group_bar_chart_base",
     "required_fields": ["x","y", "group"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
+    "required_other_colors": [],
     "supported_effects": [],
     "required_data_points": [5, 100],
     "required_image": [],

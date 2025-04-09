@@ -146,9 +146,13 @@ def run_pipeline(input_path, output_path=None, temp_dir=None, modules_to_run=Non
         
         # 获取输入目录下所有JSON文件
         input_files = list(input_path.glob('*.json'))
+        # 仅保留第一个文件
         success = True
         
-        for input_file in input_files:
+        for i, input_file in enumerate(input_files):
+            if i < 132:
+                continue
+            print(f"Processing file {i+1}/{len(input_files)}: {input_file}")
             # 如果是inplace处理，输出路径就是输入路径
             if output_path == input_path:
                 output_file = input_file
@@ -253,7 +257,7 @@ def run_single_file(input_path, output_path, temp_dir=None, modules_to_run=None)
     # 根据最后一个模块的输出类型决定最终输出文件的扩展名
     if last_module["name"] in ["chart_engine", "title_styler"]:
         final_output = output_path.with_suffix('.svg')
-    elif last_module["name"] == "layout_optimizer":
+    elif last_module["name"] == "layout_optimizer" or last_module["name"] == "infographics_generator":
         final_output = output_path.parent / f"{output_path.stem}_final.svg"
     else:
         final_output = output_path.with_suffix('.json')
@@ -309,9 +313,7 @@ def run_single_file(input_path, output_path, temp_dir=None, modules_to_run=None)
                 )
                 current_input = output_path
         elif module_name == "infographics_generator":
-            print(f"Running modules.infographics_generator.infographics_generator")
             module = import_module(f"modules.{module_name}.{module_name}")
-            print(f"imported module: {module}")
             if not should_skip_module(module_name, output_path):
                 module.process(
                     input=str(current_input), 

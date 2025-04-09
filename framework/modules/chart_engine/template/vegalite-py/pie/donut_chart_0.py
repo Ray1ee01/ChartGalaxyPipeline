@@ -13,6 +13,7 @@ REQUIREMENTS_BEGIN
     "chart_name": "donut_chart_0",
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],
+    "required_other_colors": [],
     "supported_effects": [],
     "required_data_points": [5, 100],
     "required_image": [],

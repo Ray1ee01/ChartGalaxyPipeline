@@ -6,9 +6,7 @@ import argparse
 from logging import getLogger
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-print("before import")
 from modules.chart_engine.template.template_registry import get_template_for_chart_type, get_template_for_chart_name
-print("after import")
 from modules.chart_engine.utils.load_charts import render_chart_to_svg
 from modules.chart_engine.utils.file_utils import create_temp_file, cleanup_temp_file, ensure_temp_dir, create_fallback_svg
 import importlib
@@ -173,7 +171,7 @@ def process(input: str, output: str, chart_name: str = None, html_output: str = 
                     raise Exception(f"Failed to generate D3.js chart: {error_message}")
                     
             elif engine == 'vegalite-py':
-                # Use VegaLite-py template
+                # Use vegalite-py template
                 template_root = "template.vegalite-py"
                 general_chart_type = template.split('/')[-2]
                 module_name = template.split('/')[-1].split('.')[0]

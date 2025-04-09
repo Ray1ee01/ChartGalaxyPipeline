@@ -14,7 +14,8 @@ def parse_svg_dimensions(svg_content):
     # print('svg_content: ', svg_content)
     # for debug: 把svg_content写入文件
     svg_content = svg_content.replace('&', '')
-    with open("svg_content.svg", "w") as f:
+    temp_dir = os.environ.get('TEMP_DIR', '.')
+    with open(os.path.join(temp_dir, "svg_content.svg"), "w") as f:
         f.write(svg_content)
     # 将&符号替换为&amp;以避免XML解析错误
     root = etree.fromstring(svg_content)

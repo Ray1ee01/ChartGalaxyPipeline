@@ -356,7 +356,7 @@ def render_chart_to_svg(json_data, output_svg_path, js_file=None, width=None, he
         #         "primary": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII="
         #     }
         # }
-        # Use VegaLite-py template
+        # Use vegalite-py template
         template = js_file
         template_root = "modules.chart_engine.template.vegalite-py"
         general_chart_type = template.split('/')[-2]
