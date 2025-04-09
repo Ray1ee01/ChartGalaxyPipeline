@@ -14,6 +14,7 @@ REQUIREMENTS_BEGIN
     "min_height": 600,
     "min_width": 800,
     "background": "styled",
+    "background_color": ["#f4f6f8", "#e6e3db"],
     "icon_mark": "none",
     "icon_label": "none",
     "has_x_axis": "no",
