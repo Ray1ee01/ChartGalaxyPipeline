@@ -13,7 +13,7 @@ REQUIREMENTS_BEGIN
     "supported_effects": ["gradient", "opacity"],
     "min_height": 600,
     "min_width": 800,
-    "background": "styled",
+    "background": "dark",
     "icon_mark": "none",
     "icon_label": "none",
     "has_x_axis": "yes",

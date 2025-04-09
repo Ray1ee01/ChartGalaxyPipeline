@@ -13,7 +13,7 @@ REQUIREMENTS_BEGIN
     "supported_effects": ["gradient", "opacity"],
     "min_height": 400,
     "min_width": 800,
-    "background": "styled",
+    "background": "light",
     "icon_mark": "none",
     "icon_label": "none",
     "has_x_axis": "yes",
@@ -54,12 +54,6 @@ function makeChart(containerSelector, data) {
         .attr("style", "max-width: 100%; height: auto;")
         .attr("xmlns", "http://www.w3.org/2000/svg");
     
-    // 添加背景
-    svg.append("rect")
-        .attr("width", width)
-        .attr("height", height)
-        .attr("fill", "#f5f7fa");
-    
     // 创建图表区域
     const chartWidth = width - margin.left - margin.right;
     const chartHeight = height - margin.top - margin.bottom;
@@ -93,6 +87,7 @@ function makeChart(containerSelector, data) {
     .data(yScale.ticks(8))
     .enter()
     .append("line")
+    .attr("class", "background")
     .attr("x1", 0)
     .attr("y1", d => yScale(d))
     .attr("x2", chartWidth)
@@ -190,6 +185,7 @@ function makeChart(containerSelector, data) {
                 .attr("width", x2 - x1)
                 .attr("height", chartHeight)
                 .attr("fill", "#f0f0f0")
+                .attr("class", "background")
                 .attr("opacity", 0.5);
         }
     });

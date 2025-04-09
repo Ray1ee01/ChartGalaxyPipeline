@@ -13,7 +13,7 @@ REQUIREMENTS_BEGIN
     "supported_effects": ["gradient", "opacity"],
     "min_height": 400,
     "min_width": 800,
-    "background": "styled",
+    "background": "dark",
     "icon_mark": "none",
     "icon_label": "none",
     "has_x_axis": "yes",
@@ -171,6 +171,7 @@ function makeChart(containerSelector, data) {
         .enter()
         .append("rect")
         .attr("class", "grid-rect-y")
+        .attr("class", "background")
         .attr("x", -gridExtension)
         .attr("y", d => yScale(d) - 0.5) // 减去0.5使线条居中
         .attr("width", innerWidth + gridExtension)
@@ -205,6 +206,7 @@ function makeChart(containerSelector, data) {
         .enter()
         .append("rect")
         .attr("class", "grid-rect-x")
+        .attr("class", "background")
         .attr("x", d => xScale(d) - 0.5)
         .attr("y", 0)
         .attr("width", 1)

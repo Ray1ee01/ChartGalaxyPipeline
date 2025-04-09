@@ -13,7 +13,7 @@ REQUIREMENTS_BEGIN
     "supported_effects": ["gradient", "opacity"],
     "min_height": 400,
     "min_width": 600,
-    "background": "styled",
+    "background": "dark",
     "icon_mark": "none",
     "icon_label": "none",
     "has_x_axis": "yes",
@@ -63,14 +63,6 @@ function makeChart(containerSelector, data) {
     const g = svg.append("g")
         .attr("transform", `translate(${margin.left},${margin.top})`);
     
-    // 添加网格背景 - 改为透明
-    g.append("rect")
-        .attr("width", innerWidth)
-        .attr("height", innerHeight)
-        .attr("fill", "transparent") // 透明背景
-        .attr("rx", 5)
-        .attr("ry", 5);
-    
     // 创建比例尺 - 修改为时间比例尺
     // 首先解析年份字符串为日期对象
     const parseYear = (yearStr) => {
@@ -118,6 +110,7 @@ function makeChart(containerSelector, data) {
         .attr("x2", innerWidth)
         .attr("y2", d => yScale(d))
         .attr("stroke", "#ffffff")
+        .attr("class", "background")
         .attr("stroke-width", d => d === 0 ? 2 : 1) // 0刻度线加粗
         .attr("opacity", d => d === 0 ? 1 : 0.3); // 0刻度线不透明
 
@@ -138,6 +131,7 @@ function makeChart(containerSelector, data) {
         .attr("x2", d => xScale(d))
         .attr("y2", innerHeight)
         .attr("stroke", "#ffffff")
+        .attr("class", "background")
         .attr("stroke-width", 1)
         .attr("opacity", 0.3); // 降低透明度
     

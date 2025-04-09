@@ -13,7 +13,7 @@ REQUIREMENTS_BEGIN
     "supported_effects": ["gradient", "opacity"],
     "min_height": 400,
     "min_width": 800,
-    "background": "styled",
+    "background": "light",
     "icon_mark": "circle",
     "icon_label": "legend",
     "has_x_axis": "yes",
@@ -55,12 +55,6 @@ function makeChart(containerSelector, data) {
         .attr("viewBox", `0 0 ${width} ${height}`)
         .attr("style", "max-width: 100%; height: auto;")
         .attr("xmlns", "http://www.w3.org/2000/svg");
-    
-    // 添加背景
-    svg.append("rect")
-        .attr("width", width)
-        .attr("height", height)
-        .attr("fill", "#f9f9f9");
     
     // 创建图表区域
     const chartWidth = width - margin.left - margin.right;
@@ -213,6 +207,7 @@ function makeChart(containerSelector, data) {
                 .attr("width", x2 - x1)
                 .attr("height", chartHeight + xAxisTextHeight - (legendY + 10)) // 高度需要减去legend的位置
                 .attr("fill", "#ececec")
+                .attr("class", "background")
                 .attr("opacity", 0.8);
         }
     }
@@ -229,6 +224,7 @@ function makeChart(containerSelector, data) {
             .attr("y2", yScale(tick))
             .attr("stroke", "#e0e0e0")
             .attr("stroke-width", 1)
+            .attr("class", "background")
             .attr("stroke-dasharray", "2,2");
     });
     

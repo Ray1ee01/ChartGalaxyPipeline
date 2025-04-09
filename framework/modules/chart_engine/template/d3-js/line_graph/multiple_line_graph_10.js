@@ -13,7 +13,7 @@ REQUIREMENTS_BEGIN
     "supported_effects": ["gradient", "opacity"],
     "min_height": 400,
     "min_width": 800,
-    "background": "styled",
+    "background": "light",
     "icon_mark": "none",
     "icon_label": "none",
     "has_x_axis": "yes",
@@ -53,12 +53,6 @@ function makeChart(containerSelector, data) {
         .attr("viewBox", `0 0 ${width} ${height}`)
         .attr("style", "max-width: 100%; height: auto;")
         .attr("xmlns", "http://www.w3.org/2000/svg");
-    
-    // 添加背景
-    svg.append("rect")
-        .attr("width", width)
-        .attr("height", height)
-        .attr("fill", "#f9f9f9");
     
     // 创建图表区域
     const chartWidth = width - margin.left - margin.right;
@@ -129,7 +123,8 @@ function makeChart(containerSelector, data) {
             .attr("x2", chartWidth)
             .attr("y2", yScale(tick))
             .attr("stroke", "#dddddd")
-            .attr("stroke-width", 1);
+            .attr("stroke-width", 1)
+            .attr("class", "background");
     });
     
     // 添加刻度之间的额外网格线
@@ -146,6 +141,7 @@ function makeChart(containerSelector, data) {
                 .attr("y2", yScale(midValue))
                 .attr("stroke", "#dddddd")
                 .attr("stroke-width", 1)
+                .attr("class", "background");
         }
     }
     
