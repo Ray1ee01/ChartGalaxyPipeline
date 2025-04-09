@@ -13,7 +13,7 @@ REQUIREMENTS_BEGIN
     "supported_effects": ["gradient", "opacity"],
     "min_height": 400,
     "min_width": 800,
-    "background": "styled",
+    "background": "light",
     "icon_mark": "none",
     "icon_label": "none",
     "has_x_axis": "yes",
@@ -53,13 +53,6 @@ function makeChart(containerSelector, data) {
         .attr("viewBox", `0 0 ${width} ${height}`)
         .attr("style", "max-width: 100%; height: auto;")
         .attr("xmlns", "http://www.w3.org/2000/svg");
-    
-    // 添加背景
-    svg.append("rect")
-        .attr("width", width)
-        .attr("height", height)
-        .attr("class", "background")
-        .attr("fill", "#f9f9f9");
     
     // 创建图表区域
     const chartWidth = width - margin.left - margin.right;
@@ -150,6 +143,7 @@ function makeChart(containerSelector, data) {
                 .attr("width", rightX - leftX)
                 .attr("height", minYTickPosition - maxYTickPosition) // 高度只到最低Y刻度
                 .attr("fill", "#ececec")
+                .attr("class", "background")
                 .attr("opacity", 0.8);
         }
     }
@@ -168,6 +162,7 @@ function makeChart(containerSelector, data) {
             .attr("x2", chartWidth)
             .attr("y2", yScale(tick))
             .attr("stroke", "#e0e0e0")
+            .attr("class", "background")
             .attr("stroke-width", isZeroTick ? 1.5 : 1) // 0刻度线稍粗
             .attr("stroke-dasharray", isZeroTick ? null : "2,2"); // 0刻度线为实线
     });

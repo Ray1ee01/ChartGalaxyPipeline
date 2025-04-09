@@ -13,7 +13,7 @@ REQUIREMENTS_BEGIN
     "supported_effects": ["gradient", "opacity"],
     "min_height": 400,
     "min_width": 600,
-    "background": "styled",
+    "background": "dark",
     "icon_mark": "none",
     "icon_label": "none",
     "has_x_axis": "yes",
@@ -91,6 +91,7 @@ function makeChart(containerSelector, data) {
         .attr("width", innerWidth)
         .attr("height", innerHeight)
         .attr("fill", `url(#${gridGradientId})`) // 使用渐变填充
+        .attr("class", "background")
         .attr("rx", 0)
         .attr("ry", 0);
 
@@ -136,6 +137,7 @@ function makeChart(containerSelector, data) {
         .enter()
         .append("line")
         .attr("class", "grid-line-y")
+        .attr("class", "background")
         .attr("x1", -gridExtension) // 向左延伸
         .attr("y1", d => yScale(d))
         .attr("x2", innerWidth)
@@ -175,6 +177,7 @@ function makeChart(containerSelector, data) {
         .enter()
         .append("line")
         .attr("class", "grid-line-x")
+        .attr("class", "background")
         .attr("x1", d => xScale(d))
         .attr("y1", 0) // 从顶部开始，超过最大Y刻度
         .attr("x2", d => xScale(d))

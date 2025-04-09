@@ -13,7 +13,7 @@ REQUIREMENTS_BEGIN
     "supported_effects": ["gradient", "opacity"],
     "min_height": 400,
     "min_width": 800,
-    "background": "styled",
+    "background": "light",
     "icon_mark": "none",
     "icon_label": "none",
     "has_x_axis": "yes",
@@ -366,7 +366,8 @@ function makeChart(containerSelector, data) {
         .attr("y2", d => yScale(d))
         .attr("stroke", "rgba(255, 255, 255, 0.2)")
         .attr("stroke-width", 1)
-        .attr("stroke-dasharray", "none"); // 使用实线
+        .attr("stroke-dasharray", "none")
+        .attr("class", "background"); // 使用实线
     
     // 添加Y轴刻度值 - 调整位置
     g.selectAll(".y-tick")

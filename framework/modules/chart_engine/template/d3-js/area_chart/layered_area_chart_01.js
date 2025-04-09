@@ -13,7 +13,7 @@ REQUIREMENTS_BEGIN
     "supported_effects": ["gradient", "opacity"],
     "min_height": 600,
     "min_width": 800,
-    "background": "styled",
+    "background": "dark",
     "icon_mark": "none",
     "icon_label": "none",
     "has_x_axis": "yes",
@@ -68,7 +68,7 @@ function makeChart(containerSelector, data) {
         .attr("width", "100%")
         .attr("height", height)
         .attr("viewBox", `0 0 ${width} ${height}`)
-        .attr("style", "max-width: 100%; height: auto; background-color: #0a1738;") // 深蓝色背景
+        .attr("style", "max-width: 100%; height: auto;")
         .attr("xmlns", "http://www.w3.org/2000/svg");
     
     // 创建图表区域
@@ -251,6 +251,7 @@ function makeChart(containerSelector, data) {
             .attr("y2", chartHeight)
             .attr("stroke", "#87aac0")
             .attr("opacity", 0.2)
+            .attr("class", "background")
             .attr("stroke-width", 1)
     });
     // 添加水平网格线
@@ -263,6 +264,7 @@ function makeChart(containerSelector, data) {
             .attr("stroke", "#87aac0")
             .attr("opacity", 0.2)
             .attr("stroke-width", 1)
+            .attr("class", "background")
     });
     
     // 添加最后一年标注

@@ -13,7 +13,7 @@ REQUIREMENTS_BEGIN
     "supported_effects": ["gradient", "opacity"],
     "min_height": 400,
     "min_width": 800,
-    "background": "styled",
+    "background": "dark",
     "icon_mark": "none",
     "icon_label": "none",
     "has_x_axis": "yes",
@@ -67,7 +67,7 @@ function makeChart(containerSelector, data) {
         .attr("width", "100%")
         .attr("height", height)
         .attr("viewBox", `0 0 ${width} ${height}`)
-        .attr("style", "max-width: 100%; height: auto; background-color: #333333;")
+        .attr("style", "max-width: 100%; height: auto;")
         .attr("xmlns", "http://www.w3.org/2000/svg");
     
     // 创建图表组
@@ -115,6 +115,7 @@ function makeChart(containerSelector, data) {
         .enter()
         .append("rect")
         .attr("class", "grid-rect-y")
+        .attr("class", "background")
         .attr("x", -gridExtension - 30)
         .attr("y", d => yScale(d) - 0.5) // 减去0.5使线条居中
         .attr("width", innerWidth + gridExtension)
@@ -150,6 +151,7 @@ function makeChart(containerSelector, data) {
         .enter()
         .append("rect")
         .attr("class", "grid-rect-x")
+        .attr("class", "background")
         .attr("x", d => xScale(d) - 0.5)
         .attr("y", 0)
         .attr("width", 1)

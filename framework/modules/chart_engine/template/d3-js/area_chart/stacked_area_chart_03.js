@@ -13,7 +13,7 @@ REQUIREMENTS_BEGIN
     "supported_effects": ["gradient", "opacity"],
     "min_height": 600,
     "min_width": 800,
-    "background": "styled",
+    "background": "dark",
     "icon_mark": "none",
     "icon_label": "none",
     "has_x_axis": "yes",
@@ -85,12 +85,6 @@ function makeChart(containerSelector, data) {
         .attr("viewBox", `0 0 ${width} ${height}`)
         .attr("style", "max-width: 100%; height: auto;")
         .attr("xmlns", "http://www.w3.org/2000/svg");
-    
-    // 添加背景 - 改为深蓝灰色
-    svg.append("rect")
-        .attr("width", width)
-        .attr("height", height)
-        .attr("fill", "#364d51"); // 修改为深蓝灰色背景
     
     // 创建图表区域
     const chartWidth = width - margin.left - margin.right;
