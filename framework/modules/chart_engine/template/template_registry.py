@@ -69,6 +69,8 @@ def scan_directory(dir_path, engine_type, file_extension):
                 
             # 提取需求并注册模板
             requirements = extract_requirements(item_path)
+            # if engine_type == 'vegalite-py':
+            #     print(f"requirements: {requirements['chart_name']}")
             if requirements and 'chart_type' in requirements:
                 chart_type = requirements['chart_type'].lower()
                 
@@ -208,7 +210,7 @@ def get_template_for_chart_name(chart_name, engine_preference=None):
     
     # If no preference is specified, use default order
     if engine_preference is None:
-        engine_preference = ['echarts-py', 'echarts-js', 'd3-js']
+        engine_preference = ['vegalite-py']
     
     # Try each engine in order of preference
     for engine in engine_preference:

@@ -1,5 +1,5 @@
 from typing import Dict
-from utils.color_tool.base import interpolate_color2
+from modules.chart_engine.utils.color_tool.base import interpolate_color2
 
 def available_first(json_data: Dict) -> Dict:
     color = json_data['colors']['available_colors'][0]

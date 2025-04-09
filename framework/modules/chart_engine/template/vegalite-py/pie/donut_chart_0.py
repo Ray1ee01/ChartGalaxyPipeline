@@ -1,8 +1,8 @@
 from .donut_chart import DonutChart
 from typing import Dict
-from utils.color_tool.base import interpolate_color2
-from utils.element_tool.variation import ImageChart
-from utils.element_tool.elements import *
+from modules.chart_engine.utils.color_tool.base import interpolate_color2
+from modules.chart_engine.utils.element_tool.variation import ImageChart
+from modules.chart_engine.utils.element_tool.elements import *
 
 
 """

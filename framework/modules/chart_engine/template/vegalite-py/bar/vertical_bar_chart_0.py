@@ -1,6 +1,6 @@
 from .vertical_bar_chart import VerticalBarChart
 from typing import Dict
-from utils.color_tool.base import interpolate_color2
+from modules.chart_engine.utils.color_tool.base import interpolate_color2
 """
 REQUIREMENTS_BEGIN
 {

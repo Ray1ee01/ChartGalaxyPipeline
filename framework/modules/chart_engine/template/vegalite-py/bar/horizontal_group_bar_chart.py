@@ -8,7 +8,7 @@ REQUIREMENTS_BEGIN
 {
     "_comment": "这些属性的值由你对特定的图表进行定义，用于要求数据的格式。完成测试后填写。",
     "chart_type": "Horizontal Group Bar Chart",
-    "chart_name": "horizontal_group_bar_chart",
+    "chart_name": "horizontal_group_bar_chart_base",
     "required_fields": ["x","y", "group"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
     "supported_effects": [],

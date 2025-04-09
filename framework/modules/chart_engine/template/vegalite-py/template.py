@@ -3,13 +3,13 @@ import subprocess
 import json
 import os
 import random
-from utils.element_tool.vegalite_parser import SVGParser
-from utils.element_tool.tree_converter import SVGTreeConverter
-from utils.element_tool.vegalite_element_parser import VegaLiteElementParser
-from utils.element_tool.data_binder import *
-from utils.color_tool.base import *
-from utils.element_tool.variation import BackgroundChart
-from utils.element_tool.readability import *
+from modules.chart_engine.utils.element_tool.vegalite_parser import SVGParser
+from modules.chart_engine.utils.element_tool.tree_converter import SVGTreeConverter
+from modules.chart_engine.utils.element_tool.vegalite_element_parser import VegaLiteElementParser
+from modules.chart_engine.utils.element_tool.data_binder import *
+from modules.chart_engine.utils.color_tool.base import *
+from modules.chart_engine.utils.element_tool.variation import BackgroundChart
+from modules.chart_engine.utils.element_tool.readability import *
 class VegaLiteTemplate:
     def __init__(self, json_data: Dict):
         self.json_data = json_data

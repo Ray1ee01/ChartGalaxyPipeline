@@ -6,7 +6,7 @@ REQUIREMENTS_BEGIN
 {
     "_comment": "这些属性的值由你对特定的图表进行定义，用于要求数据的格式。完成测试后填写。",
     "chart_type": "Line Chart",
-    "chart_name": "line_chart_01",
+    "chart_name": "line_chart_base",
     "required_fields": ["x", "y"],
     "required_fields_type": [["temporal","numerical"], ["numerical"]],
     "supported_effects": [],
@@ -24,11 +24,7 @@ class LineChart(VegaLiteTemplate):
         super().__init__(json_data)
 
     def make_mark_specification(self, json_data: Dict) -> Dict:
-<<<<<<< HEAD
         mark_styles = json_data['variables']
-=======
-        mark_styles = json_data['variables']['mark']
->>>>>>> origin/dev
         mark_spec = {
             "type": "line",
             "interpolate": "linear"
@@ -45,7 +41,6 @@ class LineChart(VegaLiteTemplate):
     
     def make_axis_specification(self, json_data: Dict) -> Dict:
         variables = json_data['variables']
-<<<<<<< HEAD
         axes_config = json_data['variation']['axes']
         label_typography = json_data['typography']['label']
         label_color = json_data['colors']['text_color']
@@ -101,40 +96,10 @@ class LineChart(VegaLiteTemplate):
         x_axis_spec['grid'] = False
         # 默认没有label
         if x_axis_config['has_label'] is True:
-=======
-        constants = json_data['constants']
-        label_color = variables['color'].get('label_color', "#000000")
-        label_typography = json_data['typography']['label']
-        if constants['has_x_axis']:
-            x_axis_config = variables['x_axis']
-            x_encoding_spec = {
-                "field": x_axis_config['field'],
-                # 暂时用ordinal来处理，等数据type完善之后可以搞
-                "type": "ordinal"
-            }
-            x_axis_spec = {}
-            x_axis_spec['domain'] = True
-            if x_axis_config['has_domain'] is True:
-                x_axis_spec['domainOpacity'] = 1
-            else:
-                x_axis_spec['domainOpacity'] = 0
-
-            x_axis_spec['ticks'] = True
-            if x_axis_config['has_tick'] is True:
-                x_axis_spec['tickOpacity'] = 1
-            else:
-                x_axis_spec['tickOpacity'] = 0
-            # 默认没有title
-            x_axis_spec['title'] = None
-            # 默认没有grid
-            x_axis_spec['grid'] = False
-            # 默认没有label
->>>>>>> origin/dev
             x_axis_spec['labelColor'] = label_color
             x_axis_spec['labelFont'] = label_typography['font_family']
             x_axis_spec['labelFontSize'] = label_typography['font_size'].replace('px', '')
             x_axis_spec['labelFontWeight'] = label_typography['font_weight']
-<<<<<<< HEAD
             x_axis_spec['labelAngle'] = 0
         else:
             x_axis_spec['labels'] = False
@@ -168,40 +133,10 @@ class LineChart(VegaLiteTemplate):
         # 默认没有grid
         y_axis_spec['grid'] = False
         if y_axis_config['has_label'] is True:
-=======
-            x_axis_spec['labelLineHeight'] = label_typography['line_height']
-            x_axis_spec['labelAngle'] = 0
-            # letter_spacing 不支持
-            print("Vega-lite does not support letter_spacing")
-            # 结束axis样式配置
-            x_encoding_spec['axis'] = x_axis_spec
-        if constants['has_y_axis']:
-            y_axis_config = variables['y_axis'] 
-            y_encoding_spec = {
-                "field": y_axis_config['field'],
-                "type": "quantitative"
-            }
-            y_axis_spec = {}
-            y_axis_spec['domain'] = True
-            if y_axis_config['has_domain'] is True:
-                y_axis_spec['domainOpacity'] = 1
-            else:
-                y_axis_spec['domainOpacity'] = 0
-                
-            y_axis_spec['ticks'] = True
-            if y_axis_config['has_tick'] is True:
-                y_axis_spec['tickOpacity'] = 1
-            else:
-                y_axis_spec['tickOpacity'] = 0
-            y_axis_spec['title'] = None
-            # 默认没有grid
-            y_axis_spec['grid'] = False
->>>>>>> origin/dev
             y_axis_spec['labelColor'] = label_color
             y_axis_spec['labelFont'] = label_typography['font_family']  
             y_axis_spec['labelFontSize'] = label_typography['font_size'].replace('px', '')
             y_axis_spec['labelFontWeight'] = label_typography['font_weight']
-<<<<<<< HEAD
             y_axis_spec['labelAngle'] = 0
         else:
             y_axis_spec['labels'] = False
@@ -213,14 +148,6 @@ class LineChart(VegaLiteTemplate):
         # 结束axis样式配置
         y_encoding_spec['axis'] = y_axis_spec
         
-=======
-            y_axis_spec['labelLineHeight'] = label_typography['line_height']
-            y_axis_spec['labelAngle'] = 0
-            # letter_spacing 不支持
-            print("Vega-lite does not support letter_spacing")
-            # 结束axis样式配置
-            y_encoding_spec['axis'] = y_axis_spec
->>>>>>> origin/dev
         return x_encoding_spec, y_encoding_spec
     
     def make_color_specification(self, json_data: Dict) -> Dict:

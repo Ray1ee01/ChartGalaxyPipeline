@@ -6,7 +6,7 @@ REQUIREMENTS_BEGIN
 {
     "_comment": "这些属性的值由你对特定的图表进行定义，用于要求数据的格式。完成测试后填写。",
     "chart_type": "Multiple Spline Chart",
-    "chart_name": "multiple_spline_chart_01",
+    "chart_name": "multiple_spline_chart_base",
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["temporal","numerical"], ["numerical"], ["categorical"]],
     "supported_effects": [],

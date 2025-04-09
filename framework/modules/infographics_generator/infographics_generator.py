@@ -75,6 +75,8 @@ def check_template_compatibility(data: Dict, templates: Dict) -> List[str]:
         # Skip vegalite-py templates
         #if engine == 'vegalite-py':
         #    continue
+        if engine != 'vegalite-py':
+            continue
             
         for chart_type, chart_names_dict in templates_dict.items():
             for chart_name, template_info in chart_names_dict.items():
@@ -106,168 +108,174 @@ def process(input: str, output: str, base_url: str, api_key: str) -> bool:
     Returns:
         bool: 处理是否成功
     """
-    try:
-        print("infographics_generator")
-        # 读取输入文件
-        with open(input, "r", encoding="utf-8") as f:
-            data = json.load(f)
-            
-        # 扫描并获取所有可用的模板
-        templates = scan_templates()
+    # try:
+    print("infographics_generator")
+    # 读取输入文件
+    print(f"input: {input}")
+    with open(input, "r", encoding="utf-8") as f:
+        data = json.load(f)
         
-        # Count total templates
-        total_templates = 0
-        for engine, templates_dict in templates.items():
-            for chart_type, chart_names_dict in templates_dict.items():
-                total_templates += len(chart_names_dict)
-        # logger.info(f"\nTotal number of templates: {total_templates}")
+    # 扫描并获取所有可用的模板
+    templates = scan_templates()
+    # print(f"templates: {templates.keys()}")
+    # print(f"templates: {templates['vegalite-py'].keys()}")
+    
+    # Count total templates
+    total_templates = 0
+    for engine, templates_dict in templates.items():
+        for chart_type, chart_names_dict in templates_dict.items():
+            total_templates += len(chart_names_dict)
+    # logger.info(f"\nTotal number of templates: {total_templates}")
+    
+    # Analyze templates and get requirements
+    template_count, template_requirements = analyze_templates(templates)
+    # logger.info(f"Number of templates with requirements: {template_count}")
+    
+    # Log template requirements
+    # logger.info("\nTemplate data requirements:")
+    # for template_name, data_type in template_requirements.items():
+    #     logger.info(f"{template_name}: {data_type}")
         
-        # Analyze templates and get requirements
-        template_count, template_requirements = analyze_templates(templates)
-        # logger.info(f"Number of templates with requirements: {template_count}")
+    # Check compatibility with current data
+    print("check compatibility")
+    compatible_templates = check_template_compatibility(data, templates)
+    logger.info(f"\nNumber of compatible templates: {len(compatible_templates)}")
+    
+    if not compatible_templates:
+        logger.error("No compatible templates found for the given data")
+        return False
         
-        # Log template requirements
-        # logger.info("\nTemplate data requirements:")
-        # for template_name, data_type in template_requirements.items():
-        #     logger.info(f"{template_name}: {data_type}")
-            
-        # Check compatibility with current data
-        print("check compatibility")
-        compatible_templates = check_template_compatibility(data, templates)
-        logger.info(f"\nNumber of compatible templates: {len(compatible_templates)}")
+    # 随机选择一个兼容的模板
+    selected_template = random.choice(compatible_templates)
+    engine, chart_type, chart_name = selected_template.split('/')
+    print(f"selected_template: {selected_template}")
+    
+    # 打印选择的模板信息
+    logger.info(f"\nSelected template: {selected_template}")
+    logger.info(f"Engine: {engine}")
+    logger.info(f"Chart type: {chart_type}")
+    logger.info(f"Chart name: {chart_name}\n")
+    
+    # 获取图表模板
+    engine_obj, template = get_template_for_chart_name(chart_name)
+    print(f"engine_obj: {engine_obj}")
+    print(f"template: {template}")
+    if engine_obj is None or template is None:
+        logger.error(f"Failed to load template: {selected_template}")
+        return False
         
-        if not compatible_templates:
-            logger.error("No compatible templates found for the given data")
-            return False
-            
-        # 随机选择一个兼容的模板
-        selected_template = random.choice(compatible_templates)
-        engine, chart_type, chart_name = selected_template.split('/')
+    # 生成图表SVG
+    chart_svg_path = output + ".chart.tmp"
+    # try:
+    render_chart_to_svg(
+        json_data=data,
+        output_svg_path=chart_svg_path,
+        js_file=template,
+        framework=engine.split('-')[0]  # Extract framework name (echarts/d3)
+    )
+    # except Exception as e:
+    #     logger.error(f"Failed to generate chart SVG: {str(e)}")
+    #     return False
         
-        # 打印选择的模板信息
-        logger.info(f"\nSelected template: {selected_template}")
-        logger.info(f"Engine: {engine}")
-        logger.info(f"Chart type: {chart_type}")
-        logger.info(f"Chart name: {chart_name}\n")
+    # 读取生成的SVG内容
+    with open(chart_svg_path, "r", encoding="utf-8") as f:
+        chart_svg_content = f.read()
+    chart_height = data["variables"]["height"]
+    chart_width = data["variables"]["width"]
         
-        # 获取图表模板
-        engine_obj, template = get_template_for_chart_name(chart_name)
-        if engine_obj is None or template is None:
-            logger.error(f"Failed to load template: {selected_template}")
-            return False
-            
-        # 生成图表SVG
-        chart_svg_path = output + ".chart.tmp"
-        try:
-            render_chart_to_svg(
-                json_data=data,
-                output_svg_path=chart_svg_path,
-                js_file=template,
-                framework=engine.split('-')[0]  # Extract framework name (echarts/d3)
-            )
-        except Exception as e:
-            logger.error(f"Failed to generate chart SVG: {str(e)}")
-            return False
-            
-        # 读取生成的SVG内容
-        with open(chart_svg_path, "r", encoding="utf-8") as f:
-            chart_svg_content = f.read()
-        chart_height = data["variables"]["height"]
-        chart_width = data["variables"]["width"]
-            
-        # 生成标题SVG
-        title_svg_content = title_styler_process(input_data=data, max_width=chart_width)
-        if not title_svg_content:
-            logger.error("Failed to generate title SVG")
-            return False
-            
-        # 解析标题SVG的高度
-        title_svg_root = etree.fromstring(title_svg_content)
-        title_height = float(title_svg_root.get('height', '100'))
-        padding = 50
+    # 生成标题SVG
+    title_svg_content = title_styler_process(input_data=data, max_width=chart_width)
+    if not title_svg_content:
+        logger.error("Failed to generate title SVG")
+        return False
         
-        # 提取SVG内部元素
-        def extract_svg_content(svg_str):
-            root = etree.fromstring(svg_str)
-            inner_content = ''.join(etree.tostring(child, encoding='unicode') for child in root)
-            return inner_content
-            
-        # 提取内部元素
-        title_inner_content = extract_svg_content(title_svg_content)
-        chart_inner_content = extract_svg_content(chart_svg_content)
-            
-        # 创建完整的信息图SVG
-        final_svg = f"""<svg xmlns="http://www.w3.org/2000/svg" width="{chart_width + padding * 2}" height="{title_height + chart_height + padding * 2}">
+    # 解析标题SVG的高度
+    title_svg_root = etree.fromstring(title_svg_content)
+    title_height = float(title_svg_root.get('height', '100'))
+    padding = 50
+    
+    # 提取SVG内部元素
+    def extract_svg_content(svg_str):
+        root = etree.fromstring(svg_str)
+        inner_content = ''.join(etree.tostring(child, encoding='unicode') for child in root)
+        return inner_content
+        
+    # 提取内部元素
+    title_inner_content = extract_svg_content(title_svg_content)
+    chart_inner_content = extract_svg_content(chart_svg_content)
+        
+    # 创建完整的信息图SVG
+    final_svg = f"""<svg xmlns="http://www.w3.org/2000/svg" width="{chart_width + padding * 2}" height="{title_height + chart_height + padding * 2}">
     <!-- Title Section -->
     <g transform="translate({padding}, {padding})" >
         {title_inner_content}
     </g>
-    
+
     <!-- Chart Section -->
     <g transform="translate({padding}, {padding + title_height})">
         {chart_inner_content}
     </g>
-</svg>"""
+    </svg>"""
+    
+    # 保存最终SVG
+    with open(output, "w", encoding="utf-8") as f:
+        f.write(final_svg)
         
-        # 保存最终SVG
-        with open(output, "w", encoding="utf-8") as f:
-            f.write(final_svg)
+    # 生成PNG
+    png_file = f"{os.path.splitext(output)[0]}.png"
+    # 使用2倍的分辨率来确保高质量输出
+    png_width = (chart_width + padding * 2) * 2
+    png_height = (title_height + chart_height + padding * 2) * 2
+    
+    # 使用cairosvg生成高质量PNG
+    png_data = cairosvg.svg2png(
+        bytestring=final_svg.encode('utf-8'),
+        output_width=png_width,
+        output_height=png_height,
+        dpi=300  # 使用300dpi以获得更好的打印质量
+    )
+    
+    # 保存PNG文件
+    with open(png_file, 'wb') as f:
+        f.write(png_data)
+        
+    # 生成mask
+    debug_image, mask_image, mask_grid, grid_info = svg_to_mask(
+        final_svg,
+        grid_size=10,
+        content_threshold=0.05,
+        sample_density=36,
+        scale=2
+    )
+    
+    # 生成输出文件路径
+    base_name = os.path.splitext(output)[0]
+    debug_file = f"{base_name}_debug.png"
+    mask_file = f"{base_name}_mask.png"
+    info_file = f"{base_name}_info.txt"
+    
+    # 保存结果
+    debug_image.save(debug_file)
+    mask_image.save(mask_file)
+    
+    # 生成信息文件
+    dimensions = grid_info['dimensions']
+    with open(info_file, 'w', encoding='utf-8') as f:
+        f.write(f"SVG尺寸: {dimensions['width']}x{dimensions['height']}\n")
+        f.write(f"ViewBox: {dimensions['viewBox']}\n")
+        f.write(f"网格: {grid_info['cols']}×{grid_info['rows']}, 共{grid_info['filled_cells']}/{grid_info['total_cells']}个单元格被标记 ")
+        f.write(f"({grid_info['filled_cells']/grid_info['total_cells']*100:.1f}%)\n")
+        f.write(f"阈值: 5%\n")
+        f.write(f"白色阈值: 250\n")
+        
+    # 清理临时文件
+    os.remove(chart_svg_path)
+        
+    return True
             
-        # 生成PNG
-        png_file = f"{os.path.splitext(output)[0]}.png"
-        # 使用2倍的分辨率来确保高质量输出
-        png_width = (chart_width + padding * 2) * 2
-        png_height = (title_height + chart_height + padding * 2) * 2
-        
-        # 使用cairosvg生成高质量PNG
-        png_data = cairosvg.svg2png(
-            bytestring=final_svg.encode('utf-8'),
-            output_width=png_width,
-            output_height=png_height,
-            dpi=300  # 使用300dpi以获得更好的打印质量
-        )
-        
-        # 保存PNG文件
-        with open(png_file, 'wb') as f:
-            f.write(png_data)
-            
-        # 生成mask
-        debug_image, mask_image, mask_grid, grid_info = svg_to_mask(
-            final_svg,
-            grid_size=10,
-            content_threshold=0.05,
-            sample_density=36,
-            scale=2
-        )
-        
-        # 生成输出文件路径
-        base_name = os.path.splitext(output)[0]
-        debug_file = f"{base_name}_debug.png"
-        mask_file = f"{base_name}_mask.png"
-        info_file = f"{base_name}_info.txt"
-        
-        # 保存结果
-        debug_image.save(debug_file)
-        mask_image.save(mask_file)
-        
-        # 生成信息文件
-        dimensions = grid_info['dimensions']
-        with open(info_file, 'w', encoding='utf-8') as f:
-            f.write(f"SVG尺寸: {dimensions['width']}x{dimensions['height']}\n")
-            f.write(f"ViewBox: {dimensions['viewBox']}\n")
-            f.write(f"网格: {grid_info['cols']}×{grid_info['rows']}, 共{grid_info['filled_cells']}/{grid_info['total_cells']}个单元格被标记 ")
-            f.write(f"({grid_info['filled_cells']/grid_info['total_cells']*100:.1f}%)\n")
-            f.write(f"阈值: 5%\n")
-            f.write(f"白色阈值: 250\n")
-            
-        # 清理临时文件
-        os.remove(chart_svg_path)
-            
-        return True
-            
-    except Exception as e:
-        logger.error(f"信息图生成失败: {str(e)}")
-        return False
+    # except Exception as e:
+    #     logger.error(f"信息图生成失败: {str(e)}")
+    #     return False
 
 def main():
     import argparse
