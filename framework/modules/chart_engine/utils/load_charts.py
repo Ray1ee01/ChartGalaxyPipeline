@@ -319,43 +319,43 @@ def render_chart_to_svg(json_data, output_svg_path, js_file=None, width=None, he
         height = height or h
     
     if framework.lower() == "vegalite":
-        json_data['variation'] = {
-            "background": "no",
-            "image_chart": "side",
-            "image_title": "none",
-            "icon_mark": "none",
-            "axis_label": "none",
-            "axes": {
-                "x_axis": "yes",
-                "y_axis": "no"
-            }
-        }
-        json_data['colors'] = {
-            "field": {
-                "Ended": "#a5a5a5",
-                "Still active": "#d61822"
-            },
-            "other": {
-                "primary": "#efb118",
-                "secondary": "#6cc5b0",
-            },
-            "available_colors": [
-                "#efb118",
-                "#6cc5b0",
-                "#3ca951",
-                "#ff8ab7",
-                "#a463f2",
-                "#97bbf5"
-            ],
-            "background_color": "#FFFFFF",
-            "text_color": "#000000"
-        }
-        json_data['images'] = {
-            "other": {
-                # 提供一个base64的图片
-                "primary": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII="
-            }
-        }
+        # json_data['variation'] = {
+        #     "background": "no",
+        #     "image_chart": "side",
+        #     "image_title": "none",
+        #     "icon_mark": "none",
+        #     "axis_label": "none",
+        #     "axes": {
+        #         "x_axis": "yes",
+        #         "y_axis": "no"
+        #     }
+        # }
+        # json_data['colors'] = {
+        #     "field": {
+        #         "Ended": "#a5a5a5",
+        #         "Still active": "#d61822"
+        #     },
+        #     "other": {
+        #         "primary": "#efb118",
+        #         "secondary": "#6cc5b0",
+        #     },
+        #     "available_colors": [
+        #         "#efb118",
+        #         "#6cc5b0",
+        #         "#3ca951",
+        #         "#ff8ab7",
+        #         "#a463f2",
+        #         "#97bbf5"
+        #     ],
+        #     "background_color": "#FFFFFF",
+        #     "text_color": "#000000"
+        # }
+        # json_data['images'] = {
+        #     "other": {
+        #         # 提供一个base64的图片
+        #         "primary": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII="
+        #     }
+        # }
         # Use VegaLite-py template
         template = js_file
         template_root = "modules.chart_engine.template.vegalite-py"
