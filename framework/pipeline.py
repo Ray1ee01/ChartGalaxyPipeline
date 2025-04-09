@@ -253,7 +253,7 @@ def run_single_file(input_path, output_path, temp_dir=None, modules_to_run=None)
         # 根据最后一个模块的输出类型决定最终输出文件的扩展名
         if last_module["name"] in ["chart_engine", "title_styler"]:
             final_output = output_path.with_suffix('.svg')
-        elif last_module["name"] == "layout_optimizer":
+        elif last_module["name"] == "layout_optimizer" or last_module["name"] == "infographics_generator":
             final_output = output_path.parent / f"{output_path.stem}_final.svg"
         else:
             final_output = output_path.with_suffix('.json')
