@@ -8,6 +8,7 @@ import random
 from lxml import etree
 import subprocess
 from PIL import Image
+import time
 import numpy as np
 from numpy.lib.stride_tricks import as_strided
 
@@ -39,35 +40,41 @@ from modules.chart_engine.template.template_registry import scan_templates
 from modules.title_styler.title_styler import process as title_styler_process
 from .color_utils import get_contrast_color
 from .mask_utils import calculate_mask, calculate_content_height
-from .image_utils import find_best_size_and_position
 from .svg_utils import extract_svg_content
 
 padding = 50
 between_padding = 25
 grid_size = 5
 
-def get_unique_fields_and_types(required_fields: Union[List[str], List[List[str]]], required_fields_type: List[List[str]]) -> Tuple[List[str], Dict[str, str]]:
+def get_unique_fields_and_types(
+        required_fields: Union[List[str], List[List[str]]],
+        required_fields_type: Union[List[List[str]], List[List[List[str]]]],
+        required_fields_range: Union[List[List[int]], List[List[List[int]]]]
+    ) -> Tuple[List[str], Dict[str, str]]:
     """Extract unique fields and their corresponding types from nested structure"""
     field_order = ['x', 'y', 'y2', 'group']  # Define the order of fields
     field_types = {}
+    field_ranges = {}
     
     # Check if required_fields is a list of lists
     if required_fields and isinstance(required_fields[0], list):
         # Handle list of lists case
-        for fields_group, types_group in zip(required_fields, required_fields_type):
-            for field, type_list in zip(fields_group, types_group):
+        for fields_group, types_group, range_group in zip(required_fields, required_fields_type, required_fields_range):
+            for field, type_list, range_list in zip(fields_group, types_group, range_group):
                 if field not in field_types:
                     field_types[field] = type_list[0]  # Use first type from the list
+                    field_ranges[field] = range_list  # Use first range from the list
     else:
         # Handle simple list case
-        for field, type_list in zip(required_fields, required_fields_type):
+        for field, type_list, range_list in zip(required_fields, required_fields_type, required_fields_range):
             if field not in field_types:
                 field_types[field] = type_list[0]  # Use first type from the list
-    
+                field_ranges[field] = range_list  # Use first range from the list
     # Order fields according to field_order, keeping only those that exist
     ordered_fields = [field for field in field_order if field in field_types]
+    ordered_ranges = [field_ranges[field] for field in ordered_fields]
     
-    return ordered_fields, field_types
+    return ordered_fields, field_types, ordered_ranges
 
 def analyze_templates(templates: Dict) -> Tuple[int, Dict[str, str], int]:
     """Analyze templates and return count, data requirements and unique colors count"""
@@ -92,10 +99,6 @@ def analyze_templates(templates: Dict) -> Tuple[int, Dict[str, str], int]:
                             unique_colors.add(color)
                         
                     if 'required_fields' in req and 'required_fields_type' in req:
-                        ordered_fields, field_types = get_unique_fields_and_types(
-                            req['required_fields'],
-                            req['required_fields_type']
-                        )
                         template_requirements[f"{engine}/{chart_type}/{chart_name}"] = template_info['requirements']
                     
     # print("unique colors: ", unique_colors)
@@ -122,21 +125,40 @@ def check_template_compatibility(data: Dict, templates: Dict) -> List[str]:
                 if 'requirements' in template_info:
                     req = template_info['requirements']
                     if 'required_fields' in req and 'required_fields_type' in req:
-                        ordered_fields, field_types = get_unique_fields_and_types(
+                        ordered_fields, field_types, ordered_ranges = get_unique_fields_and_types(
                             req['required_fields'],
-                            req['required_fields_type']
+                            req['required_fields_type'],
+                            req['required_fields_range']
                         )
                         data_type_str = ' + '.join([field_types[field] for field in ordered_fields])
-                        
-                        if len(req.get('required_fields_colors', [])) > 0 and len(data["colors"]["field"]) == 0:
-                            continue
+                        try:
+                            if len(req.get('required_fields_colors', [])) > 0 and len(data["colors"]["field"]) == 0:
+                                continue
 
-                        if len(req.get('required_fields_icons', [])) > 0 and len(data["images"]["field"]) == 0:
-                            continue
+                            if len(req.get('required_fields_icons', [])) > 0 and len(data["images"]["field"]) == 0:
+                                continue
 
-                        # If the combination type matches the template's data type, it's compatible
-                        if combination_type == data_type_str:
-                            compatible_templates.append(template_key)
+                            for i, range in enumerate(ordered_ranges):
+                                if data["data"]["columns"][i]["data_type"] in ["temporal", "categorical"]:
+                                    key = data["data"]["columns"][i]["name"]
+                                    unique_values = list(set(value[key] for value in data["data"]["data"]))
+                                    #print(key, unique_values, range)
+                                    if len(unique_values) > range[1] or len(unique_values) < range[0]:
+                                        continue
+                                elif data["data"]["columns"][i]["data_type"] in ["numerical"]:
+                                    key = data["data"]["columns"][i]["name"]
+                                    min_value = min(value[key] for value in data["data"]["data"])
+                                    max_value = max(value[key] for value in data["data"]["data"])
+                                    #print(key, min_value, max_value, range)
+                                    if min_value > range[1] or max_value < range[0]:
+                                        continue
+
+                            # If the combination type matches the template's data type, it's compatible
+                            if combination_type == data_type_str:
+                                compatible_templates.append(template_key)
+                        except Exception as e:
+                            logger.error(f"Error checking template compatibility: {e}")
+                            continue
                         
     return compatible_templates
 
@@ -646,9 +668,13 @@ def process(input: str, output: str, base_url: str, api_key: str) -> bool:
         if final_svg is None:
             logger.error("Failed to assemble infographic: SVG content extraction failed")
             return False
-            
-        # 确保输出文件扩展名是svg
-        output_path = os.path.splitext(output)[0] + '.svg'
+        
+        # 获取当前时间戳
+        timestamp = int(time.time())
+        output_dir = os.path.dirname(output)
+        output_filename = os.path.basename(output)        
+        new_filename = f"{timestamp}_{chart_name}_{os.path.splitext(output_filename)[0]}.svg"        
+        output_path = os.path.join(output_dir, new_filename)
         
         # 保存最终的SVG
         with open(output_path, "w", encoding="utf-8") as f:
