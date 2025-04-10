@@ -122,8 +122,14 @@ function makeChart(containerSelector, data) {
         .attr("stroke-width", 3)
         .attr("d", line);
     
+    const sampleLabelIndex = sampleLabels(chartData.length);
+
     // 添加数据点和标签 - 优化标签位置，包括首尾点
     chartData.forEach((d, i) => {
+        if (!sampleLabelIndex.includes(i)) {
+            return;
+        }
+
         const x = xScale(parseDate(d[xField]));
         const y = yScale(d[yField]);
         
