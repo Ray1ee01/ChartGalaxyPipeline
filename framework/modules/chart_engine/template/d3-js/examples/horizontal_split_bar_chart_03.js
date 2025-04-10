@@ -2,12 +2,13 @@
 REQUIREMENTS_BEGIN
 {
     "chart_type": "Split Comparison Chart",
-    "chart_name": "horizontal_split_bar_chart_03",
+    "chart_name": "horizontal_split_bar_chart_04",
+    "chart_for": "comparison",
     "is_composite": false,
-    "required_fields": ["dimension", "value", "group", "group"],
+    "required_fields": ["x", "y", "group1", "group2"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"], ["categorical"]],
     "required_fields_range": [[2, 20], [0, 10000], [1, 5], [1, 3]],
-    "required_fields_icons": ["dimension"],
+    "required_fields_icons": ["x"],
     "required_other_icons": [],
     "required_fields_colors": ["group"],
     "required_other_colors": ["primary", "secondary"],
@@ -29,7 +30,7 @@ function makeChart(containerSelector, data) {
     
     // 提取数据和配置
     const jsonData = data;
-    const chartData = jsonData.data.data;
+    const chartData = jsonData.data.data
     const variables = jsonData.variables || {};
     const typography = jsonData.typography || {
         title: { font_family: "Arial", font_size: "24px", font_weight: "bold" },

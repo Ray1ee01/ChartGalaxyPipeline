@@ -6,9 +6,10 @@ REQUIREMENTS_BEGIN
 {
     "_comment": "这些属性的值由你对特定的图表进行定义，用于要求数据的格式。完成测试后填写。",
     "chart_type": "Vertical Bar Chart",
-    "chart_name": "vertical_bar_chart_01",
+    "chart_name": "vertical_bar_chart_base",
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],
+    "required_other_colors": [],
     "supported_effects": [],
     "required_data_points": [5, 100],
     "required_image": [],
@@ -24,7 +25,7 @@ class VerticalBarChart(VegaLiteTemplate):
         super().__init__(json_data)
 
     def make_mark_specification(self, json_data: Dict) -> Dict:
-        mark_styles = json_data['variables']['mark']
+        mark_styles = json_data['variables']
         mark_spec = {
             "type": "bar",
         }
@@ -46,87 +47,124 @@ class VerticalBarChart(VegaLiteTemplate):
         return mark_spec
     def make_axis_specification(self, json_data: Dict) -> Dict:
         variables = json_data['variables']
-        constants = json_data['constants']
-        label_color = variables['color'].get('label_color', "#000000")
+        # axes_config = json_data['variation']['axes']
+        axes_config = {
+            "x_axis": "yes",
+            "y_axis": "yes"
+        }
+        label_color = json_data['colors']['text_color']
         label_typography = json_data['typography']['label']
-        print(label_typography)
-        if constants['has_x_axis']:
-            x_axis_config = variables['x_axis']
-            x_encoding_spec = {
-                "field": x_axis_config['field'],
-                "type": "nominal"
-            }
-            x_axis_spec = {}
-            x_axis_spec['domain'] = True
-            if x_axis_config['has_domain'] is True:
-                x_axis_spec['domainOpacity'] = 1
-            else:
-                x_axis_spec['domainOpacity'] = 0
+        data_columns = json_data['data']['columns']
+        x_axis_config = None
+        y_axis_config = None
+        for data_column in data_columns:
+            if data_column['role'] == 'x':
+                x_axis_config = data_column
+            if data_column['role'] == 'y':
+                y_axis_config = data_column
+        if axes_config['x_axis'] == 'no':
+            x_axis_config['has_tick'] = False
+            x_axis_config['has_domain'] = False
+            x_axis_config['has_label'] = False
+        else:
+            x_axis_config['has_tick'] = True
+            x_axis_config['has_domain'] = True
+            x_axis_config['has_label'] = True
+            
+        if axes_config['y_axis'] == 'no':
+            y_axis_config['has_tick'] = False
+            y_axis_config['has_domain'] = False
+            y_axis_config['has_label'] = False
+        else:
+            y_axis_config['has_tick'] = True
+            y_axis_config['has_domain'] = True
+            y_axis_config['has_label'] = True
+            
+        x_encoding_spec = {
+            "field": x_axis_config['name'],
+            "type": "ordinal",
+            "sort": None
+        }
+        
+        x_axis_spec = {}
+        x_axis_spec['domain'] = True
+        if x_axis_config['has_domain'] is True:
+            x_axis_spec['domainOpacity'] = 1
+        else:
+            x_axis_spec['domainOpacity'] = 0
 
-            x_axis_spec['ticks'] = True
-            if x_axis_config['has_tick'] is True:
-                x_axis_spec['tickOpacity'] = 1
-            else:
-                x_axis_spec['tickOpacity'] = 0
-            # 默认没有title
-            x_axis_spec['title'] = None
-            # 默认没有grid
-            x_axis_spec['grid'] = False
-            # 默认没有label
+        x_axis_spec['ticks'] = True
+        if x_axis_config['has_tick'] is True:
+            x_axis_spec['tickOpacity'] = 1
+        else:
+            x_axis_spec['tickOpacity'] = 0
+        # 默认没有title
+        x_axis_spec['title'] = None
+        # 默认没有grid
+        x_axis_spec['grid'] = False
+        # 默认没有label
+        if x_axis_config['has_label'] is True:
             x_axis_spec['labelColor'] = label_color
             x_axis_spec['labelFont'] = label_typography['font_family']
             x_axis_spec['labelFontSize'] = label_typography['font_size'].replace('px', '')
             x_axis_spec['labelFontWeight'] = label_typography['font_weight']
-            x_axis_spec['labelLineHeight'] = label_typography['line_height']
             x_axis_spec['labelAngle'] = 0
-            # letter_spacing 不支持
-            print("Vega-lite does not support letter_spacing")
-            # 结束axis样式配置
-            x_encoding_spec['axis'] = x_axis_spec
+        else:
+            x_axis_spec['labels'] = False
+            # x_axis_spec['labelColor'] = None
+            # x_axis_spec['labelFont'] = None
+            # x_axis_spec['labelFontSize'] = None
+            # x_axis_spec['labelFontWeight'] = None
+            # x_axis_spec['labelAngle'] = None
+        # letter_spacing 不支持
+        print("Vega-lite does not support letter_spacing")
+        # 结束axis样式配置
+        x_encoding_spec['axis'] = x_axis_spec
             
-        if constants['has_y_axis']:
-            y_axis_config = variables['y_axis'] 
-            y_encoding_spec = {
-                "field": y_axis_config['field'],
-                "type": "quantitative"
-            }
-            y_axis_spec = {}
-            y_axis_spec['domain'] = True
-            if y_axis_config['has_domain'] is True:
-                y_axis_spec['domainOpacity'] = 1
-            else:
-                y_axis_spec['domainOpacity'] = 0
-                
-            y_axis_spec['ticks'] = True
-            if y_axis_config['has_tick'] is True:
-                y_axis_spec['tickOpacity'] = 1
-            else:
-                y_axis_spec['tickOpacity'] = 0
-            y_axis_spec['title'] = None
-            # 默认没有grid
-            y_axis_spec['grid'] = False
+        y_encoding_spec = {
+            "field": y_axis_config['name'],
+            "type": "quantitative"
+        }
+        y_axis_spec = {}
+        y_axis_spec['domain'] = True
+        if y_axis_config['has_domain'] is True:
+            y_axis_spec['domainOpacity'] = 1
+        else:
+            y_axis_spec['domainOpacity'] = 0
+            
+        y_axis_spec['ticks'] = True
+        if y_axis_config['has_tick'] is True:
+            y_axis_spec['tickOpacity'] = 1
+        else:
+            y_axis_spec['tickOpacity'] = 0
+        y_axis_spec['title'] = None
+        # 默认没有grid
+        y_axis_spec['grid'] = False
+        if y_axis_config['has_label'] is True:
             y_axis_spec['labelColor'] = label_color
             y_axis_spec['labelFont'] = label_typography['font_family']  
             y_axis_spec['labelFontSize'] = label_typography['font_size'].replace('px', '')
             y_axis_spec['labelFontWeight'] = label_typography['font_weight']
-            y_axis_spec['labelLineHeight'] = label_typography['line_height']
             y_axis_spec['labelAngle'] = 0
-            # letter_spacing 不支持
-            print("Vega-lite does not support letter_spacing")
-            # 结束axis样式配置
-            y_encoding_spec['axis'] = y_axis_spec
+        else:
+            y_axis_spec['labels'] = False
+            # y_axis_spec['labelColor'] = None
+            # y_axis_spec['labelFont'] = None
+            # y_axis_spec['labelFontSize'] = None
+            # y_axis_spec['labelFontWeight'] = None
+            # y_axis_spec['labelAngle'] = None
+        # 结束axis样式配置
+        y_encoding_spec['axis'] = y_axis_spec
         
         return x_encoding_spec, y_encoding_spec
     
     def make_color_specification(self, json_data: Dict) -> Dict:
-        variables = json_data['variables']
-        color_config = variables['color']['mark_color']
-        color_spec = {
-            "field": color_config['field'],
-            "domain": color_config['domain'],
-            "range": color_config['range']
-        }
+        available_color = json_data['colors']['available_colors'][0]
+        color_spec = available_color
         return color_spec
+
+    def make_annotation_specification(self, json_data: Dict) -> Dict:
+        pass
 
     def make_specification(self, json_data: Dict) -> Dict:
         specification = super().make_specification(json_data)

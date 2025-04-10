@@ -9,6 +9,7 @@ REQUIREMENTS_BEGIN
     "chart_name": "group_donut_chart_01",
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
+    "required_other_colors": [],
     "supported_effects": [],
     "required_data_points": [5, 100],
     "required_image": [],

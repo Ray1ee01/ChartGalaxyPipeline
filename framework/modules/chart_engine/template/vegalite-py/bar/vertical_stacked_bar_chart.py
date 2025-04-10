@@ -1,16 +1,17 @@
 from .vertical_bar_chart import VerticalBarChart
 from typing import Dict
-from utils.element_tool.elements import *
-from utils.element_tool.variation import *
+from modules.chart_engine.utils.element_tool.elements import *
+from modules.chart_engine.utils.element_tool.variation import *
 from PIL import Image as PILImage
 """
 REQUIREMENTS_BEGIN
 {
     "_comment": "这些属性的值由你对特定的图表进行定义，用于要求数据的格式。完成测试后填写。",
     "chart_type": "Vertical Stacked Bar Chart",
-    "chart_name": "vertical_stacked_bar_chart_01",
+    "chart_name": "vertical_stacked_bar_chart",
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
+    "required_other_colors": [],
     "supported_effects": [],
     "required_data_points": [5, 100],
     "required_image": [],
@@ -33,7 +34,31 @@ class VerticalStackedBarChart(VerticalBarChart):
         return super().make_axis_specification(json_data)
     
     def make_color_specification(self, json_data: Dict) -> Dict:
-        return super().make_color_specification(json_data)
+        # return super().make_color_specification(json_data)
+        group_column = None
+        data_columns = json_data['data']['columns']
+        for data_column in data_columns:
+            if data_column['role'] == 'group':
+                group_column = data_column['name']
+                break
+        ranges = []
+        domains = []
+        for value, color in json_data['colors']['field'].items():
+            ranges.append(color)
+            domains.append(value)
+        if len(domains) > 0:
+            color_spec = {
+                "field": group_column,
+                "scale": {
+                    "domain": domains,
+                    "range": ranges
+                }
+            }
+        else:
+            color_spec = {
+                "field": group_column
+            }
+        return color_spec
     
     def make_specification(self, json_data: Dict) -> Dict:
         specification = super().make_specification(json_data)

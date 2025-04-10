@@ -134,11 +134,9 @@ class SVGParser():
         marks = vega_lite_element_parser.marks
         axis_labels = vega_lite_element_parser.axis_labels
         axes = vega_lite_element_parser.axes
-        print("axes: ", axes)
         for axis in axes:
             axis_label_group = None
             for child in axis.children:
-                print("child: ", child.attributes.get("class", ""))
                 if child.attributes.get("class", "") == "axis_label-group":
                     axis_label_group = child
                     break

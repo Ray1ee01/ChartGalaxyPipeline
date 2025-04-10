@@ -5,9 +5,10 @@ REQUIREMENTS_BEGIN
 {
     "_comment": "这些属性的值由你对特定的图表进行定义，用于要求数据的格式。完成测试后填写。",
     "chart_type": "Horizontal Bar Chart",
-    "chart_name": "horizontal_bar_chart_01",
+    "chart_name": "horizontal_bar_chart_base",
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],
+    "required_other_colors": [],
     "supported_effects": [],
     "required_data_points": [5, 100],
     "required_image": [],
@@ -24,7 +25,7 @@ class HorizontalBarChart(VerticalBarChart):
     
     def make_mark_specification(self, json_data: Dict) -> Dict:
         mark_spec = super().make_mark_specification(json_data)
-        mark_styles = json_data['variables']['mark']
+        mark_styles = json_data['variables']
         if mark_styles['has_spacing']:
             mark_spec['height'] = {"band": 0.6}
         else:

@@ -6,9 +6,10 @@ REQUIREMENTS_BEGIN
 {
     "_comment": "这些属性的值由你对特定的图表进行定义，用于要求数据的格式。完成测试后填写。",
     "chart_type": "Pie Chart",
-    "chart_name": "pie_chart_01",
+    "chart_name": "1232312321123",
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],
+    "required_other_colors": [],
     "supported_effects": [],
     "required_data_points": [5, 100],
     "required_image": [],
@@ -24,10 +25,11 @@ class PieChart(VegaLiteTemplate):
         super().__init__(json_data)
 
     def make_mark_specification(self, json_data: Dict) -> Dict:
-        mark_styles = json_data['variables']['mark']
+        mark_styles = json_data["variables"]
         mark_spec = {
             "type": "arc",
-            "innerRadius": 0
+            "innerRadius": 0,
+            "outerRadius": 300
         }
         if mark_styles['has_gradient']:
             print("Vega-lite does not support gradient")
@@ -40,8 +42,6 @@ class PieChart(VegaLiteTemplate):
         return mark_spec
 
     def make_axis_specification(self, json_data: Dict) -> Dict:
-        variables = json_data['variables']
-        constants = json_data['constants']
         data_columns = json_data['data']['columns']
         y_column = None
         for column in data_columns:
@@ -52,18 +52,16 @@ class PieChart(VegaLiteTemplate):
             raise ValueError("No numerical column found in data_columns")
         theta = {
             "field": y_column,
-            "type": "quantitative"
+            "type": "quantitative",
+            "sort": None,
+            "stack": True
         }
         return theta
     
     def make_color_specification(self, json_data: Dict) -> Dict:
-        variables = json_data['variables']
-        color_config = variables['color']['mark_color']
-        color_spec = {
-            "field": color_config['field'],
-            "domain": color_config['domain'],
-            "range": color_config['range']
-        }
+        # color_config = variables['color']['mark_color']
+        color = json_data['colors']['available_colors'][0]
+        color_spec = color
         return color_spec
     
     def make_specification(self, json_data: Dict) -> Dict:

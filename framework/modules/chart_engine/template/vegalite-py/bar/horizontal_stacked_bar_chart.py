@@ -6,9 +6,10 @@ REQUIREMENTS_BEGIN
 {
     "_comment": "这些属性的值由你对特定的图表进行定义，用于要求数据的格式。完成测试后填写。",
     "chart_type": "Horizontal Stacked Bar Chart",
-    "chart_name": "horizontal_stacked_bar_chart_01",
+    "chart_name": "horizontal_stacked_bar_chart",
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
+    "required_other_colors": [],
     "supported_effects": [],
     "required_data_points": [5, 100],
     "required_image": [],

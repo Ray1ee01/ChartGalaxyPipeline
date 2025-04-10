@@ -3,8 +3,9 @@ REQUIREMENTS_BEGIN
 {
     "chart_type": "Horizontal Split Bar Chart",
     "chart_name": "horizontal_split_bar_chart_02",
+    "chart_for": "comparison",
     "is_composite": false,
-    "required_fields": ["dimension", "value", "group"],
+    "required_fields": ["x", "y", "group"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
     "required_fields_range": [[2, 20], [0, 100], [2, 5]],
     "required_fields_icons": ["dimension"],
@@ -29,7 +30,7 @@ function makeChart(containerSelector, data) {
     
     // 提取数据和配置
     const jsonData = data;                          // 完整的JSON数据对象
-    const chartData = jsonData.data.data;                // 实际数据点数组
+    const chartData = jsonData.data.data                // 实际数据点数组
     const variables = jsonData.variables || {};     // 图表配置，如果不存在则使用空对象
     const typography = jsonData.typography || {     // 字体设置，如果不存在则使用默认值
         title: { font_family: "Arial", font_size: "18px", font_weight: "bold" },
@@ -70,29 +71,25 @@ function makeChart(containerSelector, data) {
     
     // ---------- 3. 提取字段名和单位 ----------
     
-    // 提取字段名称
-    const dimensionField = dataColumns.length > 0 ? dataColumns[0].name : "dimension";
-    const valueField = dataColumns.length > 1 ? dataColumns[1].name : "value";
-    const groupField = dataColumns.length > 2 ? dataColumns[2].name : "group";
+    // 根据数据列顺序提取字段名
+    const dimensionField = dataColumns.find(col => col.role === "x").name;
+    const valueField = dataColumns.find(col => col.role === "y").name;
+    const groupField = dataColumns.find(col => col.role === "group").name;
     
-    // 获取所有字段的单位（如果存在且不是"none"）
+    // 获取字段单位（如果存在）
     let dimensionUnit = "";
-    let valueUnit = "";
+    let valueUnit = ""; // 默认为百分比
     let groupUnit = "";
     
-    // 维度字段的单位
-    if (dataColumns.length > 0 && dataColumns[0].unit && dataColumns[0].unit !== "none") {
-        dimensionUnit = dataColumns[0].unit;
+    if (dataColumns.find(col => col.role === "x").unit !== "none") {
+        dimensionUnit = dataColumns.find(col => col.role === "x").unit;
     }
     
-    // 数值字段的单位
-    if (dataColumns.length > 1 && dataColumns[1].unit && dataColumns[1].unit !== "none") {
-        valueUnit = dataColumns[1].unit;
+    if (dataColumns.find(col => col.role === "y").unit !== "none") {
+        valueUnit = dataColumns.find(col => col.role === "y").unit;
     }
-    
-    // 分组字段的单位
-    if (dataColumns.length > 2 && dataColumns[2].unit && dataColumns[2].unit !== "none") {
-        groupUnit = dataColumns[2].unit;
+    if (dataColumns.find(col => col.role === "group").unit!== "none") {
+        groupUnit = dataColumns.find(col => col.role === "group").unit; 
     }
     
     // ---------- 4. 数据处理 ----------

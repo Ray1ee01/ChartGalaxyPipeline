@@ -2,8 +2,12 @@ import os
 import json
 import subprocess
 import tempfile
-from utils.file_utils import create_temp_file, create_temp_dir, cleanup_temp_file, cleanup_temp_dir
-from utils.html_to_svg import html_to_svg  # Import the html_to_svg utility
+from .file_utils import create_temp_file, create_temp_dir, cleanup_temp_file, cleanup_temp_dir
+from .html_to_svg import html_to_svg  # Import the html_to_svg utility
+import importlib
+import logging
+
+logger = logging.getLogger(__name__)
 
 def _save_to_file(content, output_file=None, prefix="", suffix=".html"):
     """
@@ -320,6 +324,84 @@ def render_chart_to_svg(json_data, output_svg_path, js_file=None, width=None, he
         w, h = _get_dimensions(json_data)
         width = width or w
         height = height or h
+    
+    if framework.lower() == "vegalite":
+        # json_data['variation'] = {
+        #     "background": "no",
+        #     "image_chart": "side",
+        #     "image_title": "none",
+        #     "icon_mark": "none",
+        #     "axis_label": "none",
+        #     "axes": {
+        #         "x_axis": "yes",
+        #         "y_axis": "no"
+        #     }
+        # }
+        # json_data['colors'] = {
+        #     "field": {
+        #         "Ended": "#a5a5a5",
+        #         "Still active": "#d61822"
+        #     },
+        #     "other": {
+        #         "primary": "#efb118",
+        #         "secondary": "#6cc5b0",
+        #     },
+        #     "available_colors": [
+        #         "#efb118",
+        #         "#6cc5b0",
+        #         "#3ca951",
+        #         "#ff8ab7",
+        #         "#a463f2",
+        #         "#97bbf5"
+        #     ],
+        #     "background_color": "#FFFFFF",
+        #     "text_color": "#000000"
+        # }
+        # json_data['images'] = {
+        #     "other": {
+        #         # 提供一个base64的图片
+        #         "primary": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII="
+        #     }
+        # }
+        # Use vegalite-py template
+        template = js_file
+        template_root = "modules.chart_engine.template.vegalite-py"
+        general_chart_type = template.split('/')[-2]
+        module_name = template.split('/')[-1].split('.')[0]
+        print("template_root: ", template_root)
+        print("general_chart_type: ", general_chart_type)
+        print("module_name: ", module_name)
+        module_path = f"{template_root}.{general_chart_type}.{module_name}"
+        print(f"module_path: {module_path}")
+        module = importlib.import_module(module_path)
+        
+        chart_words = module_name.split('_')
+        chart_words = [word.capitalize() for word in chart_words]
+        chart_type = ''.join(chart_words)
+        
+        template_class = getattr(module, chart_type)
+        template_object = template_class(json_data)
+        vega_spec = template_object.make_specification(json_data)
+        
+        vega_spec_file = create_temp_file(prefix="vega_spec_", suffix=".json", 
+                                        content=json.dumps(vega_spec, indent=2))
+        
+        # try:
+        svg_file, svg_content = template_object.specification_to_svg(vega_spec, output_svg_path)
+        if svg_file is None:
+            raise ValueError("SVG chart generation failed (returned None)")
+        
+        element_tree = template_object.svg_to_element_tree(svg_content)
+        template_object.apply_variation(json_data)
+        svg_file = output_svg_path
+        svg_content = template_object.element_tree_to_svg(template_object.elements_tree)
+        with open(output_svg_path, 'w', encoding='utf-8') as f:
+            f.write(svg_content)
+        logger.info(f"VegaLite SVG chart generated successfully")
+        return output_svg_path
+        # except Exception as e:
+        #     print(f"Error: {e}")
+        #     return None
     
     # 为引擎创建临时目录，用于生成HTML文件
     temp_dir = create_temp_dir(prefix=f"{framework}_svg_")
