@@ -39,7 +39,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from modules.chart_engine.chart_engine import load_data_from_json, get_template_for_chart_name, render_chart_to_svg
 from modules.chart_engine.template.template_registry import scan_templates
 from modules.title_styler.title_styler import process as title_styler_process
-from modules.infographics_generator.mask_utils import calculate_mask, calculate_content_height
+from modules.infographics_generator.mask_utils import calculate_mask, calculate_content_height, calculate_content_width
 from modules.infographics_generator.svg_utils import extract_svg_content, remove_large_rects
 from modules.infographics_generator.image_utils import find_best_size_and_position
 from modules.infographics_generator.template_utils import (
@@ -80,33 +80,16 @@ def assemble_infographic(
         Tuple[str, np.ndarray, int]: (最终SVG内容, mask数组, 总高度)
     """
     # 计算标题mask和实际高度
-    title_mask = calculate_mask(title_svg_content, chart_width + padding * 2, padding * 4)
-    title_start, title_end, actual_title_height = calculate_content_height(title_mask)
+    total_width = chart_width + padding * 2
+
+    title_mask = calculate_mask(title_svg_content, total_width, 250, padding, grid_size = 1)
+    title_start, title_end, title_height = calculate_content_height(title_mask, padding)
+    title_left, title_right, title_width = calculate_content_width(title_mask, padding)
     
     # 计算图表mask和实际高度
-    chart_mask = calculate_mask(chart_svg_content, chart_width + padding * 2, chart_height + padding * 2)
-    chart_start, chart_end, actual_chart_height = calculate_content_height(chart_mask)
-    chart_y_start = actual_title_height + padding + between_padding
-
-    # 使用实际计算出的高度
-    total_height = actual_title_height + actual_chart_height + padding * 2 + between_padding
-    
-    # 生成完整的mask
-    original_mask = np.zeros((total_height - padding, chart_width + padding * 2), dtype=np.uint8)
-    
-    # 添加标题区域到mask
-    title_region_height = title_end - title_start + 1
-    title_y_start = padding + title_start
-    title_y_end = min(total_height, title_y_start + title_region_height)
-    if title_y_end > title_y_start:
-        original_mask[title_y_start:title_y_end, :] = title_mask[title_start:title_start + (title_y_end - title_y_start), :]
-    
-    # 添加图表区域到mask
-    chart_region_height = chart_end - chart_start + 1
-    chart_y_start = actual_title_height + padding + between_padding
-    chart_y_end = min(total_height, chart_y_start + chart_region_height)
-    if chart_y_end > chart_y_start:
-        original_mask[chart_y_start:chart_y_end, :] = chart_mask[chart_start:chart_start + (chart_y_end - chart_y_start), :]
+    chart_mask = calculate_mask(chart_svg_content, total_width, chart_height + padding * 2, padding, grid_size = 1)
+    chart_start, chart_end, chart_height = calculate_content_height(chart_mask, padding)
+    chart_left, chart_right, chart_width = calculate_content_width(chart_mask, padding)
     
     # 提取SVG内部元素
     title_inner_content = extract_svg_content(title_svg_content)
@@ -118,39 +101,26 @@ def assemble_infographic(
     if chart_inner_content is None:
         logger.error("Failed to extract chart SVG content")
         return None, None, 0
+    title_inner_content = f"<g transform='translate({0}, {padding - title_start})'>{title_inner_content}</g>"
+    chart_inner_content = f"<g transform='translate({-chart_left}, {padding - chart_start})'>{chart_inner_content}</g>"
     
-    # 创建基础SVG
-    final_svg = f"""<svg xmlns="http://www.w3.org/2000/svg" width="{chart_width + padding * 2}" height="{total_height}" style="font-family: Arial, 'Liberation Sans', 'DejaVu Sans', sans-serif;">
-    <g class="text" transform="translate({padding}, {padding + title_start})">{title_inner_content}</g>
-    <g class="chart" transform="translate({padding}, {chart_y_start - chart_start})">{chart_inner_content}</g>"""
+    total_height = chart_end + title_height + between_padding + padding * 2
+    total_width = chart_width + padding * 2
+    
+    final_svg = f"""<svg xmlns="http://www.w3.org/2000/svg" width="{total_width}" height="{total_height}" style="font-family: Arial, 'Liberation Sans', 'DejaVu Sans', sans-serif;">
+    <g class="text" transform="translate({padding}, {padding})">{title_inner_content}</g>
+    <g class="chart" transform="translate({padding}, {padding + title_height + between_padding})">{chart_inner_content}</g>"""
+    original_mask = calculate_mask(final_svg + "\n</svg>", total_width, total_height, 0, grid_size = 1)
     
     # 处理primary图片
     if primary_image:
         if "base64," not in primary_image:
             primary_image = f"data:image/png;base64,{primary_image}"
         
-        # 找到最佳的图片尺寸和位置
         image_size, best_x, best_y = find_best_size_and_position(original_mask, primary_image, padding)
         image_size -= between_padding * 2
-        best_x += between_padding + grid_size
-        best_y += between_padding + grid_size
-        
-        # 生成最终的图片mask
-        temp_svg = f"""<svg xmlns="http://www.w3.org/2000/svg" width="{image_size}" height="{image_size}">
-            <image width="{image_size}" height="{image_size}" href="{primary_image}"/>
-        </svg>"""
-        image_mask = calculate_mask(temp_svg, image_size, image_size)
-        
-        # 更新原始mask
-        y_slice = slice(best_y, best_y + image_size)
-        x_slice = slice(best_x, best_x + image_size)
-        if y_slice.stop <= original_mask.shape[0] and x_slice.stop <= original_mask.shape[1]:
-            original_mask[y_slice, x_slice] = np.maximum(
-                original_mask[y_slice, x_slice],
-                image_mask
-            )
-        
-        # 将图片元素添加到SVG中
+        best_x += between_padding
+        best_y += between_padding
         image_element = f"""
     <image
         class="image"
@@ -263,7 +233,7 @@ def process(input: str, output: str, base_url: str, api_key: str, chart_name: st
     chart_height = max(1, int(data["variables"]["height"]))
     
     # 生成标题SVG
-    title_svg_content = title_styler_process(input_data=data, max_width=chart_width)
+    title_svg_content = title_styler_process(input_data=data, max_width=chart_width - padding * 2)
     if not title_svg_content:
         logger.error("Failed to generate title SVG")
         return False

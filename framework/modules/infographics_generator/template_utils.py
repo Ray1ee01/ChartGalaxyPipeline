@@ -137,3 +137,7 @@ def process_template_requirements(requirements: Dict, data: Dict) -> None:
                 data["colors"]["other"]["positive"] = data["colors"]["other"]["primary"]
             elif key == "negative" and "negative" not in data["colors"]["other"]:
                 data["colors"]["other"]["negative"] = get_contrast_color(data["colors"]["other"]["primary"]) 
+    if "min_width" in requirements:
+        data["variables"]["width"] = requirements["min_width"]
+    if "min_height" in requirements:
+        data["variables"]["height"] = requirements["min_height"]

@@ -71,7 +71,7 @@ from pipeline import run_pipeline
 success = run_pipeline(
     input_path='data.json',
     output_path='output.svg',
-    temp_dir='temp'
+    temp_dir='tmp'
 )
 
 if success:
