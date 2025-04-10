@@ -1,6 +1,6 @@
 from .horizontal_bar_chart import HorizontalBarChart
 from typing import Dict
-from modules.chart_engine.template.vegalite-py.components.color_encoding.color_encoding import available_first
+from ..components.color_encoding.color_encoding import available_first
 """
 REQUIREMENTS_BEGIN
 {

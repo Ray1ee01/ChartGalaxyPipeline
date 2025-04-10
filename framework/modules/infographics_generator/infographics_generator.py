@@ -199,13 +199,16 @@ def assemble_infographic(
     
     return final_svg, original_mask, total_height
 
-def process(input: str, output: str, base_url: str, api_key: str) -> bool:
+def process(input: str, output: str, base_url: str, api_key: str, chart_name: str = None) -> bool:
     """
     Pipeline入口函数，处理单个文件的信息图生成
     
     Args:
         input: 输入JSON文件路径
         output: 输出SVG文件路径
+        base_url: API基础URL
+        api_key: API密钥
+        chart_name: 指定图表名称，如果提供则使用该图表，否则自动选择
         
     Returns:
         bool: 处理是否成功
@@ -213,26 +216,33 @@ def process(input: str, output: str, base_url: str, api_key: str) -> bool:
     # 读取输入文件
     with open(input, "r", encoding="utf-8") as f:
         data = json.load(f)
-        
-    logger.info("input file: %s", input)
-    logger.info("output file: %s", output)
+    data["name"] = input
     
     # 扫描并获取所有可用的模板
     templates = scan_templates()
     
     # 分析模板并获取要求
     template_count, template_requirements = analyze_templates(templates)
-    
-    # 检查与当前数据的兼容性
-    print("check compatibility")
-    compatible_templates = check_template_compatibility(data, templates)
-    logger.info(f"\nNumber of compatible templates: {len(compatible_templates)}")
-    
-    if not compatible_templates:
-        logger.error("No compatible templates found for the given data")
-        return False
+    compatible_templates = check_template_compatibility(data, templates, chart_name)
         
-    # 随机选择一个兼容的模板
+    # 如果指定了chart_name，尝试使用它
+    if chart_name:
+        # 在兼容的模板中查找指定的chart_name
+        if len(compatible_templates) > 0:
+            pass
+        else:
+            return False
+        logger.info("input file: %s", input)
+        logger.info("output file: %s", output)
+    else:
+        logger.info("input file: %s", input)
+        logger.info("output file: %s", output)
+        # 检查与当前数据的兼容性
+        logger.info(f"\nNumber of compatible templates: {len(compatible_templates)}")
+        if not compatible_templates:
+            logger.error("No compatible templates found for the given data")
+            return False
+        # 随机选择一个兼容的模板
     engine, chart_type, chart_name = select_template(compatible_templates)
     
     # 打印选择的模板信息
@@ -264,16 +274,12 @@ def process(input: str, output: str, base_url: str, api_key: str) -> bool:
     
     # 生成图表SVG，使用安全的文件名
     chart_svg_path = os.path.join(tmp_dir, f"{os.path.splitext(safe_output_name)[0]}.chart.tmp")
-    try:
-        render_chart_to_svg(
-            json_data=data,
-            output_svg_path=chart_svg_path,
-            js_file=template,
-            framework=engine.split('-')[0]  # Extract framework name (echarts/d3)
-        )
-    except Exception as e:
-        logger.error(f"Failed to generate chart SVG: {str(e)}")
-        return False
+    render_chart_to_svg(
+        json_data=data,
+        output_svg_path=chart_svg_path,
+        js_file=template,
+        framework=engine.split('-')[0]  # Extract framework name (echarts/d3)
+    )
         
     # 读取生成的SVG内容
     with open(chart_svg_path, "r", encoding="utf-8") as f:
