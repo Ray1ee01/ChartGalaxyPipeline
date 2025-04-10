@@ -55,7 +55,11 @@ const createXAxisScaleAndTicks = (data, xField, rangeStart = 0, rangeEnd = 100, 
     let timeInterval;
     let formatFunction;
     
-    if (yearSpan > 10) {
+    if (yearSpan > 30) {
+        // 超过30年，每10年一个刻度
+        timeInterval = d3.timeYear.every(10);
+        formatFunction = d => d3.timeFormat("%Y")(d);
+    } else if (yearSpan > 10) {
         // 超过10年，每5年一个刻度
         timeInterval = d3.timeYear.every(5);
         formatFunction = d => d3.timeFormat("%Y")(d);

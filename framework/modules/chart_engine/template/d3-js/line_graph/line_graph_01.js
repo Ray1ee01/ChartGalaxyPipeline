@@ -5,7 +5,7 @@ REQUIREMENTS_BEGIN
     "chart_name": "line_graph_01",
     "required_fields": ["x", "y"],
     "required_fields_type": [["temporal"], ["numerical"]],
-    "required_fields_range": [[5, 30], [0, 10]],
+    "required_fields_range": [[4, 15], [0, 1000]],
     "required_fields_icons": [],
     "required_other_icons": [],
     "required_fields_colors": [],
@@ -79,7 +79,7 @@ function makeChart(containerSelector, data) {
         .range([chartHeight, 0]);
     
     // 获取颜色 - 修改为固定的蓝色
-    const areaColor = "#275dac"; // 使用固定的蓝色，而不是从colors对象获取
+    const areaColor = colors.other.primary;
     
     // 创建线条生成器（用于顶部边缘）
     const line = d3.line()
@@ -88,7 +88,7 @@ function makeChart(containerSelector, data) {
         .curve(d3.curveLinear);
     
     // 获取实际的Y轴刻度
-    const yTicks = yScale.ticks(5);
+    const yTicks = yScale.ticks(8);
     const maxYTick = yTicks[yTicks.length - 1]; // 最大的Y轴刻度值
     const minYTick = yTicks[0]; // 最小的Y轴刻度值
     
@@ -149,11 +149,14 @@ function makeChart(containerSelector, data) {
         const currentValue = chartData[i][yField];
         const previousValue = chartData[i-1][yField];
         const percentChange = ((currentValue - previousValue) / Math.abs(previousValue)) * 100;
-        percentChanges.push({
-            index: i,
-            value: percentChange,
-            isPositive: percentChange >= 0
-        });
+
+        if (previousValue !== 0) {
+            percentChanges.push({
+                index: i,
+                value: percentChange,
+                isPositive: percentChange >= 0
+            });
+        }
     }
     
     // 找出最大的百分比变化（绝对值）
