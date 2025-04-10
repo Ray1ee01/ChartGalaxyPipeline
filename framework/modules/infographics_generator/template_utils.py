@@ -1,6 +1,6 @@
 from typing import Dict, List, Tuple, Optional, Union
 import random
-from .color_utils import get_contrast_color
+from modules.infographics_generator.color_utils import get_contrast_color
 
 def get_unique_fields_and_types(
         required_fields: Union[List[str], List[List[str]]],

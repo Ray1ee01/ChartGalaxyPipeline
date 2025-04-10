@@ -1,5 +1,5 @@
-from .util import DataFact, DataFactGenerator
-from .value_fact import ValueFact
+from modules.datafact_generator.util import DataFact, DataFactGenerator
+from modules.datafact_generator.value_fact import ValueFact
 from typing import Any
 
 class ProportionFact(DataFact):
@@ -151,7 +151,7 @@ class ProportionFactGenerator(DataFactGenerator):
                     f"other {self.group_column}, of the total of {self.y_column} of all {self.group_column}."
                 )
 
-            # 正常来说除非就两类，不然占“少数”应该是正常情况
+            # 正常来说除非就两类，不然占"少数"应该是正常情况
             if len(min_group_values) == 1:
                 min_annotation = f"The {min_group_value_str} has the smallest proportion in {x_value}."
                 min_reason = (

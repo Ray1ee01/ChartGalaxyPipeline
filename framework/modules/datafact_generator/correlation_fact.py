@@ -1,4 +1,4 @@
-from .util import DataFact, DataFactGenerator
+from modules.datafact_generator.util import DataFact, DataFactGenerator
 import numpy as np
 from scipy.stats import pearsonr
 from itertools import combinations

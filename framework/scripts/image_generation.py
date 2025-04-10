@@ -3,10 +3,17 @@ from openai import OpenAI
 from PIL import Image
 from io import BytesIO
 import base64
+import sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from config import api_key, api_provider
+
+# OpenAI API configuration
+API_KEY = api_key
+API_PROVIDER = api_provider
 
 client = OpenAI(
-    api_key="sk-GZPrsS9VcR4Xf5iADf6a55D0C0Bb4f8d8f12DaC9F0857cAe",
-    base_url="https://api.aihubmix.com/v1",
+    api_key=API_KEY,
+    base_url=API_PROVIDER,
 )
 
 # Using text-only input

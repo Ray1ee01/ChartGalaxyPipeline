@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import argparse
 import os
-from .color_index_builder import ColorIndexBuilder
+from modules.color_recommender.color_index_builder import ColorIndexBuilder
 
 def main(force: bool=False):
     parser = argparse.ArgumentParser(description='Build color palette index using FAISS and SentenceTransformer')

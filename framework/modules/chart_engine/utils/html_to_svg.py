@@ -1,7 +1,7 @@
 import os
 import subprocess
 import tempfile
-from .file_utils import create_temp_file, cleanup_temp_file
+from modules.chart_engine.utils.file_utils import create_temp_file, cleanup_temp_file
 
 def html_to_svg(html_file, output_svg=None, width=1200, height=800):
     """

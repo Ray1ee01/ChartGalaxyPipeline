@@ -1,0 +1,3 @@
+"""
+Title Generator package initialization.
+"""

@@ -1,5 +1,5 @@
 from typing import Dict, Union
-from .utils.svg_to_mask import svg_to_mask
+from modules.title_styler.utils.svg_to_mask import svg_to_mask
 import json
 import time
 from PIL import Image as PILImage, ImageDraw

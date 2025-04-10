@@ -5,8 +5,7 @@ import random
 import argparse
 import os
 from logging import getLogger
-logger = getLogger(__name__)
-from .color_index_builder import ColorIndexBuilder
+from modules.color_recommender.color_index_builder import ColorIndexBuilder
 
 def rgb_to_hex(r, g, b):
     r = max(0, min(int(r), 255))

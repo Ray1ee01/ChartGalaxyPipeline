@@ -35,56 +35,25 @@ file_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from modules.chart_engine.chart_engine import load_data_from_json, get_template_for_chart_name, render_chart_to_svg
 from modules.chart_engine.template.template_registry import scan_templates
 from modules.title_styler.title_styler import process as title_styler_process
-from .mask_utils import calculate_mask, calculate_content_height
-from .svg_utils import extract_svg_content, remove_large_rects
-from .image_utils import find_best_size_and_position
-from .template_utils import (
+from modules.infographics_generator.mask_utils import calculate_mask, calculate_content_height
+from modules.infographics_generator.svg_utils import extract_svg_content, remove_large_rects
+from modules.infographics_generator.image_utils import find_best_size_and_position
+from modules.infographics_generator.template_utils import (
     analyze_templates,
     check_template_compatibility,
     select_template,
-    process_template_requirements
+    process_template_requirements,
+    get_unique_fields_and_types
 )
-from .data_utils import process_temporal_data, process_numerical_data
+from modules.infographics_generator.data_utils import process_temporal_data, process_numerical_data
 
 padding = 50
 between_padding = 25
 grid_size = 5
-
-def get_unique_fields_and_types(
-        required_fields: Union[List[str], List[List[str]]],
-        required_fields_type: Union[List[List[str]], List[List[List[str]]]],
-        required_fields_range: Optional[Union[List[List[int]], List[List[List[int]]]]] = None
-    ) -> Tuple[List[str], Dict[str, str]]:
-    """Extract unique fields and their corresponding types from nested structure"""
-    field_order = ['x', 'y', 'y2', 'group']  # Define the order of fields
-    field_types = {}
-    field_ranges = {}
-    
-    # Check if required_fields is a list of lists
-    if required_fields and isinstance(required_fields[0], list):
-        # Handle list of lists case
-        for i, (fields_group, types_group) in enumerate(zip(required_fields, required_fields_type)):
-            range_group = required_fields_range[i] if required_fields_range else [[float('-inf'), float('inf')] for _ in fields_group]
-            for field, type_list, range_list in zip(fields_group, types_group, range_group):
-                if field not in field_types:
-                    field_types[field] = type_list[0]  # Use first type from the list
-                    field_ranges[field] = range_list  # Use first range from the list
-    else:
-        # Handle simple list case
-        range_list = required_fields_range if required_fields_range else [[float('-inf'), float('inf')] for _ in required_fields]
-        for field, type_list, range_val in zip(required_fields, required_fields_type, range_list):
-            if field not in field_types:
-                field_types[field] = type_list[0]  # Use first type from the list
-                field_ranges[field] = range_val  # Use first range from the list
-
-    # Order fields according to field_order, keeping only those that exist
-    ordered_fields = [field for field in field_order if field in field_types]
-    ordered_ranges = [field_ranges[field] for field in ordered_fields]
-    
-    return ordered_fields, field_types, ordered_ranges
 
 def assemble_infographic(
     title_svg_content: str,

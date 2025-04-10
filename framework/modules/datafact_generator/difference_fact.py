@@ -1,5 +1,5 @@
-from .util import DataFact, DataFactGenerator
-from .value_fact import ValueFact
+from modules.datafact_generator.util import DataFact, DataFactGenerator
+from modules.datafact_generator.value_fact import ValueFact
 from statistics import mean, stdev
 from scipy.special import expit
 

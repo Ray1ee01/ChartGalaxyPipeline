@@ -3,10 +3,9 @@ import os
 import sys
 import random
 import argparse
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from template.template_registry import get_template_for_chart_type, get_template_for_chart_name
-from utils.load_charts import render_chart_to_svg
-from utils.file_utils import create_temp_file, cleanup_temp_file, ensure_temp_dir, create_fallback_svg
+from modules.chart_engine.template.template_registry import get_template_for_chart_type, get_template_for_chart_name
+from modules.chart_engine.utils.load_charts import render_chart_to_svg
+from modules.chart_engine.utils.file_utils import create_temp_file, cleanup_temp_file, ensure_temp_dir, create_fallback_svg
 import importlib
 
 def load_data_from_json(json_file_path="input.json"):
