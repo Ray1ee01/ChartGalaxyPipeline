@@ -1,23 +1,6 @@
 from ..template import VegaLiteTemplate
 from typing import Dict
-"""
-REQUIREMENTS_BEGIN
-{
-    "_comment": "这些属性的值由你对特定的图表进行定义，用于要求数据的格式。完成测试后填写。",
-    "chart_type": "Area Chart",
-    "chart_name": "area_chart_base",
-    "required_fields": ["x", "y"],
-    "required_fields_type": [["temporal","numerical"], ["numerical"]],
-    "required_other_colors": [],
-    "supported_effects": [],
-    "required_data_points": [5, 100],
-    "required_image": [],
-    "width": [500, 1000],
-    "height": [500, 800],
-    "x_range": [2, 20]
-}
-REQUIREMENTS_END
-"""
+
 
 class AreaChart(VegaLiteTemplate):
     def __init__(self, json_data: Dict):

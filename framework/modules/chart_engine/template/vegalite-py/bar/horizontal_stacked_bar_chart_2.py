@@ -48,7 +48,10 @@ class HorizontalStackedBarChart2(HorizontalStackedBarChart1):
         color_spec['legend'] = {
             "orient": "left",
             "padding": 0,
-            "offset": 0
+            "offset": 0,
+            "labelFontSize": 18,
+            "titleFontSize": 18,
+            "symbolSize": 300
         }
         return color_spec
     
@@ -101,8 +104,8 @@ class HorizontalStackedBarChart2(HorizontalStackedBarChart1):
     
     def make_specification(self, json_data: Dict) -> Dict:
         specification = super().make_specification(json_data)
-        new_annotation_spec = self.make_annotation_specification2(json_data)
-        specification['layer'].append(new_annotation_spec)
+        # new_annotation_spec = self.make_annotation_specification2(json_data)
+        # specification['layer'].append(new_annotation_spec)
         
         y_column = None
         for column in json_data['data']['columns']:

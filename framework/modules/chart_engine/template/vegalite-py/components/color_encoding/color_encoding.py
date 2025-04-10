@@ -23,7 +23,7 @@ def x_gradient_to_half(json_data: Dict, target_color: str) -> Dict:
     # 使用dict.fromkeys()保持原有顺序
     x_values = list(dict.fromkeys(x_values))
             
-    color = json_data['colors']['available_colors'][0]
+    color = json_data['colors']['other']['primary']
 
     middle_color = interpolate_color2(color, target_color, 5)[-2]
     
