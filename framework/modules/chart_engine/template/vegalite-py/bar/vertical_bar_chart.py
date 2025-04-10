@@ -6,9 +6,10 @@ REQUIREMENTS_BEGIN
 {
     "_comment": "这些属性的值由你对特定的图表进行定义，用于要求数据的格式。完成测试后填写。",
     "chart_type": "Vertical Bar Chart",
-    "chart_name": "vertical_bar_chart",
+    "chart_name": "vertical_bar_chart_base",
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],
+    "required_other_colors": [],
     "supported_effects": [],
     "required_data_points": [5, 100],
     "required_image": [],
@@ -46,12 +47,13 @@ class VerticalBarChart(VegaLiteTemplate):
         return mark_spec
     def make_axis_specification(self, json_data: Dict) -> Dict:
         variables = json_data['variables']
-        # constants = json_data['constants']
-        axes_config = json_data['variation']['axes']
-        # label_color = variables['color'].get('label_color', "#000000")
+        # axes_config = json_data['variation']['axes']
+        axes_config = {
+            "x_axis": "yes",
+            "y_axis": "yes"
+        }
         label_color = json_data['colors']['text_color']
         label_typography = json_data['typography']['label']
-        print(label_typography)
         data_columns = json_data['data']['columns']
         x_axis_config = None
         y_axis_config = None
@@ -157,15 +159,8 @@ class VerticalBarChart(VegaLiteTemplate):
         return x_encoding_spec, y_encoding_spec
     
     def make_color_specification(self, json_data: Dict) -> Dict:
-        # variables = json_data['variables']
-        color_config = json_data['colors']['mark_color']
-        color_spec = {
-            "field": color_config['field'],
-            "scale": {
-                "domain": color_config['domain'],
-                "range": color_config['range']
-            }
-        }
+        available_color = json_data['colors']['available_colors'][0]
+        color_spec = available_color
         return color_spec
 
     def make_annotation_specification(self, json_data: Dict) -> Dict:

@@ -1,4 +1,3 @@
-
 from .vertical_bar_chart import VerticalBarChart
 from typing import Dict
 
@@ -10,6 +9,7 @@ REQUIREMENTS_BEGIN
     "chart_name": "vertical_group_bar_chart",
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
+    "required_other_colors": [],
     "supported_effects": [],
     "required_data_points": [5, 100],
     "required_image": [],
@@ -42,13 +42,18 @@ class VerticalGroupBarChart(VerticalBarChart):
         for key, value in field_color_map.items():
             domains.append(key)
             ranges.append(value)
-        color_spec = {
-            "field": group_column,
-            "scale": {
-                "domain": domains,
-                "range": ranges
+        if len(domains) > 0:
+            color_spec = {
+                "field": group_column,
+                "scale": {
+                    "domain": domains,
+                    "range": ranges
+                }
             }
-        }
+        else:
+            color_spec = {
+                "field": group_column
+            }
         return color_spec
         
     def make_specification(self, json_data: Dict) -> Dict:

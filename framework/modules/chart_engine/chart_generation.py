@@ -188,7 +188,7 @@ if __name__ == '__main__':
             raise Exception(f"Failed to generate D3.js chart: {error_message}")
             
     elif engine == 'vegalite-py':
-        # Use VegaLite-py template
+        # Use vegalite-py template
         print("template:", template)
         template_root = "template.vegalite-py"
         general_chart_type = template.split('/')[-2]

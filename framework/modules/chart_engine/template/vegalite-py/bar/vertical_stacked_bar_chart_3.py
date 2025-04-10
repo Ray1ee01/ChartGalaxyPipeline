@@ -1,7 +1,7 @@
 from .vertical_stacked_bar_chart_1 import VerticalStackedBarChart1
 from typing import Dict
-from utils.element_tool.elements import *
-from utils.element_tool.variation import *
+from modules.chart_engine.utils.element_tool.elements import *
+from modules.chart_engine.utils.element_tool.variation import *
 from PIL import Image as PILImage
 """
 REQUIREMENTS_BEGIN
@@ -11,6 +11,7 @@ REQUIREMENTS_BEGIN
     "chart_name": "vertical_stacked_bar_chart_3",
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
+    "required_other_colors": [],
     "supported_effects": [],
     "required_data_points": [5, 100],
     "required_image": [],

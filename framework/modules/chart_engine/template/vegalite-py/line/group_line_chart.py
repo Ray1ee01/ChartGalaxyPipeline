@@ -6,10 +6,11 @@ REQUIREMENTS_BEGIN
 {
     "_comment": "这些属性的值由你对特定的图表进行定义，用于要求数据的格式。完成测试后填写。",
     "chart_type": "Group Line Chart",
-    "chart_name": "group_line_chart",
+    "chart_name": "group_line_chart_base",
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["temporal","numerical"], ["numerical"], ["categorical"]],
     "supported_effects": [],
+    "required_other_colors": [],
     "required_data_points": [5, 100],
     "required_image": [],
     "width": [500, 1000],

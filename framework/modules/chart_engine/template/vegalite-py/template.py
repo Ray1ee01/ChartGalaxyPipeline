@@ -3,13 +3,13 @@ import subprocess
 import json
 import os
 import random
-from utils.element_tool.vegalite_parser import SVGParser
-from utils.element_tool.tree_converter import SVGTreeConverter
-from utils.element_tool.vegalite_element_parser import VegaLiteElementParser
-from utils.element_tool.data_binder import *
-from utils.color_tool.base import *
-from utils.element_tool.variation import BackgroundChart
-from utils.element_tool.readability import *
+from modules.chart_engine.utils.element_tool.vegalite_parser import SVGParser
+from modules.chart_engine.utils.element_tool.tree_converter import SVGTreeConverter
+from modules.chart_engine.utils.element_tool.vegalite_element_parser import VegaLiteElementParser
+from modules.chart_engine.utils.element_tool.data_binder import *
+from modules.chart_engine.utils.color_tool.base import *
+from modules.chart_engine.utils.element_tool.variation import BackgroundChart
+from modules.chart_engine.utils.element_tool.readability import *
 class VegaLiteTemplate:
     def __init__(self, json_data: Dict):
         self.json_data = json_data
@@ -183,7 +183,6 @@ class VegaLiteTemplate:
         for axis in self.axes:
             axis_label_group = None
             for child in axis.children:
-                print("child: ", child.attributes.get("class", ""))
                 if child.attributes.get("class", "") == "axis_label-group":
                     axis_label_group = child
                     break
@@ -247,13 +246,19 @@ class VegaLiteTemplate:
     
     def apply_variation(self, json_data: Dict):
         # constants = json_data['constants']
-        variation = json_data['variation']
-        print("apply variation: ", variation)
-        if variation['icon_mark'] != "none":
-            self.apply_icon_mark(json_data)
-        if variation['axis_label'] != "none":
-            self.apply_axis_label(json_data)
-        if variation['background'] != "none":
-            self.apply_background(json_data)
-        self.adjust_legend_position()
-        self.adjust_axis_readability()
+        # variation = json_data['variation']
+        # print("apply variation: ", variation)
+        # if variation['icon_mark'] != "none":
+        #     self.apply_icon_mark(json_data)
+        # if variation['axis_label'] != "none":
+        #     self.apply_axis_label(json_data)
+        # if variation['background'] != "none":
+        #     self.apply_background(json_data)
+        try:
+            self.adjust_legend_position()
+        except Exception as e:
+            print("adjust legend position error: ", e)
+        try:
+            self.adjust_axis_readability()
+        except Exception as e:
+            print("adjust axis readability error: ", e)

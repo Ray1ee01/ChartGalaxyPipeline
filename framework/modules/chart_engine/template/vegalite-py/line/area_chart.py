@@ -1,14 +1,14 @@
 from ..template import VegaLiteTemplate
 from typing import Dict
-from utils.element_tool.elements import BoundingBox
 """
 REQUIREMENTS_BEGIN
 {
     "_comment": "这些属性的值由你对特定的图表进行定义，用于要求数据的格式。完成测试后填写。",
     "chart_type": "Area Chart",
-    "chart_name": "area_chart",
+    "chart_name": "area_chart_base",
     "required_fields": ["x", "y"],
     "required_fields_type": [["temporal","numerical"], ["numerical"]],
+    "required_other_colors": [],
     "supported_effects": [],
     "required_data_points": [5, 100],
     "required_image": [],
@@ -32,7 +32,8 @@ class AreaChart(VegaLiteTemplate):
     
     def make_axis_specification(self, json_data: Dict) -> Dict:
         variables = json_data['variables']
-        axes_config = json_data['variation']['axes']
+        # axes_config = json_data['variation']['axes']
+        axes_config = {"x_axis": "yes", "y_axis": "yes"}
         label_typography = json_data['typography']['label']
         label_color = json_data['colors']['text_color']
 
@@ -140,12 +141,9 @@ class AreaChart(VegaLiteTemplate):
     
     def make_color_specification(self, json_data: Dict) -> Dict:
         variables = json_data['variables']
-        color_config = variables['color']['mark_color']
-        color_spec = {
-            "field": color_config['field'],
-            "domain": color_config['domain'],
-            "range": color_config['range']
-        }
+        # color_config = variables['color']['mark_color']
+        color = json_data['colors']['available_colors'][0]
+        color_spec = color
         return color_spec
     
     def make_specification(self, json_data: Dict) -> Dict:

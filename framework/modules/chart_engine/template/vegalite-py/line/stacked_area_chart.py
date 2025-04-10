@@ -1,14 +1,15 @@
 from .area_chart import AreaChart
 from typing import Dict
-from utils.element_tool.elements import BoundingBox
+from modules.chart_engine.utils.element_tool.elements import BoundingBox
 """
 REQUIREMENTS_BEGIN
 {
     "_comment": "这些属性的值由你对特定的图表进行定义，用于要求数据的格式。完成测试后填写。",
     "chart_type": "Stacked Area Chart",
-    "chart_name": "stacked_area_chart_0",
+    "chart_name": "stacked_area_chart_base",
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["temporal","numerical"], ["numerical"], ["categorical"]],
+    "required_other_colors": [],
     "supported_effects": [],
     "required_data_points": [5, 100],
     "required_image": [],

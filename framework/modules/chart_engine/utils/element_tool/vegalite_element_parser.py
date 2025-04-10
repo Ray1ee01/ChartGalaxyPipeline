@@ -126,7 +126,6 @@ class VegaLiteElementParser:
             
     def _handle_bar(self, element):
         for i, child in enumerate(element.children):
-            print("child: ", child.dump())
             if child.tag=='g' and 'clip-path' in child.attributes:
                 bar_mark = BarMark(child.children[0].children[0])
                 bar_mark.attributes['transform'] = child.attributes['transform'] + bar_mark.attributes.get('transform', '')

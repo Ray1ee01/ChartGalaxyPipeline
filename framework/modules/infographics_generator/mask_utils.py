@@ -19,6 +19,7 @@ def calculate_mask(svg_content: str, width: int, height: int) -> np.ndarray:
     try:
         # 修改SVG内容，移除渐变
         mask_svg_content = svg_content.replace('url(#', 'none')
+        mask_svg_content = mask_svg_content.replace('&', '&amp;')
         
         with open(mask_svg, "w", encoding="utf-8") as f:
             f.write(mask_svg_content)
@@ -69,7 +70,8 @@ def calculate_mask(svg_content: str, width: int, height: int) -> np.ndarray:
 
 def calculate_content_height(mask: np.ndarray) -> Tuple[int, int, int]:
     """计算mask中内容的实际高度范围"""
-    content_rows = np.sum(mask == 1, axis=1) > 0
+    # mask中1表示内容，0表示背景
+    content_rows = np.sum(mask == 1, axis=1) > 0  # 任何非零值表示该行有内容
     content_indices = np.where(content_rows)[0]
     
     if len(content_indices) == 0:

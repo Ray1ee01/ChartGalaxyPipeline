@@ -1,8 +1,8 @@
 from .donut_chart import DonutChart
 from typing import Dict
-from utils.color_tool.base import interpolate_color2
-from utils.element_tool.variation import ImageChart
-from utils.element_tool.elements import *
+from modules.chart_engine.utils.color_tool.base import interpolate_color2
+from modules.chart_engine.utils.element_tool.variation import ImageChart
+from modules.chart_engine.utils.element_tool.elements import *
 
 
 """
@@ -13,6 +13,7 @@ REQUIREMENTS_BEGIN
     "chart_name": "donut_chart_0",
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],
+    "required_other_colors": [],
     "supported_effects": [],
     "required_data_points": [5, 100],
     "required_image": [],

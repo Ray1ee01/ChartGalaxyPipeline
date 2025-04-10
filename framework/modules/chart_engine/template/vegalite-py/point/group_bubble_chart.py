@@ -10,6 +10,7 @@ REQUIREMENTS_BEGIN
     "chart_name": "group_bubble_chart_01",
     "required_fields": ["x", "y", "size", "group"],
     "required_fields_type": [["temporal","numerical"], ["temporal","numerical"], ["numerical"], ["categorical"]],
+    "required_other_colors": [],
     "supported_effects": [],
     "required_data_points": [5, 100],
     "required_image": [],

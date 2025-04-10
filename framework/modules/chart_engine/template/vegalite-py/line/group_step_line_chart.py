@@ -5,10 +5,11 @@ from typing import Dict
 REQUIREMENTS_BEGIN
 {
     "_comment": "这些属性的值由你对特定的图表进行定义，用于要求数据的格式。完成测试后填写。",
-    "chart_type": "Multiple Step Line Chart",
-    "chart_name": "multiple_step_line_chart_01",
+    "chart_type": "Group Step Line Chart",
+    "chart_name": "group_step_line_chart_base",
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["temporal","numerical"], ["numerical"], ["categorical"]],
+    "required_other_colors": [],
     "supported_effects": [],
     "required_data_points": [5, 100],
     "required_image": [],
@@ -19,7 +20,7 @@ REQUIREMENTS_BEGIN
 REQUIREMENTS_END
 """
 
-class MultipleStepLineChart(StepLineChart):
+class GroupStepLineChart(StepLineChart):
     def __init__(self, json_data: Dict):
         super().__init__(json_data)
 

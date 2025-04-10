@@ -1,6 +1,6 @@
 from .vertical_bar_chart import VerticalBarChart
 from typing import Dict
-from utils.color_tool.base import interpolate_color2
+from modules.chart_engine.utils.color_tool.base import interpolate_color2
 """
 REQUIREMENTS_BEGIN
 {
@@ -9,6 +9,7 @@ REQUIREMENTS_BEGIN
     "chart_name": "vertical_bar_chart_0",
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],
+    "required_other_colors": [],
     "supported_effects": [],
     "required_data_points": [5, 100],
     "required_image": [],

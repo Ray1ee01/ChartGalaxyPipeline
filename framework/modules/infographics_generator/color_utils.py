@@ -59,19 +59,14 @@ def hsl_to_rgb(h: float, s: float, l: float) -> Tuple[int, int, int]:
         
     return tuple(round(x * 255) for x in (r, g, b))
 
-def get_contrast_color(color: str, method: str = 'complement') -> str:
-    """获取给定颜色的对比色"""
-    r, g, b = parse_color(color)
+def get_contrast_color(hex_color: str) -> str:
+    """获取与给定颜色形成对比的颜色"""
+    # 移除#号并转换为RGB
+    hex_color = hex_color.lstrip('#')
+    r, g, b = tuple(int(hex_color[i:i+2], 16) for i in (0, 2, 4))
     
-    if method == 'complement':
-        contrast_r = 255 - r
-        contrast_g = 255 - g
-        contrast_b = 255 - b
-    elif method == 'hsl':
-        h, s, l = rgb_to_hsl(r, g, b)
-        h = (h + 180) % 360
-        contrast_r, contrast_g, contrast_b = hsl_to_rgb(h, s, l)
-    else:
-        raise ValueError(f"Unsupported method: {method}")
+    # 计算亮度
+    luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
     
-    return f'#{contrast_r:02x}{contrast_g:02x}{contrast_b:02x}' 
+    # 根据亮度返回黑色或白色
+    return '#000000' if luminance > 0.5 else '#ffffff' 
