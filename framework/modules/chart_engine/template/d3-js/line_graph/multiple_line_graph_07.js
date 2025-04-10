@@ -106,7 +106,7 @@ function makeChart(containerSelector, data) {
     
     // 绘制垂直网格线 
     g.selectAll("rect.grid-rect-x")
-        .data(xTickValues)
+        .data(xTicks)
         .enter()
         .append("rect")
         .attr("class", "grid-rect-x")
