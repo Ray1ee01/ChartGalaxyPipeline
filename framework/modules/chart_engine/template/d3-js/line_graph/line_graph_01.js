@@ -188,9 +188,14 @@ function makeChart(containerSelector, data) {
             .attr("stroke", areaColor)
             .attr("stroke-width", 4);
     });
+
+    const sampleLabelIndex = sampleLabels(chartData.length);
     
     // 添加变化百分比三角形
     percentChanges.forEach(change => {
+        if(!sampleLabelIndex.includes(change.index)) {
+            return;
+        }
         const d = chartData[change.index];
         const x = xScale(parseDate(d[xField]));
         const y = yScale(d[yField]);
