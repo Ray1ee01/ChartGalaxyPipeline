@@ -345,9 +345,9 @@ function makeChart(containerSelector, data) {
     // 计算每行文本
     for(let i = 1; i < words.length; i++) {
         const testLine = currentLine + ' ' + words[i];
-        const testWidth = getTextWidth(testLine, typography.label.font_family, typography.label.font_size);
+        const testWidth = getTextWidth(testLine, typography.label.font_size);
         
-        if(testWidth <= 150) {
+        if(testWidth <= 200) {
             currentLine = testLine;
         } else {
             lines.push(currentLine);
@@ -368,14 +368,6 @@ function makeChart(containerSelector, data) {
             .style("fill", "#6bc7c5")
             .text(line);
     });
-    
-    // 辅助函数:计算文本宽度
-    function getTextWidth(text, fontFamily, fontSize) {
-        const canvas = document.createElement('canvas');
-        const context = canvas.getContext('2d');
-        context.font = `${fontSize} ${fontFamily}`;
-        return context.measureText(text).width;
-    }
     
     // 动态规划标签放置算法
     function placeLabelsDP(points, avoidYPositions = []) {

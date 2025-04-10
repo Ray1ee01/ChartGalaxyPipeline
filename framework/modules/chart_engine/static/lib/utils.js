@@ -55,20 +55,20 @@ const createXAxisScaleAndTicks = (data, xField, rangeStart = 0, rangeEnd = 100, 
     let timeInterval;
     let formatFunction;
     
-    if (yearSpan > 40) {
-        // 超过40年，每10年一个刻度
+    if (yearSpan > 35) {
+        // 超过35年，每10年一个刻度
         timeInterval = d3.timeYear.every(10);
         formatFunction = d => d3.timeFormat("%Y")(d);
-    } else if (yearSpan > 20) {
-        // 超过20年，每5年一个刻度
+    } else if (yearSpan > 15) {
+        // 超过15年，每5年一个刻度
         timeInterval = d3.timeYear.every(5);
         formatFunction = d => d3.timeFormat("%Y")(d);
-    } else if (yearSpan > 10) {
-        // 超过10年，每2年一个刻度  
+    } else if (yearSpan > 7) {
+        // 超过7年，每2年一个刻度  
         timeInterval = d3.timeYear.every(2);
         formatFunction = d => d3.timeFormat("%Y")(d);
     } else if (yearSpan > 2) {
-        // 2-10年，每年一个刻度
+        // 2-7年，每年一个刻度
         timeInterval = d3.timeYear.every(1);
         formatFunction = d => d3.timeFormat("%Y")(d);
     } else if (yearSpan > 1) {
