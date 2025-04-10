@@ -43,10 +43,20 @@ function makeChart(containerSelector, data) {
     // 获取唯一的组值
     const groups = [...new Set(chartData.map(d => d[groupField]))];
     
-    // 设置尺寸和边距 - 增加左侧边距
+    // 计算最长组名的长度，用于动态调整左边距
+    const maxGroupNameLength = d3.max(groups, group => group.length);
+    // 每个字符估计宽度为8像素，再加上基础边距和一些额外空间
+    const dynamicLeftMargin = Math.max(120, maxGroupNameLength * 8 + 40);
+    
+    // 设置尺寸和边距 - 动态调整左侧边距
     const width = variables.width;
     const height = variables.height;
-    const margin = { top: 60, right: 40, bottom: 60, left: 120 }; // 增加左侧边距
+    const margin = { 
+        top: 60, 
+        right: 40, 
+        bottom: 60, 
+        left: dynamicLeftMargin // 使用动态计算的左边距
+    };
     
     // 创建SVG
     const svg = d3.select(containerSelector)
@@ -164,7 +174,7 @@ function makeChart(containerSelector, data) {
         g.append("text")
             .attr("x", -margin.left + 20) // 增加与图表的距离
             .attr("y", groupPositions[group] + groupHeight - 10)
-            .attr("text-anchor", "start") // 右对齐
+            .attr("text-anchor", "start") // 左对齐
             .attr("dominant-baseline", "middle")
             .attr("fill", color)
             .attr("font-weight", "bold")

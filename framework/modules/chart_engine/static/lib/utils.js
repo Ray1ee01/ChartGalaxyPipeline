@@ -55,13 +55,17 @@ const createXAxisScaleAndTicks = (data, xField, rangeStart = 0, rangeEnd = 100, 
     let timeInterval;
     let formatFunction;
     
-    if (yearSpan > 30) {
-        // 超过30年，每10年一个刻度
+    if (yearSpan > 40) {
+        // 超过40年，每10年一个刻度
         timeInterval = d3.timeYear.every(10);
         formatFunction = d => d3.timeFormat("%Y")(d);
-    } else if (yearSpan > 10) {
-        // 超过10年，每5年一个刻度
+    } else if (yearSpan > 20) {
+        // 超过20年，每5年一个刻度
         timeInterval = d3.timeYear.every(5);
+        formatFunction = d => d3.timeFormat("%Y")(d);
+    } else if (yearSpan > 10) {
+        // 超过10年，每2年一个刻度  
+        timeInterval = d3.timeYear.every(2);
         formatFunction = d => d3.timeFormat("%Y")(d);
     } else if (yearSpan > 2) {
         // 2-10年，每年一个刻度
@@ -78,16 +82,16 @@ const createXAxisScaleAndTicks = (data, xField, rangeStart = 0, rangeEnd = 100, 
     } else if (monthSpan > 6) {
         // 6个月-1年，每月一个刻度
         timeInterval = d3.timeMonth.every(1);
-        formatFunction = d => d3.timeFormat("%b %Y")(d);
+        formatFunction = d => d3.timeFormat("%m %Y")(d);
     } else if (monthSpan > 2) {
         // 2-6个月，每周一个刻度
         timeInterval = d3.timeWeek.every(1);
-        formatFunction = d => d3.timeFormat("%d %b")(d);
+        formatFunction = d => d3.timeFormat("%d %m")(d);
     } else {
         // 少于2个月，每天一个刻度或每几天一个刻度
         const dayInterval = Math.max(1, Math.ceil(daySpan / 10));
         timeInterval = d3.timeDay.every(dayInterval);
-        formatFunction = d => d3.timeFormat("%d %b")(d);
+        formatFunction = d => d3.timeFormat("%d %m")(d);
     }
     
     // 生成刻度
@@ -95,7 +99,8 @@ const createXAxisScaleAndTicks = (data, xField, rangeStart = 0, rangeEnd = 100, 
     
     // 确保包含最后一个日期
     if (xTicks.length > 0 && xTicks[xTicks.length - 1] < xExtent[1]) {
-        xTicks.push(xExtent[1]);
+        xTicks.pop(); // 先移除当前最后一个刻度
+        xTicks.push(xExtent[1]); // 添加数据的最后一个日期作为刻度
     }
     
     return {
