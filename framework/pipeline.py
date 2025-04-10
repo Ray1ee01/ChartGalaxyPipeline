@@ -146,6 +146,7 @@ def run_pipeline(input_path, output_path=None, temp_dir=None, modules_to_run=Non
             
             # 获取输入目录下所有JSON文件
             input_files = list(input_path.glob('*.json'))
+            random.shuffle(input_files)  # 随机打乱文件顺序
             success = True
             
             for input_file in input_files:
