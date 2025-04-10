@@ -223,12 +223,14 @@ function makeChart(containerSelector, data) {
         
         // 计算数值文本
         const valueText = `${Math.round(lastPoint[yField])}`;
+
+        const textWidth = getTextWidth(valueText, typography.label.font_size) + 10;
         
         // 标签背景 - 固定宽度，无圆角
         labelGroup.append("rect")
             .attr("x", 0)
             .attr("y", -10)
-            .attr("width", fixedLabelWidth) // 固定宽度
+            .attr("width", textWidth) // 固定宽度
             .attr("height", 20)
             .attr("fill", getColor(group))
             .attr("rx", 0) // 移除圆角
@@ -254,18 +256,18 @@ function makeChart(containerSelector, data) {
         
         // 标签文本 - 只显示数值
         labelGroup.append("text")
-            .attr("x", 12) // 左对齐，留出一点间距
+            .attr("x", textWidth/2) // 左对齐，留出一点间距
             .attr("y", 2) // 垂直居中
-            .attr("text-anchor", "middle") // 左对齐
+            .attr("text-anchor", "middle") //
             .attr("dominant-baseline", "middle")
             .style("font-family", typography.label.font_family)
             .style("font-size", typography.label.font_size)
             .style("fill", "#1c1c1c")
             .text(valueText);
         
-        // 添加组名文本，替代图片
+        // 添加组名文本
         labelGroup.append("text")
-            .attr("x", fixedLabelWidth + 10) // 位于标签右侧，留出间距
+            .attr("x", textWidth + 10) // 位于标签右侧，留出间距
             .attr("y", 2) // 垂直居中
             .attr("text-anchor", "start") // 左对齐
             .attr("dominant-baseline", "middle")
@@ -290,57 +292,41 @@ function makeChart(containerSelector, data) {
             .attr("d", line);
     });
     
-    // 绘制X轴
-    const xAxis = g.append("g")
-        .attr("transform", `translate(0,${innerHeight})`)
-        .call(d3.axisBottom(xScale)
-            .tickFormat(xFormat) // 使用相同的刻度数量
-        );
+    // 直接使用xTicks绘制X轴文本
+    xTicks.forEach(tick => {
+        g.append("text")
+            .attr("x", xScale(tick))
+            .attr("y", innerHeight + 25) // 下移文本
+            .attr("text-anchor", "middle")
+            .style("font-family", typography.label.font_family)
+            .style("font-size", typography.label.font_size)
+            .style("fill", "#f0dcc1")
+            .text(xFormat(tick));
+    });
     
-    // 设置X轴样式，并下移文本
-    xAxis.selectAll("text")
-        .style("font-family", typography.label.font_family)
-        .style("font-size", typography.label.font_size)
-        .style("fill", "#f0dcc1")
-        .attr("dy", "1.5em"); // 下移文本
     
-    // 移除X轴线和刻度
-    xAxis.select(".domain").remove();
-    xAxis.selectAll(".tick line").remove();
+    // 为每个刻度添加文本
+    yTicks.forEach(tick => {
+        g.append("text")
+            .attr("x", -gridExtension - 5)
+            .attr("y", yScale(tick))
+            .attr("text-anchor", "end")
+            .attr("dominant-baseline", "middle")
+            .style("font-family", typography.label.font_family)
+            .style("font-size", typography.label.font_size)
+            .style("fill", "#f0dcc1")
+            .text(tick);
+    });
+
     
-    // 绘制Y轴 - 移除B后缀，并调整刻度位置
-    const yAxis = g.append("g")
-        .call(d3.axisLeft(yScale)
-            .ticks(5)
-            .tickSize(0) // 移除刻度线
-        );
-
-    // 移除Y轴线
-    yAxis.select(".domain").remove();
-    yAxis.selectAll(".tick line").remove();
-
-    // 手动添加Y轴刻度文本，放在延伸的网格线上方
-    yAxis.selectAll(".tick text")
-        .attr("x", -gridExtension - 5) // 放在延伸的网格线上方，留出一点间距
-        .style("font-family", typography.label.font_family)
-        .style("font-size", typography.label.font_size)
-        .style("fill", "#f0dcc1") // 白色
-        .style("text-anchor", "end") 
-        .text(d => d);
-
     // 添加Y轴编码标签
     const labelGroup = g.append("g")
-        .attr("transform", `translate(${-margin.left + 35}, ${-margin.top/2})`);
+        .attr("transform", `translate(${-margin.left + 35}, ${maxYPos - 40})`);
 
     // 计算标签宽度（根据文字长度调整）
     const labelText = yField;
-    const labelPadding = 5;
-    const tempText = labelGroup.append("text")
-        .style("font-family", typography.label.font_family)
-        .style("font-size", typography.label.font_size)
-        .text(labelText);
-    const textWidth = tempText.node().getBBox().width;
-    tempText.remove();
+    const labelPadding = 10;
+    const textWidth = getTextWidth(labelText, typography.label.font_size);
 
     const labelWidth = textWidth + 2 * labelPadding;
     const labelHeight = 20;
