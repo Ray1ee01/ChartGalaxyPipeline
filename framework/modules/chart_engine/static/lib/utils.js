@@ -109,3 +109,31 @@ const createXAxisScaleAndTicks = (data, xField, rangeStart = 0, rangeEnd = 100, 
         }
     };
 };
+
+/**
+ * 根据数据点数量计算需要显示标签的点的索引
+ * @param {number} n - 数据点总数
+ * @returns {number[]} - 需要显示标签的点的索引数组
+ */
+const sampleLabels = (n) => {
+    // 少于10个点时显示所有标签
+    if (n <= 10) {
+        return Array.from({length: n}, (_, i) => i);
+    }
+    
+    // 超过10个点时每隔 n/10 个点显示一个标签
+    const step = Math.ceil(n / 10);
+    const result = [];
+    
+    // 从0开始,每隔step个点取一个索引
+    for (let i = 0; i < n; i += step) {
+        result.push(i);
+    }
+    
+    // 确保包含最后一个点
+    if (result[result.length - 1] !== n - 1) {
+        result.push(n - 1);
+    }
+    
+    return result;
+};
