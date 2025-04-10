@@ -46,7 +46,7 @@ function makeChart(containerSelector, data) {
     // 设置尺寸和边距
     const width = variables.width;
     const height = variables.height;
-    const margin = { top: 80, right: 60, bottom: 80, left: 40 };
+    const margin = { top: 20, right: 60, bottom: 80, left: 40 };
     
     // 创建SVG
     const svg = d3.select(containerSelector)
@@ -151,6 +151,7 @@ function makeChart(containerSelector, data) {
         
         // 确保第一个点从Y轴开始
         const firstDataDate = parseDate(groupData[0][xField]);
+        const xMin = new Date(xScale.domain()[0]);
         if (firstDataDate.getTime() > xMin.getTime()) {
             // 添加Y轴起点（使用第一个数据点的Y值）
             const firstPoint = {
@@ -163,6 +164,7 @@ function makeChart(containerSelector, data) {
         
         // 确保最后一个点精确对应最大X值
         const lastDataDate = parseDate(groupData[groupData.length - 1][xField]);
+        const xMax = new Date(xScale.domain()[1]);
         if (lastDataDate.getTime() < xMax.getTime()) {
             // 添加最后一个点（使用最后一个数据点的Y值）
             const lastPoint = {
@@ -385,7 +387,7 @@ function makeChart(containerSelector, data) {
             .attr("text-anchor", "start")
             .attr("dominant-baseline", "middle")
             .style("font-family", "Arial")
-            .style("font-size", "30px")
+            .style("font-size", "18px")
             .style("font-weight", "bold")
             .style("fill", pos.point.color)
             .text(pos.point.value);
@@ -395,10 +397,10 @@ function makeChart(containerSelector, data) {
     // 计算图例项
     const legendItems = groups;
     const legendPadding = 10;
-    const legendItemHeight = 40;
+    const legendItemHeight = 20;
     const legendItemSpacing = 0;
     const legendTextOffset = 10;
-    const fontSize = 30;
+    const fontSize = 18;
 
     // 计算图例的总高度
     const legendHeight = legendItems.length * legendItemHeight + (legendItems.length - 1) * legendItemSpacing + 2 * legendPadding;
@@ -421,7 +423,7 @@ function makeChart(containerSelector, data) {
     tempText.remove();
 
     // 计算图例的总宽度
-    const legendLineWidth = 40;
+    const legendLineWidth = 30;
     const legendWidth = legendLineWidth + legendTextOffset + maxTextWidth + 2 * legendPadding;
 
     // 计算图例的最佳位置（避免与数据线交叉）
