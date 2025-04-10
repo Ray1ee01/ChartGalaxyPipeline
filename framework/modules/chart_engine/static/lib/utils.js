@@ -142,3 +142,30 @@ const sampleLabels = (n) => {
     
     return result;
 };
+
+
+/**
+ * 计算文本在指定字体大小下的实际渲染宽度
+ * @param {string} text - 要测量的文本
+ * @param {number} fontSize - 字体大小(px)
+ * @returns {number} - 文本宽度(px)
+ */
+const getTextWidth = (text, fontSize) => {
+    // 创建临时canvas用于测量
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    
+    // 设置字体
+    context.font = `${fontSize}px Arial`;
+    
+    // 测量文本宽度
+    const metrics = context.measureText(text);
+    const width = metrics.width;
+    
+    // 删除canvas元素
+    canvas.remove();
+    
+    return width;
+};
+
+
