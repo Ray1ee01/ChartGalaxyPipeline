@@ -5,6 +5,11 @@ from logging import getLogger
 logger = getLogger(__name__)
 from typing import Union, Dict
 
+from modules.datafact_generator.util import DataFact
+from modules.datafact_generator.value_fact import ValueFact, ValueFactGenerator
+from modules.datafact_generator.trend_fact import TrendFact, TrendFactGenerator
+from modules.datafact_generator.proportion_fact import ProportionFact, ProportionFactGenerator
+from modules.datafact_generator.difference_fact import DifferenceFact, DifferenceFactGenerator
 from .util import DataFact
 from .value_fact import ValueFact, ValueFactGenerator
 from .trend_fact import TrendFact, TrendFactGenerator

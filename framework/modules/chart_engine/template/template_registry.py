@@ -208,12 +208,8 @@ def get_template_for_chart_name(chart_name, engine_preference=None):
     
     chart_name = chart_name.lower()
     
-    # If no preference is specified, use default order
-    if engine_preference is None:
-        engine_preference = ['vegalite-py']
-    
     # Try each engine in order of preference
-    for engine in engine_preference:
+    for engine in templates:
         for chart_type, chart_dict in templates[engine].items():
             if chart_name in chart_dict:
                 template_info = chart_dict[chart_name]
@@ -232,19 +228,19 @@ def get_template_for_chart_name(chart_name, engine_preference=None):
     best_result = None
     # print("chart_dict:", templates[engine])
     
-    for engine in engine_preference:
+    for engine in templates:
         for chart_type, chart_dict in templates[engine].items():
             for name in chart_dict:
                 # 计算两个字符串的重叠长度
                 overlap = len(set(chart_name) & set(name))
                 if overlap > max_overlap:
-                    print("overlap:", overlap)
+                    #print("overlap:", overlap)
                     max_overlap = overlap
                     best_match = name
-                    print("best_match:", best_match)
+                    #print("best_match:", best_match)
                     template_info = chart_dict[name]
                     best_result = (template_info['engine_type'], template_info['template'])
-                    print("best_result:", best_result)
+                    #print("best_result:", best_result)
     if best_result:
         return best_result
     

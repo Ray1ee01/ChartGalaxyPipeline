@@ -3,9 +3,9 @@ REQUIREMENTS_BEGIN
 {
     "chart_type": "Proportional Square Area Chart",
     "chart_name": "proportional_square_area_chart_01",
-    "required_fields": ["group", "percentage"],
+    "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],
-    "required_fields_range": [[2, 10], [0, 100]],
+    "required_fields_range": [[2, 10], []],
     "required_fields_icons": [],
     "required_other_icons": [],
     "required_fields_colors": [],

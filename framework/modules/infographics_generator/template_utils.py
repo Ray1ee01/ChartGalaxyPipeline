@@ -1,6 +1,6 @@
 from typing import Dict, List, Tuple, Optional, Union
 import random
-from .color_utils import get_contrast_color
+from modules.infographics_generator.color_utils import get_contrast_color
 
 def get_unique_fields_and_types(
         required_fields: Union[List[str], List[List[str]]],
@@ -62,7 +62,7 @@ def analyze_templates(templates: Dict) -> Tuple[int, Dict[str, str], int]:
                     
     return template_count, template_requirements
 
-def check_template_compatibility(data: Dict, templates: Dict) -> List[str]:
+def check_template_compatibility(data: Dict, templates: Dict, specific_chart_name: str = None) -> List[str]:
     """Check which templates are compatible with the given data"""
     compatible_templates = []
     
@@ -91,22 +91,32 @@ def check_template_compatibility(data: Dict, templates: Dict) -> List[str]:
 
                             if len(req.get('required_fields_icons', [])) > 0 and len(data["images"]["field"]) == 0:
                                 continue
-
+                        
+                            if combination_type != data_type_str:
+                                continue
                             for i, range in enumerate(ordered_ranges):
                                 if data["data"]["columns"][i]["data_type"] in ["temporal", "categorical"]:
                                     key = data["data"]["columns"][i]["name"]
                                     unique_values = list(set(value[key] for value in data["data"]["data"]))
                                     if len(unique_values) > range[1] or len(unique_values) < range[0]:
+                                        if specific_chart_name and specific_chart_name == chart_name:
+                                            print(f"template {template_key} miss match", data["name"], len(unique_values), range)
                                         continue
+                                    else:
+                                        if specific_chart_name and specific_chart_name == chart_name:
+                                            print(f"template {template_key} matched", data["name"], len(unique_values), range)
                                 elif data["data"]["columns"][i]["data_type"] in ["numerical"]:
+                                    continue
                                     key = data["data"]["columns"][i]["name"]
                                     min_value = min(value[key] for value in data["data"]["data"])
                                     max_value = max(value[key] for value in data["data"]["data"])
                                     if min_value > range[1] or max_value < range[0]:
+                                        if specific_chart_name and specific_chart_name == chart_name:
+                                            print(f"template {template_key} miss match", min_value, max_value, range)
                                         continue
 
                             # If the combination type matches the template's data type, it's compatible
-                            if combination_type == data_type_str:
+                            if specific_chart_name == None or specific_chart_name == chart_name:
                                 compatible_templates.append(template_key)
                         except Exception as e:
                             continue

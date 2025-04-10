@@ -2,8 +2,8 @@ import os
 import json
 import subprocess
 import tempfile
-from .file_utils import create_temp_file, create_temp_dir, cleanup_temp_file, cleanup_temp_dir
-from .html_to_svg import html_to_svg  # Import the html_to_svg utility
+from modules.chart_engine.utils.file_utils import create_temp_file, create_temp_dir, cleanup_temp_file, cleanup_temp_dir
+from modules.chart_engine.utils.html_to_svg import html_to_svg
 import importlib
 import logging
 

@@ -1,14 +1,17 @@
 import os
+import sys
 import json
 import requests
 from typing import Dict, List, Any, Optional
 import time
 import concurrent.futures
 import threading
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from config import api_key, api_provider
 
 # OpenAI API configuration
-API_KEY = 'sk-GZPrsS9VcR4Xf5iADf6a55D0C0Bb4f8d8f12DaC9F0857cAe'
-API_PROVIDER = 'https://aihubmix.com'
+API_KEY = api_key
+API_PROVIDER = api_provider
 
 # Thread-safe print function
 print_lock = threading.Lock()

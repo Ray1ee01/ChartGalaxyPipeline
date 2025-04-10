@@ -1,4 +1,4 @@
-from .util import DataFact, DataFactGenerator
+from modules.datafact_generator.util import DataFact, DataFactGenerator
 from statistics import mean, stdev
 from scipy.special import expit
 

@@ -35,56 +35,25 @@ file_handler.setFormatter(formatter)
 logger.addHandler(file_handler)
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from modules.chart_engine.chart_engine import load_data_from_json, get_template_for_chart_name, render_chart_to_svg
 from modules.chart_engine.template.template_registry import scan_templates
 from modules.title_styler.title_styler import process as title_styler_process
-from .mask_utils import calculate_mask, calculate_content_height
-from .svg_utils import extract_svg_content, remove_large_rects
-from .image_utils import find_best_size_and_position
-from .template_utils import (
+from modules.infographics_generator.mask_utils import calculate_mask, calculate_content_height
+from modules.infographics_generator.svg_utils import extract_svg_content, remove_large_rects
+from modules.infographics_generator.image_utils import find_best_size_and_position
+from modules.infographics_generator.template_utils import (
     analyze_templates,
     check_template_compatibility,
     select_template,
-    process_template_requirements
+    process_template_requirements,
+    get_unique_fields_and_types
 )
-from .data_utils import process_temporal_data, process_numerical_data
+from modules.infographics_generator.data_utils import process_temporal_data, process_numerical_data
 
 padding = 50
 between_padding = 25
 grid_size = 5
-
-def get_unique_fields_and_types(
-        required_fields: Union[List[str], List[List[str]]],
-        required_fields_type: Union[List[List[str]], List[List[List[str]]]],
-        required_fields_range: Optional[Union[List[List[int]], List[List[List[int]]]]] = None
-    ) -> Tuple[List[str], Dict[str, str]]:
-    """Extract unique fields and their corresponding types from nested structure"""
-    field_order = ['x', 'y', 'y2', 'group']  # Define the order of fields
-    field_types = {}
-    field_ranges = {}
-    
-    # Check if required_fields is a list of lists
-    if required_fields and isinstance(required_fields[0], list):
-        # Handle list of lists case
-        for i, (fields_group, types_group) in enumerate(zip(required_fields, required_fields_type)):
-            range_group = required_fields_range[i] if required_fields_range else [[float('-inf'), float('inf')] for _ in fields_group]
-            for field, type_list, range_list in zip(fields_group, types_group, range_group):
-                if field not in field_types:
-                    field_types[field] = type_list[0]  # Use first type from the list
-                    field_ranges[field] = range_list  # Use first range from the list
-    else:
-        # Handle simple list case
-        range_list = required_fields_range if required_fields_range else [[float('-inf'), float('inf')] for _ in required_fields]
-        for field, type_list, range_val in zip(required_fields, required_fields_type, range_list):
-            if field not in field_types:
-                field_types[field] = type_list[0]  # Use first type from the list
-                field_ranges[field] = range_val  # Use first range from the list
-
-    # Order fields according to field_order, keeping only those that exist
-    ordered_fields = [field for field in field_order if field in field_types]
-    ordered_ranges = [field_ranges[field] for field in ordered_fields]
-    
-    return ordered_fields, field_types, ordered_ranges
 
 def assemble_infographic(
     title_svg_content: str,
@@ -199,13 +168,16 @@ def assemble_infographic(
     
     return final_svg, original_mask, total_height
 
-def process(input: str, output: str, base_url: str, api_key: str) -> bool:
+def process(input: str, output: str, base_url: str, api_key: str, chart_name: str = None) -> bool:
     """
     Pipeline入口函数，处理单个文件的信息图生成
     
     Args:
         input: 输入JSON文件路径
         output: 输出SVG文件路径
+        base_url: API基础URL
+        api_key: API密钥
+        chart_name: 指定图表名称，如果提供则使用该图表，否则自动选择
         
     Returns:
         bool: 处理是否成功
@@ -213,26 +185,33 @@ def process(input: str, output: str, base_url: str, api_key: str) -> bool:
     # 读取输入文件
     with open(input, "r", encoding="utf-8") as f:
         data = json.load(f)
-        
-    logger.info("input file: %s", input)
-    logger.info("output file: %s", output)
+    data["name"] = input
     
     # 扫描并获取所有可用的模板
     templates = scan_templates()
     
     # 分析模板并获取要求
     template_count, template_requirements = analyze_templates(templates)
-    
-    # 检查与当前数据的兼容性
-    print("check compatibility")
-    compatible_templates = check_template_compatibility(data, templates)
-    logger.info(f"\nNumber of compatible templates: {len(compatible_templates)}")
-    
-    if not compatible_templates:
-        logger.error("No compatible templates found for the given data")
-        return False
+    compatible_templates = check_template_compatibility(data, templates, chart_name)
         
-    # 随机选择一个兼容的模板
+    # 如果指定了chart_name，尝试使用它
+    if chart_name:
+        # 在兼容的模板中查找指定的chart_name
+        if len(compatible_templates) > 0:
+            pass
+        else:
+            return False
+        logger.info("input file: %s", input)
+        logger.info("output file: %s", output)
+    else:
+        logger.info("input file: %s", input)
+        logger.info("output file: %s", output)
+        # 检查与当前数据的兼容性
+        logger.info(f"\nNumber of compatible templates: {len(compatible_templates)}")
+        if not compatible_templates:
+            logger.error("No compatible templates found for the given data")
+            return False
+        # 随机选择一个兼容的模板
     engine, chart_type, chart_name = select_template(compatible_templates)
     
     # 打印选择的模板信息
@@ -264,16 +243,12 @@ def process(input: str, output: str, base_url: str, api_key: str) -> bool:
     
     # 生成图表SVG，使用安全的文件名
     chart_svg_path = os.path.join(tmp_dir, f"{os.path.splitext(safe_output_name)[0]}.chart.tmp")
-    try:
-        render_chart_to_svg(
-            json_data=data,
-            output_svg_path=chart_svg_path,
-            js_file=template,
-            framework=engine.split('-')[0]  # Extract framework name (echarts/d3)
-        )
-    except Exception as e:
-        logger.error(f"Failed to generate chart SVG: {str(e)}")
-        return False
+    render_chart_to_svg(
+        json_data=data,
+        output_svg_path=chart_svg_path,
+        js_file=template,
+        framework=engine.split('-')[0]  # Extract framework name (echarts/d3)
+    )
         
     # 读取生成的SVG内容
     with open(chart_svg_path, "r", encoding="utf-8") as f:
