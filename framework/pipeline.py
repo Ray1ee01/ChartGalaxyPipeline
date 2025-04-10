@@ -28,6 +28,7 @@ from config import (
     image_resource_path
 )
 import random
+from concurrent.futures import ThreadPoolExecutor
 
 # 配置日志
 logging.basicConfig(
@@ -113,7 +114,7 @@ MODULES = [
 ]
 
 
-def run_pipeline(input_path, output_path=None, temp_dir=None, modules_to_run=None):
+def run_pipeline(input_path, output_path=None, temp_dir=None, modules_to_run=None, threads=None):
     """
     执行完整的图表生成管道
     
@@ -122,6 +123,7 @@ def run_pipeline(input_path, output_path=None, temp_dir=None, modules_to_run=Non
         output_path (str, optional): 输出文件路径(可以是文件或目录)，如果为None则原地修改
         temp_dir (str, optional): 临时文件目录，默认使用./tmp
         modules_to_run (list, optional): 要运行的模块列表，默认运行所有模块
+        threads (int, optional): 处理目录时的并发线程数，仅在input_path为目录时生效
     """
     try:
         print("modules_to_run: ", modules_to_run)
@@ -147,24 +149,47 @@ def run_pipeline(input_path, output_path=None, temp_dir=None, modules_to_run=Non
             # 获取输入目录下所有JSON文件
             input_files = list(input_path.glob('*.json'))
             random.shuffle(input_files)  # 随机打乱文件顺序
-            success = True
             
-            for input_file in input_files:
-                # 如果是inplace处理，输出路径就是输入路径
-                if output_path == input_path:
-                    output_file = input_file
-                else:
-                    # 确保输出文件保持相同的文件名
-                    output_file = output_path / input_file.name
-                
-                success &= run_single_file(
-                    input_path=input_file,
-                    output_path=output_file,
-                    temp_dir=temp_dir,
-                    modules_to_run=modules_to_run
-                )
-            
-            return success
+            if threads and threads > 1:
+                # 使用线程池并行处理文件
+                with ThreadPoolExecutor(max_workers=threads) as executor:
+                    futures = []
+                    for input_file in input_files:
+                        # 如果是inplace处理，输出路径就是输入路径
+                        if output_path == input_path:
+                            output_file = input_file
+                        else:
+                            # 确保输出文件保持相同的文件名
+                            output_file = output_path / input_file.name
+                            
+                        future = executor.submit(
+                            run_single_file,
+                            input_path=input_file,
+                            output_path=output_file,
+                            temp_dir=temp_dir,
+                            modules_to_run=modules_to_run
+                        )
+                        futures.append(future)
+                    
+                    # 等待所有任务完成并检查结果
+                    results = [future.result() for future in futures]
+                    return all(results)
+            else:
+                # 单线程顺序处理
+                success = True
+                for input_file in input_files:
+                    if output_path == input_path:
+                        output_file = input_file
+                    else:
+                        output_file = output_path / input_file.name
+                    
+                    success &= run_single_file(
+                        input_path=input_file,
+                        output_path=output_file,
+                        temp_dir=temp_dir,
+                        modules_to_run=modules_to_run
+                    )
+                return success
         else:
             # 单文件处理
             if output_path == input_path:
@@ -398,6 +423,7 @@ def parse_args():
     parser.add_argument('--output', type=str, help='Output json file path', default=None)
     parser.add_argument('--temp-dir', type=str, default='temp')
     parser.add_argument('--modules', type=str, nargs='+', help='Modules to run', required=True)
+    parser.add_argument('--threads', type=int, help='Number of threads for directory processing', default=None)
     args = parser.parse_args()
     # 如果没有指定input，从data_resource_path随机选择
     if args.input is None and 'create_index' not in args.modules:
@@ -421,7 +447,8 @@ def main():
         input_path=args.input,
         output_path=args.output,
         temp_dir=args.temp_dir,
-        modules_to_run=modules_to_run
+        modules_to_run=modules_to_run,
+        threads=args.threads
     )
 
 if __name__ == "__main__":
