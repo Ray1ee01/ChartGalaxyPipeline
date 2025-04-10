@@ -64,14 +64,6 @@ function makeChart(containerSelector, data) {
     const g = svg.append("g")
         .attr("transform", `translate(${margin.left}, ${margin.top})`);
     
-    // 解析日期
-    const parseDate = d => {
-        if (typeof d === 'string') {
-            return new Date(d);
-        }
-        return new Date(d);
-    };
-    
     // 创建x轴比例尺 - 扩宽范围
     const xExtent = d3.extent(chartData, d => parseDate(d[xField]));
     const xRange = xExtent[1] - xExtent[0];

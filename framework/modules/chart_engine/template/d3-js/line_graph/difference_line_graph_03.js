@@ -66,25 +66,6 @@ function makeChart(containerSelector, data) {
     const g = svg.append("g")
         .attr("transform", `translate(${margin.left}, ${margin.top})`);
     
-    // 解析日期 - 只解析年份
-    const parseDate = d => {
-        if (d instanceof Date) return d;
-        if (typeof d === 'number') {
-            // 数字表示年份,创建该年1月1日的日期对象
-            return new Date(d, 0, 1);
-        }
-        if (typeof d === 'string') {
-            // 提取年份 - 支持YYYY/... 或 YYYY-...格式 或 YYYY格式
-            const yearMatch = d.match(/^(\d{4})(?:[/-]|$)/); // 匹配YYYY/... 或 YYYY-... 或 纯YYYY格式
-            if (yearMatch) {
-                const year = parseInt(yearMatch[1]);
-                return new Date(year, 0, 1); // 设置为该年的1月1日
-            }
-        }
-        console.warn("无法解析日期:", d);
-        return new Date(0); // 返回默认日期作为后备 
-    };
-    
     // 获取唯一的组值
     const groups = [...new Set(chartData.map(d => d[groupField]))];
     

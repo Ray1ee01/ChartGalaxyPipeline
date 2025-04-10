@@ -90,14 +90,6 @@ function makeChart(containerSelector, data) {
     const g = svg.append("g")
         .attr("transform", `translate(${margin.left}, ${margin.top})`);
     
-    // 解析日期
-    const parseDate = d => {
-        if (typeof d === 'string') {
-            return new Date(d.split('/')[0]);
-        }
-        return new Date(d);
-    };
-    
     // 获取所有日期并排序
     const allDates = chartData.map(d => parseDate(d[xField]));
     const minDate = d3.min(allDates);

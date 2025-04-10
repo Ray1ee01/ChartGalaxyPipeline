@@ -62,20 +62,12 @@ function makeChart(containerSelector, data) {
     // 创建图表组
     const g = svg.append("g")
         .attr("transform", `translate(${margin.left},${margin.top})`);
-    
-    // 创建比例尺 - 修改为时间比例尺
-    // 首先解析年份字符串为日期对象
-    const parseYear = (yearStr) => {
-        // 从"XXXX/XX"格式中提取第一个年份
-        const year = yearStr.split("/")[0];
-        return new Date(parseInt(year), 0, 1); // 1月1日
-    };
 
     // 创建时间比例尺
     const xScale = d3.scaleTime()
         .domain([
-            d3.min(xValues, d => parseYear(d)),
-            d3.max(xValues, d => parseYear(d))
+            d3.min(xValues, d => parseDate(d)),
+            d3.max(xValues, d => parseDate(d))
         ])
         .range([0, innerWidth]);
     
@@ -161,12 +153,12 @@ function makeChart(containerSelector, data) {
     
     // 创建线条生成器
     const line = d3.line()
-        .x(d => xScale(parseYear(d[xField])))
+        .x(d => xScale(parseDate(d[xField])))
         .y(d => yScale(d[yField]));
     
     // 创建面积生成器（用于渐变填充）
     const area = d3.area()
-        .x(d => xScale(parseYear(d[xField])))
+        .x(d => xScale(parseDate(d[xField])))
         .y0(innerHeight)
         .y1(d => yScale(d[yField]));
     
@@ -179,7 +171,7 @@ function makeChart(containerSelector, data) {
     
     // 添加垂直参考线（最后一个年份）
     const lastYear = xValues[xValues.length - 1];
-    const lastYearDate = parseYear(lastYear);
+    const lastYearDate = parseDate(lastYear);
 
     // 添加垂直虚线
     g.append("line")

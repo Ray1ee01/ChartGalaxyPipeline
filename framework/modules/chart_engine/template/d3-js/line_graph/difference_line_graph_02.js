@@ -23,15 +23,6 @@ REQUIREMENTS_BEGIN
 REQUIREMENTS_END
 */
 
-// 解析年份函数
-function parseYear(yearStr) {
-    if (typeof yearStr === 'string') {
-        const year = yearStr.split("/")[0];
-        return new Date(parseInt(year), 0, 1);
-    }
-    return new Date(yearStr, 0, 1);
-}
-
 function makeChart(containerSelector, data) {
     // 提取数据
     const jsonData = data;
@@ -122,11 +113,11 @@ function makeChart(containerSelector, data) {
     const selectedGroupNames = [highestGroup, lowestGroup];
     
     // 确保两组数据按年份排序
-    group1Data.sort((a, b) => parseYear(a[xField]) - parseYear(b[xField]));
-    group2Data.sort((a, b) => parseYear(a[xField]) - parseYear(b[xField]));
+    group1Data.sort((a, b) => parseDate(a[xField]) - parseDate(b[xField]));
+    group2Data.sort((a, b) => parseDate(a[xField]) - parseDate(b[xField]));
     
     // 确定全局x轴范围
-    const allDates = chartData.map(d => parseYear(d[xField]));
+    const allDates = chartData.map(d => parseDate(d[xField]));
     const xMin = d3.min(allDates);
     const xMax = new Date(d3.max(allDates).getFullYear() + 2, 0, 1);
 
@@ -224,7 +215,7 @@ function makeChart(containerSelector, data) {
         .style("font-family", "Arial")
         .style("font-size", "14px")
         .style("fill", "#222222")
-        .html(`<tspan style="font-weight: bold">${dataColumns[1].description}</tspan> <tspan>${d3.min(chartData, d => parseYear(d[xField]).getFullYear())}-${d3.max(chartData, d => parseYear(d[xField]).getFullYear())}</tspan>`);
+        .html(`<tspan style="font-weight: bold">${dataColumns[1].description}</tspan> <tspan>${d3.min(chartData, d => parseDate(d[xField]).getFullYear())}-${d3.max(chartData, d => parseDate(d[xField]).getFullYear())}</tspan>`);
 
     g.append("text")
         .attr("x", -25)
@@ -237,12 +228,12 @@ function makeChart(containerSelector, data) {
     
     // 创建线条生成器
     const line = d3.line()
-        .x(d => xScale(parseYear(d[xField])))
+        .x(d => xScale(parseDate(d[xField])))
         .y(d => yScale(d[yField]));
     
     // 创建面积生成器
     const area = d3.area()
-        .x(d => xScale(parseYear(d[xField])))
+        .x(d => xScale(parseDate(d[xField])))
         .y0(d => yScale(d.group2Value))
         .y1(d => yScale(d.group1Value));
     
@@ -351,7 +342,7 @@ function makeChart(containerSelector, data) {
     
     // 线条1起始点图标
     const startImgGroup1 = g.append("g")
-        .attr("transform", `translate(${xScale(parseYear(firstPoint1[xField])) - imageSize / 2}, ${yScale(firstPoint1[yField]) - imageSize / 2})`);
+        .attr("transform", `translate(${xScale(parseDate(firstPoint1[xField])) - imageSize / 2}, ${yScale(firstPoint1[yField]) - imageSize / 2})`);
     
     // 添加图片或颜色圆
     if (images.field && images.field[selectedGroupNames[0]]) {
@@ -374,7 +365,7 @@ function makeChart(containerSelector, data) {
     
     // 添加起始值标注
     g.append("text")
-        .attr("x", xScale(parseYear(firstPoint1[xField])) - 20)
+        .attr("x", xScale(parseDate(firstPoint1[xField])) - 20)
         .attr("y", yScale(firstPoint1[yField]))
         .attr("text-anchor", "end")
         .attr("dominant-baseline", "middle")
@@ -386,7 +377,7 @@ function makeChart(containerSelector, data) {
     
     // 线条1终点图标
     const endImgGroup1 = g.append("g")
-        .attr("transform", `translate(${xScale(parseYear(lastPoint1[xField])) - imageSize / 2}, ${yScale(lastPoint1[yField]) - imageSize / 2})`);
+        .attr("transform", `translate(${xScale(parseDate(lastPoint1[xField])) - imageSize / 2}, ${yScale(lastPoint1[yField]) - imageSize / 2})`);
 
     // 添加图片或颜色圆
     if (images.field && images.field[selectedGroupNames[0]]) {
@@ -409,7 +400,7 @@ function makeChart(containerSelector, data) {
     
     // 添加终点值和组名标注（上方）- 调整位置
     g.append("text")
-        .attr("x", xScale(parseYear(lastPoint1[xField]))) // 增加距离
+        .attr("x", xScale(parseDate(lastPoint1[xField]))) // 增加距离
         .attr("y", yScale(lastPoint1[yField]) - 40)
         .attr("text-anchor", "middle")
         .attr("dominant-baseline", "middle")
@@ -420,7 +411,7 @@ function makeChart(containerSelector, data) {
         .text(selectedGroupNames[0]);
     
     g.append("text")
-        .attr("x", xScale(parseYear(lastPoint1[xField]))) // 增加距离
+        .attr("x", xScale(parseDate(lastPoint1[xField]))) // 增加距离
         .attr("y", yScale(lastPoint1[yField]) - 25)
         .attr("text-anchor", "middle")
         .attr("dominant-baseline", "middle")
@@ -436,7 +427,7 @@ function makeChart(containerSelector, data) {
     
     // 线条2起始点图标
     const startImgGroup2 = g.append("g")
-        .attr("transform", `translate(${xScale(parseYear(firstPoint2[xField])) - imageSize / 2}, ${yScale(firstPoint2[yField]) - imageSize / 2})`);
+        .attr("transform", `translate(${xScale(parseDate(firstPoint2[xField])) - imageSize / 2}, ${yScale(firstPoint2[yField]) - imageSize / 2})`);
     
     // 添加图片或颜色圆
     if (images.field && images.field[selectedGroupNames[1]]) {
@@ -459,7 +450,7 @@ function makeChart(containerSelector, data) {
     
     // 添加起始值标注
     g.append("text")
-        .attr("x", xScale(parseYear(firstPoint2[xField])) - 20)
+        .attr("x", xScale(parseDate(firstPoint2[xField])) - 20)
         .attr("y", yScale(firstPoint2[yField]))
         .attr("text-anchor", "end")
         .attr("dominant-baseline", "middle")
@@ -471,7 +462,7 @@ function makeChart(containerSelector, data) {
     
     // 线条2终点图标
     const endImgGroup2 = g.append("g")
-        .attr("transform", `translate(${xScale(parseYear(lastPoint2[xField])) - imageSize / 2}, ${yScale(lastPoint2[yField]) - imageSize / 2})`);
+        .attr("transform", `translate(${xScale(parseDate(lastPoint2[xField])) - imageSize / 2}, ${yScale(lastPoint2[yField]) - imageSize / 2})`);
     
     // 添加图片或颜色圆
     if (images.field && images.field[selectedGroupNames[1]]) {
@@ -494,7 +485,7 @@ function makeChart(containerSelector, data) {
     
     // 添加终点值和组名标注（下方）- 调整位置
     g.append("text")
-        .attr("x", xScale(parseYear(lastPoint2[xField]))) // 增加距离
+        .attr("x", xScale(parseDate(lastPoint2[xField]))) // 增加距离
         .attr("y", yScale(lastPoint2[yField]) + 40)
         .attr("text-anchor", "middle")
         .attr("dominant-baseline", "middle")
@@ -505,7 +496,7 @@ function makeChart(containerSelector, data) {
         .text(selectedGroupNames[1]);
     
     g.append("text")
-        .attr("x", xScale(parseYear(lastPoint2[xField]))) // 增加距离
+        .attr("x", xScale(parseDate(lastPoint2[xField]))) // 增加距离
         .attr("y", yScale(lastPoint2[yField]) + 25)
         .attr("text-anchor", "middle")
         .attr("dominant-baseline", "middle")
@@ -550,34 +541,34 @@ function makeChart(containerSelector, data) {
     
     // 添加上箭头 - 使用实心三角形尖端，调整与图标的距离
     g.append("line")
-        .attr("x1", xScale(parseYear(firstPoint1[xField])))
+        .attr("x1", xScale(parseDate(firstPoint1[xField])))
         .attr("y1", startRatioY - 15)
-        .attr("x2", xScale(parseYear(firstPoint1[xField])))
+        .attr("x2", xScale(parseDate(firstPoint1[xField])))
         .attr("y2", yScale(firstPoint1[yField]) + 20) // 减少距离
         .attr("stroke", '#030300')
         .attr("stroke-width", 1);
     
     // 添加上箭头的实心三角形尖端，调整位置
     g.append("polygon")
-        .attr("points", `${xScale(parseYear(firstPoint1[xField]))},${yScale(firstPoint1[yField]) + 15} ${xScale(parseYear(firstPoint1[xField])) - 2.5},${yScale(firstPoint1[yField]) + 20} ${xScale(parseYear(firstPoint1[xField])) + 2.5},${yScale(firstPoint1[yField]) + 20}`)
+        .attr("points", `${xScale(parseDate(firstPoint1[xField]))},${yScale(firstPoint1[yField]) + 15} ${xScale(parseDate(firstPoint1[xField])) - 2.5},${yScale(firstPoint1[yField]) + 20} ${xScale(parseDate(firstPoint1[xField])) + 2.5},${yScale(firstPoint1[yField]) + 20}`)
         .attr("fill", '#030300');
     
     // 添加下箭头 - 使用实心三角形尖端，调整与图标的距离
     g.append("line")
-        .attr("x1", xScale(parseYear(firstPoint1[xField])))
+        .attr("x1", xScale(parseDate(firstPoint1[xField])))
         .attr("y1", startRatioY + 15)
-        .attr("x2", xScale(parseYear(firstPoint1[xField])))
+        .attr("x2", xScale(parseDate(firstPoint1[xField])))
         .attr("y2", yScale(firstPoint2[yField]) - 20) // 减少距离
         .attr("stroke", '#030300')
         .attr("stroke-width", 1);
     
     // 添加下箭头的实心三角形尖端，调整位置
     g.append("polygon")
-        .attr("points", `${xScale(parseYear(firstPoint1[xField]))},${yScale(firstPoint2[yField]) - 15} ${xScale(parseYear(firstPoint1[xField])) - 2.5},${yScale(firstPoint2[yField]) - 20} ${xScale(parseYear(firstPoint1[xField])) + 2.5},${yScale(firstPoint2[yField]) - 20}`)
+        .attr("points", `${xScale(parseDate(firstPoint1[xField]))},${yScale(firstPoint2[yField]) - 15} ${xScale(parseDate(firstPoint1[xField])) - 2.5},${yScale(firstPoint2[yField]) - 20} ${xScale(parseDate(firstPoint1[xField])) + 2.5},${yScale(firstPoint2[yField]) - 20}`)
         .attr("fill", '#030300');
     
     g.append("text")
-        .attr("x", xScale(parseYear(firstPoint1[xField])))
+        .attr("x", xScale(parseDate(firstPoint1[xField])))
         .attr("y", startRatioY)
         .attr("text-anchor", "middle")
         .attr("dominant-baseline", "middle")
@@ -594,35 +585,35 @@ function makeChart(containerSelector, data) {
     
     // 添加上箭头 - 使用实心三角形尖端，调整与图标的距离
     g.append("line")
-        .attr("x1", xScale(parseYear(lastPoint1[xField])))
+        .attr("x1", xScale(parseDate(lastPoint1[xField])))
         .attr("y1", ratioY - 15)
-        .attr("x2", xScale(parseYear(lastPoint1[xField])))
+        .attr("x2", xScale(parseDate(lastPoint1[xField])))
         .attr("y2", yScale(lastPoint1[yField]) + 20) // 减少距离
         .attr("stroke", '#030300')
         .attr("stroke-width", 1);
     
     // 添加上箭头的实心三角形尖端，调整位置
     g.append("polygon")
-        .attr("points", `${xScale(parseYear(lastPoint1[xField]))},${yScale(lastPoint1[yField]) + 15} ${xScale(parseYear(lastPoint1[xField])) - 2.5},${yScale(lastPoint1[yField]) + 20} ${xScale(parseYear(lastPoint1[xField])) + 2.5},${yScale(lastPoint1[yField]) + 20}`)
+        .attr("points", `${xScale(parseDate(lastPoint1[xField]))},${yScale(lastPoint1[yField]) + 15} ${xScale(parseDate(lastPoint1[xField])) - 2.5},${yScale(lastPoint1[yField]) + 20} ${xScale(parseDate(lastPoint1[xField])) + 2.5},${yScale(lastPoint1[yField]) + 20}`)
         .attr("fill", '#030300');
     
     // 添加下箭头 - 使用实心三角形尖端，调整与图标的距离
     g.append("line")
-        .attr("x1", xScale(parseYear(lastPoint1[xField])))
+        .attr("x1", xScale(parseDate(lastPoint1[xField])))
         .attr("y1", ratioY + 15)
-        .attr("x2", xScale(parseYear(lastPoint1[xField])))
+        .attr("x2", xScale(parseDate(lastPoint1[xField])))
         .attr("y2", yScale(lastPoint2[yField]) - 20) // 减少距离
         .attr("stroke", '#030300')
         .attr("stroke-width", 1);
     
     // 添加下箭头的实心三角形尖端，调整位置
     g.append("polygon")
-        .attr("points", `${xScale(parseYear(lastPoint1[xField]))},${yScale(lastPoint2[yField]) - 15} ${xScale(parseYear(lastPoint1[xField])) - 2.5},${yScale(lastPoint2[yField]) - 20} ${xScale(parseYear(lastPoint1[xField])) + 2.5},${yScale(lastPoint2[yField]) - 20}`)
+        .attr("points", `${xScale(parseDate(lastPoint1[xField]))},${yScale(lastPoint2[yField]) - 15} ${xScale(parseDate(lastPoint1[xField])) - 2.5},${yScale(lastPoint2[yField]) - 20} ${xScale(parseDate(lastPoint1[xField])) + 2.5},${yScale(lastPoint2[yField]) - 20}`)
         .attr("fill", '#030300');
     
     // 添加新的比率标签 - 带描边
     g.append("text")
-        .attr("x", xScale(parseYear(lastPoint1[xField])))
+        .attr("x", xScale(parseDate(lastPoint1[xField])))
         .attr("y", ratioY - 5)
         .attr("text-anchor", "middle")
         .attr("dominant-baseline", "middle")
@@ -634,7 +625,7 @@ function makeChart(containerSelector, data) {
         .text(ratio);
     
     g.append("text")
-        .attr("x", xScale(parseYear(lastPoint1[xField])))
+        .attr("x", xScale(parseDate(lastPoint1[xField])))
         .attr("y", ratioY + 10)
         .attr("text-anchor", "middle")
         .attr("dominant-baseline", "middle")

@@ -64,32 +64,6 @@ function makeChart(containerSelector, data) {
     const g = svg.append("g")
         .attr("transform", `translate(${margin.left}, ${margin.top})`);
     
-    // 解析日期
-    const parseDate = d => {
-        if (d instanceof Date) return d;
-        if (typeof d === 'number') return new Date(d, 0, 1);
-        if (typeof d === 'string') {
-            // 尝试解析各种日期格式
-            const date = new Date(d);
-            if (!isNaN(date)) return date;
-            
-            // 尝试解析 "YYYY/MM" 或 "YYYY-MM" 格式
-            const parts = d.split(/[/-]/);
-            if (parts.length >= 2) {
-                const year = parseInt(parts[0]);
-                const month = parseInt(parts[1]) - 1;
-                return new Date(year, month, 1);
-            }
-            
-            // 尝试解析 "YYYY" 格式
-            if (/^\d{4}$/.test(d)) {
-                const year = parseInt(d);
-                return new Date(year, 0, 1);
-            }
-        }
-        return new Date();
-    };
-    
     // 确定x轴范围
     const allDates = chartData.map(d => parseDate(d[xField]));
     const xMin = d3.min(allDates);

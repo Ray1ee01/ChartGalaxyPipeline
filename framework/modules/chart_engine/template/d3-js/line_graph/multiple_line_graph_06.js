@@ -22,15 +22,6 @@ REQUIREMENTS_BEGIN
 REQUIREMENTS_END
 */
 
-// 解析年份函数
-function parseYear(yearStr) {
-    if (typeof yearStr === 'string') {
-        const year = yearStr.split("/")[0];
-        return new Date(parseInt(year), 0, 1);
-    }
-    return new Date(yearStr, 0, 1);
-}
-
 function makeChart(containerSelector, data) {
     // 提取数据
     const jsonData = data;
@@ -74,7 +65,7 @@ function makeChart(containerSelector, data) {
         .attr("transform", `translate(${margin.left}, ${margin.top})`);
     
     // 确定全局x轴范围
-    const allDates = chartData.map(d => parseYear(d[xField]));
+    const allDates = chartData.map(d => parseDate(d[xField]));
     const xMin = d3.min(allDates);
     const xMax = d3.max(allDates);
 
@@ -170,7 +161,7 @@ function makeChart(containerSelector, data) {
     
     // 创建线条生成器
     const line = d3.line()
-        .x(d => xScale(parseYear(d[xField])))
+        .x(d => xScale(parseDate(d[xField])))
         .y(d => yScale(d[yField]))
         .curve(d3.curveLinear); // 使用普通折线
     
@@ -183,7 +174,7 @@ function makeChart(containerSelector, data) {
         const color = colors.field[group];
         
         // 确保第一个点从Y轴开始
-        const firstDataDate = parseYear(groupData[0][xField]);
+        const firstDataDate = parseDate(groupData[0][xField]);
         if (firstDataDate.getTime() > xMin.getTime()) {
             // 添加Y轴起点（使用第一个数据点的Y值）
             const firstPoint = {
@@ -195,7 +186,7 @@ function makeChart(containerSelector, data) {
         }
         
         // 确保最后一个点精确对应最大X值
-        const lastDataDate = parseYear(groupData[groupData.length - 1][xField]);
+        const lastDataDate = parseDate(groupData[groupData.length - 1][xField]);
         if (lastDataDate.getTime() < xMax.getTime()) {
             // 添加最后一个点（使用最后一个数据点的Y值）
             const lastPoint = {
@@ -486,7 +477,7 @@ function makeChart(containerSelector, data) {
                 
                 // 简化：检查每个数据点是否在图例区域内
                 for (let i = 0; i < groupData.length; i++) {
-                    const x = margin.left + xScale(parseYear(groupData[i][xField]));
+                    const x = margin.left + xScale(parseDate(groupData[i][xField]));
                     const y = margin.top + yScale(groupData[i][yField]);
                     
                     if (x >= pos.x && x <= pos.x + legendWidth && 
@@ -496,7 +487,7 @@ function makeChart(containerSelector, data) {
                     
                     // 也检查线段是否穿过图例
                     if (i < groupData.length - 1) {
-                        const nextX = margin.left + xScale(parseYear(groupData[i+1][xField]));
+                        const nextX = margin.left + xScale(parseDate(groupData[i+1][xField]));
                         const nextY = margin.top + yScale(groupData[i+1][yField]);
                         
                         // 简化的线段与矩形相交检测

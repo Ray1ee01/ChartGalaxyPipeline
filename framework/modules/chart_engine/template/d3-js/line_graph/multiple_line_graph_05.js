@@ -22,15 +22,6 @@ REQUIREMENTS_BEGIN
 REQUIREMENTS_END
 */
 
-// 解析年份函数
-function parseYear(yearStr) {
-    if (typeof yearStr === 'string') {
-        const year = yearStr.split("/")[0];
-        return new Date(parseInt(year), 0, 1);
-    }
-    return new Date(yearStr, 0, 1);
-}
-
 function makeChart(containerSelector, data) {
     // 提取数据
     const jsonData = data;
@@ -81,7 +72,7 @@ function makeChart(containerSelector, data) {
     const defs = svg.append("defs");
     
     // 确定全局x轴范围
-    const allDates = chartData.map(d => parseYear(d[xField]));
+    const allDates = chartData.map(d => parseDate(d[xField]));
     const xMin = d3.min(allDates);
     const xMax = d3.max(allDates);
     // 扩展范围以便有更好的视觉效果
@@ -269,7 +260,7 @@ function makeChart(containerSelector, data) {
         
         // 创建线条生成器
         const line = d3.line()
-            .x(d => xScale(parseYear(d[xField])))
+            .x(d => xScale(parseDate(d[xField])))
             .y(d => yScale(d[yField]))
             .curve(d3.curveStepAfter); // 使用阶梯曲线
         
@@ -295,7 +286,7 @@ function makeChart(containerSelector, data) {
             const labelXOffset = col === cols - 1 ? -17 : 0;
             
             g.append("text")
-                .attr("x", xScale(parseYear(lastPoint[xField])) + labelXOffset)
+                .attr("x", xScale(parseDate(lastPoint[xField])) + labelXOffset)
                 .attr("y", yScale(lastPoint[yField]) + labelOffset)
                 .attr("text-anchor", "middle")
                 .style("font-family", 'Arial Narrow')

@@ -22,15 +22,6 @@ REQUIREMENTS_BEGIN
 REQUIREMENTS_END
 */
 
-// 解析年份函数
-function parseYear(yearStr) {
-    if (typeof yearStr === 'string') {
-        const year = yearStr.split("/")[0];
-        return new Date(parseInt(year), 0, 1);
-    }
-    return new Date(yearStr, 0, 1);
-}
-
 function makeChart(containerSelector, data) {
     // 提取数据
     const jsonData = data;
@@ -70,7 +61,7 @@ function makeChart(containerSelector, data) {
         .attr("transform", `translate(${margin.left}, ${margin.top})`);
     
     // 确定全局x轴范围
-    const allDates = chartData.map(d => parseYear(d[xField]));
+    const allDates = chartData.map(d => parseDate(d[xField]));
     const xMin = d3.min(allDates);
     const xMax = d3.max(allDates);
 
@@ -86,14 +77,14 @@ function makeChart(containerSelector, data) {
     
     // 创建面积生成器
     const area = d3.area()
-        .x(d => xScale(parseYear(d[xField])))
+        .x(d => xScale(parseDate(d[xField])))
         .y0(chartHeight)
         .y1(d => yScale(d[yField]))
         .curve(d3.curveLinear); // 使用折线
     
     // 创建线条生成器（用于边界线）
     const line = d3.line()
-        .x(d => xScale(parseYear(d[xField])))
+        .x(d => xScale(parseDate(d[xField])))
         .y(d => yScale(d[yField]))
         .curve(d3.curveLinear); // 使用折线
     
@@ -200,9 +191,9 @@ function makeChart(containerSelector, data) {
         const current = chartData[i];
         const next = chartData[i + 1];
         
-        const x1 = xScale(parseYear(current[xField]));
+        const x1 = xScale(parseDate(current[xField]));
         const y1 = yScale(current[yField]);
-        const x2 = xScale(parseYear(next[xField]));
+        const x2 = xScale(parseDate(next[xField]));
         const y2 = yScale(next[yField]);
         
         // 存储折线点用于后续判断标签是否在折线上方或下方
@@ -313,7 +304,7 @@ function makeChart(containerSelector, data) {
     
     // 为每个数据点找到最佳标签位置
     chartData.forEach((d, index) => {
-        const x = xScale(parseYear(d[xField]));
+        const x = xScale(parseDate(d[xField]));
         const y = yScale(d[yField]);
         
         // 检查是否是最高点

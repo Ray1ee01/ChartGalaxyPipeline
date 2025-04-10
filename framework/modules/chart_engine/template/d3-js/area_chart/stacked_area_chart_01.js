@@ -22,15 +22,6 @@ REQUIREMENTS_BEGIN
 REQUIREMENTS_END
 */
 
-// 解析年份函数
-function parseYear(yearStr) {
-    if (typeof yearStr === 'string') {
-        const year = yearStr.split("/")[0];
-        return new Date(parseInt(year), 0, 1);
-    }
-    return new Date(yearStr, 0, 1);
-}
-
 function makeChart(containerSelector, data) {
     // 提取数据
     const jsonData = data;
@@ -79,7 +70,7 @@ function makeChart(containerSelector, data) {
         .attr("transform", `translate(${margin.left}, ${margin.top})`);
     
     // 确定全局x轴范围
-    const allDates = chartData.map(d => parseYear(d[xField]));
+    const allDates = chartData.map(d => parseDate(d[xField]));
     const xMin = d3.min(allDates);
     const xMax = d3.max(allDates);
 
@@ -94,7 +85,7 @@ function makeChart(containerSelector, data) {
     
     // 转换为堆叠格式
     const stackData = Array.from(groupedData, ([key, values]) => {
-        const obj = { date: parseYear(key) };
+        const obj = { date: parseDate(key) };
         values.forEach(v => {
             obj[v[groupField]] = v[yField];
         });

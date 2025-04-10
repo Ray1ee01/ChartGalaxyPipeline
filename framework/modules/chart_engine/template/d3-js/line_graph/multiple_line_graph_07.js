@@ -51,15 +51,9 @@ function makeChart(containerSelector, data) {
     const xValues = [...new Set(chartData.map(d => d[xField]))].sort();
     
     // 创建比例尺 - 修改为时间比例尺
-    // 首先解析年份字符串为日期对象
-    const parseYear = (yearStr) => {
-        // 从"XXXX/XX"格式中提取第一个年份
-        const year = yearStr.split("/")[0];
-        return new Date(parseInt(year), 0, 1); // 1月1日
-    };
     
     // 获取最大年份
-    const maxYear = d3.max(xValues, d => parseYear(d));
+    const maxYear = d3.max(xValues, d => parseDate(d));
     
     // 创建SVG
     const svg = d3.select(containerSelector)
@@ -78,7 +72,7 @@ function makeChart(containerSelector, data) {
     // 创建时间比例尺 - 确保包含最大年份
     const xScale = d3.scaleTime()
         .domain([
-            d3.min(xValues, d => parseYear(d)),
+            d3.min(xValues, d => parseDate(d)),
             maxYear // 使用最大年份
         ])
         .range([0, innerWidth]);
@@ -142,7 +136,7 @@ function makeChart(containerSelector, data) {
     };
     
     // 获取均匀分布的X轴刻度，确保包含最大年份
-    const minYear = d3.min(xValues, d => parseYear(d));
+    const minYear = d3.min(xValues, d => parseDate(d));
     const xTickValues = generateEvenTicks(minYear, maxYear, xTickCount);
     
     // 绘制垂直网格线 
@@ -159,7 +153,7 @@ function makeChart(containerSelector, data) {
         .style("fill", "#3f3e40");
     
     const line = d3.line()
-        .x(d => xScale(parseYear(d[xField])))
+        .x(d => xScale(parseDate(d[xField])))
         .y(d => yScale(d[yField]))
 
     // 首先收集所有点信息，并分为起点和终点两组
@@ -169,7 +163,7 @@ function makeChart(containerSelector, data) {
     let endX = 0;
     // 获取最后一个时间点对应的x坐标
     const lastXValue = xValues[xValues.length - 1];
-    endX = xScale(parseYear(lastXValue));
+    endX = xScale(parseDate(lastXValue));
     
     // 创建渐变定义
     const defs = svg.append("defs");
@@ -221,8 +215,8 @@ function makeChart(containerSelector, data) {
         const next = highestGroupData[i + 1];
         
         // 计算当前点和下一个点的x坐标
-        const currentX = xScale(parseYear(current[xField]));
-        const nextX = xScale(parseYear(next[xField]));
+        const currentX = xScale(parseDate(current[xField]));
+        const nextX = xScale(parseDate(next[xField]));
         
         // 计算当前点和下一个点的y值
         const currentY = current[yField];
@@ -254,7 +248,7 @@ function makeChart(containerSelector, data) {
     
     // 添加最后一个点
     interpolatedData.push({
-        x: xScale(parseYear(highestGroupData[highestGroupData.length - 1][xField])),
+        x: xScale(parseDate(highestGroupData[highestGroupData.length - 1][xField])),
         y: highestGroupData[highestGroupData.length - 1][yField],
         original: highestGroupData[highestGroupData.length - 1]
     });
@@ -357,7 +351,7 @@ function makeChart(containerSelector, data) {
         const lastPoint = groupData[groupData.length - 1];
         
         // 处理起点 - 添加黑色描边
-        const startX = xScale(parseYear(firstPoint[xField]));
+        const startX = xScale(parseDate(firstPoint[xField]));
         const startY = yScale(firstPoint[yField]);
         
         // 添加圆点描边
@@ -384,7 +378,7 @@ function makeChart(containerSelector, data) {
         });
         
         // 处理终点 - 添加黑色描边
-        endX = xScale(parseYear(lastPoint[xField]));
+        endX = xScale(parseDate(lastPoint[xField]));
         const endY = yScale(lastPoint[yField]);
         
         // 添加圆点描边
@@ -681,9 +675,9 @@ function makeChart(containerSelector, data) {
                         const current = groupData[i];
                         const next = groupData[i + 1];
                         
-                        const x1 = xScale(parseYear(current[xField]));
+                        const x1 = xScale(parseDate(current[xField]));
                         const y1 = yScale(current[yField]);
-                        const x2 = xScale(parseYear(next[xField]));
+                        const x2 = xScale(parseDate(next[xField]));
                         const y2 = yScale(next[yField]);
                         
                         // 使用线性插值标记路径上的点
@@ -723,9 +717,9 @@ function makeChart(containerSelector, data) {
                 const current = highestGroupData[i];
                 const next = highestGroupData[i + 1];
                 
-                const x1 = xScale(parseYear(current[xField]));
+                const x1 = xScale(parseDate(current[xField]));
                 const y1 = yScale(current[yField]);
-                const x2 = xScale(parseYear(next[xField]));
+                const x2 = xScale(parseDate(next[xField]));
                 const y2 = yScale(next[yField]);
                 
                 // 使用线性插值标记路径上的点

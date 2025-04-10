@@ -60,22 +60,6 @@ function makeChart(containerSelector, data) {
     const g = svg.append("g")
         .attr("transform", `translate(${margin.left}, ${margin.top})`);
     
-    // 解析日期 - 只解析年份
-    const parseDate = d => {
-        if (d instanceof Date) return d;
-        if (typeof d === 'number') return new Date(d);
-        if (typeof d === 'string') {
-            // 提取年份 - 支持YYYY/... 或 YYYY-...格式 或者直接是YYYY
-            const yearMatch = d.match(/^(\d{4})(?:[/-]|$)/);
-            if (yearMatch) {
-                const year = parseInt(yearMatch[1]);
-                return new Date(year, 0, 1); // 设置为该年的1月1日
-            }
-        }
-        console.warn("无法解析日期:", d);
-        return new Date(0); // 返回默认日期作为后备
-    };
-    
     // 确保数据按日期排序
     chartData.sort((a, b) => parseDate(a[xField]) - parseDate(b[xField]));
     
