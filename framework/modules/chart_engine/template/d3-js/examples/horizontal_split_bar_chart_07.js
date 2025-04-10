@@ -40,7 +40,7 @@ function makeChart(containerSelector, data) {
     };
     const colors = jsonData.colors || { text_color: "#333333" };  // 颜色设置
     const images = jsonData.images || { field: {}, other: {} };   // 图像设置
-    const dataColumns = jsonData.data.columns  || []; // 数据列定义
+    const dataColumns = jsonData.data.columns || []; // 数据列定义
     
     // 设置视觉效果变量的默认值
     variables.has_rounded_corners = variables.has_rounded_corners || false;
@@ -455,19 +455,20 @@ function makeChart(containerSelector, data) {
                 return null;
             }).filter(d => d !== null);
             
-            // 绘制连接线（从第一组数据点到右边缘）
+            // 绘制连接线（从最低值数据点到右边缘）
             if (pointData.length > 0) {
-                // 查找第一组数据（通常是记录的最低值）
-                const firstGroupData = pointData.find(d => d.group === groups[0]);
+                // 找到具有最低值的数据点
+                const lowestValueData = pointData.reduce((lowest, current) => 
+                    current.value < lowest.value ? current : lowest, pointData[0]);
                 
-                if (firstGroupData) {
+                if (lowestValueData) {
                     // 绘制连接线 - 更粗并精确到最右侧刻度线
                     g.append("rect")
-                        .attr("x", firstGroupData.x)
-                        .attr("y", firstGroupData.y - 2) // 更粗的线
-                        .attr("width", rightmostTickX - firstGroupData.x)
+                        .attr("x", lowestValueData.x)
+                        .attr("y", lowestValueData.y - 2) // 更粗的线
+                        .attr("width", rightmostTickX - lowestValueData.x)
                         .attr("height", 4) // 更粗的线
-                        .attr("fill", "rgba(255, 255, 255, 0.5)");
+                        .attr("fill", "#ffffff");
                 }
             }
             
