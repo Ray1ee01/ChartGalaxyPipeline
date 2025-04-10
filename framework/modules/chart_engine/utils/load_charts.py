@@ -363,9 +363,9 @@ def render_chart_to_svg(json_data, output_svg_path, js_file=None, width=None, he
         #         "primary": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII="
         #     }
         # }
-        # Use vegalite-py template
+        # Use vegalite_py template
         template = js_file
-        template_root = "modules.chart_engine.template.vegalite-py"
+        template_root = "modules.chart_engine.template.vegalite_py"
         general_chart_type = template.split('/')[-2]
         module_name = template.split('/')[-1].split('.')[0]
         print("template_root: ", template_root)
@@ -409,7 +409,7 @@ def render_chart_to_svg(json_data, output_svg_path, js_file=None, width=None, he
     
     try:
         # 根据框架类型生成HTML文件
-        if framework.lower() == "echarts" or framework.lower() == "echarts-py":
+        if framework.lower() == "echarts" or framework.lower() == "echarts_py":
             html_content = load_js_echarts(json_data=json_data, output_file=html_file, js_file=js_file)
         elif framework.lower() == "d3":
             html_content = load_d3js(json_data=json_data, output_file=html_file, js_file=js_file)
@@ -521,7 +521,7 @@ def render_vegalite_specification_to_svg(vegalite_specification, output_svg_path
                 raise Exception(f"Node.js执行错误: {result.stderr}")
 
             return result.stdout
-    script_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'template', 'vegalite-py', 'vega_spec.js')
+    script_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'template', 'vegalite_py', 'vega_spec.js')
     result = NodeBridge.execute_node_script(script_path, {
         "spec": vegalite_specification,
     })

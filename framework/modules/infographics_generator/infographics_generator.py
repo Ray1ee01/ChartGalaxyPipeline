@@ -52,7 +52,8 @@ from modules.infographics_generator.template_utils import (
 from modules.infographics_generator.data_utils import process_temporal_data, process_numerical_data
 
 padding = 50
-between_padding = 25
+outer_padding = 15
+between_padding = 45
 grid_size = 5
 
 def assemble_infographic(
@@ -82,14 +83,15 @@ def assemble_infographic(
     # 计算标题mask和实际高度
     total_width = chart_width + padding * 2
 
-    title_mask = calculate_mask(title_svg_content, total_width, 250, padding, grid_size = 1)
-    title_start, title_end, title_height = calculate_content_height(title_mask, padding)
-    title_left, title_right, title_width = calculate_content_width(title_mask, padding)
+    drawing_padding = 0
+    title_mask = calculate_mask(title_svg_content, total_width, 250, drawing_padding)
+    title_start, title_end, title_height = calculate_content_height(title_mask, drawing_padding)
+    title_left, title_right, title_width = calculate_content_width(title_mask, drawing_padding)
     
     # 计算图表mask和实际高度
-    chart_mask = calculate_mask(chart_svg_content, total_width, chart_height + padding * 2, padding, grid_size = 1)
-    chart_start, chart_end, chart_height = calculate_content_height(chart_mask, padding)
-    chart_left, chart_right, chart_width = calculate_content_width(chart_mask, padding)
+    chart_mask = calculate_mask(chart_svg_content, total_width, chart_height + padding * 2, drawing_padding)
+    chart_start, chart_end, chart_height = calculate_content_height(chart_mask, drawing_padding)
+    chart_left, chart_right, chart_width = calculate_content_width(chart_mask, drawing_padding)
     
     # 提取SVG内部元素
     title_inner_content = extract_svg_content(title_svg_content)
@@ -101,16 +103,16 @@ def assemble_infographic(
     if chart_inner_content is None:
         logger.error("Failed to extract chart SVG content")
         return None, None, 0
-    title_inner_content = f"<g transform='translate({0}, {padding - title_start})'>{title_inner_content}</g>"
-    chart_inner_content = f"<g transform='translate({-chart_left}, {padding - chart_start})'>{chart_inner_content}</g>"
+    title_inner_content = f"<g transform='translate({-title_left}, {-title_start})'>{title_inner_content}</g>"
+    chart_inner_content = f"<g transform='translate({-chart_left}, {-chart_start})'>{chart_inner_content}</g>"
     
-    total_height = chart_end + title_height + between_padding + padding * 2
+    total_height = chart_height + title_height + between_padding + outer_padding * 2
     total_width = chart_width + padding * 2
     
-    final_svg = f"""<svg xmlns="http://www.w3.org/2000/svg" width="{total_width}" height="{total_height}" style="font-family: Arial, 'Liberation Sans', 'DejaVu Sans', sans-serif;">
-    <g class="text" transform="translate({padding}, {padding})">{title_inner_content}</g>
-    <g class="chart" transform="translate({padding}, {padding + title_height + between_padding})">{chart_inner_content}</g>"""
-    original_mask = calculate_mask(final_svg + "\n</svg>", total_width, total_height, 0, grid_size = 1)
+    final_svg = f"""<svg xmlns="http://www.w3.org/2000/svg" width="{total_width}" height="{total_height + 100}" style="font-family: Arial, 'Liberation Sans', 'DejaVu Sans', sans-serif;">
+    <g class="text" transform="translate({outer_padding}, {outer_padding})">{title_inner_content}</g>
+    <g class="chart" transform="translate({outer_padding}, {outer_padding + title_height + between_padding})">{chart_inner_content}</g>"""
+    original_mask = calculate_mask(final_svg + "\n</svg>", total_width, total_height, 0)
     
     # 处理primary图片
     if primary_image:
@@ -213,11 +215,19 @@ def process(input: str, output: str, base_url: str, api_key: str, chart_name: st
     
     # 生成图表SVG，使用安全的文件名
     chart_svg_path = os.path.join(tmp_dir, f"{os.path.splitext(safe_output_name)[0]}.chart.tmp")
+
+    if '-' in engine:
+        framework = engine.split('-')[0]
+    elif '_' in engine:
+        framework = engine.split('_')[0]
+    else:
+        framework = engine
+
     render_chart_to_svg(
         json_data=data,
         output_svg_path=chart_svg_path,
         js_file=template,
-        framework=engine.split('-')[0]  # Extract framework name (echarts/d3)
+        framework=framework # Extract framework name (echarts/d3)
     )
         
     # 读取生成的SVG内容

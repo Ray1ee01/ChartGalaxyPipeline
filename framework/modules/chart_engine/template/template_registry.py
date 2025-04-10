@@ -9,10 +9,10 @@ REQUIREMENTS_PATTERN = re.compile(r'REQUIREMENTS_BEGIN\s*({.*?})\s*REQUIREMENTS_
 
 # Dictionary to store template mappings
 templates = {
-    'echarts-py': {},  # chart_type -> module
+    'echarts_py': {},  # chart_type -> module
     'echarts-js': {},  # chart_type -> js_file_path
     'd3-js': {},        # chart_type -> js_file_path
-    'vegalite-py': {}   # chart_type -> module
+    'vegalite_py': {}   # chart_type -> module
 }
 
 # 全局标识符，用于跟踪是否已扫描过模板
@@ -47,7 +47,7 @@ def scan_directory(dir_path, engine_type, file_extension):
     
     Args:
         dir_path: 要扫描的目录路径
-        engine_type: 引擎类型，'echarts-py', 'echarts-js' 或 'd3-js'
+        engine_type: 引擎类型，'echarts_py', 'echarts-js' 或 'd3-js'
         file_extension: 文件扩展名，'.py' 或 '.js'
     """
     if not os.path.exists(dir_path):
@@ -69,7 +69,7 @@ def scan_directory(dir_path, engine_type, file_extension):
                 
             # 提取需求并注册模板
             requirements = extract_requirements(item_path)
-            # if engine_type == 'vegalite-py':
+            # if engine_type == 'vegalite_py':
             #     print(f"requirements: {requirements['chart_name']}")
             if requirements and 'chart_type' in requirements:
                 chart_type = requirements['chart_type'].lower()
@@ -82,7 +82,7 @@ def scan_directory(dir_path, engine_type, file_extension):
                     templates[engine_type][chart_type] = {}
                 
                 # 根据引擎类型处理不同的模板
-                if engine_type == 'echarts-py':
+                if engine_type == 'echarts_py':
                     template = load_python_template(item_path)
                 else:  # echarts-js 或 d3-js
                     template = item_path
@@ -114,15 +114,16 @@ def scan_templates(force=False):
         return templates
     
     # 清空现有模板
-    templates['echarts-py'].clear()
+    templates['vegalite_py'].clear()
+    templates['echarts_py'].clear()
     templates['echarts-js'].clear()
     templates['d3-js'].clear()
     
     template_dir = os.path.dirname(os.path.abspath(__file__))
     
-    # 扫描 echarts-py 目录及子目录
-    echarts_py_dir = os.path.join(template_dir, 'echarts-py')
-    scan_directory(echarts_py_dir, 'echarts-py', '.py')
+    # 扫描 echarts_py 目录及子目录
+    echarts_py_dir = os.path.join(template_dir, 'echarts_py')
+    scan_directory(echarts_py_dir, 'echarts_py', '.py')
     
     # 扫描 echarts-js 目录及子目录
     echarts_js_dir = os.path.join(template_dir, 'echarts-js')
@@ -132,9 +133,9 @@ def scan_templates(force=False):
     d3_js_dir = os.path.join(template_dir, 'd3-js')
     scan_directory(d3_js_dir, 'd3-js', '.js')
     
-    # 扫描 vegalite-py 目录及子目录
-    vegalite_py_dir = os.path.join(template_dir, 'vegalite-py')
-    scan_directory(vegalite_py_dir, 'vegalite-py', '.py')
+    # 扫描 vegalite_py 目录及子目录
+    vegalite_py_dir = os.path.join(template_dir, 'vegalite_py')
+    scan_directory(vegalite_py_dir, 'vegalite_py', '.py')
     
     # 标记已完成扫描
     _templates_scanned = True
@@ -146,7 +147,7 @@ def get_template_for_chart_type(chart_type, engine_preference=None):
     
     Args:
         chart_type: The chart type to look for
-        engine_preference: Optional list of engine preferences ['echarts-py', 'echarts-js', 'd3-js']
+        engine_preference: Optional list of engine preferences ['echarts_py', 'echarts-js', 'd3-js']
                           in the order of preference
                           
     Returns:
@@ -159,11 +160,8 @@ def get_template_for_chart_type(chart_type, engine_preference=None):
         scan_templates()
     
     chart_type = chart_type.lower()
-    
-    print("engine_preference:", engine_preference)
-    # If no preference is specified, use default order
     if engine_preference is None:
-        engine_preference = ['echarts-py', 'echarts-js', 'd3-js']
+        engine_preference = ['echarts_py', 'echarts-js', 'd3-js']
     
     # Try each engine in order of preference
     for engine in engine_preference:
@@ -194,7 +192,7 @@ def get_template_for_chart_name(chart_name, engine_preference=None):
     
     Args:
         chart_name: The chart name to look for
-        engine_preference: Optional list of engine preferences ['echarts-py', 'echarts-js', 'd3-js']
+        engine_preference: Optional list of engine preferences ['echarts_py', 'echarts-js', 'd3-js']
                           in the order of preference
                           
     Returns:

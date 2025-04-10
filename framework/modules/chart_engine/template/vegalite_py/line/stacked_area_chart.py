@@ -1,6 +1,6 @@
 from modules.chart_engine.template.vegalite_py.line.area_chart import AreaChart
 from typing import Dict
-from modules.chart_engine.utils.element_tool.elements import BoundingBox
+from modules.chart_engine.template.vegalite_py.utils.element_tool.elements import BoundingBox
 """
 REQUIREMENTS_BEGIN
 {

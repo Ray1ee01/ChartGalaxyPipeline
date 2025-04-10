@@ -37,7 +37,7 @@ class VerticalBarChart0(VerticalBarChart):
         return x_encoding_spec, y_encoding_spec
     
     def make_color_specification(self, json_data: Dict) -> Dict:
-        main_color = json_data['colors']['available_colors'][0]
+        main_color = json_data['colors']['other']['primary']
         darker_color = interpolate_color2(main_color, "#000000", 5)[1]
         darker_color = "#e2632c"
         x_column = None

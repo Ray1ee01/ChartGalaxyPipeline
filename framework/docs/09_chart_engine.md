@@ -49,7 +49,7 @@ SVG 输出包含完整的图表可视化，包括：
 ```
 modules/chart_engine/
 ├── template/
-│   ├── echarts-py/    # Python生成的ECharts配置模板
+│   ├── echarts_py/    # Python生成的ECharts配置模板
 │   ├── echarts-js/    # ECharts JavaScript模板
 │   └── d3-js/         # D3.js模板
 ```
@@ -73,7 +73,7 @@ REQUIREMENTS_END
 
 ### 支持的模板类型
 
-1. **ECharts-Python模板**
+1. **echarts_python模板**
    - `.py`文件，实现`make_options(json_data)`函数
    - 返回ECharts配置对象
 
@@ -112,7 +112,7 @@ python make_svg.py
    - 修改`input.json`包含所需数据和图表类型
 
 2. 创建新模板：
-   - 在适当的模板目录创建文件（如`echarts-py/my_chart.py`）
+   - 在适当的模板目录创建文件（如`echarts_py/my_chart.py`）
    - 添加REQUIREMENTS_BEGIN/END声明
    - 实现必要的函数（如`make_options`）
 
@@ -158,7 +158,7 @@ else:
 
 创建新的图表模板：
 
-1. 选择合适的模板引擎（echarts-py、echarts-js或d3-js）
+1. 选择合适的模板引擎（echarts_py、echarts-js或d3-js）
 2. 在对应目录创建新文件，添加REQUIREMENTS_BEGIN/END声明
 3. 实现必要的函数（如`make_options`）
 4. 将模板放入正确目录后，系统会自动扫描并注册

@@ -22,7 +22,7 @@ framework/
 ├── template/               # 图表模板目录
 │   ├── d3-js/              # D3.js模板
 │   ├── echarts-js/         # ECharts JavaScript模板
-│   ├── echarts-py/         # Python生成的ECharts模板
+│   ├── echarts_py/         # Python生成的ECharts模板
 │   └── template_registry.py # 模板注册和管理
 ├── utils/                  # 工具函数
 │   ├── file_utils.py       # 文件操作函数

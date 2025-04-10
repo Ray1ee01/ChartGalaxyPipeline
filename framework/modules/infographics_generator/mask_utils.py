@@ -5,7 +5,6 @@ import re
 from PIL import Image
 import numpy as np
 from typing import Tuple
-
 def calculate_mask(svg_content: str, width: int, height: int, padding: int, grid_size: int = 5) -> np.ndarray:
     """将SVG转换为二值化的mask数组"""
     width = int(width)
@@ -22,34 +21,25 @@ def calculate_mask(svg_content: str, width: int, height: int, padding: int, grid
         mask_svg_content = svg_content.replace('url(#', 'none')
         mask_svg_content = mask_svg_content.replace('&', '&amp;')
         
-        # 给SVG内容添加padding
-        # 提取viewBox属性
-        viewbox_match = re.search(r'viewBox=["\']([^"\']+)["\']', mask_svg_content)
-        if viewbox_match:
-            viewbox = viewbox_match.group(1)
-            values = list(map(float, viewbox.split()))
-            # 调整viewBox以包含padding
-            new_values = [values[0] - padding, values[1] - padding, 
-                          values[2] + 2 * padding, values[3] + 2 * padding]
-            new_viewbox = ' '.join(map(str, new_values))
-            mask_svg_content = mask_svg_content.replace(viewbox, new_viewbox)
-            
-            # 找到SVG标签结束和第一个内容元素之间的位置
-            svg_tag_end = re.search(r'<svg[^>]*>', mask_svg_content).end()
-            # 在内容前添加group，并应用transform以考虑padding
-            group_start = f'<g transform="translate({padding}, {padding})">'
-            group_end = '</g>'
-            
-            # 拆分SVG头部和内容
-            svg_header = mask_svg_content[:svg_tag_end]
-            svg_content_part = mask_svg_content[svg_tag_end:]
-            
-            # 找到结束标签
-            svg_end_tag = '</svg>'
-            svg_content_without_end = svg_content_part.replace(svg_end_tag, '')
-            
-            # 重组SVG，添加group
-            mask_svg_content = svg_header + group_start + svg_content_without_end + group_end + svg_end_tag
+        # 提取SVG内容并添加新的SVG标签
+        svg_content_match = re.search(r'<svg[^>]*>(.*?)</svg>', mask_svg_content, re.DOTALL)
+        if svg_content_match:
+            inner_content = svg_content_match.group(1)
+            # 创建新的SVG标签
+            mask_svg_content = f'<svg width="{width}" height="{height}">{inner_content}</svg>'
+        
+        # 添加padding
+        if padding > 0:
+            svg_tag_match = re.search(r'<svg[^>]*>', mask_svg_content)
+            if svg_tag_match:
+                svg_tag = svg_tag_match.group(0)
+                svg_tag_end = svg_tag_match.end()
+                svg_content_part = mask_svg_content[svg_tag_end:]
+                svg_end_tag = '</svg>'
+                svg_content_without_end = svg_content_part.replace(svg_end_tag, '')
+                
+                # 添加transform group
+                mask_svg_content = svg_tag + f'<g transform="translate({padding}, {padding})">' + svg_content_without_end + '</g>' + svg_end_tag
         
         with open(mask_svg, "w", encoding="utf-8") as f:
             f.write(mask_svg_content)

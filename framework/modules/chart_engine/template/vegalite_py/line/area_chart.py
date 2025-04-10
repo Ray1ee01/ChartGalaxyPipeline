@@ -142,7 +142,7 @@ class AreaChart(VegaLiteTemplate):
     def make_color_specification(self, json_data: Dict) -> Dict:
         variables = json_data['variables']
         # color_config = variables['color']['mark_color']
-        color = json_data['colors']['available_colors'][0]
+        color = json_data['colors']['other']['primary']
         color_spec = color
         return color_spec
     

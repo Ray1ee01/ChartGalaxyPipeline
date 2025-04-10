@@ -6,7 +6,7 @@ This guide explains how to create new chart templates for the ECharts SVG Render
 
 The framework supports three types of templates:
 
-1. **ECharts Python Templates** (`echarts-py/`): Python modules that generate ECharts options
+1. **ECharts Python Templates** (`echarts_py/`): Python modules that generate ECharts options
 2. **ECharts JavaScript Templates** (`echarts-js/`): JavaScript files that create ECharts instances
 3. **D3.js Templates** (`d3-js/`): JavaScript files that create D3.js charts
 
@@ -161,7 +161,7 @@ template/
 │   └── examples/       # Example templates
 ├── echarts-js/         # ECharts JavaScript templates
 │   └── examples/       # Example templates
-└── echarts-py/         # Python templates
+└── echarts_py/         # Python templates
     └── examples/       # Example templates
 ```
 

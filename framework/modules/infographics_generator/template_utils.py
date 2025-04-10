@@ -16,14 +16,14 @@ def get_unique_fields_and_types(
     if required_fields and isinstance(required_fields[0], list):
         # Handle list of lists case
         for i, (fields_group, types_group) in enumerate(zip(required_fields, required_fields_type)):
-            range_group = required_fields_range[i] if required_fields_range else [[float('-inf'), float('inf')] for _ in fields_group]
+            range_group = required_fields_range[i] if required_fields_range != None else [[float('-inf'), float('inf')] for _ in fields_group]
             for field, type_list, range_list in zip(fields_group, types_group, range_group):
                 if field not in field_types:
                     field_types[field] = type_list[0]  # Use first type from the list
                     field_ranges[field] = range_list  # Use first range from the list
     else:
         # Handle simple list case
-        range_list = required_fields_range if required_fields_range else [[float('-inf'), float('inf')] for _ in required_fields]
+        range_list = required_fields_range if required_fields_range != None else [[float('-inf'), float('inf')] for _ in required_fields]
         for field, type_list, range_val in zip(required_fields, required_fields_type, range_list):
             if field not in field_types:
                 field_types[field] = type_list[0]  # Use first type from the list
@@ -85,41 +85,38 @@ def check_template_compatibility(data: Dict, templates: Dict, specific_chart_nam
                             req.get('required_fields_range', None)
                         )
                         data_type_str = ' + '.join([field_types[field] for field in ordered_fields])
-                        try:
-                            if len(req.get('required_fields_colors', [])) > 0 and len(data["colors"]["field"]) == 0:
-                                continue
-
-                            if len(req.get('required_fields_icons', [])) > 0 and len(data["images"]["field"]) == 0:
-                                continue
-                        
-                            if combination_type != data_type_str:
-                                continue
-                            for i, range in enumerate(ordered_ranges):
-                                if data["data"]["columns"][i]["data_type"] in ["temporal", "categorical"]:
-                                    key = data["data"]["columns"][i]["name"]
-                                    unique_values = list(set(value[key] for value in data["data"]["data"]))
-                                    if len(unique_values) > range[1] or len(unique_values) < range[0]:
-                                        if specific_chart_name and specific_chart_name == chart_name:
-                                            print(f"template {template_key} miss match", data["name"], len(unique_values), range)
-                                        continue
-                                    else:
-                                        if specific_chart_name and specific_chart_name == chart_name:
-                                            print(f"template {template_key} matched", data["name"], len(unique_values), range)
-                                elif data["data"]["columns"][i]["data_type"] in ["numerical"]:
-                                    continue
-                                    key = data["data"]["columns"][i]["name"]
-                                    min_value = min(value[key] for value in data["data"]["data"])
-                                    max_value = max(value[key] for value in data["data"]["data"])
-                                    if min_value > range[1] or max_value < range[0]:
-                                        if specific_chart_name and specific_chart_name == chart_name:
-                                            print(f"template {template_key} miss match", min_value, max_value, range)
-                                        continue
-
-                            # If the combination type matches the template's data type, it's compatible
-                            if specific_chart_name == None or specific_chart_name == chart_name:
-                                compatible_templates.append(template_key)
-                        except Exception as e:
+                        if len(req.get('required_fields_colors', [])) > 0 and len(data.get("colors", {}).get("field", [])) == 0:
                             continue
+
+                        if len(req.get('required_fields_icons', [])) > 0 and len(data.get("images", {}).get("field", [])) == 0:
+                            continue
+                    
+                        if combination_type != data_type_str:
+                            continue
+                        for i, range in enumerate(ordered_ranges):
+                            if data["data"]["columns"][i]["data_type"] in ["temporal", "categorical"]:
+                                key = data["data"]["columns"][i]["name"]
+                                unique_values = list(set(value[key] for value in data["data"]["data"]))
+                                if len(unique_values) > range[1] or len(unique_values) < range[0]:
+                                    if specific_chart_name and specific_chart_name == chart_name:
+                                        print(f"template {template_key} miss match", data["name"], len(unique_values), range)
+                                    continue
+                                else:
+                                    if specific_chart_name and specific_chart_name == chart_name:
+                                        print(f"template {template_key} matched", data["name"], len(unique_values), range)
+                            elif data["data"]["columns"][i]["data_type"] in ["numerical"]:
+                                continue
+                                key = data["data"]["columns"][i]["name"]
+                                min_value = min(value[key] for value in data["data"]["data"])
+                                max_value = max(value[key] for value in data["data"]["data"])
+                                if min_value > range[1] or max_value < range[0]:
+                                    if specific_chart_name and specific_chart_name == chart_name:
+                                        print(f"template {template_key} miss match", min_value, max_value, range)
+                                    continue
+
+                        # If the combination type matches the template's data type, it's compatible
+                        if specific_chart_name == None or specific_chart_name == chart_name:
+                            compatible_templates.append(template_key)
                         
     return compatible_templates
 
@@ -137,7 +134,9 @@ def process_template_requirements(requirements: Dict, data: Dict) -> None:
                 data["colors"]["other"]["positive"] = data["colors"]["other"]["primary"]
             elif key == "negative" and "negative" not in data["colors"]["other"]:
                 data["colors"]["other"]["negative"] = get_contrast_color(data["colors"]["other"]["primary"]) 
-    if "min_width" in requirements:
-        data["variables"]["width"] = requirements["min_width"]
+
     if "min_height" in requirements:
-        data["variables"]["height"] = requirements["min_height"]
+        data["variables"]["height"] = max(600, requirements["min_height"])
+    if "min_width" in requirements:
+        data["variables"]["height"] = max(800, requirements["min_width"])
+        

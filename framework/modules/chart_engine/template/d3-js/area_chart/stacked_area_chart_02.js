@@ -222,8 +222,8 @@ function makeChart(containerSelector, data) {
             const y = chartHeight - cumulativeHeight - height;
             
             // 获取颜色
-            const color = colors.fields && colors.fields.group && colors.fields.group[group] 
-                ? colors.fields.group[group] 
+            const color = colors.fields && colors.fields[group] 
+                ? colors.fields[group] 
                 : d3.schemeCategory10[groupIndex % 10];
             
             // 绘制条形图
@@ -341,8 +341,8 @@ function makeChart(containerSelector, data) {
     
     // 添加各组图例 - 水平排列
     groups.forEach((group, i) => {
-        const color = colors.fields && colors.fields.group && colors.fields.group[group] 
-            ? colors.fields.group[group] 
+        const color = colors.fields && colors.fields[group] 
+            ? colors.fields[group] 
             : d3.schemeCategory10[i % 10];
         
         // 计算水平位置 - 从标题之后开始

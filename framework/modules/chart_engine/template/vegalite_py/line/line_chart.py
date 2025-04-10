@@ -156,7 +156,7 @@ class LineChart(VegaLiteTemplate):
         return x_encoding_spec, y_encoding_spec
     
     def make_color_specification(self, json_data: Dict) -> Dict:
-        # color = json_data['colors']['available_colors'][0]
+        # color = json_data['colors']['other']['primary']
         color = "#00ff00"
         color_spec = color
         return color_spec

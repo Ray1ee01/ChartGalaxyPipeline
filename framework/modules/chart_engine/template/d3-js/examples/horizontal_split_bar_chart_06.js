@@ -225,9 +225,9 @@ function makeChart(containerSelector, data) {
     if (variables.has_gradient) {
         groups.forEach((group, i) => {
             // 为每个组创建一个渐变
-            const groupColor = colors.field && colors.field[groupField] && 
-                             colors.field[groupField][group] ? 
-                             colors.field[groupField][group] : 
+            const groupColor = colors.field && colors.field && 
+                             colors.field[group] ? 
+                             colors.field[group] : 
                              d3.schemeCategory10[i % 10];
             
             const gradient = defs.append("linearGradient")
@@ -267,8 +267,8 @@ function makeChart(containerSelector, data) {
     const colorScale = d3.scaleOrdinal()
         .domain(groups)
         .range(groups.map((group, i) => {
-            if (colors.field && colors.field[groupField] && colors.field[groupField][group]) {
-                return colors.field[groupField][group];
+            if (colors.field && colors.field[group]) {
+                return colors.field[group];
             }
             return d3.schemeCategory10[i % 10]; // 使用D3默认颜色方案
         }));

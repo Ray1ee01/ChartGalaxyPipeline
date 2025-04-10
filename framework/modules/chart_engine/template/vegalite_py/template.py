@@ -7,13 +7,13 @@ import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 # Import from the same directory
-from utils.element_tool.vegalite_parser import SVGParser
-from utils.element_tool.tree_converter import SVGTreeConverter
-from utils.element_tool.vegalite_element_parser import VegaLiteElementParser
-from utils.element_tool.data_binder import *
-from utils.color_tool.base import *
-from utils.element_tool.variation import BackgroundChart
-from utils.element_tool.readability import *
+from modules.chart_engine.template.vegalite_py.utils.element_tool.vegalite_parser import SVGParser
+from modules.chart_engine.template.vegalite_py.utils.element_tool.tree_converter import SVGTreeConverter
+from modules.chart_engine.template.vegalite_py.utils.element_tool.vegalite_element_parser import VegaLiteElementParser
+from modules.chart_engine.template.vegalite_py.utils.element_tool.data_binder import *
+from modules.chart_engine.template.vegalite_py.utils.color_tool.base import *
+from modules.chart_engine.template.vegalite_py.utils.element_tool.variation import BackgroundChart
+from modules.chart_engine.template.vegalite_py.utils.element_tool.readability import *
 
 class VegaLiteTemplate:
     def __init__(self, json_data: Dict):
@@ -58,7 +58,7 @@ class VegaLiteTemplate:
                     raise Exception(f"Node.js执行错误: {result.stderr}")
 
                 return result.stdout
-        script_path = os.path.join(os.path.dirname(os.path.dirname(__file__)),'vegalite-py', 'vega_spec.js')
+        script_path = os.path.join(os.path.dirname(os.path.dirname(__file__)),'vegalite_py', 'vega_spec.js')
         result = NodeBridge.execute_node_script(script_path, {
             "spec": vegalite_specification,
         })
