@@ -69,15 +69,7 @@ function makeChart(containerSelector, data) {
     const g = svg.append("g")
         .attr("transform", `translate(${margin.left}, ${margin.top})`);
     
-    // 确定全局x轴范围
-    const allDates = chartData.map(d => parseDate(d[xField]));
-    const xMin = d3.min(allDates);
-    const xMax = d3.max(allDates);
-
-    // 创建x轴比例尺
-    const xScale = d3.scaleTime()
-        .domain([xMin, xMax])
-        .range([0, chartWidth]);
+    const { xScale, xTicks, xFormat, timeSpan } = createXAxisScaleAndTicks(chartData, xField, 0, chartWidth);
     
     // 创建y轴比例尺 (百分比)
     const yScale = d3.scaleLinear()
@@ -93,18 +85,6 @@ function makeChart(containerSelector, data) {
         .attr("stroke", "#9badd3")
         .attr("opacity", 0.6)
         .attr("stroke-width", 1)
-    
-    // 添加垂直网格线
-    const xTicks = [];
-    const startYear = xMin.getFullYear();
-    const endYear = xMax.getFullYear();
-    const yearRange = endYear - startYear;
-    const tickCount = Math.min(6, yearRange + 1);
-    const yearStep = Math.ceil(yearRange / (tickCount - 1));
-    
-    for (let year = startYear; year <= endYear; year += yearStep) {
-        xTicks.push(new Date(year, 0, 1));
-    }
     
     // 添加水平网格线
     const yTicks = d3.ticks(0, d3.max(chartData, d => d[yField]) * 1.3, 5); // 根据实际数据生成刻度
@@ -136,7 +116,7 @@ function makeChart(containerSelector, data) {
             .style("font-size", "16px")
             .style("font-weight", "bold")
             .style("fill", "#87aac0")
-            .text(tick.getFullYear());
+            .text(xFormat(tick));
     });
     
     // 创建面积生成器
@@ -266,7 +246,7 @@ function makeChart(containerSelector, data) {
         .style("font-family", "Arial")
         .style("font-size", "14px")
         .style("fill", "#87aac0")
-        .text(endYear);
+        .text(xFormat(xTicks[xTicks.length - 1]));
 
     // 添加倒置的蓝色小三角
     g.append("path")

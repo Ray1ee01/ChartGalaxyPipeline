@@ -64,10 +64,7 @@ function makeChart(containerSelector, data) {
     chartData.sort((a, b) => parseDate(a[xField]) - parseDate(b[xField]));
     
     // 创建x轴比例尺
-    const xExtent = d3.extent(chartData, d => parseDate(d[xField]));
-    const xScale = d3.scaleTime()
-        .domain(xExtent)
-        .range([0, chartWidth]);
+    const { xScale, xTicks, xFormat, timeSpan } = createXAxisScaleAndTicks(chartData, xField, 0, chartWidth);
     
     // 创建y轴比例尺 - 从0开始
     const yMax = d3.max(chartData, d => d[yField]);
@@ -220,19 +217,16 @@ function makeChart(containerSelector, data) {
     });
     
     // 添加X轴刻度文本
-    const xTicks = xScale.ticks(chartData.length);
-    
     xTicks.forEach(tick => {
         const x = xScale(tick);
-        const year = tick.getFullYear();
-        
+            
         g.append("text")
             .attr("x", x)
             .attr("y", chartHeight + 25)
             .attr("text-anchor", "middle")
             .attr("fill", "#aaa")
             .style("font-size", "14px")
-            .text(year);
+            .text(xFormat(tick));
     });
     
     return svg.node();

@@ -107,14 +107,7 @@ function makeChart(containerSelector, data) {
         .attr("stop-opacity", 0.1);
 
     // 创建比例尺 - 修改为时间比例尺
-
-    // 创建时间比例尺
-    const xScale = d3.scaleTime()
-        .domain([
-            d3.min(xValues, d => parseDate(d)),
-            d3.max(xValues, d => parseDate(d))
-        ])
-        .range([0, innerWidth]);
+    const { xScale, xTicks, xFormat, timeSpan } = createXAxisScaleAndTicks(chartData, xField, 0, innerWidth);
     
     // 修改Y轴比例尺，支持负值，并确保最大刻度超过数据最大值
     const yScale = d3.scaleLinear()
@@ -171,12 +164,6 @@ function makeChart(containerSelector, data) {
         .attr("width", innerWidth + gridExtension)
         .attr("height", 1)
         .style("fill", `url(#horizontal-grid-gradient)`);
-
-    // 计算X轴刻度数量
-    const xTickCount = xValues.length > 6 ? 6 : xValues.length;
-
-    // 获取X轴刻度位置
-    const xTicks = xScale.ticks(xTickCount);
 
     const verticalGradient = defs.append("linearGradient")
         .attr("id", "vertical-grid-gradient")
@@ -299,8 +286,7 @@ function makeChart(containerSelector, data) {
     const xAxis = g.append("g")
         .attr("transform", `translate(0,${innerHeight})`)
         .call(d3.axisBottom(xScale)
-            .tickFormat(d3.timeFormat("%Y")) // 格式化为年份
-            .ticks(xTickCount) // 使用相同的刻度数量
+            .tickFormat(xFormat) // 使用相同的刻度数量
         );
     
     // 设置X轴样式，并下移文本

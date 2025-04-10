@@ -66,13 +66,8 @@ function makeChart(containerSelector, data) {
     
     // 按组分组数据
     const groupedData = d3.group(chartData, d => d[groupField]);
-    
-    // 创建x轴比例尺
-    const xExtent = d3.extent(chartData, d => parseDate(d[xField]));
-    
-    const xScale = d3.scaleTime()
-        .domain(xExtent)
-        .range([20, chartWidth - 20]);
+
+    const { xScale, xTicks, xFormat, timeSpan } = createXAxisScaleAndTicks(chartData, xField, 0, chartWidth);
     
     // 创建y轴比例尺 - 使用数据的实际范围
     const yMin = d3.min(chartData, d => d[yField]);
@@ -141,12 +136,8 @@ function makeChart(containerSelector, data) {
             .text(Math.round(tick)); // 四舍五入到整数，不带百分号
     });
     
-    // 获取X轴刻度
-    const xTicks = xScale.ticks(chartData.length > 10 ? 10 : chartData.length);
-    
     // 添加X轴刻度文本
     xTicks.forEach(tick => {
-        const year = tick.getFullYear();
         
         g.append("text")
             .attr("x", xScale(tick))
@@ -154,7 +145,7 @@ function makeChart(containerSelector, data) {
             .attr("text-anchor", "middle")
             .attr("fill", "#666")
             .style("font-size", "14px")
-            .text(year);
+            .text(xFormat(tick));
     });
     
     // 添加X轴线

@@ -115,16 +115,8 @@ function makeChart(containerSelector, data) {
     // 确保两组数据按年份排序
     group1Data.sort((a, b) => parseDate(a[xField]) - parseDate(b[xField]));
     group2Data.sort((a, b) => parseDate(a[xField]) - parseDate(b[xField]));
-    
-    // 确定全局x轴范围
-    const allDates = chartData.map(d => parseDate(d[xField]));
-    const xMin = d3.min(allDates);
-    const xMax = new Date(d3.max(allDates).getFullYear() + 2, 0, 1);
 
-    // 创建x轴比例尺
-    const xScale = d3.scaleTime()
-        .domain([xMin, xMax])
-        .range([0, chartWidth]);
+    const { xScale, xTicks, xFormat, timeSpan } = createXAxisScaleAndTicks(chartData, xField, 0, chartWidth);
     
     // 创建y轴比例尺
     const yMin = 0;
@@ -133,18 +125,6 @@ function makeChart(containerSelector, data) {
     const yScale = d3.scaleLinear()
         .domain([yMin, yMax])
         .range([chartHeight, 0]);
-    
-    // 生成年份刻度
-    const startYear = xMin.getFullYear();
-    const endYear = xMax.getFullYear();
-    const yearRange = endYear - startYear;
-    const tickCount = Math.min(10, yearRange + 1);
-    const yearStep = Math.ceil(yearRange / (tickCount - 1));
-    
-    const xTicks = [];
-    for (let year = startYear; year <= endYear; year += yearStep) {
-        xTicks.push(new Date(year, 0, 1));
-    }
     
     // 添加水平网格线
     const yTicks = d3.ticks(yMin, yMax, 5);
@@ -186,7 +166,7 @@ function makeChart(containerSelector, data) {
             .style("font-family", "Arial")
             .style("font-size", "10px")
             .style("fill", "#222222")
-            .text(tick.getFullYear());
+            .text(xFormat(tick));
     });
 
     // 添加X轴线

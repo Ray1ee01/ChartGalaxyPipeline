@@ -64,15 +64,7 @@ function makeChart(containerSelector, data) {
     const g = svg.append("g")
         .attr("transform", `translate(${margin.left}, ${margin.top})`);
     
-    // 确定x轴范围
-    const allDates = chartData.map(d => parseDate(d[xField]));
-    const xMin = d3.min(allDates);
-    const xMax = d3.max(allDates);
-    
-    // 创建x轴比例尺
-    const xScale = d3.scaleTime()
-        .domain([xMin, xMax])
-        .range([0, chartWidth]);
+    const { xScale, xTicks, xFormat, timeSpan } = createXAxisScaleAndTicks(chartData, xField, 0, chartWidth);
     
     // 为每个组计算最大值
     const groupMaxValues = {};
@@ -97,15 +89,9 @@ function makeChart(containerSelector, data) {
     });
     
     // 添加网格线和x轴刻度
-    // 使用年份作为主要刻度
-    const years = d3.timeYear.range(
-        d3.timeYear.floor(xMin),
-        d3.timeYear.ceil(xMax)
-    );
     
-    // 添加垂直网格线（每月）
-    const monthTicks = xScale.ticks(12);
-    monthTicks.forEach(tick => {
+    // 添加垂直网格线
+    xTicks.forEach(tick => {
         g.append("line")
             .attr("x1", xScale(tick))
             .attr("y1", 0)
@@ -116,36 +102,26 @@ function makeChart(containerSelector, data) {
             .attr("stroke-width", 1);
     });
     
-    // 添加年份刻度标签 - 确保包含最后一年
-    // 手动创建年份数组，确保包含最后一年
-    const startYear = xMin.getFullYear();
-    const endYear = xMax.getFullYear();
-    const yearLabels = [];
-    
-    for (let year = startYear; year <= endYear; year++) {
-        yearLabels.push(new Date(year, 0, 1));
-    }
-    
-    yearLabels.forEach(year => {
+    xTicks.forEach(tick => {
         // 添加上方x轴年份标签
         g.append("text")
-            .attr("x", xScale(year))
+            .attr("x", xScale(tick))
             .attr("y", -10)
             .attr("text-anchor", "middle")
             .attr("dominant-baseline", "bottom")
             .attr("fill", "#ffffff")
             .style("font-size", "12px")
-            .text(year.getFullYear());
+            .text(xFormat(tick));
         
         // 添加下方x轴年份标签
         g.append("text")
-            .attr("x", xScale(year))
+            .attr("x", xScale(tick))
             .attr("y", chartHeight + 15)
             .attr("text-anchor", "middle")
             .attr("dominant-baseline", "hanging")
             .attr("fill", "#ffffff")
             .style("font-size", "12px")
-            .text(year.getFullYear());
+            .text(xFormat(tick));
     });
     
     // 创建面积生成器

@@ -59,16 +59,8 @@ function makeChart(containerSelector, data) {
     
     const g = svg.append("g")
         .attr("transform", `translate(${margin.left}, ${margin.top})`);
-    
-    // 确定全局x轴范围
-    const allDates = chartData.map(d => parseDate(d[xField]));
-    const xMin = d3.min(allDates);
-    const xMax = d3.max(allDates);
 
-    // 创建x轴比例尺
-    const xScale = d3.scaleTime()
-        .domain([xMin, xMax])
-        .range([0, chartWidth]);
+    const { xScale, xTicks, xFormat, timeSpan } = createXAxisScaleAndTicks(chartData, xField, 0, chartWidth);
     
     // 创建y轴比例尺 (百分比)
     const yScale = d3.scaleLinear()
@@ -471,7 +463,7 @@ function makeChart(containerSelector, data) {
                 .style("font-size", "10px")
                 .style("font-weight", "bold")
                 .style("fill", yearColor) // 根据位置选择颜色
-                .text(d[xField].split("/")[0]);
+                .text(xFormat(d[xField]));
             
             // 添加调试可视化 - 标签区域
             if (debugLayout) {
@@ -509,18 +501,6 @@ function makeChart(containerSelector, data) {
         .attr("stroke", "#9191a9") // 更改为指定的颜色
         .attr("stroke-width", 1.5); // 稍微加粗一点
     
-    // 添加X轴刻度和标签
-    const xTicks = [];
-    const startYear = xMin.getFullYear();
-    const endYear = xMax.getFullYear();
-    const yearRange = endYear - startYear;
-    const tickCount = Math.min(10, yearRange + 1);
-    const yearStep = Math.ceil(yearRange / (tickCount - 1));
-    
-    for (let year = startYear; year <= endYear; year += yearStep) {
-        xTicks.push(new Date(year, 0, 1));
-    }
-    
     xTicks.forEach(tick => {
         // 添加白色刻度线
         g.append("line")
@@ -540,7 +520,7 @@ function makeChart(containerSelector, data) {
             .style("font-size", "10px")
             .style("fill", "#2a2e7a") // 保持深蓝色文本
             .style("font-weight", "bold")
-            .text(tick.getFullYear());
+            .text(xFormat(tick));
     });
     
     

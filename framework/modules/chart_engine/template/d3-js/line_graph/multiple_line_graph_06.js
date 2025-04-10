@@ -64,15 +64,7 @@ function makeChart(containerSelector, data) {
     const g = svg.append("g")
         .attr("transform", `translate(${margin.left}, ${margin.top})`);
     
-    // 确定全局x轴范围
-    const allDates = chartData.map(d => parseDate(d[xField]));
-    const xMin = d3.min(allDates);
-    const xMax = d3.max(allDates);
-
-    // 创建x轴比例尺 - 确保范围从0开始到最大值结束
-    const xScale = d3.scaleTime()
-        .domain([xMin, xMax])
-        .range([0, chartWidth]);
+    const { xScale, xTicks, xFormat, timeSpan } = createXAxisScaleAndTicks(chartData, xField, 0, chartWidth);
     
     // 确定全局y轴范围
     const yMin = Math.min(0, d3.min(chartData, d => d[yField]) * 1.4);
@@ -102,22 +94,6 @@ function makeChart(containerSelector, data) {
         .attr("stroke", "#9badd3")
         .attr("stroke-width", 1)
         .attr("stroke-dasharray", "2,2");
-    
-    // 添加x轴刻度和标签 - 使用4-5个刻度点
-    const xTicks = [];
-    const startYear = xMin.getFullYear();
-    const endYear = xMax.getFullYear();
-    const yearRange = endYear - startYear;
-    const tickCount = Math.min(5, yearRange + 1); // 最多5个刻度,最少包含首尾年份
-    const yearStep = Math.ceil(yearRange / (tickCount - 1)); // 计算年份间隔
-    
-    for (let year = startYear; year <= endYear; year += yearStep) {
-        xTicks.push(new Date(year, 0, 1));
-    }
-    // 确保包含最后一年
-    if (xTicks[xTicks.length - 1].getFullYear() !== endYear) {
-        xTicks.push(new Date(endYear, 0, 1));
-    }
     
     // 添加y轴刻度和标签
     const yTicks = yScale.ticks(5); // 根据实际数据自动生成刻度
@@ -156,7 +132,7 @@ function makeChart(containerSelector, data) {
             .style("font-family", "Arial")
             .style("font-size", "16px")
             .style("fill", "#ffffff")
-            .text(tick.getFullYear());
+            .text(xFormat(tick));
     });
     
     // 创建线条生成器

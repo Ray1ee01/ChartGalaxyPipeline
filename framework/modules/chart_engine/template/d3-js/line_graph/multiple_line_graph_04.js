@@ -148,16 +148,7 @@ function makeChart(containerSelector, data) {
         .attr("style", "max-width: 100%; height: auto;")
         .attr("xmlns", "http://www.w3.org/2000/svg");
     
-    // 添加渐变效果
-    const defs = svg.append("defs");
-    
-    // 创建时间比例尺 - 不再需要在这里定义parseDate
-    const xScale = d3.scaleTime()
-        .domain([
-            d3.min(xValues, d => parseDate(d)),
-            d3.max(xValues, d => parseDate(d))
-        ])
-        .range([0, innerWidth]);
+    const { xScale, xTicks, xFormat, timeSpan } = createXAxisScaleAndTicks(chartData, xField, 0, innerWidth);
     
     // Y轴比例尺
     const yMin = Math.min(0, d3.min(chartData, d => d[yField]) * 1.1);
@@ -293,7 +284,6 @@ function makeChart(containerSelector, data) {
             .attr("d", line);
         
         // 绘制X轴刻度（只在基准线上显示，且只有第一个子图显示文本）
-        const xTicks = xScale.ticks(4);
         xTicks.forEach(tick => {
             g.append("line")
                 .attr("x1", xScale(tick))
@@ -329,7 +319,7 @@ function makeChart(containerSelector, data) {
                     .style("font-weight", "bold")
                     .style("fill", "#110c57")
                     .style("opacity", 0.3)
-                    .text(d3.timeFormat("%Y")(tick));
+                    .text(xFormat(tick));
             }
         });
         

@@ -51,9 +51,7 @@ function makeChart(containerSelector, data) {
     const xValues = [...new Set(chartData.map(d => d[xField]))].sort();
     
     // 创建比例尺 - 修改为时间比例尺
-    
-    // 获取最大年份
-    const maxYear = d3.max(xValues, d => parseDate(d));
+    const { xScale, xTicks, xFormat, timeSpan } = createXAxisScaleAndTicks(chartData, xField, 0, innerWidth);
     
     // 创建SVG
     const svg = d3.select(containerSelector)
@@ -67,15 +65,6 @@ function makeChart(containerSelector, data) {
     // 创建图表组
     const g = svg.append("g")
         .attr("transform", `translate(${margin.left},${margin.top})`);
-
-
-    // 创建时间比例尺 - 确保包含最大年份
-    const xScale = d3.scaleTime()
-        .domain([
-            d3.min(xValues, d => parseDate(d)),
-            maxYear // 使用最大年份
-        ])
-        .range([0, innerWidth]);
     
     // 修改Y轴比例尺，支持负值，并确保最大刻度超过数据最大值
     const yScale = d3.scaleLinear()
@@ -98,7 +87,6 @@ function makeChart(containerSelector, data) {
 
     // 绘制水平网格线 - 向左延伸
     const gridExtension = 5; // 网格线向左延伸的距离
-        
 
     // 过滤Y轴刻度，移除最小的刻度（通常是0或负值）
     const filteredYTicks = yTicks.filter(d => d > yTicks[0]);
@@ -115,29 +103,6 @@ function makeChart(containerSelector, data) {
         .attr("width", innerWidth + gridExtension)
         .attr("height", 1)
         .style("fill", "#3f3e40");
-
-    // 计算X轴刻度数量
-    const xTickCount = Math.min(6, xValues.length);
-
-    // 创建均匀分布的刻度
-    const generateEvenTicks = (min, max, count) => {
-        const step = (max.getTime() - min.getTime()) / (count - 1);
-        const ticks = [];
-        
-        for (let i = 0; i < count - 1; i++) {
-            const tickTime = min.getTime() + step * i;
-            ticks.push(new Date(tickTime));
-        }
-        
-        // 添加最大年份作为最后一个刻度
-        ticks.push(max);
-        
-        return ticks;
-    };
-    
-    // 获取均匀分布的X轴刻度，确保包含最大年份
-    const minYear = d3.min(xValues, d => parseDate(d));
-    const xTickValues = generateEvenTicks(minYear, maxYear, xTickCount);
     
     // 绘制垂直网格线 
     g.selectAll("rect.grid-rect-x")
@@ -410,8 +375,7 @@ function makeChart(containerSelector, data) {
     const xAxis = g.append("g")
         .attr("transform", `translate(0,${innerHeight})`)
         .call(d3.axisBottom(xScale)
-            .tickFormat(d3.timeFormat("%Y")) // 格式化为年份
-            .tickValues(xTickValues) // 使用自定义刻度值
+            .tickFormat(xFormat) // 使用自定义刻度值
         );
     
     // 设置X轴样式，并下移文本
