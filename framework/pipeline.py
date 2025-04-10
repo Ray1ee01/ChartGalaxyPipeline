@@ -114,7 +114,7 @@ MODULES = [
 ]
 
 
-def run_pipeline(input_path, output_path=None, temp_dir=None, modules_to_run=None, threads=None):
+def run_pipeline(input_path, output_path=None, temp_dir=None, modules_to_run=None, threads=None, chart_name=None):
     """
     执行完整的图表生成管道
     
@@ -124,6 +124,7 @@ def run_pipeline(input_path, output_path=None, temp_dir=None, modules_to_run=Non
         temp_dir (str, optional): 临时文件目录，默认使用./tmp
         modules_to_run (list, optional): 要运行的模块列表，默认运行所有模块
         threads (int, optional): 处理目录时的并发线程数，仅在input_path为目录时生效
+        chart_name (str, optional): 指定图表名称，仅对infographics_generator模块有效
     """
     try:
         print("modules_to_run: ", modules_to_run)
@@ -133,7 +134,8 @@ def run_pipeline(input_path, output_path=None, temp_dir=None, modules_to_run=Non
                 input_path=input_path,
                 output_path=output_path,
                 temp_dir=temp_dir,
-                modules_to_run=modules_to_run
+                modules_to_run=modules_to_run,
+                chart_name=chart_name
             )
             
         input_path = Path(input_path)
@@ -166,7 +168,8 @@ def run_pipeline(input_path, output_path=None, temp_dir=None, modules_to_run=Non
                             input_path=input_file,
                             output_path=output_file,
                             temp_dir=temp_dir,
-                            modules_to_run=modules_to_run
+                            modules_to_run=modules_to_run,
+                            chart_name=chart_name
                         )
                         futures.append(future)
                     
@@ -186,7 +189,8 @@ def run_pipeline(input_path, output_path=None, temp_dir=None, modules_to_run=Non
                         input_path=input_file,
                         output_path=output_file,
                         temp_dir=temp_dir,
-                        modules_to_run=modules_to_run
+                        modules_to_run=modules_to_run,
+                        chart_name=chart_name
                     )
                 return success
         else:
@@ -202,14 +206,15 @@ def run_pipeline(input_path, output_path=None, temp_dir=None, modules_to_run=Non
                 input_path=input_path,
                 output_path=output_file,
                 temp_dir=temp_dir,
-                modules_to_run=modules_to_run
+                modules_to_run=modules_to_run,
+                chart_name=chart_name
             )
             
     except Exception as e:
         logger.error(f"管道执行失败: {str(e)}")
         return False
     
-def run_single_file(input_path, output_path, temp_dir=None, modules_to_run=None):
+def run_single_file(input_path, output_path, temp_dir=None, modules_to_run=None, chart_name=None):
     """
     处理单个文件的管道逻辑
     
@@ -218,6 +223,7 @@ def run_single_file(input_path, output_path, temp_dir=None, modules_to_run=None)
         output_path (Path): 输出路径
         temp_dir (Path): 临时文件目录，默认为./tmp
         modules_to_run (list): 要运行的模块列表
+        chart_name (str, optional): 指定图表名称，仅对infographics_generator模块有效
     """
     # try:
     # 如果要运行create_index，单独处理并直接返回
@@ -289,7 +295,7 @@ def run_single_file(input_path, output_path, temp_dir=None, modules_to_run=None)
     for i, module_config in enumerate([m for m in MODULES if m["name"] in modules_to_run]):
         module_name = module_config["name"]
         module_desc = module_config["description"]
-        logger.info(f"执行模块 {i+1}/{len(modules_to_run)}: {module_name} - {module_desc}")
+        # logger.info(f"执行模块 {i+1}/{len(modules_to_run)}: {module_name} - {module_desc}")
         
         # 特殊处理title_generator模块，传入配置参数
         if module_name == "title_generator":
@@ -340,7 +346,8 @@ def run_single_file(input_path, output_path, temp_dir=None, modules_to_run=None)
                     input=str(current_input), 
                     output=str(output_path),
                     base_url=base_url,
-                    api_key=api_key
+                    api_key=api_key,
+                    chart_name=chart_name
                 )
                 current_input = output_path
         elif module_name == "chart_engine":
@@ -423,6 +430,7 @@ def parse_args():
     parser.add_argument('--temp-dir', type=str, default='temp')
     parser.add_argument('--modules', type=str, nargs='+', help='Modules to run', required=True)
     parser.add_argument('--threads', type=int, help='Number of threads for directory processing', default=None)
+    parser.add_argument('--chart-name', type=str, help='Specific chart name to use for infographics_generator', default=None)
     args = parser.parse_args()
     # 如果没有指定input，从data_resource_path随机选择
     if args.input is None and 'create_index' not in args.modules:
@@ -447,7 +455,8 @@ def main():
         output_path=args.output,
         temp_dir=args.temp_dir,
         modules_to_run=modules_to_run,
-        threads=args.threads
+        threads=args.threads,
+        chart_name=args.chart_name
     )
 
 if __name__ == "__main__":
