@@ -23,15 +23,6 @@ REQUIREMENTS_BEGIN
 REQUIREMENTS_END
 */
 
-// 解析年份函数
-function parseYear(yearStr) {
-    if (typeof yearStr === 'string') {
-        const year = yearStr.split("/")[0];
-        return new Date(parseInt(year), 0, 1);
-    }
-    return new Date(yearStr, 0, 1);
-}
-
 function makeChart(containerSelector, data) {
     // 提取数据
     const jsonData = data;
@@ -92,8 +83,8 @@ function makeChart(containerSelector, data) {
     const diffData = [];
     
     // 确保两组数据按年份排序
-    group1Data.sort((a, b) => parseYear(a[xField]) - parseYear(b[xField]));
-    group2Data.sort((a, b) => parseYear(a[xField]) - parseYear(b[xField]));
+    group1Data.sort((a, b) => parseDate(a[xField]) - parseDate(b[xField]));
+    group2Data.sort((a, b) => parseDate(a[xField]) - parseDate(b[xField]));
     
     // 计算差异
     for (let i = 0; i < group1Data.length; i++) {
@@ -111,15 +102,7 @@ function makeChart(containerSelector, data) {
         }
     }
     
-    // 确定全局x轴范围
-    const allDates = diffData.map(d => parseYear(d[xField]));
-    const xMin = d3.min(allDates);
-    const xMax = d3.max(allDates);
-
-    // 创建x轴比例尺
-    const xScale = d3.scaleTime()
-        .domain([xMin, xMax])
-        .range([40, chartWidth]); // 将起点从0改为40,整体右移40像素
+    const { xScale, xTicks, xFormat, timeSpan } = createXAxisScaleAndTicks(diffData, xField, 0, chartWidth);
     
     // 创建y轴比例尺
     const yMin = d3.min(diffData, d => d[yField]);
@@ -129,16 +112,6 @@ function makeChart(containerSelector, data) {
     const yScale = d3.scaleLinear()
         .domain([Math.min(yMin - yPadding, -5), Math.max(yMax + yPadding, 5)])
         .range([chartHeight, 0]);
-    
-    // 生成年份刻度
-    const startYear = xMin.getFullYear();
-    const endYear = xMax.getFullYear();
-    const yearStep = Math.ceil((endYear - startYear) / 10); // 约10个刻度
-    
-    const xTicks = [];
-    for (let year = startYear; year <= endYear; year += yearStep) {
-        xTicks.push(new Date(year, 0, 1));
-    }
     
     // 添加水平网格线
     const yTicks = d3.ticks(yScale.domain()[0], yScale.domain()[1], 10);
@@ -187,12 +160,12 @@ function makeChart(containerSelector, data) {
             .style("font-family", "Century Gothic")
             .style("font-size", "12px")
             .style("fill", "#666666")
-            .text(tick.getFullYear());
+            .text(xFormat(tick));
     });
     
     // 创建线条生成器
     const line = d3.line()
-        .x(d => xScale(parseYear(d[xField])))
+        .x(d => xScale(parseDate(d[xField])))
         .y(d => yScale(d[yField]))
         .curve(d3.curveMonotoneX);
     
@@ -248,7 +221,7 @@ function makeChart(containerSelector, data) {
     // 添加最大值和最小值标注
     const maxPoint = diffData.reduce((max, p) => p[yField] > max[yField] ? p : max, diffData[0]);
     g.append("circle")
-        .attr("cx", xScale(parseYear(maxPoint[xField])))
+        .attr("cx", xScale(parseDate(maxPoint[xField])))
         .attr("cy", yScale(maxPoint[yField]))
         .attr("r", 6)
         .attr("fill", "#ffffff")
@@ -256,7 +229,7 @@ function makeChart(containerSelector, data) {
         .attr("stroke-width", 2.5);
 
     g.append("text")
-        .attr("x", xScale(parseYear(maxPoint[xField])))
+        .attr("x", xScale(parseDate(maxPoint[xField])))
         .attr("y", yScale(maxPoint[yField]) - 15)
         .attr("text-anchor", "middle")
         .style("font-family", "Century Gothic")
@@ -267,7 +240,7 @@ function makeChart(containerSelector, data) {
 
     const minPoint = diffData.reduce((min, p) => p[yField] < min[yField] ? p : min, diffData[0]);
     g.append("circle")
-        .attr("cx", xScale(parseYear(minPoint[xField])))
+        .attr("cx", xScale(parseDate(minPoint[xField])))
         .attr("cy", yScale(minPoint[yField]))
         .attr("r", 6)
         .attr("fill", "#ffffff")
@@ -275,7 +248,7 @@ function makeChart(containerSelector, data) {
         .attr("stroke-width", 2.5);
 
     g.append("text")
-        .attr("x", xScale(parseYear(minPoint[xField])))
+        .attr("x", xScale(parseDate(minPoint[xField])))
         .attr("y", yScale(minPoint[yField]) + 20)
         .attr("text-anchor", "middle")
         .style("font-family", "Century Gothic")
@@ -288,7 +261,7 @@ function makeChart(containerSelector, data) {
     const lastPoint = diffData[diffData.length - 1];
     if (lastPoint !== maxPoint && lastPoint !== minPoint) {
         g.append("circle")
-            .attr("cx", xScale(parseYear(lastPoint[xField])))
+            .attr("cx", xScale(parseDate(lastPoint[xField])))
             .attr("cy", yScale(lastPoint[yField]))
             .attr("r", 6)
             .attr("fill", "#ffffff")
@@ -296,7 +269,7 @@ function makeChart(containerSelector, data) {
             .attr("stroke-width", 2.5);
 
         g.append("text")
-            .attr("x", xScale(parseYear(lastPoint[xField])))
+            .attr("x", xScale(parseDate(lastPoint[xField])))
             .attr("y", yScale(lastPoint[yField]) + 20)
             .attr("text-anchor", "middle")
             .attr("dominant-baseline", "middle")
@@ -382,9 +355,9 @@ function makeChart(containerSelector, data) {
                     for (let testY = y; testY < y + arrowSize; testY += 10) {
                         // 检查是否在数据线附近
                         for (let i = 0; i < diffData.length - 1; i++) {
-                            const x1 = xScale(parseYear(diffData[i][xField]));
+                            const x1 = xScale(parseDate(diffData[i][xField]));
                             const y1 = yScale(diffData[i][yField]);
-                            const x2 = xScale(parseYear(diffData[i + 1][xField]));
+                            const x2 = xScale(parseDate(diffData[i + 1][xField]));
                             const y2 = yScale(diffData[i + 1][yField]);
                             
                             // 检查测试点是否在线段的范围内

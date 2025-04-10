@@ -61,18 +61,8 @@ function makeChart(containerSelector, data) {
     const g = svg.append("g")
         .attr("transform", `translate(${margin.left}, ${margin.top})`);
     
-    // 解析日期
-    const parseDate = d => {
-        if (typeof d === 'string') {
-            return new Date(d);
-        }
-        return new Date(d);
-    };
-    
     // 创建x轴比例尺
-    const xScale = d3.scaleTime()
-        .domain(d3.extent(chartData, d => parseDate(d[xField])))
-        .range([0, chartWidth]);
+    const { xScale, xTicks, xFormat, timeSpan } = createXAxisScaleAndTicks(chartData, xField, 0, chartWidth);
     
     // 创建y轴比例尺
     const yScale = d3.scaleLinear()
@@ -168,8 +158,6 @@ function makeChart(containerSelector, data) {
         .attr("d", negativeArea);
     
     // 添加条纹网格
-    // 首先获取X轴刻度
-    const xTicks = xScale.ticks(d3.timeYear);
     
     // 为每个X轴刻度创建条纹背景
     xTicks.forEach((tick, i) => {
@@ -203,13 +191,13 @@ function makeChart(containerSelector, data) {
         .attr("stroke-width", 1);
     
     // 添加X轴文本（不添加轴线和刻度线）
-    xScale.ticks(5).forEach(tick => {
+    xTicks.forEach(tick => {
         g.append("text")
             .attr("x", xScale(tick))
             .attr("y", chartHeight + 20)
             .attr("text-anchor", "middle")
             .attr("fill", "#666")
-            .text(d3.timeFormat("%Y")(tick));
+            .text(xFormat(tick));
     });
     
     // 添加Y轴文本（不添加轴线和刻度线）

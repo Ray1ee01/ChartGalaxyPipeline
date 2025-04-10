@@ -62,22 +62,8 @@ function makeChart(containerSelector, data) {
     // 创建图表组
     const g = svg.append("g")
         .attr("transform", `translate(${margin.left},${margin.top})`);
-    
-    // 创建比例尺 - 修改为时间比例尺
-    // 首先解析年份字符串为日期对象
-    const parseYear = (yearStr) => {
-        // 从"XXXX/XX"格式中提取第一个年份
-        const year = yearStr.split("/")[0];
-        return new Date(parseInt(year), 0, 1); // 1月1日
-    };
 
-    // 创建时间比例尺
-    const xScale = d3.scaleTime()
-        .domain([
-            d3.min(xValues, d => parseYear(d)),
-            d3.max(xValues, d => parseYear(d))
-        ])
-        .range([0, innerWidth]);
+    const { xScale, xTicks, xFormat, timeSpan } = createXAxisScaleAndTicks(chartData, xField, 0, innerWidth);
     
     // 修改Y轴比例尺，支持负值
     const yScale = d3.scaleLinear()
@@ -114,11 +100,6 @@ function makeChart(containerSelector, data) {
         .attr("stroke-width", d => d === 0 ? 2 : 1) // 0刻度线加粗
         .attr("opacity", d => d === 0 ? 1 : 0.3); // 0刻度线不透明
 
-    // 计算X轴刻度数量
-    const xTickCount = xValues.length > 6 ? 6 : xValues.length;
-
-    // 获取X轴刻度位置
-    const xTicks = xScale.ticks(xTickCount);
 
     // 绘制垂直网格线 - 确保不超过最大Y刻度，并与X轴刻度对应
     g.selectAll("line.grid-line-x")
@@ -161,12 +142,12 @@ function makeChart(containerSelector, data) {
     
     // 创建线条生成器
     const line = d3.line()
-        .x(d => xScale(parseYear(d[xField])))
+        .x(d => xScale(parseDate(d[xField])))
         .y(d => yScale(d[yField]));
     
     // 创建面积生成器（用于渐变填充）
     const area = d3.area()
-        .x(d => xScale(parseYear(d[xField])))
+        .x(d => xScale(parseDate(d[xField])))
         .y0(innerHeight)
         .y1(d => yScale(d[yField]));
     
@@ -179,7 +160,7 @@ function makeChart(containerSelector, data) {
     
     // 添加垂直参考线（最后一个年份）
     const lastYear = xValues[xValues.length - 1];
-    const lastYearDate = parseYear(lastYear);
+    const lastYearDate = parseDate(lastYear);
 
     // 添加垂直虚线
     g.append("line")
@@ -221,7 +202,7 @@ function makeChart(containerSelector, data) {
         .style("font-size", "16px")
         .style("font-weight", "bold")
         .style("fill", "#333333")
-        .text(lastYear.split("/")[0]);
+        .text(xFormat(lastYearDate));
 
     // 在最后的竖线上为每个组添加彩色小圆点，并创建指向它们的标签
     let labelPositions = [];
@@ -349,7 +330,7 @@ function makeChart(containerSelector, data) {
     const xAxis = g.append("g")
         .attr("transform", `translate(0,${innerHeight})`)
         .call(d3.axisBottom(xScale)
-            .tickFormat(d3.timeFormat("%Y")) // 格式化为年份
+            .tickFormat(xFormat) // 使用相同的刻度数量
             .ticks(xTickCount) // 使用相同的刻度数量
         );
     

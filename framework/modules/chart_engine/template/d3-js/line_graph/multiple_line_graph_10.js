@@ -61,34 +61,13 @@ function makeChart(containerSelector, data) {
     const g = svg.append("g")
         .attr("transform", `translate(${margin.left}, ${margin.top})`);
     
-    // 解析日期
-    const parseDate = d => {
-        if (d instanceof Date) return d;
-        if (typeof d === 'number') return new Date(d);
-        if (typeof d === 'string') {
-            // 提取年份 - 支持YYYY/... 或 YYYY-...格式
-            const yearMatch = d.match(/^(\d{4})(?:[/-]|$)/);
-            if (yearMatch) {
-                const year = parseInt(yearMatch[1]);
-                return new Date(year, 0, 1); // 设置为该年的1月1日
-            }
-        }
-        console.warn("无法解析日期:", d);
-        return new Date(0); // 返回默认日期作为后备
-    };
-    
     // 获取唯一的组值
     const groups = [...new Set(chartData.map(d => d[groupField]))];
     
     // 按组分组数据
     const groupedData = d3.group(chartData, d => d[groupField]);
-    
-    // 创建x轴比例尺
-    const xExtent = d3.extent(chartData, d => parseDate(d[xField]));
-    
-    const xScale = d3.scaleTime()
-        .domain(xExtent)
-        .range([20, chartWidth - 20]);
+
+    const { xScale, xTicks, xFormat, timeSpan } = createXAxisScaleAndTicks(chartData, xField, 0, chartWidth);
     
     // 创建y轴比例尺 - 使用数据的实际范围
     const yMin = d3.min(chartData, d => d[yField]);
@@ -157,12 +136,8 @@ function makeChart(containerSelector, data) {
             .text(Math.round(tick)); // 四舍五入到整数，不带百分号
     });
     
-    // 获取X轴刻度
-    const xTicks = xScale.ticks(chartData.length > 10 ? 10 : chartData.length);
-    
     // 添加X轴刻度文本
     xTicks.forEach(tick => {
-        const year = tick.getFullYear();
         
         g.append("text")
             .attr("x", xScale(tick))
@@ -170,7 +145,7 @@ function makeChart(containerSelector, data) {
             .attr("text-anchor", "middle")
             .attr("fill", "#666")
             .style("font-size", "14px")
-            .text(year);
+            .text(xFormat(tick));
     });
     
     // 添加X轴线

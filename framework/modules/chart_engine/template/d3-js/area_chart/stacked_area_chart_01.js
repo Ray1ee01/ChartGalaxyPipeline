@@ -22,15 +22,6 @@ REQUIREMENTS_BEGIN
 REQUIREMENTS_END
 */
 
-// 解析年份函数
-function parseYear(yearStr) {
-    if (typeof yearStr === 'string') {
-        const year = yearStr.split("/")[0];
-        return new Date(parseInt(year), 0, 1);
-    }
-    return new Date(yearStr, 0, 1);
-}
-
 function makeChart(containerSelector, data) {
     // 提取数据
     const jsonData = data;
@@ -77,16 +68,8 @@ function makeChart(containerSelector, data) {
     
     const g = svg.append("g")
         .attr("transform", `translate(${margin.left}, ${margin.top})`);
-    
-    // 确定全局x轴范围
-    const allDates = chartData.map(d => parseYear(d[xField]));
-    const xMin = d3.min(allDates);
-    const xMax = d3.max(allDates);
 
-    // 创建x轴比例尺
-    const xScale = d3.scaleTime()
-        .domain([xMin, xMax])
-        .range([0, chartWidth]);
+    const { xScale, xTicks, xFormat, timeSpan } = createXAxisScaleAndTicks(chartData, xField, 0, chartWidth);
     
     // 为堆叠数据准备
     // 使用 d3.group
@@ -94,7 +77,7 @@ function makeChart(containerSelector, data) {
     
     // 转换为堆叠格式
     const stackData = Array.from(groupedData, ([key, values]) => {
-        const obj = { date: parseYear(key) };
+        const obj = { date: parseDate(key) };
         values.forEach(v => {
             obj[v[groupField]] = v[yField];
         });
@@ -128,18 +111,6 @@ function makeChart(containerSelector, data) {
         .domain([0, yMax])
         .range([chartHeight, 0]);
     
-    // 添加垂直网格线
-    const xTicks = [];
-    const startYear = xMin.getFullYear();
-    const endYear = xMax.getFullYear();
-    const yearRange = endYear - startYear;
-    const tickCount = Math.min(6, yearRange + 1);
-    const yearStep = Math.ceil(yearRange / (tickCount - 1));
-    
-    for (let year = startYear; year <= endYear; year += yearStep) {
-        xTicks.push(new Date(year, 0, 1));
-    }
-    
     // 添加x轴刻度和标签
     xTicks.forEach((tick, i) => {
         // 添加刻度标签
@@ -150,7 +121,7 @@ function makeChart(containerSelector, data) {
             .style("font-family", "Arial")
             .style("font-size", "16px")
             .style("fill", "#cccccc")
-            .text(tick.getFullYear());
+            .text(xFormat(tick));
     });
     
     // 创建面积生成器

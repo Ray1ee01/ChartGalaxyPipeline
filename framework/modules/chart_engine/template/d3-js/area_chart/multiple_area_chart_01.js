@@ -22,15 +22,6 @@ REQUIREMENTS_BEGIN
 REQUIREMENTS_END
 */
 
-// 解析年份函数
-function parseYear(yearStr) {
-    if (typeof yearStr === 'string') {
-        const year = yearStr.split("/")[0];
-        return new Date(parseInt(year), 0, 1);
-    }
-    return new Date(yearStr, 0, 1);
-}
-
 function makeChart(containerSelector, data) {
     // 提取数据
     const jsonData = data;
@@ -79,17 +70,9 @@ function makeChart(containerSelector, data) {
     const g = svg.append("g")
         .attr("transform", `translate(${margin.left}, ${margin.top})`);
     
-    // 确定全局x轴范围（垂直方向）
-    const allDates = chartData.map(d => parseYear(d[xField]));
-    const xMin = d3.min(allDates);
-    const xMax = d3.max(allDates);
-
-    // 创建x轴比例尺（垂直方向）
-    const xScale = d3.scaleTime()
-        .domain([xMin, xMax])
-        .range([0, chartHeight]); // 范围是从上到下
+    const { xScale, xTicks, xFormat, timeSpan } = createXAxisScaleAndTicks(chartData, xField, 0, chartHeight);
     
-    // 定义中心区域的宽度（用于放置年份标签）
+    // 定义中心区域的宽度（用于放置标签）
     const centerWidth = 60; // 中心区域宽度
     const halfCenter = centerWidth / 2; // 中心区域的一半宽度
     
@@ -168,7 +151,7 @@ function makeChart(containerSelector, data) {
         const groupData = chartData.filter(d => d[groupField] === group);
         
         // 确保数据按日期排序
-        groupData.sort((a, b) => parseYear(a[xField]) - parseYear(b[xField]));
+        groupData.sort((a, b) => parseDate(a[xField]) - parseDate(b[xField]));
         
         // 根据组的索引决定使用左侧还是右侧比例尺
         const yScale = i === 0 ? yScaleLeft : yScaleRight;
@@ -177,7 +160,7 @@ function makeChart(containerSelector, data) {
         const area = d3.area()
             .x0(i === 0 ? chartWidth/2 - halfCenter : chartWidth/2 + halfCenter) // 起始点在中心区域边缘
             .x1(d => yScale(d[yField])) // 终点是数据值
-            .y(d => xScale(parseYear(d[xField]))) // y值是时间
+            .y(d => xScale(parseDate(d[xField]))) // y值是时间
             .curve(d3.curveLinear); // 使用折线
         
         // 绘制面积 - 使用纯色填充，不透明
@@ -214,7 +197,6 @@ function makeChart(containerSelector, data) {
 
     // 添加X轴刻度和标签（垂直方向）- 放在中心
     // 所有刻度使用相同长度和样式
-    const xTicks = xScale.ticks(d3.timeYear.every(1)); // 每年一个刻度
     xTicks.forEach(tick => {
         // 添加年份标签（每两年一个）
         if (tick.getFullYear() % 2 === 0) {
@@ -225,7 +207,7 @@ function makeChart(containerSelector, data) {
                 .attr("dominant-baseline", "middle")
                 .attr("fill", "#fff")
                 .style("font-size", "12px")
-                .text(tick.getFullYear());
+                .text(xFormat(tick));
         }
         
         // 添加刻度线（左侧）- 更长更明显

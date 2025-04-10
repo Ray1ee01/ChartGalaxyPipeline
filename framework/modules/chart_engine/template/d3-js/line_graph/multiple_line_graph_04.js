@@ -22,16 +22,6 @@ REQUIREMENTS_BEGIN
 REQUIREMENTS_END
 */
 
-// 将parseYear函数移到全局作用域
-function parseYear(yearStr) {
-    // 从字符串中提取年份
-    if (typeof yearStr === 'string') {
-        const year = yearStr.split("/")[0];
-        return new Date(parseInt(year), 0, 1); // 1月1日
-    }
-    return new Date(yearStr, 0, 1);
-}
-
 function makeChart(containerSelector, data) {
     // 提取数据
     const jsonData = data;
@@ -158,16 +148,7 @@ function makeChart(containerSelector, data) {
         .attr("style", "max-width: 100%; height: auto;")
         .attr("xmlns", "http://www.w3.org/2000/svg");
     
-    // 添加渐变效果
-    const defs = svg.append("defs");
-    
-    // 创建时间比例尺 - 不再需要在这里定义parseYear
-    const xScale = d3.scaleTime()
-        .domain([
-            d3.min(xValues, d => parseYear(d)),
-            d3.max(xValues, d => parseYear(d))
-        ])
-        .range([0, innerWidth]);
+    const { xScale, xTicks, xFormat, timeSpan } = createXAxisScaleAndTicks(chartData, xField, 0, innerWidth);
     
     // Y轴比例尺
     const yMin = Math.min(0, d3.min(chartData, d => d[yField]) * 1.1);
@@ -184,7 +165,7 @@ function makeChart(containerSelector, data) {
     
     // 创建曲线生成器
     const line = d3.line()
-        .x(d => xScale(parseYear(d[xField])))
+        .x(d => xScale(parseDate(d[xField])))
         .y(d => yScale(d[yField]))
         .curve(d3.curveMonotoneX); // 使用单调曲线插值
 
@@ -197,10 +178,10 @@ function makeChart(containerSelector, data) {
         
         // 找到时间上最接近的数据点
         let closestPoint = data[0];
-        let minTimeDiff = Math.abs(parseYear(data[0][xField]).getTime() - targetTime);
+        let minTimeDiff = Math.abs(parseDate(data[0][xField]).getTime() - targetTime);
         
         for (let i = 1; i < data.length; i++) {
-            const currentTime = parseYear(data[i][xField]).getTime();
+            const currentTime = parseDate(data[i][xField]).getTime();
             const timeDiff = Math.abs(currentTime - targetTime);
             
             if (timeDiff < minTimeDiff) {
@@ -303,7 +284,6 @@ function makeChart(containerSelector, data) {
             .attr("d", line);
         
         // 绘制X轴刻度（只在基准线上显示，且只有第一个子图显示文本）
-        const xTicks = xScale.ticks(4);
         xTicks.forEach(tick => {
             g.append("line")
                 .attr("x1", xScale(tick))
@@ -339,7 +319,7 @@ function makeChart(containerSelector, data) {
                     .style("font-weight", "bold")
                     .style("fill", "#110c57")
                     .style("opacity", 0.3)
-                    .text(d3.timeFormat("%Y")(tick));
+                    .text(xFormat(tick));
             }
         });
         

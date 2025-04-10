@@ -22,15 +22,6 @@ REQUIREMENTS_BEGIN
 REQUIREMENTS_END
 */
 
-// 解析年份函数
-function parseYear(yearStr) {
-    if (typeof yearStr === 'string') {
-        const year = yearStr.split("/")[0];
-        return new Date(parseInt(year), 0, 1);
-    }
-    return new Date(yearStr, 0, 1);
-}
-
 function makeChart(containerSelector, data) {
     // 提取数据
     const jsonData = data;
@@ -68,16 +59,8 @@ function makeChart(containerSelector, data) {
     
     const g = svg.append("g")
         .attr("transform", `translate(${margin.left}, ${margin.top})`);
-    
-    // 确定全局x轴范围
-    const allDates = chartData.map(d => parseYear(d[xField]));
-    const xMin = d3.min(allDates);
-    const xMax = d3.max(allDates);
 
-    // 创建x轴比例尺
-    const xScale = d3.scaleTime()
-        .domain([xMin, xMax])
-        .range([0, chartWidth]);
+    const { xScale, xTicks, xFormat, timeSpan } = createXAxisScaleAndTicks(chartData, xField, 0, chartWidth);
     
     // 创建y轴比例尺 (百分比)
     const yScale = d3.scaleLinear()
@@ -86,14 +69,14 @@ function makeChart(containerSelector, data) {
     
     // 创建面积生成器
     const area = d3.area()
-        .x(d => xScale(parseYear(d[xField])))
+        .x(d => xScale(parseDate(d[xField])))
         .y0(chartHeight)
         .y1(d => yScale(d[yField]))
         .curve(d3.curveLinear); // 使用折线
     
     // 创建线条生成器（用于边界线）
     const line = d3.line()
-        .x(d => xScale(parseYear(d[xField])))
+        .x(d => xScale(parseDate(d[xField])))
         .y(d => yScale(d[yField]))
         .curve(d3.curveLinear); // 使用折线
     
@@ -200,9 +183,9 @@ function makeChart(containerSelector, data) {
         const current = chartData[i];
         const next = chartData[i + 1];
         
-        const x1 = xScale(parseYear(current[xField]));
+        const x1 = xScale(parseDate(current[xField]));
         const y1 = yScale(current[yField]);
-        const x2 = xScale(parseYear(next[xField]));
+        const x2 = xScale(parseDate(next[xField]));
         const y2 = yScale(next[yField]);
         
         // 存储折线点用于后续判断标签是否在折线上方或下方
@@ -313,7 +296,7 @@ function makeChart(containerSelector, data) {
     
     // 为每个数据点找到最佳标签位置
     chartData.forEach((d, index) => {
-        const x = xScale(parseYear(d[xField]));
+        const x = xScale(parseDate(d[xField]));
         const y = yScale(d[yField]);
         
         // 检查是否是最高点
@@ -480,7 +463,7 @@ function makeChart(containerSelector, data) {
                 .style("font-size", "10px")
                 .style("font-weight", "bold")
                 .style("fill", yearColor) // 根据位置选择颜色
-                .text(d[xField].split("/")[0]);
+                .text(xFormat(d[xField]));
             
             // 添加调试可视化 - 标签区域
             if (debugLayout) {
@@ -518,18 +501,6 @@ function makeChart(containerSelector, data) {
         .attr("stroke", "#9191a9") // 更改为指定的颜色
         .attr("stroke-width", 1.5); // 稍微加粗一点
     
-    // 添加X轴刻度和标签
-    const xTicks = [];
-    const startYear = xMin.getFullYear();
-    const endYear = xMax.getFullYear();
-    const yearRange = endYear - startYear;
-    const tickCount = Math.min(10, yearRange + 1);
-    const yearStep = Math.ceil(yearRange / (tickCount - 1));
-    
-    for (let year = startYear; year <= endYear; year += yearStep) {
-        xTicks.push(new Date(year, 0, 1));
-    }
-    
     xTicks.forEach(tick => {
         // 添加白色刻度线
         g.append("line")
@@ -549,7 +520,7 @@ function makeChart(containerSelector, data) {
             .style("font-size", "10px")
             .style("fill", "#2a2e7a") // 保持深蓝色文本
             .style("font-weight", "bold")
-            .text(tick.getFullYear());
+            .text(xFormat(tick));
     });
     
     

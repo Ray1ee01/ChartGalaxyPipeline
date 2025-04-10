@@ -107,20 +107,7 @@ function makeChart(containerSelector, data) {
         .attr("stop-opacity", 0.1);
 
     // 创建比例尺 - 修改为时间比例尺
-    // 首先解析年份字符串为日期对象
-    const parseYear = (yearStr) => {
-        // 从"XXXX/XX"格式中提取第一个年份
-        const year = yearStr.split("/")[0];
-        return new Date(parseInt(year), 0, 1); // 1月1日
-    };
-
-    // 创建时间比例尺
-    const xScale = d3.scaleTime()
-        .domain([
-            d3.min(xValues, d => parseYear(d)),
-            d3.max(xValues, d => parseYear(d))
-        ])
-        .range([0, innerWidth]);
+    const { xScale, xTicks, xFormat, timeSpan } = createXAxisScaleAndTicks(chartData, xField, 0, innerWidth);
     
     // 修改Y轴比例尺，支持负值，并确保最大刻度超过数据最大值
     const yScale = d3.scaleLinear()
@@ -178,12 +165,6 @@ function makeChart(containerSelector, data) {
         .attr("height", 1)
         .style("fill", `url(#horizontal-grid-gradient)`);
 
-    // 计算X轴刻度数量
-    const xTickCount = xValues.length > 6 ? 6 : xValues.length;
-
-    // 获取X轴刻度位置
-    const xTicks = xScale.ticks(xTickCount);
-
     const verticalGradient = defs.append("linearGradient")
         .attr("id", "vertical-grid-gradient")
         .attr("x1", "0%")
@@ -237,7 +218,7 @@ function makeChart(containerSelector, data) {
     });
     
     const line = d3.line()
-        .x(d => xScale(parseYear(d[xField])))
+        .x(d => xScale(parseDate(d[xField])))
         .y(d => yScale(d[yField]))
 
     // 首先收集所有点信息，并分为起点和终点两组
@@ -261,7 +242,7 @@ function makeChart(containerSelector, data) {
         const lastPoint = groupData[groupData.length - 1];
         
         // 处理起点
-        const startX = xScale(parseYear(firstPoint[xField]));
+        const startX = xScale(parseDate(firstPoint[xField]));
         const startY = yScale(firstPoint[yField]);
         
         // 添加圆点
@@ -281,7 +262,7 @@ function makeChart(containerSelector, data) {
         });
         
         // 处理终点
-        const endX = xScale(parseYear(lastPoint[xField]));
+        const endX = xScale(parseDate(lastPoint[xField]));
         const endY = yScale(lastPoint[yField]);
         
         // 添加圆点
@@ -305,8 +286,7 @@ function makeChart(containerSelector, data) {
     const xAxis = g.append("g")
         .attr("transform", `translate(0,${innerHeight})`)
         .call(d3.axisBottom(xScale)
-            .tickFormat(d3.timeFormat("%Y")) // 格式化为年份
-            .ticks(xTickCount) // 使用相同的刻度数量
+            .tickFormat(xFormat) // 使用相同的刻度数量
         );
     
     // 设置X轴样式，并下移文本

@@ -96,20 +96,7 @@ function makeChart(containerSelector, data) {
         .attr("ry", 0);
 
     // 创建比例尺 - 修改为时间比例尺
-    // 首先解析年份字符串为日期对象
-    const parseYear = (yearStr) => {
-        // 从"XXXX/XX"格式中提取第一个年份
-        const year = yearStr.split("/")[0];
-        return new Date(parseInt(year), 0, 1); // 1月1日
-    };
-
-    // 创建时间比例尺
-    const xScale = d3.scaleTime()
-        .domain([
-            d3.min(xValues, d => parseYear(d)),
-            d3.max(xValues, d => parseYear(d))
-        ])
-        .range([0, innerWidth]);
+    const { xScale, xTicks, xFormat, timeSpan } = createXAxisScaleAndTicks(chartData, xField, 0, innerWidth);
     
     // 修改Y轴比例尺，支持负值
     const yScale = d3.scaleLinear()
@@ -145,12 +132,6 @@ function makeChart(containerSelector, data) {
         .attr("stroke", "#f0dcc1")
         .attr("stroke-width", 1)
         .attr("opacity", 0.2); // 半透明
-
-    // 计算X轴刻度数量
-    const xTickCount = xValues.length > 6 ? 6 : xValues.length;
-
-    // 获取X轴刻度位置
-    const xTicks = xScale.ticks(xTickCount);
 
     // 添加垂直网格线渐变
     const verticalGridGradientId = "vertical-grid-gradient";
@@ -211,7 +192,7 @@ function makeChart(containerSelector, data) {
     
     // 创建曲线生成器（而不是折线）
     const line = d3.line()
-        .x(d => xScale(parseYear(d[xField])))
+        .x(d => xScale(parseDate(d[xField])))
         .y(d => yScale(d[yField]))
         .curve(d3.curveMonotoneX); // 使用单调曲线插值
 
@@ -313,8 +294,7 @@ function makeChart(containerSelector, data) {
     const xAxis = g.append("g")
         .attr("transform", `translate(0,${innerHeight})`)
         .call(d3.axisBottom(xScale)
-            .tickFormat(d3.timeFormat("%Y")) // 格式化为年份
-            .ticks(xTickCount) // 使用相同的刻度数量
+            .tickFormat(xFormat) // 使用相同的刻度数量
         );
     
     // 设置X轴样式，并下移文本

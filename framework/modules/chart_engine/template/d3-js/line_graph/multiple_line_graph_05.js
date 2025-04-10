@@ -22,15 +22,6 @@ REQUIREMENTS_BEGIN
 REQUIREMENTS_END
 */
 
-// 解析年份函数
-function parseYear(yearStr) {
-    if (typeof yearStr === 'string') {
-        const year = yearStr.split("/")[0];
-        return new Date(parseInt(year), 0, 1);
-    }
-    return new Date(yearStr, 0, 1);
-}
-
 function makeChart(containerSelector, data) {
     // 提取数据
     const jsonData = data;
@@ -80,15 +71,7 @@ function makeChart(containerSelector, data) {
     // 创建defs元素用于存放遮罩
     const defs = svg.append("defs");
     
-    // 确定全局x轴范围
-    const allDates = chartData.map(d => parseYear(d[xField]));
-    const xMin = d3.min(allDates);
-    const xMax = d3.max(allDates);
-    // 扩展范围以便有更好的视觉效果
-    const xRange = [
-        new Date(xMin.getFullYear() - 1, 0, 1),
-        new Date(xMax.getFullYear() + 1, 0, 1)
-    ];
+    const { xScale, xTicks, xFormat, timeSpan } = createXAxisScaleAndTicks(chartData, xField, 0, innerWidth);
     
     // 为每个组创建子图
     groups.forEach((group, i) => {
@@ -111,11 +94,6 @@ function makeChart(containerSelector, data) {
         // 获取当前组的数据
         const groupData = chartData.filter(d => d[groupField] === group);
         
-        // 创建x轴比例尺
-        const xScale = d3.scaleTime()
-            .domain(xRange)
-            .range([0, innerWidth]);
-        
         // 创建y轴比例尺 - 根据数据调整
         const groupYMin = Math.min(0, d3.min(groupData, d => d[yField]) * 1.4);
         const groupYMax = d3.max(groupData, d => d[yField]) * 1.1;
@@ -137,7 +115,6 @@ function makeChart(containerSelector, data) {
         });
         
         // 减少X轴刻度密度
-        const xTicks = xScale.ticks(4); // 固定4个刻度
         xTicks.forEach(tick => {
             g.append("line")
                 .attr("x1", xScale(tick))
@@ -264,12 +241,12 @@ function makeChart(containerSelector, data) {
                 .style("font-family", 'Arial Narrow')
                 .style("font-size", "16px")
                 .style("fill", "#d5d5d5")
-                .text(d3.timeFormat("%Y")(tick));
+                .text(xFormat(tick));
         });
         
         // 创建线条生成器
         const line = d3.line()
-            .x(d => xScale(parseYear(d[xField])))
+            .x(d => xScale(parseDate(d[xField])))
             .y(d => yScale(d[yField]))
             .curve(d3.curveStepAfter); // 使用阶梯曲线
         
@@ -295,7 +272,7 @@ function makeChart(containerSelector, data) {
             const labelXOffset = col === cols - 1 ? -17 : 0;
             
             g.append("text")
-                .attr("x", xScale(parseYear(lastPoint[xField])) + labelXOffset)
+                .attr("x", xScale(parseDate(lastPoint[xField])) + labelXOffset)
                 .attr("y", yScale(lastPoint[yField]) + labelOffset)
                 .attr("text-anchor", "middle")
                 .style("font-family", 'Arial Narrow')

@@ -237,6 +237,9 @@ def load_d3js(json_data=None, output_file=None, js_file=None):
         <script>
             // 准备数据
             const json_data = JSON_DATA_PLACEHOLDER;
+
+            // 导入utils.js
+            UTILS_LIB_PLACEHOLDER
             
             // D3.js实现
             JS_CODE_PLACEHOLDER
@@ -266,6 +269,10 @@ def load_d3js(json_data=None, output_file=None, js_file=None):
     
     # 使用文件协议的URL (用于SVG渲染)
     d3_lib_url = f"file://{d3_lib_path}"
+
+    utils_lib_path = os.path.abspath(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static', 'lib', 'utils.js'))
+
+    utils_code = _load_js_code(utils_lib_path)
     
     js_code = _load_js_code(js_file)
     
@@ -273,7 +280,7 @@ def load_d3js(json_data=None, output_file=None, js_file=None):
     formatted_html = html_template % (d3_lib_url, width, height)
     formatted_html = formatted_html.replace('JSON_DATA_PLACEHOLDER', json.dumps(json_data))
     formatted_html = formatted_html.replace('JS_CODE_PLACEHOLDER', js_code)
-    
+    formatted_html = formatted_html.replace('UTILS_LIB_PLACEHOLDER', utils_code)
     # Save the HTML to a file
     output_file = _save_to_file(formatted_html, output_file, prefix="_d3")
     

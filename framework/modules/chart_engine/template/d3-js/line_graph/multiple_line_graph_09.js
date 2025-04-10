@@ -66,36 +66,10 @@ function makeChart(containerSelector, data) {
     const g = svg.append("g")
         .attr("transform", `translate(${margin.left}, ${margin.top})`);
     
-    // 解析日期 - 只解析年份
-    const parseDate = d => {
-        if (d instanceof Date) return d;
-        if (typeof d === 'number') return new Date(d);
-        if (typeof d === 'string') {
-            // 提取年份 - 支持YYYY/... 或 YYYY-...格式
-            const yearMatch = d.match(/^(\d{4})[/-]/);
-            if (yearMatch) {
-                const year = parseInt(yearMatch[1]);
-                return new Date(year, 0, 1); // 设置为该年的1月1日
-            }
-        }
-        console.warn("无法解析日期:", d);
-        return new Date(0); // 返回默认日期作为后备
-    };
-    
     // 获取唯一的组值
     const groups = [...new Set(chartData.map(d => d[groupField]))];
-    
-    // 创建x轴比例尺 - 扩宽范围
-    const xExtent = d3.extent(chartData, d => parseDate(d[xField]));
-    const xRange = xExtent[1] - xExtent[0];
-    const xPadding = xRange * 0.05; // 添加5%的填充
-    
-    const xScale = d3.scaleTime()
-        .domain([
-            new Date(xExtent[0].getTime() - xPadding),
-            new Date(xExtent[1].getTime() + xPadding)
-        ])
-        .range([0, chartWidth]);
+
+    const { xScale, xTicks, xFormat, timeSpan } = createXAxisScaleAndTicks(chartData, xField, 0, chartWidth);
     
     // 创建y轴比例尺 - 使用数据的实际范围
     const yMin = d3.min(chartData, d => d[yField]);
@@ -128,22 +102,6 @@ function makeChart(containerSelector, data) {
     const maxYTickPosition = yScale(maxYTick);
     
     // 添加条纹背景 - 使用更合适的时间间隔
-    // 根据数据范围选择合适的时间间隔
-    let timeInterval;
-    const yearDiff = xExtent[1].getFullYear() - xExtent[0].getFullYear();
-    
-    if (yearDiff > 10) {
-        timeInterval = d3.timeYear.every(5); // 每5年
-    } else if (yearDiff > 5) {
-        timeInterval = d3.timeYear.every(2); // 每2年
-    } else if (yearDiff >= 2) {
-        timeInterval = d3.timeYear.every(1); // 每1年
-    } else {
-        timeInterval = d3.timeMonth.every(3); // 每季度
-    }
-    
-    // 获取适当数量的X轴刻度
-    const xTicks = xScale.ticks(timeInterval);
     
     // 为每个X轴刻度创建条纹背景，使条纹以刻度为中心
     for (let i = 0; i < xTicks.length - 1; i++) {
@@ -371,16 +329,13 @@ function makeChart(containerSelector, data) {
         // 计算中点位置
         const midX = (x1 + x2) / 2;
         
-        // 使用年份作为标签
-        const year = currentTick.getFullYear();
-        
         g.append("text")
             .attr("x", midX)
             .attr("y", chartHeight + 20)
             .attr("text-anchor", "middle")
             .attr("fill", "#666")
             .style("font-size", "12px")
-            .text(year);
+            .text(xFormat(currentTick));
     }
     
     

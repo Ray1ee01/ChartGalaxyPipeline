@@ -22,15 +22,6 @@ REQUIREMENTS_BEGIN
 REQUIREMENTS_END
 */
 
-// 解析年份函数
-function parseYear(yearStr) {
-    if (typeof yearStr === 'string') {
-        const year = yearStr.split("/")[0];
-        return new Date(parseInt(year), 0, 1);
-    }
-    return new Date(yearStr, 0, 1);
-}
-
 function makeChart(containerSelector, data) {
     // 提取数据
     const jsonData = data;
@@ -73,15 +64,7 @@ function makeChart(containerSelector, data) {
     const g = svg.append("g")
         .attr("transform", `translate(${margin.left}, ${margin.top})`);
     
-    // 确定全局x轴范围
-    const allDates = chartData.map(d => parseYear(d[xField]));
-    const xMin = d3.min(allDates);
-    const xMax = d3.max(allDates);
-
-    // 创建x轴比例尺 - 确保范围从0开始到最大值结束
-    const xScale = d3.scaleTime()
-        .domain([xMin, xMax])
-        .range([0, chartWidth]);
+    const { xScale, xTicks, xFormat, timeSpan } = createXAxisScaleAndTicks(chartData, xField, 0, chartWidth);
     
     // 确定全局y轴范围
     const yMin = Math.min(0, d3.min(chartData, d => d[yField]) * 1.4);
@@ -111,22 +94,6 @@ function makeChart(containerSelector, data) {
         .attr("stroke", "#9badd3")
         .attr("stroke-width", 1)
         .attr("stroke-dasharray", "2,2");
-    
-    // 添加x轴刻度和标签 - 使用4-5个刻度点
-    const xTicks = [];
-    const startYear = xMin.getFullYear();
-    const endYear = xMax.getFullYear();
-    const yearRange = endYear - startYear;
-    const tickCount = Math.min(5, yearRange + 1); // 最多5个刻度,最少包含首尾年份
-    const yearStep = Math.ceil(yearRange / (tickCount - 1)); // 计算年份间隔
-    
-    for (let year = startYear; year <= endYear; year += yearStep) {
-        xTicks.push(new Date(year, 0, 1));
-    }
-    // 确保包含最后一年
-    if (xTicks[xTicks.length - 1].getFullYear() !== endYear) {
-        xTicks.push(new Date(endYear, 0, 1));
-    }
     
     // 添加y轴刻度和标签
     const yTicks = yScale.ticks(5); // 根据实际数据自动生成刻度
@@ -165,12 +132,12 @@ function makeChart(containerSelector, data) {
             .style("font-family", "Arial")
             .style("font-size", "16px")
             .style("fill", "#ffffff")
-            .text(tick.getFullYear());
+            .text(xFormat(tick));
     });
     
     // 创建线条生成器
     const line = d3.line()
-        .x(d => xScale(parseYear(d[xField])))
+        .x(d => xScale(parseDate(d[xField])))
         .y(d => yScale(d[yField]))
         .curve(d3.curveLinear); // 使用普通折线
     
@@ -183,7 +150,7 @@ function makeChart(containerSelector, data) {
         const color = colors.field[group];
         
         // 确保第一个点从Y轴开始
-        const firstDataDate = parseYear(groupData[0][xField]);
+        const firstDataDate = parseDate(groupData[0][xField]);
         if (firstDataDate.getTime() > xMin.getTime()) {
             // 添加Y轴起点（使用第一个数据点的Y值）
             const firstPoint = {
@@ -195,7 +162,7 @@ function makeChart(containerSelector, data) {
         }
         
         // 确保最后一个点精确对应最大X值
-        const lastDataDate = parseYear(groupData[groupData.length - 1][xField]);
+        const lastDataDate = parseDate(groupData[groupData.length - 1][xField]);
         if (lastDataDate.getTime() < xMax.getTime()) {
             // 添加最后一个点（使用最后一个数据点的Y值）
             const lastPoint = {
@@ -486,7 +453,7 @@ function makeChart(containerSelector, data) {
                 
                 // 简化：检查每个数据点是否在图例区域内
                 for (let i = 0; i < groupData.length; i++) {
-                    const x = margin.left + xScale(parseYear(groupData[i][xField]));
+                    const x = margin.left + xScale(parseDate(groupData[i][xField]));
                     const y = margin.top + yScale(groupData[i][yField]);
                     
                     if (x >= pos.x && x <= pos.x + legendWidth && 
@@ -496,7 +463,7 @@ function makeChart(containerSelector, data) {
                     
                     // 也检查线段是否穿过图例
                     if (i < groupData.length - 1) {
-                        const nextX = margin.left + xScale(parseYear(groupData[i+1][xField]));
+                        const nextX = margin.left + xScale(parseDate(groupData[i+1][xField]));
                         const nextY = margin.top + yScale(groupData[i+1][yField]);
                         
                         // 简化的线段与矩形相交检测
