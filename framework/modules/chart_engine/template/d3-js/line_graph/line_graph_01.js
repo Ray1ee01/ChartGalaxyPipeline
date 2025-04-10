@@ -103,6 +103,7 @@ function makeChart(containerSelector, data) {
         const currentTick = xTicks[i];
         
         // 计算前一个和后一个刻度的位置
+        const currentX = xScale(currentTick);
         const prevX = i > 0 ? xScale(xTicks[i-1]) : 0;
         const nextX = i < xTicks.length - 1 ? xScale(xTicks[i+1]) : chartWidth;
         
@@ -371,39 +372,47 @@ function makeChart(containerSelector, data) {
     // 如果趋势向上，标签放在下方(isHighest=false)；如果趋势向下，标签放在上方(isHighest=true)
     addDataLabel(lastPoint, !isUpwardTrend);
     
-    // 添加图例
-    const legendGroup = g.append("g")
-        .attr("transform", `translate(${chartWidth/2 - 100}, 60)`); // 放在图表上方中央位置，稍微下移
-    
+    // 添加图例 - 整体居中
+    // 首先创建一个容器组，稍后再设置其位置
+    const legendGroup = g.append("g");
+
+    // 获取字段名称
+    const fieldName = dataColumns[1].label || dataColumns[1].name;
+    // 估算字段名称的宽度（每个字符约8像素）
+    const fieldNameWidth = fieldName.length * 8;
+
+    // 计算三角形图例的起始位置，确保不会与字段名称重叠
+    const triangleStartX = 30 + fieldNameWidth;
+
     // 添加Sales图例
     legendGroup.append("circle")
         .attr("cx", 0)
         .attr("cy", 0)
         .attr("r", 8)
         .attr("fill", areaColor);
-    
+
     legendGroup.append("text")
         .attr("x", 15)
         .attr("y", 0)
         .attr("dominant-baseline", "middle")
         .attr("fill", "#333")
         .style("font-size", "14px")
-        .text(dataColumns[1].name);
-    
+        .text(fieldName);
+
     // 添加% change图例 - 使用圆角等边三角形
     const triangleSize = 18; // 三角形大小
     const triangleHeight = triangleSize * Math.sqrt(3) / 2; // 等边三角形高度
     const triangleSpacing = -4; // 三角形之间的间距
-    
+
     // 绿色上升三角形 - 使用圆角等边三角形路径
-    const upTriangleX = 120;
+    const upTriangleX = triangleStartX;
     const upTriangleY = 0;
-    
+
     // 创建上升三角形的顶点
     const upTop = [upTriangleX, upTriangleY - triangleHeight/2];
     const upBottomLeft = [upTriangleX - triangleSize/2, upTriangleY + triangleHeight/2];
     const upBottomRight = [upTriangleX + triangleSize/2, upTriangleY + triangleHeight/2];
-    
+
     // 绘制上升三角形
     legendGroup.append("path")
         .attr("d", `
@@ -413,16 +422,16 @@ function makeChart(containerSelector, data) {
             Z
         `)
         .attr("fill", "#469377");
-    
+
     // 红色下降三角形 - 使用圆角等边三角形路径
     const downTriangleX = upTriangleX + triangleSize + triangleSpacing;
     const downTriangleY = 0;
-    
+
     // 创建下降三角形的顶点
     const downBottom = [downTriangleX, downTriangleY + triangleHeight/2];
     const downTopLeft = [downTriangleX - triangleSize/2, downTriangleY - triangleHeight/2];
     const downTopRight = [downTriangleX + triangleSize/2, downTriangleY - triangleHeight/2];
-    
+
     // 绘制下降三角形
     legendGroup.append("path")
         .attr("d", `
@@ -432,15 +441,22 @@ function makeChart(containerSelector, data) {
             Z
         `)
         .attr("fill", "#c63310");
-    
+
     // 添加"% change"文本
-    legendGroup.append("text")
+    const changeText = legendGroup.append("text")
         .attr("x", downTriangleX + triangleSize/2 + 10) // 放在下降三角形右侧
         .attr("y", 0)
         .attr("dominant-baseline", "middle")
         .attr("fill", "#333")
         .style("font-size", "14px")
         .text("% change");
+
+    // 计算整个图例的总宽度
+    const changeTextWidth = "% change".length * 8; // 估算"% change"文本宽度
+    const totalLegendWidth = downTriangleX + triangleSize/2 + 10 + changeTextWidth;
+
+    // 设置图例组的位置，使其整体居中
+    legendGroup.attr("transform", `translate(${(chartWidth - totalLegendWidth)/2}, 60)`);
     
     return svg.node();
 } 

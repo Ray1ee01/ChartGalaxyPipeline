@@ -30,7 +30,7 @@ const parseDate = d => {
 };
 
 // 创建智能日期比例尺和刻度
-const createDateScaleAndTicks = (data, xField, rangeStart = 0, rangeEnd = 100, padding = 0.05) => {
+const createXAxisScaleAndTicks = (data, xField, rangeStart = 0, rangeEnd = 100, padding = 0.05) => {
     // 解析所有日期
     const dates = data.map(d => parseDate(d[xField]));
     const xExtent = d3.extent(dates);
@@ -95,9 +95,9 @@ const createDateScaleAndTicks = (data, xField, rangeStart = 0, rangeEnd = 100, p
     }
     
     return {
-        scale: xScale,
-        ticks: xTicks,
-        format: formatFunction,
+        xScale: xScale,
+        xTicks: xTicks,
+        xFormat: formatFunction,
         timeSpan: {
             days: daySpan,
             months: monthSpan,
