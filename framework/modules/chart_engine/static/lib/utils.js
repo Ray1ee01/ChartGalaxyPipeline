@@ -63,17 +63,17 @@ const createXAxisScaleAndTicks = (data, xField, rangeStart = 0, rangeEnd = 100, 
         // 超过10年，每5年一个刻度
         timeInterval = d3.timeYear.every(5);
         formatFunction = d => d3.timeFormat("%Y")(d);
-    } else if (yearSpan > 3) {
-        // 3-10年，每年一个刻度
+    } else if (yearSpan > 2) {
+        // 2-10年，每年一个刻度
         timeInterval = d3.timeYear.every(1);
         formatFunction = d => d3.timeFormat("%Y")(d);
     } else if (yearSpan > 1) {
-        // 1-3年，每季度一个刻度
+        // 1-2年，每季度一个刻度
         timeInterval = d3.timeMonth.every(3);
         formatFunction = d => {
             const month = d.getMonth();
             const quarter = Math.floor(month / 3) + 1;
-            return `Q${quarter} ${d.getFullYear()}`;
+            return `${d.getFullYear().toString().slice(-2)}Q${quarter}`;
         };
     } else if (monthSpan > 6) {
         // 6个月-1年，每月一个刻度
