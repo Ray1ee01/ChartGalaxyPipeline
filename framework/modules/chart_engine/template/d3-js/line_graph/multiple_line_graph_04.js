@@ -146,7 +146,8 @@ function makeChart(containerSelector, data) {
         .attr("height", height)
         .attr("viewBox", `0 0 ${width} ${height}`)
         .attr("style", "max-width: 100%; height: auto;")
-        .attr("xmlns", "http://www.w3.org/2000/svg");
+        .attr("xmlns", "http://www.w3.org/2000/svg")
+        .attr("xmlns:xlink", "http://www.w3.org/1999/xlink");
     
     const { xScale, xTicks, xFormat, timeSpan } = createXAxisScaleAndTicks(chartData, xField, 0, innerWidth);
     

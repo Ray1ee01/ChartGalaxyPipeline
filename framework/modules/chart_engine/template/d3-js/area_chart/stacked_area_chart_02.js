@@ -84,7 +84,8 @@ function makeChart(containerSelector, data) {
         .attr("height", height)
         .attr("viewBox", `0 0 ${width} ${height}`)
         .attr("style", "max-width: 100%; height: auto;")
-        .attr("xmlns", "http://www.w3.org/2000/svg");
+        .attr("xmlns", "http://www.w3.org/2000/svg")
+        .attr("xmlns:xlink", "http://www.w3.org/1999/xlink");
     
     // 创建图表区域
     const chartWidth = width - margin.left - margin.right;
