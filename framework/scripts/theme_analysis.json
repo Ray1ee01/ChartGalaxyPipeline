@@ -263,5 +263,10 @@
     "theme": "Public Space Utilization",
     "base_description": "Showing how urban spaces are used",
     "scenarios": []
+  },
+  "Luxury Market Trends": {
+    "theme": "Luxury Market Trends",
+    "base_description": "Analyzing high-end consumer spending",
+    "scenarios": []
   }
 }
