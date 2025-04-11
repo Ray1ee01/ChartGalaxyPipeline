@@ -44,6 +44,8 @@ def analyze_templates(templates: Dict) -> Tuple[int, Dict[str, str], int]:
     for engine, templates_dict in templates.items():
         for chart_type, chart_names_dict in templates_dict.items():
             for chart_name, template_info in chart_names_dict.items():
+                if 'base' in chart_name or engine == 'vegalite_py' and 'line' in chart_name:
+                    continue
                 template_count += 1
                 if 'requirements' in template_info:
                     req = template_info['requirements']
@@ -138,5 +140,5 @@ def process_template_requirements(requirements: Dict, data: Dict) -> None:
     if "min_height" in requirements:
         data["variables"]["height"] = max(600, requirements["min_height"])
     if "min_width" in requirements:
-        data["variables"]["height"] = max(800, requirements["min_width"])
+        data["variables"]["width"] = max(800, requirements["min_width"])
         

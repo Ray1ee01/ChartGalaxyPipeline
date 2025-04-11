@@ -88,8 +88,8 @@ function makeChart(containerSelector, data) {
     const colorScale = d3.scaleOrdinal()
         .domain(groups)
         .range(groups.map((g, i) => {
-            if (colors.fields && colors.fields[g]) {
-                return colors.fields[g];
+            if (colors.field && colors.field[g]) {
+                return colors.field[g];
             }
             return d3.schemeCategory10[i % 10];
         }));

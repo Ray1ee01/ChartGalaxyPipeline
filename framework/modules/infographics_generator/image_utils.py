@@ -55,7 +55,7 @@ def find_best_size_and_position(main_mask: np.ndarray, image_content: str, paddi
         
         # 生成当前尺寸的图片mask并降采样
         original_size = mid_size * grid_size
-        temp_svg = f"""<svg xmlns="http://www.w3.org/2000/svg" width="{original_size}" height="{original_size}">
+        temp_svg = f"""<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="{original_size}" height="{original_size}">
             <image width="{original_size}" height="{original_size}" href="{image_content}"/>
         </svg>"""
         image_mask = calculate_mask(temp_svg, original_size, original_size, 0)

@@ -84,8 +84,8 @@ function makeChart(containerSelector, data) {
     
     // 创建颜色比例尺 - 使用提供的颜色或默认颜色
     const colorScale = d => {
-        if (colors.fields && colors.fields[d]) {
-            return colors.fields[d];
+        if (colors.field && colors.field[d]) {
+            return colors.field[d];
         }
         return d3.schemeCategory10[groups.indexOf(d) % 10];
     };

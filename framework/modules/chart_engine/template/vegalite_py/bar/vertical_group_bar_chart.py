@@ -2,25 +2,6 @@ from modules.chart_engine.template.vegalite_py.template import VegaLiteTemplate
 from modules.chart_engine.template.vegalite_py.bar.vertical_bar_chart import VerticalBarChart
 from typing import Dict
 
-"""
-REQUIREMENTS_BEGIN
-{
-    "_comment": "这些属性的值由你对特定的图表进行定义，用于要求数据的格式。完成测试后填写。",
-    "chart_type": "Vertical Group Bar Chart",
-    "chart_name": "vertical_group_bar_chart",
-    "required_fields": ["x", "y", "group"],
-    "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
-    "required_other_colors": [],
-    "supported_effects": [],
-    "required_data_points": [5, 100],
-    "required_image": [],
-    "width": [500, 1000],
-    "height": [500, 800],
-    "x_range": [2, 20]
-}
-REQUIREMENTS_END
-"""
-
 class VerticalGroupBarChart(VerticalBarChart):
     def __init__(self, json_data: Dict):
         super().__init__(json_data)

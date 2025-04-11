@@ -2,24 +2,6 @@ from template import VegaLiteTemplate
 from modules.chart_engine.template.vegalite_py.bar.horizontal_bar_chart import HorizontalBarChart
 from typing import Dict
 
-"""
-REQUIREMENTS_BEGIN
-{
-    "_comment": "这些属性的值由你对特定的图表进行定义，用于要求数据的格式。完成测试后填写。",
-    "chart_type": "Horizontal Stacked Bar Chart",
-    "chart_name": "horizontal_stacked_bar_chart",
-    "required_fields": ["x", "y", "group"],
-    "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
-    "required_other_colors": [],
-    "supported_effects": [],
-    "required_data_points": [5, 100],
-    "required_image": [],
-    "width": [500, 1000],
-    "height": [500, 800],
-    "x_range": [2, 20]
-}
-REQUIREMENTS_END
-"""
 
 class HorizontalStackedBarChart(HorizontalBarChart):
     def __init__(self, json_data: Dict):

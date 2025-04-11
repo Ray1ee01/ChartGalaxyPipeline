@@ -39,6 +39,7 @@ class HorizontalBarChart1(HorizontalBarChart):
         y_encoding_spec['axis']['tickOpacity'] = 0
         x_encoding_spec['axis']['labelLimit'] = 1000
         y_encoding_spec['axis']['labelLimit'] = 1000
+        x_encoding_spec['axis']['labels'] = False
         return x_encoding_spec, y_encoding_spec
 
     def make_color_specification(self, json_data: Dict) -> Dict:

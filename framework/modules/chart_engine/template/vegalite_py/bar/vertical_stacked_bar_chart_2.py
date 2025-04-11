@@ -43,6 +43,8 @@ class VerticalStackedBarChart2(VerticalStackedBarChart1):
     def make_color_specification(self, json_data: Dict) -> Dict:
         color_spec = super().make_color_specification(json_data)
         color_spec['legend']['title'] = None
+        if len(color_spec['scale']['domain']) > 4:
+            color_spec['legend']['columns'] = len(color_spec['scale']['domain'])/2
         return color_spec
     
     def make_annotation_specification(self, json_data: Dict) -> Dict:

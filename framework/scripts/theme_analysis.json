@@ -1,0 +1,267 @@
+{
+  "Political Landscape Analysis": {
+    "theme": "Political Landscape Analysis",
+    "base_description": "Examining political affiliations and voting patterns",
+    "scenarios": []
+  },
+  "Technology Adoption Trends": {
+    "theme": "Technology Adoption Trends",
+    "base_description": "Showing how new technologies are adopted over time",
+    "scenarios": []
+  },
+  "Income Inequality Visualization": {
+    "theme": "Income Inequality Visualization",
+    "base_description": "Showing wealth distribution patterns",
+    "scenarios": []
+  },
+  "Climate Change Indicators": {
+    "theme": "Climate Change Indicators",
+    "base_description": "Tracking environmental metrics over time",
+    "scenarios": []
+  },
+  "Healthcare Access Disparities": {
+    "theme": "Healthcare Access Disparities",
+    "base_description": "Comparing healthcare availability across regions",
+    "scenarios": []
+  },
+  "Global Economic Comparisons": {
+    "theme": "Global Economic Comparisons",
+    "base_description": "Comparing economic indicators across countries",
+    "scenarios": []
+  },
+  "Media Consumption Habits": {
+    "theme": "Media Consumption Habits",
+    "base_description": "Revealing how people consume different media forms",
+    "scenarios": []
+  },
+  "Urban Development Patterns": {
+    "theme": "Urban Development Patterns",
+    "base_description": "Tracking city growth and infrastructure changes",
+    "scenarios": []
+  },
+  "Education Performance Metrics": {
+    "theme": "Education Performance Metrics",
+    "base_description": "Analyzing educational outcomes globally",
+    "scenarios": []
+  },
+  "Consumer Behavior Patterns": {
+    "theme": "Consumer Behavior Patterns",
+    "base_description": "Revealing purchasing habits across demographics",
+    "scenarios": []
+  },
+  "Digital Transformation Impact": {
+    "theme": "Digital Transformation Impact",
+    "base_description": "Measuring effects of digitalization on industries",
+    "scenarios": []
+  },
+  "Corporate Financial Trends": {
+    "theme": "Corporate Financial Trends",
+    "base_description": "Displaying business financial metrics over time",
+    "scenarios": []
+  },
+  "Religious Participation Trends": {
+    "theme": "Religious Participation Trends",
+    "base_description": "Showing changes in religious activities",
+    "scenarios": []
+  },
+  "Military Strength Comparisons": {
+    "theme": "Military Strength Comparisons",
+    "base_description": "Comparing defense capabilities between nations",
+    "scenarios": []
+  },
+  "Housing Market Dynamics": {
+    "theme": "Housing Market Dynamics",
+    "base_description": "Tracking real estate prices and affordability",
+    "scenarios": []
+  },
+  "Tourism Patterns": {
+    "theme": "Tourism Patterns",
+    "base_description": "Analyzing travel destinations and tourist behaviors",
+    "scenarios": []
+  },
+  "Employment Sector Changes": {
+    "theme": "Employment Sector Changes",
+    "base_description": "Showing shifts in job markets and industries",
+    "scenarios": []
+  },
+  "Generational Attitude Differences": {
+    "theme": "Generational Attitude Differences",
+    "base_description": "Comparing perspectives across age groups",
+    "scenarios": []
+  },
+  "Energy Usage Patterns": {
+    "theme": "Energy Usage Patterns",
+    "base_description": "Showing consumption of different energy sources",
+    "scenarios": []
+  },
+  "Transportation Mode Shifts": {
+    "theme": "Transportation Mode Shifts",
+    "base_description": "Showing changes in how people travel",
+    "scenarios": []
+  },
+  "Sports Performance Analysis": {
+    "theme": "Sports Performance Analysis",
+    "base_description": "Comparing athletic achievements across teams",
+    "scenarios": []
+  },
+  "Social Media Influence": {
+    "theme": "Social Media Influence",
+    "base_description": "Tracking platform usage and engagement metrics",
+    "scenarios": []
+  },
+  "Food Consumption Patterns": {
+    "theme": "Food Consumption Patterns",
+    "base_description": "Analyzing dietary preferences across regions",
+    "scenarios": []
+  },
+  "Market Share Evolution": {
+    "theme": "Market Share Evolution",
+    "base_description": "Tracking how companies compete within industries",
+    "scenarios": []
+  },
+  "Demographic Shifts": {
+    "theme": "Demographic Shifts",
+    "base_description": "Illustrating changes in population composition",
+    "scenarios": []
+  },
+  "Public Health Indicators": {
+    "theme": "Public Health Indicators",
+    "base_description": "Displaying health statistics across populations",
+    "scenarios": []
+  },
+  "Public Opinion Fluctuations": {
+    "theme": "Public Opinion Fluctuations",
+    "base_description": "Showing how attitudes change over time",
+    "scenarios": []
+  },
+  "Water Resource Management": {
+    "theme": "Water Resource Management",
+    "base_description": "Analyzing water usage and availability",
+    "scenarios": []
+  },
+  "Brand Loyalty Indicators": {
+    "theme": "Brand Loyalty Indicators",
+    "base_description": "Measuring consumer attachment to brands",
+    "scenarios": []
+  },
+  "Linguistic Diversity Patterns": {
+    "theme": "Linguistic Diversity Patterns",
+    "base_description": "Showing language usage and preservation",
+    "scenarios": []
+  },
+  "Innovation Metrics": {
+    "theme": "Innovation Metrics",
+    "base_description": "Tracking patent filings and R&D investments",
+    "scenarios": []
+  },
+  "Gender Gap Analysis": {
+    "theme": "Gender Gap Analysis",
+    "base_description": "Tracking disparities between genders",
+    "scenarios": []
+  },
+  "Air Travel Trends": {
+    "theme": "Air Travel Trends",
+    "base_description": "Analyzing flight patterns and passenger behaviors",
+    "scenarios": []
+  },
+  "Manufacturing Output Comparison": {
+    "theme": "Manufacturing Output Comparison",
+    "base_description": "Tracking production across countries",
+    "scenarios": []
+  },
+  "Agricultural Production Patterns": {
+    "theme": "Agricultural Production Patterns",
+    "base_description": "Showing crop yields and farming methods",
+    "scenarios": []
+  },
+  "Waste Generation and Recycling": {
+    "theme": "Waste Generation and Recycling",
+    "base_description": "Analyzing trash production and management",
+    "scenarios": []
+  },
+  "Public Transport Efficiency": {
+    "theme": "Public Transport Efficiency",
+    "base_description": "Comparing transit systems across cities",
+    "scenarios": []
+  },
+  "Cultural Product Consumption": {
+    "theme": "Cultural Product Consumption",
+    "base_description": "Tracking books, music, and film consumption",
+    "scenarios": []
+  },
+  "Digital Divide Visualization": {
+    "theme": "Digital Divide Visualization",
+    "base_description": "Showing technology access disparities",
+    "scenarios": []
+  },
+  "Mental Health Awareness": {
+    "theme": "Mental Health Awareness",
+    "base_description": "Tracking attitudes and treatment access",
+    "scenarios": []
+  },
+  "Cryptocurrency Trading Patterns": {
+    "theme": "Cryptocurrency Trading Patterns",
+    "base_description": "Analyzing digital currency markets",
+    "scenarios": []
+  },
+  "Renewable Energy Adoption": {
+    "theme": "Renewable Energy Adoption",
+    "base_description": "Showing implementation of sustainable energy",
+    "scenarios": []
+  },
+  "Aging Population Challenges": {
+    "theme": "Aging Population Challenges",
+    "base_description": "Showing demographic shifts toward older populations",
+    "scenarios": []
+  },
+  "Work-Life Balance Metrics": {
+    "theme": "Work-Life Balance Metrics",
+    "base_description": "Comparing time allocation across countries",
+    "scenarios": []
+  },
+  "Urbanization Acceleration": {
+    "theme": "Urbanization Acceleration",
+    "base_description": "Tracking movement from rural to urban areas",
+    "scenarios": []
+  },
+  "Cybersecurity Threat Landscape": {
+    "theme": "Cybersecurity Threat Landscape",
+    "base_description": "Analyzing digital security incidents",
+    "scenarios": []
+  },
+  "Corporate Diversity Progress": {
+    "theme": "Corporate Diversity Progress",
+    "base_description": "Measuring workplace representation",
+    "scenarios": []
+  },
+  "Wildlife Conservation Status": {
+    "theme": "Wildlife Conservation Status",
+    "base_description": "Tracking endangered species populations",
+    "scenarios": []
+  },
+  "International Aid Distribution": {
+    "theme": "International Aid Distribution",
+    "base_description": "Showing humanitarian assistance flows",
+    "scenarios": []
+  },
+  "Entertainment Industry Revenue": {
+    "theme": "Entertainment Industry Revenue",
+    "base_description": "Tracking earnings across media formats",
+    "scenarios": []
+  },
+  "Remote Work Adoption": {
+    "theme": "Remote Work Adoption",
+    "base_description": "Tracking changes in workplace location",
+    "scenarios": []
+  },
+  "Mobile Device Usage Patterns": {
+    "theme": "Mobile Device Usage Patterns",
+    "base_description": "Analyzing how people use smartphones and tablets",
+    "scenarios": []
+  },
+  "Public Space Utilization": {
+    "theme": "Public Space Utilization",
+    "base_description": "Showing how urban spaces are used",
+    "scenarios": []
+  }
+}

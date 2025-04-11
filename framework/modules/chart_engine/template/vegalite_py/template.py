@@ -89,13 +89,16 @@ class VegaLiteTemplate:
             if data_column['role'] == 'x':
                 x_column = data_column
         self.chart = elements_tree
-        # print("self.chart: ", self.chart.children[0].children[0].children)
-        # 在self.chart.children[0].children[0].children中，把class是mark_group的元素放在第一的位置
-        for child in self.chart.children[0].children[0].children:
-            if child.attributes.get("class", "") == "mark_group":
-                self.chart.children[0].children[0].children.remove(child)
-                self.chart.children[0].children[0].children.insert(0, child)
-                break
+        # # print("self.chart: ", self.chart.children[0].children[0].children)
+        # # 在self.chart.children[0].children[0].children中，把class是mark_group的元素放在尽可能后面的位置，但是保证在所有"mark-text role-mark" in "class"的元素之前
+        # for child in self.chart.children[0].children[0].children:
+        #     if child.attributes.get("class", "") == "mark_group":
+        #         self.chart.children[0].children[0].children.remove(child)
+        #         for child in self.chart.children[0].children[0].children:
+        #             if "mark-text role-mark" in child.attributes.get("class", ""):
+        #                 self.chart.children[0].children[0].children.insert(0, child)
+        #                 break
+        #         break
         self.legend_group = element_parser.legend_group
         for mark in self.marks:
             element_with_data = find_element_with_aria_label(mark)

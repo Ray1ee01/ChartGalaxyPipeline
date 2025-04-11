@@ -109,7 +109,7 @@ def assemble_infographic(
     total_height = chart_height + title_height + between_padding + outer_padding * 2
     total_width = chart_width + padding * 2
     
-    final_svg = f"""<svg xmlns="http://www.w3.org/2000/svg" width="{total_width}" height="{total_height + 100}" style="font-family: Arial, 'Liberation Sans', 'DejaVu Sans', sans-serif;">
+    final_svg = f"""<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="{total_width}" height="{total_height + 100}" style="font-family: Arial, 'Liberation Sans', 'DejaVu Sans', sans-serif;">
     <g class="text" transform="translate({outer_padding}, {outer_padding})">{title_inner_content}</g>
     <g class="chart" transform="translate({outer_padding}, {outer_padding + title_height + between_padding})">{chart_inner_content}</g>"""
     original_mask = calculate_mask(final_svg + "\n</svg>", total_width, total_height, 0)
@@ -123,17 +123,18 @@ def assemble_infographic(
         image_size -= between_padding * 2
         best_x += between_padding
         best_y += between_padding
-        image_element = f"""
-    <image
-        class="image"
-        x="{best_x}"
-        y="{best_y}"
-        width="{image_size}"
-        height="{image_size}"
-        preserveAspectRatio="none"
-        href="{primary_image}"
-    />"""
-        final_svg += image_element
+        if image_size > 100:
+            image_element = f"""
+        <image
+            class="image"
+            x="{best_x}"
+            y="{best_y}"
+            width="{image_size}"
+            height="{image_size}"
+            preserveAspectRatio="none"
+            href="{primary_image}"
+        />"""
+            final_svg += image_element
     
     # 关闭SVG标签
     final_svg += "\n</svg>"
@@ -154,17 +155,28 @@ def process(input: str, output: str, base_url: str, api_key: str, chart_name: st
     Returns:
         bool: 处理是否成功
     """
+    start_time = time.time()
+    
     # 读取输入文件
+    file_read_start = time.time()
     with open(input, "r", encoding="utf-8") as f:
         data = json.load(f)
     data["name"] = input
+    file_read_time = time.time() - file_read_start
+    logger.info(f"Reading input file took: {file_read_time:.4f} seconds")
     
     # 扫描并获取所有可用的模板
+    scan_templates_start = time.time()
     templates = scan_templates()
+    scan_templates_time = time.time() - scan_templates_start
+    logger.info(f"Scanning templates took: {scan_templates_time:.4f} seconds")
     
     # 分析模板并获取要求
+    analyze_templates_start = time.time()
     template_count, template_requirements = analyze_templates(templates)
     compatible_templates = check_template_compatibility(data, templates, chart_name)
+    analyze_templates_time = time.time() - analyze_templates_start
+    logger.info(f"Analyzing templates took: {analyze_templates_time:.4f} seconds")
         
     # 如果指定了chart_name，尝试使用它
     if chart_name:
@@ -172,6 +184,7 @@ def process(input: str, output: str, base_url: str, api_key: str, chart_name: st
         if len(compatible_templates) > 0:
             pass
         else:
+            logger.error(f"Specified chart_name '{chart_name}' not compatible with data")
             return False
         logger.info("input file: %s", input)
         logger.info("output file: %s", output)
@@ -183,8 +196,12 @@ def process(input: str, output: str, base_url: str, api_key: str, chart_name: st
         if not compatible_templates:
             logger.error("No compatible templates found for the given data")
             return False
-        # 随机选择一个兼容的模板
+    
+    # 选择模板
+    select_template_start = time.time()
     engine, chart_type, chart_name = select_template(compatible_templates)
+    select_template_time = time.time() - select_template_start
+    logger.info(f"Selecting template took: {select_template_time:.4f} seconds")
     
     # 打印选择的模板信息
     logger.info(f"\nSelected template: {engine}/{chart_type}/{chart_name}")
@@ -192,19 +209,30 @@ def process(input: str, output: str, base_url: str, api_key: str, chart_name: st
     logger.info(f"Chart type: {chart_type}")
     logger.info(f"Chart name: {chart_name}\n")
 
+    # print("requirements", template_requirements)
+
     # 处理模板要求
+    process_req_start = time.time()
     requirements = template_requirements[f"{engine}/{chart_type}/{chart_name}"]
     process_template_requirements(requirements, data)
+    process_req_time = time.time() - process_req_start
+    logger.info(f"Processing template requirements took: {process_req_time:.4f} seconds")
     
     # 处理数据
+    process_data_start = time.time()
     process_temporal_data(data)
     process_numerical_data(data)
+    process_data_time = time.time() - process_data_start
+    logger.info(f"Processing data took: {process_data_time:.4f} seconds")
     
     # 获取图表模板
+    get_template_start = time.time()
     engine_obj, template = get_template_for_chart_name(chart_name)
     if engine_obj is None or template is None:
         logger.error(f"Failed to load template: {engine}/{chart_type}/{chart_name}")
         return False
+    get_template_time = time.time() - get_template_start
+    logger.info(f"Getting template took: {get_template_time:.4f} seconds")
     
     # 创建临时目录
     tmp_dir = "./tmp"
@@ -223,14 +251,19 @@ def process(input: str, output: str, base_url: str, api_key: str, chart_name: st
     else:
         framework = engine
 
+    # 渲染图表
+    render_chart_start = time.time()
     render_chart_to_svg(
         json_data=data,
         output_svg_path=chart_svg_path,
         js_file=template,
         framework=framework # Extract framework name (echarts/d3)
     )
+    render_chart_time = time.time() - render_chart_start
+    logger.info(f"Rendering chart took: {render_chart_time:.4f} seconds")
         
     # 读取生成的SVG内容
+    read_svg_start = time.time()
     with open(chart_svg_path, "r", encoding="utf-8") as f:
         chart_svg_content = f.read()
         if "This is a fallback SVG using a PNG screenshot" in chart_svg_content:
@@ -238,20 +271,26 @@ def process(input: str, output: str, base_url: str, api_key: str, chart_name: st
         
         # 检查并删除大型rect
         chart_svg_content = remove_large_rects(chart_svg_content)
+    read_svg_time = time.time() - read_svg_start
+    logger.info(f"Reading and processing SVG took: {read_svg_time:.4f} seconds")
         
     chart_width = max(1, int(data["variables"]["width"]))
     chart_height = max(1, int(data["variables"]["height"]))
     
     # 生成标题SVG
+    title_svg_start = time.time()
     title_svg_content = title_styler_process(input_data=data, max_width=chart_width - padding * 2)
     if not title_svg_content:
         logger.error("Failed to generate title SVG")
         return False
+    title_svg_time = time.time() - title_svg_start
+    logger.info(f"Generating title SVG took: {title_svg_time:.4f} seconds")
     
     # 获取primary图片
     primary_image = data.get("images", {}).get("other", {}).get("primary")
     
     # 使用新函数组装信息图
+    assemble_start = time.time()
     final_svg, original_mask, total_height = assemble_infographic(
         title_svg_content=title_svg_content,
         chart_svg_content=chart_svg_content,
@@ -261,6 +300,8 @@ def process(input: str, output: str, base_url: str, api_key: str, chart_name: st
         between_padding=between_padding,
         primary_image=primary_image
     )
+    assemble_time = time.time() - assemble_start
+    logger.info(f"Assembling infographic took: {assemble_time:.4f} seconds")
     
     if final_svg is None:
         logger.error("Failed to assemble infographic: SVG content extraction failed")
@@ -274,10 +315,31 @@ def process(input: str, output: str, base_url: str, api_key: str, chart_name: st
     output_path = os.path.join(output_dir, new_filename)
     
     # 保存最终的SVG
+    save_start = time.time()
     with open(output_path, "w", encoding="utf-8") as f:
         f.write(final_svg)
+    save_time = time.time() - save_start
+    logger.info(f"Saving final SVG took: {save_time:.4f} seconds")
     
     os.remove(chart_svg_path)
+    
+    total_time = time.time() - start_time
+    logger.info(f"\n--- PERFORMANCE SUMMARY ---")
+    logger.info(f"Total processing time: {total_time:.4f} seconds")
+    logger.info(f"Reading input file: {file_read_time:.4f}s ({(file_read_time/total_time)*100:.1f}%)")
+    logger.info(f"Scanning templates: {scan_templates_time:.4f}s ({(scan_templates_time/total_time)*100:.1f}%)")
+    logger.info(f"Analyzing templates: {analyze_templates_time:.4f}s ({(analyze_templates_time/total_time)*100:.1f}%)")
+    logger.info(f"Selecting template: {select_template_time:.4f}s ({(select_template_time/total_time)*100:.1f}%)")
+    logger.info(f"Processing template requirements: {process_req_time:.4f}s ({(process_req_time/total_time)*100:.1f}%)")
+    logger.info(f"Processing data: {process_data_time:.4f}s ({(process_data_time/total_time)*100:.1f}%)")
+    logger.info(f"Getting template: {get_template_time:.4f}s ({(get_template_time/total_time)*100:.1f}%)")
+    logger.info(f"Rendering chart: {render_chart_time:.4f}s ({(render_chart_time/total_time)*100:.1f}%)")
+    logger.info(f"Reading and processing SVG: {read_svg_time:.4f}s ({(read_svg_time/total_time)*100:.1f}%)")
+    logger.info(f"Generating title SVG: {title_svg_time:.4f}s ({(title_svg_time/total_time)*100:.1f}%)")
+    logger.info(f"Assembling infographic: {assemble_time:.4f}s ({(assemble_time/total_time)*100:.1f}%)")
+    logger.info(f"Saving final SVG: {save_time:.4f}s ({(save_time/total_time)*100:.1f}%)")
+    logger.info(f"--- END SUMMARY ---\n")
+    
     return True
 
 def main():
