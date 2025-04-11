@@ -10,7 +10,7 @@ REQUIREMENTS_BEGIN
     "required_other_icons": [],
     "required_fields_colors": ["group"],
     "required_other_colors": [],
-    "supported_effects": ["gradient", "opacity"],
+    "supported_effects": [],
     "min_height": 400,
     "min_width": 800,
     "background": "light",
