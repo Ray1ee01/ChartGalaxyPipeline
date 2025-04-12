@@ -7,13 +7,13 @@ REQUIREMENTS_BEGIN
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
     "required_fields_range": [[2, 20], [0, 100], [2, 5]],
-    "required_fields_icons": ["dimension"],
+    "required_fields_icons": ["x"],
     "required_other_icons": [],
     "required_fields_colors": ["group"],
-    "required_other_colors": ["primary"],
+    "required_other_colors": [],
     "supported_effects": ["shadow", "radius_corner", "gradient", "stroke", "spacing"],
     "min_height": 400,
-    "min_width": 600,
+    "min_width": 400,
     "background": "styled",
     "icon_mark": "none",
     "icon_label": "side",
@@ -73,31 +73,20 @@ function makeChart(containerSelector, data) {
     
     // ---------- 3. 提取字段名和单位 ----------
     
-    // 根据数据列顺序提取字段名
-    const dimensionField = dataColumns.length > 0 ? dataColumns[0].name : "dimension";
-    const valueField = dataColumns.length > 1 ? dataColumns[1].name : "value";
-    const groupField = dataColumns.length > 2 ? dataColumns[2].name : "group";
     
-    // 获取所有字段的单位（如果存在且不是"none"）
-    let dimensionUnit = "";
+    
+    
+    
+    // 根据数据列顺序提取字段名称
+    const dimensionField = dataColumns.find(col => col.role === "x").name;
+    const valueField = dataColumns.find(col => col.role === "y").name;
+    
+    // 找到所有带有"group"角色的列
+    const groupField = dataColumns.filter(col => col.role === "group").name;
     let valueUnit = "";
-    let groupUnit = "";
-    
-    // 维度字段的单位
-    if (dataColumns.length > 0 && dataColumns[0].unit && dataColumns[0].unit !== "none") {
-        dimensionUnit = dataColumns[0].unit;
+    if (dataColumns.find(col => col.role === "y").unit !== "none") {
+        valueUnit = dataColumns.find(col => col.role === "y").unit;
     }
-    
-    // 数值字段的单位
-    if (dataColumns.length > 1 && dataColumns[1].unit && dataColumns[1].unit !== "none") {
-        valueUnit = dataColumns[1].unit;
-    }
-    
-    // 分组字段的单位
-    if (dataColumns.length > 2 && dataColumns[2].unit && dataColumns[2].unit !== "none") {
-        groupUnit = dataColumns[2].unit;
-    }
-    
     // ---------- 4. 数据处理 ----------
     
     // 获取维度（如Gen Z, Millennials等）和分组（如$50 or more, $1-49, Nothing）

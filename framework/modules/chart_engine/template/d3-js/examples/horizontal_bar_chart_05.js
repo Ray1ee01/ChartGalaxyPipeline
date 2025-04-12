@@ -9,11 +9,11 @@ REQUIREMENTS_BEGIN
     "required_fields_range": [[2, 30], [-100, 100]],
     "required_fields_icons": [],
     "required_other_icons": [],
-    "required_fields_colors": ["x"],
+    "required_fields_colors": [],
     "required_other_colors": ["primary"],
     "supported_effects": ["shadow", "radius_corner", "gradient", "stroke", "spacing"],
     "min_height": 400,
-    "min_width": 600,
+    "min_width": 400,
     "background": "no",
     "icon_mark": "none",
     "icon_label": "none",
@@ -75,7 +75,7 @@ function makeChart(containerSelector, data) {
     
     // 获取字段单位（如果存在）
     let dimensionUnit = "";
-    let valueUnit = ""; // 默认为百分比
+    let valueUnit = ""; 
     
     if (dataColumns.find(col => col.role === "x").unit !== "none") {
         dimensionUnit = dataColumns.find(col => col.role === "x").unit;
@@ -294,7 +294,7 @@ function makeChart(containerSelector, data) {
     
     // 添加Y轴名称文本 - 右对齐
     g.append("text")
-        .attr("x", innerWidth - 10) // 右边缘减去一点padding
+        .attr("x", innerWidth - 5) // 右边缘减去一点padding
         .attr("y", titleBarY + titleBarHeight/2)
         .attr("dy", "0.35em") // 垂直居中
         .attr("text-anchor", "end") // 右对齐

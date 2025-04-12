@@ -15,11 +15,11 @@ REQUIREMENTS_BEGIN
     ],
     "required_fields_icons": ["x"],
     "required_other_icons": [],
-    "required_fields_colors": ["y", "y2"],
+    "required_fields_colors": [],
     "required_other_colors": ["primary"],
     "supported_effects": ["radius_corner", "spacing"],
-    "min_height": 600,
-    "min_width": 600,
+    "min_height": 400,
+    "min_width": 400,
     "background": "no",
     "icon_mark": "none",
     "icon_label": "side",
@@ -81,9 +81,10 @@ function makeChart(containerSelector, data) {
     const valueField2 = dataColumns.find(col => col.role === "y2")?.name || "Number of Owners";
     
     // 获取字段单位
-    const valueUnit1 = dataColumns.find(col => col.role === "y")?.unit || "";
-    const valueUnit2 = dataColumns.find(col => col.role === "y2")?.unit || "M";
-    
+    const valueUnit1 = dataColumns.find(col => col.role === "y")?.unit === "none" ? "" : 
+                       dataColumns.find(col => col.role === "y")?.unit;
+    const valueUnit2 = dataColumns.find(col => col.role === "y2")?.unit === "none"? "" :
+                       dataColumns.find(col => col.role === "y2")?.unit;
     // 列标题（使用数据列的name字段，而不是description）
     const columnTitle1 = dataColumns.find(col => col.role === "y")?.name || 
                           "Crypto Ownership Percentage";
@@ -194,17 +195,13 @@ function makeChart(containerSelector, data) {
     
     // 获取条形图颜色
     const getBarColor = (dimension) => {
-        if (colors.field && colors.field[valueField1]) {
-            return colors.field[valueField1];
-        }
+        
         return colors.other.primary || "#83C341"; // 亮绿色
     };
     
     // 获取圆形图颜色
     const getCircleColor = (dimension) => {
-        if (colors.field && colors.field[valueField2]) {
-            return colors.field[valueField2];
-        }
+        
         return colors.other.primary || "#83C341"; // 亮绿色
     };
 

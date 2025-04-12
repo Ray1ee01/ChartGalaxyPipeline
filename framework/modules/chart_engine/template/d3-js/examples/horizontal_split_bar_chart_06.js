@@ -14,7 +14,7 @@ REQUIREMENTS_BEGIN
     "required_other_colors": ["primary"],
     "supported_effects": ["shadow", "radius_corner", "gradient", "stroke", "spacing"],
     "min_height": 400,
-    "min_width": 600,
+    "min_width": 400,
     "background": "no",
     "icon_mark": "none",
     "icon_label": "side",
@@ -30,7 +30,7 @@ function makeChart(containerSelector, data) {
     
     // 提取数据和配置
     const jsonData = data;                           // 完整的JSON数据对象
-    const chartData = jsonData.data.data                 // 实际数据点数组  
+    const chartData = jsonData.data;            // 实际数据点数组  
     const variables = jsonData.variables || {};      // 图表配置
     const typography = jsonData.typography || {      // 字体设置，如果不存在则使用默认值
         title: { font_family: "Arial", font_size: "18px", font_weight: "bold" },
@@ -40,7 +40,7 @@ function makeChart(containerSelector, data) {
     };
     const colors = jsonData.colors || { text_color: "#333333" };  // 颜色设置
     const images = jsonData.images || { field: {}, other: {} };   // 图像设置
-    const dataColumns = jsonData.data.columns  || []; // 数据列定义
+    const dataColumns = jsonData.data_columns || []; // 数据列定义
     
     // 设置视觉效果变量的默认值
     variables.has_rounded_corners = variables.has_rounded_corners || false;
@@ -225,9 +225,8 @@ function makeChart(containerSelector, data) {
     if (variables.has_gradient) {
         groups.forEach((group, i) => {
             // 为每个组创建一个渐变
-            const groupColor = colors.field && colors.field[groupField] && 
-                             colors.field[groupField][group] ? 
-                             colors.field[groupField][group] : 
+            const groupColor = colors.field && colors.field[group] ? 
+                             colors.field[group] : 
                              d3.schemeCategory10[i % 10];
             
             const gradient = defs.append("linearGradient")
@@ -267,8 +266,8 @@ function makeChart(containerSelector, data) {
     const colorScale = d3.scaleOrdinal()
         .domain(groups)
         .range(groups.map((group, i) => {
-            if (colors.field && colors.field[groupField] && colors.field[groupField][group]) {
-                return colors.field[groupField][group];
+            if (colors.field && colors.field[group]) {
+                return colors.field[group];
             }
             return d3.schemeCategory10[i % 10]; // 使用D3默认颜色方案
         }));
