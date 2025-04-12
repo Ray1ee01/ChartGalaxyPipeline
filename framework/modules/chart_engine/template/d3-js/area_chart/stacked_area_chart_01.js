@@ -6,11 +6,11 @@ REQUIREMENTS_BEGIN
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["temporal"], ["numerical"], ["categorical"]],
     "required_fields_range": [[5, 50], [0, 100], [2, 5]],
-    "required_fields_icons": [],
+    "required_fields_icons": ["group"],
     "required_other_icons": [],
     "required_fields_colors": ["group"],
-    "required_other_colors": ["primary", "secondary", "background"],
-    "supported_effects": ["gradient", "opacity"],
+    "required_other_colors": [],
+    "supported_effects": [],
     "min_height": 600,
     "min_width": 800,
     "background": "dark",
@@ -60,7 +60,8 @@ function makeChart(containerSelector, data) {
         .attr("height", height)
         .attr("viewBox", `0 0 ${width} ${height}`)
         .attr("style", "max-width: 100%; height: auto;")
-        .attr("xmlns", "http://www.w3.org/2000/svg");
+        .attr("xmlns", "http://www.w3.org/2000/svg")
+        .attr("xmlns:xlink", "http://www.w3.org/1999/xlink");
     
     // 创建图表区域
     const chartWidth = width - margin.left - margin.right;
@@ -184,16 +185,16 @@ function makeChart(containerSelector, data) {
             });
         }
         
-        // 计算每个网格及其前后2个网格的平均宽度
+        // 计算每个网格及其前后5个网格的平均宽度
         let avgWidths = [];
-        for (let i = 1; i < gridWidths.length - 1; i++) {
+        for (let i = 5; i < gridWidths.length - 5; i++) {
             let curY0 = gridWidths[i].y0;
             let curY1 = gridWidths[i].y1;
 
             let sum = curY0 - curY1;
-            let count = 1;
+            let count = 11;
 
-            for (let j = i - 1; j >= Math.max(0, i - 2); j--) {
+            for (let j = i - 1; j >= Math.max(0, i - 5); j--) {
                 if (gridWidths[j].y0 < curY0) {
                     curY0 = gridWidths[j].y0;
                 }
@@ -201,13 +202,12 @@ function makeChart(containerSelector, data) {
                     curY1 = gridWidths[j].y1;
                 }
                 sum += curY0 - curY1;
-                count++;
             }
 
             curY0 = gridWidths[i].y0;
             curY1 = gridWidths[i].y1;
 
-            for (let j = i + 1; j <= Math.min(gridWidths.length - 1, i + 2); j++) {
+            for (let j = i + 1; j <= Math.min(gridWidths.length - 1, i + 5); j++) {
                 if (gridWidths[j].y0 < curY0) {
                     curY0 = gridWidths[j].y0;
                 }
@@ -215,7 +215,6 @@ function makeChart(containerSelector, data) {
                     curY1 = gridWidths[j].y1;
                 }
                 sum += curY0 - curY1;
-                count++;
             }
             
             avgWidths.push({
@@ -243,12 +242,14 @@ function makeChart(containerSelector, data) {
         // 使用找到的最佳位置
         const bestGrid = avgWidths[bestGridIdx];
         const areaHeight = bestGrid.avgWidth;
-        const dataIdx = bestGrid.dataIdx;
-        const minHeightForImage = 30; // 显示图像的最小高度
+        const minHeightForImage = 70; // 显示图像的最小高度
         
         // 计算标签位置
         const labelX = bestGrid.gridX;
-        let labelY = yScale((d[dataIdx][0] + d[dataIdx][1]) / 2);
+        // 对labelX处的y0和y1进行插值计算
+        const y0 = gridWidths[bestGridIdx].y0; // labelX处的上边界
+        const y1 = gridWidths[bestGridIdx].y1; // labelX处的下边界
+        let labelY = y0 + (y1 - y0) * 0.5; // 取中点位置
 
         console.log(`Group: ${group}, bestAvgWidth: ${maxAvgWidth}, at grid: ${bestGridIdx}, x: ${labelX}`);
         

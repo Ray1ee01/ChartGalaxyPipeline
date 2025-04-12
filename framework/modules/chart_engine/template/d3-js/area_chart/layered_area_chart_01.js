@@ -5,7 +5,7 @@ REQUIREMENTS_BEGIN
     "chart_name": "layered_area_chart_01",
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["temporal"], ["numerical"], ["categorical"]],
-    "required_fields_range": [[5, 50], [0, 100], [2, 3]],
+    "required_fields_range": [[5, 50], [0, 100], [2, 4]],
     "required_fields_icons": [],
     "required_other_icons": [],
     "required_fields_colors": ["group"],
@@ -60,7 +60,8 @@ function makeChart(containerSelector, data) {
         .attr("height", height)
         .attr("viewBox", `0 0 ${width} ${height}`)
         .attr("style", "max-width: 100%; height: auto;")
-        .attr("xmlns", "http://www.w3.org/2000/svg");
+        .attr("xmlns", "http://www.w3.org/2000/svg")
+        .attr("xmlns:xlink", "http://www.w3.org/1999/xlink");
     
     // 创建图表区域
     const chartWidth = width - margin.left - margin.right;
@@ -73,7 +74,7 @@ function makeChart(containerSelector, data) {
     
     // 创建y轴比例尺 (百分比)
     const yScale = d3.scaleLinear()
-        .domain([0, d3.max(chartData, d => d[yField]) * 1.3])
+        .domain([0, d3.max(chartData, d => d[yField]) * 1.5])
         .range([chartHeight, 0]);
 
     // 添加X轴线
@@ -106,7 +107,9 @@ function makeChart(containerSelector, data) {
     
     // 添加x轴刻度和标签
     xTicks.forEach((tick, i) => {
-        
+        if (i === xTicks.length - 1) {
+            return;
+        }
         // 添加刻度标签
         g.append("text")
             .attr("x", xScale(tick))
@@ -237,10 +240,13 @@ function makeChart(containerSelector, data) {
             .attr("stroke-width", 1)
             .attr("class", "background")
     });
+
+    // 获取最后一个刻度的x值
+    const lastTickX = xScale(xTicks[xTicks.length - 1]);
     
     // 添加最后一年标注
     g.append("text")
-        .attr("x", chartWidth)
+        .attr("x", lastTickX)
         .attr("y", yScale(d3.max(yTicks)) - 10) // 调整文本位置到y轴最大刻度上方
         .attr("text-anchor", "middle")
         .style("font-family", "Arial")
@@ -250,14 +256,14 @@ function makeChart(containerSelector, data) {
 
     // 添加倒置的蓝色小三角
     g.append("path")
-        .attr("d", "M" + (chartWidth-5) + "," + yScale(d3.max(yTicks)) + " L" + (chartWidth+5) + "," + yScale(d3.max(yTicks)) + " L" + chartWidth + "," + (yScale(d3.max(yTicks))+5) + "Z")
+        .attr("d", "M" + (lastTickX-5) + "," + yScale(d3.max(yTicks)) + " L" + (lastTickX+5) + "," + yScale(d3.max(yTicks)) + " L" + lastTickX + "," + (yScale(d3.max(yTicks))+5) + "Z")
         .attr("fill", "#87aac0");
     
     // 添加垂直虚线指向最后一年
     g.append("line")
-        .attr("x1", chartWidth)
+        .attr("x1", lastTickX)
         .attr("y1", yScale(d3.max(yTicks))+5)
-        .attr("x2", chartWidth)
+        .attr("x2", lastTickX)
         .attr("y2", chartHeight)
         .attr("stroke", "#87aac0")
         .attr("stroke-width", 1)
@@ -274,6 +280,7 @@ function makeChart(containerSelector, data) {
 
         // 计算标签基础位置
         let labelYBase = yScale(lastPoint[yField]);
+        let labelXBase = xScale(parseDate(lastPoint[xField]));
         
         // 检查与上一个标签的距离，如果太近则调整位置
         if (prevLabelYBase !== null && Math.abs(prevLabelYBase - labelYBase) < minLabelDistance) {
@@ -285,24 +292,24 @@ function makeChart(containerSelector, data) {
         
         // 创建标签背景
         const labelBg = g.append("rect")
-            .attr("x", chartWidth - 30)
+            .attr("x", labelXBase - 40)
             .attr("y", labelYBase - 50)
             .attr("rx", 10)
             .attr("ry", 10)
-            .attr("width", 60)
+            .attr("width", 80)
             .attr("height", 40)
             .attr("fill", color);
         
         // 添加倒三角
         g.append("path")
-            .attr("d", `M${chartWidth}, ${labelYBase} 
-                       L${chartWidth - 10}, ${labelYBase - 15} 
-                       L${chartWidth + 10}, ${labelYBase - 15} Z`)
+            .attr("d", `M${labelXBase}, ${labelYBase} 
+                       L${labelXBase - 10}, ${labelYBase - 15} 
+                       L${labelXBase + 10}, ${labelYBase - 15} Z`)
             .attr("fill", color);
         
         // 添加组名（上部分文本）
         g.append("text")
-            .attr("x", chartWidth)
+            .attr("x", labelXBase)
             .attr("y", labelYBase - 40)
             .attr("text-anchor", "middle")
             .attr("dominant-baseline", "middle")
@@ -314,7 +321,7 @@ function makeChart(containerSelector, data) {
         
         // 添加最终值（下部分文本）
         g.append("text")
-            .attr("x", chartWidth)
+            .attr("x", labelXBase)
             .attr("y", labelYBase - 22)
             .attr("text-anchor", "middle")
             .attr("dominant-baseline", "middle")

@@ -61,7 +61,8 @@ function makeChart(containerSelector, data) {
         .attr("height", height)
         .attr("viewBox", `0 0 ${width} ${height}`)
         .attr("style", "max-width: 100%; height: auto;") // 深蓝色背景
-        .attr("xmlns", "http://www.w3.org/2000/svg");
+        .attr("xmlns", "http://www.w3.org/2000/svg")
+        .attr("xmlns:xlink", "http://www.w3.org/1999/xlink");
     
     // 创建图表区域
     const chartWidth = width - margin.left - margin.right;
@@ -171,21 +172,41 @@ function makeChart(containerSelector, data) {
         
         // 添加组标签（在侧面，纯文本，垂直中间位置）
         if (i === 0) {
+            // 左侧组标签背景
+            g.append("rect")
+                .attr("x", 2)
+                .attr("y", chartHeight / 2 - 12)
+                .attr("width", group.length * 9 + 6)
+                .attr("height", 24)
+                .attr("fill", "white")
+                .attr("opacity", 0.5)
+                .attr("rx", 3);
+
             // 左侧组标签
             g.append("text")
-                .attr("x", 5) // 靠近左边缘，但在图表区域内
-                .attr("y", chartHeight / 2) // 放在垂直中间位置
-                .attr("text-anchor", "start")
+                .attr("x", 5)
+                .attr("y", chartHeight / 2)
+                .attr("text-anchor", "start") 
                 .attr("dominant-baseline", "middle")
                 .attr("fill", color)
                 .style("font-size", "14px")
                 .style("font-weight", "bold")
                 .text(group);
         } else {
+            // 右侧组标签背景
+            g.append("rect")
+                .attr("x", chartWidth - group.length * 9 - 8)
+                .attr("y", chartHeight / 2 - 12)
+                .attr("width", group.length * 9 + 6)
+                .attr("height", 24)
+                .attr("fill", "white")
+                .attr("opacity", 0.5)
+                .attr("rx", 3);
+
             // 右侧组标签
             g.append("text")
-                .attr("x", chartWidth - 5) // 靠近右边缘，但在图表区域内
-                .attr("y", chartHeight / 2) // 放在垂直中间位置
+                .attr("x", chartWidth - 5)
+                .attr("y", chartHeight / 2)
                 .attr("text-anchor", "end")
                 .attr("dominant-baseline", "middle")
                 .attr("fill", color)
@@ -199,16 +220,14 @@ function makeChart(containerSelector, data) {
     // 所有刻度使用相同长度和样式
     xTicks.forEach(tick => {
         // 添加年份标签（每两年一个）
-        if (tick.getFullYear() % 2 === 0) {
-            g.append("text")
-                .attr("x", chartWidth/2)
-                .attr("y", xScale(tick))
-                .attr("text-anchor", "middle")
-                .attr("dominant-baseline", "middle")
-                .attr("fill", "#fff")
-                .style("font-size", "12px")
-                .text(xFormat(tick));
-        }
+        g.append("text")
+            .attr("x", chartWidth/2)
+            .attr("y", xScale(tick))
+            .attr("text-anchor", "middle")
+            .attr("dominant-baseline", "middle")
+            .attr("fill", "#fff")
+            .style("font-size", "12px")
+            .text(xFormat(tick));
         
         // 添加刻度线（左侧）- 更长更明显
         g.append("line")

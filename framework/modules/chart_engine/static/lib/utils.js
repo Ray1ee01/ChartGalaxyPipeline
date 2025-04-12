@@ -55,39 +55,43 @@ const createXAxisScaleAndTicks = (data, xField, rangeStart = 0, rangeEnd = 100, 
     let timeInterval;
     let formatFunction;
     
-    if (yearSpan > 30) {
-        // 超过30年，每10年一个刻度
+    if (yearSpan > 35) {
+        // 超过35年，每10年一个刻度
         timeInterval = d3.timeYear.every(10);
         formatFunction = d => d3.timeFormat("%Y")(d);
-    } else if (yearSpan > 10) {
-        // 超过10年，每5年一个刻度
+    } else if (yearSpan > 15) {
+        // 超过15年，每5年一个刻度
         timeInterval = d3.timeYear.every(5);
         formatFunction = d => d3.timeFormat("%Y")(d);
-    } else if (yearSpan > 3) {
-        // 3-10年，每年一个刻度
+    } else if (yearSpan > 7) {
+        // 超过7年，每2年一个刻度  
+        timeInterval = d3.timeYear.every(2);
+        formatFunction = d => d3.timeFormat("%Y")(d);
+    } else if (yearSpan > 2) {
+        // 2-7年，每年一个刻度
         timeInterval = d3.timeYear.every(1);
         formatFunction = d => d3.timeFormat("%Y")(d);
     } else if (yearSpan > 1) {
-        // 1-3年，每季度一个刻度
+        // 1-2年，每季度一个刻度
         timeInterval = d3.timeMonth.every(3);
         formatFunction = d => {
             const month = d.getMonth();
             const quarter = Math.floor(month / 3) + 1;
-            return `Q${quarter} ${d.getFullYear()}`;
+            return `${d.getFullYear().toString().slice(-2)}Q${quarter}`;
         };
     } else if (monthSpan > 6) {
         // 6个月-1年，每月一个刻度
         timeInterval = d3.timeMonth.every(1);
-        formatFunction = d => d3.timeFormat("%b %Y")(d);
+        formatFunction = d => d3.timeFormat("%m %Y")(d);
     } else if (monthSpan > 2) {
         // 2-6个月，每周一个刻度
         timeInterval = d3.timeWeek.every(1);
-        formatFunction = d => d3.timeFormat("%d %b")(d);
+        formatFunction = d => d3.timeFormat("%d %m")(d);
     } else {
         // 少于2个月，每天一个刻度或每几天一个刻度
         const dayInterval = Math.max(1, Math.ceil(daySpan / 10));
         timeInterval = d3.timeDay.every(dayInterval);
-        formatFunction = d => d3.timeFormat("%d %b")(d);
+        formatFunction = d => d3.timeFormat("%d %m")(d);
     }
     
     // 生成刻度
@@ -95,7 +99,8 @@ const createXAxisScaleAndTicks = (data, xField, rangeStart = 0, rangeEnd = 100, 
     
     // 确保包含最后一个日期
     if (xTicks.length > 0 && xTicks[xTicks.length - 1] < xExtent[1]) {
-        xTicks.push(xExtent[1]);
+        xTicks.pop(); // 先移除当前最后一个刻度
+        xTicks.push(xExtent[1]); // 添加数据的最后一个日期作为刻度
     }
     
     return {
@@ -109,3 +114,58 @@ const createXAxisScaleAndTicks = (data, xField, rangeStart = 0, rangeEnd = 100, 
         }
     };
 };
+
+/**
+ * 根据数据点数量计算需要显示标签的点的索引
+ * @param {number} n - 数据点总数
+ * @returns {number[]} - 需要显示标签的点的索引数组
+ */
+const sampleLabels = (n) => {
+    // 少于10个点时显示所有标签
+    if (n <= 10) {
+        return Array.from({length: n}, (_, i) => i);
+    }
+    
+    // 超过10个点时每隔 n/10 个点显示一个标签
+    const step = Math.ceil(n / 10);
+    const result = [];
+    
+    // 从0开始,每隔step个点取一个索引
+    for (let i = 0; i < n; i += step) {
+        result.push(i);
+    }
+    
+    // 确保包含最后一个点
+    if (result[result.length - 1] !== n - 1) {
+        result.push(n - 1);
+    }
+    
+    return result;
+};
+
+
+/**
+ * 计算文本在指定字体大小下的实际渲染宽度
+ * @param {string} text - 要测量的文本
+ * @param {number} fontSize - 字体大小(px)
+ * @returns {number} - 文本宽度(px)
+ */
+const getTextWidth = (text, fontSize) => {
+    // 创建临时canvas用于测量
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    
+    // 设置字体
+    context.font = `${fontSize}px Arial`;
+    
+    // 测量文本宽度
+    const metrics = context.measureText(text);
+    const width = metrics.width;
+    
+    // 删除canvas元素
+    canvas.remove();
+    
+    return width;
+};
+
+

@@ -6,11 +6,11 @@ REQUIREMENTS_BEGIN
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["temporal"], ["numerical"], ["categorical"]],
     "required_fields_range": [[4, 30], [-1000, 1000], [2, 8]],
-    "required_fields_icons": [],
+    "required_fields_icons": ["group"],
     "required_other_icons": [],
     "required_fields_colors": ["group"],
-    "required_other_colors": ["primary"],
-    "supported_effects": ["gradient", "opacity"],
+    "required_other_colors": [],
+    "supported_effects": [],
     "min_height": 400,
     "min_width": 600,
     "background": "dark",
@@ -57,7 +57,8 @@ function makeChart(containerSelector, data) {
         .attr("height", height)
         .attr("viewBox", `0 0 ${width} ${height}`)
         .attr("style", "max-width: 100%; height: auto;")
-        .attr("xmlns", "http://www.w3.org/2000/svg");
+        .attr("xmlns", "http://www.w3.org/2000/svg")
+        .attr("xmlns:xlink", "http://www.w3.org/1999/xlink");
     
     // 创建图表组
     const g = svg.append("g")

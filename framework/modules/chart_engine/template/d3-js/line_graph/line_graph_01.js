@@ -10,7 +10,7 @@ REQUIREMENTS_BEGIN
     "required_other_icons": [],
     "required_fields_colors": [],
     "required_other_colors": ["primary"],
-    "supported_effects": ["gradient", "opacity"],
+    "supported_effects": [],
     "min_height": 400,
     "min_width": 800,
     "background": "light",
@@ -52,7 +52,8 @@ function makeChart(containerSelector, data) {
         .attr("height", height)
         .attr("viewBox", `0 0 ${width} ${height}`)
         .attr("style", "max-width: 100%; height: auto;")
-        .attr("xmlns", "http://www.w3.org/2000/svg");
+        .attr("xmlns", "http://www.w3.org/2000/svg")
+        .attr("xmlns:xlink", "http://www.w3.org/1999/xlink");
     
     // 创建图表区域
     const chartWidth = width - margin.left - margin.right;
@@ -188,9 +189,14 @@ function makeChart(containerSelector, data) {
             .attr("stroke", areaColor)
             .attr("stroke-width", 4);
     });
+
+    const sampleLabelIndex = sampleLabels(chartData.length);
     
     // 添加变化百分比三角形
     percentChanges.forEach(change => {
+        if(!sampleLabelIndex.includes(change.index)) {
+            return;
+        }
         const d = chartData[change.index];
         const x = xScale(parseDate(d[xField]));
         const y = yScale(d[yField]);

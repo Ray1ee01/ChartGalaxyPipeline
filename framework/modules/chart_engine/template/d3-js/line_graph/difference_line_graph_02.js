@@ -6,11 +6,11 @@ REQUIREMENTS_BEGIN
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["temporal"], ["numerical"], ["categorical"]],
     "required_fields_range": [[5, 50], [0, 1000], [2, 2]],
-    "required_fields_icons": [],
+    "required_fields_icons": ["group"],
     "required_other_icons": [],
     "required_fields_colors": ["group"],
-    "required_other_colors": ["primary", "secondary", "background"],
-    "supported_effects": ["gradient", "opacity"],
+    "required_other_colors": [],
+    "supported_effects": [],
     "min_height": 600,
     "min_width": 800,
     "background": "light",
@@ -53,7 +53,8 @@ function makeChart(containerSelector, data) {
         .attr("height", height)
         .attr("viewBox", `0 0 ${width} ${height}`)
         .attr("style", "max-width: 100%; height: auto;")
-        .attr("xmlns", "http://www.w3.org/2000/svg");
+        .attr("xmlns", "http://www.w3.org/2000/svg")
+        .attr("xmlns:xlink", "http://www.w3.org/1999/xlink");
     
     // 创建网格线
     const gridSize = 20;
@@ -120,15 +121,16 @@ function makeChart(containerSelector, data) {
     
     // 创建y轴比例尺
     const yMin = 0;
-    const yMax = d3.max(chartData, d => d[yField]) * 1.1;
+    const yMax = d3.max(chartData, d => d[yField]);
+
+    const yPadding = 0.3 * yMax;
     
     const yScale = d3.scaleLinear()
-        .domain([yMin, yMax])
+        .domain([yMin - yPadding, yMax + yPadding])
         .range([chartHeight, 0]);
     
     // 添加水平网格线
-    const yTicks = d3.ticks(yMin, yMax, 5);
-    
+    const yTicks = d3.ticks(yMin - yPadding, yMax + yPadding, 5);
     
     // 添加水平网格线
     yTicks.forEach(tick => {
@@ -324,7 +326,7 @@ function makeChart(containerSelector, data) {
     const startImgGroup1 = g.append("g")
         .attr("transform", `translate(${xScale(parseDate(firstPoint1[xField])) - imageSize / 2}, ${yScale(firstPoint1[yField]) - imageSize / 2})`);
     
-    // 添加图片或颜色圆
+    // 添加图片
     if (images.field && images.field[selectedGroupNames[0]]) {
         startImgGroup1.append("image")
             .attr("x", 0)
@@ -333,15 +335,7 @@ function makeChart(containerSelector, data) {
             .attr("height", imageSize)
             .attr("filter", `url(#${filterId})`)
             .attr("xlink:href", images.field[selectedGroupNames[0]]);
-    } else {
-        startImgGroup1.append("circle")
-            .attr("cx", 12)
-            .attr("cy", 12)
-            .attr("r", 12)
-            .attr("fill", colors.field[selectedGroupNames[0]])
-            .attr("stroke", "#000000")
-            .attr("stroke-width", 1);
-    }
+    } 
     
     // 添加起始值标注
     g.append("text")
@@ -359,7 +353,7 @@ function makeChart(containerSelector, data) {
     const endImgGroup1 = g.append("g")
         .attr("transform", `translate(${xScale(parseDate(lastPoint1[xField])) - imageSize / 2}, ${yScale(lastPoint1[yField]) - imageSize / 2})`);
 
-    // 添加图片或颜色圆
+    // 添加图片
     if (images.field && images.field[selectedGroupNames[0]]) {
         endImgGroup1.append("image")
             .attr("x", 0)
@@ -368,14 +362,6 @@ function makeChart(containerSelector, data) {
             .attr("height", imageSize)
             .attr("filter", `url(#${filterId})`)
             .attr("xlink:href", images.field[selectedGroupNames[0]]);
-    } else {
-        endImgGroup1.append("circle")
-            .attr("cx", 12)
-            .attr("cy", 12)
-            .attr("r", 12)
-            .attr("fill", colors.field[selectedGroupNames[0]])
-            .attr("stroke", "#000000")
-            .attr("stroke-width", 1);
     }
     
     // 添加终点值和组名标注（上方）- 调整位置
@@ -409,7 +395,7 @@ function makeChart(containerSelector, data) {
     const startImgGroup2 = g.append("g")
         .attr("transform", `translate(${xScale(parseDate(firstPoint2[xField])) - imageSize / 2}, ${yScale(firstPoint2[yField]) - imageSize / 2})`);
     
-    // 添加图片或颜色圆
+    // 添加图片
     if (images.field && images.field[selectedGroupNames[1]]) {
         startImgGroup2.append("image")
             .attr("x", 0)
@@ -418,14 +404,6 @@ function makeChart(containerSelector, data) {
             .attr("height", imageSize)
             .attr("filter", `url(#${filterId})`)
             .attr("xlink:href", images.field[selectedGroupNames[1]]);
-    } else {
-        startImgGroup2.append("circle")
-            .attr("cx", 12)
-            .attr("cy", 12)
-            .attr("r", 12)
-            .attr("fill", colors.field[selectedGroupNames[1]])
-            .attr("stroke", "#000000")
-            .attr("stroke-width", 1);
     }
     
     // 添加起始值标注
@@ -444,7 +422,7 @@ function makeChart(containerSelector, data) {
     const endImgGroup2 = g.append("g")
         .attr("transform", `translate(${xScale(parseDate(lastPoint2[xField])) - imageSize / 2}, ${yScale(lastPoint2[yField]) - imageSize / 2})`);
     
-    // 添加图片或颜色圆
+    // 添加图片
     if (images.field && images.field[selectedGroupNames[1]]) {
         endImgGroup2.append("image")
             .attr("x", 0)
@@ -453,14 +431,6 @@ function makeChart(containerSelector, data) {
             .attr("height", imageSize)
             .attr("filter", `url(#${filterId})`)
             .attr("xlink:href", images.field[selectedGroupNames[1]]);
-    } else {
-        endImgGroup2.append("circle")
-            .attr("cx", 12)
-            .attr("cy", 12)
-            .attr("r", 12)
-            .attr("fill", colors.field[selectedGroupNames[1]])
-            .attr("stroke", "#000000")
-            .attr("stroke-width", 1);
     }
     
     // 添加终点值和组名标注（下方）- 调整位置

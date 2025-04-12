@@ -9,8 +9,8 @@ REQUIREMENTS_BEGIN
     "required_fields_icons": [],
     "required_other_icons": [],
     "required_fields_colors": ["group"],
-    "required_other_colors": ["primary", "secondary", "background"],
-    "supported_effects": ["gradient", "opacity"],
+    "required_other_colors": [],
+    "supported_effects": [],
     "min_height": 600,
     "min_width": 800,
     "background": "light",
@@ -46,7 +46,7 @@ function makeChart(containerSelector, data) {
     
     // 测试代码：添加更多组以测试不同布局
     // 可以通过修改这个数字来测试不同数量的子图
-    const additionalGroups = 5; // 修改这个值来测试不同数量的子图
+    const additionalGroups = 0; // 修改这个值来测试不同数量的子图
     
     if (additionalGroups > 0) {
         const originalData = [...chartData];
@@ -146,7 +146,8 @@ function makeChart(containerSelector, data) {
         .attr("height", height)
         .attr("viewBox", `0 0 ${width} ${height}`)
         .attr("style", "max-width: 100%; height: auto;")
-        .attr("xmlns", "http://www.w3.org/2000/svg");
+        .attr("xmlns", "http://www.w3.org/2000/svg")
+        .attr("xmlns:xlink", "http://www.w3.org/1999/xlink");
     
     const { xScale, xTicks, xFormat, timeSpan } = createXAxisScaleAndTicks(chartData, xField, 0, innerWidth);
     
@@ -241,7 +242,7 @@ function makeChart(containerSelector, data) {
             .attr("transform", `translate(${subplotMargin.left}, ${subplotMargin.top})`);
         
         // 添加组名标题和图例 - 居中显示
-        const legendWidth = 30 + 5 + getTextWidth(group, typography.title.font_family, "14px");
+        const legendWidth = 30 + 5 + getTextWidth(group, 14);
         const legendX = (innerWidth - legendWidth) / 2;
         
         g.append("rect")
@@ -341,12 +342,4 @@ function makeChart(containerSelector, data) {
     });
     
     return svg.node();
-}
-
-// 辅助函数:计算文本宽度
-function getTextWidth(text, fontFamily, fontSize) {
-    const canvas = document.createElement('canvas');
-    const context = canvas.getContext('2d');
-    context.font = `${fontSize} ${fontFamily}`;
-    return context.measureText(text).width;
 }

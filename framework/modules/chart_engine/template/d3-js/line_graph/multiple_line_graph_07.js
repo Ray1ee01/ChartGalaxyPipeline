@@ -6,11 +6,11 @@ REQUIREMENTS_BEGIN
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["temporal"], ["numerical"], ["categorical"]],
     "required_fields_range": [[5, 30], [-1000, 1000], [2, 7]],
-    "required_fields_icons": [],
+    "required_fields_icons": ["group"],
     "required_other_icons": [],
     "required_fields_colors": ["group"],
-    "required_other_colors": ["primary"],
-    "supported_effects": ["gradient", "opacity"],
+    "required_other_colors": [],
+    "supported_effects": [],
     "min_height": 400,
     "min_width": 800,
     "background": "dark",
@@ -60,7 +60,8 @@ function makeChart(containerSelector, data) {
         .attr("height", height)
         .attr("viewBox", `0 0 ${width} ${height}`)
         .attr("style", "max-width: 100%; height: auto;")
-        .attr("xmlns", "http://www.w3.org/2000/svg");
+        .attr("xmlns", "http://www.w3.org/2000/svg")
+        .attr("xmlns:xlink", "http://www.w3.org/1999/xlink");
     
     // 创建图表组
     const g = svg.append("g")
@@ -106,7 +107,7 @@ function makeChart(containerSelector, data) {
     
     // 绘制垂直网格线 
     g.selectAll("rect.grid-rect-x")
-        .data(xTickValues)
+        .data(xTicks)
         .enter()
         .append("rect")
         .attr("class", "grid-rect-x")
@@ -713,7 +714,7 @@ function makeChart(containerSelector, data) {
             // 找到最高组折线下方的空位
 
             // 计算标签尺寸（网格单位）
-            const labelWidth = 9; // 估计标签宽度
+            const labelWidth = 4 + Math.ceil(getTextWidth(point.group, 22) / gridSize); // 根据实际文本宽度计算网格单位
             const labelHeight = 4; // 估计标签高度
             
             // 找到合适的位置
@@ -737,8 +738,10 @@ function makeChart(containerSelector, data) {
                     }
                     
                     if (hasSpace) {                 
-                        // 优先选择靠上的位置
-                        const score = -gridY + 0.1 * gridX; // 越靠上gridY越小,分数越高
+                        // 优先选择靠上且靠中间的位置
+                        const centerX = gridWidth / 2;
+                        const distanceFromCenter = Math.abs(gridX + labelWidth / 2 - centerX);
+                        const score = -gridY * 0.01 - 2 * distanceFromCenter; // 越靠上gridY越小,越靠近中间distanceFromCenter越小,分数越高
                         
                         if (score > bestScore) {
                             bestScore = score;
@@ -750,7 +753,7 @@ function makeChart(containerSelector, data) {
             }
             
             // 可视化网格占用情况
-            const debugGrid = false; // 设置为true开启可视化，false关闭
+            const debugGrid = true; // 设置为true开启可视化，false关闭
             
             if (debugGrid) {
                 // 创建一个单独的组用于网格可视化
@@ -799,8 +802,8 @@ function makeChart(containerSelector, data) {
                 // 添加图像图标
                 if (images && images.field[point.group]) {
                     iconGroup.append("image")
-                        .attr("x", -5)
-                        .attr("y", -5)
+                        .attr("x", 0)
+                        .attr("y", 0)
                         .attr("width", 40)
                         .attr("height", 40)
                         .attr("xlink:href", images.field[point.group]);
@@ -814,8 +817,8 @@ function makeChart(containerSelector, data) {
                 
                 // 添加组名
                 iconGroup.append("text")
-                    .attr("x", 35)
-                    .attr("y", 20)
+                    .attr("x", 40)
+                    .attr("y", 25)
                     .attr("dominant-baseline", "middle")
                     .style("font-family", typography.label.font_family)
                     .style("font-size", "22px")

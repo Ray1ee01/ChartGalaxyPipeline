@@ -6,11 +6,11 @@ REQUIREMENTS_BEGIN
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["temporal"], ["numerical"], ["categorical"]],
     "required_fields_range": [[5, 30], [0, 100], [2, 2]],
-    "required_fields_icons": ["group"],
+    "required_fields_icons": [],
     "required_other_icons": [],
     "required_fields_colors": ["group"],
     "required_other_colors": [],
-    "supported_effects": ["gradient", "opacity"],
+    "supported_effects": [],
     "min_height": 400,
     "min_width": 800,
     "background": "light",
@@ -54,7 +54,8 @@ function makeChart(containerSelector, data) {
         .attr("height", height)
         .attr("viewBox", `0 0 ${width} ${height}`)
         .attr("style", "max-width: 100%; height: auto;")
-        .attr("xmlns", "http://www.w3.org/2000/svg");
+        .attr("xmlns", "http://www.w3.org/2000/svg")
+        .attr("xmlns:xlink", "http://www.w3.org/1999/xlink");
     
     // 创建图表区域
     const chartWidth = width - margin.left - margin.right;
@@ -344,37 +345,44 @@ function makeChart(containerSelector, data) {
     });
     
     // 添加图例 - 整体居中，放在最大Y轴刻度上方
-    const legendItemWidth = 120; // 每个图例项的宽度
+    
+    // 计算每个图例项的宽度(圆形 + 间距 + 文本)
+    const legendItems = selectedGroups.map(group => ({
+        group: group,
+        width: 6 * 2 + 15 + getTextWidth(group, 14) + 10 // 圆形直径 + 间距 + 文本宽度 + 右侧间距
+    }));
     
     // 计算图例的总宽度
-    const totalLegendWidth = selectedGroups.length * legendItemWidth;
+    const totalLegendWidth = legendItems.reduce((sum, item) => sum + item.width, 0);
     
     // 计算图例的起始X位置，使其居中
-    const legendStartX = (chartWidth - totalLegendWidth) / 2;
+    const legendStartX = 10;
     
     // 为选中的两个组添加图例
-    selectedGroups.forEach((group, i) => {
-        const color = colorScale(group);
-        const legendX = legendStartX + i * legendItemWidth;
+    let currentX = legendStartX;
+    legendItems.forEach((item, i) => {
+        const color = colorScale(item.group);
         
         g.append("circle")
-            .attr("cx", legendX)
+            .attr("cx", currentX)
             .attr("cy", legendY)
             .attr("r", 6)
             .attr("fill", color);
         
         g.append("text")
-            .attr("x", legendX + 15)
+            .attr("x", currentX + 15)
             .attr("y", legendY)
             .attr("dominant-baseline", "middle")
             .attr("fill", "#333")
             .style("font-size", "14px")
-            .text(group);
+            .text(item.group);
+            
+        currentX += item.width;
     });
     
     // 添加比值图例
     const ratioLegendY = legendY;
-    const ratioLegendX = legendStartX + totalLegendWidth + 10; // 在组图例右侧40像素处
+    const ratioLegendX = legendStartX + totalLegendWidth + 10;
     
     // 添加比值图例的圆形示例
     const sampleRadius = 6;

@@ -9,8 +9,8 @@ REQUIREMENTS_BEGIN
     "required_fields_icons": [],
     "required_other_icons": [],
     "required_fields_colors": ["group"],
-    "required_other_colors": ["primary"],
-    "supported_effects": ["gradient", "opacity"],
+    "required_other_colors": [],
+    "supported_effects": [],
     "min_height": 400,
     "min_width": 800,
     "background": "dark",
@@ -57,7 +57,8 @@ function makeChart(containerSelector, data) {
         .attr("height", height)
         .attr("viewBox", `0 0 ${width} ${height}`)
         .attr("style", "max-width: 100%; height: auto;")
-        .attr("xmlns", "http://www.w3.org/2000/svg");
+        .attr("xmlns", "http://www.w3.org/2000/svg")
+        .attr("xmlns:xlink", "http://www.w3.org/1999/xlink");
     
     // 创建图表组
     const g = svg.append("g")
@@ -345,9 +346,9 @@ function makeChart(containerSelector, data) {
     // 计算每行文本
     for(let i = 1; i < words.length; i++) {
         const testLine = currentLine + ' ' + words[i];
-        const testWidth = getTextWidth(testLine, typography.label.font_family, typography.label.font_size);
+        const testWidth = getTextWidth(testLine, typography.label.font_size);
         
-        if(testWidth <= 150) {
+        if(testWidth <= 200) {
             currentLine = testLine;
         } else {
             lines.push(currentLine);
@@ -368,14 +369,6 @@ function makeChart(containerSelector, data) {
             .style("fill", "#6bc7c5")
             .text(line);
     });
-    
-    // 辅助函数:计算文本宽度
-    function getTextWidth(text, fontFamily, fontSize) {
-        const canvas = document.createElement('canvas');
-        const context = canvas.getContext('2d');
-        context.font = `${fontSize} ${fontFamily}`;
-        return context.measureText(text).width;
-    }
     
     // 动态规划标签放置算法
     function placeLabelsDP(points, avoidYPositions = []) {

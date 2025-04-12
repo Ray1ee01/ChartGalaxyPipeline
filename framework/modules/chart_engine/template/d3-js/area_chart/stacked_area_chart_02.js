@@ -5,12 +5,12 @@ REQUIREMENTS_BEGIN
     "chart_name": "stacked_area_chart_02",
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
-    "required_fields_range": [[5, 50], [0, 100], [2, 5]],
+    "required_fields_range": [[2, 4], [0, 100], [2, 4]],
     "required_fields_icons": [],
     "required_other_icons": [],
     "required_fields_colors": ["group"],
-    "required_other_colors": ["primary", "secondary", "background"],
-    "supported_effects": ["gradient", "opacity"],
+    "required_other_colors": [],
+    "supported_effects": [],
     "min_height": 600,
     "min_width": 800,
     "background": "light",
@@ -84,7 +84,8 @@ function makeChart(containerSelector, data) {
         .attr("height", height)
         .attr("viewBox", `0 0 ${width} ${height}`)
         .attr("style", "max-width: 100%; height: auto;")
-        .attr("xmlns", "http://www.w3.org/2000/svg");
+        .attr("xmlns", "http://www.w3.org/2000/svg")
+        .attr("xmlns:xlink", "http://www.w3.org/1999/xlink");
     
     // 创建图表区域
     const chartWidth = width - margin.left - margin.right;
@@ -325,9 +326,18 @@ function makeChart(containerSelector, data) {
     // 设置图例的共同y坐标
     const legendY = 10;
     
-    // 添加"Household income"标题
+    // 计算所有组名的总宽度
+    const groupNameWidths = groups.map(group => group.length * 10); // 每个字符10px
+    const totalGroupWidth = groupNameWidths.reduce((a, b) => a + b, 0);
+    const totalPadding = groups.length * 20; // 每组间隔40px
+    const totalWidth = totalGroupWidth + totalPadding;
+    
+    // 计算图例起始x坐标,使图例整体居中
+    const startX = (chartWidth - totalWidth) / 2;
+    
+    // 添加字段名称
     legendGroup.append("text")
-        .attr("x", 0)
+        .attr("x", startX)
         .attr("y", legendY)
         .attr("dominant-baseline", "middle")
         .attr("fill", "#333")
@@ -335,36 +345,38 @@ function makeChart(containerSelector, data) {
         .style("font-weight", "bold")
         .text(groupField);
     
-    // 计算标题宽度并添加一些间距
-    const titleWidth = groupField.length * 10; // 估算标题宽度
-    const titleMargin = 30; // 标题后的间距
+    // 计算字段名宽度并添加间距
+    const titleWidth = groupField.length * 10;
+    const titleMargin = 15;
     
     // 添加各组图例 - 水平排列
+    let currentX = startX + titleWidth + titleMargin;
+    
     groups.forEach((group, i) => {
         const color = colors.field && colors.field[group] 
             ? colors.field[group] 
             : d3.schemeCategory10[i % 10];
         
-        // 计算水平位置 - 从标题之后开始
-        const xPos = titleWidth + titleMargin + i * 100;
-        
         // 绘制颜色方块
         legendGroup.append("rect")
-            .attr("x", xPos)
-            .attr("y", legendY - 10) // 垂直居中
+            .attr("x", currentX)
+            .attr("y", legendY - 10)
             .attr("width", 20)
             .attr("height", 20)
             .attr("fill", color);
         
-        // 添加组名文本 - 设置为粗体
+        // 添加组名文本
         legendGroup.append("text")
-            .attr("x", xPos + 30)
+            .attr("x", currentX + 20)
             .attr("y", legendY)
             .attr("dominant-baseline", "middle")
             .attr("fill", "#333")
-            .attr("font-weight", "bold") // 添加粗体
+            .attr("font-weight", "bold")
             .style("font-size", "14px")
             .text(group);
+            
+        // 更新下一组的起始位置
+        currentX += groupNameWidths[i] + 20; // 文本宽度 + 40px间距
     });
     
     return svg.node();

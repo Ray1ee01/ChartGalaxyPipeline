@@ -9,8 +9,8 @@ REQUIREMENTS_BEGIN
     "required_fields_icons": [],
     "required_other_icons": [],
     "required_fields_colors": ["group"],
-    "required_other_colors": ["primary"],
-    "supported_effects": ["gradient", "opacity"],
+    "required_other_colors": [],
+    "supported_effects": [],
     "min_height": 400,
     "min_width": 800,
     "background": "light",
@@ -56,7 +56,8 @@ function makeChart(containerSelector, data) {
         .attr("width", "100%")
         .attr("height", height)
         .attr("viewBox", `0 0 ${width} ${height}`)
-        .attr("xmlns", "http://www.w3.org/2000/svg");
+        .attr("xmlns", "http://www.w3.org/2000/svg")
+        .attr("xmlns:xlink", "http://www.w3.org/1999/xlink");
     
     // 创建渐变定义
     const defs = svg.append("defs");

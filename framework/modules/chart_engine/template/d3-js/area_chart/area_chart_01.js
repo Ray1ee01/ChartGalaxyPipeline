@@ -51,7 +51,8 @@ function makeChart(containerSelector, data) {
         .attr("height", height)
         .attr("viewBox", `0 0 ${width} ${height}`)
         .attr("style", "max-width: 100%; height: auto;")
-        .attr("xmlns", "http://www.w3.org/2000/svg");
+        .attr("xmlns", "http://www.w3.org/2000/svg")
+        .attr("xmlns:xlink", "http://www.w3.org/1999/xlink");
     
     // 创建图表区域
     const chartWidth = width - margin.left - margin.right;
@@ -293,6 +294,8 @@ function makeChart(containerSelector, data) {
     // 找到最高点的数据
     const maxDataPoint = chartData.reduce((max, current) => 
         current[yField] > max[yField] ? current : max, chartData[0]);
+
+    const sampleLabelIndex = sampleLabels(chartData.length);
     
     // 为每个数据点找到最佳标签位置
     chartData.forEach((d, index) => {
@@ -354,6 +357,10 @@ function makeChart(containerSelector, data) {
                 .attr("cy", y)
                 .attr("r", 3)
                 .attr("fill", "#e63946");
+        }
+
+        if (!sampleLabelIndex.includes(index)) {
+            return;
         }
         
         // 将数据点转换为网格坐标
@@ -452,7 +459,7 @@ function makeChart(containerSelector, data) {
                 .style("font-size", isHighestPoint ? "18px" : "12px") // 最高点使用更大字体
                 .style("font-weight", "bold")
                 .style("fill", "#e63946") // 红色文本
-                .text(`${d[yField]}%`);
+                .text(`${d[yField]} ${dataColumns[1].unit === 'none' ? '' : dataColumns[1].unit}`);
             
             // 添加年份标签
             g.append("text")

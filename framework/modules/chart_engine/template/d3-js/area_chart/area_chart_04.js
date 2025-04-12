@@ -54,7 +54,8 @@ function makeChart(containerSelector, data) {
         .attr("height", height)
         .attr("viewBox", `0 0 ${width} ${height}`)
         .attr("style", "max-width: 100%; height: auto;")
-        .attr("xmlns", "http://www.w3.org/2000/svg");
+        .attr("xmlns", "http://www.w3.org/2000/svg")
+        .attr("xmlns:xlink", "http://www.w3.org/1999/xlink");
     
     // 创建图表组
     const g = svg.append("g")
@@ -122,8 +123,14 @@ function makeChart(containerSelector, data) {
         .attr("stroke-width", 3)
         .attr("d", line);
     
+    const sampleLabelIndex = sampleLabels(chartData.length);
+
     // 添加数据点和标签 - 优化标签位置，包括首尾点
     chartData.forEach((d, i) => {
+        if (!sampleLabelIndex.includes(i)) {
+            return;
+        }
+
         const x = xScale(parseDate(d[xField]));
         const y = yScale(d[yField]);
         

@@ -52,7 +52,8 @@ function makeChart(containerSelector, data) {
         .attr("height", height)
         .attr("viewBox", `0 0 ${width} ${height}`)
         .attr("style", "max-width: 100%; height: auto;")
-        .attr("xmlns", "http://www.w3.org/2000/svg");
+        .attr("xmlns", "http://www.w3.org/2000/svg")
+        .attr("xmlns:xlink", "http://www.w3.org/1999/xlink");
     
     
     // 创建图表区域
@@ -245,11 +246,13 @@ function makeChart(containerSelector, data) {
             .text(point[yField].toFixed(2));
     };
     
+    // 只有当最低点不是起点或终点时才添加最低点标注
+    if (lowestPoint !== firstPoint && lowestPoint !== lastPoint) {
+        addDataLabel(lowestPoint, false);
+    }
+    
     // 添加起点标注
     addDataLabel(firstPoint, true);
-    
-    // 添加最低点标注
-    addDataLabel(lowestPoint, false);
     
     // 添加终点标注
     addDataLabel(lastPoint, true);
