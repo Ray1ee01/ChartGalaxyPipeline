@@ -106,7 +106,7 @@ def assemble_infographic(
     new_chart_left, chart_right, new_chart_width = calculate_content_width(chart_mask, drawing_padding)
     
     chart_start = min(chart_top, new_chart_start)
-    chart_left = min(chart_left, new_chart_left)
+    chart_left = max(-padding, min(chart_left, new_chart_left))
     chart_height = max(chart_height, new_chart_height)
     chart_width = max(chart_width, new_chart_width)
 

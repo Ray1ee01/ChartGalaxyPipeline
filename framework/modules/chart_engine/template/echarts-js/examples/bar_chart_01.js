@@ -134,7 +134,7 @@ function make_option(jsonData) {
         
         // Return ECharts option object
         return {
-            backgroundColor: colors.background_color || '#ffffff',
+            backgroundColor: 'none',
             tooltip: {
                 trigger: 'axis',
                 axisPointer: {
