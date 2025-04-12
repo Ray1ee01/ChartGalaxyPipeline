@@ -18,11 +18,11 @@ REQUIREMENTS_BEGIN
     "required_fields_colors": ["x"],
     "required_other_colors": ["primary"],
     "supported_effects": ["radius_corner", "spacing", "shadow", "gradient", "stroke"],
-    "min_height": 600,
-    "min_width": 600,
+    "min_height": 400,
+    "min_width": 400,
     "background": "no",
     "icon_mark": "none",
-    "icon_label": "side",
+    "icon_label": "none",
     "has_x_axis": "no",
     "has_y_axis": "no"
 }
@@ -80,15 +80,17 @@ function makeChart(containerSelector, data) {
     
     // 根据数据列提取字段名
     const dimensionField = dataColumns.find(col => col.role === "x")?.name || "Country";
-    const valueField1 = dataColumns.find(col => col.role === "y" || col.role === "y1")?.name || "Crypto Ownership Percentage";
+    const valueField1 = dataColumns.find(col => col.role === "y" )?.name || "Crypto Ownership Percentage";
     const valueField2 = dataColumns.find(col => col.role === "y2")?.name || "Number of Owners";
     
     // 获取字段单位
-    const valueUnit1 = dataColumns.find(col => col.role === "y" || col.role === "y1")?.unit || "";
-    const valueUnit2 = dataColumns.find(col => col.role === "y2")?.unit || "M";
+    const valueUnit1 = dataColumns.find(col => col.role === "y")?.unit === "none" ? "" : 
+                       dataColumns.find(col => col.role === "y")?.unit;
+    const valueUnit2 = dataColumns.find(col => col.role === "y2")?.unit === "none"? "" :
+                       dataColumns.find(col => col.role === "y2")?.unit;
     
     // 列标题（使用数据列的name字段，而不是description）
-    const columnTitle1 = dataColumns.find(col => col.role === "y" || col.role === "y1")?.name || 
+    const columnTitle1 = dataColumns.find(col => col.role === "y")?.name || 
                           "Crypto Ownership Percentage";
     const columnTitle2 = dataColumns.find(col => col.role === "y2")?.name || 
                           "Number of Owners";

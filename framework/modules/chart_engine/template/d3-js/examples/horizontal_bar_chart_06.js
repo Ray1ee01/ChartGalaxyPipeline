@@ -13,7 +13,7 @@ REQUIREMENTS_BEGIN
     "required_other_colors": ["primary"],
     "supported_effects": ["shadow", "radius_corner", "gradient", "stroke", "spacing"],
     "min_height": 400,
-    "min_width": 600,
+    "min_width": 400,
     "background": "no",
     "icon_mark": "none",
     "icon_label": "none",
@@ -289,6 +289,7 @@ function makeChart(containerSelector, data) {
                 .attr("y", 0)
                 .attr("width", innerWidth)
                 .attr("height", barHeight)
+                .attr("class","background")
                 .attr("fill", extensionColor)
                 .attr("rx", variables.has_rounded_corners ? 4 : 0)
                 .attr("ry", variables.has_rounded_corners ? 4 : 0);

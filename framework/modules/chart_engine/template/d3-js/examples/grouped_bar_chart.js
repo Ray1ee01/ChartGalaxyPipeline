@@ -12,7 +12,7 @@ REQUIREMENTS_BEGIN
     "required_other_colors": ["primary"],
     "supported_effects": ["shadow", "gradient", "radius_corner"],
     "min_height": 400,
-    "min_width": 500,
+    "min_width": 400,
     "background": "no",
     "icon_mark": "none",
     "icon_label": "side",

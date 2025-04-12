@@ -14,7 +14,7 @@ REQUIREMENTS_BEGIN
     "required_other_colors": ["primary"],
     "supported_effects": ["shadow", "radius_corner", "gradient", "stroke", "spacing"],
     "min_height": 400,
-    "min_width": 600,
+    "min_width": 400,
     "background": "styled",
     "icon_mark": "none",
     "icon_label": "side",
@@ -269,7 +269,7 @@ function makeChart(containerSelector, data) {
     const colorScale = d3.scaleOrdinal()
         .domain(groups)
         .range(groups.map((group, i) => {
-            if (colors.field && colors.field && colors.field[group]) {
+            if (colors.field && colors.field[group]) {
                 return colors.field[group];
             }
             // 使用自定义颜色作为示例

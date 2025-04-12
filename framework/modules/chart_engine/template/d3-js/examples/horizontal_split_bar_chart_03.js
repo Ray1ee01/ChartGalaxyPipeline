@@ -2,20 +2,20 @@
 REQUIREMENTS_BEGIN
 {
     "chart_type": "Split Comparison Chart",
-    "chart_name": "horizontal_split_bar_chart_04",
+    "chart_name": "horizontal_split_bar_chart_03",
     "chart_for": "comparison",
     "is_composite": false,
     "required_fields": ["x", "y", "group1", "group2"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"], ["categorical"]],
     "required_fields_range": [[2, 20], [0, 10000], [1, 5], [1, 3]],
-    "required_fields_icons": ["x"],
+    "required_fields_icons": ["dimension"],
     "required_other_icons": [],
     "required_fields_colors": ["group"],
-    "required_other_colors": ["primary", "secondary"],
+    "required_other_colors": [],
     "supported_effects": ["shadow", "radius_corner", "gradient", "stroke", "spacing"],
-    "min_height": 600,
-    "min_width": 800,
-    "background": "styled",
+    "min_height": 400,
+    "min_width": 400,
+    "background": "no",
     "icon_mark": "none",
     "icon_label": "replace",
     "has_x_axis": "no",
@@ -61,24 +61,27 @@ function makeChart(containerSelector, data) {
     const initialMargin = { top: 60, right: 40, bottom: 40, left: 40 };
     
     // 提取字段名称
-    const dimensionField = dataColumns.length > 0 ? dataColumns[0].name : "Country";
-    const valueField = dataColumns.length > 1 ? dataColumns[1].name : "Units";
-    const categoryField = dataColumns.length > 2 ? dataColumns[2].name : "Leave Type";
-    const developmentStatusField = dataColumns.length > 3 ? dataColumns[3].name : "Development Status";
+    const xField = dataColumns.find(col => col.role === "x").name; 
+    const yField = dataColumns.find(col => col.role === "y").name;
+    
+    // 查找所有具有 "group" 角色的列
+    const groupColumns = dataColumns.filter(col => col.role === "group");
+    
+    // 使用第一个 group 作为 categoryField，如果不存在则使用默认值
+    const categoryField =groupColumns[0].name ;
+    
+    // 使用第二个 group 作为 developmentStatusField，如果不存在则使用默认值
+    const developmentStatusField = groupColumns[1].name;
     
     // 获取唯一维度和类别
-    const allDimensions = [...new Set(chartData.map(d => d[dimensionField]))];
+    const allDimensions = [...new Set(chartData.map(d => d[xField]))];
     const allLeaveTypes = [...new Set(chartData.map(d => d[categoryField]))];
     const allDevelopmentStatuses = [...new Set(chartData.map(d => d[developmentStatusField]))];
     
     // 确定左右两组的类别
     let leftCategory, rightCategory;
     
-    if (allLeaveTypes.includes("Paid annual leave (working days)") && 
-        allLeaveTypes.includes("Paid public holidays")) {
-        leftCategory = "Paid annual leave (working days)";
-        rightCategory = "Paid public holidays";
-    } else if (allLeaveTypes.length >= 2) {
+    if (allLeaveTypes.length >= 2) {
         // 如果没有预期的值，但有至少两个类别，使用前两个
         leftCategory = allLeaveTypes[0];
         rightCategory = allLeaveTypes[1];
@@ -94,8 +97,8 @@ function makeChart(containerSelector, data) {
     
     // 处理数据
     chartData.forEach(item => {
-        const dimension = item[dimensionField];
-        const value = item[valueField];
+        const dimension = item[xField];
+        const value = item[yField];
         const category = item[categoryField];
         const developmentStatus = item[developmentStatusField]; // 获取发展状态
         
@@ -209,7 +212,7 @@ function makeChart(containerSelector, data) {
         }
         
         // 根据发展状态调整颜色深浅
-        if (developmentStatus === "developed") {
+        if (developmentStatus === allDevelopmentStatuses[0]) {
             // 深色版本 - 对于已发展国家
             return baseColor;
         } else {
@@ -258,7 +261,7 @@ function makeChart(containerSelector, data) {
     if (variables.has_gradient) {
         // 左侧渐变
         const leftGradientId = `gradient-${leftCategory.replace(/\s+/g, '-').toLowerCase()}`;
-        const leftBaseColor = getColor(leftCategory, "developed", 0);
+        const leftBaseColor = getColor(leftCategory, allDevelopmentStatuses[0], 0);
         
         const leftGradient = defs.append("linearGradient")
             .attr("id", leftGradientId)
@@ -277,7 +280,7 @@ function makeChart(containerSelector, data) {
         
         // 右侧渐变
         const rightGradientId = `gradient-${rightCategory.replace(/\s+/g, '-').toLowerCase()}`;
-        const rightBaseColor = getColor(rightCategory, "developed", 0);
+        const rightBaseColor = getColor(rightCategory, allDevelopmentStatuses[0], 0);
         
         const rightGradient = defs.append("linearGradient")
             .attr("id", rightGradientId)

@@ -10,10 +10,10 @@ REQUIREMENTS_BEGIN
     "required_fields_icons": ["x"],
     "required_other_icons": [],
     "required_fields_colors": [],
-    "required_other_colors": ["primary"],
+    "required_other_colors": ["positive", "negative"],
     "supported_effects": ["shadow", "radius_corner", "gradient", "stroke", "spacing"],
-    "min_height": 500,
-    "min_width": 700,
+    "min_height": 400,
+    "min_width": 400,
     "background": "no",
     "icon_mark": "none",
     "icon_label": "side",
@@ -331,14 +331,12 @@ function makeChart(containerSelector, data) {
     
     // 获取正负值条形颜色的辅助函数
     const getPositiveColor = () => {
-        return colors.other.primary;
         if (colors.other && colors.other.positive) return colors.other.positive;
         if (colors.available_colors && colors.available_colors.length > 0) return colors.available_colors[0];
         return "#44c2a7"; // 默认绿色
     };
     
     const getNegativeColor = () => {
-        return colors.other.secondary || colors.other.primary;
         if (colors.other && colors.other.negative) return colors.other.negative;
         if (colors.available_colors && colors.available_colors.length > 1) return colors.available_colors[1];
         return "#c13030"; // 默认红色

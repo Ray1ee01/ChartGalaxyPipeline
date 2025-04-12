@@ -11,10 +11,10 @@ REQUIREMENTS_BEGIN
     "required_fields_icons": [],
     "required_other_icons": [],
     "required_fields_colors": ["group"],
-    "required_other_colors": ["primary"],
+    "required_other_colors": [],
     "supported_effects": ["shadow", "radius_corner", "gradient", "stroke", "spacing"],
     "min_height": 400,
-    "min_width": 600,
+    "min_width": 400,
     "background": "styled",
     "icon_mark": "none",
     "icon_label": "none",
@@ -488,7 +488,7 @@ function makeChart(containerSelector, data) {
                     .attr("y", yScale(dimension) - extraPadding)
                     .attr("width", centerX + margin.left/2)
                     .attr("height", yScale.bandwidth() + (extraPadding * 2))
-                    .attr("class", "background-left")
+                    .attr("class", "background")
                     .attr("fill", `url(#${leftBgGradientId})`)
                     .attr("opacity", 0.3);
                 
@@ -498,7 +498,7 @@ function makeChart(containerSelector, data) {
                     .attr("y", yScale(dimension) - extraPadding)
                     .attr("width", centerX + margin.right/2)
                     .attr("height", yScale.bandwidth() + (extraPadding * 2))
-                    .attr("class", "background-right")
+                    .attr("class", "background")
                     .attr("fill", `url(#${rightBgGradientId})`)
                     .attr("opacity", 0.3);
             }

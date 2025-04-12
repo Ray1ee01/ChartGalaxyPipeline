@@ -13,8 +13,8 @@ REQUIREMENTS_BEGIN
     "required_other_colors": ["primary"],
     "supported_effects": ["shadow",  "gradient", "stroke", "spacing"],
     "min_height": 400,
-    "min_width": 600,
-    "background": "styled",
+    "min_width": 400,
+    "background": "no",
     "icon_mark": "none",
     "icon_label": "none",
     "has_x_axis": "no",
@@ -344,8 +344,8 @@ function makeChart(containerSelector, data) {
                 `${dataPoint[valueField]}`;
             
             // 计算最后一个棒子的位置，用于放置数值标签
-            const lastGroupIndex = Math.floor((barCount - 1) / groupSize);
-            const lastInGroupIndex = (barCount - 1) % groupSize;
+            const lastGroupIndex = Math.floor(barCount  / groupSize);
+            const lastInGroupIndex = barCount  % groupSize;
             const lastBarX = (lastGroupIndex * (groupSize * (barWidth + barSpacing) + groupSpacing)) + 
                            (lastInGroupIndex * (barWidth + barSpacing));
             
