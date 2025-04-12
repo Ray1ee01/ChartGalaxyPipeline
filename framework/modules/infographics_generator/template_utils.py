@@ -44,8 +44,11 @@ def analyze_templates(templates: Dict) -> Tuple[int, Dict[str, str], int]:
     for engine, templates_dict in templates.items():
         for chart_type, chart_names_dict in templates_dict.items():
             for chart_name, template_info in chart_names_dict.items():
-                if 'base' in chart_name or engine == 'vegalite_py' and 'line' in chart_name:
+                if 'base' in chart_name:
                     continue
+                if engine == 'vegalite_py':
+                    if 'line' in chart_name or 'donut' in chart_name or 'pie' in chart_name or 'area' in chart_name:
+                        continue
                 template_count += 1
                 if 'requirements' in template_info:
                     req = template_info['requirements']
@@ -76,6 +79,12 @@ def check_template_compatibility(data: Dict, templates: Dict, specific_chart_nam
     for engine, templates_dict in templates.items():
         for chart_type, chart_names_dict in templates_dict.items():
             for chart_name, template_info in chart_names_dict.items():
+                if 'base' in chart_name:
+                    continue
+                if engine == 'vegalite_py':
+                    if 'line' in chart_name or 'donut' in chart_name or 'pie' in chart_name or 'area' in chart_name:
+                        continue
+                    
                 template_key = f"{engine}/{chart_type}/{chart_name}"
                 
                 if 'requirements' in template_info:
@@ -128,7 +137,7 @@ def select_template(compatible_templates: List[str]) -> Tuple[str, str, str]:
     engine, chart_type, chart_name = selected_template.split('/')
     return engine, chart_type, chart_name
 
-def process_template_requirements(requirements: Dict, data: Dict) -> None:
+def process_template_requirements(requirements: Dict, data: Dict, engine: str, chart_name: str) -> None:
     """处理模板的颜色要求"""
     if len(requirements["required_other_colors"]) > 0:
         for key in requirements["required_other_colors"]:
@@ -137,8 +146,16 @@ def process_template_requirements(requirements: Dict, data: Dict) -> None:
             elif key == "negative" and "negative" not in data["colors"]["other"]:
                 data["colors"]["other"]["negative"] = get_contrast_color(data["colors"]["other"]["primary"]) 
 
-    if "min_height" in requirements:
-        data["variables"]["height"] = max(600, requirements["min_height"])
-    if "min_width" in requirements:
-        data["variables"]["width"] = max(800, requirements["min_width"])
-        
+    if 'donut' in chart_name or 'pie' in chart_name and engine == 'vegalite_py':
+        data["variables"]["height"] = 500
+        data["variables"]["width"] = 500
+    else:
+        if "min_height" in requirements:
+            data["variables"]["height"] = max(600, requirements["min_height"])
+        elif 'height' in requirements:
+            data["variables"]["height"] = max(600, requirements["height"][0])
+
+        if "min_width" in requirements:
+            data["variables"]["width"] = max(800, requirements["min_width"])
+        elif 'width' in requirements:
+            data["variables"]["width"] = max(600, requirements["width"][0])

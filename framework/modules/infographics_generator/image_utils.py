@@ -58,7 +58,7 @@ def find_best_size_and_position(main_mask: np.ndarray, image_content: str, paddi
         temp_svg = f"""<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="{original_size}" height="{original_size}">
             <image width="{original_size}" height="{original_size}" href="{image_content}"/>
         </svg>"""
-        image_mask = calculate_mask(temp_svg, original_size, original_size, 0)
+        image_mask = calculate_mask(temp_svg, original_size, original_size, 0, grid_size=grid_size, bg_threshold=240)
         
         # Save the original image mask to PNG for debugging
         os.makedirs('tmp', exist_ok=True)
@@ -120,7 +120,7 @@ def find_best_size_and_position(main_mask: np.ndarray, image_content: str, paddi
     final_y = best_y * grid_size
     
     # 生成最终尺寸的图片mask
-    temp_svg = f"""<svg xmlns="http://www.w3.org/2000/svg" width="{final_size}" height="{final_size}">
+    temp_svg = f"""<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="{final_size}" height="{final_size}">
         <image width="{final_size}" height="{final_size}" href="{image_content}"/>
     </svg>"""
     final_image_mask = calculate_mask(temp_svg, final_size, final_size, 0)

@@ -71,12 +71,19 @@ function makeChart(containerSelector, data) {
     const dimensionField = dataColumns.find(col => col.role === "x")?.name || "dimension";
     const valueField = dataColumns.find(col => col.role === "y")?.name || "value";
     
+    // 获取字段单位（如果存在）
+    let dimensionUnit = "";
+    let valueUnit = ""; // 默认为百分比
+    
+    if (dataColumns.find(col => col.role === "x").unit !== "none") {
+        dimensionUnit = dataColumns.find(col => col.role === "x").unit;
+    }
+    
+    if (dataColumns.find(col => col.role === "y").unit !== "none") {
+        valueUnit = dataColumns.find(col => col.role === "y").unit;
+    }
 
-    // 获取字段单位
-    let valueUnit = "";
     let valueUnit2 = "";
-    valueUnit = dataColumns.find(col => col.role === "y")?.unit === "none" ? "" : 
-                     dataColumns.find(col => col.role === "y")?.unit;
     valueUnit2 = dataColumns.find(col => col.role === "y2")?.unit === "none" ? "" : 
                      dataColumns.find(col => col.role === "y2")?.unit;
     

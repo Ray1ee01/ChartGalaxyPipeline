@@ -93,11 +93,13 @@ function makeChart(containerSelector, data) {
     
     // 获取维度列表
     const dimensions = chartData.map(d => d[dimensionField]);
-    
-    // 确保所有数值在0-100范围内
-    chartData.forEach(d => {
-        d[valueField] = Math.max(0, Math.min(100, +d[valueField]));
-    });
+    const maxValue = d3.max(chartData, d => Math.abs(+d[valueField]));
+    if (maxValue > 100) {
+        // 确保所有数值在0-100范围内
+        chartData.forEach(d => {
+            d[valueField] = Math.max(1, Math.floor(+d[valueField] / maxValue * 100));
+        });
+    }
     
     // ---------- 5. 测量标签宽度和调整布局 ----------
     

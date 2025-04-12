@@ -5,7 +5,7 @@ import re
 from PIL import Image
 import numpy as np
 from typing import Tuple
-def calculate_mask(svg_content: str, width: int, height: int, padding: int, grid_size: int = 5) -> np.ndarray:
+def calculate_mask(svg_content: str, width: int, height: int, padding: int, grid_size: int = 5, bg_threshold: float = 220) -> np.ndarray:
     """将SVG转换为二值化的mask数组"""
     width = int(width)
     height = int(height)
@@ -26,7 +26,7 @@ def calculate_mask(svg_content: str, width: int, height: int, padding: int, grid
         if svg_content_match:
             inner_content = svg_content_match.group(1)
             # 创建新的SVG标签
-            mask_svg_content = f'<svg width="{width}" height="{height}">{inner_content}</svg>'
+            mask_svg_content = f'<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="{width}" height="{height}">{inner_content}</svg>'
         
         # 添加padding
         if padding > 0:
@@ -75,7 +75,7 @@ def calculate_mask(svg_content: str, width: int, height: int, padding: int, grid
                 if y_end > y and x_end > x:
                     grid = img_array[y:y_end, x:x_end]
                     if grid.size > 0:
-                        white_pixels = np.all(grid >= 220, axis=2)
+                        white_pixels = np.all(grid >= bg_threshold, axis=2)
                         white_ratio = np.mean(white_pixels)
                         mask[y:y_end, x:x_end] = 0 if white_ratio > 0.95 else 1
         
