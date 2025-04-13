@@ -5,7 +5,7 @@ REQUIREMENTS_BEGIN
     "chart_name": "area_chart_04",
     "required_fields": ["x", "y"],
     "required_fields_type": [["temporal"], ["numerical"]],
-    "required_fields_range": [[5, 30], [0, 1000]],
+    "required_fields_range": [[5, 30], [0, "inf"]],
     "required_fields_icons": [],
     "required_other_icons": ["primary"],
     "required_fields_colors": [],

@@ -10,8 +10,8 @@ REQUIREMENTS_BEGIN
         [["categorical"], ["numerical"]]
     ],
     "required_fields_range": [
-        [[2, 30], [0, 100]],
-        [[2, 30], [0, 1000]]
+        [[2, 30], [0, "inf"]],
+        [[2, 30], [0, "inf"]]
     ],
     "required_fields_icons": ["x"],
     "required_other_icons": [],
@@ -77,10 +77,12 @@ function makeChart(containerSelector, data) {
     const valueField2 = dataColumns.find(col => col.role === "y2")?.name || "Number of Owners";
     
     // 获取字段单位
-    const valueUnit1 = dataColumns.find(col => col.role === "y")?.unit === "none" ? "" : 
+    let valueUnit1 = dataColumns.find(col => col.role === "y")?.unit === "none" ? "" : 
                        dataColumns.find(col => col.role === "y")?.unit;
-    const valueUnit2 = dataColumns.find(col => col.role === "y2")?.unit === "none"? "" :
+    let valueUnit2 = dataColumns.find(col => col.role === "y2")?.unit === "none"? "" :
                        dataColumns.find(col => col.role === "y2")?.unit;
+    valueUnit1 = valueUnit1 ? valueUnit1 : "";
+    valueUnit2 = valueUnit2 ? valueUnit2 : "";
     
     // 列标题
     const columnTitle1 = dataColumns.find(col => col.role === "y")?.name || "Crypto Ownership Percentage";

@@ -190,6 +190,7 @@ def process(input: str, output: str, base_url: str, api_key: str, chart_name: st
     # 如果指定了chart_name，尝试使用它
     if chart_name:
         # 在兼容的模板中查找指定的chart_name
+        compatible_templates = [t for t in compatible_templates if chart_name == t[0].split('/')[-1]]
         if len(compatible_templates) > 0:
             pass
         else:
@@ -208,7 +209,7 @@ def process(input: str, output: str, base_url: str, api_key: str, chart_name: st
     
     # 选择模板
     select_template_start = time.time()
-    engine, chart_type, chart_name = select_template(compatible_templates)
+    engine, chart_type, chart_name, ordered_fields = select_template(compatible_templates)
     select_template_time = time.time() - select_template_start
     # logger.info(f"Selecting template took: {select_template_time:.4f} seconds")
     
@@ -229,6 +230,8 @@ def process(input: str, output: str, base_url: str, api_key: str, chart_name: st
     
     # 处理数据
     process_data_start = time.time()
+    for i, field in enumerate(ordered_fields):
+        data["data"]["columns"][i]["role"] = field
     process_temporal_data(data)
     process_numerical_data(data)
     process_data_time = time.time() - process_data_start
@@ -321,7 +324,7 @@ def process(input: str, output: str, base_url: str, api_key: str, chart_name: st
         # 获取primary图片
         primary_image = data.get("images", {}).get("other", {}).get("primary")
         
-        # 使用新函数组装信息图
+        print("try to assemble infographic")
         assemble_start = time.time()
         final_svg, original_mask, total_height = assemble_infographic(
             title_svg_content=title_svg_content,

@@ -5,7 +5,7 @@ REQUIREMENTS_BEGIN
     "chart_name": "proportional_square_area_chart_01",
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],
-    "required_fields_range": [[2, 10], []],
+    "required_fields_range": [[2, 10], [0, "inf"]],
     "required_fields_icons": [],
     "required_other_icons": [],
     "required_fields_colors": [],

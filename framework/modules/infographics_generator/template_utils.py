@@ -31,6 +31,12 @@ def get_unique_fields_and_types(
 
     # Order fields according to field_order, keeping only those that exist
     ordered_fields = [field for field in field_order if field in field_types]
+    for field in field_ranges:
+        r = field_ranges[field]
+        if r[0] == "-inf":
+            r[0] = float('-inf')
+        if r[1] == "inf":
+            r[1] = float('inf')
     ordered_ranges = [field_ranges[field] for field in ordered_fields]
     
     return ordered_fields, field_types, ordered_ranges
@@ -104,38 +110,45 @@ def check_template_compatibility(data: Dict, templates: Dict, specific_chart_nam
                     
                         if combination_type != data_type_str:
                             continue
+
+                        flag = True
                         for i, range in enumerate(ordered_ranges):
+                            if i >= len(data["data"]["columns"]):
+                                flag = False
+                                break
+
                             if data["data"]["columns"][i]["data_type"] in ["temporal", "categorical"]:
                                 key = data["data"]["columns"][i]["name"]
                                 unique_values = list(set(value[key] for value in data["data"]["data"]))
                                 if len(unique_values) > range[1] or len(unique_values) < range[0]:
-                                    if specific_chart_name and specific_chart_name == chart_name:
-                                        print(f"template {template_key} miss match", data["name"], len(unique_values), range)
-                                    continue
+                                    flag = False
+                                    #if specific_chart_name and specific_chart_name == chart_name:
+                                    #    print(f"template {template_key} miss match", data["name"], len(unique_values), range)
+                                    break
                                 else:
-                                    if specific_chart_name and specific_chart_name == chart_name:
-                                        print(f"template {template_key} matched", data["name"], len(unique_values), range)
+                                    pass
+                                    #if specific_chart_name and specific_chart_name == chart_name:
+                                    #    print(f"template {template_key} matched", data["name"], len(unique_values), range)
                             elif data["data"]["columns"][i]["data_type"] in ["numerical"]:
-                                continue
                                 key = data["data"]["columns"][i]["name"]
                                 min_value = min(value[key] for value in data["data"]["data"])
                                 max_value = max(value[key] for value in data["data"]["data"])
                                 if min_value > range[1] or max_value < range[0]:
-                                    if specific_chart_name and specific_chart_name == chart_name:
-                                        print(f"template {template_key} miss match", min_value, max_value, range)
-                                    continue
-
-                        # If the combination type matches the template's data type, it's compatible
-                        if specific_chart_name == None or specific_chart_name == chart_name:
-                            compatible_templates.append(template_key)
+                                    #if specific_chart_name and specific_chart_name == chart_name:
+                                    #    print(f"template {template_key} miss match", min_value, max_value, range)
+                                    flag = False
+                                    break
+                        if flag:
+                            if specific_chart_name == None or specific_chart_name == chart_name:
+                                compatible_templates.append((template_key, ordered_fields))
                         
     return compatible_templates
 
 def select_template(compatible_templates: List[str]) -> Tuple[str, str, str]:
     """随机选择一个兼容的模板"""
-    selected_template = random.choice(compatible_templates)
+    [selected_template, ordered_fields] = random.choice(compatible_templates)
     engine, chart_type, chart_name = selected_template.split('/')
-    return engine, chart_type, chart_name
+    return engine, chart_type, chart_name, ordered_fields
 
 def process_template_requirements(requirements: Dict, data: Dict, engine: str, chart_name: str) -> None:
     """处理模板的颜色要求"""

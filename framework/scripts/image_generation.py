@@ -25,7 +25,7 @@ response = client.chat.completions.create(
             "content": [
                 {
                     "type": "text",
-                    "text": 'create a small clipart for "Labour Party" in "UK", pure white background',
+                    "text": 'A small clipart for "Xiaomi". Pure white background. No gradients, shadows, or complex details. Avoid photorealistic rendering. No text.',
                 }
             ],
         },

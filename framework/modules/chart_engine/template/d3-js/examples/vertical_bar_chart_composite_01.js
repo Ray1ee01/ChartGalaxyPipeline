@@ -7,7 +7,7 @@ REQUIREMENTS_BEGIN
     "is_composite": true,
     "required_fields": [["x", "y"], ["x","y2"]],
     "required_fields_type": [[["categorical"], ["numerical"]],[["categorical"], ["numerical"]]],
-    "required_fields_range": [[[2, 20], [0, 1000000]],[[2, 20], [0, 1000000]]],
+    "required_fields_range": [[[2, 20], [0, "inf"]],[[2, 20], [0, "inf"]]],
     "required_fields_icons": ["x"],
     "required_other_icons": [],
     "required_fields_colors": [],

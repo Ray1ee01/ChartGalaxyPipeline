@@ -5,7 +5,7 @@ REQUIREMENTS_BEGIN
     "chart_name": "multiple_area_chart_01",
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["temporal"], ["numerical"], ["categorical"]],
-    "required_fields_range": [[5, 50], [0, 100], [2, 2]],
+    "required_fields_range": [[5, 50], [0, "inf"], [2, 2]],
     "required_fields_icons": [],
     "required_other_icons": [],
     "required_fields_colors": ["group"],

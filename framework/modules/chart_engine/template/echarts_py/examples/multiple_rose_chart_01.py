@@ -5,13 +5,13 @@ REQUIREMENTS_BEGIN
     "chart_name": "multiple_rose_chart_01",
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
-    "required_fields_range": [[2, 10], [0, 100], [2, 8]],
+    "required_fields_range": [[2, 8], [0, "inf"], [2, 12]],
     "required_fields_icons": ["x"],
     "required_other_icons": ["primary"],
     "required_fields_colors": ["group"],
     "required_other_colors": ["primary"],
     "supported_effects": ["shadow", "radius_corner"],
-    "min_height": 400,
+    "min_height": 600,
     "min_width": 650,
     "background": "no",
     "icon_mark": "none",
@@ -136,14 +136,16 @@ def make_options(json_data):
     min_dimension = min(chart_width, chart_height)
     # For 2 columns, allow slightly larger maximum radius
     max_radius = 180 if cols == 2 else 150
-    outer_radius = min(min_dimension / 2 - 10, max_radius)
-    inner_radius = 0  # Changed to 0 - no inner hole for rose chart
+    outer_radius = min(min_dimension / 2 - 10, max_radius) * 0.9
+    icon_width = max(32, outer_radius * 0.5)
+    icon_height = max(32, outer_radius * 0.5)
+    inner_radius = outer_radius * 0.33  # Changed to 0 - no inner hole for rose chart
     
     # Fixed vertical spacing between charts
     fixed_vertical_spacing = 40  # Define a fixed vertical spacing
     
     # Calculate title width (slightly less than inner circle diameter)
-    title_width = inner_radius * 1.8
+    title_width = outer_radius
     
     # Add datasets for each category
     for category in categories:
@@ -248,8 +250,6 @@ def make_options(json_data):
         if category in images['field']:
             options["graphic"] = options.get("graphic", [])
             # Calculate position for icon
-            icon_width = max(32, outer_radius * 0.5)
-            icon_height = max(32, outer_radius * 0.5)
             icon_x = center_x - (icon_width / 2)
             icon_y = center_y - (icon_height / 2)  # Position above the title
             

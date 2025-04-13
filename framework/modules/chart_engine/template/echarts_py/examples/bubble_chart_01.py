@@ -5,7 +5,7 @@ REQUIREMENTS_BEGIN
     "chart_name": "bubble_chart_01",
     "required_fields": ["x", "y", "y2"],
     "required_fields_type": [["categorical"], ["numerical"], ["numerical"]],
-    "required_fields_range": [[2, 10], [0, 1000000], [0, 100]],
+    "required_fields_range": [[2, 12], [0, "inf"], [0, "inf"]],
     "required_fields_icons": ["x"],
     "required_other_icons": ["primary"],
     "required_fields_colors": ["x"],
