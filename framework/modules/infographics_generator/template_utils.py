@@ -146,7 +146,7 @@ def process_template_requirements(requirements: Dict, data: Dict, engine: str, c
             elif key == "negative" and "negative" not in data["colors"]["other"]:
                 data["colors"]["other"]["negative"] = get_contrast_color(data["colors"]["other"]["primary"]) 
 
-    if 'donut' in chart_name or 'pie' in chart_name and engine == 'vegalite_py':
+    if ('donut' in chart_name or 'pie' in chart_name) and engine == 'vegalite_py':
         data["variables"]["height"] = 500
         data["variables"]["width"] = 500
     else:

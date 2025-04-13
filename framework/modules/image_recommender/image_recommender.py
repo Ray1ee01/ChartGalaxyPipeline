@@ -23,109 +23,6 @@ class ImageRecommender:
         self.special_icons = os.path.join(resource_path, 'special_icons')
         self.special_icon_index = os.path.join(self.special_icons, 'data.json')
         self.special_categories = ["country"]
-
-    def determine_by_group(self, columns: List[Dict], combination: str, input_data: Dict) -> Optional[Dict]:
-        """
-        Determine which column to use for grouping based on the combination type and LLM evaluation.
-        
-        Args:
-            columns: List of column dictionaries containing name and data_type
-            combination: Type of combination (e.g., "categorical + numerical")
-            input_data: Dictionary containing the input data
-            
-        Returns:
-            Dictionary containing group column and category info, or None if no grouping should be used
-        """
-        # First get the candidate column based on combination type
-        column_names = [col["name"] for col in columns]
-        candidate_group_col = None
-        
-        if combination == "categorical + numerical" or combination == "categorical + numerical + numerical":
-            candidate_group_col = column_names[0]
-        elif combination == "categorical + numerical + categorical":
-            candidate_group_col = column_names[2]
-        elif combination == "temporal + numerical + categorical":
-            candidate_group_col = column_names[2]
-        elif combination == "categorical + numerical + temporal":
-            candidate_group_col = column_names[0]
-        elif combination == "temporal + numerical":
-            pass
-        
-        if not candidate_group_col or not self.base_url or not self.api_key:
-            return None
-        
-        # Get the unique values for the candidate group column
-        data = pd.DataFrame(input_data.get("data", {}).get("data", []))
-        unique_values = data[candidate_group_col].unique().tolist()
-        
-        # Prepare the prompt for LLM
-        titles = input_data.get("metadata", {}).get("titles", {})
-        prompt = f"""Please analyze if we should use icons to distinguish between different groups in this chart.
-
-Chart Context:
-Title: {titles.get('main_title', '')}
-Subtitle: {titles.get('sub_title', '')}
-Grouping Column: {candidate_group_col}
-Unique Values: {', '.join(map(str, unique_values[:10]))}{"..." if len(unique_values) > 10 else ""}
-
-Please categorize the groups into one of these types:
-1. country (use flags)
-2. industry (e.g., tech, finance, healthcare)
-3. weather (e.g., sunny, rainy, cloudy)
-4. emotion (e.g., happy, sad, neutral)
-5. transport (e.g., car, plane, ship)
-6. nature (e.g., animals, plants)
-7. sports (e.g., football, basketball)
-8. abstract (not suitable for icons)
-
-Please respond in JSON format:
-{{
-    "use_icons": true/false,
-    "category": "country/industry/weather/emotion/transport/nature/sports/abstract"
-}}"""
-
-        try:
-            response = requests.post(
-                self.request_url,
-                headers={
-                    "Authorization": f"Bearer {self.api_key}",
-                    "Content-Type": "application/json"
-                },
-                json={
-                    "model": "gemini-2.0-flash",
-                    "messages": [{
-                        "role": "user",
-                        "content": prompt
-                    }]
-                }
-            )
-            if response.status_code == 200:
-                # Extract content from response which contains the JSON string
-                content = response.json()['choices'][0]['message']['content']
-                # Remove markdown code block formatting if present
-                content = content.replace('```json\n', '').replace('\n```', '').strip()
-                try:
-                    decision = json.loads(content)
-                    logger.info(f"Icon usage decision: {decision}")
-                    
-                    if not decision['use_icons']:
-                        return None
-                        
-                    return {
-                        "column": candidate_group_col,
-                        "category": decision['category']
-                    }
-                    
-                except json.JSONDecodeError:
-                    logger.error("Failed to parse LLM response as JSON")
-                    return None
-            else:
-                logger.error(f"LLM API request failed with status code: {response.status_code}")
-                return None
-            
-        except Exception as e:
-            logger.error(f"Error calling LLM API: {str(e)}")
-            return None
         
     def create_query_text_for_value(self, input_data: Dict, group_value: str) -> str:
         """Create a text query from input data for finding similar images."""
@@ -374,6 +271,175 @@ Please respond in JSON format:
             logger.error(f"Error processing image {image_path}: {str(e)}")
             return ""
 
+    def identify_categorical_columns(self, columns: List[Dict], input_data: Dict) -> List[Dict]:
+        """
+        识别所有categorical列，为每个列确定是否应使用图标以及图标类别。
+        
+        Args:
+            columns: 列信息列表
+            input_data: 输入数据
+            
+        Returns:
+            列表，包含所有应该使用图标的categorical列信息
+        """
+        categorical_columns = []
+        
+        for column in columns:
+            if column["data_type"] == "categorical":
+                # 检查是否应该使用图标
+                result = self._should_use_icons(column["name"], input_data)
+                if result:
+                    categorical_columns.append(result)
+        
+        return categorical_columns
+    
+    def _should_use_icons(self, column_name: str, input_data: Dict) -> Optional[Dict]:
+        """
+        Determine whether icons should be used for a specific column
+        
+        Args:
+            column_name: Column name
+            input_data: Input data
+            
+        Returns:
+            Dictionary containing column name and category, or None if icons should not be used
+        """
+        if not self.base_url or not self.api_key:
+            return None
+            
+        # Get unique values for the column
+        data_rows = input_data.get("data", {}).get("data", [])
+        unique_values = list(set([row[column_name] for row in data_rows]))
+        titles = input_data.get("metadata", {}).get("titles", {})
+
+        prompt = f"""Please analyze whether icons should be used to distinguish between different groups in this chart.
+
+Chart Context:
+Title: {titles.get('main_title', '')}
+Subtitle: {titles.get('sub_title', '')}
+Column Name: {column_name}
+Unique Values: {', '.join(map(str, unique_values[:10]))}{"..." if len(unique_values) > 10 else ""}
+
+Categorize these values into one of the following types:
+1. country (use country flags)
+2. industry (e.g., tech, finance, healthcare, manufacturing)
+3. weather (e.g., sunny, rainy, cloudy, stormy)
+4. emotion (e.g., happy, sad, neutral, excited, like, dislike)
+5. transport (e.g., car, plane, train, ship)
+6. nature (e.g., animals, plants, landscapes)
+7. sports (e.g., football, basketball, tennis)
+8. politics (e.g., president, prime minister, king, queen, party, government)
+9. other (e.g., food, drink, art, music, science, technology, history, geography, etc.) suitable for icons
+10. abstract (not suitable for icons)
+
+Consider whether icons would enhance understanding of the data. If the values don't clearly fit into any specific category above, or if using icons would not add meaningful information, select 'abstract' and set 'use_icons' to false.
+
+Please respond in JSON format:
+{{
+    "use_icons": true/false,
+    "category": "country/industry/weather/emotion/transport/nature/sports/abstract"
+}}"""
+
+        try:
+            response = requests.post(
+                self.request_url,
+                headers={
+                    "Authorization": f"Bearer {self.api_key}",
+                    "Content-Type": "application/json"
+                },
+                json={
+                    "model": "gemini-2.0-flash",
+                    "messages": [{
+                        "role": "user",
+                        "content": prompt
+                    }]
+                }
+            )
+            if response.status_code == 200:
+                content = response.json()['choices'][0]['message']['content']
+                content = content.replace('```json\n', '').replace('\n```', '').strip()
+                try:
+                    decision = json.loads(content)
+                    logger.info(f"Column {column_name} icon usage decision: {decision}")
+                    
+                    if not decision['use_icons']:
+                        return None
+                        
+                    return {
+                        "column": column_name,
+                        "category": decision['category']
+                    }
+                    
+                except json.JSONDecodeError:
+                    logger.error("Failed to parse LLM response as JSON")
+                    return None
+            else:
+                logger.error(f"LLM API request failed with status code: {response.status_code}")
+                return None
+            
+        except Exception as e:
+            logger.error(f"Error calling LLM API: {str(e)}")
+            return None
+
+    def recommend_images(self, input_data: Dict) -> Dict:
+        """
+        Recommend images based on the input data.
+        """
+        if self.index_builder is None:
+            raise ValueError("Index builder not initialized")
+        
+        # Extract necessary information
+        data_dict = input_data.get("data", {})
+        columns = data_dict.get("columns", [])
+        
+        # Step 1: 识别所有应该使用图标的categorical列
+        categorical_columns = self.identify_categorical_columns(columns, input_data)
+        print(categorical_columns)
+        
+        # Step 2: Get topic-level clipart recommendations
+        query_text = self.create_query_text(input_data)
+        topic_clipart = self.index_builder.search(query_text, top_k=5, image_type='clipart')
+        
+        # Prepare the result
+        result = {
+            "topic_clipart": [
+                {
+                    "image_path": img["image_path"],
+                    "image_data": img["image_data"],
+                    "similarity_score": 1.0 / (1.0 + img["distance"])
+                }
+                for img in topic_clipart
+            ],
+            "group_icons": {}
+        }
+
+        # Step 3: 为每个categorical列处理图标
+        for column_info in categorical_columns:
+            group_col = column_info["column"]
+            category = column_info["category"]
+            data_rows = input_data.get("data", {}).get("data", [])
+            unique_values = list(set([row[group_col] for row in data_rows]))
+            
+            # 创建一个包含列名的键，用于存储该列的图标
+            column_key = f"{group_col}"
+            result["group_icons"][column_key] = {}
+            
+            # Try special categories first
+            if category in self.special_categories:
+                icons = self.process_special_icons(category, unique_values)
+                if icons:
+                    result["group_icons"][column_key] = icons
+            else:
+                # 为该列创建专门的输入数据
+                column_input = {
+                    "data": data_dict,
+                    "titles": input_data.get("metadata", {}).get("titles", {})
+                }
+                icons = self.process_normal_icons(column_input, unique_values)
+                result["group_icons"][column_key] = icons
+        
+        return self.process_recommendation_result(result)
+
     def process_recommendation_result(self, result: Dict) -> Dict:
         """
         Process the recommendation result:
@@ -397,67 +463,20 @@ Please respond in JSON format:
             # Randomly select one clipart
             clipart = random.choice(result["topic_clipart"])
             processed["other"]["primary"] = self.post_process_image(clipart["image_path"])
-            # processed["topic_clipart_data"] = clipart["image_data"]
         
-        # Process group icons
-        for group, icons in result["group_icons"].items():
-            if isinstance(icons, list):
-                # For normal icons (list of candidates)
-                icon = random.choice(icons)
-                processed["field"][group] = self.post_process_image(icon["image_path"])
-            else:
-                # For special icons (single icon)
-                processed["field"][group] = self.post_process_image(icons["image_path"])
+        # Process group icons - 新结构支持多列的图标
+        for column_name, column_icons in result["group_icons"].items():
+            for group, icons in column_icons.items():
+                field_key = group
+                if isinstance(icons, list):
+                    # For normal icons (list of candidates)
+                    icon = random.choice(icons)
+                    processed["field"][field_key] = self.post_process_image(icon["image_path"])
+                else:
+                    # For special icons (single icon)
+                    processed["field"][field_key] = self.post_process_image(icons["image_path"])
         
         return processed
-
-    def recommend_images(self, input_data: Dict) -> Dict:
-        """
-        Recommend images based on the input data.
-        """
-        if self.index_builder is None:
-            raise ValueError("Index builder not initialized")
-        
-        # Extract necessary information
-        data_dict = input_data.get("data", {})
-        data = pd.DataFrame(data_dict.get("data", []))
-        columns = data_dict.get("columns", [])
-        combination = data_dict.get("type_combination", "")
-        
-        # Step 1: Determine by_group
-        by_group = self.determine_by_group(columns, combination, input_data)
-        
-        # Step 2: Get topic-level clipart recommendations
-        query_text = self.create_query_text(input_data)
-        # logger.info(f"Searching for topic clipart with query: {query_text}")
-        topic_clipart = self.index_builder.search(query_text, top_k=5, image_type='clipart')
-        
-        # Prepare the result
-        result = {
-            "topic_clipart": [
-                {
-                    "image_path": img["image_path"],
-                    "image_data": img["image_data"],
-                    "similarity_score": 1.0 / (1.0 + img["distance"])
-                }
-                for img in topic_clipart
-            ],
-            "group_icons": {}
-        }
-
-        # Step 3: Process group icons if needed
-        if by_group:
-            group_col = by_group["column"]
-            category = by_group["category"]
-            unique_values = data[group_col].unique()
-            
-            # Try special categories first
-            if category in self.special_categories:
-                result["group_icons"] = self.process_special_icons(category, unique_values)
-            else:
-                result["group_icons"] = self.process_normal_icons(input_data, unique_values)
-        
-        return self.process_recommendation_result(result)
 
 def process(input: str, output: str, embed_model_path: str = None, resource_path: str = None, data_path: str = None, index_path: str = None, base_url: str = None, api_key: str = None) -> bool:
     """

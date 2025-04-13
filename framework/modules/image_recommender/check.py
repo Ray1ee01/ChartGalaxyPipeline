@@ -1,5 +1,6 @@
 # 1. 扫描当前目录下所有image文件 包含png jpg jpeg webp，进行编号 存储下list
 import os, json
+import uuid  # 添加导入uuid模块
 image_pathes = []
 root = '/data/lizhen/resources/image'
 image_root = os.path.join(root, 'images')
@@ -139,7 +140,10 @@ if not os.path.exists(results_path):
 def process_image(args):
     i, image_path, prompt, results_path = args
     rel_path = os.path.relpath(image_path, image_root)
-    target_path = os.path.join(results_path, f'{i}.json')
+    
+    # 使用UUID生成随机文件名，而不是使用索引
+    random_filename = str(uuid.uuid4())
+    target_path = os.path.join(results_path, f'{random_filename}.json')
     
     # Skip if already processed
     if rel_path in result_map:

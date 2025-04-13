@@ -102,8 +102,8 @@ function makeChart(containerSelector, data) {
         .style("visibility", "hidden");
     
     // 图标尺寸
-    const flagWidth = 20;
-    const flagHeight = 15;
+    const defaultFlagWidth = 48;
+    const defaultFlagHeight = 48;
     const flagPadding = 0;
     
     // 计算最大维度标签宽度
@@ -121,7 +121,7 @@ function makeChart(containerSelector, data) {
             .text(formattedDimension);
         
         const textWidth = tempText.node().getBBox().width;
-        const totalWidth = flagWidth + flagPadding + textWidth;
+        const totalWidth = defaultFlagWidth + flagPadding + textWidth;
         
         maxLabelWidth = Math.max(maxLabelWidth, totalWidth);
         
@@ -230,6 +230,9 @@ function makeChart(containerSelector, data) {
     const xScale = d3.scaleLinear()
         .domain([0, d3.max(chartData, d => +d[valueField]) * 1.05]) // 添加5%边距
         .range([0, innerWidth]);
+
+    let flagWidth = Math.min(defaultFlagWidth, yScale.bandwidth() - 10);
+    let flagHeight = Math.min(defaultFlagHeight, yScale.bandwidth() - 10);
     
     // ---------- 8. 添加标题和副标题 ----------
     

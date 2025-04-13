@@ -1,8 +1,8 @@
 '''
 REQUIREMENTS_BEGIN
 {
-    "chart_type": "Donut Chart",
-    "chart_name": "multiple_donut_chart_01",
+    "chart_type": "Gauge Chart",
+    "chart_name": "multiple_gauge_chart_02",
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
     "required_fields_range": [[2, 10], [0, 100], [2, 8]],
@@ -52,7 +52,7 @@ def get_grid_layout(num_items):
 
 def make_options(json_data):
     """
-    Generate ECharts options for donut charts
+    Generate ECharts options for gauge charts
     
     Args:
         json_data: Dictionary containing the JSON data from input.json
@@ -77,6 +77,10 @@ def make_options(json_data):
     categories = sorted(list(set(item[x_field] for item in data)))
     groups = sorted(list(set(item[group_field] for item in data)))
     
+    # Limit groups to maximum of 3
+    if len(groups) > 3:
+        groups = groups[:3]
+    
     # Create color list for groups
     colors = []
     for group in groups:
@@ -86,7 +90,7 @@ def make_options(json_data):
     # Define dimensions based on json_data
     canvas_width = variables['width']
     canvas_height = variables['height']
-    title_height = 0  # Increased for larger title
+    title_height = 40
     legend_height = 40
     
     # Calculate grid layout
@@ -94,8 +98,7 @@ def make_options(json_data):
     rows, cols = get_grid_layout(num_charts)
     
     # Adjust margin based on number of columns
-    chart_margin = 10 if cols == 2 else 20  # Smaller margin for 2 columns
-    
+    chart_margin = 10 if cols == 2 else 20
     
     options = {
         "title": [],
@@ -107,10 +110,11 @@ def make_options(json_data):
         ],
         "series": [],
         "legend": {
-            "type": "scroll",
+            "type": "plain",
             "orient": "horizontal",
             "top": title_height,
             "left": "center",
+            "data": groups,
             "textStyle": {
                 "fontSize": int(typography['label']['font_size'].replace('px', '')),
                 "fontFamily": typography['label']['font_family'],
@@ -125,38 +129,18 @@ def make_options(json_data):
     
     # For 2 columns, use more of the available width
     if cols == 2:
-        effective_width = canvas_width - (chart_margin * 3)  # Only 3 margins for 2 columns
+        effective_width = canvas_width - (chart_margin * 3)
         chart_width = effective_width / 2
     else:
         chart_width = (canvas_width - (chart_margin * (cols + 1))) / cols
         
     chart_height = (content_height - (chart_margin * (rows + 1))) / rows
     
-    # Calculate donut radius based on available space
+    # Calculate gauge radius based on available space
     min_dimension = min(chart_width, chart_height)
-    # For 2 columns, allow slightly larger maximum radius
-    max_radius = 180 if cols == 2 else 150
-    outer_radius = min(min_dimension / 2 - 5, max_radius)
-    inner_radius = outer_radius * 0.7
+    max_radius = min(min_dimension / 2 - 10, 150)
     
-    # Calculate title width (slightly less than inner circle diameter)
-    title_width = inner_radius * 1.8
-    
-    # Add datasets for each category
-    for category in categories:
-        options["dataset"].append({
-            "transform": [
-                {
-                    "type": "filter",
-                    "config": {
-                        "dimension": x_field,
-                        "value": category
-                    }
-                }
-            ]
-        })
-    
-    # Add each donut chart
+    # Add each gauge chart
     for i, category in enumerate(categories):
         if i >= rows * cols:  # Safety check
             break
@@ -168,81 +152,112 @@ def make_options(json_data):
         center_x = chart_margin + (col * (chart_width + chart_margin)) + (chart_width / 2)
         center_y = content_top + chart_margin + (row * (chart_height + chart_margin)) + (chart_height / 2)
         
-        # Set pie style based on variables
-        item_style = {
-            "borderRadius": 4 if variables.get('has_rounded_corners', False) else 0,
-            "borderWidth": 2 if variables.get('has_stroke', False) else 0,
-            "borderColor": colors_data.get('stroke_color', '#ffffff') if variables.get('has_stroke', False) else 'transparent',
-            "shadowBlur": 10 if variables.get('has_shadow', False) else 0,
-            "shadowColor": 'rgba(0, 0, 0, 0.3)' if variables.get('has_shadow', False) else 'transparent'
-        }
-        
-        # Add pie chart series
-        options["series"].append({
-            "name": category,
-            "type": "pie",
-            "radius": [inner_radius, outer_radius],
-            "center": [center_x, center_y],
-            "datasetIndex": i + 1,
-            "encode": {
-                "itemName": group_field,
-                "value": y_field
-            },
-            "label": {
-                "show": True,
-                "position": "inside",
-                "formatter": "{@[1]}",
-                "fontSize": int(typography['label']['font_size'].replace('px', '')),
-                "fontFamily": typography['label']['font_family'],
-                "color": "white",
-            },
-            "emphasis": {
-                "label": {
-                    "show": True,
-                    "fontSize": int(typography['label']['font_size'].replace('px', '')) + 2,
-                    "fontWeight": "bold"
-                },
-                "itemStyle": {
-                    "shadowBlur": 15,
-                    "shadowColor": 'rgba(0, 0, 0, 0.5)'
-                }
-            },
-            "itemStyle": item_style,
-        })
-        
-        # Add separate title component for each donut
-        title_text = category
-        
-        # Add title component without using HTML
+        # Add title component
         options["title"].append({
-            "text": title_text,
-            "left": center_x,
-            "top": center_y,
-            "textAlign": "center",
-            "textVerticalAlign": "middle",
-            "width": title_width,
-            "overflow": "break",
-            "lineHeight": 24,
-            "padding": [5, 5],
+            "text": category,
+            "left": center_x - 10,
+            "top": center_y + max_radius - 5,
+            "textAlign": "right",
             "textStyle": {
                 "fontSize": int(typography['label']['font_size'].replace('px', '')),
                 "fontWeight": typography['label']['font_weight'],
                 "fontFamily": typography['label']['font_family'],
-                "color": colors_data['text_color'],
-                "width": title_width,
-                "overflow": "break",
-                "lineHeight": 24
+                "color": colors_data['text_color']
             }
         })
         
-        # If country has an icon, add it as a separate image component
+        # Get data for this category
+        category_data = []
+        for item in data:
+            if item[x_field] == category and item[group_field] in groups:
+                category_data.append({
+                    "name": item[group_field],
+                    "value": item[y_field]
+                })
+
+        gauge_max = max(100, max(item["value"] for item in category_data))
+        
+        # Create gauge series for this category
+        gauge_series = []
+        ring_width = 18
+        if max_radius < 80:
+            ring_width = 10
+        
+        for j, item in enumerate(category_data):
+            # Adjust radius for multiple gauges
+            radius = max_radius * (0.9 - (j * 0.2))
+            if radius < max_radius * 0.4:
+                radius = max_radius * 0.4
+                
+            gauge_series.append({
+                "type": "gauge",
+                "name": item["name"],  # Add name for legend association
+                "center": [center_x, center_y],
+                "radius": radius,
+                "min": 0,
+                "max": gauge_max,
+                "startAngle": 90,
+                "endAngle": 180,
+                "progress": {
+                    "show": True,
+                    "width": ring_width,
+                    "itemStyle": {
+                        "color": colors[j % len(colors)],
+                        "shadowBlur": 10 if variables.get('has_shadow', False) else 0,
+                        "shadowColor": 'rgba(0, 0, 0, 0.3)' if variables.get('has_shadow', False) else 'transparent',
+                        "borderRadius": 4 if variables.get('has_rounded_corners', False) else 0
+                    }
+                },
+                "pointer": {
+                    "show": False
+                },
+                "axisLine": {
+                    "lineStyle": {
+                        "width": ring_width,
+                        "color": [[1, "white"]]
+                    }
+                },
+                "axisTick": {
+                    "show": False
+                },
+                "splitLine": {
+                    "show": False
+                },
+                "axisLabel": {
+                    "show": False
+                },
+                "anchor": {
+                    "show": False
+                },
+                "title": {
+                    "show": False
+                },
+                "detail": {
+                    "valueAnimation": True,
+                    "fontSize": int(typography['label']['font_size'].replace('px', '')) + 6,
+                    "fontWeight": "bold",
+                    "fontFamily": typography['label']['font_family'],
+                    "color": colors[j % len(colors)],
+                    "offsetCenter": [-30, -max_radius + (ring_width + 5) * (j + 1)],
+                    "textAlign": "right",
+                    "formatter": "{value}" + data_columns[1].get('unit', '')
+                },
+                "data": [{
+                    "value": item["value"],
+                    "name": item["name"]
+                }]
+            })
+        
+        options["series"].extend(gauge_series)
+        
+        # If category has an icon, add it as a separate image component
         if category in images['field']:
             options["graphic"] = options.get("graphic", [])
             # Calculate position for icon
-            icon_width = inner_radius - 10
-            icon_height = inner_radius - 10
-            icon_x = center_x - (icon_width / 2)
-            icon_y = center_y - (icon_height / 2)
+            icon_width = min(32, max_radius * 0.5)
+            icon_height = min(32, max_radius * 0.5)
+            icon_x = center_x + 10
+            icon_y = center_y + max_radius - 10
             
             options["graphic"].append({
                 "type": "image",
@@ -252,8 +267,7 @@ def make_options(json_data):
                     "width": icon_width,
                     "height": icon_height,
                     "x": icon_x,
-                    "y": icon_y,
-                    "opacity": 0.25
+                    "y": icon_y
                 },
                 "left": icon_x,
                 "top": icon_y,

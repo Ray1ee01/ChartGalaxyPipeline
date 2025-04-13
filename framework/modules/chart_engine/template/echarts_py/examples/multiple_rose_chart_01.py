@@ -1,8 +1,8 @@
 '''
 REQUIREMENTS_BEGIN
 {
-    "chart_type": "Donut Chart",
-    "chart_name": "multiple_donut_chart_01",
+    "chart_type": "Rose Chart",
+    "chart_name": "multiple_rose_chart_01",
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
     "required_fields_range": [[2, 10], [0, 100], [2, 8]],
@@ -107,7 +107,7 @@ def make_options(json_data):
         ],
         "series": [],
         "legend": {
-            "type": "scroll",
+            "type": "plain",
             "orient": "horizontal",
             "top": title_height,
             "left": "center",
@@ -136,8 +136,11 @@ def make_options(json_data):
     min_dimension = min(chart_width, chart_height)
     # For 2 columns, allow slightly larger maximum radius
     max_radius = 180 if cols == 2 else 150
-    outer_radius = min(min_dimension / 2 - 5, max_radius)
-    inner_radius = outer_radius * 0.7
+    outer_radius = min(min_dimension / 2 - 10, max_radius)
+    inner_radius = 0  # Changed to 0 - no inner hole for rose chart
+    
+    # Fixed vertical spacing between charts
+    fixed_vertical_spacing = 40  # Define a fixed vertical spacing
     
     # Calculate title width (slightly less than inner circle diameter)
     title_width = inner_radius * 1.8
@@ -164,9 +167,16 @@ def make_options(json_data):
         row = i // cols
         col = i % cols
         
-        # Calculate center positions in pixels
+        # Calculate center positions in pixels with fixed vertical spacing
         center_x = chart_margin + (col * (chart_width + chart_margin)) + (chart_width / 2)
-        center_y = content_top + chart_margin + (row * (chart_height + chart_margin)) + (chart_height / 2)
+        
+        # Use fixed vertical spacing instead of dynamic calculation
+        if rows == 1:
+            center_y = content_top + chart_margin + (chart_height / 2)
+        else:
+            available_height = content_height - ((rows - 1) * fixed_vertical_spacing)
+            chart_height_adjusted = available_height / rows
+            center_y = content_top + (row * (chart_height_adjusted + fixed_vertical_spacing)) + (chart_height_adjusted / 2)
         
         # Set pie style based on variables
         item_style = {
@@ -181,6 +191,7 @@ def make_options(json_data):
         options["series"].append({
             "name": category,
             "type": "pie",
+            "roseType": "radius",
             "radius": [inner_radius, outer_radius],
             "center": [center_x, center_y],
             "datasetIndex": i + 1,
@@ -190,11 +201,11 @@ def make_options(json_data):
             },
             "label": {
                 "show": True,
-                "position": "inside",
+                "position": "outside",
                 "formatter": "{@[1]}",
                 "fontSize": int(typography['label']['font_size'].replace('px', '')),
                 "fontFamily": typography['label']['font_family'],
-                "color": "white",
+                "color": colors_data['text_color'],
             },
             "emphasis": {
                 "label": {
@@ -213,25 +224,23 @@ def make_options(json_data):
         # Add separate title component for each donut
         title_text = category
         
-        # Add title component without using HTML
+        # Move title below chart instead of center
+        label_y_offset = outer_radius + 15  # Position below the chart with more space
+        
+        # Add title component below the chart
         options["title"].append({
             "text": title_text,
             "left": center_x,
-            "top": center_y,
+            "top": center_y + label_y_offset,  # Position below the chart
             "textAlign": "center",
-            "textVerticalAlign": "middle",
-            "width": title_width,
-            "overflow": "break",
-            "lineHeight": 24,
-            "padding": [5, 5],
+            "textVerticalAlign": "top",
+            "width": title_width * 1.5,  # Increase width for better text display
             "textStyle": {
                 "fontSize": int(typography['label']['font_size'].replace('px', '')),
                 "fontWeight": typography['label']['font_weight'],
                 "fontFamily": typography['label']['font_family'],
                 "color": colors_data['text_color'],
-                "width": title_width,
-                "overflow": "break",
-                "lineHeight": 24
+                "overflow": "truncate"  # Changed to truncate to avoid breaking text
             }
         })
         
@@ -239,10 +248,10 @@ def make_options(json_data):
         if category in images['field']:
             options["graphic"] = options.get("graphic", [])
             # Calculate position for icon
-            icon_width = inner_radius - 10
-            icon_height = inner_radius - 10
+            icon_width = max(32, outer_radius * 0.5)
+            icon_height = max(32, outer_radius * 0.5)
             icon_x = center_x - (icon_width / 2)
-            icon_y = center_y - (icon_height / 2)
+            icon_y = center_y - (icon_height / 2)  # Position above the title
             
             options["graphic"].append({
                 "type": "image",
@@ -252,8 +261,7 @@ def make_options(json_data):
                     "width": icon_width,
                     "height": icon_height,
                     "x": icon_x,
-                    "y": icon_y,
-                    "opacity": 0.25
+                    "y": icon_y
                 },
                 "left": icon_x,
                 "top": icon_y,

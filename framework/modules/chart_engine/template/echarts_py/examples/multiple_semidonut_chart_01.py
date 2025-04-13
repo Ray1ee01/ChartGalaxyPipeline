@@ -2,7 +2,7 @@
 REQUIREMENTS_BEGIN
 {
     "chart_type": "Donut Chart",
-    "chart_name": "multiple_donut_chart_01",
+    "chart_name": "multiple_semidonut_chart_01",
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
     "required_fields_range": [[2, 10], [0, 100], [2, 8]],
@@ -107,7 +107,7 @@ def make_options(json_data):
         ],
         "series": [],
         "legend": {
-            "type": "scroll",
+            "type": "plain",
             "orient": "horizontal",
             "top": title_height,
             "left": "center",
@@ -136,7 +136,7 @@ def make_options(json_data):
     min_dimension = min(chart_width, chart_height)
     # For 2 columns, allow slightly larger maximum radius
     max_radius = 180 if cols == 2 else 150
-    outer_radius = min(min_dimension / 2 - 5, max_radius)
+    outer_radius = min(min_dimension / 2 - 5, max_radius) * 1.05
     inner_radius = outer_radius * 0.7
     
     # Calculate title width (slightly less than inner circle diameter)
@@ -166,7 +166,7 @@ def make_options(json_data):
         
         # Calculate center positions in pixels
         center_x = chart_margin + (col * (chart_width + chart_margin)) + (chart_width / 2)
-        center_y = content_top + chart_margin + (row * (chart_height + chart_margin)) + (chart_height / 2)
+        center_y = content_top + chart_margin + (row * (chart_height + chart_margin)) + (chart_height / 2) + (chart_height * 0.1)
         
         # Set pie style based on variables
         item_style = {
@@ -188,13 +188,16 @@ def make_options(json_data):
                 "itemName": group_field,
                 "value": y_field
             },
+            "startAngle": 180,
+            "endAngle": 360,
             "label": {
                 "show": True,
                 "position": "inside",
-                "formatter": "{@[1]}",
+                "formatter": "{@" + y_field + "}",  # 直接引用y字段的值
                 "fontSize": int(typography['label']['font_size'].replace('px', '')),
                 "fontFamily": typography['label']['font_family'],
                 "color": "white",
+                "fontWeight": "bold"
             },
             "emphasis": {
                 "label": {
@@ -217,7 +220,7 @@ def make_options(json_data):
         options["title"].append({
             "text": title_text,
             "left": center_x,
-            "top": center_y,
+            "top": center_y - outer_radius - 30,  # 放在半圆上方
             "textAlign": "center",
             "textVerticalAlign": "middle",
             "width": title_width,
@@ -242,7 +245,7 @@ def make_options(json_data):
             icon_width = inner_radius - 10
             icon_height = inner_radius - 10
             icon_x = center_x - (icon_width / 2)
-            icon_y = center_y - (icon_height / 2)
+            icon_y = center_y - 50  # 调整图标位置
             
             options["graphic"].append({
                 "type": "image",
@@ -252,8 +255,7 @@ def make_options(json_data):
                     "width": icon_width,
                     "height": icon_height,
                     "x": icon_x,
-                    "y": icon_y,
-                    "opacity": 0.25
+                    "y": icon_y
                 },
                 "left": icon_x,
                 "top": icon_y,

@@ -97,7 +97,7 @@ def assemble_infographic(
     total_width = chart_width + padding * 2
 
     drawing_padding = 100
-    title_mask = calculate_mask(title_svg_content, total_width, 250, drawing_padding)
+    title_mask = calculate_mask(title_svg_content, total_width, 500, drawing_padding)
     title_start, title_end, title_height = calculate_content_height(title_mask, drawing_padding)
     title_left, title_right, title_width = calculate_content_width(title_mask, drawing_padding)
     
@@ -225,14 +225,14 @@ def process(input: str, output: str, base_url: str, api_key: str, chart_name: st
     requirements = template_requirements[f"{engine}/{chart_type}/{chart_name}"]
     process_template_requirements(requirements, data, engine, chart_name)
     process_req_time = time.time() - process_req_start
-    # logger.info(f"Processing template requirements took: {process_req_time:.4f} seconds")
+    logger.info(f"Processing template requirements took: {process_req_time:.4f} seconds")
     
     # 处理数据
     process_data_start = time.time()
     process_temporal_data(data)
     process_numerical_data(data)
     process_data_time = time.time() - process_data_start
-    # logger.info(f"Processing data took: {process_data_time:.4f} seconds")
+    logger.info(f"Processing data took: {process_data_time:.4f} seconds")
     
     # 获取图表模板
     get_template_start = time.time()
@@ -241,7 +241,7 @@ def process(input: str, output: str, base_url: str, api_key: str, chart_name: st
         logger.error(f"Failed to load template: {engine}/{chart_type}/{chart_name}")
         return False
     get_template_time = time.time() - get_template_start
-    # logger.info(f"Getting template took: {get_template_time:.4f} seconds")
+    logger.info(f"Getting template took: {get_template_time:.4f} seconds")
     
     # 创建临时目录
     tmp_dir = "./tmp"
@@ -254,11 +254,12 @@ def process(input: str, output: str, base_url: str, api_key: str, chart_name: st
     chart_svg_path = os.path.join(tmp_dir, f"{os.path.splitext(safe_output_name)[0]}.chart.tmp")
 
     if '-' in engine:
-        framework = engine.split('-')[0]
+        framework, framework_type = engine.split('-')
     elif '_' in engine:
-        framework = engine.split('_')[0]
+        framework, framework_type = engine.split('_')
     else:
         framework = engine
+        framework_type = None
 
     # 渲染图表
     render_chart_start = time.time()
@@ -268,7 +269,8 @@ def process(input: str, output: str, base_url: str, api_key: str, chart_name: st
             json_data=data,
             output_svg_path=chart_svg_path,
             js_file=template,
-            framework=framework # Extract framework name (echarts/d3)
+            framework=framework, # Extract framework name (echarts/d3)
+            framework_type=framework_type
         )
         render_chart_time = time.time() - render_chart_start
         logger.info(f"Rendering chart took: {render_chart_time:.4f} seconds")

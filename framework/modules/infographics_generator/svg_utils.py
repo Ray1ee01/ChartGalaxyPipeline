@@ -79,6 +79,12 @@ def get_svg_actual_bbox(svg_path):
         dx, dy = get_accumulated_transform(elem)
 
         if tag == 'rect':
+            # 检查是否应该忽略此矩形（fill="none"且没有stroke属性）
+            fill = elem.get('fill', '').lower()
+            has_stroke = elem.get('stroke') is not None
+            if fill == 'none' and not has_stroke:
+                continue  # 忽略这个矩形
+                
             x = float(elem.get('x', 0)) + dx
             y = float(elem.get('y', 0)) + dy
             w = float(elem.get('width', 0))

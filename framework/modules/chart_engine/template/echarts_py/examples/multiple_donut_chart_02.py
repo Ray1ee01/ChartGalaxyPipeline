@@ -2,7 +2,7 @@
 REQUIREMENTS_BEGIN
 {
     "chart_type": "Donut Chart",
-    "chart_name": "multiple_donut_chart_01",
+    "chart_name": "multiple_donut_chart_02",
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
     "required_fields_range": [[2, 10], [0, 100], [2, 8]],
@@ -107,7 +107,7 @@ def make_options(json_data):
         ],
         "series": [],
         "legend": {
-            "type": "scroll",
+            "type": "plain",
             "orient": "horizontal",
             "top": title_height,
             "left": "center",
@@ -140,7 +140,7 @@ def make_options(json_data):
     inner_radius = outer_radius * 0.7
     
     # Calculate title width (slightly less than inner circle diameter)
-    title_width = inner_radius * 1.8
+    title_width = outer_radius * 2.5
     
     # Add datasets for each category
     for category in categories:
@@ -217,7 +217,7 @@ def make_options(json_data):
         options["title"].append({
             "text": title_text,
             "left": center_x,
-            "top": center_y,
+            "top": center_y - outer_radius - 15,
             "textAlign": "center",
             "textVerticalAlign": "middle",
             "width": title_width,
@@ -239,8 +239,8 @@ def make_options(json_data):
         if category in images['field']:
             options["graphic"] = options.get("graphic", [])
             # Calculate position for icon
-            icon_width = inner_radius - 10
-            icon_height = inner_radius - 10
+            icon_width = inner_radius * 1.5
+            icon_height = inner_radius * 1.5
             icon_x = center_x - (icon_width / 2)
             icon_y = center_y - (icon_height / 2)
             
@@ -252,11 +252,11 @@ def make_options(json_data):
                     "width": icon_width,
                     "height": icon_height,
                     "x": icon_x,
-                    "y": icon_y,
-                    "opacity": 0.25
+                    "y": icon_y
                 },
                 "left": icon_x,
                 "top": icon_y,
+                "opacity": 0.5,
                 "z": 100
             })
     
