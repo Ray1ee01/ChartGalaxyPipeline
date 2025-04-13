@@ -28,7 +28,7 @@ function makeChart(containerSelector, data) {
     const chartData = jsonData.data.data;
     const variables = jsonData.variables;
     const typography = jsonData.typography;
-    const colors = jsonData.colors || {};
+    const colors = jsonData.colors_dark || {};
     const dataColumns = jsonData.data.columns || [];
     const images = jsonData.images || {};
     // 清空容器
@@ -304,6 +304,18 @@ function makeChart(containerSelector, data) {
                 .attr("height", 50) // 图片高度
                 .attr("xlink:href", imgData);
         }
+
+        // 添加标签文本
+        labelGroup.append("text")
+            .attr("x", textWidth + 100) // 位于图片右侧,留出10px间距
+            .attr("y", 2) // 垂直居中
+            .attr("text-anchor", "start")
+            .attr("dominant-baseline", "middle")
+            .style("font-family", typography.label.font_family)
+            .style("font-size", "20px")
+            .style("font-weight", "bold")
+            .style("fill", "#ffffff")
+            .text(group);
     });
     
     // 为每个组绘制线条和面积

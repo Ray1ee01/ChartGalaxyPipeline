@@ -28,7 +28,7 @@ function makeChart(containerSelector, data) {
     const chartData = jsonData.data.data;
     const variables = jsonData.variables;
     const typography = jsonData.typography;
-    const colors = jsonData.colors || {};
+    const colors = jsonData.colors_dark || {};
     const dataColumns = jsonData.data.columns || [];
     const images = jsonData.images || {};
     
