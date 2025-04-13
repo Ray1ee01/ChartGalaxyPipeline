@@ -10,8 +10,8 @@ REQUIREMENTS_BEGIN
         [["categorical"], ["numerical"]]
     ],
     "required_fields_range": [
-        [[2, 30], [0, 100], [2, 30]],
-        [[2, 30], [0, 1000]]
+        [[2, 30], [0, "inf"], [2, 30]],
+        [[2, 30], [0, "inf"]]
     ],
     "required_fields_icons": ["x"],
     "required_other_icons": [],
@@ -469,7 +469,7 @@ function makeChart(containerSelector, data) {
                 const labelText = stackItem.value + valueUnit;
                 const tempLabel = tempSvg.append("text")
                     .style("font-family", typography.annotation.font_family)
-                    .style("font-size", typography.annotation.font_size)
+                    .style("font-size", `${Math.max(barHeight * 0.6, parseFloat(typography.annotation.font_size))}px`)
                     .style("font-weight", typography.annotation.font_weight)
                     .text(labelText);
                 
@@ -487,7 +487,7 @@ function makeChart(containerSelector, data) {
                         .attr("dy", "0.35em")
                         .attr("text-anchor", "end") // 右对齐
                         .style("font-family", typography.annotation.font_family)
-                        .style("font-size", typography.annotation.font_size)
+                        .style("font-size", `${Math.max(barHeight * 0.6, parseFloat(typography.annotation.font_size))}px`)
                         .style("font-weight", typography.annotation.font_weight)
                         .style("fill", "#FFFFFF")  // 白色文本更易读
                         .text(labelText);
@@ -499,7 +499,7 @@ function makeChart(containerSelector, data) {
                         .attr("dy", "0.35em")
                         .attr("text-anchor", "start") // 左对齐（在条形外部）
                         .style("font-family", typography.annotation.font_family)
-                        .style("font-size", typography.annotation.font_size)
+                        .style("font-size", `${Math.max(barHeight * 0.6, parseFloat(typography.annotation.font_size))}px`)
                         .style("font-weight", typography.annotation.font_weight)
                         .style("fill", colors.text_color)  // 使用文本颜色
                         .text(labelText);
@@ -558,7 +558,7 @@ function makeChart(containerSelector, data) {
                     .attr("dy", "0.35em")
                     .attr("text-anchor", "middle")
                     .style("font-family", typography.annotation.font_family)
-                    .style("font-size", typography.annotation.font_size)
+                    .style("font-size", `${Math.max(barHeight * 0.6, parseFloat(typography.annotation.font_size))}px`)
                     .style("font-weight", typography.annotation.font_weight)
                     .style("fill", "#FFFFFF")
                     .text(formattedTotal);

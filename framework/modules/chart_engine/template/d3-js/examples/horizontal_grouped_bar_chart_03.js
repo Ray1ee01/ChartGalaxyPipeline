@@ -6,7 +6,7 @@ REQUIREMENTS_BEGIN
     "is_composite": false,
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
-    "required_fields_range": [[2, 20], [0, 100], [2, 5]],
+    "required_fields_range": [[2, 20], [0, "inf"], [2, 6]],
     "required_fields_icons": [],
     "required_other_icons": [],
     "required_fields_colors": ["group"],
@@ -435,7 +435,7 @@ function makeChart(containerSelector, data) {
                 // 创建临时文本元素来计算数值文本的宽度
                 const tempText = g.append("text")
                     .style("font-family", typography.annotation.font_family)
-                    .style("font-size", typography.annotation.font_size)
+                    .style("font-size", `${Math.max(barHeight * 0.5, parseFloat(typography.annotation.font_size))}px`)
                     .style("font-weight", typography.annotation.font_weight)
                     .style("visibility", "hidden")
                     .text(formattedValue);
@@ -458,7 +458,7 @@ function makeChart(containerSelector, data) {
                         .attr("text-anchor", "start")
                         .style("fill", colors.text_color || "#333") 
                         .style("font-family", typography.annotation.font_family)
-                        .style("font-size", typography.annotation.font_size)
+                        .style("font-size", `${Math.max(barHeight * 0.5, parseFloat(typography.annotation.font_size))}px`)
                         .style("font-weight", typography.annotation.font_weight)
                         .style("pointer-events", "none")
                         .text(formattedValue);
@@ -471,7 +471,7 @@ function makeChart(containerSelector, data) {
                         .attr("text-anchor", "end")
                         .style("fill", "#ffffff") 
                         .style("font-family", typography.annotation.font_family)
-                        .style("font-size", typography.annotation.font_size)
+                        .style("font-size", `${Math.max(barHeight * 0.5, parseFloat(typography.annotation.font_size))}px`)
                         .style("font-weight", typography.annotation.font_weight)
                         .style("pointer-events", "none")
                         .text(formattedValue);

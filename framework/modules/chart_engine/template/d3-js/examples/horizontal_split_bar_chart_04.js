@@ -7,7 +7,7 @@ REQUIREMENTS_BEGIN
     "is_composite": false,
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
-    "required_fields_range": [[2, 20], [0, 100], [2, 2]],
+    "required_fields_range": [[2, 20], [0, "inf"], [2, 2]],
     "required_fields_icons": [],
     "required_other_icons": [],
     "required_fields_colors": ["group"],
@@ -595,7 +595,7 @@ function makeChart(containerSelector, data) {
             const formattedValue = valueUnit ? 
             `${dataPoint[valueField]}${valueUnit}` : 
             `${dataPoint[valueField]}`;
-                
+            const barHeight = yScale.bandwidth();
             // 绘制左侧标签 - 使用统一的位置和右对齐
             g.append("text")
                 .attr("class", "label")
@@ -605,7 +605,7 @@ function makeChart(containerSelector, data) {
                 .attr("text-anchor", "end") // 右对齐文本
                 .style("fill", colors.text_color)
                 .style("font-family", typography.annotation.font_family)
-                .style("font-size", typography.annotation.font_size)
+                .style("font-size", `${Math.max(barHeight * 0.6, parseFloat(typography.annotation.font_size))}px`)
                 .style("font-weight", typography.annotation.font_weight)
                 .style("pointer-events", "none")
                 .text(formattedValue);
@@ -673,7 +673,7 @@ function makeChart(containerSelector, data) {
                 .attr("text-anchor", "end") // 左对齐文本
                 .style("fill", colors.text_color)
                 .style("font-family", typography.annotation.font_family)
-                .style("font-size", typography.annotation.font_size)
+                .style("font-size", `${Math.max(barHeight * 0.6, parseFloat(typography.annotation.font_size))}px`)
                 .style("font-weight", typography.annotation.font_weight)
                 .style("pointer-events", "none")
                 .text(formattedValue);

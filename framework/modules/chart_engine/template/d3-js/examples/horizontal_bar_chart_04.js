@@ -6,7 +6,7 @@ REQUIREMENTS_BEGIN
     "is_composite": false,
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],
-    "required_fields_range": [[2, 30], [0, 100]],
+    "required_fields_range": [[2, 30], [0, "inf"]],
     "required_fields_icons": ["x"],
     "required_other_icons": [],
     "required_fields_colors": [],
@@ -71,12 +71,19 @@ function makeChart(containerSelector, data) {
     const dimensionField = dataColumns.find(col => col.role === "x")?.name || "dimension";
     const valueField = dataColumns.find(col => col.role === "y")?.name || "value";
     
+    // 获取字段单位（如果存在）
+    let dimensionUnit = "";
+    let valueUnit = ""; // 默认为百分比
+    
+    if (dataColumns.find(col => col.role === "x").unit !== "none") {
+        dimensionUnit = dataColumns.find(col => col.role === "x").unit;
+    }
+    
+    if (dataColumns.find(col => col.role === "y").unit !== "none") {
+        valueUnit = dataColumns.find(col => col.role === "y").unit;
+    }
 
-    // 获取字段单位
-    let valueUnit = "";
     let valueUnit2 = "";
-    valueUnit = dataColumns.find(col => col.role === "y")?.unit === "none" ? "" : 
-                     dataColumns.find(col => col.role === "y")?.unit;
     valueUnit2 = dataColumns.find(col => col.role === "y2")?.unit === "none" ? "" : 
                      dataColumns.find(col => col.role === "y2")?.unit;
     
@@ -408,7 +415,7 @@ function makeChart(containerSelector, data) {
             
             const tempValueText = tempTextSvg.append("text")
                 .style("font-family", typography.annotation.font_family)
-                .style("font-size", typography.annotation.font_size)
+                .style("font-size", `${Math.max(barHeight * 0.6, parseFloat(typography.annotation.font_size))}px`)
                 .style("font-weight", typography.annotation.font_weight)
                 .text(formattedValue);
             
@@ -425,7 +432,7 @@ function makeChart(containerSelector, data) {
                 .attr("dy", "0.35em")
                 .attr("text-anchor", textFitsInside ? "end" : "start") // 在内部时右对齐，在外部时左对齐
                 .style("font-family", typography.annotation.font_family)
-                .style("font-size", typography.annotation.font_size)
+                .style("font-size", `${Math.max(barHeight * 0.6, parseFloat(typography.annotation.font_size))}px`)
                 .style("font-weight", typography.annotation.font_weight)
                 .style("fill", textFitsInside ? "#ffffff" : colors.text_color) // 在内部时使用白色，在外部时使用文本颜色
                 .text(formattedValue);

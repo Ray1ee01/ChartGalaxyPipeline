@@ -6,7 +6,7 @@ REQUIREMENTS_BEGIN
     "is_composite": false,
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],
-    "required_fields_range": [[2, 20], [0, 1000000]],
+    "required_fields_range": [[2, 20], [0, "inf"]],
     "required_fields_icons": ["x"],
     "required_other_icons": [],
     "required_fields_colors": [],
@@ -27,7 +27,7 @@ REQUIREMENTS_END
 function makeChart(containerSelector, data) {
     // ---------- 1. 数据准备 ----------
     const jsonData = data;                          // 完整的JSON数据对象
-    const chartData = jsonData.data || [];          // 图表数据
+    const chartData = jsonData.data.data || [];          // 图表数据
     const variables = jsonData.variables || {};     // 图表配置
     const typography = jsonData.typography || {     // 字体设置
         title: { font_family: "Arial", font_size: "18px", font_weight: "bold" },
@@ -40,7 +40,7 @@ function makeChart(containerSelector, data) {
         other: { primary: "#73D2C7", secondary: "#4682B4" } 
     };
     const images = jsonData.images || { field: {}, other: {} };  // 图片(标志等)
-    const dataColumns = jsonData.data_columns || [];            // 数据列
+    const dataColumns = jsonData.data.columns || [];            // 数据列
     
     // 设置视觉效果变量
     variables.has_rounded_corners = variables.has_rounded_corners || false;

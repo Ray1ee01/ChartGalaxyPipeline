@@ -7,7 +7,7 @@ REQUIREMENTS_BEGIN
     "is_composite": true,
     "required_fields": [["x", "y"], ["x","y2"]],
     "required_fields_type": [[["categorical"], ["numerical"]],[["categorical"], ["numerical"]]],
-    "required_fields_range": [[[2, 20], [0, 1000000]],[[2, 20], [0, 1000000]]],
+    "required_fields_range": [[[2, 20], [0, "inf"]],[[2, 20], [0, "inf"]]],
     "required_fields_icons": ["x"],
     "required_other_icons": [],
     "required_fields_colors": [],
@@ -29,7 +29,7 @@ function makeChart(containerSelector, data) {
     // ---------- 1. 数据准备 ----------
     // 提取数据和配置
     const jsonData = data;                          // 完整的JSON数据对象
-    const chartData = jsonData.data || [];          // 修正: 直接使用jsonData.data而不是jsonData.data.data
+    const chartData = jsonData.data.data || [];          // 修正: 直接使用jsonData.data而不是jsonData.data.data
     const variables = jsonData.variables || {};     // 图表配置，如果不存在则使用空对象
     const typography = jsonData.typography || {     // 字体设置，如果不存在则使用默认值
         title: { font_family: "Arial", font_size: "18px", font_weight: "bold" },
@@ -39,7 +39,7 @@ function makeChart(containerSelector, data) {
     };
     const colors = jsonData.colors || { text_color: "#333333", other: { primary: "#4682B4", secondary: "#FF7F50" } };  // 修正: 添加默认other颜色
     const images = jsonData.images || { field: {}, other: {} };  // 图像(国旗等)
-    const dataColumns = jsonData.data_columns || [];            // 使用data_columns
+    const dataColumns = jsonData.data.columns || [];            // 使用data_columns
     
     // 添加subtitle字段如果不存在
     typography.subtitle = typography.subtitle || typography.description;

@@ -6,7 +6,7 @@ REQUIREMENTS_BEGIN
     "is_composite": false,
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
-    "required_fields_range": [[2, 20], [0, 100], [2, 5]],
+    "required_fields_range": [[5, 20], [0, "inf"], [2, 6]],
     "required_fields_icons": [],
     "required_other_icons": [],
     "required_fields_colors": ["group"],
@@ -361,7 +361,7 @@ function makeChart(containerSelector, data) {
     
     // ---------- 10. 改进图例 ----------
     const uniqueGroups = [...new Set(chartData.map(d => d[groupField]))];
-    
+    const barHeight = yScale.bandwidth();
     if (uniqueGroups.length > 1) {
         // 创建新的临时SVG用于测量图例文本宽度
         const legendTempSvg = svg.append("svg")
@@ -383,7 +383,7 @@ function makeChart(containerSelector, data) {
         uniqueGroups.forEach(group => {
             const tempText = legendTempSvg.append("text")
                 .style("font-family", typography.annotation.font_family)
-                .style("font-size", typography.annotation.font_size)
+                .style("font-size", `${Math.max(barHeight * 0.6, parseFloat(typography.annotation.font_size))}px`)
                 .style("font-weight", typography.annotation.font_weight)
                 .text(group);
             
@@ -449,7 +449,7 @@ function makeChart(containerSelector, data) {
                 .attr("dy", "0.35em")
                 .attr("text-anchor", "middle")
                 .style("font-family", typography.annotation.font_family)
-                .style("font-size", typography.annotation.font_size)
+                .style("font-size", `${Math.max(barHeight * 0.6, parseFloat(typography.annotation.font_size))}px`)
                 .style("font-weight", typography.annotation.font_weight)
                 .style("fill", "#FFFFFF") // 修改：使用白色文本
                 .text(item.group);

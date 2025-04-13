@@ -6,7 +6,7 @@ REQUIREMENTS_BEGIN
     "is_composite": false,
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
-    "required_fields_range": [[2, 20], [0, 2000], [3, 3]],
+    "required_fields_range": [[2, 10], [0, "inf"], [2, 2]],
     "required_fields_icons": [],
     "required_other_icons": [],
     "required_fields_colors": ["group"],
@@ -28,7 +28,7 @@ function makeChart(containerSelector, data) {
     // ---------- 1. 数据准备 ----------
     // 提取数据和配置
     const jsonData = data;                          
-    const chartData = jsonData.data || [];          
+    const chartData = jsonData.data.data || [];          
     const variables = jsonData.variables || {};     
     const typography = jsonData.typography || {     
         title: { font_family: "Arial", font_size: "18px", font_weight: "bold" },
@@ -49,7 +49,7 @@ function makeChart(containerSelector, data) {
         } 
     };
     const images = jsonData.images || { field: {}, other: {} };
-    const dataColumns = jsonData.data_columns || [];
+    const dataColumns = jsonData.data.columns || [];
     
     // 如果不存在，添加副标题字段
     typography.subtitle = typography.subtitle || typography.description;
@@ -106,16 +106,14 @@ function makeChart(containerSelector, data) {
     const xValues = [...new Set(useData.map(d => d[xField]))];
     let groupValues = [...new Set(useData.map(d => d[groupField]))];
     
-    
-    // 如果组的数量不符合要求，给出警告
-    if (groupValues.length !== 3) {
-        console.warn("此图表需要恰好3个组字段：2个用于柱状图，1个用于百分比变化。");
+    // 确保我们只有两个组字段：第一个组是左侧柱子，第二个组是右侧柱子
+    if (groupValues.length !== 2) {
+        console.warn("此图表需要恰好2个组字段：用于左侧和右侧柱状图。");
     }
     
-    // 第一个组是左侧柱子，第二个组是右侧柱子，第三个组是百分比变化
+    // 第一个组是左侧柱子，第二个组是右侧柱子
     const leftBarGroup = groupValues[0];
     const rightBarGroup = groupValues[1];
-    const percentageGroup = groupValues[2];
     
     // ---------- 5. 创建SVG容器 ----------
     const svg = d3.select(containerSelector)
@@ -171,7 +169,7 @@ function makeChart(containerSelector, data) {
     
     // Y比例尺（数值）
     // 找出数据中的最大值
-    const dataMax = d3.max(useData.filter(d => d[groupField] !== percentageGroup), d => +d[yField]) || 100;
+    const dataMax = d3.max(useData, d => +d[yField]) || 100;
     // 向上取整到最接近的合适的刻度
     let yMax;
     if (dataMax <= 10) yMax = 10;
@@ -335,8 +333,17 @@ function makeChart(containerSelector, data) {
         // 获取右侧柱子的数据（2012年销售额）
         const rightBarData = xData.find(d => d[groupField] === rightBarGroup);
         
-        // 获取百分比变化数据
-        const percentageData = xData.find(d => d[groupField] === percentageGroup);
+        // 计算百分比变化
+        let percentValue = 0;
+        if (leftBarData && rightBarData) {
+            const leftValue = leftBarData[yField];
+            const rightValue = rightBarData[yField];
+            
+            // 计算百分比变化：(新值-旧值)/旧值 * 100
+            if (leftValue !== 0) {
+                percentValue = Math.round(((rightValue - leftValue) / leftValue) * 100);
+            }
+        }
         
         // 计算左侧柱子的位置和高度
         if (leftBarData) {
@@ -373,10 +380,9 @@ function makeChart(containerSelector, data) {
         }
         
         // 绘制百分比变化指示器
-        if (percentageData) {
-            const percentValue = percentageData[yField];
+        if (leftBarData && rightBarData) {
             const percentText = percentValue <= 0 ? `${percentValue}%` : `+${percentValue}%`;
-            const percentColor = colors.field[percentageGroup] || colors.other.percentage_indicator || "#C0392B";
+            const percentColor = colors.other.percentage_indicator || "#C0392B";
             
             // 计算两个柱子的中心位置，确保三角形指向正确位置
             const leftBarCenter = xScale(xValue) + groupScale.bandwidth() / 2;

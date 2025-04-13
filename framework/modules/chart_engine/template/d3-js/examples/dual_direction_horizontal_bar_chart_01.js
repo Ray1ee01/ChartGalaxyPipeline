@@ -6,7 +6,7 @@ REQUIREMENTS_BEGIN
     "is_composite": false,
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],
-    "required_fields_range": [[2, 30], [-100, 100]],
+    "required_fields_range": [[2, 20], ["-inf", "inf"]],
     "required_fields_icons": [],
     "required_other_icons": [],
     "required_fields_colors": [],
@@ -438,7 +438,7 @@ function makeChart(containerSelector, data) {
                 .attr("dy", "0.35em")
                 .attr("text-anchor", "start")
                 .style("font-family", typography.annotation.font_family)
-                .style("font-size", typography.annotation.font_size)
+                .style("font-size", `${Math.max(barHeight * 0.6, parseFloat(typography.annotation.font_size))}px`)
                 .style("font-weight", typography.annotation.font_weight)
                 .style("fill", colors.text_color || "#000000")
                 .text(formattedValue);
@@ -450,7 +450,7 @@ function makeChart(containerSelector, data) {
                 .attr("dy", "0.35em")
                 .attr("text-anchor", "end")
                 .style("font-family", typography.annotation.font_family)
-                .style("font-size", typography.annotation.font_size)
+                .style("font-size", `${Math.max(barHeight * 0.6, parseFloat(typography.annotation.font_size))}px`)
                 .style("font-weight", typography.annotation.font_weight)
                 .style("fill", colors.text_color || "#000000")
                 .text(formattedValue);

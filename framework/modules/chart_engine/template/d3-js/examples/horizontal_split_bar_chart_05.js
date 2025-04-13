@@ -7,7 +7,7 @@ REQUIREMENTS_BEGIN
     "is_composite": false,
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
-    "required_fields_range": [[2, 20], [0, 100], [2, 2]],
+    "required_fields_range": [[2, 20], [0, "inf"], [2, 2]],
     "required_fields_icons": ["x"],
     "required_other_icons": [],
     "required_fields_colors": ["group"],
@@ -586,7 +586,7 @@ function makeChart(containerSelector, data) {
                 .attr("text-anchor", "end")
                 .style("fill", colors.text_color)
                 .style("font-family", typography.annotation.font_family)
-                .style("font-size", typography.annotation.font_size)
+                .style("font-size", `${Math.max(barHeight * 0.6, parseFloat(typography.annotation.font_size))}px`)
                 .style("font-weight", typography.annotation.font_weight)
                 .style("pointer-events", "none")
                 .text(formattedValue);
@@ -650,7 +650,7 @@ function makeChart(containerSelector, data) {
                 .attr("text-anchor", "start")
                 .style("fill", colors.text_color)
                 .style("font-family", typography.annotation.font_family)
-                .style("font-size", typography.annotation.font_size)
+                .style("font-size", `${Math.max(barHeight * 0.6, parseFloat(typography.annotation.font_size))}px`)
                 .style("font-weight", typography.annotation.font_weight)
                 .style("pointer-events", "none")
                 .text(formattedValue);

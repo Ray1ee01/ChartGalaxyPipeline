@@ -10,7 +10,7 @@ REQUIREMENTS_BEGIN
         [["categorical"], ["numerical"]]
     ],
     "required_fields_range": [
-        [[2, 30], [0, 2000]],
+        [[2, 30], [0, "inf"]],
         [[2, 30], [-100, 100]]
     ],
     "required_fields_icons": [],

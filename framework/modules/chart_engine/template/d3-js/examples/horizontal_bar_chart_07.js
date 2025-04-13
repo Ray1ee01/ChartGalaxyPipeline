@@ -6,7 +6,7 @@ REQUIREMENTS_BEGIN
     "is_composite": false,
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],
-    "required_fields_range": [[2, 30], [0, 100]],
+    "required_fields_range": [[2, 30], [0, "inf"]],
     "required_fields_icons": [],
     "required_other_icons": [],
     "required_fields_colors": [],
@@ -89,6 +89,16 @@ function makeChart(containerSelector, data) {
     
     // 获取唯一维度值并按数值降序排列数据
     const dimensions = [...new Set(chartData.map(d => d[dimensionField]))];
+    const maxValue_ = d3.max(chartData, d => Math.abs(+d[valueField]));
+    chartData.forEach(d => {
+        d[`${valueField}_`] = d[valueField];
+    });
+    if (maxValue_ > 100) {
+        // 确保所有数值在0-100范围内
+        chartData.forEach(d => {
+            d[`${valueField}_`] = Math.max(1, Math.floor(+d[valueField] / maxValue_ * 50));
+        });
+    }
     
     // 按数值降序排序数据
     const sortedData = [...chartData].sort((a, b) => b[valueField] - a[valueField]);
@@ -128,8 +138,8 @@ function makeChart(containerSelector, data) {
     let maxValueWidth = 0;
     chartData.forEach(d => {
         const formattedValue = valueUnit ? 
-            `${d[valueField]}${valueUnit}` : 
-            `${d[valueField]}`;
+            `${d[`${valueField}_`]}${valueUnit}` : 
+            `${d[`${valueField}_`]}`;
             
         const tempText = tempSvg.append("text")
             .style("font-family", typography.annotation.font_family)
@@ -229,7 +239,7 @@ function makeChart(containerSelector, data) {
         .padding(rowPadding);
     
     // 计算最大值，确保所有棒子能够显示
-    const maxValue = d3.max(chartData, d => +d[valueField]);
+    const maxValue = d3.max(chartData, d => +d[`${valueField}_`]);
     
     // 计算适合当前宽度的棒子尺寸
     const availableWidth = innerWidth;
@@ -283,7 +293,7 @@ function makeChart(containerSelector, data) {
             const rowHeight = yScale.bandwidth();
             const barHeight = rowHeight * 0.6;  // 竖条高度为行高的60%
             const barY = yScale(dimension) + (rowHeight - barHeight) / 2;  // 竖条垂直居中
-            const barCount = Math.round(dataPoint[valueField]);  // 四舍五入到整数
+            const barCount = Math.round(dataPoint[`${valueField}_`]);  // 四舍五入到整数
             
             // 绘制竖条组
             for (let i = 0; i < barCount; i++) {

@@ -4,9 +4,9 @@ REQUIREMENTS_BEGIN
     "chart_type": "Horizontal Grouped Bar Chart",
     "chart_name": "horizontal_grouped_bar_chart_05",
     "is_composite": false,
-    "required_fields": ["x", "y", "group", "group"],
+    "required_fields": ["x", "y", "group1", "group2"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"], ["categorical"]],
-    "required_fields_range": [[2, 20], [0, 100], [2, 5], [2, 5]],
+    "required_fields_range": [[2, 20], [0, "inf"], [2, 5], [2, 5]],
     "required_fields_icons": ["dimension", "group"],
     "required_other_icons": [],
     "required_fields_colors": ["group"],
@@ -22,6 +22,8 @@ REQUIREMENTS_BEGIN
 }
 REQUIREMENTS_END
 */
+
+// TODO: 需要修改
 
 // 水平分组条形图实现 - 使用D3.js
 function makeChart(containerSelector, data) {
