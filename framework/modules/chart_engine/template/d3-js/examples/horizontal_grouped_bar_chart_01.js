@@ -298,12 +298,12 @@ function makeChart(containerSelector, data) {
         const groupLabelOffsetX = -(iconWidth + iconRightPadding + 5);
         g.append("text")
             .attr("x", groupLabelOffsetX)     
-            .attr("y", groupStartY - 10)      // 略微上移
+            .attr("y", groupStartY - parseFloat(typography.label.font_size)/2-5)      // 略微上移
             .attr("dy", "0.35em")
             .attr("text-anchor", "end")       // 右对齐
             .style("font-family", typography.label.font_family)
             .style("font-size", typography.label.font_size)
-            .style("font-weight", typography.label.font_weight)
+            .style("font-weight", "bold")
             .style("fill", colors.text_color || "#333")
             .text(group);
         
@@ -324,7 +324,7 @@ function makeChart(containerSelector, data) {
                 
                 // 创建标签和图标组
                 const labelGroup = g.append("g")
-                    .attr("transform", `translate(0, ${barY + barHeight/2})`);
+                    .attr("transform", `translate(0, ${barY + actualBarHeight / 2})`);
                 
                 // 绘制图标
                 if (images.field && images.field[dimension]) {
@@ -344,7 +344,7 @@ function makeChart(containerSelector, data) {
                     .attr("dy", "0.35em")
                     .attr("text-anchor", "end") // 右对齐
                     .style("font-family", typography.label.font_family)
-                    .style("font-size", typography.label.font_size)
+                    .style("font-size", `${Math.min(barHeight * 0.9, parseFloat(typography.annotation.font_size))}px`)
                     .style("font-weight", typography.label.font_weight)
                     .style("fill", colors.text_color || "#333")
                     .text(dimension);
@@ -378,7 +378,7 @@ function makeChart(containerSelector, data) {
                 // 创建临时文本元素来计算数值文本的宽度
                 const tempText = g.append("text")
                     .style("font-family", typography.annotation.font_family)
-                    .style("font-size", `${Math.max(barHeight * 0.5, parseFloat(typography.annotation.font_size))}px`)
+                    .style("font-size", `${barHeight * 0.55}px`)
                     .style("font-weight", typography.annotation.font_weight)
                     .style("visibility", "hidden")
                     .text(formattedValue);
@@ -403,7 +403,7 @@ function makeChart(containerSelector, data) {
                         .attr("text-anchor", "start")
                         .style("fill", colors.text_color || "#333") 
                         .style("font-family", typography.annotation.font_family)
-                        .style("font-size", `${Math.max(barHeight * 0.5, parseFloat(typography.annotation.font_size))}px`)
+                        .style("font-size", `${barHeight * 0.55}px`)
                         .style("font-weight", typography.annotation.font_weight)
                         .style("pointer-events", "none")
                         .text(formattedValue);

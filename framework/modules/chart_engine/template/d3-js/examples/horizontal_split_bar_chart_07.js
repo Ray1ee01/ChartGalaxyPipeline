@@ -492,7 +492,7 @@ function makeChart(containerSelector, data) {
                 const tempTextGroup = svg.append("g").attr("visibility", "hidden");
                 const tempTextElem = tempTextGroup.append("text")
                     .style("font-family", typography.annotation.font_family)
-                    .style("font-size", `${Math.max(barHeight * 0.6, parseFloat(typography.annotation.font_size))}px`)
+                    .style("font-size", `${Math.min(20,Math.max(barHeight * 0.6, parseFloat(typography.annotation.font_size)))}px`)
                     .style("font-weight", "bold")
                     .text(formattedValue);
                 
@@ -522,7 +522,7 @@ function makeChart(containerSelector, data) {
                     .attr("dy", "0.35em")
                     .attr("text-anchor", "middle")
                     .style("font-family", typography.annotation.font_family)
-                    .style("font-size", `${Math.max(barHeight * 0.6, parseFloat(typography.annotation.font_size))}px`)
+                    .style("font-size", `${Math.min(20,Math.max(barHeight * 0.6, parseFloat(typography.annotation.font_size)))}px`)
                     .style("font-weight", "bold")
                     .style("fill", "white")
                     .text(formattedValue);

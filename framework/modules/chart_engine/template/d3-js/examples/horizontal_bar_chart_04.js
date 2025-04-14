@@ -415,7 +415,7 @@ function makeChart(containerSelector, data) {
             
             const tempValueText = tempTextSvg.append("text")
                 .style("font-family", typography.annotation.font_family)
-                .style("font-size", `${Math.max(barHeight * 0.6, parseFloat(typography.annotation.font_size))}px`)
+                .style("font-size", `${Math.min(20,Math.max(barHeight * 0.6, parseFloat(typography.annotation.font_size)))}px`)
                 .style("font-weight", typography.annotation.font_weight)
                 .text(formattedValue);
             
@@ -432,7 +432,7 @@ function makeChart(containerSelector, data) {
                 .attr("dy", "0.35em")
                 .attr("text-anchor", textFitsInside ? "end" : "start") // 在内部时右对齐，在外部时左对齐
                 .style("font-family", typography.annotation.font_family)
-                .style("font-size", `${Math.max(barHeight * 0.6, parseFloat(typography.annotation.font_size))}px`)
+                .style("font-size", `${Math.min(20,Math.max(barHeight * 0.6, parseFloat(typography.annotation.font_size)))}px`)
                 .style("font-weight", typography.annotation.font_weight)
                 .style("fill", textFitsInside ? "#ffffff" : colors.text_color) // 在内部时使用白色，在外部时使用文本颜色
                 .text(formattedValue);
