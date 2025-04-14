@@ -1,8 +1,8 @@
 from modules.chart_engine.template.vegalite_py.bar.horizontal_bar_chart_1 import HorizontalBarChart1
 from typing import Dict
-from modules.chart_engine.utils.element_tool.elements import *
+from modules.chart_engine.template.vegalite_py.utils.element_tool.elements import *
 from modules.chart_engine.template.vegalite_py.utils.element_tool.variation import AxisLabelMark
-from modules.chart_engine.utils.element_tool.data_binder import get_content_from_axis_label, bind_data_to_element
+from modules.chart_engine.template.vegalite_py.utils.element_tool.data_binder import get_content_from_axis_label, bind_data_to_element
 from modules.chart_engine.template.vegalite_py.components.color_encoding.color_encoding import gridient_primary_secondary_y
 """
 REQUIREMENTS_BEGIN

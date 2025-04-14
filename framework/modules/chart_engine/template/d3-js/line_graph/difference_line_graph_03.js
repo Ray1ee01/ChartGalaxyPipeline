@@ -5,12 +5,12 @@ REQUIREMENTS_BEGIN
     "chart_name": "difference_line_graph_03",
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["temporal"], ["numerical"], ["categorical"]],
-    "required_fields_range": [[5, 30], [0, 100], [2, 2]],
-    "required_fields_icons": ["group"],
+    "required_fields_range": [[5, 30], [0, "inf"], [2, 2]],
+    "required_fields_icons": [],
     "required_other_icons": [],
     "required_fields_colors": ["group"],
     "required_other_colors": [],
-    "supported_effects": ["gradient", "opacity"],
+    "supported_effects": [],
     "min_height": 400,
     "min_width": 800,
     "background": "light",
@@ -54,7 +54,8 @@ function makeChart(containerSelector, data) {
         .attr("height", height)
         .attr("viewBox", `0 0 ${width} ${height}`)
         .attr("style", "max-width: 100%; height: auto;")
-        .attr("xmlns", "http://www.w3.org/2000/svg");
+        .attr("xmlns", "http://www.w3.org/2000/svg")
+        .attr("xmlns:xlink", "http://www.w3.org/1999/xlink");
     
     // 创建图表区域
     const chartWidth = width - margin.left - margin.right;
@@ -65,25 +66,6 @@ function makeChart(containerSelector, data) {
     
     const g = svg.append("g")
         .attr("transform", `translate(${margin.left}, ${margin.top})`);
-    
-    // 解析日期 - 只解析年份
-    const parseDate = d => {
-        if (d instanceof Date) return d;
-        if (typeof d === 'number') {
-            // 数字表示年份,创建该年1月1日的日期对象
-            return new Date(d, 0, 1);
-        }
-        if (typeof d === 'string') {
-            // 提取年份 - 支持YYYY/... 或 YYYY-...格式 或 YYYY格式
-            const yearMatch = d.match(/^(\d{4})(?:[/-]|$)/); // 匹配YYYY/... 或 YYYY-... 或 纯YYYY格式
-            if (yearMatch) {
-                const year = parseInt(yearMatch[1]);
-                return new Date(year, 0, 1); // 设置为该年的1月1日
-            }
-        }
-        console.warn("无法解析日期:", d);
-        return new Date(0); // 返回默认日期作为后备 
-    };
     
     // 获取唯一的组值
     const groups = [...new Set(chartData.map(d => d[groupField]))];
@@ -119,20 +101,8 @@ function makeChart(containerSelector, data) {
     
     // 只保留最高和最低的两个组
     const selectedGroups = [highestGroup, lowestGroup];
-    
-    // 创建x轴比例尺 - 扩宽范围
-    const xExtent = d3.extent(chartData, d => parseDate(d[xField]));
-    const xRange = xExtent[1] - xExtent[0];
-    const xPadding = xRange * 0.05; // 添加5%的填充
 
-    console.log(xExtent);
-    
-    const xScale = d3.scaleTime()
-        .domain([
-            new Date(xExtent[0].getTime() - xPadding),
-            new Date(xExtent[1].getTime() + xPadding)
-        ])
-        .range([0, chartWidth]);
+    const { xScale, xTicks, xFormat, timeSpan } = createXAxisScaleAndTicks(chartData, xField, 0, chartWidth);
     
     // 创建y轴比例尺 - 使用数据的实际范围
     const yMin = d3.min(chartData, d => d[yField]);
@@ -151,8 +121,8 @@ function makeChart(containerSelector, data) {
     const colorScale = d3.scaleOrdinal()
         .domain(groups)
         .range(groups.map((g, i) => {
-            if (colors.fields && colors.fields.group && colors.fields.group[g]) {
-                return colors.fields.group[g];
+            if (colors.field && colors.field[g]) {
+                return colors.field[g];
             }
             return d3.schemeCategory10[i % 10];
         }));
@@ -171,22 +141,6 @@ function makeChart(containerSelector, data) {
     const ratioCircleY = maxYTickPosition - 30;
     
     // 添加条纹背景 - 使用更合适的时间间隔
-    // 根据数据范围选择合适的时间间隔
-    let timeInterval;
-    const yearDiff = xExtent[1].getFullYear() - xExtent[0].getFullYear();
-    
-    if (yearDiff > 10) {
-        timeInterval = d3.timeYear.every(5); // 每5年
-    } else if (yearDiff > 5) {
-        timeInterval = d3.timeYear.every(2); // 每2年
-    } else if (yearDiff >= 2) {
-        timeInterval = d3.timeYear.every(1); // 每1年
-    } else {
-        timeInterval = d3.timeMonth.every(3); // 每季度
-    }
-    
-    // 获取适当数量的X轴刻度
-    const xTicks = xScale.ticks(timeInterval);
     
     // 为每个X轴刻度创建条纹背景，使条纹以刻度为中心
     // 条纹背景要覆盖到圆形区域
@@ -368,16 +322,13 @@ function makeChart(containerSelector, data) {
         // 计算中点位置
         const midX = (x1 + x2) / 2;
         
-        // 使用年份作为标签
-        const year = currentTick.getFullYear();
-        
         g.append("text")
             .attr("x", midX)
             .attr("y", chartHeight + 20)
             .attr("text-anchor", "middle")
             .attr("fill", "#666")
             .style("font-size", "12px")
-            .text(year);
+            .text(xFormat(currentTick));
     }
     
     
@@ -394,37 +345,44 @@ function makeChart(containerSelector, data) {
     });
     
     // 添加图例 - 整体居中，放在最大Y轴刻度上方
-    const legendItemWidth = 120; // 每个图例项的宽度
+    
+    // 计算每个图例项的宽度(圆形 + 间距 + 文本)
+    const legendItems = selectedGroups.map(group => ({
+        group: group,
+        width: 6 * 2 + 15 + getTextWidth(group, 14) + 10 // 圆形直径 + 间距 + 文本宽度 + 右侧间距
+    }));
     
     // 计算图例的总宽度
-    const totalLegendWidth = selectedGroups.length * legendItemWidth;
+    const totalLegendWidth = legendItems.reduce((sum, item) => sum + item.width, 0);
     
     // 计算图例的起始X位置，使其居中
-    const legendStartX = (chartWidth - totalLegendWidth) / 2;
+    const legendStartX = 10;
     
     // 为选中的两个组添加图例
-    selectedGroups.forEach((group, i) => {
-        const color = colorScale(group);
-        const legendX = legendStartX + i * legendItemWidth;
+    let currentX = legendStartX;
+    legendItems.forEach((item, i) => {
+        const color = colorScale(item.group);
         
         g.append("circle")
-            .attr("cx", legendX)
+            .attr("cx", currentX)
             .attr("cy", legendY)
             .attr("r", 6)
             .attr("fill", color);
         
         g.append("text")
-            .attr("x", legendX + 15)
+            .attr("x", currentX + 15)
             .attr("y", legendY)
             .attr("dominant-baseline", "middle")
             .attr("fill", "#333")
             .style("font-size", "14px")
-            .text(group);
+            .text(item.group);
+            
+        currentX += item.width;
     });
     
     // 添加比值图例
     const ratioLegendY = legendY;
-    const ratioLegendX = legendStartX + totalLegendWidth + 10; // 在组图例右侧40像素处
+    const ratioLegendX = legendStartX + totalLegendWidth + 10;
     
     // 添加比值图例的圆形示例
     const sampleRadius = 6;

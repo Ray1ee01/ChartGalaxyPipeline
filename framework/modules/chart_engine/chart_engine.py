@@ -84,7 +84,7 @@ def process(input: str, output: str, chart_name: str = None, html_output: str = 
         error_message = None
         
         try:
-            if engine == 'echarts-py':
+            if engine == 'echarts_py':
                 # Use Python template
                 options = template.make_options(json_data)
                 
@@ -170,9 +170,9 @@ def process(input: str, output: str, chart_name: str = None, html_output: str = 
                     error_message = str(e)
                     raise Exception(f"Failed to generate D3.js chart: {error_message}")
                     
-            elif engine == 'vegalite-py':
-                # Use vegalite-py template
-                template_root = "template.vegalite-py"
+            elif engine == 'vegalite_py':
+                # Use vegalite_py template
+                template_root = "template.vegalite_py"
                 general_chart_type = template.split('/')[-2]
                 module_name = template.split('/')[-1].split('.')[0]
                 module_path = f"{template_root}.{general_chart_type}.{module_name}"

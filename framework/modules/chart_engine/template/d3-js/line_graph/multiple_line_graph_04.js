@@ -5,12 +5,12 @@ REQUIREMENTS_BEGIN
     "chart_name": "multiple_line_graph_04",
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["temporal"], ["numerical"], ["categorical"]],
-    "required_fields_range": [[5, 30], [-1000, 1000], [2, 8]],
+    "required_fields_range": [[5, 30], ["-inf", "inf"], [2, 8]],
     "required_fields_icons": [],
     "required_other_icons": [],
     "required_fields_colors": ["group"],
-    "required_other_colors": ["primary", "secondary", "background"],
-    "supported_effects": ["gradient", "opacity"],
+    "required_other_colors": [],
+    "supported_effects": [],
     "min_height": 600,
     "min_width": 800,
     "background": "light",
@@ -21,16 +21,6 @@ REQUIREMENTS_BEGIN
 }
 REQUIREMENTS_END
 */
-
-// 将parseYear函数移到全局作用域
-function parseYear(yearStr) {
-    // 从字符串中提取年份
-    if (typeof yearStr === 'string') {
-        const year = yearStr.split("/")[0];
-        return new Date(parseInt(year), 0, 1); // 1月1日
-    }
-    return new Date(yearStr, 0, 1);
-}
 
 function makeChart(containerSelector, data) {
     // 提取数据
@@ -56,7 +46,7 @@ function makeChart(containerSelector, data) {
     
     // 测试代码：添加更多组以测试不同布局
     // 可以通过修改这个数字来测试不同数量的子图
-    const additionalGroups = 5; // 修改这个值来测试不同数量的子图
+    const additionalGroups = 0; // 修改这个值来测试不同数量的子图
     
     if (additionalGroups > 0) {
         const originalData = [...chartData];
@@ -156,18 +146,10 @@ function makeChart(containerSelector, data) {
         .attr("height", height)
         .attr("viewBox", `0 0 ${width} ${height}`)
         .attr("style", "max-width: 100%; height: auto;")
-        .attr("xmlns", "http://www.w3.org/2000/svg");
+        .attr("xmlns", "http://www.w3.org/2000/svg")
+        .attr("xmlns:xlink", "http://www.w3.org/1999/xlink");
     
-    // 添加渐变效果
-    const defs = svg.append("defs");
-    
-    // 创建时间比例尺 - 不再需要在这里定义parseYear
-    const xScale = d3.scaleTime()
-        .domain([
-            d3.min(xValues, d => parseYear(d)),
-            d3.max(xValues, d => parseYear(d))
-        ])
-        .range([0, innerWidth]);
+    const { xScale, xTicks, xFormat, timeSpan } = createXAxisScaleAndTicks(chartData, xField, 0, innerWidth);
     
     // Y轴比例尺
     const yMin = Math.min(0, d3.min(chartData, d => d[yField]) * 1.1);
@@ -184,7 +166,7 @@ function makeChart(containerSelector, data) {
     
     // 创建曲线生成器
     const line = d3.line()
-        .x(d => xScale(parseYear(d[xField])))
+        .x(d => xScale(parseDate(d[xField])))
         .y(d => yScale(d[yField]))
         .curve(d3.curveMonotoneX); // 使用单调曲线插值
 
@@ -197,10 +179,10 @@ function makeChart(containerSelector, data) {
         
         // 找到时间上最接近的数据点
         let closestPoint = data[0];
-        let minTimeDiff = Math.abs(parseYear(data[0][xField]).getTime() - targetTime);
+        let minTimeDiff = Math.abs(parseDate(data[0][xField]).getTime() - targetTime);
         
         for (let i = 1; i < data.length; i++) {
-            const currentTime = parseYear(data[i][xField]).getTime();
+            const currentTime = parseDate(data[i][xField]).getTime();
             const timeDiff = Math.abs(currentTime - targetTime);
             
             if (timeDiff < minTimeDiff) {
@@ -260,7 +242,7 @@ function makeChart(containerSelector, data) {
             .attr("transform", `translate(${subplotMargin.left}, ${subplotMargin.top})`);
         
         // 添加组名标题和图例 - 居中显示
-        const legendWidth = 30 + 5 + getTextWidth(group, typography.title.font_family, "14px");
+        const legendWidth = 30 + 5 + getTextWidth(group, 14);
         const legendX = (innerWidth - legendWidth) / 2;
         
         g.append("rect")
@@ -303,7 +285,6 @@ function makeChart(containerSelector, data) {
             .attr("d", line);
         
         // 绘制X轴刻度（只在基准线上显示，且只有第一个子图显示文本）
-        const xTicks = xScale.ticks(4);
         xTicks.forEach(tick => {
             g.append("line")
                 .attr("x1", xScale(tick))
@@ -339,7 +320,7 @@ function makeChart(containerSelector, data) {
                     .style("font-weight", "bold")
                     .style("fill", "#110c57")
                     .style("opacity", 0.3)
-                    .text(d3.timeFormat("%Y")(tick));
+                    .text(xFormat(tick));
             }
         });
         
@@ -361,12 +342,4 @@ function makeChart(containerSelector, data) {
     });
     
     return svg.node();
-}
-
-// 辅助函数:计算文本宽度
-function getTextWidth(text, fontFamily, fontSize) {
-    const canvas = document.createElement('canvas');
-    const context = canvas.getContext('2d');
-    context.font = `${fontSize} ${fontFamily}`;
-    return context.measureText(text).width;
 }

@@ -7,14 +7,14 @@ REQUIREMENTS_BEGIN
     "is_composite": false,
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
-    "required_fields_range": [[2, 20], [0, 100], [2,2]],
+    "required_fields_range": [[2, 20], [0, "inf"], [2,2]],
     "required_fields_icons": [],
     "required_other_icons": [],
     "required_fields_colors": ["group"],
     "required_other_colors": ["primary"],
     "supported_effects": ["shadow", "radius_corner", "gradient", "stroke", "spacing"],
     "min_height": 400,
-    "min_width": 600,
+    "min_width": 400,
     "background": "styled",
     "icon_mark": "none",
     "icon_label": "side",
@@ -40,7 +40,7 @@ function makeChart(containerSelector, data) {
     };
     const colors = jsonData.colors || { text_color: "#333333" };  // 颜色设置
     const images = jsonData.images || { field: {}, other: {} };   // 图像设置
-    const dataColumns = jsonData.data.columns  || []; // 数据列定义
+    const dataColumns = jsonData.data.columns || []; // 数据列定义
     
     // 设置视觉效果变量的默认值
     variables.has_rounded_corners = variables.has_rounded_corners || false;
@@ -269,8 +269,8 @@ function makeChart(containerSelector, data) {
     const colorScale = d3.scaleOrdinal()
         .domain(groups)
         .range(groups.map((group, i) => {
-            if (colors.field && colors.field[groupField] && colors.field[groupField][group]) {
-                return colors.field[groupField][group];
+            if (colors.field && colors.field[group]) {
+                return colors.field[group];
             }
             // 使用自定义颜色作为示例
             return i === 0 ? "#1d3c6f" : "#6fa0d8"; // 深蓝色和浅蓝色
@@ -455,19 +455,20 @@ function makeChart(containerSelector, data) {
                 return null;
             }).filter(d => d !== null);
             
-            // 绘制连接线（从第一组数据点到右边缘）
+            // 绘制连接线（从最低值数据点到右边缘）
             if (pointData.length > 0) {
-                // 查找第一组数据（通常是记录的最低值）
-                const firstGroupData = pointData.find(d => d.group === groups[0]);
+                // 找到具有最低值的数据点
+                const lowestValueData = pointData.reduce((lowest, current) => 
+                    current.value < lowest.value ? current : lowest, pointData[0]);
                 
-                if (firstGroupData) {
+                if (lowestValueData) {
                     // 绘制连接线 - 更粗并精确到最右侧刻度线
                     g.append("rect")
-                        .attr("x", firstGroupData.x)
-                        .attr("y", firstGroupData.y - 2) // 更粗的线
-                        .attr("width", rightmostTickX - firstGroupData.x)
+                        .attr("x", lowestValueData.x)
+                        .attr("y", lowestValueData.y - 2) // 更粗的线
+                        .attr("width", rightmostTickX - lowestValueData.x)
                         .attr("height", 4) // 更粗的线
-                        .attr("fill", "rgba(255, 255, 255, 0.5)");
+                        .attr("fill", "#ffffff");
                 }
             }
             

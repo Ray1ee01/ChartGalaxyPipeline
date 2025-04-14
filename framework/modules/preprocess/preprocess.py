@@ -77,22 +77,37 @@ def update_data_format(data: Dict[str, Any]) -> Dict[str, Any]:
     updated_data = remove_unnecessary_fields(data.copy())
     
     # Extract columns and data from the nested structure
-    columns = updated_data["columns"]
-    data = updated_data["data"]
-    updated_data["data"] = {
-        "data": data,
-        "columns": columns
-    }
-    del updated_data["columns"]
+    if "data" in updated_data and "data" in updated_data["data"] and "columns" in updated_data["data"]:
+        pass
+    else:
+        columns = updated_data["columns"]
+        data = updated_data["data"]
+        updated_data["data"] = {
+            "data": data,
+            "columns": columns
+        }
+        del updated_data["columns"]
 
-    title = updated_data["title"]
-    description = updated_data["description"]
-    main_insight = updated_data["main_insight"]
-    updated_data["metadata"] = {
-        "title": title,
-        "description": description,
-        "main_insight": main_insight
-    }
+    if "title" in updated_data and "description" in updated_data and "main_insight" in updated_data:
+        title = updated_data["title"]
+        description = updated_data["description"]
+        main_insight = updated_data["main_insight"]
+        updated_data["metadata"] = {
+            "title": title,
+            "description": description,
+            "main_insight": main_insight
+        }
+    elif "description" in updated_data and "titles" in updated_data and "main_title" in updated_data["titles"]:
+        description = updated_data["description"]
+        main_title = updated_data["titles"]["main_title"]
+        main_insight = updated_data["metadata"]["main_insight"]
+        datafact = updated_data["metadata"]["datafact"]
+        updated_data["metadata"] = {
+            "title": main_title,
+            "description": description,
+            "main_insight": main_insight,
+            "datafact": datafact
+        }
     
     # Add standard attributes
     for key, value in STANDARD_ADDITIONS.items():
@@ -120,7 +135,7 @@ def process(input: str, output: str = None) -> None:
         if Path(output).exists():
             with open(output) as f:
                 data = json.load(f)
-                if "metadata" in data and "data" in data:
+                if "metadata" in data and "data" in data and "variables" in data:
                     logger.info(f"跳过处理: {output} 已包含必要字段")
                     return
         

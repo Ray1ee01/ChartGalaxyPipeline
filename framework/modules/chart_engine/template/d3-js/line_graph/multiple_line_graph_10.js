@@ -5,12 +5,12 @@ REQUIREMENTS_BEGIN
     "chart_name": "multiple_line_graph_10",
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["temporal"], ["numerical"], ["categorical"]],
-    "required_fields_range": [[3, 30], [-1000, 1000], [2, 6]],
+    "required_fields_range": [[3, 30], ["-inf", "inf"], [2, 6]],
     "required_fields_icons": [],
-    "required_other_icons": ["primary"],
+    "required_other_icons": [],
     "required_fields_colors": ["group"],
     "required_other_colors": [],
-    "supported_effects": ["gradient", "opacity"],
+    "supported_effects": [],
     "min_height": 400,
     "min_width": 800,
     "background": "light",
@@ -52,7 +52,8 @@ function makeChart(containerSelector, data) {
         .attr("height", height)
         .attr("viewBox", `0 0 ${width} ${height}`)
         .attr("style", "max-width: 100%; height: auto;")
-        .attr("xmlns", "http://www.w3.org/2000/svg");
+        .attr("xmlns", "http://www.w3.org/2000/svg")
+        .attr("xmlns:xlink", "http://www.w3.org/1999/xlink");
     
     // 创建图表区域
     const chartWidth = width - margin.left - margin.right;
@@ -61,34 +62,13 @@ function makeChart(containerSelector, data) {
     const g = svg.append("g")
         .attr("transform", `translate(${margin.left}, ${margin.top})`);
     
-    // 解析日期
-    const parseDate = d => {
-        if (d instanceof Date) return d;
-        if (typeof d === 'number') return new Date(d);
-        if (typeof d === 'string') {
-            // 提取年份 - 支持YYYY/... 或 YYYY-...格式
-            const yearMatch = d.match(/^(\d{4})(?:[/-]|$)/);
-            if (yearMatch) {
-                const year = parseInt(yearMatch[1]);
-                return new Date(year, 0, 1); // 设置为该年的1月1日
-            }
-        }
-        console.warn("无法解析日期:", d);
-        return new Date(0); // 返回默认日期作为后备
-    };
-    
     // 获取唯一的组值
     const groups = [...new Set(chartData.map(d => d[groupField]))];
     
     // 按组分组数据
     const groupedData = d3.group(chartData, d => d[groupField]);
-    
-    // 创建x轴比例尺
-    const xExtent = d3.extent(chartData, d => parseDate(d[xField]));
-    
-    const xScale = d3.scaleTime()
-        .domain(xExtent)
-        .range([20, chartWidth - 20]);
+
+    const { xScale, xTicks, xFormat, timeSpan } = createXAxisScaleAndTicks(chartData, xField, 0, chartWidth);
     
     // 创建y轴比例尺 - 使用数据的实际范围
     const yMin = d3.min(chartData, d => d[yField]);
@@ -105,8 +85,8 @@ function makeChart(containerSelector, data) {
     
     // 创建颜色比例尺 - 使用提供的颜色或默认颜色
     const colorScale = d => {
-        if (colors.fields && colors.fields.group && colors.fields.group[d]) {
-            return colors.fields.group[d];
+        if (colors.field && colors.field[d]) {
+            return colors.field[d];
         }
         return d3.schemeCategory10[groups.indexOf(d) % 10];
     };
@@ -157,12 +137,8 @@ function makeChart(containerSelector, data) {
             .text(Math.round(tick)); // 四舍五入到整数，不带百分号
     });
     
-    // 获取X轴刻度
-    const xTicks = xScale.ticks(chartData.length > 10 ? 10 : chartData.length);
-    
     // 添加X轴刻度文本
     xTicks.forEach(tick => {
-        const year = tick.getFullYear();
         
         g.append("text")
             .attr("x", xScale(tick))
@@ -170,7 +146,7 @@ function makeChart(containerSelector, data) {
             .attr("text-anchor", "middle")
             .attr("fill", "#666")
             .style("font-size", "14px")
-            .text(year);
+            .text(xFormat(tick));
     });
     
     // 添加X轴线
@@ -200,7 +176,7 @@ function makeChart(containerSelector, data) {
         // 确保数据按日期排序
         values.sort((a, b) => parseDate(a[xField]) - parseDate(b[xField]));
         
-        const color = colorScale(group);
+        const color = colors.field[group];
         
         // 绘制线条
         g.append("path")
@@ -295,35 +271,44 @@ function makeChart(containerSelector, data) {
     
     // 添加图例 - 整体居中，向上移动
     const legendY = 10; // 更靠近顶部
-    const legendItemWidth = 120; // 每个图例项的宽度
+    const legendLineWidth = 30; // 线段宽度
+    const legendTextPadding = 5; // 文本与线段的间距
+    const legendItemPadding = 25; // 图例项之间的间距
     
-    // 计算图例的总宽度
-    const totalLegendWidth = groups.length * legendItemWidth;
+    // 计算每个图例项的宽度
+    const legendWidths = groups.map(group => {
+        return legendLineWidth + legendTextPadding + getTextWidth(group, 14);
+    });
     
-    // 计算图例的起始X位置，使其居中
-    const legendStartX = (chartWidth - totalLegendWidth) / 2;
+    // 计算图例总宽度
+    const totalLegendWidth = legendWidths.reduce((sum, width) => sum + width + legendItemPadding, 0) - legendItemPadding;
+    
+    // 计算图例起始位置，使其居中
+    let legendStartX = (chartWidth - totalLegendWidth) / 2;
     
     // 为每个组添加图例
     groups.forEach((group, i) => {
-        const color = colorScale(group);
-        const legendX = legendStartX + i * legendItemWidth;
+        const color = colors.field[group];
         
         // 使用短线段而不是圆点
         g.append("line")
-            .attr("x1", legendX)
+            .attr("x1", legendStartX)
             .attr("y1", legendY)
-            .attr("x2", legendX + 30)
+            .attr("x2", legendStartX + legendLineWidth)
             .attr("y2", legendY)
             .attr("stroke", color)
             .attr("stroke-width", 4);
         
         g.append("text")
-            .attr("x", legendX + 40)
+            .attr("x", legendStartX + legendLineWidth + legendTextPadding)
             .attr("y", legendY)
             .attr("dominant-baseline", "middle")
             .attr("fill", "#333")
             .style("font-size", "16px")
             .text(group);
+            
+        // 更新下一个图例项的起始位置
+        legendStartX += legendWidths[i] + legendItemPadding;
     });
     
     return svg.node();

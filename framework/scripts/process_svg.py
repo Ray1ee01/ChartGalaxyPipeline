@@ -14,12 +14,21 @@ import requests
 import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
 import sys
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from config import api_key, api_provider
+
+# Add project root to path for imports
+current_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.dirname(current_dir)
+sys.path.append(project_root)
+
+try:
+    from config import api_key, base_url
+except ImportError:
+    # Fallback values if config can't be imported
+    print("Warning: Could not import config. Using default API values.")
 
 # OpenAI API configuration
 API_KEY = api_key
-API_PROVIDER = api_provider
+API_PROVIDER = base_url
 
 # Thread-safe print function
 print_lock = threading.Lock()
@@ -51,7 +60,7 @@ def query_llm(prompt: str) -> str:
     }
     
     try:
-        response = requests.post(f'{API_PROVIDER}/v1/chat/completions', headers=headers, json=data)
+        response = requests.post(f'{API_PROVIDER}/chat/completions', headers=headers, json=data)
         response.raise_for_status()
         return response.json()['choices'][0]['message']['content'].strip()
     except Exception as e:

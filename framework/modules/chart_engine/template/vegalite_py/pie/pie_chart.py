@@ -1,7 +1,6 @@
 from modules.chart_engine.template.vegalite_py.template import VegaLiteTemplate
 from typing import Dict
 
-
 class PieChart(VegaLiteTemplate):
     def __init__(self, json_data: Dict):
         super().__init__(json_data)
@@ -42,7 +41,7 @@ class PieChart(VegaLiteTemplate):
     
     def make_color_specification(self, json_data: Dict) -> Dict:
         # color_config = variables['color']['mark_color']
-        color = json_data['colors']['available_colors'][0]
+        color = json_data['colors']['other']['primary']
         color_spec = color
         return color_spec
     

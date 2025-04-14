@@ -5,11 +5,11 @@ from io import BytesIO
 import base64
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from config import api_key, api_provider
+from config import api_key, base_url
 
 # OpenAI API configuration
 API_KEY = api_key
-API_PROVIDER = api_provider
+API_PROVIDER = base_url
 
 client = OpenAI(
     api_key=API_KEY,
@@ -25,7 +25,7 @@ response = client.chat.completions.create(
             "content": [
                 {
                     "type": "text",
-                    "text": 'create a cartoon clipart for "wind energe generation", no text',
+                    "text": 'A small clipart for "Xiaomi". Pure white background. No gradients, shadows, or complex details. Avoid photorealistic rendering. No text.',
                 }
             ],
         },

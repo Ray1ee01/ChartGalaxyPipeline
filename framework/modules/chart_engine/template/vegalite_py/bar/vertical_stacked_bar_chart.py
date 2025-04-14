@@ -1,7 +1,7 @@
 from modules.chart_engine.template.vegalite_py.template import VegaLiteTemplate
 from modules.chart_engine.template.vegalite_py.bar.vertical_bar_chart import VerticalBarChart
 from typing import Dict
-from modules.chart_engine.utils.element_tool.elements import *
+from modules.chart_engine.template.vegalite_py.utils.element_tool.elements import *
 from modules.chart_engine.template.vegalite_py.utils.element_tool.variation import *
 from PIL import Image as PILImage
 

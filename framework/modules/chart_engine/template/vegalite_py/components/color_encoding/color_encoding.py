@@ -2,7 +2,7 @@ from typing import Dict
 from modules.chart_engine.template.vegalite_py.utils.color_tool.base import interpolate_color2
 
 def available_first(json_data: Dict) -> Dict:
-    color = json_data['colors']['available_colors'][0]
+    color = json_data['colors']['other']['primary']
     color_spec = {
         "value": color
     }
@@ -54,7 +54,7 @@ def x_one_lighter(json_data: Dict) -> Dict:
     # 使用dict.fromkeys()保持原有顺序
     x_values = list(dict.fromkeys(x_values))
             
-    color = json_data['colors']['available_colors'][0]
+    color = json_data['colors']['other']['primary']
     # 取color和#000000的中间值
     middle_color = interpolate_color2(color, "#ffffff", 5)[-2]
     

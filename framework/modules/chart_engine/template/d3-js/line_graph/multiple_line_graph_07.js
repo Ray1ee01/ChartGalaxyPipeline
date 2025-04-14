@@ -5,12 +5,12 @@ REQUIREMENTS_BEGIN
     "chart_name": "multiple_line_graph_07",
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["temporal"], ["numerical"], ["categorical"]],
-    "required_fields_range": [[5, 30], [-1000, 1000], [2, 7]],
-    "required_fields_icons": [],
+    "required_fields_range": [[5, 30], ["-inf", "inf"], [2, 7]],
+    "required_fields_icons": ["group"],
     "required_other_icons": [],
     "required_fields_colors": ["group"],
-    "required_other_colors": ["primary"],
-    "supported_effects": ["gradient", "opacity"],
+    "required_other_colors": [],
+    "supported_effects": [],
     "min_height": 400,
     "min_width": 800,
     "background": "dark",
@@ -51,15 +51,7 @@ function makeChart(containerSelector, data) {
     const xValues = [...new Set(chartData.map(d => d[xField]))].sort();
     
     // 创建比例尺 - 修改为时间比例尺
-    // 首先解析年份字符串为日期对象
-    const parseYear = (yearStr) => {
-        // 从"XXXX/XX"格式中提取第一个年份
-        const year = yearStr.split("/")[0];
-        return new Date(parseInt(year), 0, 1); // 1月1日
-    };
-    
-    // 获取最大年份
-    const maxYear = d3.max(xValues, d => parseYear(d));
+    const { xScale, xTicks, xFormat, timeSpan } = createXAxisScaleAndTicks(chartData, xField, 0, innerWidth);
     
     // 创建SVG
     const svg = d3.select(containerSelector)
@@ -68,20 +60,12 @@ function makeChart(containerSelector, data) {
         .attr("height", height)
         .attr("viewBox", `0 0 ${width} ${height}`)
         .attr("style", "max-width: 100%; height: auto;")
-        .attr("xmlns", "http://www.w3.org/2000/svg");
+        .attr("xmlns", "http://www.w3.org/2000/svg")
+        .attr("xmlns:xlink", "http://www.w3.org/1999/xlink");
     
     // 创建图表组
     const g = svg.append("g")
         .attr("transform", `translate(${margin.left},${margin.top})`);
-
-
-    // 创建时间比例尺 - 确保包含最大年份
-    const xScale = d3.scaleTime()
-        .domain([
-            d3.min(xValues, d => parseYear(d)),
-            maxYear // 使用最大年份
-        ])
-        .range([0, innerWidth]);
     
     // 修改Y轴比例尺，支持负值，并确保最大刻度超过数据最大值
     const yScale = d3.scaleLinear()
@@ -104,7 +88,6 @@ function makeChart(containerSelector, data) {
 
     // 绘制水平网格线 - 向左延伸
     const gridExtension = 5; // 网格线向左延伸的距离
-        
 
     // 过滤Y轴刻度，移除最小的刻度（通常是0或负值）
     const filteredYTicks = yTicks.filter(d => d > yTicks[0]);
@@ -121,33 +104,10 @@ function makeChart(containerSelector, data) {
         .attr("width", innerWidth + gridExtension)
         .attr("height", 1)
         .style("fill", "#3f3e40");
-
-    // 计算X轴刻度数量
-    const xTickCount = Math.min(6, xValues.length);
-
-    // 创建均匀分布的刻度
-    const generateEvenTicks = (min, max, count) => {
-        const step = (max.getTime() - min.getTime()) / (count - 1);
-        const ticks = [];
-        
-        for (let i = 0; i < count - 1; i++) {
-            const tickTime = min.getTime() + step * i;
-            ticks.push(new Date(tickTime));
-        }
-        
-        // 添加最大年份作为最后一个刻度
-        ticks.push(max);
-        
-        return ticks;
-    };
-    
-    // 获取均匀分布的X轴刻度，确保包含最大年份
-    const minYear = d3.min(xValues, d => parseYear(d));
-    const xTickValues = generateEvenTicks(minYear, maxYear, xTickCount);
     
     // 绘制垂直网格线 
     g.selectAll("rect.grid-rect-x")
-        .data(xTickValues)
+        .data(xTicks)
         .enter()
         .append("rect")
         .attr("class", "grid-rect-x")
@@ -159,7 +119,7 @@ function makeChart(containerSelector, data) {
         .style("fill", "#3f3e40");
     
     const line = d3.line()
-        .x(d => xScale(parseYear(d[xField])))
+        .x(d => xScale(parseDate(d[xField])))
         .y(d => yScale(d[yField]))
 
     // 首先收集所有点信息，并分为起点和终点两组
@@ -169,7 +129,7 @@ function makeChart(containerSelector, data) {
     let endX = 0;
     // 获取最后一个时间点对应的x坐标
     const lastXValue = xValues[xValues.length - 1];
-    endX = xScale(parseYear(lastXValue));
+    endX = xScale(parseDate(lastXValue));
     
     // 创建渐变定义
     const defs = svg.append("defs");
@@ -221,8 +181,8 @@ function makeChart(containerSelector, data) {
         const next = highestGroupData[i + 1];
         
         // 计算当前点和下一个点的x坐标
-        const currentX = xScale(parseYear(current[xField]));
-        const nextX = xScale(parseYear(next[xField]));
+        const currentX = xScale(parseDate(current[xField]));
+        const nextX = xScale(parseDate(next[xField]));
         
         // 计算当前点和下一个点的y值
         const currentY = current[yField];
@@ -254,7 +214,7 @@ function makeChart(containerSelector, data) {
     
     // 添加最后一个点
     interpolatedData.push({
-        x: xScale(parseYear(highestGroupData[highestGroupData.length - 1][xField])),
+        x: xScale(parseDate(highestGroupData[highestGroupData.length - 1][xField])),
         y: highestGroupData[highestGroupData.length - 1][yField],
         original: highestGroupData[highestGroupData.length - 1]
     });
@@ -357,7 +317,7 @@ function makeChart(containerSelector, data) {
         const lastPoint = groupData[groupData.length - 1];
         
         // 处理起点 - 添加黑色描边
-        const startX = xScale(parseYear(firstPoint[xField]));
+        const startX = xScale(parseDate(firstPoint[xField]));
         const startY = yScale(firstPoint[yField]);
         
         // 添加圆点描边
@@ -384,7 +344,7 @@ function makeChart(containerSelector, data) {
         });
         
         // 处理终点 - 添加黑色描边
-        endX = xScale(parseYear(lastPoint[xField]));
+        endX = xScale(parseDate(lastPoint[xField]));
         const endY = yScale(lastPoint[yField]);
         
         // 添加圆点描边
@@ -416,8 +376,7 @@ function makeChart(containerSelector, data) {
     const xAxis = g.append("g")
         .attr("transform", `translate(0,${innerHeight})`)
         .call(d3.axisBottom(xScale)
-            .tickFormat(d3.timeFormat("%Y")) // 格式化为年份
-            .tickValues(xTickValues) // 使用自定义刻度值
+            .tickFormat(xFormat) // 使用自定义刻度值
         );
     
     // 设置X轴样式，并下移文本
@@ -681,9 +640,9 @@ function makeChart(containerSelector, data) {
                         const current = groupData[i];
                         const next = groupData[i + 1];
                         
-                        const x1 = xScale(parseYear(current[xField]));
+                        const x1 = xScale(parseDate(current[xField]));
                         const y1 = yScale(current[yField]);
-                        const x2 = xScale(parseYear(next[xField]));
+                        const x2 = xScale(parseDate(next[xField]));
                         const y2 = yScale(next[yField]);
                         
                         // 使用线性插值标记路径上的点
@@ -723,9 +682,9 @@ function makeChart(containerSelector, data) {
                 const current = highestGroupData[i];
                 const next = highestGroupData[i + 1];
                 
-                const x1 = xScale(parseYear(current[xField]));
+                const x1 = xScale(parseDate(current[xField]));
                 const y1 = yScale(current[yField]);
-                const x2 = xScale(parseYear(next[xField]));
+                const x2 = xScale(parseDate(next[xField]));
                 const y2 = yScale(next[yField]);
                 
                 // 使用线性插值标记路径上的点
@@ -755,7 +714,7 @@ function makeChart(containerSelector, data) {
             // 找到最高组折线下方的空位
 
             // 计算标签尺寸（网格单位）
-            const labelWidth = 9; // 估计标签宽度
+            const labelWidth = 4 + Math.ceil(getTextWidth(point.group, 22) / gridSize); // 根据实际文本宽度计算网格单位
             const labelHeight = 4; // 估计标签高度
             
             // 找到合适的位置
@@ -779,8 +738,10 @@ function makeChart(containerSelector, data) {
                     }
                     
                     if (hasSpace) {                 
-                        // 优先选择靠上的位置
-                        const score = -gridY + 0.1 * gridX; // 越靠上gridY越小,分数越高
+                        // 优先选择靠上且靠中间的位置
+                        const centerX = gridWidth / 2;
+                        const distanceFromCenter = Math.abs(gridX + labelWidth / 2 - centerX);
+                        const score = -gridY * 0.01 - 2 * distanceFromCenter; // 越靠上gridY越小,越靠近中间distanceFromCenter越小,分数越高
                         
                         if (score > bestScore) {
                             bestScore = score;
@@ -792,7 +753,7 @@ function makeChart(containerSelector, data) {
             }
             
             // 可视化网格占用情况
-            const debugGrid = false; // 设置为true开启可视化，false关闭
+            const debugGrid = true; // 设置为true开启可视化，false关闭
             
             if (debugGrid) {
                 // 创建一个单独的组用于网格可视化
@@ -841,8 +802,8 @@ function makeChart(containerSelector, data) {
                 // 添加图像图标
                 if (images && images.field[point.group]) {
                     iconGroup.append("image")
-                        .attr("x", -5)
-                        .attr("y", -5)
+                        .attr("x", 0)
+                        .attr("y", 0)
                         .attr("width", 40)
                         .attr("height", 40)
                         .attr("xlink:href", images.field[point.group]);
@@ -856,8 +817,8 @@ function makeChart(containerSelector, data) {
                 
                 // 添加组名
                 iconGroup.append("text")
-                    .attr("x", 35)
-                    .attr("y", 20)
+                    .attr("x", 40)
+                    .attr("y", 25)
                     .attr("dominant-baseline", "middle")
                     .style("font-family", typography.label.font_family)
                     .style("font-size", "22px")

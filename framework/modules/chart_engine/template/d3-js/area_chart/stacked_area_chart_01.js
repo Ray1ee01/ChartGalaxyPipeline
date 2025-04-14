@@ -5,12 +5,12 @@ REQUIREMENTS_BEGIN
     "chart_name": "stacked_area_chart_01",
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["temporal"], ["numerical"], ["categorical"]],
-    "required_fields_range": [[5, 50], [0, 100], [2, 5]],
-    "required_fields_icons": [],
+    "required_fields_range": [[5, 50], [0, "inf"], [2, 6]],
+    "required_fields_icons": ["group"],
     "required_other_icons": [],
     "required_fields_colors": ["group"],
-    "required_other_colors": ["primary", "secondary", "background"],
-    "supported_effects": ["gradient", "opacity"],
+    "required_other_colors": [],
+    "supported_effects": [],
     "min_height": 600,
     "min_width": 800,
     "background": "dark",
@@ -22,14 +22,6 @@ REQUIREMENTS_BEGIN
 REQUIREMENTS_END
 */
 
-// 解析年份函数
-function parseYear(yearStr) {
-    if (typeof yearStr === 'string') {
-        const year = yearStr.split("/")[0];
-        return new Date(parseInt(year), 0, 1);
-    }
-    return new Date(yearStr, 0, 1);
-}
 
 function makeChart(containerSelector, data) {
     // 提取数据
@@ -69,7 +61,8 @@ function makeChart(containerSelector, data) {
         .attr("height", height)
         .attr("viewBox", `0 0 ${width} ${height}`)
         .attr("style", "max-width: 100%; height: auto;")
-        .attr("xmlns", "http://www.w3.org/2000/svg");
+        .attr("xmlns", "http://www.w3.org/2000/svg")
+        .attr("xmlns:xlink", "http://www.w3.org/1999/xlink");
     
     // 创建图表区域
     const chartWidth = width - margin.left - margin.right;
@@ -77,16 +70,8 @@ function makeChart(containerSelector, data) {
     
     const g = svg.append("g")
         .attr("transform", `translate(${margin.left}, ${margin.top})`);
-    
-    // 确定全局x轴范围
-    const allDates = chartData.map(d => parseYear(d[xField]));
-    const xMin = d3.min(allDates);
-    const xMax = d3.max(allDates);
 
-    // 创建x轴比例尺
-    const xScale = d3.scaleTime()
-        .domain([xMin, xMax])
-        .range([0, chartWidth]);
+    const { xScale, xTicks, xFormat, timeSpan } = createXAxisScaleAndTicks(chartData, xField, 0, chartWidth);
     
     // 为堆叠数据准备
     // 使用 d3.group
@@ -94,7 +79,7 @@ function makeChart(containerSelector, data) {
     
     // 转换为堆叠格式
     const stackData = Array.from(groupedData, ([key, values]) => {
-        const obj = { date: parseYear(key) };
+        const obj = { date: parseDate(key) };
         values.forEach(v => {
             obj[v[groupField]] = v[yField];
         });
@@ -128,18 +113,6 @@ function makeChart(containerSelector, data) {
         .domain([0, yMax])
         .range([chartHeight, 0]);
     
-    // 添加垂直网格线
-    const xTicks = [];
-    const startYear = xMin.getFullYear();
-    const endYear = xMax.getFullYear();
-    const yearRange = endYear - startYear;
-    const tickCount = Math.min(6, yearRange + 1);
-    const yearStep = Math.ceil(yearRange / (tickCount - 1));
-    
-    for (let year = startYear; year <= endYear; year += yearStep) {
-        xTicks.push(new Date(year, 0, 1));
-    }
-    
     // 添加x轴刻度和标签
     xTicks.forEach((tick, i) => {
         // 添加刻度标签
@@ -150,7 +123,7 @@ function makeChart(containerSelector, data) {
             .style("font-family", "Arial")
             .style("font-size", "16px")
             .style("fill", "#cccccc")
-            .text(tick.getFullYear());
+            .text(xFormat(tick));
     });
     
     // 创建面积生成器
@@ -213,16 +186,16 @@ function makeChart(containerSelector, data) {
             });
         }
         
-        // 计算每个网格及其前后2个网格的平均宽度
+        // 计算每个网格及其前后5个网格的平均宽度
         let avgWidths = [];
-        for (let i = 1; i < gridWidths.length - 1; i++) {
+        for (let i = 5; i < gridWidths.length - 5; i++) {
             let curY0 = gridWidths[i].y0;
             let curY1 = gridWidths[i].y1;
 
             let sum = curY0 - curY1;
-            let count = 1;
+            let count = 11;
 
-            for (let j = i - 1; j >= Math.max(0, i - 2); j--) {
+            for (let j = i - 1; j >= Math.max(0, i - 5); j--) {
                 if (gridWidths[j].y0 < curY0) {
                     curY0 = gridWidths[j].y0;
                 }
@@ -230,13 +203,12 @@ function makeChart(containerSelector, data) {
                     curY1 = gridWidths[j].y1;
                 }
                 sum += curY0 - curY1;
-                count++;
             }
 
             curY0 = gridWidths[i].y0;
             curY1 = gridWidths[i].y1;
 
-            for (let j = i + 1; j <= Math.min(gridWidths.length - 1, i + 2); j++) {
+            for (let j = i + 1; j <= Math.min(gridWidths.length - 1, i + 5); j++) {
                 if (gridWidths[j].y0 < curY0) {
                     curY0 = gridWidths[j].y0;
                 }
@@ -244,7 +216,6 @@ function makeChart(containerSelector, data) {
                     curY1 = gridWidths[j].y1;
                 }
                 sum += curY0 - curY1;
-                count++;
             }
             
             avgWidths.push({
@@ -272,12 +243,14 @@ function makeChart(containerSelector, data) {
         // 使用找到的最佳位置
         const bestGrid = avgWidths[bestGridIdx];
         const areaHeight = bestGrid.avgWidth;
-        const dataIdx = bestGrid.dataIdx;
-        const minHeightForImage = 30; // 显示图像的最小高度
+        const minHeightForImage = 70; // 显示图像的最小高度
         
         // 计算标签位置
         const labelX = bestGrid.gridX;
-        let labelY = yScale((d[dataIdx][0] + d[dataIdx][1]) / 2);
+        // 对labelX处的y0和y1进行插值计算
+        const y0 = gridWidths[bestGridIdx].y0; // labelX处的上边界
+        const y1 = gridWidths[bestGridIdx].y1; // labelX处的下边界
+        let labelY = y0 + (y1 - y0) * 0.5; // 取中点位置
 
         console.log(`Group: ${group}, bestAvgWidth: ${maxAvgWidth}, at grid: ${bestGridIdx}, x: ${labelX}`);
         

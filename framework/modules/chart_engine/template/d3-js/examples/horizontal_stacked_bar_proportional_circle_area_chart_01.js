@@ -10,16 +10,16 @@ REQUIREMENTS_BEGIN
         [["categorical"], ["numerical"]]
     ],
     "required_fields_range": [
-        [[2, 30], [0, 100], [2, 30]],
-        [[2, 30], [0, 1000]]
+        [[2, 30], [0, "inf"], [2, 30]],
+        [[2, 30], [0, "inf"]]
     ],
     "required_fields_icons": ["x"],
     "required_other_icons": [],
     "required_fields_colors": ["group"],
     "required_other_colors": ["primary"],
     "supported_effects": ["radius_corner", "spacing", "shadow", "gradient", "stroke"],
-    "min_height": 600,
-    "min_width": 600,
+    "min_height": 400,
+    "min_width": 400,
     "background": "no",
     "icon_mark": "none",
     "icon_label": "replace",
@@ -89,7 +89,7 @@ function makeChart(containerSelector, data) {
     const totalField = dataColumns.find(col => col.role === "y2")?.name || "total";
     
     // 获取字段描述用于右侧圆圈图标题
-    const totalFieldDescription = dataColumns.find(col => col.role === "y2")?.description || totalField;
+    const totalFieldDescription = totalField;
     
     // 获取字段单位
     let valueUnit = "";

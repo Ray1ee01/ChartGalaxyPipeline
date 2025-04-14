@@ -141,7 +141,7 @@ class VerticalBarChart(VegaLiteTemplate):
         return x_encoding_spec, y_encoding_spec
     
     def make_color_specification(self, json_data: Dict) -> Dict:
-        available_color = json_data['colors']['available_colors'][0]
+        available_color = json_data['colors']['other']['primary']
         color_spec = available_color
         return color_spec
 

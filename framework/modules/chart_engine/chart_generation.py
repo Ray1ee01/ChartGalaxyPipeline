@@ -97,7 +97,7 @@ if __name__ == '__main__':
     # 可用的输入：engine: 名字， template: 模板对应的文件路径，chart_type: 图表类型，json_data: 图表数据
     
     # try:
-    if engine == 'echarts-py':
+    if engine == 'echarts_py':
         # Use Python template
         options = template.make_options(json_data)
         
@@ -186,10 +186,10 @@ if __name__ == '__main__':
             error_message = str(e)
             raise Exception(f"Failed to generate D3.js chart: {error_message}")
             
-    elif engine == 'vegalite-py':
-        # Use vegalite-py template
+    elif engine == 'vegalite_py':
+        # Use vegalite_py template
         print("template:", template)
-        template_root = "template.vegalite-py"
+        template_root = "template.vegalite_py"
         general_chart_type = template.split('/')[-2]
         module_name = template.split('/')[-1].split('.')[0]
         print("module_name:", module_name)

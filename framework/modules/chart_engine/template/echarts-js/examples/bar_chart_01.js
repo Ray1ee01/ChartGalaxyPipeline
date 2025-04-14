@@ -134,18 +134,7 @@ function make_option(jsonData) {
         
         // Return ECharts option object
         return {
-            backgroundColor: colors.background_color || '#ffffff',
-            title: {
-                text: variables.title && variables.title.text ? variables.title.text : 'Bar Chart',
-                left: 'center',
-                top: 10,
-                textStyle: {
-                    color: textColor,
-                    fontFamily: typography.title?.font_family || 'Arial',
-                    fontSize: parseInt(typography.title?.font_size) || 18,
-                    fontWeight: typography.title?.font_weight || 'bold'
-                }
-            },
+            backgroundColor: 'none',
             tooltip: {
                 trigger: 'axis',
                 axisPointer: {

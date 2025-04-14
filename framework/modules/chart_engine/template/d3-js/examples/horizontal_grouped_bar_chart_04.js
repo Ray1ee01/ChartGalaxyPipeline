@@ -6,14 +6,14 @@ REQUIREMENTS_BEGIN
     "is_composite": false,
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
-    "required_fields_range": [[2, 20], [0, 100], [2, 5]],
+    "required_fields_range": [[5, 20], [0, "inf"], [2, 6]],
     "required_fields_icons": [],
     "required_other_icons": [],
     "required_fields_colors": ["group"],
     "required_other_colors": ["primary"],
     "supported_effects": ["shadow", "radius_corner", "gradient", "stroke", "spacing"],
     "min_height": 400,
-    "min_width": 600,
+    "min_width": 400,
     "background": "no",
     "icon_mark": "none",
     "icon_label": "none",
@@ -37,7 +37,7 @@ function makeChart(containerSelector, data) {
         annotation: { font_family: "Arial", font_size: "12px", font_weight: "normal" }
     };
     const colors = jsonData.colors || { text_color: "#333333" };  // 颜色设置
-    const dataColumns = jsonData.data.columns  || []; // 数据列定义
+    const dataColumns = jsonData.data.columns || []; // 数据列定义
     
     // 设置视觉效果变量的默认值
     variables.has_rounded_corners = variables.has_rounded_corners || false;
@@ -62,7 +62,7 @@ function makeChart(containerSelector, data) {
         bottom: 60,   // 底部边距
         left: 80      // 左侧初始空间，用于维度标签和图标
     };
-    
+    const innerHeight = height - margin.top - margin.bottom; // 计算内部绘图区域高度
     // ---------- 3. 提取字段名和单位 ----------
     
     // 根据数据列顺序提取字段名称
@@ -106,7 +106,7 @@ function makeChart(containerSelector, data) {
         .style("visibility", "hidden");
     
     // 定义圆形间距，半径将根据条形高度动态计算
-    let circleRadius = 10; // 初始值，后续会被覆盖
+    let circleRadius = innerHeight/dimensions.length/2; // 初始值，后续会被覆盖
     const circlePadding = 10;
     
     // 计算最大维度标签宽度
@@ -119,7 +119,7 @@ function makeChart(containerSelector, data) {
             
         const tempText = tempSvg.append("text")
             .style("font-family", typography.label.font_family)
-            .style("font-size", typography.label.font_size)
+            .style("font-size", `${innerHeight/dimensions.length * 0.5}px`)
             .style("font-weight", typography.label.font_weight)
             .text(formattedDimension);
         
@@ -140,7 +140,7 @@ function makeChart(containerSelector, data) {
             
         const tempText = tempSvg.append("text")
             .style("font-family", typography.annotation.font_family)
-            .style("font-size", typography.annotation.font_size)
+            .style("font-size", `${innerHeight/dimensions.length * 0.4}px`)
             .style("font-weight", typography.annotation.font_weight)
             .text(formattedValue);
         
@@ -160,7 +160,7 @@ function makeChart(containerSelector, data) {
     
     // 计算内部绘图区域尺寸
     const innerWidth = width - margin.left - margin.right;
-    const innerHeight = height - margin.top - margin.bottom;
+    
     
     // ---------- 6. 创建SVG容器 ----------
     
@@ -311,7 +311,7 @@ function makeChart(containerSelector, data) {
                 .attr("cy", circleY)
                 .attr("r", circleRadius)
                 .attr("fill", "#000000"); // 黑色圆形
-            
+            const dynamicFontSize = `${barHeight * 0.5}px`;
             // 添加白色序号
             g.append("text")
                 .attr("x", circleX)
@@ -319,7 +319,7 @@ function makeChart(containerSelector, data) {
                 .attr("dy", "0.35em")
                 .attr("text-anchor", "middle")
                 .style("font-family", typography.label.font_family)
-                .style("font-size", "10px")
+                .style("font-size", `${barHeight * 0.5}px`)
                 .style("font-weight", "bold")
                 .style("fill", "#FFFFFF") // 白色文字
                 .text(index + 1); // 序号从1开始
@@ -331,7 +331,7 @@ function makeChart(containerSelector, data) {
                 .attr("dy", "0.35em")
                 .attr("text-anchor", "end")
                 .style("font-family", typography.label.font_family)
-                .style("font-size", typography.label.font_size)
+                .style("font-size", `${barHeight * 0.6}px`)
                 .style("font-weight", typography.label.font_weight)
                 .style("fill", colors.text_color)
                 .text(dimension);
@@ -352,7 +352,7 @@ function makeChart(containerSelector, data) {
                 .attr("dy", "0.35em")
                 .attr("text-anchor", "start")
                 .style("font-family", typography.annotation.font_family)
-                .style("font-size", typography.annotation.font_size)
+                .style("font-size", `${Math.max(12,barHeight * 0.6)}px`)
                 .style("font-weight", typography.annotation.font_weight)
                 .style("fill", valueColor) // 修改：使用条形的颜色
                 .text(formattedValue);
@@ -371,7 +371,7 @@ function makeChart(containerSelector, data) {
         
         // 计算每个图例项的宽度
         const legendItemPadding = 10;
-        const legendItemHeight = 20;
+        const legendItemHeight = 20; // 图例项高度
         const legendItemMargin = 10; // 图例项之间的间距
         
         // 计算图例可用的最大宽度（60%的图表宽度）

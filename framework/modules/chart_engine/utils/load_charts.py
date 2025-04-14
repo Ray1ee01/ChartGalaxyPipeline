@@ -28,6 +28,7 @@ def _save_to_file(content, output_file=None, prefix="", suffix=".html"):
     else:
         with open(output_file, 'w', encoding='utf-8') as f:
             f.write(content)
+            f.close()
     
     return output_file
 
@@ -68,7 +69,7 @@ def _load_js_code(js_file, base_dirs=None):
     
     raise ValueError(f"No JavaScript file found for chart path: {js_file}. Please provide a valid JS file.")
 
-def load_js_echarts(json_data=None, output_file=None, js_file=None):
+def load_js_echarts(json_data=None, output_file=None, js_file=None, width=None, height=None):
     """
     Generate an ECharts chart using JavaScript.
     This function directly generates an HTML file with the JavaScript code.
@@ -83,8 +84,6 @@ def load_js_echarts(json_data=None, output_file=None, js_file=None):
     """
     if json_data is None:
         raise ValueError("JSON data must be provided")
-    
-    width, height = _get_dimensions(json_data)
         
     # Default HTML template
     html_template = """
@@ -177,20 +176,26 @@ def load_js_echarts(json_data=None, output_file=None, js_file=None):
     echarts_lib_url = f"file://{echarts_lib_path}"
     
     # Load JavaScript code
-    js_code = _load_js_code(js_file)
-    
+    if js_file:
+        js_code = _load_js_code(js_file)
+    else:
+        js_code = f"""
+        function make_option(jsonData) {{
+            return JSON.parse(jsonData);
+        }}
+        """
+
     # Create HTML content
     formatted_html = html_template % (echarts_lib_url, width, height)
     formatted_html = formatted_html.replace('JSON_DATA_PLACEHOLDER', json.dumps(json_data))
     formatted_html = formatted_html.replace('JS_CODE_PLACEHOLDER', js_code)
     
     # Save the HTML to a file
-    output_file = _save_to_file(formatted_html, output_file)
-    
+    output_file = _save_to_file(formatted_html, output_file)    
     # 简化日志输出
     return output_file
 
-def load_d3js(json_data=None, output_file=None, js_file=None):
+def load_d3js(json_data=None, output_file=None, js_file=None, width=None, height=None):
     """
     Generate a D3.js chart using JavaScript.
     This function generates an HTML file with the D3.js code.
@@ -205,8 +210,6 @@ def load_d3js(json_data=None, output_file=None, js_file=None):
     """
     if json_data is None:
         raise ValueError("JSON data must be provided")
-    
-    width, height = _get_dimensions(json_data, default_width=800, default_height=600)
         
     # Default HTML template for D3.js - use %% to escape % characters
     html_template = """
@@ -237,6 +240,9 @@ def load_d3js(json_data=None, output_file=None, js_file=None):
         <script>
             // 准备数据
             const json_data = JSON_DATA_PLACEHOLDER;
+
+            // 导入utils.js
+            UTILS_LIB_PLACEHOLDER
             
             // D3.js实现
             JS_CODE_PLACEHOLDER
@@ -266,6 +272,10 @@ def load_d3js(json_data=None, output_file=None, js_file=None):
     
     # 使用文件协议的URL (用于SVG渲染)
     d3_lib_url = f"file://{d3_lib_path}"
+
+    utils_lib_path = os.path.abspath(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static', 'lib', 'utils.js'))
+
+    utils_code = _load_js_code(utils_lib_path)
     
     js_code = _load_js_code(js_file)
     
@@ -273,7 +283,7 @@ def load_d3js(json_data=None, output_file=None, js_file=None):
     formatted_html = html_template % (d3_lib_url, width, height)
     formatted_html = formatted_html.replace('JSON_DATA_PLACEHOLDER', json.dumps(json_data))
     formatted_html = formatted_html.replace('JS_CODE_PLACEHOLDER', js_code)
-    
+    formatted_html = formatted_html.replace('UTILS_LIB_PLACEHOLDER', utils_code)
     # Save the HTML to a file
     output_file = _save_to_file(formatted_html, output_file, prefix="_d3")
     
@@ -296,7 +306,9 @@ def load_py_echarts(json_data=None):
     # 不需要特殊处理，直接返回处理好的选项数据
     return json_data
 
-def render_chart_to_svg(json_data, output_svg_path, js_file=None, width=None, height=None, framework="echarts", html_output_path=None):
+def render_chart_to_svg(json_data, output_svg_path, \
+                        js_file=None, width=None, height=None, \
+                        framework="echarts", framework_type='js', html_output_path=None):
     """
     通用的图表渲染函数，支持多种图表框架
     
@@ -312,7 +324,7 @@ def render_chart_to_svg(json_data, output_svg_path, js_file=None, width=None, he
     Returns:
         Path to the generated SVG file
     """
-    # 获取宽度和高度
+
     if width is None or height is None:
         w, h = _get_dimensions(json_data)
         width = width or w
@@ -356,16 +368,16 @@ def render_chart_to_svg(json_data, output_svg_path, js_file=None, width=None, he
         #         "primary": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII="
         #     }
         # }
-        # Use vegalite-py template
+        # Use vegalite_py template
         template = js_file
-        template_root = "modules.chart_engine.template.vegalite-py"
+        template_root = "modules.chart_engine.template.vegalite_py"
         general_chart_type = template.split('/')[-2]
         module_name = template.split('/')[-1].split('.')[0]
-        print("template_root: ", template_root)
-        print("general_chart_type: ", general_chart_type)
-        print("module_name: ", module_name)
+        # print("template_root: ", template_root)
+        # print("general_chart_type: ", general_chart_type)
+        # print("module_name: ", module_name)
         module_path = f"{template_root}.{general_chart_type}.{module_name}"
-        print(f"module_path: {module_path}")
+        # print(f"module_path: {module_path}")
         module = importlib.import_module(module_path)
         
         chart_words = module_name.split('_')
@@ -399,35 +411,30 @@ def render_chart_to_svg(json_data, output_svg_path, js_file=None, width=None, he
     # 为引擎创建临时目录，用于生成HTML文件
     temp_dir = create_temp_dir(prefix=f"{framework}_svg_")
     html_file = os.path.join(temp_dir, 'chart.html')
-    
+
     try:
         # 根据框架类型生成HTML文件
-        if framework.lower() == "echarts" or framework.lower() == "echarts-py":
-            html_content = load_js_echarts(json_data=json_data, output_file=html_file, js_file=js_file)
+        if framework.lower() == "echarts" and framework_type == 'js':
+            load_js_echarts(json_data=json_data, output_file=html_file, js_file=js_file, width=width, height=height)
+        elif framework.lower() == "echarts" and framework_type == 'py':
+            template = js_file
+            options = template.make_options(json_data)
+            option_data = json.dumps(options)
+            load_js_echarts(json_data=option_data, output_file=html_file, width=width, height=height)
         elif framework.lower() == "d3":
-            html_content = load_d3js(json_data=json_data, output_file=html_file, js_file=js_file)
+            load_d3js(json_data=json_data, output_file=html_file, js_file=js_file, width=width, height=height)
         else:
             raise ValueError(f"Unsupported framework: {framework}")
         
-        # 如果指定了HTML输出路径，创建HTML文件副本并处理CDN URL
         if html_output_path and os.path.exists(html_file):
             import shutil
             import re
             
-            # 确保目标目录存在
-            os.makedirs(os.path.dirname(os.path.abspath(html_output_path)), exist_ok=True)
-            
-            # 读取HTML内容
             with open(html_file, 'r', encoding='utf-8') as f:
                 html_content = f.read()
-            
-            # 确定库文件名
             lib_file = 'echarts.min.js' if framework.lower().startswith('echarts') else 'd3.min.js'
-            
-            # 替换file://路径为CDN URL (使用通用的CDN)
             file_pattern = r'file://.*?/' + lib_file
             
-            # 确定CDN URL
             if framework.lower().startswith('echarts'):
                 cdn_url = "https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"
             else:  # D3.js
@@ -435,7 +442,6 @@ def render_chart_to_svg(json_data, output_svg_path, js_file=None, width=None, he
             
             html_content = re.sub(file_pattern, cdn_url, html_content)
             
-            # 将处理后的HTML内容写入到输出文件
             with open(html_output_path, 'w', encoding='utf-8') as f:
                 f.write(html_content)
                 
@@ -455,9 +461,8 @@ def render_chart_to_svg(json_data, output_svg_path, js_file=None, width=None, he
         return None
     
     finally:
-        # 清理临时目录
         if os.path.exists(temp_dir):
-            cleanup_temp_dir(temp_dir)
+           cleanup_temp_dir(temp_dir)
 
 # 保持向后兼容的函数
 def render_d3js_chart_to_svg(json_data, output_svg_path, js_file=None, width=None, height=None, html_output_path=None):
@@ -514,7 +519,7 @@ def render_vegalite_specification_to_svg(vegalite_specification, output_svg_path
                 raise Exception(f"Node.js执行错误: {result.stderr}")
 
             return result.stdout
-    script_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'template', 'vegalite-py', 'vega_spec.js')
+    script_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'template', 'vegalite_py', 'vega_spec.js')
     result = NodeBridge.execute_node_script(script_path, {
         "spec": vegalite_specification,
     })

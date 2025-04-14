@@ -4,10 +4,10 @@ REQUIREMENTS_BEGIN
     "chart_type": "Horizontal Bar Chart",
     "chart_name": "horizontal_bar_chart",
     "is_composite": false,
-    "required_fields": ["dimension", "value"],
+    "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],
-    "required_fields_range": [[2, 30], [0, 100]],
-    "required_fields_icons": ["dimension"],
+    "required_fields_range": [[2, 30], [0, "inf"]],
+    "required_fields_icons": ["x"],
     "required_other_icons": [],
     "required_fields_colors": [],
     "required_other_colors": ["primary"],
@@ -29,7 +29,7 @@ function makeChart(containerSelector, data) {
     
     // 提取数据和配置
     const jsonData = data;                           // 完整的JSON数据对象
-    const chartData = jsonData.data;                 // 实际数据点数组  
+    const chartData = jsonData.data.data;                 // 实际数据点数组  
     const variables = jsonData.variables || {};      // 图表配置
     const typography = jsonData.typography || {      // 字体设置，如果不存在则使用默认值
         title: { font_family: "Arial", font_size: "18px", font_weight: "bold" },
@@ -39,7 +39,7 @@ function makeChart(containerSelector, data) {
     };
     const colors = jsonData.colors || { text_color: "#333333" };  // 颜色设置
     const images = jsonData.images || { field: {}, other: {} };   // 图像设置
-    const dataColumns = jsonData.data_columns || []; // 数据列定义
+    const dataColumns = jsonData.data.columns || []; // 数据列定义
     
     // 设置视觉效果变量的默认值
     variables.has_rounded_corners = variables.has_rounded_corners || false;
@@ -102,8 +102,8 @@ function makeChart(containerSelector, data) {
         .style("visibility", "hidden");
     
     // 图标尺寸
-    const flagWidth = 20;
-    const flagHeight = 15;
+    const defaultFlagWidth = 48;
+    const defaultFlagHeight = 48;
     const flagPadding = 0;
     
     // 计算最大维度标签宽度
@@ -121,7 +121,7 @@ function makeChart(containerSelector, data) {
             .text(formattedDimension);
         
         const textWidth = tempText.node().getBBox().width;
-        const totalWidth = flagWidth + flagPadding + textWidth;
+        const totalWidth = defaultFlagWidth + flagPadding + textWidth;
         
         maxLabelWidth = Math.max(maxLabelWidth, totalWidth);
         
@@ -230,6 +230,9 @@ function makeChart(containerSelector, data) {
     const xScale = d3.scaleLinear()
         .domain([0, d3.max(chartData, d => +d[valueField]) * 1.05]) // 添加5%边距
         .range([0, innerWidth]);
+
+    let flagWidth = Math.min(defaultFlagWidth, yScale.bandwidth() - 10);
+    let flagHeight = Math.min(defaultFlagHeight, yScale.bandwidth() - 10);
     
     // ---------- 8. 添加标题和副标题 ----------
     

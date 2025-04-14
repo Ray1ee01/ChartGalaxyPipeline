@@ -5,14 +5,14 @@ REQUIREMENTS_BEGIN
     "chart_name": "grouped_bar_chart_01",
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
-    "required_fields_range": [[2, 10], [0, 100], [2, 8]],
+    "required_fields_range": [[2, 6], [0, "inf"], [2, 8]],
     "required_fields_icons": ["x"],
     "required_other_icons": ["primary"],
     "required_fields_colors": ["group"],
     "required_other_colors": ["primary"],
     "supported_effects": ["shadow", "gradient", "radius_corner"],
     "min_height": 400,
-    "min_width": 500,
+    "min_width": 400,
     "background": "no",
     "icon_mark": "none",
     "icon_label": "side",
@@ -45,6 +45,7 @@ function makeChart(containerSelector, data) {
   const xField = dataColumns[0].name;
   const yField = dataColumns[1].name;
   const groupField = dataColumns[2].name;
+  const imageSize = 32;
   
   // Get unique x values and groups
   const xValues = [...new Set(chartData.map(d => d[xField]))];
@@ -104,6 +105,7 @@ function makeChart(containerSelector, data) {
   
   // Apply typography to x-axis labels
   xAxis.selectAll("text")
+    .attr("transform", "translate(0, 32)")
     .style("font-family", typography.label.font_family)
     .style("font-size", typography.label.font_size)
     .style("font-weight", typography.label.font_weight);
@@ -115,10 +117,10 @@ function makeChart(containerSelector, data) {
       
       g.append("image")
         .attr("href", images.field[value])
-        .attr("x", xPos - 10)
+        .attr("x", xPos - imageSize / 2)
         .attr("y", innerHeight + 5)
-        .attr("width", 20)
-        .attr("height", 20)
+        .attr("width", imageSize)
+        .attr("height", imageSize)
         .attr("text-anchor", "middle");
     }
   });

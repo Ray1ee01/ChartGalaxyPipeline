@@ -1,6 +1,8 @@
 import numpy as np
 from typing import Tuple
 from .mask_utils import calculate_mask
+import os
+from PIL import Image
 
 def find_best_size_and_position(main_mask: np.ndarray, image_content: str, padding: int) -> Tuple[int, int, int]:
     """
@@ -14,21 +16,26 @@ def find_best_size_and_position(main_mask: np.ndarray, image_content: str, paddi
     Returns:
         Tuple[int, int, int]: (image_size, best_x, best_y)
     """
-    grid_size = 5  # 使用与calculate_mask相同的网格大小
+    # Save the main_mask to PNG for debugging
+    os.makedirs('tmp', exist_ok=True)
+    mask_image = Image.fromarray((main_mask * 255).astype(np.uint8))
+    mask_image.save('tmp/main_mask.png')
+    
+    grid_size = 5
     
     # 将main_mask降采样到1/grid_size大小
     h, w = main_mask.shape
     downsampled_h = h // grid_size
     downsampled_w = w // grid_size
     downsampled_main = np.zeros((downsampled_h, downsampled_w), dtype=np.uint8)
-    
+        
     # 对每个grid进行降采样，只要原grid中有内容（1）就标记为1
     for i in range(downsampled_h):
         for j in range(downsampled_w):
-            y_start = i * grid_size
-            x_start = j * grid_size
-            y_end = min((i + 1) * grid_size, h)
-            x_end = min((j + 1) * grid_size, w)
+            y_start = max(0, (i - 1) * (grid_size))
+            x_start = max(0, (j - 1) * (grid_size))
+            y_end = min((i + 2) * (grid_size), h)
+            x_end = min((j + 2) * (grid_size), w)
             grid = main_mask[y_start:y_end, x_start:x_end]
             downsampled_main[i, j] = 1 if np.any(grid == 1) else 0
     
@@ -48,19 +55,23 @@ def find_best_size_and_position(main_mask: np.ndarray, image_content: str, paddi
         
         # 生成当前尺寸的图片mask并降采样
         original_size = mid_size * grid_size
-        temp_svg = f"""<svg xmlns="http://www.w3.org/2000/svg" width="{original_size}" height="{original_size}">
+        temp_svg = f"""<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="{original_size}" height="{original_size}">
             <image width="{original_size}" height="{original_size}" href="{image_content}"/>
         </svg>"""
-        image_mask = calculate_mask(temp_svg, original_size, original_size)
+        image_mask = calculate_mask(temp_svg, original_size, original_size, 0, grid_size=grid_size, bg_threshold=240)
         
+        # Save the original image mask to PNG for debugging
+        os.makedirs('tmp', exist_ok=True)
+        mask_image = Image.fromarray((image_mask * 255).astype(np.uint8))
+        mask_image.save('tmp/image_mask.png')
         # 将image_mask降采样
         downsampled_image = np.zeros((mid_size, mid_size), dtype=np.uint8)
         for i in range(mid_size):
             for j in range(mid_size):
-                y_start = i * grid_size
-                x_start = j * grid_size
-                y_end = min((i + 1) * grid_size, original_size)
-                x_end = min((j + 1) * grid_size, original_size)
+                y_start = max(0, (i - 1) * (grid_size))
+                x_start = max(0, (j - 1) * (grid_size))
+                y_end = min((i + 2) * (grid_size), original_size)
+                x_end = min((j + 2) * (grid_size), original_size)
                 grid = image_mask[y_start:y_end, x_start:x_end]
                 downsampled_image[i, j] = 1 if np.any(grid == 1) else 0
         
@@ -94,7 +105,7 @@ def find_best_size_and_position(main_mask: np.ndarray, image_content: str, paddi
         
         print(f"Trying size {mid_size * grid_size}x{mid_size * grid_size}, minimum overlap ratio: {min_overlap:.3f}")
         
-        if min_overlap < 0.025:  # 允许2.5%的重叠
+        if min_overlap < 0.01:
             best_size = mid_size
             best_overlap_ratio = min_overlap
             best_x = current_x
@@ -107,6 +118,22 @@ def find_best_size_and_position(main_mask: np.ndarray, image_content: str, paddi
     final_size = best_size * grid_size
     final_x = best_x * grid_size
     final_y = best_y * grid_size
+    
+    # 生成最终尺寸的图片mask
+    temp_svg = f"""<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="{final_size}" height="{final_size}">
+        <image width="{final_size}" height="{final_size}" href="{image_content}"/>
+    </svg>"""
+    final_image_mask = calculate_mask(temp_svg, final_size, final_size, 0)
+    
+    # 创建合并的mask，将image_mask放在正确的位置
+    combined_mask = np.zeros_like(main_mask)
+    combined_mask[main_mask == 1] = 1
+    # 将image_mask放在正确的位置
+    combined_mask[final_y:final_y + final_size, final_x:final_x + final_size] = np.where(final_image_mask == 1, 2, combined_mask[final_y:final_y + final_size, final_x:final_x + final_size])
+    
+    # 保存合并的mask
+    combined_image = Image.fromarray((combined_mask * 127).astype(np.uint8))
+    combined_image.save('tmp/all_mask.png')
     
     print(f"Final result: size={final_size}x{final_size}, position=({final_x}, {final_y}), overlap ratio={best_overlap_ratio:.3f}")
     

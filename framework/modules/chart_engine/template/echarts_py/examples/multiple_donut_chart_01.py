@@ -2,17 +2,17 @@
 REQUIREMENTS_BEGIN
 {
     "chart_type": "Donut Chart",
-    "chart_name": "donut_chart_01",
+    "chart_name": "multiple_donut_chart_01",
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
-    "required_fields_range": [[2, 10], [0, 100], [2, 8]],
+    "required_fields_range": [[2, 8], [0, "inf"], [2, 12]],
     "required_fields_icons": ["x"],
     "required_other_icons": ["primary"],
     "required_fields_colors": ["group"],
     "required_other_colors": ["primary"],
     "supported_effects": ["shadow", "radius_corner"],
-    "min_height": 400,
-    "min_width": 500,
+    "min_height": 600,
+    "min_width": 650,
     "background": "no",
     "icon_mark": "none",
     "icon_label": "side",
@@ -86,32 +86,19 @@ def make_options(json_data):
     # Define dimensions based on json_data
     canvas_width = variables['width']
     canvas_height = variables['height']
-    title_height = 60  # Increased for larger title
-    legend_height = 60
+    title_height = 0  # Increased for larger title
+    legend_height = 40
     
     # Calculate grid layout
     num_charts = len(categories)
     rows, cols = get_grid_layout(num_charts)
     
     # Adjust margin based on number of columns
-    chart_margin = 20 if cols == 2 else 40  # Smaller margin for 2 columns
+    chart_margin = 10 if cols == 2 else 20  # Smaller margin for 2 columns
     
-    # Create main title
-    main_title_text = variables.get('title', {}).get('text', 'Donut Chart')
-    main_title = {
-        "text": main_title_text,
-        "top": 10,
-        "left": "center",
-        "textStyle": {
-            "fontSize": int(typography['title']['font_size'].replace('px', '')),
-            "fontWeight": typography['title']['font_weight'],
-            "fontFamily": typography['title']['font_family'],
-            "color": colors_data['text_color']
-        }
-    }
     
     options = {
-        "title": [main_title],
+        "title": [],
         "color": colors,
         "dataset": [
             {
@@ -120,7 +107,7 @@ def make_options(json_data):
         ],
         "series": [],
         "legend": {
-            "type": "scroll",
+            "type": "plain",  # Changed from "scroll" to "plain" to display all items
             "orient": "horizontal",
             "top": title_height,
             "left": "center",
@@ -129,10 +116,6 @@ def make_options(json_data):
                 "fontFamily": typography['label']['font_family'],
                 "color": colors_data['text_color']
             }
-        },
-        "tooltip": {
-            "trigger": "item",
-            "formatter": "{a} <br/>{b}: {c} ({d}%)"
         }
     }
     
@@ -153,7 +136,7 @@ def make_options(json_data):
     min_dimension = min(chart_width, chart_height)
     # For 2 columns, allow slightly larger maximum radius
     max_radius = 180 if cols == 2 else 150
-    outer_radius = min(min_dimension / 2 - 20, max_radius)
+    outer_radius = min(min_dimension / 2 - 5, max_radius)
     inner_radius = outer_radius * 0.7
     
     # Calculate title width (slightly less than inner circle diameter)
@@ -256,10 +239,10 @@ def make_options(json_data):
         if category in images['field']:
             options["graphic"] = options.get("graphic", [])
             # Calculate position for icon
-            icon_width = 20
-            icon_height = 20
+            icon_width = inner_radius - 10
+            icon_height = inner_radius - 10
             icon_x = center_x - (icon_width / 2)
-            icon_y = center_y - (icon_height / 2) - 30  # Position above the title
+            icon_y = center_y - (icon_height / 2)
             
             options["graphic"].append({
                 "type": "image",
@@ -269,7 +252,8 @@ def make_options(json_data):
                     "width": icon_width,
                     "height": icon_height,
                     "x": icon_x,
-                    "y": icon_y
+                    "y": icon_y,
+                    "opacity": 0.25
                 },
                 "left": icon_x,
                 "top": icon_y,

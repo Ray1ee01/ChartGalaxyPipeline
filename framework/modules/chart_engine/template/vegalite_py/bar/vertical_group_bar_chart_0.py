@@ -1,6 +1,6 @@
 from modules.chart_engine.template.vegalite_py.bar.vertical_group_bar_chart import VerticalGroupBarChart
 from typing import Dict
-from modules.chart_engine.utils.element_tool.elements import BoundingBox
+from modules.chart_engine.template.vegalite_py.utils.element_tool.elements import BoundingBox
 """
 REQUIREMENTS_BEGIN
 {

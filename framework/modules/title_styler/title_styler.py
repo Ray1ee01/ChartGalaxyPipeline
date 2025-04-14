@@ -1,11 +1,7 @@
 from typing import Dict, Union
-from modules.title_styler.utils.svg_to_mask import svg_to_mask
 import json
-import time
-from PIL import Image as PILImage, ImageDraw
-import pytesseract
-import os
-import cairosvg
+from PIL import Image, ImageDraw, ImageFont
+import argparse
 
 def merge_bounding_boxes(bounding_boxes):
     """合并所有有实际文字内容的boundingbox"""
@@ -24,132 +20,179 @@ def merge_bounding_boxes(bounding_boxes):
         'descent': descent
     }
 
-def OCR_boundingbox(text_svg: str):
-    # 创建SVG内容
-    svg_left = f"""
-    <svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1000">
-    """
-    svg_right = f"""
-    </svg>
-    """
-    shift_y = 100
-    group_left = f"""
-    <g transform="translate(0, {shift_y})">
-    """
-    group_right = f"""
-    </g>
-    """
-    text_anchor = 'start'
-    
-    svg_content = svg_left + group_left + text_svg + group_right + svg_right
-    
-    time_stamp = time.time()
-    svg_path = f'/tmp/text_{time_stamp}.svg'
-    with open(svg_path, 'w') as f:
-        f.write(svg_content)
-    # 转换为PNG
-    png_path = f'/tmp/text_{time_stamp}.png'
-    cairosvg.svg2png(url=svg_path, write_to=png_path)
-
-    # OCR识别
-    img = PILImage.open(png_path)
-    result = pytesseract.image_to_data(img, output_type=pytesseract.Output.DICT)
-    # print("result: ", result)
-    # # 删除临时文件
-    os.remove(svg_path)
-    os.remove(png_path)
-
-    # print(f"result: {result}")
-    # 把所有有实际文字内容的boundingbox合并
-    bounding_boxes = []
-    for i in range(len(result['text'])):
-        if result['text'][i]:
-            # print("result['left'][i]: ", result['left'][i])
-            # print("result['top'][i]: ", result['top'][i])
-            # print("result['width'][i]: ", result['width'][i])
-            # print("result['height'][i]: ", result['height'][i])
-            # print("result['text'][i]: ", result['text'][i])
-            bounding_boxes.append({
-                'x': result['left'][i],
-                'y': result['top'][i],
-                'width': result['width'][i],
-                'height': result['height'][i],
-                'ascent': result['height'][i],
-                'descent': result['height'][i]
-            })
-    # 合并boundingbox
-    merged_bounding_box = merge_bounding_boxes(bounding_boxes)
-    width = merged_bounding_box['width']
-    height = merged_bounding_box['height']
-    ascent = merged_bounding_box['ascent']
-    descent = merged_bounding_box['descent']
-    # print("merged_bounding_box: ", merged_bounding_box)
-    
-    x = 0
-    y = merged_bounding_box['y']
-    
-    if text_anchor == 'middle':
-        x -= width / 2
-    elif text_anchor == 'end':
-        x -= width
-
-    # # y -= ascent
-    # y -= descent
-
-    min_x = x
-    min_y = y
-    max_x = x + width
-    max_y = y + height
-    
-    # 在image中画出boundingbox
+def measure_text_bounds(text, font_family, font_size, font_weight="normal"):
+    """测量文本的边界框尺寸"""
+    # 创建临时图像用于测量文本
+    img = Image.new('RGB', (1, 1), color=(255, 255, 255))
     draw = ImageDraw.Draw(img)
-    # print(min_x, min_y, max_x, max_y)
-    draw.rectangle([(min_x, min_y), (max_x, max_y)], outline='red', width=1)
-    img.save('debug_image.png')
     
-    # 减去shift_y
-    min_y -= shift_y
-    max_y -= shift_y
+    # 获取字体
+    font = get_font(font_family, font_size, font_weight)
     
-    return {
+    # 获取文本尺寸
+    left, top, right, bottom = draw.textbbox((0, 0), text, font=font)
+    width = right - left
+    height = bottom - top
+    
+    result = {
         'width': width,
         'height': height,
-        'min_x': min_x,
-        'min_y': min_y,
-        'max_x': max_x,
-        'max_y': max_y
+        'min_x': left,
+        'min_y': top,
+        'max_x': right,
+        'max_y': bottom
     }
+    
+    return result
 
-def measure_text_bounding_box(text_svg: str):
-    # 使用svg_to_mask测量文本的边界框
-    svg_left = '<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1000" viewBox="0 0 1000 1000">'
-    svg_right = '</svg>'
-    text_svg = svg_left + text_svg + svg_right
-    debug_image, mask_image, mask_grid, grid_info = svg_to_mask(text_svg, scale=10)
-    # 把debug_image保存到本地
-    debug_image.save('debug_image.png')
-    # 把mask_image保存到本地
-    mask_image.save('mask_image.png')
-    print(mask_grid)
-    print(grid_info)
+def get_font(font_family, font_size, font_weight="normal"):
+    """获取字体对象，处理各种字体格式和降级情况"""
+    # 从字体大小中提取数字部分
+    if isinstance(font_size, str):
+        font_size = int(font_size.replace('px', ''))
+    
+    try:
+        # 首先尝试加载系统字体
+        if font_weight == "bold":
+            font = ImageFont.truetype(font_family, size=font_size, weight="bold")
+        else:
+            font = ImageFont.truetype(font_family, size=font_size)
+    except (OSError, IOError):
+        try:
+            # 如果直接加载失败，尝试一些常见的系统字体
+            system_fonts = {
+                'Arial': '/usr/share/fonts/truetype/msttcorefonts/Arial.ttf',
+                'Times': '/usr/share/fonts/truetype/msttcorefonts/Times_New_Roman.ttf',
+                'Courier': '/usr/share/fonts/truetype/msttcorefonts/Courier_New.ttf',
+                'Verdana': '/usr/share/fonts/truetype/msttcorefonts/Verdana.ttf',
+                'Default': '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf'
+            }
+            
+            # 尝试匹配字体名称
+            for name, path in system_fonts.items():
+                if name.lower() in font_family.lower():
+                    font = ImageFont.truetype(path, size=font_size)
+                    return font
+            
+            # 如果没有匹配，使用默认字体
+            font = ImageFont.truetype(system_fonts['Default'], size=font_size)
+        except (OSError, IOError):
+            # 如果所有尝试都失败，使用PIL的默认字体并尝试调整大小
+            default_font = ImageFont.load_default()
+            
+            # PIL的默认字体不支持调整大小，所以我们必须警告用户
+            print(f"警告: 无法加载指定字体和大小 '{font_family}', {font_size}px。使用默认字体。")
+            font = default_font
+    
+    return font
+
+def split_text_into_lines(text, max_width, font_family="Arial", font_size=16, font_weight="normal"):
+    """将文本按照给定的宽度限制拆分成多行"""
+    # 创建临时图像用于测量文本宽度
+    img = Image.new('RGB', (1, 1), color=(255, 255, 255))
+    draw = ImageDraw.Draw(img)
+    
+    # 获取字体
+    font = get_font(font_family, font_size, font_weight)
+    
+    lines = []
+    
+    # 检测是否包含中文字符
+    has_chinese = any('\u4e00' <= char <= '\u9fff' for char in text)
+    
+    if has_chinese:
+        # 中文文本按字符切分
+        current_line = ("", 0)
+        for char in text:
+            test_line = current_line[0] + char
+            # 获取文本宽度
+            text_width = draw.textlength(test_line, font=font)
+            
+            if text_width <= max_width:
+                current_line = (test_line, text_width)
+            else:
+                lines.append(current_line)
+                current_line = (char, draw.textlength(char, font=font))
+        
+        # 添加最后一行
+        if current_line:
+            lines.append(current_line)
+    else:
+        # 英文文本按单词切分
+        words = text.split()
+        current_line = ("", 0)
+        
+        for word in words:
+            # 测试添加这个单词后是否超出宽度
+            test_line = current_line[0] + (" " if current_line[0] else "") + word
+            text_width = draw.textlength(test_line, font=font)
+            if text_width <= max_width:
+                current_line = (test_line, text_width)
+            else:
+                if current_line:
+                    lines.append(current_line)
+                current_line = (word, draw.textlength(word, font=font))
+                
+                # 检查单个单词是否超过最大宽度
+                if draw.textlength(word, font=font) > max_width:
+                    # 如果单个单词就超过宽度，则需要逐字分割
+                    word_line = ""
+                    for char in word:
+                        test_word_line = word_line + char
+                        if draw.textlength(test_word_line, font=font) <= max_width:
+                            word_line = test_word_line
+                        else:
+                            word_line = word_line + "-"
+                            lines.append((word_line, draw.textlength(word_line, font=font)))
+                            word_line = char
+                    
+                    if word_line:
+                        current_line = (word_line, draw.textlength(word_line, font=font))
+                        if current_line not in lines:
+                            lines.append(current_line)
+                            current_line = ("", 0)
+        
+        # 添加最后一行
+        if current_line:
+            lines.append(current_line)
+    
+    # 确保至少有一行
+    if not lines:
+        lines = [(text, draw.textlength(text, font=font))]
+            
+    return lines
 
 class TitleGenerator:
-    def __init__(self, json_data: Dict, max_width = 0):
+    def __init__(self, json_data: Dict, max_width = 0, text_align = "left", show_embellishment = True):
         self.json_data = json_data
         self.max_width = max_width
+        self.text_align = text_align  # 保留接口，但内部只实现左对齐
+        self.show_embellishment = show_embellishment
 
     def generate(self):
         self.main_title_svg, self.main_title_bounding_box = self.generate_main_title()
         self.description_svg, self.description_bounding_box = self.generate_description()
         primary_color = self.json_data['colors']['other']['primary']
-        self.embellishment_svg, self.embellishment_bounding_box = self.generate_embellishment(primary_color)
+        
+        if self.show_embellishment:
+            self.embellishment_svg, self.embellishment_bounding_box = self.generate_embellishment(primary_color)
+        else:
+            # 创建空的装饰块，不会显示在最终结果中
+            self.embellishment_svg = ""
+            self.embellishment_bounding_box = {
+                'width': 0, 'height': 0,
+                'min_x': 0, 'min_y': 0,
+                'max_x': 0, 'max_y': 0
+            }
+            
         return self.composite()
 
     def composite(self):
-        # 首先以main_title_svg为基准，通过调整description_svg的位置，使他们两个boundingbox的min_x相同，同时description_svg的min_y比main_title_svg的max_y大10
+        description_shift_y = self.main_title_bounding_box['max_y'] + 25 - self.description_bounding_box['min_y']
+        
+        # 左对齐情况下，直接使用标题的min_x作为基准
         description_shift_x = self.main_title_bounding_box['min_x'] - self.description_bounding_box['min_x']
-        description_shift_y = self.main_title_bounding_box['max_y'] + 10 - self.description_bounding_box['min_y']
-        # 通过添加transform属性，调整description_svg的位置
+        
         description_transform = f'translate({description_shift_x}, {description_shift_y})'
         self.description_svg = self.description_svg.replace('transform="', f'transform="{description_transform} ')
         self.description_bounding_box['min_x'] += description_shift_x
@@ -157,54 +200,70 @@ class TitleGenerator:
         self.description_bounding_box['max_x'] += description_shift_x
         self.description_bounding_box['max_y'] += description_shift_y
         
-        new_height = self.description_bounding_box['max_y'] - self.main_title_bounding_box['min_y']
-        old_height = self.embellishment_bounding_box['height']
-        old_width = self.embellishment_bounding_box['width']
-        scale = new_height / old_height
-        new_width = old_width * scale
+        # 如果显示装饰块，调整其位置和大小
+        if self.show_embellishment:
+            new_height = self.description_bounding_box['max_y'] - self.main_title_bounding_box['min_y']
+            old_height = self.embellishment_bounding_box['height']
+            old_width = self.embellishment_bounding_box['width']
+            scale = new_height / old_height
+            new_width = old_width * scale
+            
+            # 装饰块在左边
+            embellishment_shift_x = self.main_title_bounding_box['min_x'] - self.embellishment_bounding_box['min_x'] - new_width - 15
+            embellishment_shift_y = self.main_title_bounding_box['min_y'] - self.embellishment_bounding_box['min_y']
+            
+            # 通过添加transform属性，调整embellishment_svg的位置
+            embellishment_transform = f'translate({embellishment_shift_x}, {embellishment_shift_y})'
+            self.embellishment_svg = self.embellishment_svg.replace('transform="', f'transform="{embellishment_transform} ')
+            self.embellishment_bounding_box['min_x'] += embellishment_shift_x
+            self.embellishment_bounding_box['min_y'] += embellishment_shift_y
+            self.embellishment_bounding_box['max_x'] += embellishment_shift_x
+            self.embellishment_bounding_box['max_y'] += embellishment_shift_y
+            
+            old_width_text = self.embellishment_svg.split('width="')[1].split('"')[0]
+            old_height_text = self.embellishment_svg.split('height="')[1].split('"')[0]
+            new_width_text = str(int(float(old_width_text) * scale))
+            new_height_text = str(int(float(old_height_text) * scale))
+           
+            # 通过修改width和height，调整embellishment_svg的大小
+            self.embellishment_svg = self.embellishment_svg.replace(old_width_text, new_width_text)
+            self.embellishment_svg = self.embellishment_svg.replace(old_height_text, new_height_text)
+            
+            # Update embellishment bounding box with new dimensions after scaling
+            self.embellishment_bounding_box['width'] = float(new_width_text)
+            self.embellishment_bounding_box['height'] = float(new_height_text)
+            self.embellishment_bounding_box['max_x'] = self.embellishment_bounding_box['min_x'] + float(new_width_text)
+            self.embellishment_bounding_box['max_y'] = self.embellishment_bounding_box['min_y'] + float(new_height_text)
         
-        # 通过调整embellishment_svg的大小和位置，使embellishment_svg的min_y与main_title的min_y相同，同时embellishment_svg的max_y与description_svg的max_y相同
-        embellishment_shift_x = self.main_title_bounding_box['min_x'] - self.embellishment_bounding_box['min_x'] - new_width - 15
-        embellishment_shift_y = self.main_title_bounding_box['min_y'] - self.embellishment_bounding_box['min_y']
-        
-        # 通过添加transform属性，调整embellishment_svg的位置
-        embellishment_transform = f'translate({embellishment_shift_x}, {embellishment_shift_y})'
-        self.embellishment_svg = self.embellishment_svg.replace('transform="', f'transform="{embellishment_transform} ')
-        self.embellishment_bounding_box['min_x'] += embellishment_shift_x
-        self.embellishment_bounding_box['min_y'] += embellishment_shift_y
-        self.embellishment_bounding_box['max_x'] += embellishment_shift_x
-        self.embellishment_bounding_box['max_y'] += embellishment_shift_y
-        
-       
-        old_width_text = self.embellishment_svg.split('width="')[1].split('"')[0]
-        old_height_text = self.embellishment_svg.split('height="')[1].split('"')[0]
-        new_width_text = str(int(float(old_width_text) * scale))
-        new_height_text = str(int(float(old_height_text) * scale))
-       
-        # # 通过修改width和height，调整embellishment_svg的大小
-        self.embellishment_svg = self.embellishment_svg.replace(old_width_text, new_width_text)
-        self.embellishment_svg = self.embellishment_svg.replace(old_height_text, new_height_text)
-        
-
-        
-        min_x = min(self.embellishment_bounding_box['min_x'], self.main_title_bounding_box['min_x'], self.description_bounding_box['min_x'])
-        min_y = min(self.embellishment_bounding_box['min_y'], self.main_title_bounding_box['min_y'], self.description_bounding_box['min_y'])
-        max_x = max(self.embellishment_bounding_box['max_x'], self.main_title_bounding_box['max_x'], self.description_bounding_box['max_x'])
-        max_y = max(self.embellishment_bounding_box['max_y'], self.main_title_bounding_box['max_y'], self.description_bounding_box['max_y'])
-        
+        # 计算整体边界框
+        min_x = min(
+            self.main_title_bounding_box['min_x'], 
+            self.description_bounding_box['min_x'],
+            self.embellishment_bounding_box['min_x'] if self.show_embellishment else float('inf')
+        )
+        min_y = min(
+            self.main_title_bounding_box['min_y'], 
+            self.description_bounding_box['min_y'],
+            self.embellishment_bounding_box['min_y'] if self.show_embellishment else float('inf')
+        )
+        max_x = max(
+            self.main_title_bounding_box['max_x'], 
+            self.description_bounding_box['max_x'],
+            self.embellishment_bounding_box['max_x'] if self.show_embellishment else float('-inf')
+        )
+        max_y = max(
+            self.main_title_bounding_box['max_y'], 
+            self.description_bounding_box['max_y'],
+            self.embellishment_bounding_box['max_y'] if self.show_embellishment else float('-inf')
+        )
         
         group_left = f'<g class="title" transform="translate({-min_x}, {-min_y})">'
         group_right = '</g>'
         svg_left = f'<svg xmlns="http://www.w3.org/2000/svg" width="{max_x - min_x}" height="{max_y - min_y}" viewBox="0 0 {max_x - min_x} {max_y - min_y}">'
         svg_right = '</svg>'
         svg_content = svg_left + group_left + self.embellishment_svg + self.main_title_svg + self.description_svg + group_right + svg_right 
-        
-        save_group_left = f'<g class="title" transform="translate({50-min_x}, {100-min_y})">'
-        save_group_right = '</g>'
-        save_svg_content = svg_left + save_group_left + self.embellishment_svg + self.main_title_svg + self.description_svg + save_group_right + svg_right 
-        with open('result.svg', 'w') as f:
-            f.write(save_svg_content)
-        return svg_content, {
+            
+        final_bounding_box = {
             'width': max_x - min_x,
             'height': max_y - min_y,
             'min_x': 0,
@@ -212,30 +271,39 @@ class TitleGenerator:
             'max_x': max_x - min_x,
             'max_y': max_y - min_y
         }
+        
+        return svg_content, final_bounding_box
+
+    def generate_text_element(self, text: str, typography: Dict, max_width: int = 0, text_align: str = "left"):
+        """生成文本元素，包括SVG和边界框"""
+        text_svg = self.generate_one_line_text(typography, text)
+        
+        # 使用PIL直接测量文本尺寸
+        font_family = typography.get('font_family', 'Arial')
+        font_size = typography.get('font_size', '16px')
+        font_weight = typography.get('font_weight', 'normal')
+        
+        bounding_box = measure_text_bounds(text, font_family, font_size, font_weight)
+        print(f"Bounding box: {bounding_box}", "text: ", text)
+        print(f"Typography: {typography}")
+        
+        # 检查是否超出最大宽度，并且生成多行文本
+        if max_width > 0 and bounding_box['width'] > max_width:
+            text_svg, bounding_box = self.generate_multi_line_text(typography, text, max_width, text_align)
+        
+        return text_svg, bounding_box
 
     def generate_main_title(self):
+        """生成主标题"""
         main_title_text = self.json_data['metadata']['title']
         typography = self.json_data['typography']['title']
-        text_svg = self.generate_one_line_text(typography, main_title_text)
-        bounding_box = OCR_boundingbox(text_svg)
-        
-        # 检查是否超出最大宽度
-        if self.max_width > 0 and bounding_box['width'] > self.max_width:
-            text_svg, bounding_box = self.generate_multi_line_text(typography, main_title_text, self.max_width)
-        
-        return text_svg, bounding_box
+        return self.generate_text_element(main_title_text, typography, self.max_width, self.text_align)
 
     def generate_description(self):
+        """生成描述文本"""
         description_text = self.json_data['metadata']['description']
         typography = self.json_data['typography']['description']
-        text_svg = self.generate_one_line_text(typography, description_text)
-        bounding_box = OCR_boundingbox(text_svg)
-        
-        # 检查是否超出最大宽度
-        if self.max_width > 0 and bounding_box['width'] > self.max_width:
-            text_svg, bounding_box = self.generate_multi_line_text(typography, description_text, self.max_width)
-            
-        return text_svg, bounding_box
+        return self.generate_text_element(description_text, typography, self.max_width, self.text_align)
 
     def generate_embellishment(self, color = '#000000'):
         rect = f'<rect x="0" y="0" width="15" height="150" fill="{color}" transform="translate(0, 0)"></rect>'
@@ -253,62 +321,69 @@ class TitleGenerator:
         font_family = typography.get('font_family', 'Arial')
         font_size = typography.get('font_size', '16px')
         font_weight = typography.get('font_weight', 'normal')
-        text_left = f'<text style="font-family: {font_family}; font-size: {font_size}; font-weight: {font_weight};" transform="translate(0, 0)">'
+        
+        text_left = f'<text dominant-baseline="hanging" text-anchor="start" style="font-family: {font_family}; font-size: {font_size}; font-weight: {font_weight};" transform="translate(0, 0)">'
         text_right = '</text>'
         return text_left + text + text_right
 
-    def generate_multi_line_text(self, typography: Dict, text: str, max_width: int):
+    def generate_multi_line_text(self, typography: Dict, text: str, max_width: int, text_align: str = "left"):
         """生成多行文本，确保每行不超过最大宽度"""
         font_family = typography.get('font_family', 'Arial')
         font_size = typography.get('font_size', '16px')
         font_weight = typography.get('font_weight', 'normal')
         
-        # 尝试拆分文本
-        words = text.split()
-        lines = []
-        current_line = []
-        
-        for word in words:
-            # 测试添加这个词后的宽度
-            test_line = current_line + [word]
-            test_text = ' '.join(test_line)
-            
-            # 确保test_text至少有3个字符
-            if len(test_text) < 3:
-                current_line.append(word)
-                continue
-                
-            test_svg = self.generate_one_line_text(typography, test_text)
-            test_box = OCR_boundingbox(test_svg)
-            
-            if not current_line or test_box['width'] <= max_width:
-                current_line.append(word)
-            else:
-                # 确保当前行文本至少3个字符
-                current_text = ' '.join(current_line)
-                if len(current_text) >= 3:
-                    lines.append(current_text)
-                current_line = [word]
-        
-        # 添加最后一行
-        if current_line:
-            lines.append(' '.join(current_line))
+        # 使用拆分文本函数获取多行
+        lines = split_text_into_lines(text, max_width, font_family, font_size, font_weight)
+        # print(f"Width: {max_width}, Lines: {lines}")
         
         # 生成多行SVG
-        line_height = int(font_size.replace('px', '')) * 1.0  # 行高约为字体大小的1.2倍
+        if isinstance(font_size, str):
+            font_size_px = int(font_size.replace('px', ''))
+        else:
+            font_size_px = font_size
+            
+        line_height = font_size_px * 1.2  # 行高约为字体大小的1.2倍
         g_left = '<g>'
         text_content = ""
+
+        text_anchor = "start"
+        if text_align == "center":
+            text_anchor = "middle"
+        elif text_align == "right":
+            text_anchor = "end"
         
-        for i, line in enumerate(lines):
+        for i, (line, line_width) in enumerate(lines):
             y = i * line_height
+            x = 0
+            if text_align == "right":
+                x = max_width
+            elif text_align == "center":
+                x = max_width / 2
             text_style = f'style="font-family: {font_family}; font-size: {font_size}; font-weight: {font_weight};"'
-            text_content += f'<text {text_style} transform="translate(0, {y})">{line}</text>'
+            text_content += f'<text dominant-baseline="hanging" text-anchor="{text_anchor}" {text_style} transform="translate({x}, {y})">{line}</text>'
         
         g_right = '</g>'
         text_svg = g_left + text_content + g_right
         
         # 计算整体边界框
-        bounding_box = OCR_boundingbox(text_svg)
+        if len(lines) == 1:
+            bounding_box = measure_text_bounds(lines[0][0], font_family, font_size, font_weight)
+        else:
+            # 对于多行文本，计算整体边界框
+            max_line_width = 0
+            for (line, line_width) in lines:
+                max_line_width = max(max_line_width, line_width)
+                
+            total_height = line_height * (len(lines) - 1) + font_size_px
+            
+            bounding_box = {
+                'width': max_line_width,
+                'height': total_height,
+                'min_x': 0,
+                'min_y': 0,
+                'max_x': max_line_width,
+                'max_y': total_height
+            }
         
         return text_svg, bounding_box
     
@@ -317,7 +392,9 @@ def process(
     input: str = None,
     output: str = None,
     input_data: Dict = None,
-    max_width: int = 500
+    max_width: int = 500,
+    text_align: str = "left",
+    show_embellishment: bool = True
 ) -> Union[bool, str]:
     """
     Process function for generating styled title SVG from input data.
@@ -327,6 +404,8 @@ def process(
         output (str, optional): Path to the output SVG file.
         input_data (Dict, optional): Input data dictionary (alternative to file input).
         max_width (int, optional): Maximum width constraint for the title. Defaults to 500.
+        text_align (str, optional): Text alignment. Options: "left", "center", "right". Defaults to "left".
+        show_embellishment (bool, optional): Whether to show the decoration element. Defaults to True.
 
     Returns:
         Union[bool, str]:
@@ -344,7 +423,9 @@ def process(
             data = input_data
 
         # Generate the title SVG
-        title_generator = TitleGenerator(data, max_width=max_width)
+        title_generator = TitleGenerator(data, max_width=max_width, 
+                                         text_align=text_align, 
+                                         show_embellishment=show_embellishment)
         svg_content, bounding_box = title_generator.generate()
 
         if output:
@@ -364,13 +445,18 @@ def main():
     parser.add_argument('--input', '-i', type=str, required=True, help='Input JSON file path')
     parser.add_argument('--output', '-o', type=str, help='Output SVG file path')
     parser.add_argument('--max-width', '-w', type=int, default=500, help='Maximum width constraint for the title')
+    parser.add_argument('--text-align', '-a', type=str, default='left', choices=['left', 'center', 'right'],
+                        help='Text alignment: left, center, or right')
+    parser.add_argument('--no-embellishment', action='store_true', help='Hide the decoration element')
     
     args = parser.parse_args()
     
     success = process(
         input=args.input,
         output=args.output,
-        max_width=args.max_width
+        max_width=args.max_width,
+        text_align=args.text_align,
+        show_embellishment=not args.no_embellishment
     )
     
     if success:

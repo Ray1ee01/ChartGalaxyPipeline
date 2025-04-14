@@ -6,14 +6,14 @@ REQUIREMENTS_BEGIN
     "is_composite": false,
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],
-    "required_fields_range": [[2, 30], [0, 100]],
+    "required_fields_range": [[2, 30], [0, "inf"]],
     "required_fields_icons": [],
     "required_other_icons": [],
     "required_fields_colors": ["x"],
     "required_other_colors": ["primary"],
     "supported_effects": ["shadow", "radius_corner", "gradient", "stroke", "spacing"],
     "min_height": 400,
-    "min_width": 600,
+    "min_width": 400,
     "background": "no",
     "icon_mark": "none",
     "icon_label": "none",
@@ -93,11 +93,13 @@ function makeChart(containerSelector, data) {
     
     // 获取维度列表
     const dimensions = chartData.map(d => d[dimensionField]);
-    
-    // 确保所有数值在0-100范围内
-    chartData.forEach(d => {
-        d[valueField] = Math.max(0, Math.min(100, +d[valueField]));
-    });
+    const maxValue = d3.max(chartData, d => Math.abs(+d[valueField]));
+    if (maxValue > 100) {
+        // 确保所有数值在0-100范围内
+        chartData.forEach(d => {
+            d[valueField] = Math.max(1, Math.floor(+d[valueField] / maxValue * 100));
+        });
+    }
     
     // ---------- 5. 测量标签宽度和调整布局 ----------
     
@@ -287,6 +289,7 @@ function makeChart(containerSelector, data) {
                 .attr("y", 0)
                 .attr("width", innerWidth)
                 .attr("height", barHeight)
+                .attr("class","background")
                 .attr("fill", extensionColor)
                 .attr("rx", variables.has_rounded_corners ? 4 : 0)
                 .attr("ry", variables.has_rounded_corners ? 4 : 0);

@@ -6,14 +6,14 @@ REQUIREMENTS_BEGIN
     "is_composite": false,
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],
-    "required_fields_range": [[2, 30], [0, 100]],
-    "required_fields_icons": ["dimension"],
+    "required_fields_range": [[2, 30], [0, "inf"]],
+    "required_fields_icons": ["x"],
     "required_other_icons": [],
     "required_fields_colors": [],
     "required_other_colors": ["primary"],
     "supported_effects": ["shadow", "radius_corner", "gradient", "stroke", "spacing"],
     "min_height": 400,
-    "min_width": 600,
+    "min_width": 400,
     "background": "no",
     "icon_mark": "none",
     "icon_label": "side",
@@ -71,12 +71,19 @@ function makeChart(containerSelector, data) {
     const dimensionField = dataColumns.find(col => col.role === "x")?.name || "dimension";
     const valueField = dataColumns.find(col => col.role === "y")?.name || "value";
     
+    // 获取字段单位（如果存在）
+    let dimensionUnit = "";
+    let valueUnit = ""; // 默认为百分比
+    
+    if (dataColumns.find(col => col.role === "x").unit !== "none") {
+        dimensionUnit = dataColumns.find(col => col.role === "x").unit;
+    }
+    
+    if (dataColumns.find(col => col.role === "y").unit !== "none") {
+        valueUnit = dataColumns.find(col => col.role === "y").unit;
+    }
 
-    // 获取字段单位
-    let valueUnit = "";
     let valueUnit2 = "";
-    valueUnit = dataColumns.find(col => col.role === "y")?.unit === "none" ? "" : 
-                     dataColumns.find(col => col.role === "y")?.unit;
     valueUnit2 = dataColumns.find(col => col.role === "y2")?.unit === "none" ? "" : 
                      dataColumns.find(col => col.role === "y2")?.unit;
     

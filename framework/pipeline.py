@@ -28,7 +28,7 @@ from config import (
     image_resource_path
 )
 import random
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 
 # 配置日志
 logging.basicConfig(
@@ -153,7 +153,7 @@ def run_pipeline(input_path, output_path=None, temp_dir=None, modules_to_run=Non
             
             if threads and threads > 1:
                 # 使用线程池并行处理文件
-                with ThreadPoolExecutor(max_workers=threads) as executor:
+                with ProcessPoolExecutor(max_workers=threads) as executor:
                     futures = []
                     for input_file in input_files:
                         # 如果是inplace处理，输出路径就是输入路径
@@ -405,7 +405,7 @@ def should_skip_module(module_name: str, output_path: Path) -> bool:
             data = json.load(f)
             
         skip_conditions = {
-            "preprocess": lambda d: "metadata" in d and "data" in d,
+            "preprocess": lambda d: "metadata" in d and "data" in d and "variables" in d,
             "chart_type_recommender": lambda d: "chart_type" in d,
             "datafact_generator": lambda d: "datafacts" in d,
             "title_generator": lambda d: "titles" in d,
@@ -427,7 +427,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--input', type=str, help='Input json file path', default=None)
     parser.add_argument('--output', type=str, help='Output json file path', default=None)
-    parser.add_argument('--temp-dir', type=str, default='temp')
+    parser.add_argument('--temp-dir', type=str, default='tmp')
     parser.add_argument('--modules', type=str, nargs='+', help='Modules to run', required=True)
     parser.add_argument('--threads', type=int, help='Number of threads for directory processing', default=None)
     parser.add_argument('--chart-name', type=str, help='Specific chart name to use for infographics_generator', default=None)

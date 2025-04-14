@@ -1,7 +1,7 @@
 from modules.chart_engine.template.vegalite_py.bar.vertical_group_bar_chart_3 import VerticalGroupBarChart3
 from typing import Dict
-from modules.chart_engine.utils.element_tool.elements import *
-from modules.chart_engine.utils.element_tool.data_binder import get_content_from_axis_label, bind_data_to_element
+from modules.chart_engine.template.vegalite_py.utils.element_tool.elements import *
+from modules.chart_engine.template.vegalite_py.utils.element_tool.data_binder import get_content_from_axis_label, bind_data_to_element
 from modules.chart_engine.template.vegalite_py.utils.element_tool.variation import AxisLabelMark
 from modules.chart_engine.template.vegalite_py.utils.element_tool.image_processor import ImageProcessor
 """

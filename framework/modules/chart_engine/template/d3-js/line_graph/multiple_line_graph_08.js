@@ -5,12 +5,12 @@ REQUIREMENTS_BEGIN
     "chart_name": "multiple_line_graph_08",
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["temporal"], ["numerical"], ["categorical"]],
-    "required_fields_range": [[5, 30], [0, 100], [2, 7]],
+    "required_fields_range": [[5, 30], [0, "inf"], [2, 7]],
     "required_fields_icons": [],
     "required_other_icons": [],
     "required_fields_colors": ["group"],
-    "required_other_colors": ["primary"],
-    "supported_effects": ["gradient", "opacity"],
+    "required_other_colors": [],
+    "supported_effects": [],
     "min_height": 400,
     "min_width": 800,
     "background": "light",
@@ -56,7 +56,8 @@ function makeChart(containerSelector, data) {
         .attr("width", "100%")
         .attr("height", height)
         .attr("viewBox", `0 0 ${width} ${height}`)
-        .attr("xmlns", "http://www.w3.org/2000/svg");
+        .attr("xmlns", "http://www.w3.org/2000/svg")
+        .attr("xmlns:xlink", "http://www.w3.org/1999/xlink");
     
     // 创建渐变定义
     const defs = svg.append("defs");
@@ -90,23 +91,7 @@ function makeChart(containerSelector, data) {
     const g = svg.append("g")
         .attr("transform", `translate(${margin.left}, ${margin.top})`);
     
-    // 解析日期
-    const parseDate = d => {
-        if (typeof d === 'string') {
-            return new Date(d.split('/')[0]);
-        }
-        return new Date(d);
-    };
-    
-    // 获取所有日期并排序
-    const allDates = chartData.map(d => parseDate(d[xField]));
-    const minDate = d3.min(allDates);
-    const maxDate = d3.max(allDates);
-    
-    // 创建比例尺 - 修改X轴范围使第一个数据点位于最左侧
-    const xScale = d3.scaleTime()
-        .domain([minDate, maxDate])
-        .range([0, innerWidth]); // 从0开始，使第一个数据点位于最左侧
+    const { xScale, xTicks, xFormat, timeSpan } = createXAxisScaleAndTicks(chartData, xField, 0, innerWidth);
     
     const yScale = d3.scaleLinear()
         .domain([0, d3.max(chartData, d => d[yField]) * 1.1])
@@ -326,9 +311,6 @@ function makeChart(containerSelector, data) {
         .attr("opacity", 0.5)
         .attr("stroke-dasharray", "1,1");
     
-    // 获取刻度值
-    const xTicks = xScale.ticks(10);
-    
     // 添加刻度和标签
     xTicks.forEach(tick => {
         const x = xScale(tick);
@@ -352,7 +334,7 @@ function makeChart(containerSelector, data) {
             .style("font-size", "11px")
             .style("font-weight", "bold")
             .style("fill", "#333")
-            .text(d3.timeFormat("%Y")(tick));
+            .text(xFormat(tick));
     });
     
     // 添加水平网格线 - 实线，延伸到整个SVG两侧

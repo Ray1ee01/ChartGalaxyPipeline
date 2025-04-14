@@ -3,14 +3,15 @@ import torch
 import numpy as np
 from sentence_transformers import SentenceTransformer, util
 from lapjv import lapjv
-# from config import sentence_transformer_path as model_path
+import os
+from utils.model_loader import ModelLoader
+from config import sentence_transformer_path as model_path
 
 
 library_path = 'all_seeds.json'
-model_path = "/data1/jiashu/models/models--sentence-transformers--all-MiniLM-L6-v2/snapshots/fa97f6e7cb1a59073dff9e6b13e2715cf7475ac9"
 # model_path = "D:/VIS/Infographics/data/fa97f6e7cb1a59073dff9e6b13e2715cf7475ac9"
 
-model = SentenceTransformer(model_path)
+model = ModelLoader.get_model(model_path)
 
 def get_text_similarity(text1, text2):
     # 计算两个文本的余弦相似度
