@@ -417,7 +417,7 @@ function makeChart(containerSelector, data) {
     }
     
     // ---------- 12. 绘制条形和标记 ----------
-    
+    const barHeight = yScale.bandwidth();
     // 找到最右侧的刻度位置，用于连接线终点
     const rightmostTickX = xScale(xTicks[xTicks.length - 1]);
     
@@ -492,7 +492,7 @@ function makeChart(containerSelector, data) {
                 const tempTextGroup = svg.append("g").attr("visibility", "hidden");
                 const tempTextElem = tempTextGroup.append("text")
                     .style("font-family", typography.annotation.font_family)
-                    .style("font-size", typography.annotation.font_size)
+                    .style("font-size", `${Math.min(20,Math.max(barHeight * 0.6, parseFloat(typography.annotation.font_size)))}px`)
                     .style("font-weight", "bold")
                     .text(formattedValue);
                 
@@ -522,7 +522,7 @@ function makeChart(containerSelector, data) {
                     .attr("dy", "0.35em")
                     .attr("text-anchor", "middle")
                     .style("font-family", typography.annotation.font_family)
-                    .style("font-size", typography.annotation.font_size)
+                    .style("font-size", `${Math.min(20,Math.max(barHeight * 0.6, parseFloat(typography.annotation.font_size)))}px`)
                     .style("font-weight", "bold")
                     .style("fill", "white")
                     .text(formattedValue);

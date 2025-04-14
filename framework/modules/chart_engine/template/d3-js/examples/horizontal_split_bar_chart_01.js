@@ -424,7 +424,7 @@ function makeChart(containerSelector, data) {
             
             const tempText = g.append("text")
                 .style("font-family", typography.annotation.font_family)
-                .style("font-size", typography.annotation.font_size)
+                .style("font-size", `${Math.min(20,Math.max(barHeight * 0.6, parseFloat(typography.annotation.font_size)))}px`)
                 .style("font-weight", typography.annotation.font_weight)
                 .style("visibility", "hidden")
                 .text(formattedValue);
@@ -445,7 +445,7 @@ function makeChart(containerSelector, data) {
                     .attr("text-anchor", "end")
                     .style("fill", colors.text_color)
                     .style("font-family", typography.annotation.font_family)
-                    .style("font-size", typography.annotation.font_size)
+                    .style("font-size", `${Math.min(20,Math.max(barHeight * 0.6, parseFloat(typography.annotation.font_size)))}px`)
                     .style("font-weight", typography.annotation.font_weight)
                     .style("pointer-events", "none")
                     .text(formattedValue);
@@ -459,7 +459,7 @@ function makeChart(containerSelector, data) {
             //         .attr("text-anchor", "end")
             //         .style("fill", colors.text_color)
             //         .style("font-family", typography.annotation.font_family)
-            //         .style("font-size", typography.annotation.font_size)
+            //         .style("font-size", `${Math.min(20,Math.max(barHeight * 0.6, parseFloat(typography.annotation.font_size)))}px`)
             //         .style("font-weight", typography.annotation.font_weight)
             //         .style("pointer-events", "none")
             //         .text(formattedValue);
@@ -472,7 +472,7 @@ function makeChart(containerSelector, data) {
             //         .attr("text-anchor", "middle")
             //         .style("fill", "#ffffff")
             //         .style("font-family", typography.annotation.font_family)
-            //         .style("font-size", typography.annotation.font_size)
+            //         .style("font-size", `${Math.min(20,Math.max(barHeight * 0.6, parseFloat(typography.annotation.font_size)))}px`)
             //         .style("font-weight", typography.annotation.font_weight)
             //         .style("pointer-events", "none")
             //         .text(formattedValue);
@@ -537,7 +537,7 @@ function makeChart(containerSelector, data) {
             
             const tempText = g.append("text")
                 .style("font-family", typography.annotation.font_family)
-                .style("font-size", typography.annotation.font_size)
+                .style("font-size", `${Math.min(20,Math.max(barHeight * 0.6, parseFloat(typography.annotation.font_size)))}px`)
                 .style("font-weight", typography.annotation.font_weight)
                 .style("visibility", "hidden")
                 .text(formattedValue);
@@ -557,7 +557,7 @@ function makeChart(containerSelector, data) {
                     .attr("text-anchor", "start")
                     .style("fill", colors.text_color)
                     .style("font-family", typography.annotation.font_family)
-                    .style("font-size", typography.annotation.font_size)
+                    .style("font-size", `${Math.min(20,Math.max(barHeight * 0.6, parseFloat(typography.annotation.font_size)))}px`)
                     .style("font-weight", typography.annotation.font_weight)
                     .style("pointer-events", "none")
                     .text(formattedValue);
@@ -570,7 +570,7 @@ function makeChart(containerSelector, data) {
             //         .attr("text-anchor", "start")
             //         .style("fill", colors.text_color)
             //         .style("font-family", typography.annotation.font_family)
-            //         .style("font-size", typography.annotation.font_size)
+            //         .style("font-size", `${Math.min(20,Math.max(barHeight * 0.6, parseFloat(typography.annotation.font_size)))}px`)
             //         .style("font-weight", typography.annotation.font_weight)
             //         .style("pointer-events", "none")
             //         .text(formattedValue);
@@ -583,7 +583,7 @@ function makeChart(containerSelector, data) {
             //         .attr("text-anchor", "middle")
             //         .style("fill", "#ffffff")
             //         .style("font-family", typography.annotation.font_family)
-            //         .style("font-size", typography.annotation.font_size)
+            //         .style("font-size", `${Math.min(20,Math.max(barHeight * 0.6, parseFloat(typography.annotation.font_size)))}px`)
             //         .style("font-weight", typography.annotation.font_weight)
             //         .style("pointer-events", "none")
             //         .text(formattedValue);

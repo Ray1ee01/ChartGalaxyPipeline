@@ -349,7 +349,7 @@ function makeChart(containerSelector, data) {
             // 创建临时文本测量数值标签宽度
             const tempValueText = svg.append("text")
                 .style("font-family", typography.annotation.font_family)
-                .style("font-size", typography.annotation.font_size)
+                .style("font-size", `${Math.min(20,Math.max(barHeight * 0.6, parseFloat(typography.annotation.font_size)))}px`)
                 .style("font-weight", typography.annotation.font_weight)
                 .text(formattedValue);
             
@@ -368,7 +368,7 @@ function makeChart(containerSelector, data) {
                     .attr("dy", "0.35em") // 垂直居中
                     .attr("text-anchor", "start")
                     .style("font-family", typography.annotation.font_family)
-                    .style("font-size", typography.annotation.font_size)
+                    .style("font-size", `${Math.min(20,Math.max(barHeight * 0.6, parseFloat(typography.annotation.font_size)))}px`)
                     .style("font-weight", typography.annotation.font_weight)
                     .style("fill", "#FFFFFF") // 白色
                     .text(formattedValue);
@@ -380,7 +380,7 @@ function makeChart(containerSelector, data) {
                     .attr("dy", "0.35em") // 垂直居中
                     .attr("text-anchor", "end")
                     .style("font-family", typography.annotation.font_family)
-                    .style("font-size", typography.annotation.font_size)
+                    .style("font-size", `${Math.min(20,Math.max(barHeight * 0.6, parseFloat(typography.annotation.font_size)))}px`)
                     .style("font-weight", typography.annotation.font_weight)
                     .style("fill", colors.text_color || "#333333") // 使用文本颜色
                     .text(formattedValue);
