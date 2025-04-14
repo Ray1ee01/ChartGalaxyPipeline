@@ -5,7 +5,7 @@ REQUIREMENTS_BEGIN
     "chart_name": "proportional_square_area_chart_01",
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],
-    "required_fields_range": [[2, 10], [0, "inf"]],
+    "required_fields_range": [[4, 10], [0, 100]],
     "required_fields_icons": [],
     "required_other_icons": [],
     "required_fields_colors": [],
@@ -273,7 +273,7 @@ function makeChart(containerSelector, data) {
                 .attr("fill", primaryColor)
                 .attr("font-weight", "bold")
                 .style("font-size", `${Math.max(14, squareSize / 8)}px`)
-                .text(`${percentage}%`);
+                .text(`${Number(percentage).toFixed(1)}%`);
         } else {
             // 其他矩形：上边界向右延伸
             const extensionX = isFirstSquare ? squareSize + extensionLength + extraExtension : squareSize + extensionLength;
@@ -295,7 +295,7 @@ function makeChart(containerSelector, data) {
                 .attr("fill", primaryColor)
                 .attr("font-weight", "bold")
                 .style("font-size", `${Math.max(14, squareSize / 8)}px`)
-                .text(`${percentage}%`);
+                .text(`${Number(percentage).toFixed(1)}%`);
             
             // 第一个矩形：额外添加yfield name
             if (isFirstSquare) {
@@ -333,7 +333,7 @@ function makeChart(containerSelector, data) {
                 .attr("fill", secondaryColor)
                 .attr("font-weight", "bold")
                 .style("font-size", `${Math.max(14, squareSize / 8)}px`)
-                .text(`${inversePercentage}%`);
+                .text(`${Number(inversePercentage).toFixed(1)}%`);
         } else {
             // 其他矩形：下边界向左延伸
             squareGroup.append("line")
@@ -353,7 +353,7 @@ function makeChart(containerSelector, data) {
                 .attr("fill", secondaryColor)
                 .attr("font-weight", "bold")
                 .style("font-size", `${Math.max(14, squareSize / 8)}px`)
-                .text(`${inversePercentage}%`);
+                .text(`${Number(inversePercentage).toFixed(1)}%`);
         }
     });
     

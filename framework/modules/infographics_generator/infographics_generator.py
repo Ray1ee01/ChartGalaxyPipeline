@@ -4,10 +4,6 @@ import sys
 from typing import Dict, Optional, List, Tuple, Set, Union
 from logging import getLogger
 import logging
-import random
-from lxml import etree
-import subprocess
-from PIL import Image
 import time
 import numpy as np
 from numpy.lib.stride_tricks import as_strided
@@ -39,7 +35,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from modules.chart_engine.chart_engine import load_data_from_json, get_template_for_chart_name, render_chart_to_svg
 from modules.chart_engine.template.template_registry import scan_templates
 from modules.title_styler.title_styler import process as title_styler_process
-from modules.infographics_generator.mask_utils import calculate_mask, calculate_content_height, calculate_content_width
+from modules.infographics_generator.mask_utils import calculate_mask, calculate_content_height, calculate_content_width, calculate_bbox
 from modules.infographics_generator.svg_utils import extract_svg_content, remove_large_rects, get_svg_actual_bbox
 from modules.infographics_generator.image_utils import find_best_size_and_position
 from modules.infographics_generator.template_utils import (
@@ -55,6 +51,86 @@ padding = 50
 outer_padding = 15
 between_padding = 45
 grid_size = 5
+
+'''
+def make_infographic(
+    data: Dict,
+    chart_svg_content: str,
+    chart_info: Dict,
+    padding: int,
+    between_padding: int
+) -> str:
+    chart_width = chart_info["width"]
+    chart_height = chart_info["height"]
+    chart_left = chart_info["left"]
+    chart_top = chart_info["top"]
+
+    title_inner_content = extract_svg_content(title_svg_content)
+    if title_inner_content is None:
+        logger.error("Failed to extract title SVG content")
+        return None, None, 0
+        
+    chart_inner_content = extract_svg_content(chart_svg_content)
+    if chart_inner_content is None:
+        logger.error("Failed to extract chart SVG content")
+        return None, None, 0
+    
+    total_width = chart_width + padding * 2
+
+    drawing_padding = 100
+    title_mask = calculate_mask(title_svg_content, total_width, 500, drawing_padding)
+    title_start, title_end, title_height = calculate_content_height(title_mask, drawing_padding)
+    title_left, title_right, title_width = calculate_content_width(title_mask, drawing_padding)
+    
+    chart_mask = calculate_mask(chart_svg_content, total_width, chart_height + padding * 2, drawing_padding)
+    new_chart_start, chart_end, new_chart_height = calculate_content_height(chart_mask, drawing_padding)
+    new_chart_left, chart_right, new_chart_width = calculate_content_width(chart_mask, drawing_padding)
+    
+    chart_start = min(chart_top, new_chart_start)
+    chart_left = max(-padding, min(chart_left, new_chart_left))
+    chart_height = max(chart_height, new_chart_height)
+    chart_width = max(chart_width, new_chart_width)
+
+    total_width = max(title_width, chart_width) + padding * 2
+    
+    title_inner_content = f"<g transform='translate({-title_left}, {-title_start})'>{title_inner_content}</g>"
+    chart_inner_content = f"<g transform='translate({-chart_left}, {-chart_start})'>{chart_inner_content}</g>"
+    
+    total_height = chart_height + title_height + between_padding + outer_padding * 2
+    total_width = chart_width + padding * 2
+    
+    final_svg = f"""<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="{total_width}" height="{total_height + 100}" style="font-family: Arial, 'Liberation Sans', 'DejaVu Sans', sans-serif;">
+    <g class="text" transform="translate({outer_padding}, {outer_padding})">{title_inner_content}</g>
+    <g class="chart" transform="translate({outer_padding}, {outer_padding + title_height + between_padding})">{chart_inner_content}</g>"""
+    original_mask = calculate_mask(final_svg + "\n</svg>", total_width, total_height, 0)
+    
+    # 处理primary图片
+    if primary_image:
+        if "base64," not in primary_image:
+            primary_image = f"data:image/png;base64,{primary_image}"
+        
+        image_size, best_x, best_y = find_best_size_and_position(original_mask, primary_image, padding)
+        image_size -= between_padding * 2
+        best_x += between_padding
+        best_y += between_padding
+        if image_size > 100:
+            image_element = f"""
+        <image
+            class="image"
+            x="{best_x}"
+            y="{best_y}"
+            width="{image_size}"
+            height="{image_size}"
+            preserveAspectRatio="none"
+            href="{primary_image}"
+        />"""
+            final_svg += image_element
+    
+    # 关闭SVG标签
+    final_svg += "\n</svg>"
+    
+    return final_svg
+'''
 
 def assemble_infographic(
     title_svg_content: str,
@@ -267,101 +343,98 @@ def process(input: str, output: str, base_url: str, api_key: str, chart_name: st
     # 渲染图表
     render_chart_start = time.time()
 
-    try:
-        render_chart_to_svg(
-            json_data=data,
-            output_svg_path=chart_svg_path,
-            js_file=template,
-            framework=framework, # Extract framework name (echarts/d3)
-            framework_type=framework_type
-        )
-        render_chart_time = time.time() - render_chart_start
-        logger.info(f"Rendering chart took: {render_chart_time:.4f} seconds")
-            
-        # 读取生成的SVG内容
-        read_svg_start = time.time()
+    #try:
+    render_chart_to_svg(
+        json_data=data,
+        output_svg_path=chart_svg_path,
+        js_file=template,
+        framework=framework, # Extract framework name (echarts/d3)
+        framework_type=framework_type
+    )
+    render_chart_time = time.time() - render_chart_start
+    logger.info(f"Rendering chart took: {render_chart_time:.4f} seconds")
         
-        with open(chart_svg_path, "r", encoding="utf-8") as f:
-            chart_svg_content = f.read()
-            if "This is a fallback SVG using a PNG screenshot" in chart_svg_content:
-                return False
-            chart_inner_content = extract_svg_content(chart_svg_content)
-            chart_outer_content = f"<svg \
-                width='{data['variables']['width']}' \
-                height='{data['variables']['height']}' \
-                xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'> \
-                {chart_inner_content}</svg>"
-            with open(chart_svg_path, "w", encoding="utf-8") as f:
-                f.write(chart_outer_content)
-                f.close()
-            
-            # 检查并删除大型rect
-            # chart_svg_content = remove_large_rects(chart_svg_content)
+    # 读取生成的SVG内容
+    read_svg_start = time.time()
+    
+    with open(chart_svg_path, "r", encoding="utf-8") as f:
+        chart_svg_content = f.read()
+        if "This is a fallback SVG using a PNG screenshot" in chart_svg_content:
+            return False
+        chart_inner_content = extract_svg_content(chart_svg_content)
+        chart_outer_content = f"<svg \
+            width='{data['variables']['width']}' \
+            height='{data['variables']['height']}' \
+            xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'> \
+            {chart_inner_content}</svg>"
+        with open(chart_svg_path, "w", encoding="utf-8") as f:
+            f.write(chart_outer_content)
+            f.close()
+    
+    bbox = get_svg_actual_bbox(chart_svg_path)
+    print("bbox", bbox)
+    read_svg_time = time.time() - read_svg_start
+    # logger.info(f"Reading and processing SVG took: {read_svg_time:.4f} seconds")
         
-        bbox = get_svg_actual_bbox(chart_svg_path)
-        print("bbox", bbox)
-        read_svg_time = time.time() - read_svg_start
-        # logger.info(f"Reading and processing SVG took: {read_svg_time:.4f} seconds")
-            
-        # print(bbox)
-        chart_left = bbox["min_x"]
-        chart_top = bbox["min_y"]
-        chart_width = bbox["max_x"] - bbox["min_x"]
-        chart_height = bbox["max_y"] - bbox["min_y"]
-        
-        # 生成标题SVG
-        title_svg_start = time.time()
+    # print(bbox)
+    chart_left = bbox["min_x"]
+    chart_top = bbox["min_y"]
+    chart_width = bbox["max_x"] - bbox["min_x"]
+    chart_height = bbox["max_y"] - bbox["min_y"]
+    
+    # 生成标题SVG
+    title_svg_start = time.time()
 
-        # TODO add more style for title
-        title_width = min(600, chart_width - padding * 2)
-        title_svg_content = title_styler_process(input_data=data, max_width=title_width)
-        if not title_svg_content:
-            logger.error("Failed to generate title SVG")
-            return False
-        title_svg_time = time.time() - title_svg_start
-        logger.info(f"Generating title SVG took: {title_svg_time:.4f} seconds")
-        
-        # 获取primary图片
-        primary_image = data.get("images", {}).get("other", {}).get("primary")
-        
-        print("try to assemble infographic")
-        assemble_start = time.time()
-        final_svg, original_mask, total_height = assemble_infographic(
-            title_svg_content=title_svg_content,
-            chart_svg_content=chart_svg_content,
-            chart_info={
-                "left": chart_left,
-                "top": chart_top,
-                "width": chart_width,
-                "height": chart_height
-            },
-            padding=padding,
-            between_padding=between_padding,
-            primary_image=primary_image
-        )
-        assemble_time = time.time() - assemble_start
-        logger.info(f"Assembling infographic took: {assemble_time:.4f} seconds")
-        
-        if final_svg is None:
-            logger.error("Failed to assemble infographic: SVG content extraction failed")
-            return False
-        
-        # 获取当前时间戳
-        timestamp = int(time.time())
-        output_dir = os.path.dirname(output)
-        output_filename = os.path.basename(output)        
-        new_filename = f"{timestamp}_{chart_name}_{os.path.splitext(output_filename)[0]}.svg"        
-        output_path = os.path.join(output_dir, new_filename)
-        
-        # 保存最终的SVG
-        save_start = time.time()
-        with open(output_path, "w", encoding="utf-8") as f:
-            f.write(final_svg)
-        save_time = time.time() - save_start
-        # logger.info(f"Saving final SVG took: {save_time:.4f} seconds")
-    except Exception as e:
-        logger.error(f"Error processing infographics: {e}")
+    # TODO add more style for title
+    title_width = min(600, chart_width - padding * 2)
+    title_svg_content = title_styler_process(input_data=data, max_width=title_width, text_align="center")
+    if not title_svg_content:
+        logger.error("Failed to generate title SVG")
         return False
+    title_svg_time = time.time() - title_svg_start
+    logger.info(f"Generating title SVG took: {title_svg_time:.4f} seconds")
+    
+    # 获取primary图片
+    primary_image = data.get("images", {}).get("other", {}).get("primary")
+    
+    print("try to assemble infographic")
+    assemble_start = time.time()
+    final_svg, original_mask, total_height = assemble_infographic(
+        title_svg_content=title_svg_content,
+        chart_svg_content=chart_svg_content,
+        chart_info={
+            "left": chart_left,
+            "top": chart_top,
+            "width": chart_width,
+            "height": chart_height
+        },
+        padding=padding,
+        between_padding=between_padding,
+        primary_image=primary_image
+    )
+    assemble_time = time.time() - assemble_start
+    logger.info(f"Assembling infographic took: {assemble_time:.4f} seconds")
+    
+    if final_svg is None:
+        logger.error("Failed to assemble infographic: SVG content extraction failed")
+        return False
+    
+    # 获取当前时间戳
+    timestamp = int(time.time())
+    output_dir = os.path.dirname(output)
+    output_filename = os.path.basename(output)        
+    new_filename = f"{timestamp}_{chart_name}_{os.path.splitext(output_filename)[0]}.svg"        
+    output_path = os.path.join(output_dir, new_filename)
+    
+    # 保存最终的SVG
+    save_start = time.time()
+    with open(output_path, "w", encoding="utf-8") as f:
+        f.write(final_svg)
+    save_time = time.time() - save_start
+    # logger.info(f"Saving final SVG took: {save_time:.4f} seconds")
+    # except Exception as e:
+    #     logger.error(f"Error processing infographics: {e}")
+    #     return False
     
     try:
         os.remove(chart_svg_path)

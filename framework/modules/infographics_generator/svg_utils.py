@@ -48,6 +48,10 @@ def get_svg_actual_bbox(svg_path):
     tree = etree.parse(svg_path)
     root = tree.getroot()
 
+    # 获取SVG的原始宽度和高度
+    svg_width = float(root.get('width', '0').replace('px', ''))
+    svg_height = float(root.get('height', '0').replace('px', ''))
+
     min_x, min_y = float('inf'), float('inf')
     max_x, max_y = float('-inf'), float('-inf')
 
@@ -69,10 +73,17 @@ def get_svg_actual_bbox(svg_path):
                 total_dx += dx
                 total_dy += dy
             parent = current.getparent()
-            if parent is None or current == root:
+            if current == root:
                 break
             current = parent
         return total_dx, total_dy
+
+    def parse_percentage(value, base):
+        """解析百分比值，返回实际数值"""
+        if isinstance(value, str) and '%' in value:
+            percentage = float(value.replace('%', '')) / 100
+            return base * percentage
+        return float(value)
 
     for elem in root.iter():
         tag = elem.tag.split('}')[-1]
@@ -85,27 +96,27 @@ def get_svg_actual_bbox(svg_path):
             if fill == 'none' and not has_stroke:
                 continue  # 忽略这个矩形
                 
-            x = float(elem.get('x', 0)) + dx
-            y = float(elem.get('y', 0)) + dy
-            w = float(elem.get('width', 0))
-            h = float(elem.get('height', 0))
+            x = parse_percentage(elem.get('x', '0'), svg_width) + dx
+            y = parse_percentage(elem.get('y', '0'), svg_height) + dy
+            w = parse_percentage(elem.get('width', '0'), svg_width)
+            h = parse_percentage(elem.get('height', '0'), svg_height)
             update_bounds([x, x + w], [y, y + h])
         elif tag == 'circle':
-            cx = float(elem.get('cx', 0)) + dx
-            cy = float(elem.get('cy', 0)) + dy
-            r = float(elem.get('r', 0))
+            cx = parse_percentage(elem.get('cx', '0'), svg_width) + dx
+            cy = parse_percentage(elem.get('cy', '0'), svg_height) + dy
+            r = parse_percentage(elem.get('r', '0'), svg_width)
             update_bounds([cx - r, cx + r], [cy - r, cy + r])
         elif tag == 'ellipse':
-            cx = float(elem.get('cx', 0)) + dx
-            cy = float(elem.get('cy', 0)) + dy
-            rx = float(elem.get('rx', 0))
-            ry = float(elem.get('ry', 0))
+            cx = parse_percentage(elem.get('cx', '0'), svg_width) + dx
+            cy = parse_percentage(elem.get('cy', '0'), svg_height) + dy
+            rx = parse_percentage(elem.get('rx', '0'), svg_width)
+            ry = parse_percentage(elem.get('ry', '0'), svg_height)
             update_bounds([cx - rx, cx + rx], [cy - ry, cy + ry])
         elif tag == 'line':
-            x1 = float(elem.get('x1', 0)) + dx
-            y1 = float(elem.get('y1', 0)) + dy
-            x2 = float(elem.get('x2', 0)) + dx
-            y2 = float(elem.get('y2', 0)) + dy
+            x1 = parse_percentage(elem.get('x1', '0'), svg_width) + dx
+            y1 = parse_percentage(elem.get('y1', '0'), svg_height) + dy
+            x2 = parse_percentage(elem.get('x2', '0'), svg_width) + dx
+            y2 = parse_percentage(elem.get('y2', '0'), svg_height) + dy
             update_bounds([x1, x2], [y1, y2])
         elif tag == 'path':
             d = elem.get('d')
@@ -122,8 +133,8 @@ def get_svg_actual_bbox(svg_path):
                     # 处理无效路径
                     print(f"Error parsing path: {e}")
         elif tag == 'text':
-            x = float(elem.get('x', 0)) + dx
-            y = float(elem.get('y', 0)) + dy
+            x = parse_percentage(elem.get('x', '0'), svg_width) + dx
+            y = parse_percentage(elem.get('y', '0'), svg_height) + dy
             font_size_str = elem.get('font-size', '16')
             font_size = float(font_size_str.replace('px', '')) if 'px' in font_size_str else float(font_size_str)
             text_len = len(elem.text or "")

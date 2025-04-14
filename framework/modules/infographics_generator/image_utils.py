@@ -21,7 +21,7 @@ def find_best_size_and_position(main_mask: np.ndarray, image_content: str, paddi
     mask_image = Image.fromarray((main_mask * 255).astype(np.uint8))
     mask_image.save('tmp/main_mask.png')
     
-    grid_size = 5  # 使用与calculate_mask相同的网格大小
+    grid_size = 5
     
     # 将main_mask降采样到1/grid_size大小
     h, w = main_mask.shape

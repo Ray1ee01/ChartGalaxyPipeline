@@ -5,6 +5,7 @@ import re
 from PIL import Image
 import numpy as np
 from typing import Tuple
+
 def calculate_mask(svg_content: str, width: int, height: int, padding: int, grid_size: int = 5, bg_threshold: float = 220) -> np.ndarray:
     """将SVG转换为二值化的mask数组"""
     width = int(width)
@@ -86,6 +87,14 @@ def calculate_mask(svg_content: str, width: int, height: int, padding: int, grid
             os.remove(mask_svg)
         if os.path.exists(temp_mask_png):
             os.remove(temp_mask_png)
+
+def calculate_bbox(mask: np.ndarray) -> Tuple[int, int, int, int]:
+    """计算mask的bbox"""
+    rows = np.sum(mask == 1, axis=1) > 0
+    cols = np.sum(mask == 1, axis=0) > 0
+    row_indices = np.where(rows)[0]
+    col_indices = np.where(cols)[0]
+    return row_indices[0], col_indices[0], row_indices[-1], col_indices[-1]
 
 def calculate_content_width(mask: np.ndarray, padding: int = 0) -> Tuple[int, int, int]:
     """计算mask中内容的实际宽度范围"""

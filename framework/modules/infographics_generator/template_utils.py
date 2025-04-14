@@ -73,6 +73,8 @@ def analyze_templates(templates: Dict) -> Tuple[int, Dict[str, str], int]:
                     
     return template_count, template_requirements
 
+block_list = ["multiple_line_graph_06", "layered_area_chart_02", "multiple_area_chart_01", "stacked_area_chart_01", "stacked_area_chart_03"]
+
 def check_template_compatibility(data: Dict, templates: Dict, specific_chart_name: str = None) -> List[str]:
     """Check which templates are compatible with the given data"""
     compatible_templates = []
@@ -86,6 +88,8 @@ def check_template_compatibility(data: Dict, templates: Dict, specific_chart_nam
         for chart_type, chart_names_dict in templates_dict.items():
             for chart_name, template_info in chart_names_dict.items():
                 if 'base' in chart_name:
+                    continue
+                if chart_name in block_list:
                     continue
                 if engine == 'vegalite_py':
                     if 'line' in chart_name or 'donut' in chart_name or 'pie' in chart_name or 'area' in chart_name:
