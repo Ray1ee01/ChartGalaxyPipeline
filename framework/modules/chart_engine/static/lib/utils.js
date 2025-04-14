@@ -168,4 +168,171 @@ const getTextWidth = (text, fontSize) => {
     return width;
 };
 
+/**
+ * 智能排版图例，将多个图例元素自动排布成多行
+ * @param {Object} g - D3 选择的 SVG 组元素，用于放置图例
+ * @param {Array} groups - 组名数组
+ * @param {Object} colors - 颜色对象，包含 field 属性
+ * @param {Object} options - 配置选项
+ * @param {number} options.maxWidth - 每行最大宽度
+ * @param {number} options.x - 图例起始 x 坐标
+ * @param {number} options.y - 图例起始 y 坐标
+ * @param {number} options.itemHeight - 每个图例项的高度
+ * @param {number} options.itemSpacing - 图例项之间的水平间距
+ * @param {number} options.rowSpacing - 行之间的垂直间距
+ * @param {number} options.symbolSize - 图例符号大小
+ * @param {string} options.textColor - 文本颜色
+ * @param {number} options.fontSize - 字体大小
+ * @param {string} options.fontWeight - 字体粗细
+ * @param {string} options.align - 对齐方式：'left', 'center', 'right'
+ * @param {string} options.shape - 图例形状：'circle', 'rect', 'line'
+ * @returns {Object} 包含图例尺寸信息的对象 {width, height}
+ */
+const layoutLegend = (g, groups, colors, options = {}) => {
+    // 默认选项
+    const defaults = {
+        maxWidth: 500,
+        x: 0,
+        y: 0,
+        itemHeight: 20,
+        itemSpacing: 20,
+        rowSpacing: 10,
+        symbolSize: 10,
+        textColor: "#333",
+        fontSize: 12,
+        fontWeight: "normal",
+        align: "left",
+        shape: "circle" // 默认形状为圆形
+    };
+    
+    // 合并选项
+    const opts = {...defaults, ...options};
+    
+    // 创建临时文本元素测量文本宽度
+    const tempText = g.append("text")
+        .attr("visibility", "hidden")
+        .style("font-size", `${opts.fontSize}px`)
+        .style("font-weight", opts.fontWeight);
+    
+    // 计算每个图例项的宽度
+    const itemWidths = groups.map(group => {
+        tempText.text(group);
+        // 符号宽度 + 文本宽度 + 间距
+        return opts.symbolSize * 2 + tempText.node().getComputedTextLength() + 5;
+    });
+    
+    // 移除临时文本
+    tempText.remove();
+    
+    // 排布图例项到多行
+    const rows = [];
+    let currentRow = [];
+    let currentRowWidth = 0;
+    
+    itemWidths.forEach((width, i) => {
+        // 如果当前行为空或添加此项后不超过最大宽度，则添加到当前行
+        if (currentRow.length === 0 || currentRowWidth + width + opts.itemSpacing <= opts.maxWidth) {
+            currentRow.push(i);
+            currentRowWidth += width + (currentRow.length > 1 ? opts.itemSpacing : 0);
+        } else {
+            // 否则开始新行
+            rows.push(currentRow);
+            currentRow = [i];
+            currentRowWidth = width;
+        }
+    });
+    
+    // 添加最后一行
+    if (currentRow.length > 0) {
+        rows.push(currentRow);
+    }
+    
+    // 计算总高度和最大行宽
+    const totalHeight = rows.length * opts.itemHeight + (rows.length - 1) * opts.rowSpacing;
+    const maxRowWidth = Math.max(...rows.map(row => {
+        return row.reduce((sum, i, idx) => {
+            return sum + itemWidths[i] + (idx > 0 ? opts.itemSpacing : 0);
+        }, 0);
+    }));
+    
+    // 绘制图例
+    rows.forEach((row, rowIndex) => {
+        // 计算行起始位置（根据对齐方式）
+        const rowWidth = row.reduce((sum, i, idx) => {
+            return sum + itemWidths[i] + (idx > 0 ? opts.itemSpacing : 0);
+        }, 0);
+        
+        let rowStartX;
+        if (opts.align === "center") {
+            rowStartX = opts.x + (opts.maxWidth - rowWidth) / 2;
+        } else if (opts.align === "right") {
+            rowStartX = opts.x + opts.maxWidth - rowWidth;
+        } else {
+            rowStartX = opts.x;
+        }
+        
+        // 绘制当前行的图例项
+        let currentX = rowStartX;
+        row.forEach(i => {
+            const group = groups[i];
+            const color = colors.field && colors.field[group] 
+                ? colors.field[group] 
+                : d3.schemeCategory10[i % 10]; // 备用颜色
+                
+            const legendGroup = g.append("g")
+                .attr("transform", `translate(${currentX}, ${opts.y + rowIndex * (opts.itemHeight + opts.rowSpacing)})`);
+            
+            // 绘制图例符号
+            if (opts.shape === "circle") {
+                legendGroup.append("circle")
+                    .attr("cx", opts.symbolSize / 2)
+                    .attr("cy", opts.itemHeight / 2)
+                    .attr("r", opts.symbolSize / 2)
+                    .attr("fill", color);
+            } else if (opts.shape === "rect") {
+                legendGroup.append("rect")
+                    .attr("x", 0)
+                    .attr("y", opts.itemHeight / 2 - opts.symbolSize / 2)
+                    .attr("width", opts.symbolSize)
+                    .attr("height", opts.symbolSize)
+                    .attr("fill", color);
+            } else if (opts.shape === "line") {
+                legendGroup.append("line")
+                    .attr("x1", 0)
+                    .attr("y1", opts.itemHeight / 2)
+                    .attr("x2", opts.symbolSize)
+                    .attr("y2", opts.itemHeight / 2)
+                    .attr("stroke", color)
+                    .attr("stroke-width", 4);
+            } else {
+                // 默认为圆形
+                legendGroup.append("circle")
+                    .attr("cx", opts.symbolSize / 2)
+                    .attr("cy", opts.itemHeight / 2)
+                    .attr("r", opts.symbolSize / 2)
+                    .attr("fill", color);
+            }
+            
+            // 绘制图例文本
+            legendGroup.append("text")
+                .attr("x", opts.symbolSize * 1.5)
+                .attr("y", opts.itemHeight / 2)
+                .attr("dominant-baseline", "middle")
+                .attr("fill", opts.textColor)
+                .style("font-size", `${opts.fontSize}px`)
+                .style("font-weight", opts.fontWeight)
+                .text(group);
+            
+            // 更新 x 位置
+            currentX += itemWidths[i] + opts.itemSpacing;
+        });
+    });
+    
+    // 返回图例尺寸信息
+    return {
+        width: maxRowWidth,
+        height: totalHeight
+    };
+};
+
 

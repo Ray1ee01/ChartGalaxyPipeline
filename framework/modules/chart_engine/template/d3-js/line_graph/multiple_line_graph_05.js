@@ -28,7 +28,7 @@ function makeChart(containerSelector, data) {
     const chartData = jsonData.data.data;
     const variables = jsonData.variables;
     const typography = jsonData.typography;
-    const colors = jsonData.colors || {};
+    const colors = jsonData.colors_dark || {};
     const dataColumns = jsonData.data.columns || [];
     const images = jsonData.images || {};
     
@@ -156,8 +156,8 @@ function makeChart(containerSelector, data) {
         
         // 添加标题和图片
         subplot.append("text")
-            .attr("x", subplotMargin.left + 30)
-            .attr("y", 30)
+            .attr("x", subplotMargin.left + 40)
+            .attr("y", 32)
             .attr("text-anchor", "start")
             .style("font-family", 'Impact')
             .style("font-size", "24px")
@@ -174,9 +174,9 @@ function makeChart(containerSelector, data) {
             defs.append("mask")
                 .attr("id", maskId)
                 .append("circle")
-                .attr("cx", 12)
-                .attr("cy", 12)
-                .attr("r", 13)
+                .attr("cx", 18)
+                .attr("cy", 18)
+                .attr("r", 19.5)
                 .attr("fill", "white");
             
             // 获取图片的base64数据
@@ -184,13 +184,13 @@ function makeChart(containerSelector, data) {
             
             // 创建图片容器组
             const imgGroup = subplot.append("g")
-                .attr("transform", `translate(${subplotMargin.left}, 9)`);
+                .attr("transform", `translate(${subplotMargin.left}, 7)`);
             
             // 添加白色圆形边框
             imgGroup.append("circle")
-                .attr("cx", 12)
-                .attr("cy", 12)
-                .attr("r", 13)
+                .attr("cx", 18)
+                .attr("cy", 18)
+                .attr("r", 19.5)
                 .attr("fill", "none")
                 .attr("stroke", "white")
                 .attr("stroke-width", 1);
@@ -199,8 +199,8 @@ function makeChart(containerSelector, data) {
             imgGroup.append("image")
                 .attr("x", 0)
                 .attr("y", 0)
-                .attr("width", 24)
-                .attr("height", 24)
+                .attr("width", 36)
+                .attr("height", 36)
                 .attr("mask", `url(#${maskId})`)
                 .attr("xlink:href", imgData);
         }
@@ -255,7 +255,7 @@ function makeChart(containerSelector, data) {
         g.append("path")
             .datum(groupData)
             .attr("fill", "none")
-            .attr("stroke", "#4aa7c8") // 蓝色
+            .attr("stroke", colors.field[group]) // 蓝色
             .attr("stroke-width", 2.5)
             .attr("d", line);
         
