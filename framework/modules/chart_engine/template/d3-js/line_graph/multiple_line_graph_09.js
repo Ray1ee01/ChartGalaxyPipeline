@@ -366,7 +366,7 @@ function makeChart(containerSelector, data) {
     });
     
     // 居中legend
-    legendGroup.attr("transform", `translate(${(chartWidth - legendSize.width) / 2}, ${-maxYTickPosition - 30 - legendSize.height/2})`);
+    legendGroup.attr("transform", `translate(${(chartWidth - legendSize.width) / 2}, ${maxYTickPosition - 50 - legendSize.height/2})`);
     
     // 添加数据标注函数 - 文本放在线条上方，不加粗
     function addDataLabel(point, isStart) {

@@ -75,7 +75,7 @@ function makeChart(containerSelector, data) {
     const yMax = d3.max(chartData, d => d[yField]);
     
     // 为了美观，稍微扩展Y轴范围
-    const yPadding = (yMax - yMin) * 0.1;
+    const yPadding = (yMax - yMin) * 0.3;
     const yDomainMax = yMax + yPadding;
     const yDomainMin = Math.max(0, yMin - yPadding); // 确保下限不小于0
     
@@ -270,7 +270,6 @@ function makeChart(containerSelector, data) {
     drawLabels(endLabelPositions);
     
     // 添加图例 - 整体居中，向上移动
-    const legendY = 10; // 更靠近顶部
     const legendGroup = g.append("g");
     
     const legendSize = layoutLegend(legendGroup, groups, colors, {
@@ -282,9 +281,11 @@ function makeChart(containerSelector, data) {
         maxWidth: chartWidth,
         shape: "line",
     });
+
+    const maxYTickPosition = yScale(yTicks[yTicks.length - 1]);
     
     // 居中legend
-    legendGroup.attr("transform", `translate(${(chartWidth - legendSize.width) / 2}, ${-maxYTickPosition - 30 - legendSize.height/2})`);
+    legendGroup.attr("transform", `translate(${(chartWidth - legendSize.width) / 2}, ${maxYTickPosition - 50 - legendSize.height/2})`);
     
     return svg.node();
 }

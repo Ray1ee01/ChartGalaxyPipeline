@@ -303,7 +303,7 @@ const layoutLegend = (g, groups, colors, options = {}) => {
                     .attr("x2", opts.symbolSize)
                     .attr("y2", opts.itemHeight / 2)
                     .attr("stroke", color)
-                    .attr("stroke-width", 2);
+                    .attr("stroke-width", 4);
             } else {
                 // 默认为圆形
                 legendGroup.append("circle")
