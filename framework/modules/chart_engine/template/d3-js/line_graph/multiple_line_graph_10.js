@@ -271,45 +271,20 @@ function makeChart(containerSelector, data) {
     
     // 添加图例 - 整体居中，向上移动
     const legendY = 10; // 更靠近顶部
-    const legendLineWidth = 30; // 线段宽度
-    const legendTextPadding = 5; // 文本与线段的间距
-    const legendItemPadding = 25; // 图例项之间的间距
+    const legendGroup = g.append("g");
     
-    // 计算每个图例项的宽度
-    const legendWidths = groups.map(group => {
-        return legendLineWidth + legendTextPadding + getTextWidth(group, 14);
+    const legendSize = layoutLegend(legendGroup, groups, colors, {
+        x: 0,
+        y: 0,
+        fontSize: 14,
+        fontWeight: "bold",
+        align: "left",
+        maxWidth: chartWidth,
+        shape: "line",
     });
     
-    // 计算图例总宽度
-    const totalLegendWidth = legendWidths.reduce((sum, width) => sum + width + legendItemPadding, 0) - legendItemPadding;
-    
-    // 计算图例起始位置，使其居中
-    let legendStartX = (chartWidth - totalLegendWidth) / 2;
-    
-    // 为每个组添加图例
-    groups.forEach((group, i) => {
-        const color = colors.field[group];
-        
-        // 使用短线段而不是圆点
-        g.append("line")
-            .attr("x1", legendStartX)
-            .attr("y1", legendY)
-            .attr("x2", legendStartX + legendLineWidth)
-            .attr("y2", legendY)
-            .attr("stroke", color)
-            .attr("stroke-width", 4);
-        
-        g.append("text")
-            .attr("x", legendStartX + legendLineWidth + legendTextPadding)
-            .attr("y", legendY)
-            .attr("dominant-baseline", "middle")
-            .attr("fill", "#333")
-            .style("font-size", "16px")
-            .text(group);
-            
-        // 更新下一个图例项的起始位置
-        legendStartX += legendWidths[i] + legendItemPadding;
-    });
+    // 居中legend
+    legendGroup.attr("transform", `translate(${(chartWidth - legendSize.width) / 2}, ${-maxYTickPosition - 30 - legendSize.height/2})`);
     
     return svg.node();
 }

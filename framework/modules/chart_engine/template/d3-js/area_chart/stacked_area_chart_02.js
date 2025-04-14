@@ -323,61 +323,34 @@ function makeChart(containerSelector, data) {
     const legendGroup = g.append("g")
         .attr("transform", `translate(0, -50)`);
     
-    // 设置图例的共同y坐标
-    const legendY = 10;
     
-    // 计算所有组名的总宽度
-    const groupNameWidths = groups.map(group => group.length * 10); // 每个字符10px
-    const totalGroupWidth = groupNameWidths.reduce((a, b) => a + b, 0);
-    const totalPadding = groups.length * 20; // 每组间隔40px
-    const totalWidth = totalGroupWidth + totalPadding;
     
-    // 计算图例起始x坐标,使图例整体居中
-    const startX = (chartWidth - totalWidth) / 2;
-    
+    // 计算字段名宽度并添加间距
+    const titleWidth = groupField.length * 10;
+    const titleMargin = 15;
+
+    const legendSize = layoutLegend(legendGroup, groups, colors, {
+        x: titleWidth + titleMargin,
+        y: 0,
+        fontSize: 14,
+        fontWeight: "bold",
+        align: "left",
+        maxWidth: chartWidth - titleWidth - titleMargin,
+        shape: "rect",
+    });
+
     // 添加字段名称
     legendGroup.append("text")
-        .attr("x", startX)
-        .attr("y", legendY)
+        .attr("x", 0)
+        .attr("y", legendSize.height / 2)
         .attr("dominant-baseline", "middle")
         .attr("fill", "#333")
         .style("font-size", "16px")
         .style("font-weight", "bold")
         .text(groupField);
     
-    // 计算字段名宽度并添加间距
-    const titleWidth = groupField.length * 10;
-    const titleMargin = 15;
-    
-    // 添加各组图例 - 水平排列
-    let currentX = startX + titleWidth + titleMargin;
-    
-    groups.forEach((group, i) => {
-        const color = colors.field && colors.field[group] 
-            ? colors.field[group] 
-            : d3.schemeCategory10[i % 10];
-        
-        // 绘制颜色方块
-        legendGroup.append("rect")
-            .attr("x", currentX)
-            .attr("y", legendY - 10)
-            .attr("width", 20)
-            .attr("height", 20)
-            .attr("fill", color);
-        
-        // 添加组名文本
-        legendGroup.append("text")
-            .attr("x", currentX + 20)
-            .attr("y", legendY)
-            .attr("dominant-baseline", "middle")
-            .attr("fill", "#333")
-            .attr("font-weight", "bold")
-            .style("font-size", "14px")
-            .text(group);
-            
-        // 更新下一组的起始位置
-        currentX += groupNameWidths[i] + 20; // 文本宽度 + 40px间距
-    });
+    // 将图例组向上移动 height/2, 并居中
+    legendGroup.attr("transform", `translate(${(chartWidth - legendSize.width - titleWidth - titleMargin) / 2}, ${-50 - legendSize.height/2})`);
     
     return svg.node();
 } 
