@@ -75,8 +75,8 @@ def gridient_primary_secondary_y(json_data: Dict) -> Dict:
     for data_column in json_data['data']['columns']:
         if data_column['role'] == 'y':
             y_column = data_column['name']
-    primary_color = json_data['colors']['othter']['primary']
-    secondary_color = json_data['colors']['othter']['secondary']
+    primary_color = json_data['colors']['other']['primary']
+    secondary_color = json_data['colors']['other']['secondary']
     y_values = []
     for item in json_data['data']['data']:
         y_values.append(item[y_column])

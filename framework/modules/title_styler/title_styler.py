@@ -284,8 +284,6 @@ class TitleGenerator:
         font_weight = typography.get('font_weight', 'normal')
         
         bounding_box = measure_text_bounds(text, font_family, font_size, font_weight)
-        print(f"Bounding box: {bounding_box}", "text: ", text)
-        print(f"Typography: {typography}")
         
         # 检查是否超出最大宽度，并且生成多行文本
         if max_width > 0 and bounding_box['width'] > max_width:
@@ -334,7 +332,6 @@ class TitleGenerator:
         
         # 使用拆分文本函数获取多行
         lines = split_text_into_lines(text, max_width, font_family, font_size, font_weight)
-        # print(f"Width: {max_width}, Lines: {lines}")
         
         # 生成多行SVG
         if isinstance(font_size, str):
