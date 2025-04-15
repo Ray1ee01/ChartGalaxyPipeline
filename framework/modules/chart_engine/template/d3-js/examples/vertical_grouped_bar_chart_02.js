@@ -6,7 +6,11 @@ REQUIREMENTS_BEGIN
     "is_composite": false,
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
+<<<<<<< HEAD
     "required_fields_range": [[2, 10], [0, "inf"], [3, 3]],
+=======
+    "required_fields_range": [[2, 10], [0, "inf"], [2, 2]],
+>>>>>>> origin/develop-bowen-barchart
     "required_fields_icons": [],
     "required_other_icons": [],
     "required_fields_colors": ["group"],
@@ -106,16 +110,14 @@ function makeChart(containerSelector, data) {
     const xValues = [...new Set(useData.map(d => d[xField]))];
     let groupValues = [...new Set(useData.map(d => d[groupField]))];
     
-    
-    // 如果组的数量不符合要求，给出警告
-    if (groupValues.length !== 3) {
-        console.warn("此图表需要恰好3个组字段：2个用于柱状图，1个用于百分比变化。");
+    // 确保我们只有两个组字段：第一个组是左侧柱子，第二个组是右侧柱子
+    if (groupValues.length !== 2) {
+        console.warn("此图表需要恰好2个组字段：用于左侧和右侧柱状图。");
     }
     
-    // 第一个组是左侧柱子，第二个组是右侧柱子，第三个组是百分比变化
+    // 第一个组是左侧柱子，第二个组是右侧柱子
     const leftBarGroup = groupValues[0];
     const rightBarGroup = groupValues[1];
-    const percentageGroup = groupValues[2];
     
     // ---------- 5. 创建SVG容器 ----------
     const svg = d3.select(containerSelector)
@@ -171,20 +173,23 @@ function makeChart(containerSelector, data) {
     
     // Y比例尺（数值）
     // 找出数据中的最大值
-    const dataMax = d3.max(useData.filter(d => d[groupField] !== percentageGroup), d => +d[yField]) || 100;
+    const dataMax = d3.max(useData, d => +d[yField]) ;
+    // 找出数据中的最小值
+    const dataMin = d3.min(useData, d => +d[yField]) ;
     // 向上取整到最接近的合适的刻度
     let yMax;
-    if (dataMax <= 10) yMax = 10;
-    else if (dataMax <= 20) yMax = 20;
-    else if (dataMax <= 50) yMax = 50;
-    else if (dataMax <= 100) yMax = 100;
-    else if (dataMax <= 500) yMax = 500;
-    else if (dataMax <= 1000) yMax = 1000;
-    else if (dataMax <= 2000) yMax = 2000;
-    else yMax = Math.ceil(dataMax / 500) * 500;
+    yMax = Math.ceil(dataMax * 1.2 / 10) * 10; // 向上取整到最接近的10的倍数
+    let yMin;
+    if (dataMin < 0) {
+        yMin = Math.floor(dataMin * 1.2 / 10) * 10; // 向下取整到最接近的10的倍数
+    }
+    else {
+        yMin = 0; // 如果没有负值，则从0开始
+    }
+    
     
     const yScale = d3.scaleLinear()
-        .domain([0, yMax])
+        .domain([yMin, yMax])
         .range([innerHeight, 0]);
     
     // 计算动态文本大小的函数
@@ -217,19 +222,101 @@ function makeChart(containerSelector, data) {
         .call(d3.axisBottom(xScale).tickSize(0))
         .call(g => {
             g.select(".domain").remove();
+            
+            // 第一步：找出最长的标签并计算统一的字体大小
+            let maxLabelLength = 0;
+            const allLabels = [];
+            
+            // 收集所有标签并找出最长的一个
+            g.selectAll(".tick text").each(function(d) {
+                const labelText = d.toString();
+                allLabels.push(labelText);
+                if (labelText.length > maxLabelLength) {
+                    maxLabelLength = labelText.length;
+                }
+            });
+            
+            // 使用最长标签计算合适的统一字体大小
+            const maxWidth = xScale.bandwidth() ; 
+            const longestLabel = allLabels.reduce((a, b) => a.length > b.length ? a : b, "");
+            const uniformFontSize = calculateFontSize(longestLabel, maxWidth);
+            
+            // 第二步：应用统一字体大小，必要时进行换行处理
             g.selectAll(".tick text")
                 .style("font-family", typography.label.font_family)
-                .style("font-size", (d) => {
-                    if (!shouldShowLabel(d.toString())) {
-                        return "0px"; // 隐藏文本
-                    }
-                    return `${calculateFontSize(d.toString(), xScale.bandwidth() * 2)}px`;
-                })
+                .style("font-size", `${uniformFontSize}px`) // 应用统一的字体大小
                 .style("font-weight", typography.label.font_weight)
-                .style("fill", colors.text_color);
+                .style("fill", colors.text_color)
+                .each(function(d) {
+                    const text = d3.select(this);
+                    
+                    // 检查使用统一字体大小后，文本是否仍然超过可用宽度
+                    if (this.getComputedTextLength() > maxWidth) {
+                        // 如果仍然太长，应用文本换行
+                        wrapText(text, d.toString(), maxWidth, 1.1);
+                    }
+                });
         });
     
-    
+    // 文本换行助手函数
+    function wrapText(text, str, width, lineHeight) {
+        const words = str.split(/\s+/).reverse();
+        let word;
+        let line = [];
+        let lineNumber = 0;
+        const y = text.attr("y");
+        const dy = parseFloat(text.attr("dy") || 0);
+        let tspan = text.text(null).append("tspan")
+            .attr("x", 0)
+            .attr("y", y)
+            .attr("dy", dy + "em");
+        
+        // 如果没有空格可分割，按字符分割
+        if (words.length <= 1) {
+            const chars = str.split('');
+            let currentLine = '';
+            
+            for (let i = 0; i < chars.length; i++) {
+                currentLine += chars[i];
+                tspan.text(currentLine);
+                
+                if (tspan.node().getComputedTextLength() > width && currentLine.length > 1) {
+                    // 当前行过长，回退一个字符并换行
+                    currentLine = currentLine.slice(0, -1);
+                    tspan.text(currentLine);
+                    
+                    // 创建新行
+                    currentLine = chars[i];
+                    tspan = text.append("tspan")
+                        .attr("x", 0)
+                        .attr("y", y)
+                        .attr("dy", ++lineNumber * lineHeight + dy + "em")
+                        .text(currentLine);
+                }
+            }
+        } else {
+            while (word = words.pop()) {
+                line.push(word);
+                tspan.text(line.join(" "));
+                
+                if (tspan.node().getComputedTextLength() > width && line.length > 1) {
+                    line.pop();
+                    tspan.text(line.join(" "));
+                    line = [word];
+                    tspan = text.append("tspan")
+                        .attr("x", 0)
+                        .attr("y", y)
+                        .attr("dy", ++lineNumber * lineHeight + dy + "em")
+                        .text(word);
+                }
+            }
+        }
+        
+        // 调整标签位置以保持居中
+        if (lineNumber > 0) {
+            text.selectAll("tspan").attr("y", parseFloat(y) + 5);
+        }
+    }
     
     // 左侧的Y轴
     chart.append("g")
@@ -335,8 +422,17 @@ function makeChart(containerSelector, data) {
         // 获取右侧柱子的数据（2012年销售额）
         const rightBarData = xData.find(d => d[groupField] === rightBarGroup);
         
-        // 获取百分比变化数据
-        const percentageData = xData.find(d => d[groupField] === percentageGroup);
+        // 计算百分比变化
+        let percentValue = 0;
+        if (leftBarData && rightBarData) {
+            const leftValue = leftBarData[yField];
+            const rightValue = rightBarData[yField];
+            
+            // 计算百分比变化：(新值-旧值)/旧值 * 100
+            if (leftValue !== 0) {
+                percentValue = Math.round(((rightValue - leftValue) / leftValue) * 100);
+            }
+        }
         
         // 计算左侧柱子的位置和高度
         if (leftBarData) {
@@ -373,10 +469,9 @@ function makeChart(containerSelector, data) {
         }
         
         // 绘制百分比变化指示器
-        if (percentageData) {
-            const percentValue = percentageData[yField];
+        if (leftBarData && rightBarData) {
             const percentText = percentValue <= 0 ? `${percentValue}%` : `+${percentValue}%`;
-            const percentColor = colors.field[percentageGroup] || colors.other.percentage_indicator || "#C0392B";
+            const percentColor = colors.other.percentage_indicator || "#C0392B";
             
             // 计算两个柱子的中心位置，确保三角形指向正确位置
             const leftBarCenter = xScale(xValue) + groupScale.bandwidth() / 2;
@@ -389,7 +484,7 @@ function makeChart(containerSelector, data) {
                 .attr("transform", `translate(${centerBetweenBars}, 0)`);
             
             // 计算百分比指示器的位置
-            const indicatorWidth = 2 * groupScale.bandwidth();  // 指示器宽度
+            const indicatorWidth = Math.min(2 * groupScale.bandwidth(),40);  // 指示器宽度
             const indicatorHeight = indicatorWidth / 2;  // 指示器高度
             const triangleHeight = indicatorHeight * 0.8;   // 三角形高度
             

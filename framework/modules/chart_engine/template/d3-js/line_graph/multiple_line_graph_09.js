@@ -353,34 +353,20 @@ function makeChart(containerSelector, data) {
     });
     
     // 添加图例 - 整体居中，放在最大Y轴刻度上方
-    const legendY = maxYTickPosition - 20; // 最大Y轴刻度上方20像素
-    const legendItemWidth = 120; // 每个图例项的宽度
+    const legendGroup = g.append("g");
     
-    // 计算图例的总宽度
-    const totalLegendWidth = groups.length * legendItemWidth;
-    
-    // 计算图例的起始X位置，使其居中
-    const legendStartX = (chartWidth - totalLegendWidth) / 2;
-    
-    // 为每个组添加图例
-    groups.forEach((group, i) => {
-        const color = colorScale(group);
-        const legendX = legendStartX + i * legendItemWidth;
-        
-        g.append("circle")
-            .attr("cx", legendX)
-            .attr("cy", legendY)
-            .attr("r", 6)
-            .attr("fill", color);
-        
-        g.append("text")
-            .attr("x", legendX + 15)
-            .attr("y", legendY)
-            .attr("dominant-baseline", "middle")
-            .attr("fill", "#333")
-            .style("font-size", "14px")
-            .text(group);
+    const legendSize = layoutLegend(legendGroup, groups, colors, {
+        x: 0,
+        y: 0,
+        fontSize: 14,
+        fontWeight: "bold",
+        align: "left",
+        maxWidth: chartWidth,
+        shape: "circle",
     });
+    
+    // 居中legend
+    legendGroup.attr("transform", `translate(${(chartWidth - legendSize.width) / 2}, ${maxYTickPosition - 50 - legendSize.height/2})`);
     
     // 添加数据标注函数 - 文本放在线条上方，不加粗
     function addDataLabel(point, isStart) {

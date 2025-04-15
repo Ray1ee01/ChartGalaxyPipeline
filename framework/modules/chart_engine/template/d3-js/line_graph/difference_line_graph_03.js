@@ -345,61 +345,30 @@ function makeChart(containerSelector, data) {
     });
     
     // 添加图例 - 整体居中，放在最大Y轴刻度上方
+    const legendGroup = g.append("g")
+        .attr("transform", `translate(0, -50)`);
     
-    // 计算每个图例项的宽度(圆形 + 间距 + 文本)
-    const legendItems = selectedGroups.map(group => ({
-        group: group,
-        width: 6 * 2 + 15 + getTextWidth(group, 14) + 10 // 圆形直径 + 间距 + 文本宽度 + 右侧间距
-    }));
+    const group_names = [lowestGroup, highestGroup, `${lowestGroup}/${highestGroup}`];
+    const colors_legend = {
+        field: {
+            [lowestGroup]: lowColor,
+            [highestGroup]: highColor,
+            [`${lowestGroup}/${highestGroup}`]: circleColor,
+        }
+    }
     
-    // 计算图例的总宽度
-    const totalLegendWidth = legendItems.reduce((sum, item) => sum + item.width, 0);
-    
-    // 计算图例的起始X位置，使其居中
-    const legendStartX = 10;
-    
-    // 为选中的两个组添加图例
-    let currentX = legendStartX;
-    legendItems.forEach((item, i) => {
-        const color = colorScale(item.group);
-        
-        g.append("circle")
-            .attr("cx", currentX)
-            .attr("cy", legendY)
-            .attr("r", 6)
-            .attr("fill", color);
-        
-        g.append("text")
-            .attr("x", currentX + 15)
-            .attr("y", legendY)
-            .attr("dominant-baseline", "middle")
-            .attr("fill", "#333")
-            .style("font-size", "14px")
-            .text(item.group);
-            
-        currentX += item.width;
+    const legendSize = layoutLegend(legendGroup, group_names, colors_legend, {
+        x: 0,
+        y: 0,
+        fontSize: 14,
+        fontWeight: "bold",
+        align: "left",
+        maxWidth: chartWidth,
+        shape: "circle",
     });
-    
-    // 添加比值图例
-    const ratioLegendY = legendY;
-    const ratioLegendX = legendStartX + totalLegendWidth + 10;
-    
-    // 添加比值图例的圆形示例
-    const sampleRadius = 6;
-    g.append("circle")
-        .attr("cx", ratioLegendX)
-        .attr("cy", ratioLegendY)
-        .attr("r", sampleRadius)
-        .attr("fill", circleColor.toString());
-    
-    // 添加比值图例的文本
-    g.append("text")
-        .attr("x", ratioLegendX + sampleRadius + 10)
-        .attr("y", ratioLegendY)
-        .attr("dominant-baseline", "middle")
-        .attr("fill", "#333")
-        .style("font-size", "14px")
-        .text(`${lowestGroup}/${highestGroup}`);
+
+    // 居中legend
+    legendGroup.attr("transform", `translate(${(chartWidth - legendSize.width) / 2}, ${-50 - legendSize.height/2})`);
     
     // 添加每个X刻度的比值，使用圆形背景
     ratios.forEach((ratio, i) => {
