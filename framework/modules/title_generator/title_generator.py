@@ -4,11 +4,17 @@ import faiss
 import numpy as np
 from tqdm import tqdm
 import argparse
-
+import logging
 from typing import Any, Dict, List, Tuple, Union
-
 from openai import OpenAI
-from sentence_transformers import SentenceTransformer
+from utils.model_loader import ModelLoader
+
+# 配置日志
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger("RagTitleGenerator")
 
 class RagTitleGenerator:
     """
@@ -38,9 +44,11 @@ class RagTitleGenerator:
         self.index_path = index_path
         self.data_path = data_path
         if embed_model_path:
-            self.embed_model = SentenceTransformer(embed_model_path)
+            self.embed_model = ModelLoader.get_model(embed_model_path)
         else:
-            self.embed_model = SentenceTransformer("all-MiniLM-L6-v2")
+            print("fuck")
+        #else:
+        #    self.embed_model = SentenceTransformer("all-MiniLM-L6-v2")
 
         self.index = None
         self.training_data = []  # List of tuples: (input_text, title, description)
@@ -62,38 +70,32 @@ class RagTitleGenerator:
         else:
             print("No existing FAISS index found; you can build a new one via build_faiss_index().")
 
-    def build_faiss_index(
-        self,
-        data_json_path: str
-    ) -> None:
-        """
-        Build (or rebuild) the FAISS index using the entire dataset in the given JSON file.
-        The JSON file should contain a dictionary, where each key corresponds to a unique
-        identifier, and its value is a data dictionary with relevant fields (metadata, etc.).
+    def build_faiss_index(self, data_json_path):
+        """Build a FAISS index from a JSON dataset of chart data."""
+        try:
+            if not os.path.exists(data_json_path):
+                raise ValueError(f"Provided data_json_path {data_json_path} does not exist.")
 
-        NOTE: This method removes the existing index/data in memory and on disk, then creates a new one.
+            # Remove existing index
+            self.clear_faiss_data()
 
-        Args:
-            data_json_path (str): The path to the JSON file containing all training data.
-        """
-        if not os.path.exists(data_json_path):
-            raise ValueError(f"Provided data_json_path {data_json_path} does not exist.")
+            # Load the entire dataset from JSON
+            with open(data_json_path, "r", encoding="utf-8") as f:
+                dataset = json.load(f)
+            print("dataset", type(dataset))
+            # Build the FAISS index from scratch
+            if isinstance(dataset, dict):
+                for name, details in tqdm(dataset.items(), desc="Building new FAISS index"):
+                    processed_text = self.process_single_data(details)
+                    title = details.get("metadata", {}).get("title", "")
+                    description = details.get("metadata", {}).get("description", "")
+                    self.add_training_data(processed_text, title, description)
+            else:
+                raise ValueError("Dataset must be a dictionary")
 
-        # Remove existing index
-        self.clear_faiss_data()
-
-        # Load the entire dataset from JSON
-        with open(data_json_path, "r", encoding="utf-8") as f:
-            dataset = json.load(f)
-
-        # Build the FAISS index from scratch
-        for name, details in tqdm(dataset.items(), desc="Building new FAISS index"):
-            processed_text = self.process_single_data(details)
-            title = details.get("metadata", {}).get("title", "")
-            description = details.get("metadata", {}).get("description", "")
-            self.add_training_data(processed_text, title, description)
-
-        print("FAISS index building completed!")
+        except Exception as e:
+            logger.error(f"处理记录时出错: {str(e)}")
+            raise
 
     def clear_faiss_data(self) -> None:
         """Remove existing FAISS index and training data from disk."""
@@ -122,8 +124,8 @@ class RagTitleGenerator:
         metadata = data.get("metadata", {})
         chart_type = data.get("chart_type", [])
         datafacts = data.get("datafacts", [])
-        data_columns = data.get("data_columns", [])
-        chart_data = data.get("data", [])
+        data_columns = data["data"].get("columns", [])
+        chart_data = data["data"].get("data", [])
 
         main_insight = metadata.get("main_insight", "")
 
