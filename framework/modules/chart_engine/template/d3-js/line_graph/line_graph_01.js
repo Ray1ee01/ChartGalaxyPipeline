@@ -5,7 +5,7 @@ REQUIREMENTS_BEGIN
     "chart_name": "line_graph_01",
     "required_fields": ["x", "y"],
     "required_fields_type": [["temporal"], ["numerical"]],
-    "required_fields_range": [[4, 15], [0, 1000]],
+    "required_fields_range": [[4, 20], [0, "inf"]],
     "required_fields_icons": [],
     "required_other_icons": [],
     "required_fields_colors": [],

@@ -5,7 +5,7 @@ REQUIREMENTS_BEGIN
     "chart_name": "difference_line_graph_02",
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["temporal"], ["numerical"], ["categorical"]],
-    "required_fields_range": [[5, 50], [0, 1000], [2, 2]],
+    "required_fields_range": [[5, 50], [0, "inf"], [2, 2]],
     "required_fields_icons": ["group"],
     "required_other_icons": [],
     "required_fields_colors": ["group"],

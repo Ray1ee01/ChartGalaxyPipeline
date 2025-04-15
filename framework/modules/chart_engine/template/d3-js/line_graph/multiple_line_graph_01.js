@@ -5,7 +5,7 @@ REQUIREMENTS_BEGIN
     "chart_name": "multiple_line_graph_01",
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["temporal"], ["numerical"], ["categorical"]],
-    "required_fields_range": [[4, 30], [-1000, 1000], [2, 8]],
+    "required_fields_range": [[4, 30], ["-inf", "inf"], [2, 8]],
     "required_fields_icons": ["group"],
     "required_other_icons": [],
     "required_fields_colors": ["group"],

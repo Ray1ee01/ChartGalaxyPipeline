@@ -5,6 +5,77 @@ import re
 from PIL import Image
 import numpy as np
 from typing import Tuple
+import tempfile
+
+def calculate_mask_v2(svg_content: str, width: int, height: int, background_color: str, grid_size: int = 5, max_difference = 15) -> np.ndarray:
+    """将SVG转换为基于背景色的二值化mask数组"""
+    width = int(width)
+    height = int(height)
+    
+    # 将背景色转换为RGB格式
+    background_color = tuple(int(background_color[i:i+2], 16) for i in (1, 3, 5))
+    
+    # 创建临时文件
+    with tempfile.NamedTemporaryFile(suffix='.svg', delete=False) as mask_svg_file, \
+         tempfile.NamedTemporaryFile(suffix='.png', delete=False) as temp_mask_png_file:
+        mask_svg = mask_svg_file.name
+        temp_mask_png = temp_mask_png_file.name
+        
+        # 修改SVG内容，移除渐变
+        mask_svg_content = svg_content.replace('url(#', 'none')
+        mask_svg_content = mask_svg_content.replace('&', '&amp;')
+        
+        # 提取SVG内容并添加新的SVG标签
+        svg_content_match = re.search(r'<svg[^>]*>(.*?)</svg>', mask_svg_content, re.DOTALL)
+        if svg_content_match:
+            inner_content = svg_content_match.group(1)
+            # 创建新的SVG标签
+            mask_svg_content = f'<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="{width}" height="{height}">{inner_content}</svg>'
+        
+        mask_svg_file.write(mask_svg_content.encode('utf-8'))
+        
+    subprocess.run([
+        'rsvg-convert',
+        '-f', 'png',
+        '-o', temp_mask_png,
+        '--dpi-x', '300',
+        '--dpi-y', '300',
+        '--background-color', '#ffffff',
+        mask_svg
+    ], check=True)
+    
+    # 读取为numpy数组并处理
+    img = Image.open(temp_mask_png).convert('RGB')
+    img_array = np.array(img)
+    
+    # 确保图像尺寸匹配预期尺寸
+    actual_height, actual_width = img_array.shape[:2]
+    if actual_width != width or actual_height != height:
+        img = img.resize((width, height), Image.LANCZOS)
+        img_array = np.array(img)
+    
+    # 转换为二值mask
+    mask = np.ones((height, width), dtype=np.uint8)
+    
+    for y in range(0, height, grid_size):
+        for x in range(0, width, grid_size):
+            y_end = min(y + grid_size, height)
+            x_end = min(x + grid_size, width)
+            
+            if y_end > y and x_end > x:
+                grid = img_array[y:y_end, x:x_end]
+                if grid.size > 0:
+                    # 计算与背景色的差异
+                    background_diff = np.sqrt(np.sum((grid - background_color) ** 2, axis=2))
+                    white_ratio = np.mean(background_diff < max_difference)
+                    mask[y:y_end, x:x_end] = 0 if white_ratio > 0.95 else 1
+    
+    # 删除临时文件
+    os.remove(mask_svg)
+    os.remove(temp_mask_png)
+    
+    return mask
+
 def calculate_mask(svg_content: str, width: int, height: int, padding: int, grid_size: int = 5, bg_threshold: float = 220) -> np.ndarray:
     """将SVG转换为二值化的mask数组"""
     width = int(width)
@@ -86,6 +157,14 @@ def calculate_mask(svg_content: str, width: int, height: int, padding: int, grid
             os.remove(mask_svg)
         if os.path.exists(temp_mask_png):
             os.remove(temp_mask_png)
+
+def calculate_bbox(mask: np.ndarray) -> Tuple[int, int, int, int]:
+    """计算mask的bbox"""
+    rows = np.sum(mask == 1, axis=1) > 0
+    cols = np.sum(mask == 1, axis=0) > 0
+    row_indices = np.where(rows)[0]
+    col_indices = np.where(cols)[0]
+    return row_indices[0], col_indices[0], row_indices[-1], col_indices[-1]
 
 def calculate_content_width(mask: np.ndarray, padding: int = 0) -> Tuple[int, int, int]:
     """计算mask中内容的实际宽度范围"""

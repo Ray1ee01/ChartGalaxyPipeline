@@ -22,6 +22,7 @@ REQUIREMENTS_BEGIN
 REQUIREMENTS_END
 */
 
+
 function makeChart(containerSelector, data) {
     // 提取数据
     const jsonData = data;

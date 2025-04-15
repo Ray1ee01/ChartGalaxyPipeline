@@ -1,12 +1,16 @@
 /*
 REQUIREMENTS_BEGIN
 {
-    "chart_type": "Horizontal Grouped Bar Chart",
+    "chart_type": "Horizontal Bar Chart",
     "chart_name": "horizontal_grouped_bar_chart_01",
     "is_composite": false,
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
+<<<<<<< HEAD
     "required_fields_range": [[2, 20], [0, "inf"], [2, 5]],
+=======
+    "required_fields_range": [[2, 30], [0, "inf"], [2, 10]],
+>>>>>>> origin/develop-bowen-barchart
     "required_fields_icons": ["x"],
     "required_other_icons": [],
     "required_fields_colors": ["group"],
@@ -29,7 +33,7 @@ function makeChart(containerSelector, data) {
     
     // 提取数据和配置
     const jsonData = data;                          // 完整的JSON数据对象
-    const chartData = jsonData.data.data                // 实际数据点数组
+    const chartData = jsonData.data.data;                // 实际数据点数组
     const variables = jsonData.variables || {};     // 图表配置
     const typography = jsonData.typography || {     // 字体设置，如果不存在则使用默认值
         title: { font_family: "Arial", font_size: "18px", font_weight: "bold" },
@@ -72,21 +76,28 @@ function makeChart(containerSelector, data) {
     };
     
     // ---------- 3. 提取字段名和单位 ----------
-    
-    
-    
-    
-    
-    // 根据数据列顺序提取字段名称
     const dimensionField = dataColumns.find(col => col.role === "x").name;
     const valueField = dataColumns.find(col => col.role === "y").name;
+    const groupField = dataColumns.find(col => col.role === "group").name;
     
-    // 找到所有带有"group"角色的列
-    const groupField = dataColumns.filter(col => col.role === "group").name;
-    let valueUnit = "";
+    // 获取字段单位（如果存在）
+    let dimensionUnit = "";
+    let valueUnit = ""; 
+    let groupUnit = "";
+    
+    if (dataColumns.find(col => col.role === "x").unit !== "none") {
+        dimensionUnit = dataColumns.find(col => col.role === "x").unit;
+    }
+    
     if (dataColumns.find(col => col.role === "y").unit !== "none") {
         valueUnit = dataColumns.find(col => col.role === "y").unit;
     }
+
+    if (dataColumns.find(col => col.role === "group").unit !== "none") {
+        groupUnit = dataColumns.find(col => col.role === "group").unit;
+    }
+    
+    
     // ---------- 4. 数据处理 ----------
     
     // 获取维度（如Gen Z, Millennials等）和分组（如$50 or more, $1-49, Nothing）
@@ -249,18 +260,7 @@ function makeChart(containerSelector, data) {
             return colors.available_colors[groupIndex % colors.available_colors.length];
         }
         
-        // 默认颜色方案
-        // const defaultColors = {
-        //     "$50 or more": "#ff725c", // 红色
-        //     "$1-49": "#4269d0",      // 蓝色
-        //     "Nothing": "#3ca951"     // 绿色
-        // };
-        // 默认颜色方案（修改部分）
-        const defaultColors = d3.schemeTableau10; // 使用D3内置的10色方案
-        const groupIndex = groups.indexOf(group);
-        return defaultColors[groupIndex % defaultColors.length] || colors.other.primary || "#999";
-
-        // return defaultColors[group] || colors.other.primary || "#999";
+        
     }
     
     // 获取描边颜色
@@ -302,12 +302,12 @@ function makeChart(containerSelector, data) {
         const groupLabelOffsetX = -(iconWidth + iconRightPadding + 5);
         g.append("text")
             .attr("x", groupLabelOffsetX)     
-            .attr("y", groupStartY - 10)      // 略微上移
+            .attr("y", groupStartY - parseFloat(typography.label.font_size)/2-5)      // 略微上移
             .attr("dy", "0.35em")
             .attr("text-anchor", "end")       // 右对齐
             .style("font-family", typography.label.font_family)
             .style("font-size", typography.label.font_size)
-            .style("font-weight", typography.label.font_weight)
+            .style("font-weight", "bold")
             .style("fill", colors.text_color || "#333")
             .text(group);
         
@@ -328,7 +328,7 @@ function makeChart(containerSelector, data) {
                 
                 // 创建标签和图标组
                 const labelGroup = g.append("g")
-                    .attr("transform", `translate(0, ${barY + barHeight/2})`);
+                    .attr("transform", `translate(0, ${barY + actualBarHeight / 2})`);
                 
                 // 绘制图标
                 if (images.field && images.field[dimension]) {
@@ -348,7 +348,7 @@ function makeChart(containerSelector, data) {
                     .attr("dy", "0.35em")
                     .attr("text-anchor", "end") // 右对齐
                     .style("font-family", typography.label.font_family)
-                    .style("font-size", typography.label.font_size)
+                    .style("font-size", `${Math.min(barHeight * 0.9, parseFloat(typography.annotation.font_size))}px`)
                     .style("font-weight", typography.label.font_weight)
                     .style("fill", colors.text_color || "#333")
                     .text(dimension);
@@ -382,7 +382,7 @@ function makeChart(containerSelector, data) {
                 // 创建临时文本元素来计算数值文本的宽度
                 const tempText = g.append("text")
                     .style("font-family", typography.annotation.font_family)
-                    .style("font-size", typography.annotation.font_size)
+                    .style("font-size", `${barHeight * 0.55}px`)
                     .style("font-weight", typography.annotation.font_weight)
                     .style("visibility", "hidden")
                     .text(formattedValue);
@@ -407,40 +407,11 @@ function makeChart(containerSelector, data) {
                         .attr("text-anchor", "start")
                         .style("fill", colors.text_color || "#333") 
                         .style("font-family", typography.annotation.font_family)
-                        .style("font-size", typography.annotation.font_size)
+                        .style("font-size", `${barHeight * 0.55}px`)
                         .style("font-weight", typography.annotation.font_weight)
                         .style("pointer-events", "none")
                         .text(formattedValue);
-                // // 检查文本是否适合条形的宽度（考虑内边距）
-                // const padding = 3; // 每侧5px内边距
                 
-                // // 如果条形太窄，无法容纳文本，则放在条形外部
-                // if (barWidth < textWidth + padding) {
-                //     g.append("text")
-                //         .attr("x", barWidth + 5) // 条形右侧5像素处
-                //         .attr("y", barY + actualBarHeight / 2)
-                //         .attr("dy", "0.35em")
-                //         .attr("text-anchor", "start")
-                //         .style("fill", colors.text_color || "#333") 
-                //         .style("font-family", typography.annotation.font_family)
-                //         .style("font-size", typography.annotation.font_size)
-                //         .style("font-weight", typography.annotation.font_weight)
-                //         .style("pointer-events", "none")
-                //         .text(formattedValue);
-                // } else {
-                //     // 文本适合放在条形内部，使用居中定位
-                //     g.append("text")
-                //         .attr("x", textX)
-                //         .attr("y", barY + actualBarHeight / 2)
-                //         .attr("dy", "0.35em")
-                //         .attr("text-anchor", "middle")
-                //         .style("fill", "#ffffff") 
-                //         .style("font-family", typography.annotation.font_family)
-                //         .style("font-size", typography.annotation.font_size)
-                //         .style("font-weight", typography.annotation.font_weight)
-                //         .style("pointer-events", "none")
-                //         .text(formattedValue);
-                // }
             }
         });
     });
