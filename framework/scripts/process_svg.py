@@ -396,8 +396,8 @@ def process_svg_files(input_dir, output_dir, num_threads=10):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Process SVG files and generate annotations.')
-    parser.add_argument('input', help='Directory containing SVG files')
-    parser.add_argument('output', help='Directory to save output files')
+    parser.add_argument('--input', help='Directory containing SVG files')
+    parser.add_argument('--output', help='Directory to save output files')
     parser.add_argument('--threads', type=int, default=1, help='Number of concurrent threads (default: 10)')
     
     args = parser.parse_args()
