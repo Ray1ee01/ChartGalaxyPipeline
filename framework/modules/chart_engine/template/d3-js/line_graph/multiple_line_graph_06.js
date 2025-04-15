@@ -28,7 +28,7 @@ function makeChart(containerSelector, data) {
     const chartData = jsonData.data.data;
     const variables = jsonData.variables;
     const typography = jsonData.typography;
-    const colors = jsonData.colors || {};
+    const colors = jsonData.colors_dark || {};
     const dataColumns = jsonData.data.columns || [];
     const images = jsonData.images || {};
     
@@ -79,7 +79,7 @@ function makeChart(containerSelector, data) {
     // 添加Y轴线（虚线）
     g.append("line")
         .attr("x1", 0)
-        .attr("y1", -1000)
+        .attr("y1", 0)
         .attr("x2", 0)
         .attr("y2", chartHeight)
         .attr("stroke", "#9badd3")
@@ -153,15 +153,15 @@ function makeChart(containerSelector, data) {
         // 确保第一个点从Y轴开始
         const firstDataDate = parseDate(groupData[0][xField]);
         const xMin = new Date(xScale.domain()[0]);
-        if (firstDataDate.getTime() > xMin.getTime()) {
-            // 添加Y轴起点（使用第一个数据点的Y值）
-            const firstPoint = {
-                [xField]: xMin.getFullYear().toString(),
-                [yField]: groupData[0][yField],
-                [groupField]: group
-            };
-            groupData = [firstPoint, ...groupData];
-        }
+        // if (firstDataDate.getTime() > xMin.getTime()) {
+        //     // 添加Y轴起点（使用第一个数据点的Y值）
+        //     const firstPoint = {
+        //         [xField]: xMin.getFullYear().toString(),
+        //         [yField]: groupData[0][yField],
+        //         [groupField]: group
+        //     };
+        //     groupData = [firstPoint, ...groupData];
+        // }
         
         // 确保最后一个点精确对应最大X值
         const lastDataDate = parseDate(groupData[groupData.length - 1][xField]);

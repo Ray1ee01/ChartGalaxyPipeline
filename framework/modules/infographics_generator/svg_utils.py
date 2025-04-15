@@ -3,6 +3,12 @@ from lxml import etree
 import xml.etree.ElementTree as ET
 from svgpathtools import parse_path
 import re
+import numpy as np
+from PIL import Image
+import subprocess
+import tempfile
+import os
+
 
 def extract_svg_content(svg_content: str) -> Optional[str]:
     """从SVG内容中提取内部元素"""
@@ -42,6 +48,91 @@ def parse_translate(transform_str):
         ty = float(match.group(2)) if match.group(2) else 0.0
         return tx, ty
     return 0.0, 0.0
+
+def adjust_and_get_bbox(svg_content, background_color = "#FFFFFF"):
+    """Adjust SVG and get precise bounding box."""
+    # Create temporary files for SVG and PNG
+    with tempfile.NamedTemporaryFile(suffix='.svg', delete=False) as temp_svg, \
+         tempfile.NamedTemporaryFile(suffix='.png', delete=False) as temp_png:
+        temp_svg_path = temp_svg.name
+        temp_png_path = temp_png.name
+
+    svg_container = f"<svg \
+        width='1000' \
+        height='1000' \
+        xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'> \
+        {svg_content}</svg>"
+    
+    with open(temp_svg_path, 'w', encoding='utf-8') as f:
+        f.write(svg_container)
+
+    bbox = get_svg_actual_bbox(temp_svg_path)
+    padding = 150
+    svg_container = f"<svg \
+        width='{bbox['width'] + padding * 2}' \
+        height='{bbox['height'] + padding * 2}' \
+        xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'> \
+        <g transform='translate({padding - bbox['min_x']}, {padding - bbox['min_y']})'> \
+            {svg_content} \
+        </g> \
+        </svg>"
+    
+    with open(temp_svg_path, 'w', encoding='utf-8') as f:
+        f.write(svg_container)
+
+    svg_to_png(temp_svg_path, temp_png_path, background_color)
+    x_min, y_min, x_max, y_max = get_precise_bbox(temp_png_path)
+    width = x_max - x_min + 1
+    height = y_max - y_min + 1
+    svg_container = f"<g transform='translate({padding - bbox['min_x'] - x_min}, {padding - bbox['min_y'] - y_min})'> \
+        {svg_content} \
+    </g>"
+
+    os.unlink(temp_svg_path)
+    os.unlink(temp_png_path)
+    
+    return svg_container, width, height
+    
+
+def svg_to_png(svg_path, png_path, background_color = "#FFFFFF"):
+    """Convert SVG to PNG using rsvg-convert with a white background."""
+    # Add --background-color=#FFFFFF to set white background
+    cmd = ['rsvg-convert', '--background-color=' + background_color, svg_path, '-o', png_path]
+    subprocess.run(cmd, check=True)
+
+def get_precise_bbox(png_path, background_color = "#FFFFFF"):
+    """Get precise bounding box by detecting the exact non-transparent pixels."""
+    img = Image.open(png_path).convert("RGBA")
+    width, height = img.size
+    
+    # Convert image to numpy array for efficient processing
+    img_array = np.array(img)
+    
+    # Get alpha channel and RGB values
+    alpha = img_array[:, :, 3]
+    rgb = img_array[:, :, :3]
+    
+    # Consider pixels close to the background color as transparent too
+    bg_rgb = np.array([int(background_color[i:i+2], 16) for i in (1, 3, 5)])  # Convert hex to RGB
+    threshold = 15  # Define a threshold for color similarity
+    is_background = np.all(np.abs(rgb - bg_rgb) < threshold, axis=2)
+    
+    # Find non-transparent and non-background pixels
+    non_transparent = (alpha > 0) & (~is_background)
+    
+    # If there are no non-transparent pixels, return the full image dimensions
+    if not np.any(non_transparent):
+        return 0, 0, width, height
+    
+    # Find the bounds of non-transparent pixels
+    rows = np.any(non_transparent, axis=1)
+    cols = np.any(non_transparent, axis=0)
+    
+    # Get the boundaries
+    y_min, y_max = np.where(rows)[0][[0, -1]]
+    x_min, x_max = np.where(cols)[0][[0, -1]]
+    # Get full image dimensions
+    return x_min, y_min, x_max + 1, y_max + 1
 
 def get_svg_actual_bbox(svg_path):
     # 使用lxml而不是xml.etree.ElementTree
