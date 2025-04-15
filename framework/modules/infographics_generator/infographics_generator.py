@@ -62,9 +62,9 @@ def make_infographic(
     dark: bool
 ) -> str:
     if not dark:
-        background_color = data["colors"].get("background", "#FFFFFF")
+        background_color = data["colors"].get("background_color", "#FFFFFF")
     else:
-        background_color = data["colors_dark"].get("background", "#000000")
+        background_color = "#ffffff"
 
     chart_content, chart_width, chart_height = adjust_and_get_bbox(chart_svg_content, background_color)
     chart_svg_content = f"<svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='{chart_width}' height='{chart_height}'>{chart_content}</svg>"
@@ -269,6 +269,7 @@ def make_infographic(
     if dark:
         background_color = data["colors_dark"].get("background_color", "#000000")
         text_color = "#FFFFFF"
+        
     final_svg = f"""<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="{total_width}" height="{total_height}" style="font-family: Arial, 'Liberation Sans', 'DejaVu Sans', sans-serif;">
     <rect x="0" y="0" width="{total_width}" height="{total_height}" fill="{background_color}" />
     <g class="chart" transform="translate({padding + best_title['chart'][0]}, {padding + best_title['chart'][1]})">{chart_content}</g>
@@ -513,12 +514,13 @@ def process(input: str, output: str, base_url: str, api_key: str, chart_name: st
         print("try to assemble infographic")
         assemble_start = time.time()
 
+        print("template_requirements", requirements)
         final_svg = make_infographic(
             data=data,
             chart_svg_content=chart_inner_content,
             padding=padding,
             between_padding=between_padding,
-            dark=template_requirements.get("background", "light") == "dark"
+            dark=requirements.get("background", "light") == "dark"
         )
 
         assemble_time = time.time() - assemble_start
