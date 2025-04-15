@@ -4,17 +4,11 @@ import faiss
 import numpy as np
 from tqdm import tqdm
 import argparse
-import logging
-from typing import Any, Dict, List, Tuple, Union
-from openai import OpenAI
-from utils.model_loader import ModelLoader
 
-# 配置日志
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger("RagTitleGenerator")
+from typing import Any, Dict, List, Tuple, Union
+
+from openai import OpenAI
+from sentence_transformers import SentenceTransformer
 
 class RagTitleGenerator:
     """
@@ -44,11 +38,9 @@ class RagTitleGenerator:
         self.index_path = index_path
         self.data_path = data_path
         if embed_model_path:
-            self.embed_model = ModelLoader.get_model(embed_model_path)
+            self.embed_model = SentenceTransformer(embed_model_path)
         else:
-            print("fuck")
-        #else:
-        #    self.embed_model = SentenceTransformer("all-MiniLM-L6-v2")
+            self.embed_model = SentenceTransformer("all-MiniLM-L6-v2")
 
         self.index = None
         self.training_data = []  # List of tuples: (input_text, title, description)
@@ -70,32 +62,38 @@ class RagTitleGenerator:
         else:
             print("No existing FAISS index found; you can build a new one via build_faiss_index().")
 
-    def build_faiss_index(self, data_json_path):
-        """Build a FAISS index from a JSON dataset of chart data."""
-        try:
-            if not os.path.exists(data_json_path):
-                raise ValueError(f"Provided data_json_path {data_json_path} does not exist.")
+    def build_faiss_index(
+        self,
+        data_json_path: str
+    ) -> None:
+        """
+        Build (or rebuild) the FAISS index using the entire dataset in the given JSON file.
+        The JSON file should contain a dictionary, where each key corresponds to a unique
+        identifier, and its value is a data dictionary with relevant fields (metadata, etc.).
 
-            # Remove existing index
-            self.clear_faiss_data()
+        NOTE: This method removes the existing index/data in memory and on disk, then creates a new one.
 
-            # Load the entire dataset from JSON
-            with open(data_json_path, "r", encoding="utf-8") as f:
-                dataset = json.load(f)
-            print("dataset", type(dataset))
-            # Build the FAISS index from scratch
-            if isinstance(dataset, dict):
-                for name, details in tqdm(dataset.items(), desc="Building new FAISS index"):
-                    processed_text = self.process_single_data(details)
-                    title = details.get("metadata", {}).get("title", "")
-                    description = details.get("metadata", {}).get("description", "")
-                    self.add_training_data(processed_text, title, description)
-            else:
-                raise ValueError("Dataset must be a dictionary")
+        Args:
+            data_json_path (str): The path to the JSON file containing all training data.
+        """
+        if not os.path.exists(data_json_path):
+            raise ValueError(f"Provided data_json_path {data_json_path} does not exist.")
 
-        except Exception as e:
-            logger.error(f"处理记录时出错: {str(e)}")
-            raise
+        # Remove existing index
+        self.clear_faiss_data()
+
+        # Load the entire dataset from JSON
+        with open(data_json_path, "r", encoding="utf-8") as f:
+            dataset = json.load(f)
+
+        # Build the FAISS index from scratch
+        for name, details in tqdm(dataset.items(), desc="Building new FAISS index"):
+            processed_text = self.process_single_data(details)
+            title = details.get("metadata", {}).get("title", "")
+            description = details.get("metadata", {}).get("description", "")
+            self.add_training_data(processed_text, title, description)
+
+        print("FAISS index building completed!")
 
     def clear_faiss_data(self) -> None:
         """Remove existing FAISS index and training data from disk."""
@@ -124,8 +122,8 @@ class RagTitleGenerator:
         metadata = data.get("metadata", {})
         chart_type = data.get("chart_type", [])
         datafacts = data.get("datafacts", [])
-        data_columns = data["data"].get("columns", [])
-        chart_data = data["data"].get("data", [])
+        data_columns = data.get("data_columns", [])
+        chart_data = data.get("data", [])
 
         main_insight = metadata.get("main_insight", "")
 
@@ -269,8 +267,11 @@ class RagTitleGenerator:
             "Based on the above examples (if any), please generate a clear and concise TITLE for the following data.\n"
             f"{processed_text}\n\n"
             "Important instructions:\n"
-            "1. The title should focus solely on what the data is about, without analyzing specific "
-            "data characteristics, trends, distributions, or comparisons.\n"
+            "1. The title should focus on the most significant feature of the data. "
+            "You can choose one or more key insights from the Data Facts that best "
+            "illustrate the issue, or identify the most notable feature yourself.\n"
+            # "2. The title should focus solely on what the data is about, without analyzing specific "
+            # "data characteristics, trends, distributions, or comparisons.\n"
             f"2. The title should be strictly under {max_title_words} words.\n"
             "3. Use exact terminology from the data sources.\n"
             "4. Do NOT use these verbs: show, reveal, illustrate, analyze.\n"
@@ -292,21 +293,17 @@ class RagTitleGenerator:
             "Based on the above examples (if any), please generate a precise DESCRIPTION for the following data.\n"
             f"{processed_text}\n\n"
             "Important instructions:\n"
-            "1. The description should focus on the most significant feature of the data. "
-            "You can choose one or more key insights from the Data Facts that best "
-            "illustrate the issue, or identify the most notable feature yourself.\n"
-            "2. Do NOT describe statistical properties (e.g., highest/lowest values, changes over time, "
+            "1. Do NOT describe statistical properties (e.g., highest/lowest values, changes over time, "
             "ratios, percentages). Simply summarize what the dataset reports.\n"
-            "3. Use one of the following structured templates where applicable (choose the highest-priority one that fits):\n"
+            "2. Use one of the following structured templates where applicable (choose the highest-priority one that fits):\n"
             "   - Share/Percentage of [group] (who [action/characteristic]) (by [region/timeframe] (in [units])).\n"
             "   - Number/Total/Amount of [entity] (in [region/timeframe]) (, measured in [units]).\n"
             "   - Top/Leading N [entities] by [indicator] (, in [timeframe/region]).\n"
             "   - [Indicator] for [group/topic] (in [region/timeframe]) (, measured in [units]).\n"
-            f"4. The description should be strictly under {max_description_words} words.\n"
-            "5. Use exact terminology from the data sources.\n"
-            "6. Do NOT use these verbs: show, reveal, illustrate, analyze.\n"
-            "7. Avoid subjective statements (e.g., 'An analysis of...'). Focus on main metrics: Share, Rate, Number, Percentage.\n"
-            "8. ONLY return the description as a string, no extra text."
+            f"3. The description should be strictly under {max_description_words} words.\n"
+            "4. Use exact terminology from the data sources.\n"
+            "5. Do NOT use these verbs: show, reveal, illustrate, analyze.\n"
+            "6. ONLY return the description as a string, no extra text."
         )
 
         response_description = self.client.chat.completions.create(
