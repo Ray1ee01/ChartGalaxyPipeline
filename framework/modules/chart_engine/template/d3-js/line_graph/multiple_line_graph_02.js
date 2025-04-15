@@ -202,6 +202,13 @@ function makeChart(containerSelector, data) {
 
     // 在最后的竖线上为每个组添加彩色小圆点，并创建指向它们的标签
     let labelPositions = [];
+    // 按照最终值，对group排序，从高到低
+    groups.sort((a, b) => {
+        const aData = chartData.filter(d => d[groupField] === a);
+        const bData = chartData.filter(d => d[groupField] === b);
+        return d3.descending(aData[aData.length - 1][yField], bData[bData.length - 1][yField]);
+    });
+    
     groups.forEach((group, i) => {
         const groupData = chartData.filter(d => d[groupField] === group);
         const lastPoint = groupData[groupData.length - 1];
@@ -210,9 +217,9 @@ function makeChart(containerSelector, data) {
         
         // 检查是否与现有标签重叠
         labelPositions.forEach(pos => {
-            if (Math.abs(labelY - pos) < 45) {
+            if (Math.abs(labelY - pos) < 30) {
                 // 如果重叠，向下移动
-                labelY = pos + 45;
+                labelY = pos + 30;
             }
         });
         
@@ -231,7 +238,7 @@ function makeChart(containerSelector, data) {
         labelGroup.append("rect")
             .attr("x", 0)
             .attr("y", -10)
-            .attr("width", textWidth) // 固定宽度
+            .attr("width", textWidth * 1.1) // 固定宽度
             .attr("height", 20)
             .attr("fill", getColor(group))
             .attr("rx", 0) // 移除圆角
@@ -326,7 +333,7 @@ function makeChart(containerSelector, data) {
 
     // 计算标签宽度（根据文字长度调整）
     const labelText = yField;
-    const labelPadding = 10;
+    const labelPadding = 20;
     const textWidth = getTextWidth(labelText, typography.label.font_size);
 
     const labelWidth = textWidth + 2 * labelPadding;
