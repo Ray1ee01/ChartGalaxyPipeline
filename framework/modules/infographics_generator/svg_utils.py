@@ -68,10 +68,13 @@ def adjust_and_get_bbox(svg_content, background_color = "#FFFFFF"):
 
     bbox = get_svg_actual_bbox(temp_svg_path)
     padding = 150
+    new_width = bbox['width'] + padding * 2
+    new_height = bbox['height'] + padding * 2
     svg_container = f"<svg \
-        width='{bbox['width'] + padding * 2}' \
-        height='{bbox['height'] + padding * 2}' \
+        width='{new_width}' \
+        height='{new_height}' \
         xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'> \
+        <rect width='{new_width}' height='{new_height}' fill='{background_color}' /> \
         <g transform='translate({padding - bbox['min_x']}, {padding - bbox['min_y']})'> \
             {svg_content} \
         </g> \
@@ -81,7 +84,7 @@ def adjust_and_get_bbox(svg_content, background_color = "#FFFFFF"):
         f.write(svg_container)
 
     svg_to_png(temp_svg_path, temp_png_path, background_color)
-    x_min, y_min, x_max, y_max = get_precise_bbox(temp_png_path)
+    x_min, y_min, x_max, y_max = get_precise_bbox(temp_png_path, background_color)
     width = x_max - x_min + 1
     height = y_max - y_min + 1
     svg_container = f"<g transform='translate({padding - bbox['min_x'] - x_min}, {padding - bbox['min_y'] - y_min})'> \

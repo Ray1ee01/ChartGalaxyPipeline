@@ -64,14 +64,14 @@ def make_infographic(
     if not dark:
         background_color = data["colors"].get("background_color", "#FFFFFF")
     else:
-        background_color = "#ffffff"
+        background_color = data["colors_dark"].get("background_color", "#000000")
 
     chart_content, chart_width, chart_height = adjust_and_get_bbox(chart_svg_content, background_color)
     chart_svg_content = f"<svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='{chart_width}' height='{chart_height}'>{chart_content}</svg>"
     mask = calculate_mask_v2(chart_svg_content, chart_width, chart_height, background_color)
     title_candidates = []
     min_title_width = max(250, chart_width / 2)
-    max_title_width = chart_width - 100
+    max_title_width = chart_width - 150
     steps = np.ceil((max_title_width - min_title_width) / 100).astype(int)
 
     for i in range(steps + 1):
@@ -87,22 +87,6 @@ def make_infographic(
             "height": height,
         })
         
-    import matplotlib.pyplot as plt
-
-    # Create a figure and axis
-    fig, ax = plt.subplots()
-
-    # Display the mask as an image
-    ax.imshow(mask, cmap='gray', interpolation='nearest')
-
-    # Set title and labels
-    ax.set_title('Mask Visualization')
-    ax.set_xlabel('Width')
-    ax.set_ylabel('Height')
-
-    # Save the figure as a PNG file
-    plt.savefig('mask_visualization.png', bbox_inches='tight', dpi=300)
-    plt.close(fig)
     mask_top = np.argmax(mask, axis=0)  # 每一列第一个1的位置
     mask_bottom = mask.shape[0] - 1 - np.argmax(np.flip(mask, axis=0), axis=0)  # 每一列最后一个1的位置
     mask_left = np.argmax(mask, axis=1)  # 每一行第一个1的位置
