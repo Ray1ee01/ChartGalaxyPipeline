@@ -142,7 +142,18 @@ function makeChart(containerSelector, data) {
         .attr("style", "max-width: 100%; height: auto;")
         .attr("xmlns", "http://www.w3.org/2000/svg")
         .attr("xmlns:xlink", "http://www.w3.org/1999/xlink");
-    
+
+    // Define clip path for bars
+    const clipPathId = "bar-clip-path";
+    svg.append("defs")
+        .append("clipPath")
+        .attr("id", clipPathId)
+        .append("rect")
+        .attr("x", 0)
+        .attr("y", 0)
+        .attr("width", barChartWidth) // Clip at the right edge of the bar area
+        .attr("height", innerHeight);
+
     // 8. 添加标题
     const leftTitleX = margin.left + flagMargin + flagWidth + textMargin;
     
@@ -308,7 +319,9 @@ function makeChart(containerSelector, data) {
             // 1. 绘制条形 (barRadius was defined above)
             g.append("path")
                 .attr("d", () => {
-                    return `
+                    // Always draw the bar with the rounded right corner
+                    // The clip path will handle cases where barWidthValue < barRadius
+                    const pathData = `
                         M 0,${y}
                         L ${barWidthValue - barRadius},${y}
                         A ${barRadius},${barRadius} 0 0,1 ${barWidthValue},${centerY}
@@ -316,9 +329,11 @@ function makeChart(containerSelector, data) {
                         L 0,${y + barHeight}
                         Z
                     `;
+                    return pathData;
                 })
                 .attr("fill", getBarColor(dimension))
-                .attr("opacity", 0.9);
+                .attr("opacity", 0.9)
+                .attr("clip-path", `url(#${clipPathId})`); // Apply the clip path
 
             // 2. 添加国家/地区标签和图标 (using calculated positions)
             const iconGroup = g.append("g")
@@ -350,6 +365,7 @@ function makeChart(containerSelector, data) {
                     .attr("y", 0)
                     .attr("width", flagWidth)
                     .attr("height", flagHeight)
+                    .attr("preserveAspectRatio","xMidYMid meet")
                     .attr("xlink:href", images.field[dimension])
                     .attr("clip-path", `url(#${clipId})`);
             } else {

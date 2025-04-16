@@ -121,6 +121,7 @@ function makeChart(containerSelector, data) {
         .attr("y", innerHeight + 5)
         .attr("width", imageSize)
         .attr("height", imageSize)
+        .attr("preserveAspectRatio","xMidYMid meet")
         .attr("text-anchor", "middle");
     }
   });

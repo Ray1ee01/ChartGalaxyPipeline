@@ -157,7 +157,7 @@ function makeChart(containerSelector, data) {
                 .attr("xlink:href", bottleImage)
                 .attr("width", bottleWidth)
                 .attr("height", bottleHeight)
-                .attr("preserveAspectRatio", "none");
+                .attr("preserveAspectRatio","xMidYMid meet");
             
             // 添加瓶子蒙版（白色部分）
             group.append("rect")
@@ -256,7 +256,7 @@ function makeChart(containerSelector, data) {
                     .attr("y", 0)
                     .attr("width", xScale.bandwidth()*0.3)
                     .attr("height", xScale.bandwidth()*0.25)
-                    .attr("preserveAspectRatio", "none");
+                    .attr("preserveAspectRatio","xMidYMid meet");
                 
                 // 添加国家名称 - 使用统一的字体大小
                 const label = group.append("text")

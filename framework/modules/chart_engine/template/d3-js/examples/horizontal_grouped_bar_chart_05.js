@@ -397,6 +397,7 @@ function makeChart(containerSelector, data) {
                     .attr("y", flagY)
                     .attr("width", flagWidth)
                     .attr("height", flagHeight)
+                    .attr("preserveAspectRatio","xMidYMid meet")
                     .attr("xlink:href", images.field[dimension]);
             }
             
@@ -410,6 +411,7 @@ function makeChart(containerSelector, data) {
                     .attr("y", groupIconY)
                     .attr("width", groupIconWidth)
                     .attr("height", groupIconHeight)
+                    .attr("preserveAspectRatio","xMidYMid meet")
                     .attr("xlink:href", images.field[secondaryGroup]);
             }
             

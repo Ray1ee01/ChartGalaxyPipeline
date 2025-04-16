@@ -334,6 +334,7 @@ function makeChart(containerSelector, data) {
                     .attr("x", -12)
                     .attr("y", -12)
                     .attr("width", 24)
+                    .attr("preserveAspectRatio","xMidYMid meet")
                     .attr("height", 24);
             }
         });

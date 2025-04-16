@@ -510,6 +510,7 @@ function makeChart(containerSelector, data) {
                     .attr("y", yPos + 2) // 文本下方
                     .attr("width", flagWidth)
                     .attr("height", flagHeight)
+                    .attr("preserveAspectRatio","xMidYMid meet")
                     .attr("xlink:href", images.field[dimension]);
             }
         } else {
