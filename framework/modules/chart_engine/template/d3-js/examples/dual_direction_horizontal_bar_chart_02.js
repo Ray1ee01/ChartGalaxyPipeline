@@ -256,12 +256,12 @@ function makeChart(containerSelector, data) {
                     .append("image")
                     .attr("xlink:href", imageData)
                     .attr("width", 1)
-                    .attr("height", 1)
-                    .attr("preserveAspectRatio", "xMidYMid slice");
+                    .attr("height", 1)  
+                    .attr("preserveAspectRatio","xMidYMid meet");
             }
         });
     }
-    
+        
     // 添加阴影滤镜（如果启用）
     if (variables.has_shadow) {
         const filter = defs.append("filter")
@@ -555,7 +555,7 @@ function makeChart(containerSelector, data) {
                 .attr("width", iconSize - iconPadding) // 图标略小于背景
                 .attr("height", iconSize - iconPadding)
                 .attr("xlink:href", images.field[sector])
-                .attr("preserveAspectRatio", "xMidYMid slice");
+                .attr("preserveAspectRatio","xMidYMid meet");
         }
         
         // 绘制部门标签

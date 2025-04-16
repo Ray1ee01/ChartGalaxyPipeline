@@ -249,20 +249,22 @@ function makeChart(containerSelector, data) {
     
     // ---------- 8. 设置颜色函数 ----------
     
-    // 获取支持者组颜色
+    // 获取Group1颜色
     function getSupporterColor(supporter, index) {
         // 优先使用指定颜色
         if (colors.field && colors.field[supporter]) {
             return colors.field[supporter];
         }
-
+        if (colors.other.primary) {
+            return colors.other.primary;
+        }
         // 如果有可用颜色数组，按索引使用
         if (colors.available_colors && colors.available_colors.length > 0) {
             return colors.available_colors[index % colors.available_colors.length];
         }
     }
     
-    // 获取意见组颜色 - 根据支持者和意见类型获取颜色
+    // 获取group2颜色
     function getOpinionColor(supporter, opinion, opinionIndex) {
         const baseColor = getSupporterColor(supporter, supporterGroups.indexOf(supporter));
         

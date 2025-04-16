@@ -312,6 +312,7 @@ function makeChart(containerSelector, data) {
                     .attr("y", pos.y - starHeight/2) // 垂直居中
                     .attr("width", starWidth)
                     .attr("height", starHeight)
+                    .attr("preserveAspectRatio","xMidYMid meet")
                     .attr("xlink:href", starBase64);
             });
         }
@@ -345,6 +346,7 @@ function makeChart(containerSelector, data) {
                     .attr("y", centerY - flagHeight / 2)
                     .attr("width", flagWidth)
                     .attr("height", flagHeight)
+                    .attr("preserveAspectRatio","xMidYMid meet") // 确保图标不失真
                     .attr("xlink:href", images.field[dimension]);
             }
             
