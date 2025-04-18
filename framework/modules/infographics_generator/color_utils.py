@@ -1,4 +1,5 @@
 from typing import Tuple
+import colorsys
 
 def parse_color(c: str) -> Tuple[int, int, int]:
     """将颜色字符串解析为RGB元组"""
@@ -69,4 +70,76 @@ def get_contrast_color(hex_color: str) -> str:
     luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
     
     # 根据亮度返回黑色或白色
-    return '#000000' if luminance > 0.5 else '#ffffff' 
+    return '#000000' if luminance > 0.5 else '#ffffff'
+
+def hex_to_rgb(hex_color: str) -> tuple:
+    """
+    Convert hex color to RGB tuple
+    
+    Args:
+        hex_color: Hex color string (e.g. "#FFFFFF")
+        
+    Returns:
+        tuple: (r, g, b) where each value is between 0 and 1
+    """
+    hex_color = hex_color.lstrip('#')
+    r = int(hex_color[0:2], 16) / 255.0
+    g = int(hex_color[2:4], 16) / 255.0
+    b = int(hex_color[4:6], 16) / 255.0
+    return (r, g, b)
+
+def rgb_to_hex(rgb: tuple) -> str:
+    """
+    Convert RGB tuple to hex color
+    
+    Args:
+        rgb: (r, g, b) tuple where each value is between 0 and 1
+        
+    Returns:
+        str: Hex color string (e.g. "#FFFFFF")
+    """
+    r, g, b = [int(x * 255) for x in rgb]
+    return f"#{r:02x}{g:02x}{b:02x}"
+def lighten_color(hex_color: str, amount: float = 0.2) -> str:
+    """
+    Lighten a color by converting to HSL, increasing lightness, and converting back
+    
+    Args:
+        hex_color: Hex color string (e.g. "#FFFFFF")
+        amount: Amount to lighten (0-1)
+        
+    Returns:
+        str: Lightened hex color
+    """
+    # Convert hex to RGB
+    r, g, b = hex_to_rgb(hex_color)
+    
+    # Convert RGB to HSL
+    h, l, s = colorsys.rgb_to_hls(r, g, b)
+    
+    # Increase lightness to ensure RGB values are at least 220/255
+    # Calculate the minimum lightness needed to get RGB values above 220
+    r_new, g_new, b_new = r, g, b
+    target_min = 220/255
+    
+    # Gradually increase lightness until all RGB values are above target
+    while min(r_new, g_new, b_new) < target_min and l < 0.99:
+        l = min(0.99, l + 0.05)
+        r_new, g_new, b_new = colorsys.hls_to_rgb(h, l, s)
+    
+    # Convert back to hex
+    return rgb_to_hex((r_new, g_new, b_new))
+
+def is_dark_color(hex_color: str) -> bool:
+    """
+    Check if a color is dark by calculating its luminance
+    
+    Args:
+        hex_color: Hex color string (e.g. "#FFFFFF")
+        
+    Returns:
+        bool: True if color is dark, False otherwise
+    """
+    r, g, b = hex_to_rgb(hex_color)
+    luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b
+    return luminance < 0.8

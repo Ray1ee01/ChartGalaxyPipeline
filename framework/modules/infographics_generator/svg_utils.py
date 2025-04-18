@@ -68,10 +68,13 @@ def adjust_and_get_bbox(svg_content, background_color = "#FFFFFF"):
 
     bbox = get_svg_actual_bbox(temp_svg_path)
     padding = 150
+    new_width = bbox['width'] + padding * 2
+    new_height = bbox['height'] + padding * 2
     svg_container = f"<svg \
-        width='{bbox['width'] + padding * 2}' \
-        height='{bbox['height'] + padding * 2}' \
+        width='{new_width}' \
+        height='{new_height}' \
         xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'> \
+        <rect width='{new_width}' height='{new_height}' fill='{background_color}' /> \
         <g transform='translate({padding - bbox['min_x']}, {padding - bbox['min_y']})'> \
             {svg_content} \
         </g> \
@@ -81,7 +84,7 @@ def adjust_and_get_bbox(svg_content, background_color = "#FFFFFF"):
         f.write(svg_container)
 
     svg_to_png(temp_svg_path, temp_png_path, background_color)
-    x_min, y_min, x_max, y_max = get_precise_bbox(temp_png_path)
+    x_min, y_min, x_max, y_max = get_precise_bbox(temp_png_path, background_color)
     width = x_max - x_min + 1
     height = y_max - y_min + 1
     svg_container = f"<g transform='translate({padding - bbox['min_x'] - x_min}, {padding - bbox['min_y'] - y_min})'> \
@@ -176,6 +179,14 @@ def get_svg_actual_bbox(svg_path):
             return base * percentage
         return float(value)
 
+    def parse_points(points_str):
+        """解析points属性中的点坐标"""
+        points = []
+        for point in points_str.strip().split():
+            x, y = point.split(',')
+            points.append((float(x), float(y)))
+        return points
+
     for elem in root.iter():
         tag = elem.tag.split('}')[-1]
         dx, dy = get_accumulated_transform(elem)
@@ -209,6 +220,13 @@ def get_svg_actual_bbox(svg_path):
             x2 = parse_percentage(elem.get('x2', '0'), svg_width) + dx
             y2 = parse_percentage(elem.get('y2', '0'), svg_height) + dy
             update_bounds([x1, x2], [y1, y2])
+        elif tag == 'polygon':
+            points_str = elem.get('points', '')
+            if points_str:
+                points = parse_points(points_str)
+                x_vals = [x + dx for x, _ in points]
+                y_vals = [y + dy for _, y in points]
+                update_bounds(x_vals, y_vals)
         elif tag == 'path':
             d = elem.get('d')
             if d:

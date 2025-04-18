@@ -424,6 +424,7 @@ function makeChart(containerSelector, data) {
                 .attr("y", centerY - iconSize / 2)
                 .attr("width", iconSize)
                 .attr("height", iconSize)
+                .attr("preserveAspectRatio","xMidYMid meet")
                 .attr("xlink:href", images.field[dimension]);
         }
         

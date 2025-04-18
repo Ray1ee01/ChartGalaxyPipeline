@@ -393,6 +393,7 @@ function makeChart(containerSelector, data) {
                     .attr("y", 0)
                     .attr("width", flagWidth)
                     .attr("height", flagHeight)
+                    .attr("preserveAspectRatio","xMidYMid meet")
                     .attr("xlink:href", images.field[dimension]);
             }
             
