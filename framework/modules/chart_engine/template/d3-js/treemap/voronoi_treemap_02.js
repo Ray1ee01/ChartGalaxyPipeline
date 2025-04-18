@@ -166,7 +166,7 @@ function makeChart(containerSelector, data) {
         .attr("text-anchor", "middle")
         .attr("dominant-baseline", "middle")
         .attr("fill", "#fff")
-        .attr("font-size", "12px")
+        .attr("font-size", "16px")
         .attr("font-weight", "bold")
         .text(d => {
             try {
@@ -224,7 +224,7 @@ function makeChart(containerSelector, data) {
         .attr("dominant-baseline", "middle")
         .attr("fill", "#fff")
         .attr("fill-opacity", 0.7)
-        .attr("font-size", "10px")
+        .attr("font-size", "14px")
         .text(d => {
             try {
                 return format(d.site.originalObject.data.originalData.weight);

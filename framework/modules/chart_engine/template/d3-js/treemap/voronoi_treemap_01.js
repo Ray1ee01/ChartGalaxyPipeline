@@ -127,7 +127,7 @@ function makeChart(containerSelector, data) {
         .attr("text-anchor", "middle")
         .attr("dominant-baseline", "middle")
         .attr("fill", "#fff")
-        .attr("font-size", "12px")
+        .attr("font-size", "16px")
         .attr("font-weight", "bold")
         .text(d => d.site.originalObject.data.originalData.name)
         .each(function(d) {
@@ -147,8 +147,33 @@ function makeChart(containerSelector, data) {
             const textWidth = this.getComputedTextLength();
             
             if (textWidth > boxWidth * 0.8 || boxHeight < 30) {
-                // 如果文本太长或单元格太小，隐藏它
-                d3.select(this).style("display", "none");
+                // 如果文本太长或单元格太小，在文本下方添加暗色透明框
+                // 创建一个新的g元素来包含背景框和文本
+                const textGroup = d3.select(this.parentNode)
+                    .append("g")
+                    .raise(); // 将整个组提升到最上层
+                
+                // 添加背景框
+                const padding = 4;
+                textGroup.append("rect")
+                    .attr("x", d3.polygonCentroid(d)[0] - textWidth/2 - padding)
+                    .attr("y", d3.polygonCentroid(d)[1] - 10)
+                    .attr("width", textWidth + padding * 2)
+                    .attr("height", 35)
+                    .attr("fill", "rgba(0,0,0,0.3)")
+                    .attr("rx", 3);
+                
+                // 将原始文本移动到新组中
+                d3.select(this).remove();
+                textGroup.append("text")
+                    .attr("x", d3.polygonCentroid(d)[0])
+                    .attr("y", d3.polygonCentroid(d)[1])
+                    .attr("text-anchor", "middle")
+                    .attr("dominant-baseline", "middle")
+                    .attr("fill", "#fff")
+                    .attr("font-size", "16px")
+                    .attr("font-weight", "bold")
+                    .text(d.site.originalObject.data.originalData.name);
             }
         });
     
@@ -160,7 +185,7 @@ function makeChart(containerSelector, data) {
         .attr("dominant-baseline", "middle")
         .attr("fill", "#fff")
         .attr("fill-opacity", 0.7)
-        .attr("font-size", "10px")
+        .attr("font-size", "14px")
         .text(d => format(d.site.originalObject.data.originalData.weight))
         .each(function(d) {
             // 计算多边形的边界框
