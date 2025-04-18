@@ -43,7 +43,8 @@ def visualize_annotations(annotations_file, image_dir, output_dir, num_samples=1
     num_samples = min(num_samples, len(image_ids_with_annotations))
     
     # 随机选择图片
-    selected_image_ids = random.sample(image_ids_with_annotations, num_samples)
+    # selected_image_ids = random.sample(image_ids_with_annotations, num_samples)
+    selected_image_ids = image_ids_with_annotations
     
     # 为不同类别定义不同的颜色
     category_colors = {
@@ -104,7 +105,7 @@ def visualize_annotations(annotations_file, image_dir, output_dir, num_samples=1
         ax.axis('off')
         
         # 保存图形
-        output_path = os.path.join(output_dir, f"annotated_{i+1}_{os.path.basename(image_info['file_name'])}")
+        output_path = os.path.join(output_dir, f"annotated_{image_id}.png")
         plt.tight_layout()
         plt.savefig(output_path, bbox_inches='tight')
         plt.close()
