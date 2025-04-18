@@ -219,6 +219,8 @@ def load_d3js(json_data=None, output_file=None, js_file=None, width=None, height
         <meta charset="utf-8">
         <title>D3.js Chart</title>
         <script src="%s"></script>
+        <script src="https://cdn.jsdelivr.net/npm/d3-weighted-voronoi@1.1.3/build/d3-weighted-voronoi.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/d3-voronoi-map@2.1.1/build/d3-voronoi-map.min.js"></script>
         <style>
             body {
                 font-family: Arial, sans-serif;
