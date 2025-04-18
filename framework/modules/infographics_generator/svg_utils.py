@@ -179,6 +179,14 @@ def get_svg_actual_bbox(svg_path):
             return base * percentage
         return float(value)
 
+    def parse_points(points_str):
+        """解析points属性中的点坐标"""
+        points = []
+        for point in points_str.strip().split():
+            x, y = point.split(',')
+            points.append((float(x), float(y)))
+        return points
+
     for elem in root.iter():
         tag = elem.tag.split('}')[-1]
         dx, dy = get_accumulated_transform(elem)
@@ -212,6 +220,13 @@ def get_svg_actual_bbox(svg_path):
             x2 = parse_percentage(elem.get('x2', '0'), svg_width) + dx
             y2 = parse_percentage(elem.get('y2', '0'), svg_height) + dy
             update_bounds([x1, x2], [y1, y2])
+        elif tag == 'polygon':
+            points_str = elem.get('points', '')
+            if points_str:
+                points = parse_points(points_str)
+                x_vals = [x + dx for x, _ in points]
+                y_vals = [y + dy for _, y in points]
+                update_bounds(x_vals, y_vals)
         elif tag == 'path':
             d = elem.get('d')
             if d:

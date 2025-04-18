@@ -46,7 +46,7 @@ from modules.infographics_generator.template_utils import (
     process_template_requirements,
     get_unique_fields_and_types
 )
-from modules.infographics_generator.data_utils import process_temporal_data, process_numerical_data
+from modules.infographics_generator.data_utils import process_temporal_data, process_numerical_data, deduplicate_combinations
 from modules.infographics_generator.color_utils import is_dark_color, lighten_color
 
 padding = 50
@@ -249,7 +249,7 @@ def make_infographic(
             best_area = other_title["right-top"]["area"] if "right-top" in other_title else default_area
             if area < best_area:
                 other_title["right-top"] = {
-                    "title": (chart_width - width + offset, 0),
+                    "title": (chart_width - width, 0),
                     "chart": (0, max(title_height - min_top, 0)),
                     "text-align": "right",
                     "title-to-chart": "TR",
@@ -267,7 +267,7 @@ def make_infographic(
             best_area = other_title["right-bottom"]["area"] if "right-bottom" in other_title else default_area
             if area < best_area:
                 other_title["right-bottom"] = {
-                    "title": (chart_width - width + offset, chart_height - title_height + max(title_height - (chart_height - max_bottom), 0) + between_padding),
+                    "title": (chart_width - width, chart_height - title_height + max(title_height - (chart_height - max_bottom), 0) + between_padding),
                     "chart": (0, 0),
                     "text-align": "right",
                     "title-to-chart": "BR",
@@ -575,6 +575,7 @@ def process(input: str, output: str, base_url: str, api_key: str, chart_name: st
             data["data"]["columns"][i]["role"] = field
         process_temporal_data(data)
         process_numerical_data(data)
+        deduplicate_combinations(data)
         process_data_time = time.time() - process_data_start
         logger.info(f"Processing data took: {process_data_time:.4f} seconds")
         
