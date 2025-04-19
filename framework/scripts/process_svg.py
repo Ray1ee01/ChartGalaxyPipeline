@@ -332,10 +332,10 @@ def process_single_svg(svg_file, output_dir, stats):
         
         # Generate PNG with bounding boxes
         thread_safe_print("Generating PNG with bounding boxes...")
-        output_png_with_boxes = os.path.join(output_dir, f"{base_name}_with_boxes.png")
-        draw_bounding_boxes(output_png, bbox_data["bounding_boxes"], output_png_with_boxes)
+        #output_png_with_boxes = os.path.join(output_dir, f"{base_name}_with_boxes.png")
+        #draw_bounding_boxes(output_png, bbox_data["bounding_boxes"], output_png_with_boxes)
         
-        thread_safe_print(f"Successfully processed {svg_file} -> {output_png}, {output_png_with_boxes} and {output_json}")
+        #thread_safe_print(f"Successfully processed {svg_file} -> {output_png}, {output_png_with_boxes} and {output_json}")
         
         with stats['lock']:
             stats['processed_files'] += 1
@@ -396,9 +396,9 @@ def process_svg_files(input_dir, output_dir, num_threads=10):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Process SVG files and generate annotations.')
-    parser.add_argument('--input', help='Directory containing SVG files')
-    parser.add_argument('--output', help='Directory to save output files')
-    parser.add_argument('--threads', type=int, default=1, help='Number of concurrent threads (default: 10)')
+    parser.add_argument('input', help='Directory containing SVG files')
+    parser.add_argument('output', help='Directory to save output files')
+    parser.add_argument('--threads', type=int, default=5, help='Number of concurrent threads (default: 10)')
     
     args = parser.parse_args()
     process_svg_files(args.input, args.output, args.threads) 

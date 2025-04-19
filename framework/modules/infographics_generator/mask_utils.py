@@ -13,6 +13,7 @@ def calculate_mask_v2(svg_content: str, width: int, height: int, background_colo
     height = int(height)
     
     # 将背景色转换为RGB格式
+    original_background_color = background_color
     background_color = tuple(int(background_color[i:i+2], 16) for i in (1, 3, 5))
     
     # 创建临时文件
@@ -30,7 +31,10 @@ def calculate_mask_v2(svg_content: str, width: int, height: int, background_colo
         if svg_content_match:
             inner_content = svg_content_match.group(1)
             # 创建新的SVG标签
-            mask_svg_content = f'<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="{width}" height="{height}">{inner_content}</svg>'
+            mask_svg_content = f'<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="{width}" height="{height}"> \
+            <rect width="{width}" height="{height}" fill="{original_background_color}" /> \
+            {inner_content} \
+            </svg>'
         
         mask_svg_file.write(mask_svg_content.encode('utf-8'))
         
@@ -40,7 +44,7 @@ def calculate_mask_v2(svg_content: str, width: int, height: int, background_colo
         '-o', temp_mask_png,
         '--dpi-x', '300',
         '--dpi-y', '300',
-        '--background-color', '#ffffff',
+        '--background-color', original_background_color,
         mask_svg
     ], check=True)
     
@@ -71,8 +75,9 @@ def calculate_mask_v2(svg_content: str, width: int, height: int, background_colo
                     mask[y:y_end, x:x_end] = 0 if white_ratio > 0.95 else 1
     
     # 删除临时文件
+    print("temp", temp_mask_png)
     os.remove(mask_svg)
-    os.remove(temp_mask_png)
+    #os.remove(temp_mask_png)
     
     return mask
 

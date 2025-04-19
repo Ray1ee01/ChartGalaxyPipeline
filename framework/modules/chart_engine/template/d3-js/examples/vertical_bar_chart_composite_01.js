@@ -353,7 +353,8 @@ function makeChart(containerSelector, data) {
                         .attr("x", -8)
                         .attr("y", -8)
                         .attr("width", 16)
-                        .attr("height", 16);
+                        .attr("height", 16)
+                        .attr("preserveAspectRatio","xMidYMid meet");
                 }
             });
     }
@@ -480,7 +481,8 @@ function makeChart(containerSelector, data) {
                         .attr("x", -8)
                         .attr("y", -8)
                         .attr("width", 16)
-                        .attr("height", 16);
+                        .attr("height", 16)
+                        .attr("preserveAspectRatio","xMidYMid meet");
                 }
             });
     }

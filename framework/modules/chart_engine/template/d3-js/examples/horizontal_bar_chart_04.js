@@ -375,6 +375,7 @@ function makeChart(containerSelector, data) {
                     .attr("width", adjustedFlagWidth)
                     .attr("height", adjustedFlagHeight)
                     .attr("xlink:href", images.field[dimension])
+                    .attr("preserveAspectRatio","xMidYMid meet")
                     .attr("clip-path", `url(#${clipId})`);
             }
             // 添加维度标签

@@ -405,7 +405,7 @@ def should_skip_module(module_name: str, output_path: Path) -> bool:
             data = json.load(f)
             
         skip_conditions = {
-            "preprocess": lambda d: "metadata" in d and "data" in d and "variables" in d,
+            "preprocess": lambda d: "metadata" in d and "data" in d and "variables" in d and "processed" in d,
             "chart_type_recommender": lambda d: "chart_type" in d,
             "datafact_generator": lambda d: "datafacts" in d,
             "title_generator": lambda d: "titles" in d,
