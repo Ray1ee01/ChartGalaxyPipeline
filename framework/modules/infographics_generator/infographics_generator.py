@@ -8,6 +8,14 @@ import time
 import numpy as np
 from numpy.lib.stride_tricks import as_strided
 from lxml import etree
+from modules.infographics_generator.svg_utils import svg_to_png
+from PIL import Image as PILImage
+
+from config import api_key as API_KEY, base_url as API_PROVIDER
+
+import base64
+import requests
+from io import BytesIO
 
 # 创建tmp目录（如果不存在）
 os.makedirs("tmp", exist_ok=True)
@@ -270,11 +278,79 @@ def make_infographic(
         background_color = data["colors_dark"].get("background_color", "#000000")
         text_color = "#FFFFFF"
         
+    # final_svg = f"""<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="{total_width}" height="{total_height}" style="font-family: Arial, 'Liberation Sans', 'DejaVu Sans', sans-serif;">
+    # <rect x="0" y="0" width="{total_width}" height="{total_height}" fill="{background_color}" />
+    # <g class="chart" transform="translate({padding + best_title['chart'][0]}, {padding + best_title['chart'][1]})">{chart_content}</g>
+    # <g class="text" fill="{text_color}" transform="translate({padding + best_title['title'][0]}, {padding + best_title['title'][1]})">{title_inner_content}</g>
+    # {image_element}\n</svg>"""
     final_svg = f"""<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="{total_width}" height="{total_height}" style="font-family: Arial, 'Liberation Sans', 'DejaVu Sans', sans-serif;">
-    <rect x="0" y="0" width="{total_width}" height="{total_height}" fill="{background_color}" />
     <g class="chart" transform="translate({padding + best_title['chart'][0]}, {padding + best_title['chart'][1]})">{chart_content}</g>
     <g class="text" fill="{text_color}" transform="translate({padding + best_title['title'][0]}, {padding + best_title['title'][1]})">{title_inner_content}</g>
     {image_element}\n</svg>"""
+    
+    tmp_png_path = "./tmp.png"
+    tmp_svg_path = "./tmp.svg"
+    with open(tmp_svg_path, "w", encoding="utf-8") as f:
+        f.write(final_svg)
+    svg_to_png(tmp_svg_path, tmp_png_path)
+    
+    chart_image = PILImage.open(tmp_png_path)
+    chart_image = chart_image.convert("RGB")
+    
+    def query_llm(image: PILImage) -> str:
+        """
+        Query LLM API with a prompt
+        Args:
+            prompt: The prompt to send to LLM
+        Returns:
+            str: The response from LLM
+        """
+        headers = {
+            'Authorization': f'Bearer {API_KEY}',
+            'Content-Type': 'application/json'
+        }
+        buffered = BytesIO()
+        image.save(buffered, format="PNG")
+        img_base64 = base64.b64encode(buffered.getvalue()).decode('utf-8')
+        
+        data = {
+            'model': 'gemini-2.0-flash-exp',
+            'messages': [
+                {'role': 'user', 
+                 'content': [
+                    {
+                        "type": "text",
+                        "text": "##GENERATE IMAGE## Design a soft beige background with subtle paper texture, appropriate for financial report charts, emphasizing professionalism and simplicity "
+                    },
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": f"data:image/jpeg;base64,{img_base64}"
+                            }
+                    }
+                ]
+                }
+            ],
+            "modalities":["text","image"]
+        }
+        
+        # try:
+        response = requests.post(f'{API_PROVIDER}/chat/completions', headers=headers, json=data)
+        response.raise_for_status()
+        # print(response.json()['choices'][0]['message']['multi_mod_content'])
+        # 把response.json()['choices'][0]['message']['multi_mod_content']保存到文件
+        # with open("multi_mod_content.json", "w", encoding="utf-8") as f:
+        #     f.write(json.dumps(response.json()['choices'][0]['message']['multi_mod_content']))
+        return response.json()['choices'][0]['message']['multi_mod_content'][0]['inline_data']['data']
+        # except Exception as e:
+
+    background_image = query_llm(chart_image)
+    print(background_image)
+    # 把background_image保存到文件
+    with open("background_image.png", "wb") as f:
+        f.write(base64.b64decode(background_image))
+    # except Exception as e:
+    #     logger.error(f"生成背景图片时发生错误: {str(e)}")
     
     return final_svg
 
@@ -387,173 +463,168 @@ def process(input: str, output: str, base_url: str, api_key: str, chart_name: st
     Returns:
         bool: 处理是否成功
     """
-    try:
-        start_time = time.time()
+    start_time = time.time()
+    
+    # 读取输入文件
+    file_read_start = time.time()
+    with open(input, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    data["name"] = input
+    file_read_time = time.time() - file_read_start
+    # logger.info(f"Reading input file took: {file_read_time:.4f} seconds")
+    
+    # 扫描并获取所有可用的模板
+    scan_templates_start = time.time()
+    templates = scan_templates()
+    scan_templates_time = time.time() - scan_templates_start
+    # logger.info(f"Scanning templates took: {scan_templates_time:.4f} seconds")
+    
+    # 分析模板并获取要求
+    analyze_templates_start = time.time()
+    template_count, template_requirements = analyze_templates(templates)
+    compatible_templates = check_template_compatibility(data, templates, chart_name)
+    analyze_templates_time = time.time() - analyze_templates_start
+    # logger.info(f"Analyzing templates took: {analyze_templates_time:.4f} seconds")
         
-        # 读取输入文件
-        file_read_start = time.time()
-        with open(input, "r", encoding="utf-8") as f:
-            data = json.load(f)
-        data["name"] = input
-        file_read_time = time.time() - file_read_start
-        # logger.info(f"Reading input file took: {file_read_time:.4f} seconds")
-        
-        # 扫描并获取所有可用的模板
-        scan_templates_start = time.time()
-        templates = scan_templates()
-        scan_templates_time = time.time() - scan_templates_start
-        # logger.info(f"Scanning templates took: {scan_templates_time:.4f} seconds")
-        
-        # 分析模板并获取要求
-        analyze_templates_start = time.time()
-        template_count, template_requirements = analyze_templates(templates)
-        compatible_templates = check_template_compatibility(data, templates, chart_name)
-        analyze_templates_time = time.time() - analyze_templates_start
-        # logger.info(f"Analyzing templates took: {analyze_templates_time:.4f} seconds")
-            
-        # 如果指定了chart_name，尝试使用它
-        if chart_name:
-            # 在兼容的模板中查找指定的chart_name
-            compatible_templates = [t for t in compatible_templates if chart_name == t[0].split('/')[-1]]
-            if len(compatible_templates) > 0:
-                pass
-            else:
-                # logger.error(f"Specified chart_name '{chart_name}' not compatible with data")
-                return False
-            logger.info("input file: %s", input)
-            logger.info("output file: %s", output)
-        else:
-            logger.info("input file: %s", input)
-            logger.info("output file: %s", output)
-            # 检查与当前数据的兼容性
-            logger.info(f"\nNumber of compatible templates: {len(compatible_templates)}")
-            if not compatible_templates:
-                logger.error("No compatible templates found for the given data")
-                return False
-        
-        # 选择模板
-        select_template_start = time.time()
-        engine, chart_type, chart_name, ordered_fields = select_template(compatible_templates)
-        select_template_time = time.time() - select_template_start
-        # logger.info(f"Selecting template took: {select_template_time:.4f} seconds")
-        
-        # 打印选择的模板信息
-        logger.info(f"\nSelected template: {engine}/{chart_type}/{chart_name}")
-        logger.info(f"Engine: {engine}")
-        logger.info(f"Chart type: {chart_type}")
-        logger.info(f"Chart name: {chart_name}\n")
-
-        # print("requirements", template_requirements)
-
-        # 处理模板要求
-        process_req_start = time.time()
-        requirements = template_requirements[f"{engine}/{chart_type}/{chart_name}"]
-        process_template_requirements(requirements, data, engine, chart_name)
-        process_req_time = time.time() - process_req_start
-        logger.info(f"Processing template requirements took: {process_req_time:.4f} seconds")
-        
-        # 处理数据
-        process_data_start = time.time()
-        for i, field in enumerate(ordered_fields):
-            data["data"]["columns"][i]["role"] = field
-        process_temporal_data(data)
-        process_numerical_data(data)
-        process_data_time = time.time() - process_data_start
-        logger.info(f"Processing data took: {process_data_time:.4f} seconds")
-        
-        # 获取图表模板
-        get_template_start = time.time()
-        engine_obj, template = get_template_for_chart_name(chart_name)
-        if engine_obj is None or template is None:
-            logger.error(f"Failed to load template: {engine}/{chart_type}/{chart_name}")
-            return False
-        get_template_time = time.time() - get_template_start
-        logger.info(f"Getting template took: {get_template_time:.4f} seconds")
-        
-        # 创建临时目录
-        tmp_dir = "./tmp"
-        os.makedirs(tmp_dir, exist_ok=True)
-        
-        # 处理输出文件名，将路径分隔符替换为下划线
-        safe_output_name = os.path.basename(output).replace('/', '_').replace('\\', '_')
-        
-        # 生成图表SVG，使用安全的文件名
-        chart_svg_path = os.path.join(tmp_dir, f"{os.path.splitext(safe_output_name)[0]}.chart.tmp")
-
-        if '-' in engine:
-            framework, framework_type = engine.split('-')
-        elif '_' in engine:
-            framework, framework_type = engine.split('_')
-        else:
-            framework = engine
-            framework_type = None
-
-        # 渲染图表
-        render_chart_start = time.time()
-
-        #try:
-        render_chart_to_svg(
-            json_data=data,
-            output_svg_path=chart_svg_path,
-            js_file=template,
-            framework=framework, # Extract framework name (echarts/d3)
-            framework_type=framework_type
-        )
-        render_chart_time = time.time() - render_chart_start
-        logger.info(f"Rendering chart took: {render_chart_time:.4f} seconds")
-            
-        # 读取生成的SVG内容
-        read_svg_start = time.time()
-        
-        with open(chart_svg_path, "r", encoding="utf-8") as f:
-            chart_svg_content = f.read()
-            if "This is a fallback SVG using a PNG screenshot" in chart_svg_content:
-                return False
-            chart_inner_content = extract_svg_content(chart_svg_content)
-
-        print("try to assemble infographic")
-        assemble_start = time.time()
-
-        print("template_requirements", requirements)
-        final_svg = make_infographic(
-            data=data,
-            chart_svg_content=chart_inner_content,
-            padding=padding,
-            between_padding=between_padding,
-            dark=requirements.get("background", "light") == "dark"
-        )
-
-        assemble_time = time.time() - assemble_start
-        logger.info(f"Assembling infographic took: {assemble_time:.4f} seconds")
-        
-        if final_svg is None:
-            logger.error("Failed to assemble infographic: SVG content extraction failed")
-            return False
-        
-        # 获取当前时间戳
-        timestamp = int(time.time())
-        output_dir = os.path.dirname(output)
-        output_filename = os.path.basename(output)        
-        new_filename = f"{timestamp}_{chart_name}_{os.path.splitext(output_filename)[0]}.svg"        
-        output_path = os.path.join(output_dir, new_filename)
-        
-        # 保存最终的SVG
-        save_start = time.time()
-        with open(output_path, "w", encoding="utf-8") as f:
-            f.write(final_svg)
-        save_time = time.time() - save_start
-        # logger.info(f"Saving final SVG took: {save_time:.4f} seconds")
-        # except Exception as e:
-        #     logger.error(f"Error processing infographics: {e}")
-        #     return False
-    except Exception as e:
-        logger.error(f"Error processing infographics: {e}")
-        return False
-    finally:
-        try:
-            os.remove(chart_svg_path)
-        except Exception as e:
+    # 如果指定了chart_name，尝试使用它
+    if chart_name:
+        # 在兼容的模板中查找指定的chart_name
+        compatible_templates = [t for t in compatible_templates if chart_name == t[0].split('/')[-1]]
+        if len(compatible_templates) > 0:
             pass
+        else:
+            # logger.error(f"Specified chart_name '{chart_name}' not compatible with data")
+            return False
+        logger.info("input file: %s", input)
+        logger.info("output file: %s", output)
+    else:
+        logger.info("input file: %s", input)
+        logger.info("output file: %s", output)
+        # 检查与当前数据的兼容性
+        logger.info(f"\nNumber of compatible templates: {len(compatible_templates)}")
+        if not compatible_templates:
+            logger.error("No compatible templates found for the given data")
+            return False
+    
+    # 选择模板
+    select_template_start = time.time()
+    engine, chart_type, chart_name, ordered_fields = select_template(compatible_templates)
+    select_template_time = time.time() - select_template_start
+    # logger.info(f"Selecting template took: {select_template_time:.4f} seconds")
+    
+    # 打印选择的模板信息
+    logger.info(f"\nSelected template: {engine}/{chart_type}/{chart_name}")
+    logger.info(f"Engine: {engine}")
+    logger.info(f"Chart type: {chart_type}")
+    logger.info(f"Chart name: {chart_name}\n")
+
+    # print("requirements", template_requirements)
+
+    # 处理模板要求
+    process_req_start = time.time()
+    requirements = template_requirements[f"{engine}/{chart_type}/{chart_name}"]
+    process_template_requirements(requirements, data, engine, chart_name)
+    process_req_time = time.time() - process_req_start
+    logger.info(f"Processing template requirements took: {process_req_time:.4f} seconds")
+    
+    # 处理数据
+    process_data_start = time.time()
+    for i, field in enumerate(ordered_fields):
+        data["data"]["columns"][i]["role"] = field
+    process_temporal_data(data)
+    process_numerical_data(data)
+    process_data_time = time.time() - process_data_start
+    logger.info(f"Processing data took: {process_data_time:.4f} seconds")
+    
+    # 获取图表模板
+    get_template_start = time.time()
+    engine_obj, template = get_template_for_chart_name(chart_name)
+    if engine_obj is None or template is None:
+        logger.error(f"Failed to load template: {engine}/{chart_type}/{chart_name}")
+        return False
+    get_template_time = time.time() - get_template_start
+    logger.info(f"Getting template took: {get_template_time:.4f} seconds")
+    
+    # 创建临时目录
+    tmp_dir = "./tmp"
+    os.makedirs(tmp_dir, exist_ok=True)
+    
+    # 处理输出文件名，将路径分隔符替换为下划线
+    safe_output_name = os.path.basename(output).replace('/', '_').replace('\\', '_')
+    
+    # 生成图表SVG，使用安全的文件名
+    chart_svg_path = os.path.join(tmp_dir, f"{os.path.splitext(safe_output_name)[0]}.chart.tmp")
+
+    if '-' in engine:
+        framework, framework_type = engine.split('-')
+    elif '_' in engine:
+        framework, framework_type = engine.split('_')
+    else:
+        framework = engine
+        framework_type = None
+
+    # 渲染图表
+    render_chart_start = time.time()
+
+    #try:
+    render_chart_to_svg(
+        json_data=data,
+        output_svg_path=chart_svg_path,
+        js_file=template,
+        framework=framework, # Extract framework name (echarts/d3)
+        framework_type=framework_type
+    )
+    render_chart_time = time.time() - render_chart_start
+    logger.info(f"Rendering chart took: {render_chart_time:.4f} seconds")
+        
+    # 读取生成的SVG内容
+    read_svg_start = time.time()
+    
+    with open(chart_svg_path, "r", encoding="utf-8") as f:
+        chart_svg_content = f.read()
+        if "This is a fallback SVG using a PNG screenshot" in chart_svg_content:
+            return False
+        chart_inner_content = extract_svg_content(chart_svg_content)
+
+    print("try to assemble infographic")
+    assemble_start = time.time()
+
+    print("template_requirements", requirements)
+    final_svg = make_infographic(
+        data=data,
+        chart_svg_content=chart_inner_content,
+        padding=padding,
+        between_padding=between_padding,
+        dark=requirements.get("background", "light") == "dark"
+    )
+
+    assemble_time = time.time() - assemble_start
+    logger.info(f"Assembling infographic took: {assemble_time:.4f} seconds")
+    
+    if final_svg is None:
+        logger.error("Failed to assemble infographic: SVG content extraction failed")
+        return False
+    
+    # 获取当前时间戳
+    timestamp = int(time.time())
+    output_dir = os.path.dirname(output)
+    output_filename = os.path.basename(output)        
+    new_filename = f"{timestamp}_{chart_name}_{os.path.splitext(output_filename)[0]}.svg"        
+    output_path = os.path.join(output_dir, new_filename)
+    
+    # 保存最终的SVG
+    save_start = time.time()
+    with open(output_path, "w", encoding="utf-8") as f:
+        f.write(final_svg)
+    save_time = time.time() - save_start
+    # except Exception as e:
+    #     logger.error(f"Error processing infographics: {e}")
+    #     return False
+    # finally:
+    #     try:
+    #         os.remove(chart_svg_path)
+    #     except Exception as e:
+    #         pass
     
     '''
     total_time = time.time() - start_time

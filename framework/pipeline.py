@@ -126,93 +126,93 @@ def run_pipeline(input_path, output_path=None, temp_dir=None, modules_to_run=Non
         threads (int, optional): 处理目录时的并发线程数，仅在input_path为目录时生效
         chart_name (str, optional): 指定图表名称，仅对infographics_generator模块有效
     """
-    try:
-        print("modules_to_run: ", modules_to_run)
-        # 如果是create_index模块，单独处理
-        if modules_to_run and 'create_index' in modules_to_run:
-            return run_single_file(
-                input_path=input_path,
-                output_path=output_path,
-                temp_dir=temp_dir,
-                modules_to_run=modules_to_run,
-                chart_name=chart_name
-            )
-            
-        input_path = Path(input_path)
-        output_path = Path(output_path) if output_path else input_path
-        temp_dir = Path(temp_dir) if temp_dir else Path("./tmp")
+    # try:
+    print("modules_to_run: ", modules_to_run)
+    # 如果是create_index模块，单独处理
+    if modules_to_run and 'create_index' in modules_to_run:
+        return run_single_file(
+            input_path=input_path,
+            output_path=output_path,
+            temp_dir=temp_dir,
+            modules_to_run=modules_to_run,
+            chart_name=chart_name
+        )
+        
+    input_path = Path(input_path)
+    output_path = Path(output_path) if output_path else input_path
+    temp_dir = Path(temp_dir) if temp_dir else Path("./tmp")
 
-        if input_path.is_dir():
-            # 如果指定了输出目录且不同于输入目录，创建输出目录
-            if output_path != input_path:
-                output_path.mkdir(parents=True, exist_ok=True)
-            
-            # 获取输入目录下所有JSON文件
-            input_files = list(input_path.glob('*.json'))
-            random.shuffle(input_files)  # 随机打乱文件顺序
-            
-            if threads and threads > 1:
-                # 使用线程池并行处理文件
-                with ProcessPoolExecutor(max_workers=threads) as executor:
-                    futures = []
-                    for input_file in input_files:
-                        # 如果是inplace处理，输出路径就是输入路径
-                        if output_path == input_path:
-                            output_file = input_file
-                        else:
-                            # 确保输出文件保持相同的文件名
-                            output_file = output_path / input_file.name
-                            
-                        future = executor.submit(
-                            run_single_file,
-                            input_path=input_file,
-                            output_path=output_file,
-                            temp_dir=temp_dir,
-                            modules_to_run=modules_to_run,
-                            chart_name=chart_name
-                        )
-                        futures.append(future)
-                    
-                    # 等待所有任务完成并检查结果
-                    results = [future.result() for future in futures]
-                    return all(results)
-            else:
-                # 单线程顺序处理
-                success = True
+    if input_path.is_dir():
+        # 如果指定了输出目录且不同于输入目录，创建输出目录
+        if output_path != input_path:
+            output_path.mkdir(parents=True, exist_ok=True)
+        
+        # 获取输入目录下所有JSON文件
+        input_files = list(input_path.glob('*.json'))
+        random.shuffle(input_files)  # 随机打乱文件顺序
+        
+        if threads and threads > 1:
+            # 使用线程池并行处理文件
+            with ProcessPoolExecutor(max_workers=threads) as executor:
+                futures = []
                 for input_file in input_files:
+                    # 如果是inplace处理，输出路径就是输入路径
                     if output_path == input_path:
                         output_file = input_file
                     else:
+                        # 确保输出文件保持相同的文件名
                         output_file = output_path / input_file.name
-                    
-                    success &= run_single_file(
+                        
+                    future = executor.submit(
+                        run_single_file,
                         input_path=input_file,
                         output_path=output_file,
                         temp_dir=temp_dir,
                         modules_to_run=modules_to_run,
                         chart_name=chart_name
                     )
-                return success
+                    futures.append(future)
+                
+                # 等待所有任务完成并检查结果
+                results = [future.result() for future in futures]
+                return all(results)
         else:
-            # 单文件处理
-            if output_path == input_path:
-                output_file = input_path
-            else:
-                # 如果指定了不同的输出路径，确保它的父目录存在
-                output_path.parent.mkdir(parents=True, exist_ok=True)
-                output_file = output_path
+            # 单线程顺序处理
+            success = True
+            for input_file in input_files:
+                if output_path == input_path:
+                    output_file = input_file
+                else:
+                    output_file = output_path / input_file.name
+                
+                success &= run_single_file(
+                    input_path=input_file,
+                    output_path=output_file,
+                    temp_dir=temp_dir,
+                    modules_to_run=modules_to_run,
+                    chart_name=chart_name
+                )
+            return success
+    else:
+        # 单文件处理
+        if output_path == input_path:
+            output_file = input_path
+        else:
+            # 如果指定了不同的输出路径，确保它的父目录存在
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            output_file = output_path
 
-            return run_single_file(
-                input_path=input_path,
-                output_path=output_file,
-                temp_dir=temp_dir,
-                modules_to_run=modules_to_run,
-                chart_name=chart_name
-            )
+        return run_single_file(
+            input_path=input_path,
+            output_path=output_file,
+            temp_dir=temp_dir,
+            modules_to_run=modules_to_run,
+            chart_name=chart_name
+        )
             
-    except Exception as e:
-        logger.error(f"管道执行失败: {str(e)}")
-        return False
+    # except Exception as e:
+    #     logger.error(f"管道执行失败: {str(e)}")
+    #     return False
     
 def run_single_file(input_path, output_path, temp_dir=None, modules_to_run=None, chart_name=None):
     """

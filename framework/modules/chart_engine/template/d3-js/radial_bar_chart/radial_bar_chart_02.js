@@ -5,7 +5,7 @@ REQUIREMENTS_BEGIN
     "chart_name": "radial_bar_chart_02",
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
-    "required_fields_range": [[3, 20], [0, 100], [2]],
+    "required_fields_range": [[3, 20], [0, 100], [2,2]],
     "required_fields_icons": [],
     "required_other_icons": [],
     "required_fields_colors": [],

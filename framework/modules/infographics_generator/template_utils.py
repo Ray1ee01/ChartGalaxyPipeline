@@ -33,10 +33,13 @@ def get_unique_fields_and_types(
     ordered_fields = [field for field in field_order if field in field_types]
     for field in field_ranges:
         r = field_ranges[field]
-        if r[0] == "-inf":
-            r[0] = float('-inf')
-        if r[1] == "inf":
-            r[1] = float('inf')
+        try:
+            if r[0] == "-inf":
+                r[0] = float('-inf')
+            if r[1] == "inf":
+                r[1] = float('inf')
+        except:
+            pass
     ordered_ranges = [field_ranges[field] for field in ordered_fields]
     
     return ordered_fields, field_types, ordered_ranges
@@ -124,10 +127,9 @@ def check_template_compatibility(data: Dict, templates: Dict, specific_chart_nam
                             if data["data"]["columns"][i]["data_type"] in ["temporal", "categorical"]:
                                 key = data["data"]["columns"][i]["name"]
                                 unique_values = list(set(value[key] for value in data["data"]["data"]))
+                                print(unique_values, range)
                                 if len(unique_values) > range[1] or len(unique_values) < range[0]:
                                     flag = False
-                                    #if specific_chart_name and specific_chart_name == chart_name:
-                                    #    print(f"template {template_key} miss match", data["name"], len(unique_values), range)
                                     break
                                 else:
                                     pass
