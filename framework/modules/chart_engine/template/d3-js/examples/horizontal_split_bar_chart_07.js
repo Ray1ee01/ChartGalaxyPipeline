@@ -15,7 +15,11 @@ REQUIREMENTS_BEGIN
     "supported_effects": ["shadow", "radius_corner", "gradient", "stroke", "spacing"],
     "min_height": 400,
     "min_width": 400,
+<<<<<<< HEAD
     "background": "dark",
+=======
+    "background": ["styled","dark"],
+>>>>>>> origin/develop-bowen-barchart
     "icon_mark": "none",
     "icon_label": "side",
     "has_x_axis": "no",
