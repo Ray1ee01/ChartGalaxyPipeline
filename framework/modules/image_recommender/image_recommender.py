@@ -157,7 +157,7 @@ class ImageRecommender:
             # Randomly select a type
             import random
             available_types = list(special_icons[category].keys())
-            selected_type = random.choice(available_types)
+            selected_type = "circle"#random.choice(available_types)
             icons = special_icons[category][selected_type]
             
             model = self.model

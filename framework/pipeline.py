@@ -408,7 +408,7 @@ def should_skip_module(module_name: str, output_path: Path) -> bool:
             "preprocess": lambda d: "metadata" in d and "data" in d and "variables" in d and "processed" in d,
             "chart_type_recommender": lambda d: "chart_type" in d,
             "datafact_generator": lambda d: "datafacts" in d,
-            "title_generator": lambda d: "titles" in d,
+            "title_generator": lambda d: False,#"titles" in d,
             "layout_recommender": lambda d: "variation" in d,
             "color_recommender": lambda d: "colors" in d,
             "image_recommender": lambda d: "images" in d

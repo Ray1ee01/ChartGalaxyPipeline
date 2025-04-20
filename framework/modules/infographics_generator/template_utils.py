@@ -81,6 +81,9 @@ def check_template_compatibility(data: Dict, templates: Dict, specific_chart_nam
     
     # Get the combination type from the data
     combination_type = data.get("data", {}).get("type_combination", "")
+    if combination_type == "":
+        combination_type = " + ".join([col["data_type"] for col in data["data"]["columns"]])
+
     if not combination_type:
         return compatible_templates
     

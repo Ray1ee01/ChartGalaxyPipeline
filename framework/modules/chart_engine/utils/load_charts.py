@@ -219,8 +219,8 @@ def load_d3js(json_data=None, output_file=None, js_file=None, width=None, height
         <meta charset="utf-8">
         <title>D3.js Chart</title>
         <script src="%s"></script>
-        <script src="https://cdn.jsdelivr.net/npm/d3-weighted-voronoi@1.1.3/build/d3-weighted-voronoi.min.js"></script>
-        <script src="https://cdn.jsdelivr.net/npm/d3-voronoi-map@2.1.1/build/d3-voronoi-map.min.js"></script>
+        <script src="%s"></script>
+        <script src="%s"></script>
         <style>
             body {
                 font-family: Arial, sans-serif;
@@ -271,9 +271,13 @@ def load_d3js(json_data=None, output_file=None, js_file=None, width=None, height
     
     # 获取D3.js库文件的绝对路径
     d3_lib_path = os.path.abspath(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static', 'lib', 'd3.min.js'))
+    d3_voronoi_lib_path = os.path.abspath(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static', 'lib', 'd3-voronoi-map.min.js'))
+    d3_weighted_voronoi_lib_path = os.path.abspath(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static', 'lib', 'd3-weighted-voronoi.min.js'))
     
     # 使用文件协议的URL (用于SVG渲染)
     d3_lib_url = f"file://{d3_lib_path}"
+    d3_voronoi_lib_url = f"file://{d3_voronoi_lib_path}"
+    d3_weighted_voronoi_lib_url = f"file://{d3_weighted_voronoi_lib_path}"
 
     utils_lib_path = os.path.abspath(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static', 'lib', 'utils.js'))
 
@@ -282,7 +286,7 @@ def load_d3js(json_data=None, output_file=None, js_file=None, width=None, height
     js_code = _load_js_code(js_file)
     
     # Create HTML content    
-    formatted_html = html_template % (d3_lib_url, width, height)
+    formatted_html = html_template % (d3_lib_url, d3_voronoi_lib_url, d3_weighted_voronoi_lib_url, width, height)
     formatted_html = formatted_html.replace('JSON_DATA_PLACEHOLDER', json.dumps(json_data))
     formatted_html = formatted_html.replace('JS_CODE_PLACEHOLDER', js_code)
     formatted_html = formatted_html.replace('UTILS_LIB_PLACEHOLDER', utils_code)
@@ -434,15 +438,28 @@ def render_chart_to_svg(json_data, output_svg_path, \
             
             with open(html_file, 'r', encoding='utf-8') as f:
                 html_content = f.read()
-            lib_file = 'echarts.min.js' if framework.lower().startswith('echarts') else 'd3.min.js'
-            file_pattern = r'file://.*?/' + lib_file
-            
+                
             if framework.lower().startswith('echarts'):
+                lib_file = 'echarts.min.js'
+                file_pattern = r'file://.*?/' + lib_file
                 cdn_url = "https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"
+                html_content = re.sub(file_pattern, cdn_url, html_content)
             else:  # D3.js
+                # For D3.js, we need to replace three different URLs
+                # Replace d3.min.js
+                d3_file_pattern = r'file://.*?/d3\.min\.js'
                 cdn_url = "https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"
-            
-            html_content = re.sub(file_pattern, cdn_url, html_content)
+                html_content = re.sub(d3_file_pattern, cdn_url, html_content)
+                
+                # Replace d3-voronoi-map.min.js
+                voronoi_file_pattern = r'file://.*?/d3-voronoi-map\.min\.js'
+                cdn_url_voronoi = "https://cdn.jsdelivr.net/npm/d3-voronoi-map@2.1.1/build/d3-voronoi-map.min.js"
+                html_content = re.sub(voronoi_file_pattern, cdn_url_voronoi, html_content)
+                
+                # Replace d3-weighted-voronoi.min.js
+                weighted_voronoi_file_pattern = r'file://.*?/d3-weighted-voronoi\.min\.js'
+                cdn_url_weighted_voronoi = "https://cdn.jsdelivr.net/npm/d3-weighted-voronoi@1.1.3/build/d3-weighted-voronoi.min.js"
+                html_content = re.sub(weighted_voronoi_file_pattern, cdn_url_weighted_voronoi, html_content)
             
             with open(html_output_path, 'w', encoding='utf-8') as f:
                 f.write(html_content)
