@@ -101,6 +101,73 @@ def remove_large_rects(svg_content: str) -> str:
     except Exception as e:
         return svg_content 
 
+def extract_large_rect(svg_content: str) -> tuple[str, str]:
+    """
+    提取SVG中的大型背景矩形或图像元素，并从原SVG中删除它。
+    
+    条件：
+    1. 元素是rect或image，且class="background"
+    2. width*height > 500*500
+    3. 没有设置opacity属性或opacity > 0.5
+    
+    参数:
+        svg_content (str): 原始SVG内容
+        
+    返回:
+        tuple[str, str]: (修改后的SVG内容, 提取的背景元素内容)
+                         如果没有找到符合条件的元素，则返回(原始SVG, '')
+    """
+    try:
+        # 确保SVG内容被正确的<svg>标签包围
+        if not svg_content.strip().startswith('<svg'):
+            svg_content = f'<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">{svg_content}</svg>'
+        
+        svg_tree = etree.fromstring(svg_content.encode())
+        
+        # 寻找class为background的rect元素
+        background_elements = svg_tree.xpath("//*[local-name()='rect' and @class='background']|"
+                            "//*[local-name()='image' and @class='background']")
+        print("background_elements", background_elements)
+        
+        for element in background_elements:
+            # 获取宽度和高度
+            width = float(element.get("width", 0))
+            height = float(element.get("height", 0))
+            
+            # 检查大小条件
+            if width * height <= 500 * 500:
+                continue
+                
+            # 检查opacity条件
+            opacity = element.get("opacity")
+            if opacity is not None and float(opacity) <= 0.5:
+                continue
+                
+            # 提取背景元素
+            background_element = etree.tostring(element, encoding='unicode')
+            
+            # 从原SVG中删除该元素
+            element.getparent().remove(element)
+            
+            # 返回修改后的SVG内容和提取的背景元素内容
+            result_svg = etree.tostring(svg_tree, encoding='unicode')
+            # 如果原始内容不包含<svg>标签，则提取内部内容
+            if not svg_content.strip().startswith('<svg'):
+                result_svg = extract_svg_content(result_svg) or ''
+            
+            return result_svg, background_element
+            
+        # 如果没有找到符合条件的元素
+        if not svg_content.strip().startswith('<svg'):
+            return svg_content, ''
+        else:
+            content = extract_svg_content(svg_content) or ''
+            return content, ''
+        
+    except Exception as e:
+        print(f"提取背景元素时发生错误: {e}")
+        return svg_content, ''
+
 def parse_translate(transform_str):
     """Parse translate(x, y) from the transform attribute."""
     match = re.search(r'translate\(\s*([-\d.]+)(?:[\s,]+([-\d.]+))?\s*\)', transform_str)

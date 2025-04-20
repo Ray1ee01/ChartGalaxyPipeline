@@ -53,8 +53,7 @@ def analyze_templates(templates: Dict) -> Tuple[int, Dict[str, str], int]:
                 if 'base' in chart_name:
                     continue
                 if engine == 'vegalite_py':
-                    if 'line' in chart_name or 'donut' in chart_name or 'pie' in chart_name or 'area' in chart_name:
-                        continue
+                    continue
                 template_count += 1
                 if 'requirements' in template_info:
                     req = template_info['requirements']
@@ -81,8 +80,9 @@ def check_template_compatibility(data: Dict, templates: Dict, specific_chart_nam
     
     # Get the combination type from the data
     combination_type = data.get("data", {}).get("type_combination", "")
+    combination_types = [col["data_type"] for col in data["data"]["columns"]]
     if combination_type == "":
-        combination_type = " + ".join([col["data_type"] for col in data["data"]["columns"]])
+        combination_type = " + ".join(combination_types)
 
     if not combination_type:
         return compatible_templates
@@ -95,8 +95,7 @@ def check_template_compatibility(data: Dict, templates: Dict, specific_chart_nam
                 if chart_name in block_list:
                     continue
                 if engine == 'vegalite_py':
-                    if 'line' in chart_name or 'donut' in chart_name or 'pie' in chart_name or 'area' in chart_name:
-                        continue
+                    continue
                     
                 template_key = f"{engine}/{chart_type}/{chart_name}"
                 
@@ -108,14 +107,29 @@ def check_template_compatibility(data: Dict, templates: Dict, specific_chart_nam
                             req['required_fields_type'],
                             req.get('required_fields_range', None)
                         )
-                        data_type_str = ' + '.join([field_types[field] for field in ordered_fields])
+                        data_types = [field_types[field] for field in ordered_fields]
+                        data_type_str = ' + '.join(data_types)
                         if len(req.get('required_fields_colors', [])) > 0 and len(data.get("colors", {}).get("field", [])) == 0:
                             continue
 
                         if len(req.get('required_fields_icons', [])) > 0 and len(data.get("images", {}).get("field", [])) == 0:
                             continue
-                    
-                        if combination_type != data_type_str:
+
+                        if len(data_types) == len(combination_types):
+                            check_flag = True
+                            for data_type, combination_type in zip(data_types, combination_types[:len(data_types)]):
+                                if data_type == "categorical" and (combination_type == "temporal" or combination_type == "categorical"):
+                                    pass
+                                elif data_type == "numerical" and combination_type == "numerical":
+                                    pass
+                                elif data_type == "temporal" and combination_type == "temporal":
+                                    pass
+                                else:
+                                    check_flag = False
+                                    break
+                            if not check_flag:
+                                continue
+                        else:
                             continue
 
                         flag = True
@@ -149,6 +163,7 @@ def check_template_compatibility(data: Dict, templates: Dict, specific_chart_nam
                             if specific_chart_name == None or specific_chart_name == chart_name:
                                 compatible_templates.append((template_key, ordered_fields))
                         
+    #print("compatible_templates", compatible_templates)
     return compatible_templates
 
 def select_template(compatible_templates: List[str]) -> Tuple[str, str, str]:

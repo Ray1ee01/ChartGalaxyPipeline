@@ -88,6 +88,12 @@ MODULES = [
         "output_type": "json"
     },
     {
+        "name": "all",
+        "description": "综合模块(datafact+title+color+image)",
+        "input_type": "json",
+        "output_type": "json"
+    },
+    {
         "name": "infographics_generator",
         "description": "信息图表生成模块",
         "input_type": "json",
@@ -297,8 +303,65 @@ def run_single_file(input_path, output_path, temp_dir=None, modules_to_run=None,
         module_desc = module_config["description"]
         # logger.info(f"执行模块 {i+1}/{len(modules_to_run)}: {module_name} - {module_desc}")
         
+        # 特殊处理all模块，依次执行datafact_generator、title_generator、color_recommender和image_recommender
+        if module_name == "all":
+            # 数据洞察模块
+            preprocess_module = import_module(f"modules.preprocess.preprocess")
+            if not should_skip_module(module_name, output_path):
+                preprocess_module.process(input=str(current_input), output=str(output_path))
+                current_input = output_path
+
+            datafact_module = import_module("modules.datafact_generator.datafact_generator")
+            if not should_skip_module("datafact_generator", output_path):
+                datafact_module.process(input=str(current_input), output=str(output_path))
+                current_input = output_path
+            
+            # 标题生成模块
+            title_module = import_module("modules.title_generator.title_generator")
+            if not should_skip_module("title_generator", output_path):
+                title_module.process(
+                    input=str(current_input), 
+                    output=str(output_path),
+                    base_url=base_url,
+                    api_key=api_key,
+                    embed_model_path=embed_model_path,
+                    topk=topk,
+                    data_path=text_data_path,
+                    index_path=text_index_path
+                )
+                current_input = output_path
+            
+            # 色彩推荐模块
+            color_module = import_module("modules.color_recommender.color_recommender")
+            if not should_skip_module("color_recommender", output_path):
+                color_module.process(
+                    input=str(current_input), 
+                    output=str(output_path),
+                    base_url=base_url,
+                    api_key=api_key,
+                    embed_model_path=embed_model_path,
+                    data_path=color_data_path,
+                    index_path=color_index_path
+                )
+                current_input = output_path
+            
+            # 图像推荐模块
+            image_module = import_module("modules.image_recommender.image_recommender")
+            if not should_skip_module("image_recommender", output_path):
+                image_module.process(
+                    input=str(current_input), 
+                    output=str(output_path),
+                    base_url=base_url,
+                    api_key=api_key,
+                    embed_model_path=embed_model_path,
+                    data_path=image_data_path,
+                    index_path=image_index_path,
+                    resource_path=image_resource_path
+                )
+                current_input = output_path
+        
         # 特殊处理title_generator模块，传入配置参数
-        if module_name == "title_generator":
+        elif module_name == "title_generator":
             module = import_module(f"modules.{module_name}.{module_name}")
             if not should_skip_module(module_name, output_path):
                 module.process(

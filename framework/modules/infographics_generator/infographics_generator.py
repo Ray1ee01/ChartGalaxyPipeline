@@ -7,6 +7,7 @@ import logging
 import time
 import numpy as np
 import subprocess
+import re
 from numpy.lib.stride_tricks import as_strided
 from lxml import etree
 
@@ -38,7 +39,7 @@ from modules.chart_engine.chart_engine import load_data_from_json, get_template_
 from modules.chart_engine.template.template_registry import scan_templates
 from modules.title_styler.title_styler import process as title_styler_process
 from modules.infographics_generator.mask_utils import calculate_mask, calculate_content_height, calculate_content_width, calculate_bbox, calculate_mask_v2
-from modules.infographics_generator.svg_utils import extract_svg_content, remove_large_rects, get_svg_actual_bbox, adjust_and_get_bbox, add_gradient_to_rect
+from modules.infographics_generator.svg_utils import extract_svg_content, extract_large_rect, adjust_and_get_bbox, add_gradient_to_rect
 from modules.infographics_generator.image_utils import find_best_size_and_position
 from modules.infographics_generator.template_utils import (
     analyze_templates,
@@ -120,13 +121,6 @@ def make_infographic(
         img_str = base64.b64encode(buf.read()).decode('utf-8')
         return img_str
     
-    # Generate visualization
-    mask_img = visualize_mask(mask, "Chart Mask")
-    
-    # Save the visualization to a file for inspection
-    with open(mask_path, "wb") as f:
-        f.write(base64.b64decode(mask_img))
-    logger.info(f"Mask dimensions: {mask.shape[0]}x{mask.shape[1]}")
 
     for i in range(steps + 1):
         width = min_title_width + i * (max_title_width - min_title_width) / steps
@@ -332,7 +326,7 @@ def make_infographic(
             title_x = max(chart_width - title_width, max_right + between_padding)
             if area < best_area:
                 other_title["right"] = {
-                    "title": (title_x, range_start),
+                    "title": (title_x, range_start + between_padding),
                     "chart": (0, 0),
                     "text-align": "right",
                     "title-to-chart": "R",
@@ -384,8 +378,15 @@ def make_infographic(
     final_svg = f"""<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="{total_width}" height="{total_height}" style="font-family: Arial, 'Liberation Sans', 'DejaVu Sans', sans-serif;">
     <g class="chart" transform="translate({padding + best_title['chart'][0]}, {padding + best_title['chart'][1]})">{chart_content}</g>
     <g class="text" transform="translate({padding + best_title['title'][0]}, {padding + best_title['title'][1]})">{title_inner_content}</g>"""
-    original_mask = calculate_mask(final_svg + "\n</svg>", total_width, total_height, 0)
+    original_mask = calculate_mask_v2(final_svg + "\n</svg>", total_width, total_height, background_color)
     
+    # Generate visualization
+    mask_img = visualize_mask(original_mask, "Chart Mask")
+    
+    # Save the visualization to a file for inspection
+    with open(mask_path, "wb") as f:
+        f.write(base64.b64decode(mask_img))
+
     primary_image = data.get("images", {}).get("other", {}).get("primary")
 
     image_element = ""
@@ -468,8 +469,15 @@ def make_infographic(
                     image_to_chart = "T" if image_center_y < canvas_center_y else "B"
             
             
-            
-    background_element = add_gradient_to_rect(f'<rect x="0" y="0" width="{total_width}" height="{total_height}" fill="{background_color}" />')
+    chart_content, background_element = extract_large_rect(chart_content)
+    print("background_element", background_element)
+    if background_element == "":
+        background_element = add_gradient_to_rect(f'<rect x="0" y="0" width="{total_width}" height="{total_height}" fill="{background_color}" />')
+    else:
+        background_element = re.sub(r'width="[^"]+"', f'width="{total_width}"', background_element)
+        background_element = re.sub(r'height="[^"]+"', f'height="{total_height}"', background_element)
+        background_layer = add_gradient_to_rect(f'<rect x="0" y="0" width="{total_width}" height="{total_height}" fill="{background_color}" />')
+        background_element = background_layer + background_element
     final_svg = f"""<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="{total_width}" height="{total_height}" style="font-family: Arial, 'Liberation Sans', 'DejaVu Sans', sans-serif;">
     {background_element}
     <g class="chart" transform="translate({padding + best_title['chart'][0]}, {padding + best_title['chart'][1]})">{chart_content}</g>
