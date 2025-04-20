@@ -99,7 +99,9 @@ const createXAxisScaleAndTicks = (data, xField, rangeStart = 0, rangeEnd = 100, 
     
     // 确保包含最后一个日期
     if (xTicks.length > 0 && xTicks[xTicks.length - 1] < xExtent[1]) {
-        xTicks.pop(); // 先移除当前最后一个刻度
+        if (xTicks.length > 7) {
+            xTicks.pop(); // 先移除当前最后一个刻度
+        }
         xTicks.push(xExtent[1]); // 添加数据的最后一个日期作为刻度
     }
     

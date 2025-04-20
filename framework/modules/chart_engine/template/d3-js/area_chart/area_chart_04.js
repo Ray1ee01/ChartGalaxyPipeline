@@ -123,74 +123,122 @@ function makeChart(containerSelector, data) {
         .attr("stroke-width", 3)
         .attr("d", line);
     
-    const sampleLabelIndex = sampleLabels(chartData.length);
+    // 获取刻度对应的数据点并进行插值
+    const tickData = xTicks.map(tick => {
+        // 找到tick左右两侧最近的数据点
+        const tickTime = tick.getTime();
+        let leftPoint = null;
+        let rightPoint = null;
+        
+        for (let i = 0; i < chartData.length - 1; i++) {
+            const currDate = parseDate(chartData[i][xField]).getTime();
+            const nextDate = parseDate(chartData[i + 1][xField]).getTime();
+            
+            if (currDate <= tickTime && tickTime <= nextDate) {
+                leftPoint = {
+                    time: currDate,
+                    value: chartData[i][yField]
+                };
+                rightPoint = {
+                    time: nextDate,
+                    value: chartData[i + 1][yField]
+                };
+                break;
+            }
+        }
+
+        console.log('tick : ', tick);
+        console.log('   leftPoint : ', leftPoint);
+        console.log('   rightPoint : ', rightPoint);
+        
+        // 如果找到了左右点,进行线性插值
+        if (leftPoint && rightPoint) {
+            const ratio = (tickTime - leftPoint.time) / (rightPoint.time - leftPoint.time);
+            const interpolatedValue = leftPoint.value + (rightPoint.value - leftPoint.value) * ratio;
+            console.log('   interpolatedValue : ', interpolatedValue);
+            return {
+                xField: tick,
+                yField: interpolatedValue
+            };
+        }
+        
+        // 如果在数据范围外,返回最近的点的值
+        const closestPoint = chartData.reduce((prev, curr) => {
+            const prevDate = parseDate(prev[xField]);
+            const currDate = parseDate(curr[xField]);
+            return Math.abs(prevDate.getTime() - tickTime) < Math.abs(currDate.getTime() - tickTime) ? prev : curr;
+        });
+        
+        console.log('   closestPoint : ', closestPoint);
+        return {
+            xField: tick,
+            yField: closestPoint[yField]
+        };
+    });
 
     // 添加数据点和标签 - 优化标签位置，包括首尾点
-    chartData.forEach((d, i) => {
-        if (!sampleLabelIndex.includes(i)) {
-            return;
-        }
+    tickData.forEach((d, i) => {
 
-        const x = xScale(parseDate(d[xField]));
-        const y = yScale(d[yField]);
+        const x = xScale(parseDate(d.xField));
+        const y = yScale(d.yField);
         
         // 计算更好的标签位置，避免遮挡线条
-        let labelY = y;
+        let labelY = y - 10;
         
-        // 根据点的位置计算标签位置
-        if (i === 0) {
-            // 第一个点 - 考虑后一个点
-            if (chartData.length > 1) {
-                const nextPoint = chartData[i+1];
-                const nextY = yScale(nextPoint[yField]);
+        // // 根据点的位置计算标签位置
+        // if (i === 0) {
+        //     // 第一个点 - 考虑后一个点
+        //     if (tickData.length > 1) {
+        //         const nextPoint = tickData[i+1];
+        //         const nextY = yScale(nextPoint.yField);
                 
-                // 计算向前20%的插值
-                const forwardY = y + (nextY - y) * 0.2;
+        //         // 计算向前20%的插值
+        //         const forwardY = y + (nextY - y) * 0.4;
                 
-                // 取两个值中的最小值
-                labelY = Math.min(y, forwardY) - 4;
-            }
-            // 确保标签至少在数据点上方30像素
-            labelY = Math.min(labelY, y - 4);
-        } else if (i === chartData.length - 1) {
-            // 最后一个点 - 考虑前一个点
-            const prevPoint = chartData[i-1];
-            const prevY = yScale(prevPoint[yField]);
+        //         // 取两个值中的最小值
+        //         labelY = Math.min(y, forwardY) - 4;
+        //     }
+        //     // 确保标签至少在数据点上方30像素
+        //     labelY = Math.min(labelY, y - 4);
+        // } else if (i === tickData.length - 1) {
+        //     // 最后一个点 - 考虑前一个点
+        //     const prevPoint = tickData[i-1];
+        //     const prevY = yScale(prevPoint.yField);
             
-            // 计算向后20%的插值
-            const backwardY = y + (prevY - y) * 0.2;
+        //     // 计算向后20%的插值
+        //     const backwardY = y + (prevY - y) * 0.4;
             
-            // 取两个值中的最小值
-            labelY = Math.min(y, backwardY) - 4;
+        //     // 取两个值中的最小值
+        //     labelY = Math.min(y, backwardY) - 4;
             
-            // 确保标签至少在数据点上方30像素
-            labelY = Math.min(labelY, y - 4);
-        } else {
-            // 中间点 - 考虑前后两个点
-            const prevPoint = chartData[i-1];
-            const nextPoint = chartData[i+1];
+        //     // 确保标签至少在数据点上方30像素
+        //     labelY = Math.min(labelY, y - 4);
+        // } else {
+        //     // 中间点 - 考虑前后两个点
+        //     const prevPoint = tickData[i-1];
+        //     const nextPoint = tickData[i+1];
             
-            // 计算前一个点的y值
-            const prevY = yScale(prevPoint[yField]);
+        //     // 计算前一个点的y值
+        //     const prevY = yScale(prevPoint.yField);
             
-            // 计算后一个点的y值
-            const nextY = yScale(nextPoint[yField]);
+        //     // 计算后一个点的y值
+        //     const nextY = yScale(nextPoint.yField);
             
-            // 计算向前20%的插值
-            const forwardY = y + (nextY - y) * 0.2;
+        //     // 计算向前20%的插值
+        //     const forwardY = y + (nextY - y) * 0.4;
             
-            // 计算向后20%的插值
-            const backwardY = y + (prevY - y) * 0.2;
+        //     // 计算向后20%的插值
+        //     const backwardY = y + (prevY - y) * 0.4;
             
-            // 取三个值中的最小值（在SVG中，较小的y值表示较高的位置）
-            labelY = Math.min(y, forwardY, backwardY) - 4;
+        //     // 取三个值中的最小值（在SVG中，较小的y值表示较高的位置）
+        //     labelY = Math.min(y, forwardY, backwardY) - 4;
             
-            // 确保标签至少在数据点上方30像素
-            labelY = Math.min(labelY, y - 4);
-        }
+        //     // 确保标签至少在数据点上方30像素
+        //     labelY = Math.min(labelY, y - 4);
+        // }
         
         // 添加标签背景
-        const labelValue = Math.round(d[yField]);
+        const labelValue = Math.round(d.yField);
         const labelWidth = String(labelValue).length * 10 + 20;
         const labelHeight = 25;
         
