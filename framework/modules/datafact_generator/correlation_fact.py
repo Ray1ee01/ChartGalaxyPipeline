@@ -68,7 +68,7 @@ class CorrelationFactGenerator(DataFactGenerator):
                 )
                 reason = (
                     f"The Pearson correlation coefficient of the {self.y_column} between {group_value1} and {group_value2} "
-                    "is {r:.2f}, indicating a strong positive relationship."
+                    f"is {r:.2f}, indicating a strong positive relationship."
                 )
             elif subtype == "negative":
                 annotation = (
@@ -76,7 +76,7 @@ class CorrelationFactGenerator(DataFactGenerator):
                 )
                 reason = (
                     f"The Pearson correlation coefficient of the {self.y_column} between {group_value1} and {group_value2} "
-                    "is {r:.2f}, indicating a strong negative relationship."
+                    f"is {r:.2f}, indicating a strong negative relationship."
                 )
 
             return annotation, reason
