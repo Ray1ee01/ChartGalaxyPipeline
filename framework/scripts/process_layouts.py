@@ -33,18 +33,14 @@ def process_layouts(input_dir: str, output_dir: str):
             title_to_chart = layout_info.get('title_to_chart', 'unknown')
             image_to_chart = layout_info.get('image_to_chart', 'unknown')
             
-            # Create layout directory name
-            layout_dir = f"{title_to_chart}_{image_to_chart}"
-            
-            # Create output directory for this layout
-            output_layout_dir = os.path.join(output_dir, layout_dir)
-            os.makedirs(output_layout_dir, exist_ok=True)
+            # Create new file name with layout info as prefix
+            new_filename = f"{title_to_chart}_{image_to_chart}_{svg_file.stem}.svg"
             
             # Copy SVG file to new location
-            output_svg_path = os.path.join(output_layout_dir, svg_file.name)
+            output_svg_path = os.path.join(output_dir, new_filename)
             shutil.copy2(svg_file, output_svg_path)
             
-            print(f"Processed {svg_file.name} -> {layout_dir}/{svg_file.name}")
+            print(f"Processed {svg_file.name} -> {new_filename}")
             
         except Exception as e:
             print(f"Error processing {json_file}: {e}")

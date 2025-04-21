@@ -419,55 +419,42 @@ def make_infographic(
     if image_element == "":
         image_to_chart = "none"
     else:
-        image_center_x = best_x + image_size / 2
-        image_center_y = best_y + image_size / 2
-        canvas_center_x = total_width / 2
-        canvas_center_y = total_height / 2
-        distance_x = abs(image_center_x - canvas_center_x)
-        distance_y = abs(image_center_y - canvas_center_y)
+        # 计算图片区域
+        image_rect = {
+            'x': best_x,
+            'y': best_y,
+            'width': image_size,
+            'height': image_size
+        }
         
-        if distance_x > total_width * 0.25 and distance_y > total_height * 0.2:
-            if image_center_x < canvas_center_x and image_center_y < canvas_center_y:
-                image_to_chart = "TL"  # 左上
-            elif image_center_x > canvas_center_x and image_center_y < canvas_center_y:
-                image_to_chart = "TR"  # 右上
-            elif image_center_x < canvas_center_x and image_center_y > canvas_center_y:
-                image_to_chart = "BL"  # 左下
-            else:
-                image_to_chart = "BR"  # 右下
-                
-        elif distance_x > total_width * 0.25:
-            if image_center_x < canvas_center_x:
-                image_to_chart = "L"   # 左侧
-            else:
-                image_to_chart = "R"   # 右侧
-
-        elif distance_y > total_height * 0.2:
-            if image_center_y < canvas_center_y:
-                image_to_chart = "T"   # 上方
-            else:
-                image_to_chart = "B"   # 下方
-        else:
-            chart_x = padding + best_title['chart'][0]
-            chart_y = padding + best_title['chart'][1]
-            center_padding = padding * 2
-            chart_center_x = chart_x + center_padding
-            chart_center_y = chart_y + center_padding
-            chart_center_width = chart_width - center_padding * 2
-            chart_center_height = chart_height - center_padding * 2
+        # 定义九宫格区域
+        grid_areas = {
+            'TL': {'x': 0, 'y': 0, 'width': total_width/3, 'height': total_height/3},
+            'T': {'x': total_width/3, 'y': 0, 'width': total_width/3, 'height': total_height/3},
+            'TR': {'x': 2*total_width/3, 'y': 0, 'width': total_width/3, 'height': total_height/3},
+            'L': {'x': 0, 'y': total_height/3, 'width': total_width/3, 'height': total_height/3},
+            'C': {'x': total_width/3, 'y': total_height/3, 'width': total_width/3, 'height': total_height/3},
+            'R': {'x': 2*total_width/3, 'y': total_height/3, 'width': total_width/3, 'height': total_height/3},
+            'BL': {'x': 0, 'y': 2*total_height/3, 'width': total_width/3, 'height': total_height/3},
+            'B': {'x': total_width/3, 'y': 2*total_height/3, 'width': total_width/3, 'height': total_height/3},
+            'BR': {'x': 2*total_width/3, 'y': 2*total_height/3, 'width': total_width/3, 'height': total_height/3}
+        }
+        
+        # 计算与每个区域的重叠面积
+        max_overlap = 0
+        image_to_chart = 'none'
+        
+        for position, area in grid_areas.items():
+            # 计算重叠区域
+            overlap_x = max(0, min(image_rect['x'] + image_rect['width'], area['x'] + area['width']) - 
+                          max(image_rect['x'], area['x']))
+            overlap_y = max(0, min(image_rect['y'] + image_rect['height'], area['y'] + area['height']) - 
+                          max(image_rect['y'], area['y']))
+            overlap_area = overlap_x * overlap_y
             
-            # 检查图片是否完全在chart_center的bounding box中
-            if (best_x >= chart_center_x and 
-                best_y >= chart_center_y and 
-                best_x + image_size <= chart_center_x + chart_center_width and 
-                best_y + image_size <= chart_center_y + chart_center_height):
-                image_to_chart = "C"  # 中心
-            else:
-                if abs(image_center_x - canvas_center_x) > abs(image_center_y - canvas_center_y):
-                    image_to_chart = "L" if image_center_x < canvas_center_x else "R"
-                else:
-                    image_to_chart = "T" if image_center_y < canvas_center_y else "B"
-            
+            if overlap_area > max_overlap:
+                max_overlap = overlap_area
+                image_to_chart = position
             
     chart_content, background_element = extract_large_rect(chart_content)
     print("background_element", background_element)
