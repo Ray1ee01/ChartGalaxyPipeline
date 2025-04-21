@@ -275,9 +275,9 @@ def process_single_svg(svg_file, output_dir, stats):
                         "bbox": [int(x_min), int(y_min), int(width), int(height)]
                     })
         
-        # Process image elements (只处理一级元素)
+        # Process image elements
         thread_safe_print("Processing image elements...")
-        image_elements = root.findall('./svg:image', ns)  # 只查找一级元素
+        image_elements = root.findall('.//svg:image', ns)
         thread_safe_print(f"Found {len(image_elements)} image elements")
         for element in image_elements:
             thread_safe_print(f"Processing image element: {element.tag}")

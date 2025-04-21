@@ -365,6 +365,8 @@ def process(
                 data = json.load(f)
         else:
             data = input_data
+        if output is None:
+            output = input
 
         main_title, sub_title = generator.generate_title_description(data, topk=topk)
 

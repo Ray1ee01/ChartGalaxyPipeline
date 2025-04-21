@@ -6,6 +6,8 @@ from logging import getLogger
 import logging
 import time
 import numpy as np
+import subprocess
+import re
 from numpy.lib.stride_tricks import as_strided
 from lxml import etree
 from modules.infographics_generator.svg_utils import svg_to_png
@@ -45,7 +47,7 @@ from modules.chart_engine.chart_engine import load_data_from_json, get_template_
 from modules.chart_engine.template.template_registry import scan_templates
 from modules.title_styler.title_styler import process as title_styler_process
 from modules.infographics_generator.mask_utils import calculate_mask, calculate_content_height, calculate_content_width, calculate_bbox, calculate_mask_v2
-from modules.infographics_generator.svg_utils import extract_svg_content, remove_large_rects, get_svg_actual_bbox, adjust_and_get_bbox
+from modules.infographics_generator.svg_utils import extract_svg_content, extract_large_rect, adjust_and_get_bbox, add_gradient_to_rect
 from modules.infographics_generator.image_utils import find_best_size_and_position
 from modules.infographics_generator.template_utils import (
     analyze_templates,
@@ -68,7 +70,9 @@ def make_infographic(
     chart_svg_content: str,
     padding: int,
     between_padding: int,
-    dark: bool
+    dark: bool,
+    html_path: str,
+    mask_path: str
 ) -> str:
     if not dark:
         background_color = data["colors"].get("background_color", "#FFFFFF")
@@ -78,7 +82,7 @@ def make_infographic(
     else:
         background_color = data["colors_dark"].get("background_color", "#000000")
 
-    chart_content, chart_width, chart_height = adjust_and_get_bbox(chart_svg_content, background_color)
+    chart_content, chart_width, chart_height, chart_offset_x, chart_offset_y = adjust_and_get_bbox(chart_svg_content, background_color)
     chart_svg_content = f"<svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='{chart_width}' height='{chart_height}'>{chart_content}</svg>"
     mask = calculate_mask_v2(chart_svg_content, chart_width, chart_height, background_color)
     title_candidates = []
@@ -125,18 +129,6 @@ def make_infographic(
         img_str = base64.b64encode(buf.read()).decode('utf-8')
         return img_str
     
-    # Generate visualization
-    mask_img = visualize_mask(mask, "Chart Mask")
-    
-    # Save the visualization to a file for inspection
-    mask_output_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "mask_debug.png")
-    with open(mask_output_path, "wb") as f:
-        f.write(base64.b64decode(mask_img))
-    
-    logger.info(f"Mask visualization saved to: {mask_output_path}")
-    
-    # You can also display the dimensions in the logs
-    logger.info(f"Mask dimensions: {mask.shape[0]}x{mask.shape[1]}")
 
     for i in range(steps + 1):
         width = min_title_width + i * (max_title_width - min_title_width) / steps
@@ -342,7 +334,7 @@ def make_infographic(
             title_x = max(chart_width - title_width, max_right + between_padding)
             if area < best_area:
                 other_title["right"] = {
-                    "title": (title_x, range_start),
+                    "title": (title_x, range_start + between_padding),
                     "chart": (0, 0),
                     "text-align": "right",
                     "title-to-chart": "R",
@@ -394,8 +386,15 @@ def make_infographic(
     final_svg = f"""<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="{total_width}" height="{total_height}" style="font-family: Arial, 'Liberation Sans', 'DejaVu Sans', sans-serif;">
     <g class="chart" transform="translate({padding + best_title['chart'][0]}, {padding + best_title['chart'][1]})">{chart_content}</g>
     <g class="text" transform="translate({padding + best_title['title'][0]}, {padding + best_title['title'][1]})">{title_inner_content}</g>"""
-    original_mask = calculate_mask(final_svg + "\n</svg>", total_width, total_height, 0)
+    original_mask = calculate_mask_v2(final_svg + "\n</svg>", total_width, total_height, background_color)
     
+    # Generate visualization
+    mask_img = visualize_mask(original_mask, "Chart Mask")
+    
+    # Save the visualization to a file for inspection
+    with open(mask_path, "wb") as f:
+        f.write(base64.b64decode(mask_img))
+
     primary_image = data.get("images", {}).get("other", {}).get("primary")
 
     image_element = ""
@@ -405,10 +404,10 @@ def make_infographic(
             primary_image = f"data:image/png;base64,{primary_image}"
         
         image_size, best_x, best_y = find_best_size_and_position(original_mask, primary_image, padding)
-        image_size -= between_padding * 2
-        best_x += between_padding
-        best_y += between_padding
-        if image_size > 100:
+        image_size -= between_padding
+        best_x += between_padding / 2
+        best_y += between_padding / 2
+        if image_size > 90:
             image_element = f"""
         <image
             class="image"
@@ -478,14 +477,17 @@ def make_infographic(
                     image_to_chart = "T" if image_center_y < canvas_center_y else "B"
             
             
-            
-        
-    # final_svg = f"""<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="{total_width}" height="{total_height}" style="font-family: Arial, 'Liberation Sans', 'DejaVu Sans', sans-serif;">
-    # <rect x="0" y="0" width="{total_width}" height="{total_height}" fill="{background_color}" />
-    # <g class="chart" transform="translate({padding + best_title['chart'][0]}, {padding + best_title['chart'][1]})">{chart_content}</g>
-    # <g class="text" fill="{text_color}" transform="translate({padding + best_title['title'][0]}, {padding + best_title['title'][1]})">{title_inner_content}</g>
-    # {image_element}\n</svg>"""
+    chart_content, background_element = extract_large_rect(chart_content)
+    print("background_element", background_element)
+    if background_element == "":
+        background_element = add_gradient_to_rect(f'<rect x="0" y="0" width="{total_width}" height="{total_height}" fill="{background_color}" />')
+    else:
+        background_element = re.sub(r'width="[^"]+"', f'width="{total_width}"', background_element)
+        background_element = re.sub(r'height="[^"]+"', f'height="{total_height}"', background_element)
+        background_layer = add_gradient_to_rect(f'<rect x="0" y="0" width="{total_width}" height="{total_height}" fill="{background_color}" />')
+        background_element = background_layer + background_element
     final_svg = f"""<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="{total_width}" height="{total_height}" style="font-family: Arial, 'Liberation Sans', 'DejaVu Sans', sans-serif;">
+    {background_element}
     <g class="chart" transform="translate({padding + best_title['chart'][0]}, {padding + best_title['chart'][1]})">{chart_content}</g>
     <g class="text" fill="{text_color}" transform="translate({padding + best_title['title'][0]}, {padding + best_title['title'][1]})">{title_inner_content}</g>
     {image_element}\n</svg>"""
@@ -499,6 +501,38 @@ def make_infographic(
         "title_width": best_title["width"]
     }
     
+    html_chart_x = padding + best_title['chart'][0] + chart_offset_x
+    html_chart_y = padding + best_title['chart'][1] + chart_offset_y
+    html_text_x = padding + best_title['title'][0]
+    html_text_y = padding + best_title['title'][1]
+
+    with open(html_path, 'r', encoding='utf-8') as f:
+        html_content = f.read()
+    
+    # Find the last script tag and inject the setTimeout code at the end
+    src_end = html_content.rfind('</script>')
+    if src_end != -1:
+        inject_code = """
+        // 500ms后检查SVG是否已生成
+        setTimeout(function() {
+            const svg = document.querySelector('#chart-container svg');
+            if (svg) {
+                const originalContent = svg.innerHTML;
+                svg.setAttribute('width', '%d');
+                svg.setAttribute('height', '%d');
+                svg.innerHTML = `%s` +
+                '<g class="chart" transform="translate(%d, %d)">' + originalContent + '</g>' +
+                '<g class="text" fill="%s" transform="translate(%d, %d)">' + `%s` + '</g>' +
+                `%s`;
+            }
+        }, 1000);
+        """ % (total_width, total_height, background_element, html_chart_x, html_chart_y, text_color, html_text_x, html_text_y, title_inner_content, image_element)
+        
+        new_html_content = html_content[:src_end] + inject_code + html_content[src_end:]
+        
+        with open(html_path, 'w', encoding='utf-8') as f:
+            f.write(new_html_content)
+
     return final_svg, layout_info
 
 
@@ -661,14 +695,27 @@ def process(input: str, output: str, base_url: str, api_key: str, chart_name: st
 
         # 渲染图表
         render_chart_start = time.time()
-
+        timestamp = int(time.time())
+        output_dir = os.path.dirname(output)
+        output_filename = os.path.basename(output)        
+        new_filename = f"{timestamp}_{chart_name}_{os.path.splitext(output_filename)[0]}.svg"
+        output_path = os.path.join(output_dir, new_filename)           
+        info_filename = f"{timestamp}_{chart_name}_{os.path.splitext(output_filename)[0]}.json" 
+        info_path = os.path.join(output_dir, info_filename) 
+        html_filename = f"{timestamp}_{chart_name}_{os.path.splitext(output_filename)[0]}.html"
+        html_path = os.path.join(output_dir, html_filename)
+        png_filename = f"{timestamp}_{chart_name}_{os.path.splitext(output_filename)[0]}.png" 
+        png_path = os.path.join(output_dir, png_filename)
+        mask_filename = f"{timestamp}_{chart_name}_{os.path.splitext(output_filename)[0]}.mask.png"
+        mask_path = os.path.join(output_dir, mask_filename)
         #try:
         render_chart_to_svg(
             json_data=data,
             output_svg_path=chart_svg_path,
             js_file=template,
             framework=framework, # Extract framework name (echarts/d3)
-            framework_type=framework_type
+            framework_type=framework_type,
+            html_output_path=html_path
         )
         render_chart_time = time.time() - render_chart_start
         logger.info(f"Rendering chart took: {render_chart_time:.4f} seconds")
@@ -682,16 +729,15 @@ def process(input: str, output: str, base_url: str, api_key: str, chart_name: st
                 return False
             chart_inner_content = extract_svg_content(chart_svg_content)
 
-        print("try to assemble infographic")
         assemble_start = time.time()
-
-        print("template_requirements", requirements)
         final_svg, layout_info = make_infographic(
             data=data,
             chart_svg_content=chart_inner_content,
             padding=padding,
             between_padding=between_padding,
-            dark=requirements.get("background", "light") == "dark"
+            dark=requirements.get("background", "light") == "dark",
+            html_path=html_path,
+            mask_path=mask_path
         )
 
         assemble_time = time.time() - assemble_start
@@ -699,24 +745,25 @@ def process(input: str, output: str, base_url: str, api_key: str, chart_name: st
         # 读取生成的SVG内容
         read_svg_start = time.time()
         
-        with open(chart_svg_path, "r", encoding="utf-8") as f:
-            chart_svg_content = f.read()
-            if "This is a fallback SVG using a PNG screenshot" in chart_svg_content:
-                return False
-            
-            # 获取当前时间戳
-            timestamp = int(time.time())
-            output_dir = os.path.dirname(output)
-            output_filename = os.path.basename(output)        
-            new_filename = f"{timestamp}_{chart_name}_{os.path.splitext(output_filename)[0]}.svg"        
-            output_path = os.path.join(output_dir, new_filename)        
-            with open(output_path, "w", encoding="utf-8") as f:
-                f.write(final_svg)
+        if final_svg is None:
+            logger.error("Failed to assemble infographic: SVG content extraction failed")
+            return False
+        
+        with open(output_path, "w", encoding="utf-8") as f:
+            f.write(final_svg)
 
-            info_filename = f"{timestamp}_{chart_name}_{os.path.splitext(output_filename)[0]}.json"
-            info_path = os.path.join(output_dir, info_filename)
-            with open(info_path, "w", encoding="utf-8") as f:
-                json.dump(layout_info, f, ensure_ascii=False, indent=4)
+        with open(info_path, "w", encoding="utf-8") as f:
+            json.dump(layout_info, f, ensure_ascii=False, indent=4)
+
+        subprocess.run([
+            'rsvg-convert',
+            '-f', 'png',
+            '-o', png_path,
+            '--dpi-x', '300',
+            '--dpi-y', '300',
+            '--background-color', '#ffffff',
+            output_path
+        ], check=True)
     except Exception as e:
         logger.error(f"Error processing infographics: {e}")
         return False

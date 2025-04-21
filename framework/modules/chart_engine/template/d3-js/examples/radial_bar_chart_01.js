@@ -1,8 +1,8 @@
 /*
 REQUIREMENTS_BEGIN
 {
-    "chart_type": "Bar Chart",
-    "chart_name": "bar_chart_01",
+    "chart_type": "Radial Bar Chart",
+    "chart_name": "radial_bar_chart_01",
     "is_composite": false,
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],
@@ -145,7 +145,7 @@ function makeChart(containerSelector, data) {
 
     // 颜色比例尺 - 值越高颜色越深 (使用排序后的索引)
     // 从浅色调 (接近白色) 插值到主颜色或稍深的色调
-    const lightColor = d3.rgb(primaryColor).brighter(2.5); // 非常浅的颜色
+    const lightColor = d3.rgb(primaryColor).brighter(0.5); // 调整亮度，使最浅颜色不会太亮
     const darkColor = d3.rgb(primaryColor).darker(0.5);    // 稍深的颜色
     const colorInterpolator = d3.interpolateRgb(lightColor, darkColor); // 浅 -> 深
     const colorScale = d3.scaleSequential(colorInterpolator)

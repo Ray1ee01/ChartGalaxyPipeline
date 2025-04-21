@@ -87,6 +87,7 @@ def find_best_size_and_position(main_mask: np.ndarray, image_content: str, paddi
         min_overlap = float('inf')
         current_x = downsampled_padding
         current_y = downsampled_padding
+        min_distance_to_border = float('inf')
         
         for y in range(downsampled_padding, downsampled_h - mid_size - downsampled_padding + 1):
             for x in range(downsampled_padding, downsampled_w - mid_size - downsampled_padding + 1):
@@ -98,10 +99,18 @@ def find_best_size_and_position(main_mask: np.ndarray, image_content: str, paddi
                 total = np.sum(downsampled_image == 1)
                 overlap_ratio = overlap / total if total > 0 else 1.0
                 
-                if overlap_ratio < min_overlap:
+                # 计算到边界的最小距离
+                distance_to_left = x - downsampled_padding
+                distance_to_right = downsampled_w - mid_size - downsampled_padding - x
+                distance_to_top = y - downsampled_padding
+                distance_to_bottom = downsampled_h - mid_size - downsampled_padding - y
+                distance_to_border = min(distance_to_left, distance_to_right, distance_to_top, distance_to_bottom)
+                
+                if overlap_ratio < min_overlap or (overlap_ratio == min_overlap and distance_to_border < min_distance_to_border):
                     min_overlap = overlap_ratio
                     current_x = x
                     current_y = y
+                    min_distance_to_border = distance_to_border
         
         print(f"Trying size {mid_size * grid_size}x{mid_size * grid_size}, minimum overlap ratio: {min_overlap:.3f}")
         

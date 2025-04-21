@@ -753,7 +753,7 @@ function makeChart(containerSelector, data) {
             }
             
             // 可视化网格占用情况
-            const debugGrid = true; // 设置为true开启可视化，false关闭
+            const debugGrid = false; // 设置为true开启可视化，false关闭
             
             if (debugGrid) {
                 // 创建一个单独的组用于网格可视化

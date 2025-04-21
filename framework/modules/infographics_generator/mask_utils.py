@@ -6,6 +6,7 @@ from PIL import Image
 import numpy as np
 from typing import Tuple
 import tempfile
+from bs4 import BeautifulSoup
 
 def calculate_mask_v2(svg_content: str, width: int, height: int, background_color: str, grid_size: int = 5, max_difference = 15) -> np.ndarray:
     """将SVG转换为基于背景色的二值化mask数组"""
@@ -15,6 +16,26 @@ def calculate_mask_v2(svg_content: str, width: int, height: int, background_colo
     # 将背景色转换为RGB格式
     original_background_color = background_color
     background_color = tuple(int(background_color[i:i+2], 16) for i in (1, 3, 5))
+    
+    # 预处理SVG内容，删除背景元素和细线条
+    
+    # 解析SVG内容
+    soup = BeautifulSoup(svg_content, 'xml')
+    
+    # 删除class="background"的所有元素
+    background_elements = soup.select('[class="background"]')
+    for element in background_elements:
+        element.decompose()
+    
+    # 删除stroke-width<=1的所有line元素
+    thin_lines = soup.find_all('line')
+    for line in thin_lines:
+        stroke_width = line.get('stroke-width')
+        if stroke_width and float(stroke_width) <= 1:
+            line.decompose()
+    
+    # 重新获取处理后的SVG内容
+    svg_content = str(soup)
     
     # 创建临时文件
     with tempfile.NamedTemporaryFile(suffix='.svg', delete=False) as mask_svg_file, \
@@ -75,9 +96,8 @@ def calculate_mask_v2(svg_content: str, width: int, height: int, background_colo
                     mask[y:y_end, x:x_end] = 0 if white_ratio > 0.95 else 1
     
     # 删除临时文件
-    print("temp", temp_mask_png)
     os.remove(mask_svg)
-    #os.remove(temp_mask_png)
+    os.remove(temp_mask_png)
     
     return mask
 

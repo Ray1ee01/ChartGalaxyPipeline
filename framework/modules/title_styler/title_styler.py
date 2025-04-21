@@ -293,13 +293,13 @@ class TitleGenerator:
 
     def generate_main_title(self):
         """生成主标题"""
-        main_title_text = self.json_data['metadata']['title']
+        main_title_text = self.json_data['titles']['main_title']
         typography = self.json_data['typography']['title']
         return self.generate_text_element(main_title_text, typography, self.max_width, self.text_align)
 
     def generate_description(self):
         """生成描述文本"""
-        description_text = self.json_data['metadata']['description']
+        description_text = self.json_data['titles']['sub_title']
         typography = self.json_data['typography']['description']
         return self.generate_text_element(description_text, typography, self.max_width, self.text_align)
 

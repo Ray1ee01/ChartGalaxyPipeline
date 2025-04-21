@@ -267,7 +267,7 @@ class ColorRecommender:
         else:
             ret = None
             for col in columns:
-                if col["data_type"] == "categorical":
+                if col["data_type"] == "categorical" or col["data_type"] == "temporal":
                     ret = col["name"]
             return ret
 
