@@ -146,238 +146,325 @@ def make_infographic(
     mask_bottom = mask.shape[0] - 1 - np.argmax(np.flip(mask, axis=0), axis=0)  # 每一列最后一个1的位置
     mask_left = np.argmax(mask, axis=1)  # 每一行第一个1的位置
     mask_right = mask.shape[1] - 1 - np.argmax(np.flip(mask, axis=1), axis=1)  # 每一行最后一个1的位置
-
-    default_title = {
-        "title": (0, 0),
-        "chart": (0, title_candidates[-1]["height"] + between_padding),
-        "text-align": "left",
-        "title-to-chart": "TL",
-        "width": chart_width,
-        "total_height": title_candidates[-1]["height"] + chart_height + between_padding,
-        "total_width": chart_width,
-        "is_first": True,
-        "area": (title_candidates[-1]["height"] + between_padding + chart_height) * (chart_width)
-    }
-    area_threshold = 1.05
-    default_area = default_title["area"] * area_threshold
-    other_title = {
-    }
-
-    for title in title_candidates:
-        title_width = title["width"] + between_padding
-        title_height = title["height"] + between_padding
-        offset_list = [0, 25, 50, 75, 100, 125, 150]
-
-        # for Left-Top 
-        for offset in offset_list:
-            width = title_width - offset
-            min_top = int(np.min(mask_top[:width]))
-            area = (max(title_height - min_top, 0) + chart_height) * (chart_width + offset)
-            best_area = other_title["left-top"]["area"] if "left-top" in other_title else default_area
-            if area < best_area:
-                other_title["left-top"] = {
-                    "title": (0, 0),
-                    "title-to-chart": "TL",
-                    "chart": (offset, max(title_height - min_top, 0)),
-                    "text-align": "left",
-                    "width": title["width"],
-                    "total_height": max(title_height - min_top, 0) + chart_height,
-                    "total_width": chart_width + offset, 
-                    "area": area
-                }
-
-        # for top
-        range_start = chart_width // 2 - title_width // 2
-        range_end = range_start + title_width
-        min_top = int(np.min(mask_top[range_start:range_end]))
-        area = (max(title_height - min_top, 0) + chart_height) * chart_width
-        best_area = other_title["top"]["area"] if "top" in other_title else default_area
-        if area < best_area:
-            other_title["top"] = {
-                "title": (range_start, 0),
-                "chart": (0, max(title_height - min_top, 0)),
-                "text-align": "center",
-                "title-to-chart": "T",
-                "width": title["width"],
-                "total_height": max(title_height - min_top, 0) + chart_height,
-                "total_width": chart_width,
-                "area": area
-            }
-
-        # for bottom
-        range_start = chart_width // 2 - title_width // 2
-        range_end = range_start + title_width
-        max_bottom = int(np.max(mask_bottom[range_start:range_end]))
-        area = (max(title_height - (chart_height - max_bottom), 0) + chart_height) * chart_width
-        best_area = other_title["bottom"]["area"] if "bottom" in other_title else default_area
-        title_y = chart_height - title_height + max(title_height - (chart_height - max_bottom), 0) + between_padding
-        if area < best_area:
-            other_title["bottom"] = {
-                "title": (range_start, title_y),
-                "chart": (0, 0),
-                "text-align": "center",
-                "title-to-chart": "B",
-                "width": title["width"],
-                "total_height": max(title_y + title_height, chart_height),
-                "total_width": chart_width,
-                "area": area
-            }
-            
-        # for Left-Bottom
-        for offset in offset_list:
-            width = title_width - offset
-            max_bottom = int(np.max(mask_bottom[:width]))
-            area = (max(title_height - (chart_height - max_bottom), 0) + chart_height) * (chart_width + offset)
-            best_area = other_title["left-bottom"]["area"] if "left-bottom" in other_title else default_area
-            if area < best_area:
-                other_title["left-bottom"] = {
-                    "title": (0, chart_height - title_height + max(title_height - (chart_height - max_bottom), 0) + between_padding),
-                    "chart": (offset, 0),
-                    "text-align": "left",
-                    "title-to-chart": "BL",
-                    "width": title["width"],
-                    "total_height": max(title_height - (chart_height - max_bottom), 0) + chart_height,
-                    "total_width": chart_width + offset, 
-                    "area": area
-                }
-
-        # for Right-Top
-        for offset in offset_list:
-            width = title_width - offset
-            min_top = int(np.min(mask_top[-width:]))
-            area = (max(title_height - min_top, 0) + chart_height) * (chart_width + offset)
-            best_area = other_title["right-top"]["area"] if "right-top" in other_title else default_area
-            if area < best_area:
-                other_title["right-top"] = {
-                    "title": (chart_width - width, 0),
-                    "chart": (0, max(title_height - min_top, 0)),
-                    "text-align": "right",
-                    "title-to-chart": "TR",
-                    "width": title["width"],
-                    "total_height": max(title_height - min_top, 0) + chart_height,
-                    "total_width": chart_width + offset, 
-                    "area": area
-                }
+    
+    # 从中间列开始,计算每行向左和向右第一个1的位置
+    mid_col = mask.shape[1] // 2
+    mask_left_from_mid = np.zeros(mask.shape[0], dtype=np.int32)
+    mask_right_from_mid = np.zeros(mask.shape[0], dtype=np.int32)
+    
+    for row in range(mask.shape[0]):
+        # 向左搜索第一个1
+        left_pos = mid_col
+        while left_pos >= 0 and mask[row][left_pos] == 0:
+            left_pos -= 1
+        mask_left_from_mid[row] = left_pos if left_pos >= 0 else -1
         
-        # for Right-Bottom
-        for offset in offset_list:
-            width = title_width - offset
-            max_bottom = int(np.max(mask_bottom[-width:]))
-            area = (max(title_height - (chart_height - max_bottom), 0) + chart_height) * (chart_width + offset)
-            best_area = other_title["right-bottom"]["area"] if "right-bottom" in other_title else default_area
-            if area < best_area:
-                other_title["right-bottom"] = {
-                    "title": (chart_width - width, chart_height - title_height + max(title_height - (chart_height - max_bottom), 0) + between_padding),
-                    "chart": (0, 0),
-                    "text-align": "right",
-                    "title-to-chart": "BR",
-                    "width": title["width"],
-                    "total_height": max(title_height - (chart_height - max_bottom), 0) + chart_height,
-                    "total_width": chart_width + offset, 
-                    "area": area
-                }
+        # 向右搜索第一个1
+        right_pos = mid_col
+        while right_pos < mask.shape[1] and mask[row][right_pos] == 0:
+            right_pos += 1
+        mask_right_from_mid[row] = right_pos if right_pos < mask.shape[1] else -1
+
+    smooth_threshold = 50
+    # 从中间开始对mask_right_from_mid进行平滑
+    mid_row = len(mask_right_from_mid) // 2
+    # 向下平滑
+    for i in range(mid_row + 2, len(mask_right_from_mid)):
+        if abs(mask_right_from_mid[i] - mask_right_from_mid[i-1]) > smooth_threshold:
+            mask_right_from_mid[i] = mask_right_from_mid[i-1] + (mask_right_from_mid[i-1] - mask_right_from_mid[i-2])
+    # 向上平滑
+    for i in range(mid_row - 2, -1, -1):
+        if abs(mask_right_from_mid[i] - mask_right_from_mid[i+1]) > smooth_threshold:
+            mask_right_from_mid[i] = mask_right_from_mid[i+1] + (mask_right_from_mid[i+1] - mask_right_from_mid[i+2])
             
-        if title_height > chart_height:
-            continue
+    # 从中间开始对mask_left_from_mid进行平滑
+    # 向下平滑
+    for i in range(mid_row + 2, len(mask_left_from_mid)):
+        if abs(mask_left_from_mid[i] - mask_left_from_mid[i-1]) > smooth_threshold:
+            mask_left_from_mid[i] = mask_left_from_mid[i-1] + (mask_left_from_mid[i-1] - mask_left_from_mid[i-2])
+    # 向上平滑
+    for i in range(mid_row - 2, -1, -1):
+        if abs(mask_left_from_mid[i] - mask_left_from_mid[i+1]) > smooth_threshold:
+            mask_left_from_mid[i] = mask_left_from_mid[i+1] + (mask_left_from_mid[i+1] - mask_left_from_mid[i+2])
 
-        offset_list = [50, 75, 100, 125, 150]
-        # for left
-        for offset in offset_list:
-            range_start = offset
-            range_end = range_start + title_height
-            if range_end > chart_height - offset_list[0]:
-                continue
-            min_left = int(np.min(mask_left[range_start:range_end]))
-            area = (max(title_width - min_left, 0) + chart_width) * (chart_height)
-            best_area = other_title["left"]["area"] if "left" in other_title else default_area
-            if area < best_area:
-                other_title["left"] = {
-                    "title": (0, range_start),
-                    "chart": (offset, 0),
-                    "text-align": "left",
-                    "title-to-chart": "L",
-                    "width": title["width"],
+    # 统计距离
+    distance_list = []
+    for i in range(len(mask_left_from_mid)):
+        distance_list.append(mask_right_from_mid[i] - mask_left_from_mid[i])
+    # 统计平均距离
+    average_distance = np.mean(distance_list)
+    
+    # 在mask文件中，仅保留mask_left_from_mid和mask_right_from_mid之间的内容(设为1)，其他内容设为0
+    mask = np.zeros(mask.shape)
+    for i in range(len(mask)):
+        mask[i][mask_left_from_mid[i]:mask_right_from_mid[i]] = 1
+    mask_img = visualize_mask(mask, "Mask after smoothing")
+    with open('./tmp/mask_after_smoothing.png', "wb") as f:
+        f.write(base64.b64decode(mask_img))
+    # 统计mask中1的个数
+    mask_1_count = np.sum(mask)
+    # 统计mask中0的个数
+    mask_0_count = np.sum(1 - mask)
+    # 统计mask中1的个数占总数的比例
+    mask_1_ratio = mask_1_count / (mask_1_count + mask_0_count)
+    print(mask_1_ratio)
+    if mask_1_ratio > 0.25:
+        width = average_distance*2
+        title_content = title_styler_process(input_data=data, max_width=int(width), text_align="center", show_embellishment=False, show_sub_title=False)
+        title_svg_content = title_content  # Assuming title_content is the SVG content
+        svg_tree = etree.fromstring(title_svg_content.encode())
+        width = int(float(svg_tree.get("width", 0)))
+        height = int(float(svg_tree.get("height", 0)))
+        title_candidates = [{"width": width, "height": height}]
+        # 从上到下，找到第一个distance_list中大于width的index
+        for i in range(len(distance_list)):
+            if distance_list[i] > width:
+                best_title = {
+                    "width": width,
+                    "height": height,
+                    "text-align": "center",
+                    "is_first": False,
+                    "title-to-chart": "C",
                     "total_height": chart_height,
-                    "total_width": chart_width + offset,
-                    "area": area
-                }
-
-        for offset in offset_list:
-            range_start = chart_height - title_height - offset
-            range_end = range_start + title_height
-            if range_start < offset_list[0]:
-                continue
-            min_left = int(np.min(mask_left[range_start:range_end]))
-            area = (max(title_width - min_left, 0) + chart_width) * (chart_height)
-            best_area = other_title["left"]["area"] if "left" in other_title else default_area
-            if area < best_area:
-                other_title["left"] = {
-                    "title": (0, range_start),
-                    "chart": (offset, 0),
-                    "text-align": "left",
-                    "title-to-chart": "L",
-                    "width": title["width"],
-                    "total_height": chart_height,
-                    "total_width": chart_width + offset,
-                    "area": area
-                }
-
-        # for right
-        for offset in offset_list:
-            range_start = offset
-            range_end = range_start + title_height
-            if range_end > chart_height - offset_list[0]:
-                continue
-            max_right = int(np.max(mask_right[range_start:range_end]))
-            area = (max(title_width - (chart_width - max_right), 0) + chart_width) * (chart_height)
-            best_area = other_title["right"]["area"] if "right" in other_title else default_area
-            title_x = max(chart_width - title_width, max_right + between_padding)
-            if area < best_area:
-                other_title["right"] = {
-                    "title": (title_x, range_start + between_padding),
+                    "total_width": chart_width,
                     "chart": (0, 0),
-                    "text-align": "right",
-                    "title-to-chart": "R",
-                    "width": title["width"],
-                    "total_height": chart_height,
-                    "total_width": max(title_x + title_width, chart_width),
-                    "area": area
+                    "title": (chart_width // 2 - width // 2, i),
+                    "show_sub_title": False
                 }
-        for offset in offset_list:
-            range_start = chart_height - title_height - offset
-            range_end = range_start + title_height
-            if range_start < offset_list[0]:
-                continue
-            max_right = int(np.max(mask_right[range_start:range_end]))
-            area = (max(title_width - (chart_width - max_right), 0) + chart_width) * (chart_height)
-            best_area = other_title["right"]["area"] if "right" in other_title else default_area
-            title_x = max(chart_width - title_width, max_right + between_padding)
-            if area < best_area:
-                other_title["right"] = {
-                    "title": (title_x, range_start),
-                    "chart": (0, 0),
-                    "text-align": "right",
-                    "title-to-chart": "R",
-                    "width": title["width"],
-                    "total_height": chart_height,
-                    "total_width": max(title_x + title_width, chart_width),
-                    "area": area
-                }
-
-    if len(other_title.values()) == 0:
-        best_title = default_title
+                break
     else:
-        import random
-        title_options = [default_title] + list(other_title.values())
-        min_area = min(title_options, key=lambda x: x["area"])["area"]
-        title_options = [t for t in title_options if t["area"] <= min_area * area_threshold]
-        option_weights = [2 if t["title-to-chart"] == "TL" else 1 for t in title_options]
-        best_title = random.choices(title_options, weights=option_weights, k=1)[0]
+        default_title = {
+            "title": (0, 0),
+            "chart": (0, title_candidates[-1]["height"] + between_padding),
+            "text-align": "left",
+            "title-to-chart": "TL",
+            "width": chart_width,
+            "total_height": title_candidates[-1]["height"] + chart_height + between_padding,
+            "total_width": chart_width,
+            "is_first": True,
+            "area": (title_candidates[-1]["height"] + between_padding + chart_height) * (chart_width)
+        }
+        area_threshold = 1.05
+        default_area = default_title["area"] * area_threshold
+        other_title = {
+        }
+
+        for title in title_candidates:
+            title_width = title["width"] + between_padding
+            title_height = title["height"] + between_padding
+            offset_list = [0, 25, 50, 75, 100, 125, 150]
+
+            # for Left-Top 
+            for offset in offset_list:
+                width = title_width - offset
+                min_top = int(np.min(mask_top[:width]))
+                area = (max(title_height - min_top, 0) + chart_height) * (chart_width + offset)
+                best_area = other_title["left-top"]["area"] if "left-top" in other_title else default_area
+                if area < best_area:
+                    other_title["left-top"] = {
+                        "title": (0, 0),
+                        "title-to-chart": "TL",
+                        "chart": (offset, max(title_height - min_top, 0)),
+                        "text-align": "left",
+                        "width": title["width"],
+                        "total_height": max(title_height - min_top, 0) + chart_height,
+                        "total_width": chart_width + offset, 
+                        "area": area
+                    }
+
+            # for top
+            range_start = chart_width // 2 - title_width // 2
+            range_end = range_start + title_width
+            min_top = int(np.min(mask_top[range_start:range_end]))
+            area = (max(title_height - min_top, 0) + chart_height) * chart_width
+            best_area = other_title["top"]["area"] if "top" in other_title else default_area
+            if area < best_area:
+                other_title["top"] = {
+                    "title": (range_start, 0),
+                    "chart": (0, max(title_height - min_top, 0)),
+                    "text-align": "center",
+                    "title-to-chart": "T",
+                    "width": title["width"],
+                    "total_height": max(title_height - min_top, 0) + chart_height,
+                    "total_width": chart_width,
+                    "area": area
+                }
+
+            # for bottom
+            range_start = chart_width // 2 - title_width // 2
+            range_end = range_start + title_width
+            max_bottom = int(np.max(mask_bottom[range_start:range_end]))
+            area = (max(title_height - (chart_height - max_bottom), 0) + chart_height) * chart_width
+            best_area = other_title["bottom"]["area"] if "bottom" in other_title else default_area
+            title_y = chart_height - title_height + max(title_height - (chart_height - max_bottom), 0) + between_padding
+            if area < best_area:
+                other_title["bottom"] = {
+                    "title": (range_start, title_y),
+                    "chart": (0, 0),
+                    "text-align": "center",
+                    "title-to-chart": "B",
+                    "width": title["width"],
+                    "total_height": max(title_y + title_height, chart_height),
+                    "total_width": chart_width,
+                    "area": area
+                }
+                
+            # for Left-Bottom
+            for offset in offset_list:
+                width = title_width - offset
+                max_bottom = int(np.max(mask_bottom[:width]))
+                area = (max(title_height - (chart_height - max_bottom), 0) + chart_height) * (chart_width + offset)
+                best_area = other_title["left-bottom"]["area"] if "left-bottom" in other_title else default_area
+                if area < best_area:
+                    other_title["left-bottom"] = {
+                        "title": (0, chart_height - title_height + max(title_height - (chart_height - max_bottom), 0) + between_padding),
+                        "chart": (offset, 0),
+                        "text-align": "left",
+                        "title-to-chart": "BL",
+                        "width": title["width"],
+                        "total_height": max(title_height - (chart_height - max_bottom), 0) + chart_height,
+                        "total_width": chart_width + offset, 
+                        "area": area
+                    }
+
+            # for Right-Top
+            for offset in offset_list:
+                width = title_width - offset
+                min_top = int(np.min(mask_top[-width:]))
+                area = (max(title_height - min_top, 0) + chart_height) * (chart_width + offset)
+                best_area = other_title["right-top"]["area"] if "right-top" in other_title else default_area
+                if area < best_area:
+                    other_title["right-top"] = {
+                        "title": (chart_width - width, 0),
+                        "chart": (0, max(title_height - min_top, 0)),
+                        "text-align": "right",
+                        "title-to-chart": "TR",
+                        "width": title["width"],
+                        "total_height": max(title_height - min_top, 0) + chart_height,
+                        "total_width": chart_width + offset, 
+                        "area": area
+                    }
+            
+            # for Right-Bottom
+            for offset in offset_list:
+                width = title_width - offset
+                max_bottom = int(np.max(mask_bottom[-width:]))
+                area = (max(title_height - (chart_height - max_bottom), 0) + chart_height) * (chart_width + offset)
+                best_area = other_title["right-bottom"]["area"] if "right-bottom" in other_title else default_area
+                if area < best_area:
+                    other_title["right-bottom"] = {
+                        "title": (chart_width - width, chart_height - title_height + max(title_height - (chart_height - max_bottom), 0) + between_padding),
+                        "chart": (0, 0),
+                        "text-align": "right",
+                        "title-to-chart": "BR",
+                        "width": title["width"],
+                        "total_height": max(title_height - (chart_height - max_bottom), 0) + chart_height,
+                        "total_width": chart_width + offset, 
+                        "area": area
+                    }
+                
+            if title_height > chart_height:
+                continue
+
+            offset_list = [50, 75, 100, 125, 150]
+            # for left
+            for offset in offset_list:
+                range_start = offset
+                range_end = range_start + title_height
+                if range_end > chart_height - offset_list[0]:
+                    continue
+                min_left = int(np.min(mask_left[range_start:range_end]))
+                area = (max(title_width - min_left, 0) + chart_width) * (chart_height)
+                best_area = other_title["left"]["area"] if "left" in other_title else default_area
+                if area < best_area:
+                    other_title["left"] = {
+                        "title": (0, range_start),
+                        "chart": (offset, 0),
+                        "text-align": "left",
+                        "title-to-chart": "L",
+                        "width": title["width"],
+                        "total_height": chart_height,
+                        "total_width": chart_width + offset,
+                        "area": area
+                    }
+
+            for offset in offset_list:
+                range_start = chart_height - title_height - offset
+                range_end = range_start + title_height
+                if range_start < offset_list[0]:
+                    continue
+                min_left = int(np.min(mask_left[range_start:range_end]))
+                area = (max(title_width - min_left, 0) + chart_width) * (chart_height)
+                best_area = other_title["left"]["area"] if "left" in other_title else default_area
+                if area < best_area:
+                    other_title["left"] = {
+                        "title": (0, range_start),
+                        "chart": (offset, 0),
+                        "text-align": "left",
+                        "title-to-chart": "L",
+                        "width": title["width"],
+                        "total_height": chart_height,
+                        "total_width": chart_width + offset,
+                        "area": area
+                    }
+
+            # for right
+            for offset in offset_list:
+                range_start = offset
+                range_end = range_start + title_height
+                if range_end > chart_height - offset_list[0]:
+                    continue
+                max_right = int(np.max(mask_right[range_start:range_end]))
+                area = (max(title_width - (chart_width - max_right), 0) + chart_width) * (chart_height)
+                best_area = other_title["right"]["area"] if "right" in other_title else default_area
+                title_x = max(chart_width - title_width, max_right + between_padding)
+                if area < best_area:
+                    other_title["right"] = {
+                        "title": (title_x, range_start + between_padding),
+                        "chart": (0, 0),
+                        "text-align": "right",
+                        "title-to-chart": "R",
+                        "width": title["width"],
+                        "total_height": chart_height,
+                        "total_width": max(title_x + title_width, chart_width),
+                        "area": area
+                    }
+            for offset in offset_list:
+                range_start = chart_height - title_height - offset
+                range_end = range_start + title_height
+                if range_start < offset_list[0]:
+                    continue
+                max_right = int(np.max(mask_right[range_start:range_end]))
+                area = (max(title_width - (chart_width - max_right), 0) + chart_width) * (chart_height)
+                best_area = other_title["right"]["area"] if "right" in other_title else default_area
+                title_x = max(chart_width - title_width, max_right + between_padding)
+                if area < best_area:
+                    other_title["right"] = {
+                        "title": (title_x, range_start),
+                        "chart": (0, 0),
+                        "text-align": "right",
+                        "title-to-chart": "R",
+                        "width": title["width"],
+                        "total_height": chart_height,
+                        "total_width": max(title_x + title_width, chart_width),
+                        "area": area
+                    }
+
+        if len(other_title.values()) == 0:
+            best_title = default_title
+        else:
+            import random
+            title_options = [default_title] + list(other_title.values())
+            min_area = min(title_options, key=lambda x: x["area"])["area"]
+            title_options = [t for t in title_options if t["area"] <= min_area * area_threshold]
+            option_weights = [2 if t["title-to-chart"] == "TL" else 1 for t in title_options]
+            best_title = random.choices(title_options, weights=option_weights, k=1)[0]
 
     title_content = title_styler_process(input_data=data, \
                                          max_width=best_title["width"], \
                                          text_align=best_title["text-align"], \
-                                         show_embellishment=best_title["text-align"] == "left" and best_title.get("is_first", False))
+                                         show_embellishment=best_title["text-align"] == "left" and best_title.get("is_first", False), \
+                                         show_sub_title=best_title.get("show_sub_title", True))
     title_inner_content = extract_svg_content(title_content)
     
     total_height = best_title["total_height"] + padding * 2
@@ -407,7 +494,7 @@ def make_infographic(
         image_size -= between_padding
         best_x += between_padding / 2
         best_y += between_padding / 2
-        if image_size > 90:
+        if image_size > 80:
             image_element = f"""
         <image
             class="image"
@@ -534,6 +621,7 @@ def make_infographic(
             f.write(new_html_content)
 
     return final_svg, layout_info
+
 
 
 def process(input: str, output: str, base_url: str, api_key: str, chart_name: str = None) -> bool:
