@@ -104,7 +104,7 @@ function makeChart(containerSelector, data) {
         .attr("width", innerWidth + gridExtension)
         .attr("height", 1)
         .style("fill", "#3f3e40");
-    
+
     // 绘制垂直网格线 
     g.selectAll("rect.grid-rect-x")
         .data(xTicks)

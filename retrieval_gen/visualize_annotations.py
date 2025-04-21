@@ -6,7 +6,7 @@ import matplotlib.patches as patches
 from PIL import Image
 import numpy as np
 
-def visualize_annotations(annotations_file, image_dir, output_dir, num_samples=10):
+def visualize_annotations(annotations_file, image_dir, output_dir):
     """
     可视化标注框并保存结果
     
@@ -39,22 +39,16 @@ def visualize_annotations(annotations_file, image_dir, output_dir, num_samples=1
     # 获取有标注的图片ID列表
     image_ids_with_annotations = list(annotation_map.keys())
     
-    # 如果图片数量少于请求的样本数，则调整样本数
-    num_samples = min(num_samples, len(image_ids_with_annotations))
-    
-    # 随机选择图片
-    # selected_image_ids = random.sample(image_ids_with_annotations, num_samples)
-    selected_image_ids = image_ids_with_annotations
-    
     # 为不同类别定义不同的颜色
     category_colors = {
         1: 'blue',
         2: 'green',
+        3: 'red',
         # 可以为更多类别添加颜色
     }
     
     # 可视化每张选定的图片及其标注
-    for i, image_id in enumerate(selected_image_ids):
+    for i, image_id in enumerate(image_ids_with_annotations):
         # 获取图片信息
         image_info = image_map[image_id]
         image_path = os.path.join(image_dir, image_info['file_name'])
@@ -111,29 +105,13 @@ def visualize_annotations(annotations_file, image_dir, output_dir, num_samples=1
         plt.close()
         
         print(f"已保存标注图片: {output_path}")
-    
-    # 创建图例图片，显示类别和对应的颜色
-    fig, ax = plt.subplots(figsize=(6, 2))
-    ax.axis('off')
-    
-    # 添加图例
-    for i, (category_id, color) in enumerate(category_colors.items()):
-        ax.add_patch(patches.Rectangle((i*2, 0.5), 0.5, 0.5, linewidth=3, edgecolor=color, facecolor='none'))
-        ax.text(i*2 + 0.7, 0.75, f"类别 {category_id}", fontsize=12)
-    
-    # 保存图例
-    legend_path = os.path.join(output_dir, "legend.png")
-    plt.tight_layout()
-    plt.savefig(legend_path, bbox_inches='tight')
-    plt.close()
-    print(f"已保存图例: {legend_path}")
 
 if __name__ == "__main__":
     # 设置路径
-    annotations_file = "./data/annotations.json"
-    image_dir = "./data/realworld_test"  # 图片在realworld_test文件夹下
-    output_dir = "./output"
+    annotations_file = "./data/title_annotations.json"
+    image_dir = "./data"  # 图片在realworld_test文件夹下
+    output_dir = "./output_title_annotations"
     
     # 可视化标注
-    visualize_annotations(annotations_file, image_dir, output_dir, num_samples=10)
+    visualize_annotations(annotations_file, image_dir, output_dir)
     print("完成!") 
