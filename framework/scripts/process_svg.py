@@ -332,10 +332,10 @@ def process_single_svg(svg_file, output_dir, stats):
         
         # Generate PNG with bounding boxes
         thread_safe_print("Generating PNG with bounding boxes...")
-        #output_png_with_boxes = os.path.join(output_dir, f"{base_name}_with_boxes.png")
-        #draw_bounding_boxes(output_png, bbox_data["bounding_boxes"], output_png_with_boxes)
+        output_png_with_boxes = os.path.join(output_dir, f"{base_name}_with_boxes.png")
+        draw_bounding_boxes(output_png, bbox_data["bounding_boxes"], output_png_with_boxes)
         
-        #thread_safe_print(f"Successfully processed {svg_file} -> {output_png}, {output_png_with_boxes} and {output_json}")
+        thread_safe_print(f"Successfully processed {svg_file} -> {output_png}, {output_png_with_boxes} and {output_json}")
         
         with stats['lock']:
             stats['processed_files'] += 1
