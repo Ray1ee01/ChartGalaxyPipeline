@@ -594,13 +594,8 @@ function makeChart(containerSelector, data) {
             let lastY = 0;
             for (let i = 0; i < n; i++) {
                 const point = points[i];
-                // 确保标签不超过下一个圆点的位置
-                let maxY = innerHeight;
-                if (i < n - 1) {
-                    maxY = points[i+1].y;
-                }
                 
-                const labelY = Math.min(Math.max(point.y + 20, lastY + 25), maxY - 5);
+                const labelY = Math.max(point.y, lastY + 45);
                 
                 labelPositions.push({
                     point: point,
