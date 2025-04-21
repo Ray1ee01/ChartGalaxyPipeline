@@ -127,7 +127,6 @@ def check_template_compatibility(data: Dict, templates: Dict, specific_chart_nam
                             if data["data"]["columns"][i]["data_type"] in ["temporal", "categorical"]:
                                 key = data["data"]["columns"][i]["name"]
                                 unique_values = list(set(value[key] for value in data["data"]["data"]))
-                                print(unique_values, range)
                                 if len(unique_values) > range[1] or len(unique_values) < range[0]:
                                     flag = False
                                     break

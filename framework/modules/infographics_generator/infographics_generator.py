@@ -650,7 +650,7 @@ def process(input: str, output: str, base_url: str, api_key: str, chart_name: st
     
     # 生成图表SVG，使用安全的文件名
     chart_svg_path = os.path.join(tmp_dir, f"{os.path.splitext(safe_output_name)[0]}.chart.tmp")
-
+    try:
         if '-' in engine:
             framework, framework_type = engine.split('-')
         elif '_' in engine:
@@ -696,28 +696,27 @@ def process(input: str, output: str, base_url: str, api_key: str, chart_name: st
 
         assemble_time = time.time() - assemble_start
         logger.info(f"Assembling infographic took: {assemble_time:.4f} seconds")
+        # 读取生成的SVG内容
+        read_svg_start = time.time()
         
-    # 读取生成的SVG内容
-    read_svg_start = time.time()
-    
-    with open(chart_svg_path, "r", encoding="utf-8") as f:
-        chart_svg_content = f.read()
-        if "This is a fallback SVG using a PNG screenshot" in chart_svg_content:
-            return False
-        
-        # 获取当前时间戳
-        timestamp = int(time.time())
-        output_dir = os.path.dirname(output)
-        output_filename = os.path.basename(output)        
-        new_filename = f"{timestamp}_{chart_name}_{os.path.splitext(output_filename)[0]}.svg"        
-        output_path = os.path.join(output_dir, new_filename)        
-        with open(output_path, "w", encoding="utf-8") as f:
-            f.write(final_svg)
+        with open(chart_svg_path, "r", encoding="utf-8") as f:
+            chart_svg_content = f.read()
+            if "This is a fallback SVG using a PNG screenshot" in chart_svg_content:
+                return False
+            
+            # 获取当前时间戳
+            timestamp = int(time.time())
+            output_dir = os.path.dirname(output)
+            output_filename = os.path.basename(output)        
+            new_filename = f"{timestamp}_{chart_name}_{os.path.splitext(output_filename)[0]}.svg"        
+            output_path = os.path.join(output_dir, new_filename)        
+            with open(output_path, "w", encoding="utf-8") as f:
+                f.write(final_svg)
 
-        info_filename = f"{timestamp}_{chart_name}_{os.path.splitext(output_filename)[0]}.json"
-        info_path = os.path.join(output_dir, info_filename)
-        with open(info_path, "w", encoding="utf-8") as f:
-            json.dump(layout_info, f, ensure_ascii=False, indent=4)
+            info_filename = f"{timestamp}_{chart_name}_{os.path.splitext(output_filename)[0]}.json"
+            info_path = os.path.join(output_dir, info_filename)
+            with open(info_path, "w", encoding="utf-8") as f:
+                json.dump(layout_info, f, ensure_ascii=False, indent=4)
     except Exception as e:
         logger.error(f"Error processing infographics: {e}")
         return False
