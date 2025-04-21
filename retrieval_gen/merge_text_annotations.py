@@ -74,7 +74,7 @@ def is_same_line(box1, box2, tolerance=0.1):
     
     # 判断中心点y坐标差异是否小于容忍度且任一水平距离小于10
     return (abs(box1_center_y - box2_center_y) < avg_height * tolerance and 
-            (distance1 < 10 or distance2 < 10))
+            (distance1 < 50 or distance2 < 50))
 
 def is_same_column(box1, box2, tolerance=0.7):
     """
@@ -116,7 +116,7 @@ def is_same_column(box1, box2, tolerance=0.7):
     
     vertical_distance = min(abs(box2_min_y - box1_max_y), abs(box1_min_y - box2_max_y))
     
-    return overlap_ratio > tolerance and vertical_distance < 10
+    return overlap_ratio > tolerance and vertical_distance < 50
 
 def is_height_similar(box1, box2, tolerance=0.1):
     """
@@ -157,11 +157,11 @@ def should_merge(box1, box2, text1, text2):
     """
     # 规则1: 如果两个框重叠，直接合并
     overlap_ratio = calculate_overlap(box1, box2)
-    if overlap_ratio > 0.01:  # 重叠面积超过1%
+    if overlap_ratio > 0:  # 重叠面积超过1%
         return True
     
     # 规则2: 如果高度相差不超过10%，并且在同一行或同一列，则合并
-    if is_height_similar(box1, box2, 0.2) and (is_same_line(box1, box2) or is_same_column(box1, box2)):
+    if is_height_similar(box1, box2, 0.3) and (is_same_line(box1, box2) or is_same_column(box1, box2)):
         return True
     
     return False
@@ -242,7 +242,7 @@ def merge_text_regions(text_regions):
     
     return regions
 
-def find_title_region(text_regions, min_area=100):
+def find_title_region(text_regions):
     """
     从合并后的文本区域中找出最可能的标题
     
@@ -256,14 +256,8 @@ def find_title_region(text_regions, min_area=100):
     if not text_regions:
         return None
     
-    # 过滤掉太小的区域
-    filtered_regions = [r for r in text_regions if r['area'] > min_area]
-    
-    if not filtered_regions:
-        return None
-    
     # 按面积排序，找出最大的区域
-    largest_region = max(filtered_regions, key=lambda r: r['area'])
+    largest_region = max(text_regions, key=lambda r: r['area'])
     
     return largest_region
 

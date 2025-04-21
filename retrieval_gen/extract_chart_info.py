@@ -86,7 +86,7 @@ def query_llm_for_element_description(crop_path, category_id):
     """使用LLM获取裁剪后的图表元素的描述"""
     base64_image = encode_image(crop_path)
     
-    element_type = "visual element" if category_id == 1 else "data chart"
+    element_type = "visual element" if category_id == 1 else "data chart" if category_id == 2 else "title"
     
     prompt = f"""
     Please analyze this {element_type} and provide a detailed description including:
@@ -347,8 +347,8 @@ def visualize_with_descriptions(chart_info, output_dir):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='提取图表信息并保存为JSON')
-    parser.add_argument('--annotations', default='./data/annotations.json', help='标注文件路径')
-    parser.add_argument('--image_dir', default='./data/realworld_test', help='图片目录')
+    parser.add_argument('--annotations', default='./data/title_annotations.json', help='标注文件路径')
+    parser.add_argument('--image_dir', default='./data/', help='图片目录')
     parser.add_argument('--output_dir', default='./output_info', help='输出目录')
     parser.add_argument('--visualize', action='store_true', help='是否生成可视化结果')
     
@@ -358,8 +358,8 @@ if __name__ == "__main__":
     results = extract_chart_info(args.annotations, args.image_dir, args.output_dir)
     
     # 可视化结果
-    if args.visualize:
-        for chart_info in results:
-            visualize_with_descriptions(chart_info, args.output_dir)
+    # if args.visualize:
+    #     for chart_info in results:
+    #         visualize_with_descriptions(chart_info, args.output_dir)
     
     print("完成!") 
