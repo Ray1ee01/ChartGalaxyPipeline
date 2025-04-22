@@ -3,3 +3,4 @@ output
 output_info
 crops
 *.png
+*.json
