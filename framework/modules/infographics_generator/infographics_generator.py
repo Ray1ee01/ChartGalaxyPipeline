@@ -489,9 +489,13 @@ def make_infographic(
     total_width = best_title["total_width"] + padding * 2
     
     mode = "background"
-    # # 随机从side和background中选择一个
-    # if random.random() < 0.5:
-    #     mode = "background"
+    # 随机从side和background和overlay中选择一个
+    if random.random() < 0.5:
+        mode = "side"
+    elif random.random() < 0.5:
+        mode = "background"
+    else:
+        mode = "overlay"
     
     final_svg = f"""<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="{total_width}" height="{total_height}" style="font-family: Arial, 'Liberation Sans', 'DejaVu Sans', sans-serif;">
     <g class="chart" transform="translate({padding + best_title['chart'][0]}, {padding + best_title['chart'][1]})">{chart_content}</g>
