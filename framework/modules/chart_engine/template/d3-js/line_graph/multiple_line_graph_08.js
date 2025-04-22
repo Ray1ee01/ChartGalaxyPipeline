@@ -13,7 +13,7 @@ REQUIREMENTS_BEGIN
     "supported_effects": [],
     "min_height": 400,
     "min_width": 800,
-    "background": "light",
+    "background": "dark",
     "icon_mark": "none",
     "icon_label": "none",
     "has_x_axis": "yes",
@@ -59,42 +59,16 @@ function makeChart(containerSelector, data) {
         .attr("xmlns", "http://www.w3.org/2000/svg")
         .attr("xmlns:xlink", "http://www.w3.org/1999/xlink");
     
-    // 创建渐变定义
-    const defs = svg.append("defs");
-    const gradientId = "background-gradient";
-    
-    // 创建从左上角到右下角的渐变
-    const gradient = defs.append("linearGradient")
-        .attr("id", gradientId)
-        .attr("x1", "0%")
-        .attr("y1", "0%")
-        .attr("x2", "100%")
-        .attr("y2", "100%");
-    
-    // 添加渐变色标
-    gradient.append("stop")
-        .attr("offset", "0%")
-        .attr("stop-color", "#f6b8cd");
-    
-    gradient.append("stop")
-        .attr("offset", "100%")
-        .attr("stop-color", "#fe524a");
-    
-    // 添加背景矩形
-    svg.append("rect")
-        .attr("width", width)
-        .attr("height", height)
-        .attr("class", "background")
-        .attr("fill", `url(#${gradientId})`);
-    
     // 创建图表区域
     const g = svg.append("g")
         .attr("transform", `translate(${margin.left}, ${margin.top})`);
     
     const { xScale, xTicks, xFormat, timeSpan } = createXAxisScaleAndTicks(chartData, xField, 0, innerWidth);
     
+    const yMin = Math.min(0, d3.min(chartData, d => d[yField]) * 1.1);
+    const yMax = d3.max(chartData, d => d[yField]) * 1.1;
     const yScale = d3.scaleLinear()
-        .domain([0, d3.max(chartData, d => d[yField]) * 1.1])
+        .domain([yMin, yMax])
         .range([innerHeight, 0]);
     
     // 使用数据JSON中的颜色
