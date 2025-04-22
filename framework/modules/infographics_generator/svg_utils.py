@@ -67,7 +67,7 @@ def add_gradient_to_rect(rect_svg):
 </defs>
 
 <!-- 背景矩形 -->
-<rect x="{x}" y="{y}" width="{width}" height="{height}" rx="10" ry="10" fill="url(#{gradient_id})" />"""
+<rect x="{x}" y="{y}" width="{width}" height="{height}" fill="url(#{gradient_id})" />"""
     
     return gradient_svg
 

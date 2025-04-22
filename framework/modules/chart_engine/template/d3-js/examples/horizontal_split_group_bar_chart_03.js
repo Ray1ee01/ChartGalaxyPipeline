@@ -5,8 +5,9 @@ REQUIREMENTS_BEGIN
     "chart_name": "horizontal_split_group_bar_chart_03",
     "is_composite": false,
     "chart_for": "comparison",
-    "required_fields": ["x", "y", "group", "group"],
+    "required_fields": ["x", "y", "group", "group2"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"], ["categorical"]],
+    "hierarchy":["group2"],
     "required_fields_range": [
         [2, 30],
         [0, "inf"],
@@ -84,8 +85,8 @@ function makeChart(containerSelector, data) {
 
     const categoryField = xColumn.name;
     const valueField = yColumn.name;
-    const conditionField = groupColumns[0].name; // 条件字段 (如：年份)，决定左右分组
-    const colorField = groupColumns[1].name;     // 颜色字段 (如：区域)
+    const conditionField = dataColumns.find(col => col.role === "group").name; // 条件字段 (如：年份)，决定左右分组
+    const colorField = dataColumns.find(col => col.role === "group2").name;     // 颜色字段 (如：区域)
     let valueUnit = (yColumn.unit && yColumn.unit !== "none") ? yColumn.unit : "";
 
     // ---------- 4. 数据处理与排序 ----------

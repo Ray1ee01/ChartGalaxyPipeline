@@ -198,10 +198,13 @@ class TitleGenerator:
 
     def composite(self):
         if self.show_sub_title:
-            description_shift_y = self.main_title_bounding_box['max_y'] + 25 - self.description_bounding_box['min_y']
-            
-            # 左对齐情况下，直接使用标题的min_x作为基准
-            description_shift_x = self.main_title_bounding_box['min_x'] - self.description_bounding_box['min_x']
+            description_shift_y = self.main_title_bounding_box['max_y'] + 15 - self.main_title_bounding_box['min_y']
+            description_shift_x = self.description_bounding_box['min_x'] - self.main_title_bounding_box['min_x']
+
+            if self.text_align == "right":
+                title_width = self.main_title_bounding_box['max_x'] - self.main_title_bounding_box['min_x']
+                description_width = self.description_bounding_box['max_x'] - self.description_bounding_box['min_x']
+                description_shift_x = title_width - description_width
             
             description_transform = f'translate({description_shift_x}, {description_shift_y})'
             self.description_svg = self.description_svg.replace('transform="', f'transform="{description_transform} ')

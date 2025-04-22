@@ -36,6 +36,11 @@ def get_element_bbox(svg_file, element):
     root = tree.getroot()
     new_root = ET.Element(root.tag, root.attrib)
     new_root.extend(root.findall('./svg:defs', {'svg': 'http://www.w3.org/2000/svg'}))  # Copy defs
+    
+    # If it's a text element, make sure it's black for better bounding box detection
+    if element.tag.endswith('text') or element.get('class') == 'text':
+        ensure_text_is_black(element)
+    
     new_root.append(element)
     
     # Save the temporary SVG
@@ -56,6 +61,30 @@ def get_element_bbox(svg_file, element):
     os.unlink(temp_png_path)
     
     return x_min, y_min, x_max - x_min, y_max - y_min
+
+def ensure_text_is_black(element):
+    """Ensure text elements are black for better bounding box detection."""
+    # Set fill to black for the element
+    element.set('fill', '#000000')
+    
+    # Process any child text elements (tspan, etc.)
+    for child in element:
+        if child.tag.endswith('text') or child.tag.endswith('tspan'):
+            child.set('fill', '#000000')
+    
+    # Remove any fill opacity if present
+    if 'fill-opacity' in element.attrib:
+        del element.attrib['fill-opacity']
+    
+    # If there's a style attribute, modify it to ensure black fill
+    if 'style' in element.attrib:
+        style = element.get('style', '')
+        # Replace any fill color definition
+        style = re.sub(r'fill:\s*[^;]+;', 'fill: #000000;', style)
+        # If there's no fill definition, add one
+        if 'fill:' not in style:
+            style += ';fill: #000000;'
+        element.set('style', style)
 
 def svg_to_png(svg_path, png_path):
     """Convert SVG to PNG using rsvg-convert with a white background."""
@@ -238,10 +267,29 @@ def process_single_svg(svg_file, output_dir, stats):
                 stats['skipped_charts'] += 1
             return
         
+        # Make a copy of the SVG with all text elements turned black for processing
+        modified_svg_file = os.path.join(output_dir, f"{base_name}_black_text.svg")
+        # Deep copy the tree
+        process_tree = ET.parse(svg_file)
+        process_root = process_tree.getroot()
+        
+        # Find all text elements and make them black
+        thread_safe_print("Converting text elements to black for better detection...")
+        text_elements = process_root.findall('.//svg:text', ns) + process_root.findall('.//*[@class="text"]', ns)
+        for text_element in text_elements:
+            ensure_text_is_black(text_element)
+        
+        # Save the modified SVG
+        ET.register_namespace('', 'http://www.w3.org/2000/svg')
+        process_tree.write(modified_svg_file)
+        
+        # Use the modified SVG for bounding box detection
+        svg_file_for_detection = modified_svg_file
+        
         # Convert the whole SVG to PNG
         thread_safe_print("Converting SVG to PNG...")
         output_png = os.path.join(output_dir, f"{base_name}.png")
-        svg_to_png(svg_file, output_png)
+        svg_to_png(svg_file, output_png)  # Use original for the main output
         
         # Get image dimensions
         thread_safe_print("Getting image dimensions...")
@@ -263,11 +311,11 @@ def process_single_svg(svg_file, output_dir, stats):
         # Process chart and text elements (top-level)
         thread_safe_print("Processing chart and text elements...")
         for class_name in ["chart", "text"]:
-            elements = root.findall(f'.//*[@class="{class_name}"]', ns)
+            elements = process_root.findall(f'.//*[@class="{class_name}"]', ns)
             thread_safe_print(f"Found {len(elements)} {class_name} elements")
             for element in elements:
                 thread_safe_print(f"Processing {class_name} element: {element.tag}")
-                x_min, y_min, width, height = get_element_bbox(svg_file, element)
+                x_min, y_min, width, height = get_element_bbox(svg_file_for_detection, element)
                 if width > 0 and height > 0:
                     bbox_data["bounding_boxes"].append({
                         "class": class_name,
@@ -277,12 +325,12 @@ def process_single_svg(svg_file, output_dir, stats):
         
         # Process image elements (只处理一级元素)
         thread_safe_print("Processing image elements...")
-        image_elements = root.findall('./svg:image', ns)  # 只查找一级元素
+        image_elements = process_root.findall('./svg:image', ns)  # 只查找一级元素
         thread_safe_print(f"Found {len(image_elements)} image elements")
         for element in image_elements:
             thread_safe_print(f"Processing image element: {element.tag}")
             # Get accumulated transform from all parents
-            translate_x, translate_y = get_accumulated_transform(element, tree, ns)
+            translate_x, translate_y = get_accumulated_transform(element, process_tree, ns)
             thread_safe_print(f"Accumulated transform for image: x={translate_x}, y={translate_y}")
             
             # Create a temporary SVG with just this image element
@@ -290,7 +338,7 @@ def process_single_svg(svg_file, output_dir, stats):
                 temp_svg_path = temp_svg.name
             
             # Create a new SVG with just this image element
-            new_root = ET.Element(root.tag, root.attrib)
+            new_root = ET.Element(process_root.tag, process_root.attrib)
             # Don't copy defs to avoid conflicts
             new_root.append(element)
             
@@ -324,6 +372,9 @@ def process_single_svg(svg_file, output_dir, stats):
             os.unlink(temp_png_path)
             os.unlink(temp_svg_path)
         
+        # Clean up the modified SVG after processing
+        os.unlink(svg_file_for_detection)
+        
         # Write the bounding box JSON file
         thread_safe_print("Writing JSON file...")
         output_json = os.path.join(output_dir, f"{base_name}.json")
@@ -332,10 +383,10 @@ def process_single_svg(svg_file, output_dir, stats):
         
         # Generate PNG with bounding boxes
         thread_safe_print("Generating PNG with bounding boxes...")
-        #output_png_with_boxes = os.path.join(output_dir, f"{base_name}_with_boxes.png")
-        #draw_bounding_boxes(output_png, bbox_data["bounding_boxes"], output_png_with_boxes)
+        output_png_with_boxes = os.path.join(output_dir, f"{base_name}_with_boxes.png")
+        draw_bounding_boxes(output_png, bbox_data["bounding_boxes"], output_png_with_boxes)
         
-        #thread_safe_print(f"Successfully processed {svg_file} -> {output_png}, {output_png_with_boxes} and {output_json}")
+        thread_safe_print(f"Successfully processed {svg_file} -> {output_png}, {output_png_with_boxes} and {output_json}")
         
         with stats['lock']:
             stats['processed_files'] += 1

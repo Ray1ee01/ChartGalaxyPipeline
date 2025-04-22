@@ -1,8 +1,8 @@
 /*
 REQUIREMENTS_BEGIN
 {
-    "chart_type": "Waterfall Chart",
-    "chart_name": "waterfall_chart_01",
+    "chart_type": "Bullet Chart",
+    "chart_name": "bullet_chart_01",
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],
     "required_fields_range": [[3, 20], [0, 100]],

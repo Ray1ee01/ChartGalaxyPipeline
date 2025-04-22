@@ -4,7 +4,7 @@ REQUIREMENTS_BEGIN
     "chart_type": "vertical_grouped_bar_chart_04",
     "chart_name": "vertical_grouped_bar_chart_04",
     "is_composite": false,
-    "required_fields": ["x", "y", "group", "group"],
+    "required_fields": ["x", "y", "group", "group2"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"], ["categorical"]],
     "required_fields_range": [
         [2, 20], 
@@ -82,8 +82,8 @@ function makeChart(containerSelector, data) {
 
     xField = xColumn.name;
     yField = yColumn.name;
-    group1Field = groupColumns[0].name; // 第一分组字段 (e.g., Year)
-    group2Field = groupColumns[1].name; // 第二分组字段 (e.g., Metric)
+    group1Field = dataColumns.find(col => col.role === "group").name; // 第一分组字段 (e.g., Year)
+    group2Field = dataColumns.find(col => col.role === "group2").name; // 第二分组字段 (e.g., Metric)
 
     if (yColumn.unit && yColumn.unit !== "none") {
         yUnit = yColumn.unit; // 通常是 '%'

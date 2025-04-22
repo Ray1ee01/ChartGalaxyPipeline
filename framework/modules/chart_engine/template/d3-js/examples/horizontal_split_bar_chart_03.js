@@ -5,8 +5,9 @@ REQUIREMENTS_BEGIN
     "chart_name": "horizontal_split_bar_chart_03",
     "chart_for": "comparison",
     "is_composite": false,
-    "required_fields": ["x", "y", "group1", "group2"],
+    "required_fields": ["x", "y", "group", "group2"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"], ["categorical"]],
+    "hierarchy":["group2"],
     "required_fields_range": [[2, 20], [0, 10000], [1, 5], [1, 3]],
     "required_fields_icons": ["dimension"],
     "required_other_icons": [],
@@ -64,14 +65,13 @@ function makeChart(containerSelector, data) {
     const xField = dataColumns.find(col => col.role === "x").name; 
     const yField = dataColumns.find(col => col.role === "y").name;
     
-    // 查找所有具有 "group" 角色的列
-    const groupColumns = dataColumns.filter(col => col.role === "group");
+    
     
     // 使用第一个 group 作为 categoryField，如果不存在则使用默认值
-    const categoryField =groupColumns[0].name ;
+    const categoryField = dataColumns.find(col => col.role === "group").name;
     
     // 使用第二个 group 作为 developmentStatusField，如果不存在则使用默认值
-    const developmentStatusField = groupColumns[1].name;
+    const developmentStatusField = dataColumns.find(col => col.role === "group2").name;
     
     // 获取唯一维度和类别
     const allDimensions = [...new Set(chartData.map(d => d[xField]))];
