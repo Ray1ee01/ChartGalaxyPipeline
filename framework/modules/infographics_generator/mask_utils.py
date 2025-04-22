@@ -7,6 +7,7 @@ import numpy as np
 from typing import Tuple
 import tempfile
 from bs4 import BeautifulSoup
+import scipy.ndimage as ndimage
 
 def calculate_mask_v2(svg_content: str, width: int, height: int, background_color: str, grid_size: int = 5, max_difference = 15) -> np.ndarray:
     """将SVG转换为基于背景色的二值化mask数组"""
@@ -257,3 +258,24 @@ def fill_columns_between_bounds(mask: np.ndarray, x_min: int, x_max: int, y_min:
                 new_mask[y_min:y_max+1, x] = col_slice
     
     return new_mask
+
+def expand_mask(mask: np.ndarray, dist: int) -> np.ndarray:
+    """
+    扩展现有掩码，将任何与现有掩码距离小于dist的像素设为1。
+    
+    Args:
+        mask: 输入的掩码数组，其中1表示内容，0表示背景
+        dist: 距离阈值（像素）
+    
+    Returns:
+        np.ndarray: 扩展后的掩码数组
+    """
+    # 使用距离变换计算每个背景像素到最近的内容像素的距离
+    # 首先反转掩码，因为距离变换计算到0的距离
+    inv_mask = 1 - mask
+    # 计算距离图
+    dist_map = ndimage.distance_transform_edt(inv_mask)
+    # 创建新的掩码，将距离小于dist的像素设为1
+    expanded_mask = np.where(dist_map < dist, 1, mask)
+    
+    return expanded_mask

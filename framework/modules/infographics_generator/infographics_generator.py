@@ -50,7 +50,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from modules.chart_engine.chart_engine import load_data_from_json, get_template_for_chart_name, render_chart_to_svg
 from modules.chart_engine.template.template_registry import scan_templates
 from modules.title_styler.title_styler import process as title_styler_process
-from modules.infographics_generator.mask_utils import fill_columns_between_bounds, calculate_mask_v2
+from modules.infographics_generator.mask_utils import fill_columns_between_bounds, calculate_mask_v2, expand_mask
 from modules.infographics_generator.svg_utils import extract_svg_content, extract_large_rect, adjust_and_get_bbox, add_gradient_to_rect
 from modules.infographics_generator.image_utils import find_best_size_and_position
 from modules.infographics_generator.template_utils import (
@@ -89,6 +89,7 @@ def make_infographic(
     chart_content, chart_width, chart_height, chart_offset_x, chart_offset_y = adjust_and_get_bbox(chart_svg_content, background_color)
     chart_svg_content = f"<svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='{chart_width}' height='{chart_height}'>{chart_content}</svg>"
     mask = calculate_mask_v2(chart_svg_content, chart_width, chart_height, background_color)
+    mask = expand_mask(mask, 15)
     title_candidates = []
     min_title_width = max(250, chart_width / 2)
     max_title_width = chart_width - 150
@@ -494,7 +495,7 @@ def make_infographic(
     original_mask = calculate_mask_v2(final_svg + "\n</svg>", total_width, total_height, background_color)
     original_mask = fill_columns_between_bounds(original_mask, padding + best_title['title'][0], padding + best_title['title'][0] + best_title['width'], \
                                 padding + best_title['title'][1], padding + best_title['title'][1] + best_title['height'])
-    
+    original_mask = expand_mask(original_mask, 15)
     # Generate visualization
     mask_img = visualize_mask(original_mask, "Chart Mask")
     
@@ -556,13 +557,7 @@ def make_infographic(
                 max_overlap = overlap_area
                 image_to_chart = position
 
-        image_size -= between_padding
-        if 'B' in image_to_chart:
-            best_y += between_padding / 2
-        if 'R' in image_to_chart:
-            best_x += between_padding / 2
-
-        if image_size > 100 - between_padding:
+        if image_size > 80:
             image_element = f"""
         <image
             class="image"
