@@ -4,7 +4,7 @@ from .mask_utils import calculate_mask
 import os
 from PIL import Image
 
-def find_best_size_and_position(main_mask: np.ndarray, image_content: str, padding: int) -> Tuple[int, int, int]:
+def find_best_size_and_position(main_mask: np.ndarray, image_content: str, padding: int, mode: str = "side") -> Tuple[int, int, int]:
     """
     通过降采样加速查找最佳图片尺寸和位置
     
@@ -85,6 +85,10 @@ def find_best_size_and_position(main_mask: np.ndarray, image_content: str, paddi
         
         # 在降采样空间中寻找最佳位置
         min_overlap = float('inf')
+        if mode == "side" or mode == "background":
+            min_overlap = float('inf')
+        elif mode == "overlay":
+            min_overlap = 0
         current_x = downsampled_padding
         current_y = downsampled_padding
         min_distance_to_border = float('inf')
@@ -105,23 +109,47 @@ def find_best_size_and_position(main_mask: np.ndarray, image_content: str, paddi
                 distance_to_top = y - downsampled_padding
                 distance_to_bottom = downsampled_h - mid_size - downsampled_padding - y
                 distance_to_border = min(distance_to_left, distance_to_right, distance_to_top, distance_to_bottom)
-                
-                if overlap_ratio < min_overlap or (overlap_ratio == min_overlap and distance_to_border < min_distance_to_border):
-                    min_overlap = overlap_ratio
-                    current_x = x
-                    current_y = y
-                    min_distance_to_border = distance_to_border
+                if mode == "side" or mode == "background":
+                    if overlap_ratio < min_overlap or (overlap_ratio == min_overlap and distance_to_border < min_distance_to_border):
+                        min_overlap = overlap_ratio
+                        current_x = x
+                        current_y = y
+                        min_distance_to_border = distance_to_border
+                elif mode == "overlay":
+                    if overlap_ratio > min_overlap or (overlap_ratio == min_overlap and distance_to_border < min_distance_to_border):
+                        min_overlap = overlap_ratio
+                        current_x = x
+                        current_y = y
+                        min_distance_to_border = distance_to_border
         
         print(f"Trying size {mid_size * grid_size}x{mid_size * grid_size}, minimum overlap ratio: {min_overlap:.3f}")
         
-        if min_overlap < 0.01:
-            best_size = mid_size
-            best_overlap_ratio = min_overlap
-            best_x = current_x
-            best_y = current_y
-            min_size = mid_size + 1
-        else:
-            max_size = mid_size - 1
+        overlap_threshold = 0.01
+        if mode == "side":
+            overlap_threshold = 0.01
+        elif mode == "background":
+            overlap_threshold = 0.05
+        elif mode == "overlay":
+            overlap_threshold = 0.8
+        
+        if mode == "side" or mode == "background":
+            if min_overlap < overlap_threshold:
+                best_size = mid_size
+                best_overlap_ratio = min_overlap
+                best_x = current_x
+                best_y = current_y
+                min_size = mid_size + 1
+            else:
+                max_size = mid_size - 1
+        elif mode == "overlay":
+            if min_overlap > overlap_threshold:
+                best_size = mid_size
+                best_overlap_ratio = min_overlap
+                best_x = current_x
+                best_y = current_y
+                min_size = mid_size + 1
+            else:
+                max_size = mid_size - 1
     
     # 将结果转换回原始尺度
     final_size = best_size * grid_size

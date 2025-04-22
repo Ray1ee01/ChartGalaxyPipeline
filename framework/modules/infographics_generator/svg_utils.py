@@ -227,6 +227,29 @@ def adjust_and_get_bbox(svg_content, background_color = "#FFFFFF"):
     
     return svg_container, width, height, offset_x, offset_y
     
+def remove_image_element(svg_content: str) -> str:
+    """Remove image element from SVG content."""
+    try:
+        # 确保SVG内容以</svg>结尾
+        if not svg_content.strip().endswith('</svg>'):
+            svg_content = svg_content + '</svg>'
+            
+        # 解析SVG内容
+        svg_tree = etree.fromstring(svg_content.encode())
+        
+        # 移除所有image元素,包括不同命名空间下的image元素
+        namespaces = {'svg': 'http://www.w3.org/2000/svg', 
+                     'xlink': 'http://www.w3.org/1999/xlink'}
+        for image in svg_tree.xpath("//image | //*[local-name()='image']", namespaces=namespaces):
+            print("image", image)
+            image.getparent().remove(image)
+            
+        # 转换回字符串
+        return etree.tostring(svg_tree, encoding='unicode', pretty_print=True)
+    except Exception as e:
+        print(f"Error removing image element: {str(e)}")
+        print(f"SVG content: {svg_content}")
+        return svg_content
 
 def svg_to_png(svg_path, png_path, background_color = "#FFFFFF"):
     """Convert SVG to PNG using rsvg-convert with a white background."""

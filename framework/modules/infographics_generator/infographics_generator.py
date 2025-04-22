@@ -10,7 +10,7 @@ import subprocess
 import re
 from numpy.lib.stride_tricks import as_strided
 from lxml import etree
-from modules.infographics_generator.svg_utils import svg_to_png
+from modules.infographics_generator.svg_utils import svg_to_png, remove_image_element
 from PIL import Image as PILImage
 
 from config import api_key as API_KEY, base_url as API_PROVIDER
@@ -215,7 +215,7 @@ def make_infographic(
     # 初始化best_title默认值为None，用于后续检查
     best_title = None
     
-    if mask_1_ratio > 0.25:
+    if mask_1_ratio > 0.25 and mask_1_ratio < 0.5:
         width = average_distance*2
         title_content = title_styler_process(input_data=data, max_width=int(width), text_align="center", show_embellishment=False, show_sub_title=False)
         title_svg_content = title_content  # Assuming title_content is the SVG content
@@ -489,9 +489,21 @@ def make_infographic(
     total_height = best_title["total_height"] + padding * 2
     total_width = best_title["total_width"] + padding * 2
     
+    mode = "background"
+    # 随机从side和background和overlay中选择一个
+    if random.random() < 0.5:
+        mode = "side"
+    elif random.random() < 0.5:
+        mode = "background"
+    else:
+        mode = "overlay"
+    
     final_svg = f"""<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="{total_width}" height="{total_height}" style="font-family: Arial, 'Liberation Sans', 'DejaVu Sans', sans-serif;">
     <g class="chart" transform="translate({padding + best_title['chart'][0]}, {padding + best_title['chart'][1]})">{chart_content}</g>
     <g class="text" transform="translate({padding + best_title['title'][0]}, {padding + best_title['title'][1]})">{title_inner_content}</g>"""
+    if mode == "overlay":
+        print("remove_image_element")
+        final_svg = remove_image_element(final_svg)
     original_mask = calculate_mask_v2(final_svg + "\n</svg>", total_width, total_height, background_color)
     original_mask = fill_columns_between_bounds(original_mask, padding + best_title['title'][0], padding + best_title['title'][0] + best_title['width'], \
                                 padding + best_title['title'][1], padding + best_title['title'][1] + best_title['height'])
@@ -511,7 +523,7 @@ def make_infographic(
         if "base64," not in primary_image:
             primary_image = f"data:image/png;base64,{primary_image}"
         
-        image_size, best_x, best_y = find_best_size_and_position(original_mask, primary_image, padding)
+        image_size, best_x, best_y = find_best_size_and_position(original_mask, primary_image, padding, mode=mode)
     
     text_color = data["colors"].get("text_color", "#000000")
     if dark:
@@ -559,15 +571,21 @@ def make_infographic(
 
         if image_size > 80:
             image_element = f"""
-        <image
-            class="image"
-            x="{best_x}"
-            y="{best_y}"
-            width="{image_size}"
-            height="{image_size}"
-            preserveAspectRatio="none"
-            href="{primary_image}"
-        />"""
+                <image
+                    class="image"
+                    x="{best_x}"
+                    y="{best_y}"
+                    width="{image_size}"
+                    height="{image_size}"
+                    preserveAspectRatio="none"
+                    href="{primary_image}"
+                    opacity="{0.3 if mode=='background' or mode=='overlay' else 1}"
+                />"""
+            final_svg += image_element
+    
+    text_color = data["colors"].get("text_color", "#000000")
+    if dark:
+        text_color = "#FFFFFF"
             
     chart_content, background_element = extract_large_rect(chart_content)
     print("background_element", background_element)
@@ -578,11 +596,19 @@ def make_infographic(
         background_element = re.sub(r'height="[^"]+"', f'height="{total_height}"', background_element)
         background_layer = add_gradient_to_rect(f'<rect x="0" y="0" width="{total_width}" height="{total_height}" fill="{background_color}" />')
         background_element = background_layer + background_element
-    final_svg = f"""<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="{total_width}" height="{total_height}" style="font-family: Arial, 'Liberation Sans', 'DejaVu Sans', sans-serif;">
-    {background_element}
-    <g class="chart" transform="translate({padding + best_title['chart'][0]}, {padding + best_title['chart'][1]})">{chart_content}</g>
-    <g class="text" fill="{text_color}" transform="translate({padding + best_title['title'][0]}, {padding + best_title['title'][1]})">{title_inner_content}</g>
-    {image_element}\n</svg>"""
+    if mode == "side" or mode == "overlay":
+        final_svg = f"""<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="{total_width}" height="{total_height}" style="font-family: Arial, 'Liberation Sans', 'DejaVu Sans', sans-serif;">
+        {background_element}
+        <g class="chart" transform="translate({padding + best_title['chart'][0]}, {padding + best_title['chart'][1]})">{chart_content}</g>
+        <g class="text" fill="{text_color}" transform="translate({padding + best_title['title'][0]}, {padding + best_title['title'][1]})">{title_inner_content}</g>
+        {image_element}\n</svg>"""
+    elif mode == "background":
+        final_svg = f"""<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="{total_width}" height="{total_height}" style="font-family: Arial, 'Liberation Sans', 'DejaVu Sans', sans-serif;">
+        {background_element}
+        {image_element}\n
+        <g class="chart" transform="translate({padding + best_title['chart'][0]}, {padding + best_title['chart'][1]})">{chart_content}</g>
+        <g class="text" fill="{text_color}" transform="translate({padding + best_title['title'][0]}, {padding + best_title['title'][1]})">{title_inner_content}</g>
+        </svg>"""
 
     layout_info = {
         "text_color": text_color,
