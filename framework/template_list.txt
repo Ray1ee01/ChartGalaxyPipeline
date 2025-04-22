@@ -1,0 +1,138 @@
+rose chart / multiple_rose_chart_02
+rose chart / multiple_rose_chart_01
+donut chart / multiple_semidonut_chart_01
+donut chart / multiple_donut_chart_01
+donut chart / multiple_donut_chart_02
+pie chart / pie_chart_02
+pie chart / multiple_pie_chart_01
+pie chart / pie_chart_03
+pie chart / pie_chart_01
+gauge chart / multiple_gauge_chart_01
+gauge chart / multiple_gauge_chart_02
+bubble chart / bubble_chart_01
+bar chart / stacked_bar_chart_01
+circular voronoi map / voronoi_treemap_02
+circular voronoi map / voronoi_treemap_03
+treemap / treemap_01
+voronoi map / voronoi_treemap_01
+radial bar chart / radial_bar_chart_01
+radial bar chart / radial_bar_chart_03
+radial bar chart / radial_bar_chart_02
+donut_chart / donut_chart_01
+semicircle_pie_chart / semicircle_pie_chart_01
+horizontal_split_group_bar_chart / horizontal_split_group_bar_chart_03
+vertical bar chart with proportional circles / vertical_bar_proportional_circle_area_chart_02
+horizontal split bar chart / horizontal_split_bar_chart_07
+horizontal split bar chart / horizontal_split_bar_chart_01
+horizontal split bar chart / horizontal_split_bar_chart_06
+horizontal split bar chart / horizontal_split_bar_chart_04
+horizontal split bar chart / horizontal_split_bar_chart_05
+horizontal split bar chart / horizontal_split_bar_chart_02
+horizontal bar chart / horizontal_bar_chart_06
+horizontal bar chart / horizontal_grouped_bar_chart_01
+horizontal bar chart / horizontal_bar_chart
+horizontal bar chart / horizontal_bar_chart_08
+horizontal bar chart / horizontal_bar_chart_04
+horizontal bar chart / horizontal_bar_chart_02
+horizontal bar chart / horizontal_bar_chart_03
+horizontal bar chart / horizontal_bar_chart_05
+horizontal bar chart / horizontal_grouped_bar_chart_02
+horizontal bar chart / horizontal_bar_chart_09
+horizontal bar chart / horizontal_bar_chart_01
+horizontal bar chart / horizontal_bar_chart_07
+horizontal bar chart / horizontal_bar_chart_0
+horizontal bar chart / horizontal_bar_chart_2
+horizontal bar chart / horizontal_bar_chart_3
+horizontal bar chart / horizontal_bar_chart_1
+unit_square_chart / unit_square_chart_01
+bubble_chart / bubble_chart_05
+bubble_chart / bubble_chart_06
+horizontal grouped bar chart / horizontal_grouped_bar_chart_04
+horizontal grouped bar chart / horizontal_grouped_bar_chart_03
+horizontal grouped bar chart / horizontal_split_group_bar_chart_02
+horizontal grouped bar chart / horizontal_grouped_bar_chart_05
+horizontal grouped bar chart / horizontal_split_group_bar_chart_01
+horizontal grouped bar chart / horizontal_grouped_bar_chart_07
+horizontal grouped bar chart / horizontal_grouped_bar_chart_06
+horizontal bar chart with proportional circles / horizontal_bar_proportional_circle_area_chart_01
+horizontal bar chart with proportional circles / horizontal_bar_proportional_circle_area_chart_02
+horizontal bar chart with proportional circles / horizontal_bar_proportional_circle_area_chart_03
+bottle_bar_chart / bottle_bar_chart_01
+vertical_grouped_bar_chart_04 / vertical_grouped_bar_chart_04
+vertical_grouped_bar_chart / vertical_grouped_bar_chart_03
+vertical_grouped_bar_chart / vertical_grouped_bar_chart_02
+vertical bar chart with percentage circles / vertical_bar_proportional_circle_area_chart_01
+dual direction horizontal bar chart / dual_direction_horizontal_bar_chart_01
+dual direction horizontal bar chart / dual_direction_horizontal_bar_chart_03
+vertical_bar_chart / vertical_bar_chart_01
+pie chart / pie_chart_01
+split comparison chart / horizontal_split_bar_chart_03
+scatter chart / scatter_chart_01
+horizontal stacked bar chart / horizontal_stacked_bar_chart
+horizontal stacked bar chart / horizontal_stacked_bar_chart_1
+horizontal stacked bar chart / horizontal_stacked_bar_chart_0
+vertical grouped bar chart / vertical_grouped_bar_chart_01
+bubble_square_rect_chart / bubble_square_rect_chart_01
+grouped radial bar chart / grouped_radial_bar_chart_01
+horizontal stacked bar chart with proportional circles / horizontal_stacked_bar_proportional_circle_area_chart_01
+horizontal_bar_chart_composite / horizontal_bar_chart_composite_01
+dual direction horizontal bar chart with icons / dual_direction_horizontal_bar_chart_02
+clock pie chart / clock_pie_chart_01
+vertical_bar_chart_composite / vertical_bar_chart_composite_01
+grouped bar chart / grouped_bar_chart_01
+alluvial diagram / alluvial_diagram_01
+waterfall chart / waterfall_chart_01
+multiple line graph / multiple_line_graph_03
+multiple line graph / multiple_line_graph_07
+multiple line graph / multiple_line_graph_02
+multiple line graph / difference_line_graph_02
+multiple line graph / multiple_line_graph_08
+multiple line graph / difference_line_graph_01
+multiple line graph / multiple_line_graph_10
+multiple line graph / multiple_line_graph_06
+multiple line graph / multiple_line_graph_01
+multiple line graph / multiple_line_graph_04
+multiple line graph / multiple_line_graph_05
+multiple line graph / multiple_line_graph_09
+multiple line graph / difference_line_graph_03
+line graph / line_graph_01
+slope chart / slope_chart_01
+step line graph / step_line_graph_01
+vertical bar chart / vertical_bar_chart_0
+vertical group bar chart / vertical_group_bar_chart_0
+vertical group bar chart / vertical_group_bar_chart_1
+vertical group bar chart / vertical_group_bar_chart_2
+vertical stacked bar chart / vertical_stacked_bar_chart_0
+vertical stacked bar chart / vertical_stacked_bar_chart_1
+scatterplot / scatterplot_01
+circular bar chart / circular_bar_chart_01
+circular bar chart / circular_bar_chart_02
+multiple radar chart / multiple_radar_chart_03
+multiple radar chart / multiple_radar_chart_01
+multiple radar chart / multiple_radar_chart_02
+multiple radar chart / multiple_radar_chart_04
+radar line chart / radar_line_chart_01
+radar line chart / radar_line_chart_04
+radar line chart / radar_line_chart_03
+radar line chart / radar_line_chart_02
+pyramid chart / pyramid_chart_02
+pyramid chart / pyramid_chart_01
+pyramid diagram / pyramid_diagram_01
+pyramid diagram / pyramid_diagram_02
+funnel chart / funnel_chart_01
+funnel chart / funnel_chart_02
+area chart / area_chart_01
+area chart / area_chart_03
+area chart / area_chart_02
+area chart / area_chart_04
+area chart / area_chart_05
+stacked area chart / stacked_area_chart_04
+stacked area chart / stacked_area_chart_01
+stacked area chart / stacked_area_chart_03
+stacked area chart / stacked_area_chart_02
+multiple area chart / multiple_area_chart_02
+multiple area chart / multiple_area_chart_01
+layered area chart / layered_area_chart_01
+layered area chart / layered_area_chart_03
+layered area chart / layered_area_chart_02
+proportional square area chart / proportional_square_area_chart_01

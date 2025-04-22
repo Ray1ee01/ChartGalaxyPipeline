@@ -48,6 +48,7 @@ def analyze_templates(templates: Dict) -> Tuple[int, Dict[str, str], int]:
     """Analyze templates and return count, data requirements and unique colors count"""
     template_count = 0
     template_requirements = {}
+    template_list = []
     unique_colors = set()
     
     for engine, templates_dict in templates.items():
@@ -57,6 +58,7 @@ def analyze_templates(templates: Dict) -> Tuple[int, Dict[str, str], int]:
                     continue
                 if engine == 'vegalite_py':
                     continue
+                template_list.append(f"{chart_type} / {chart_name}")
                 template_count += 1
                 if 'requirements' in template_info:
                     req = template_info['requirements']
@@ -73,6 +75,11 @@ def analyze_templates(templates: Dict) -> Tuple[int, Dict[str, str], int]:
                     if 'required_fields' in req and 'required_fields_type' in req:
                         template_requirements[f"{engine}/{chart_type}/{chart_name}"] = template_info['requirements']
                     
+    #print("template_count", template_count)
+    #f = open("template_list.txt", "w")
+    #f.write("\n".join(template_list))
+    #f.close()
+
     return template_count, template_requirements
 
 block_list = ["multiple_line_graph_06", "layered_area_chart_02", "multiple_area_chart_01", "stacked_area_chart_01", "stacked_area_chart_03"]

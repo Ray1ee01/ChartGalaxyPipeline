@@ -64,20 +64,30 @@ function makeChart(containerSelector, data) {
     const xExtent = d3.extent(chartData, d => d[yField]);
     const yExtent = d3.extent(chartData, d => d[y2Field]);
     
-    // Function to check if data distribution is uneven
-    function isDistributionUneven(extent) {
+    // 检查数据是否包含负值或0值
+    function hasNegativeOrZeroValues(data, field) {
+        return data.some(d => d[field] <= 0);
+    }
+    
+    // 判断数据分布是否不均匀
+    function isDistributionUneven(data, field) {
+        const values = data.map(d => d[field]);
+        const extent = d3.extent(values);
         const range = extent[1] - extent[0];
-        const median = d3.median(chartData, d => d[yField]);
-        const q1 = d3.quantile(chartData, 0.25, d => d[yField]);
-        const q3 = d3.quantile(chartData, 0.75, d => d[yField]);
+        const median = d3.median(values);
+        const q1 = d3.quantile(values.sort(d3.ascending), 0.25);
+        const q3 = d3.quantile(values.sort(d3.ascending), 0.75);
         const iqr = q3 - q1;
         
-        // Lower threshold for using log scale
+        // 不均匀分布的判断标准
         return range > iqr * 3 || Math.abs(median - (extent[0] + extent[1])/2) > range * 0.2;
     }
     
-    // Create scales based on data distribution
-    const xScale = isDistributionUneven(xExtent) 
+    // 为X轴创建合适的比例尺
+    const xHasNegativeOrZero = hasNegativeOrZeroValues(chartData, yField);
+    const xIsUneven = isDistributionUneven(chartData, yField);
+    
+    const xScale = (!xHasNegativeOrZero && xIsUneven) 
         ? d3.scaleLog()
             .domain([Math.max(xExtent[0] * 0.9, 0.1), xExtent[1] * 1.1])
             .range([0, chartWidth])
@@ -85,7 +95,11 @@ function makeChart(containerSelector, data) {
             .domain([xExtent[0] - (xExtent[1] - xExtent[0]) * 0.1, xExtent[1] + (xExtent[1] - xExtent[0]) * 0.1])
             .range([0, chartWidth]);
             
-    const yScale = isDistributionUneven(yExtent)
+    // 为Y轴创建合适的比例尺
+    const yHasNegativeOrZero = hasNegativeOrZeroValues(chartData, y2Field);
+    const yIsUneven = isDistributionUneven(chartData, y2Field);
+    
+    const yScale = (!yHasNegativeOrZero && yIsUneven)
         ? d3.scaleLog()
             .domain([Math.max(yExtent[0] * 0.9, 0.1), yExtent[1] * 1.1])
             .range([chartHeight, 0])

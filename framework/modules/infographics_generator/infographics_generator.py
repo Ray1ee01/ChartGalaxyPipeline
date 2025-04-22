@@ -65,7 +65,7 @@ from modules.infographics_generator.color_utils import is_dark_color, lighten_co
 
 padding = 50
 outer_padding = 15
-between_padding = 45
+between_padding = 35
 grid_size = 5
 
 
