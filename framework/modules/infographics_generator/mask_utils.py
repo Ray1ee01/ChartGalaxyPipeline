@@ -44,7 +44,9 @@ def calculate_mask_v2(svg_content: str, width: int, height: int, background_colo
         temp_mask_png = temp_mask_png_file.name
         
         # 修改SVG内容，移除渐变
-        mask_svg_content = svg_content.replace('url(#', 'none')
+        # 将渐变填充替换为可见的纯色填充，而不是none
+        mask_svg_content = re.sub(r'fill="url\(#[^"]*\)"', 'fill="#333333"', svg_content)
+        mask_svg_content = re.sub(r'stroke="url\(#[^"]*\)"', 'stroke="#333333"', mask_svg_content)
         mask_svg_content = mask_svg_content.replace('&', '&amp;')
         
         # 提取SVG内容并添加新的SVG标签
@@ -114,7 +116,9 @@ def calculate_mask(svg_content: str, width: int, height: int, padding: int, grid
     
     try:
         # 修改SVG内容，移除渐变
-        mask_svg_content = svg_content.replace('url(#', 'none')
+        # 将渐变填充替换为可见的纯色填充，而不是none
+        mask_svg_content = re.sub(r'fill="url\(#[^"]*\)"', 'fill="#333333"', svg_content)
+        mask_svg_content = re.sub(r'stroke="url\(#[^"]*\)"', 'stroke="#333333"', mask_svg_content)
         mask_svg_content = mask_svg_content.replace('&', '&amp;')
         
         # 提取SVG内容并添加新的SVG标签
@@ -211,4 +215,45 @@ def calculate_content_height(mask: np.ndarray, padding: int = 0) -> Tuple[int, i
     end_y = content_indices[-1]
     height = end_y - start_y + 1
     
-    return start_y - padding, end_y - padding, height 
+    return start_y - padding, end_y - padding, height
+
+def fill_columns_between_bounds(mask: np.ndarray, x_min: int, x_max: int, y_min: int, y_max: int) -> np.ndarray:
+    """
+    扫描子矩形区域内每一列的第一个1和最后一个1，将两者之间的区域填充为1
+    
+    Args:
+        mask: 输入的mask数组
+        x_min: 子矩形区域的最小x坐标
+        x_max: 子矩形区域的最大x坐标
+        y_min: 子矩形区域的最小y坐标
+        y_max: 子矩形区域的最大y坐标
+    
+    Returns:
+        np.ndarray: 处理后的mask数组
+    """
+    # 确保坐标在有效范围内
+    height, width = mask.shape
+    x_min = max(0, min(x_min, width - 1))
+    x_max = max(0, min(x_max, width - 1))
+    y_min = max(0, min(y_min, height - 1))
+    y_max = max(0, min(y_max, height - 1))
+    
+    # 创建新的mask副本
+    new_mask = mask.copy()
+    
+    # 对每一列进行处理
+    for x in range(x_min, x_max + 1):
+        # 直接获取该列在指定范围内的切片
+        col_slice = new_mask[y_min:y_max+1, x]
+        
+        if np.any(col_slice == 1):
+            # 找出该列中1的位置
+            content_indices = np.where(col_slice == 1)[0]
+            
+            if len(content_indices) > 0:
+                # 填充该列从第一个1到最后一个1之间的所有位置
+                col_slice[content_indices[0]:content_indices[-1]+1] = 1
+                # 将修改后的切片放回原数组
+                new_mask[y_min:y_max+1, x] = col_slice
+    
+    return new_mask

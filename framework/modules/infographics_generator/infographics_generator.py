@@ -18,6 +18,10 @@ from config import api_key as API_KEY, base_url as API_PROVIDER
 import base64
 import requests
 from io import BytesIO
+import tempfile
+import random
+import uuid
+import fcntl  # 添加fcntl模块用于文件锁
 
 # 创建tmp目录（如果不存在）
 os.makedirs("tmp", exist_ok=True)
@@ -46,7 +50,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from modules.chart_engine.chart_engine import load_data_from_json, get_template_for_chart_name, render_chart_to_svg
 from modules.chart_engine.template.template_registry import scan_templates
 from modules.title_styler.title_styler import process as title_styler_process
-from modules.infographics_generator.mask_utils import calculate_mask, calculate_content_height, calculate_content_width, calculate_bbox, calculate_mask_v2
+from modules.infographics_generator.mask_utils import fill_columns_between_bounds, calculate_mask_v2
 from modules.infographics_generator.svg_utils import extract_svg_content, extract_large_rect, adjust_and_get_bbox, add_gradient_to_rect
 from modules.infographics_generator.image_utils import find_best_size_and_position
 from modules.infographics_generator.template_utils import (
@@ -129,7 +133,6 @@ def make_infographic(
         img_str = base64.b64encode(buf.read()).decode('utf-8')
         return img_str
     
-
     for i in range(steps + 1):
         width = min_title_width + i * (max_title_width - min_title_width) / steps
         title_content = title_styler_process(input_data=data, max_width=int(width), text_align="left", show_embellishment=False)
@@ -194,20 +197,23 @@ def make_infographic(
     # 统计平均距离
     average_distance = np.mean(distance_list)
     
-    # 在mask文件中，仅保留mask_left_from_mid和mask_right_from_mid之间的内容(设为1)，其他内容设为0
     mask = np.zeros(mask.shape)
     for i in range(len(mask)):
         mask[i][mask_left_from_mid[i]:mask_right_from_mid[i]] = 1
     mask_img = visualize_mask(mask, "Mask after smoothing")
-    with open('./tmp/mask_after_smoothing.png', "wb") as f:
-        f.write(base64.b64decode(mask_img))
-    # 统计mask中1的个数
+    
+    # 使用临时文件替代固定路径
+    with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as temp_file:
+        temp_file_path = temp_file.name
+        temp_file.write(base64.b64decode(mask_img))
+    
     mask_1_count = np.sum(mask)
-    # 统计mask中0的个数
     mask_0_count = np.sum(1 - mask)
-    # 统计mask中1的个数占总数的比例
     mask_1_ratio = mask_1_count / (mask_1_count + mask_0_count)
-    print(mask_1_ratio)
+    
+    # 初始化best_title默认值为None，用于后续检查
+    best_title = None
+    
     if mask_1_ratio > 0.25:
         width = average_distance*2
         title_content = title_styler_process(input_data=data, max_width=int(width), text_align="center", show_embellishment=False, show_sub_title=False)
@@ -232,13 +238,16 @@ def make_infographic(
                     "show_sub_title": False
                 }
                 break
-    else:
+    
+    # 如果没有找到合适的best_title（width太大或其他原因），使用默认处理逻辑
+    if best_title is None:
         default_title = {
             "title": (0, 0),
             "chart": (0, title_candidates[-1]["height"] + between_padding),
             "text-align": "left",
             "title-to-chart": "TL",
             "width": chart_width,
+            "height": title_candidates[-1]["height"],
             "total_height": title_candidates[-1]["height"] + chart_height + between_padding,
             "total_width": chart_width,
             "is_first": True,
@@ -267,6 +276,7 @@ def make_infographic(
                         "chart": (offset, max(title_height - min_top, 0)),
                         "text-align": "left",
                         "width": title["width"],
+                        "height": title["height"],
                         "total_height": max(title_height - min_top, 0) + chart_height,
                         "total_width": chart_width + offset, 
                         "area": area
@@ -285,6 +295,7 @@ def make_infographic(
                     "text-align": "center",
                     "title-to-chart": "T",
                     "width": title["width"],
+                    "height": title["height"],
                     "total_height": max(title_height - min_top, 0) + chart_height,
                     "total_width": chart_width,
                     "area": area
@@ -304,6 +315,7 @@ def make_infographic(
                     "text-align": "center",
                     "title-to-chart": "B",
                     "width": title["width"],
+                    "height": title["height"],
                     "total_height": max(title_y + title_height, chart_height),
                     "total_width": chart_width,
                     "area": area
@@ -322,6 +334,7 @@ def make_infographic(
                         "text-align": "left",
                         "title-to-chart": "BL",
                         "width": title["width"],
+                        "height": title["height"],
                         "total_height": max(title_height - (chart_height - max_bottom), 0) + chart_height,
                         "total_width": chart_width + offset, 
                         "area": area
@@ -340,6 +353,7 @@ def make_infographic(
                         "text-align": "right",
                         "title-to-chart": "TR",
                         "width": title["width"],
+                        "height": title["height"],
                         "total_height": max(title_height - min_top, 0) + chart_height,
                         "total_width": chart_width + offset, 
                         "area": area
@@ -358,6 +372,7 @@ def make_infographic(
                         "text-align": "right",
                         "title-to-chart": "BR",
                         "width": title["width"],
+                        "height": title["height"],
                         "total_height": max(title_height - (chart_height - max_bottom), 0) + chart_height,
                         "total_width": chart_width + offset, 
                         "area": area
@@ -379,12 +394,13 @@ def make_infographic(
                 if area < best_area:
                     other_title["left"] = {
                         "title": (0, range_start),
-                        "chart": (offset, 0),
+                        "chart": (max(title_width - min_left, 0), 0),
                         "text-align": "left",
                         "title-to-chart": "L",
                         "width": title["width"],
+                        "height": title["height"],
                         "total_height": chart_height,
-                        "total_width": chart_width + offset,
+                        "total_width": max(title_width - min_left, 0) + chart_width,
                         "area": area
                     }
 
@@ -399,12 +415,13 @@ def make_infographic(
                 if area < best_area:
                     other_title["left"] = {
                         "title": (0, range_start),
-                        "chart": (offset, 0),
+                        "chart": (max(title_width - min_left, 0), 0),
                         "text-align": "left",
                         "title-to-chart": "L",
                         "width": title["width"],
+                        "height": title["height"],
                         "total_height": chart_height,
-                        "total_width": chart_width + offset,
+                        "total_width": max(title_width - min_left, 0) + chart_width,
                         "area": area
                     }
 
@@ -425,6 +442,7 @@ def make_infographic(
                         "text-align": "right",
                         "title-to-chart": "R",
                         "width": title["width"],
+                        "height": title["height"],
                         "total_height": chart_height,
                         "total_width": max(title_x + title_width, chart_width),
                         "area": area
@@ -445,6 +463,7 @@ def make_infographic(
                         "text-align": "right",
                         "title-to-chart": "R",
                         "width": title["width"],
+                        "height": title["height"],
                         "total_height": chart_height,
                         "total_width": max(title_x + title_width, chart_width),
                         "area": area
@@ -453,7 +472,6 @@ def make_infographic(
         if len(other_title.values()) == 0:
             best_title = default_title
         else:
-            import random
             title_options = [default_title] + list(other_title.values())
             min_area = min(title_options, key=lambda x: x["area"])["area"]
             title_options = [t for t in title_options if t["area"] <= min_area * area_threshold]
@@ -474,6 +492,8 @@ def make_infographic(
     <g class="chart" transform="translate({padding + best_title['chart'][0]}, {padding + best_title['chart'][1]})">{chart_content}</g>
     <g class="text" transform="translate({padding + best_title['title'][0]}, {padding + best_title['title'][1]})">{title_inner_content}</g>"""
     original_mask = calculate_mask_v2(final_svg + "\n</svg>", total_width, total_height, background_color)
+    original_mask = fill_columns_between_bounds(original_mask, padding + best_title['title'][0], padding + best_title['title'][0] + best_title['width'], \
+                                padding + best_title['title'][1], padding + best_title['title'][1] + best_title['height'])
     
     # Generate visualization
     mask_img = visualize_mask(original_mask, "Chart Mask")
@@ -491,27 +511,12 @@ def make_infographic(
             primary_image = f"data:image/png;base64,{primary_image}"
         
         image_size, best_x, best_y = find_best_size_and_position(original_mask, primary_image, padding)
-        image_size -= between_padding
-        best_x += between_padding / 2
-        best_y += between_padding / 2
-        if image_size > 80:
-            image_element = f"""
-        <image
-            class="image"
-            x="{best_x}"
-            y="{best_y}"
-            width="{image_size}"
-            height="{image_size}"
-            preserveAspectRatio="none"
-            href="{primary_image}"
-        />"""
-            final_svg += image_element
     
     text_color = data["colors"].get("text_color", "#000000")
     if dark:
         text_color = "#FFFFFF"
 
-    if image_element == "":
+    if image_size <= 100:
         image_to_chart = "none"
     else:
         # 计算图片区域
@@ -550,6 +555,24 @@ def make_infographic(
             if overlap_area > max_overlap:
                 max_overlap = overlap_area
                 image_to_chart = position
+
+        image_size -= between_padding
+        if 'B' in image_to_chart:
+            best_y += between_padding / 2
+        if 'R' in image_to_chart:
+            best_x += between_padding / 2
+
+        if image_size > 100 - between_padding:
+            image_element = f"""
+        <image
+            class="image"
+            x="{best_x}"
+            y="{best_y}"
+            width="{image_size}"
+            height="{image_size}"
+            preserveAspectRatio="none"
+            href="{primary_image}"
+        />"""
             
     chart_content, background_element = extract_large_rect(chart_content)
     print("background_element", background_element)
@@ -772,17 +795,26 @@ def process(input: str, output: str, base_url: str, api_key: str, chart_name: st
         render_chart_start = time.time()
         timestamp = int(time.time())
         output_dir = os.path.dirname(output)
-        output_filename = os.path.basename(output)        
-        new_filename = f"{timestamp}_{chart_name}_{os.path.splitext(output_filename)[0]}.svg"
-        output_path = os.path.join(output_dir, new_filename)           
-        info_filename = f"{timestamp}_{chart_name}_{os.path.splitext(output_filename)[0]}.json" 
-        info_path = os.path.join(output_dir, info_filename) 
-        html_filename = f"{timestamp}_{chart_name}_{os.path.splitext(output_filename)[0]}.html"
-        html_path = os.path.join(output_dir, html_filename)
-        png_filename = f"{timestamp}_{chart_name}_{os.path.splitext(output_filename)[0]}.png" 
-        png_path = os.path.join(output_dir, png_filename)
-        mask_filename = f"{timestamp}_{chart_name}_{os.path.splitext(output_filename)[0]}.mask.png"
-        mask_path = os.path.join(output_dir, mask_filename)
+        output_filename = os.path.basename(output)
+        
+        # 创建子文件夹
+        subfolder_name = f"{timestamp}_{chart_name}_{os.path.splitext(output_filename)[0]}"
+        subfolder_path = os.path.join(output_dir, subfolder_name)
+        os.makedirs(subfolder_path, exist_ok=True)
+        
+        # 在子文件夹中创建文件路径
+        new_filename = "chart.svg"
+        output_path = os.path.join(subfolder_path, new_filename)
+        info_filename = "info.json"
+        info_path = os.path.join(subfolder_path, info_filename)
+        html_filename = "chart.html" 
+        html_path = os.path.join(subfolder_path, html_filename)
+        png_filename = "chart.png"
+        png_path = os.path.join(subfolder_path, png_filename)
+        mask_filename = "chart.mask.png"
+        mask_path = os.path.join(subfolder_path, mask_filename)
+        datatable_name = "data.json"
+        datatable_path = os.path.join(subfolder_path, datatable_name)
         #try:
         render_chart_to_svg(
             json_data=data,
@@ -794,9 +826,6 @@ def process(input: str, output: str, base_url: str, api_key: str, chart_name: st
         )
         render_chart_time = time.time() - render_chart_start
         logger.info(f"Rendering chart took: {render_chart_time:.4f} seconds")
-            
-        # 读取生成的SVG内容
-        read_svg_start = time.time()
         
         with open(chart_svg_path, "r", encoding="utf-8") as f:
             chart_svg_content = f.read()
@@ -814,6 +843,9 @@ def process(input: str, output: str, base_url: str, api_key: str, chart_name: st
             html_path=html_path,
             mask_path=mask_path
         )
+        layout_info["chart_variation"] = chart_name
+        layout_info["chart_type"] = chart_type
+        layout_info["data_source"] = input
 
         assemble_time = time.time() - assemble_start
         logger.info(f"Assembling infographic took: {assemble_time:.4f} seconds")
@@ -824,11 +856,29 @@ def process(input: str, output: str, base_url: str, api_key: str, chart_name: st
             logger.error("Failed to assemble infographic: SVG content extraction failed")
             return False
         
+        # 使用文件锁保护写入操作
         with open(output_path, "w", encoding="utf-8") as f:
-            f.write(final_svg)
+            try:
+                fcntl.flock(f, fcntl.LOCK_EX)  # 获取独占锁
+                f.write(final_svg)
+            finally:
+                fcntl.flock(f, fcntl.LOCK_UN)  # 释放锁
 
         with open(info_path, "w", encoding="utf-8") as f:
-            json.dump(layout_info, f, ensure_ascii=False, indent=4)
+            try:
+                fcntl.flock(f, fcntl.LOCK_EX)  # 获取独占锁
+                layout_info_str = json.dumps(layout_info, indent=4)
+                f.write(layout_info_str)
+            finally:
+                fcntl.flock(f, fcntl.LOCK_UN)  # 释放锁
+
+        with open(datatable_path, "w", encoding="utf-8") as f:
+            try:
+                fcntl.flock(f, fcntl.LOCK_EX)  # 获取独占锁
+                datatable_str = json.dumps(data["data"], indent=4)
+                f.write(datatable_str)
+            finally:
+                fcntl.flock(f, fcntl.LOCK_UN)  # 释放锁
 
         subprocess.run([
             'rsvg-convert',
@@ -853,7 +903,11 @@ def process(input: str, output: str, base_url: str, api_key: str, chart_name: st
     # 保存最终的SVG
     save_start = time.time()
     with open(output_path, "w", encoding="utf-8") as f:
-        f.write(final_svg)
+        try:
+            fcntl.flock(f, fcntl.LOCK_EX)  # 获取独占锁
+            f.write(final_svg)
+        finally:
+            fcntl.flock(f, fcntl.LOCK_UN)  # 释放锁
     save_time = time.time() - save_start
     # except Exception as e:
     #     logger.error(f"Error processing infographics: {e}")
