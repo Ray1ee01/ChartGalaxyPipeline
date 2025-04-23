@@ -6,7 +6,7 @@ REQUIREMENTS_BEGIN
     "is_composite": false,
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
-    "required_fields_range": [[2, 20], [0, "inf"], [2, 6]],
+    "required_fields_range": [[2, 20], [0, "inf"], [2, 5]],
     "required_fields_icons": [],
     "required_other_icons": [],
     "required_fields_colors": ["group"],
@@ -54,8 +54,8 @@ function makeChart(containerSelector, data) {
     // ---------- 2. 尺寸和布局设置 ----------
     
     // 设置图表总尺寸和边距
-    const width = variables.width || 800;
-    const height = variables.height || 600;
+    let width = variables.width || 800;
+    let height = variables.height || 600;
     
     // 为标题和副标题预留空间，即使不显示它们
     const titleHeight = 70;  // 为标题预留至少70的高度
@@ -118,6 +118,31 @@ function makeChart(containerSelector, data) {
     const dimensions = [...new Set(chartData.map(d => d[dimensionField]))];
     const groups = [...new Set(chartData.map(d => d[groupField]))];
     
+    // 预先计算所有组的维度数量总和
+    const dimensionsPerGroup = {};
+    let totalDimensions = 0;
+    
+    groups.forEach(group => {
+        // 过滤出该组的数据
+        const groupData = chartData.filter(d => d[groupField] === group);
+        // 找出该组中所有唯一的维度
+        const groupDimensions = [...new Set(groupData.map(d => d[dimensionField]))];
+        // 保存该组的维度数量
+        dimensionsPerGroup[group] = groupDimensions.length;
+        totalDimensions += groupDimensions.length;
+    });
+    
+    // 动态调整图表高度
+    if (totalDimensions > 20) {
+        // 计算增长比例 (每增加1个条形增加3%)
+        const growthFactor = 1 + ((totalDimensions - 20) * 0.03);
+        // 限制不超过原高度的180%
+        const heightFactor = Math.min(growthFactor, 1.8);
+        // 应用新高度
+        height = Math.round(height * heightFactor);
+        console.log(`条形数量(${totalDimensions})超过20，动态调整图表高度为原高度的${heightFactor.toFixed(2)}倍`);
+    }
+    
     // ---------- 5. 计算标签和图标空间 ----------
     
     // 创建临时SVG用于测量文本宽度
@@ -169,20 +194,6 @@ function makeChart(containerSelector, data) {
     const innerHeight = height - margin.top - margin.bottom;
     
     // ---------- 6. 动态计算垂直空间分配 ----------
-    
-    // 计算每个组内的维度数量
-    const dimensionsPerGroup = {};
-    let totalDimensions = 0;
-    
-    groups.forEach(group => {
-        // 过滤出该组的数据
-        const groupData = chartData.filter(d => d[groupField] === group);
-        // 找出该组中所有唯一的维度
-        const groupDimensions = [...new Set(groupData.map(d => d[dimensionField]))];
-        // 保存该组的维度数量
-        dimensionsPerGroup[group] = groupDimensions.length;
-        totalDimensions += groupDimensions.length;
-    });
     
     // 设置组间固定间距和组标题空间
     const groupTitleHeight = 25; // 组标题高度
