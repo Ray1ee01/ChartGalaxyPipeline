@@ -68,8 +68,8 @@ function makeChart(containerSelector, data) {
     // 创建y轴比例尺
     const yScale = d3.scaleLinear()
         .domain([
-            Math.min(-25, d3.min(chartData, d => d[yField])), // 确保负值区域足够
-            Math.max(15, d3.max(chartData, d => d[yField]))   // 确保正值区域足够
+            Math.min(0, d3.min(chartData, d => d[yField]) * 1.2), // 确保负值区域足够
+            d3.max(chartData, d => d[yField]) * 1.2   // 确保正值区域足够
         ])
         .range([chartHeight, 0]);
     
@@ -230,14 +230,25 @@ function makeChart(containerSelector, data) {
     // 最高值标签位置 - 上边与最高值齐平
     const maxLabelX = maxX + 10;
     const maxLabelY = maxY; // 上边与最高值齐平
+
+    function getTextColor(bgColor) {
+    // 将颜色转换为RGB值
+    const rgb = d3.color(bgColor).rgb();
+    
+    // 计算亮度 - 使用相对亮度公式
+    const brightness = (rgb.r * 299 + rgb.g * 587 + rgb.b * 114) / 1000;
+    
+    // 如果亮度小于128则返回白色,否则返回黑色
+    return brightness < 180 ? "#ffffff" : "#000000";
+    }
     
     // 创建标注气泡 - 三角只占高度的一半
     g.append("path")
         .attr("d", `
             M${maxX + 3},${maxY} 
-            L${maxLabelX},${maxLabelY + labelHeight/4} 
-            L${maxLabelX},${maxLabelY + labelHeight} 
-            L${maxLabelX + labelWidth},${maxLabelY + labelHeight} 
+            L${maxLabelX},${maxLabelY - labelHeight/4} 
+            L${maxLabelX},${maxLabelY - labelHeight} 
+            L${maxLabelX + labelWidth},${maxLabelY - labelHeight} 
             L${maxLabelX + labelWidth},${maxLabelY} 
             L${maxLabelX},${maxLabelY} 
             Z
@@ -247,10 +258,10 @@ function makeChart(containerSelector, data) {
     // 添加最高值文本
     g.append("text")
         .attr("x", maxLabelX + labelWidth/2)
-        .attr("y", maxLabelY + labelHeight/2)
+        .attr("y", maxLabelY - labelHeight/2)
         .attr("text-anchor", "middle")
         .attr("dominant-baseline", "middle")
-        .attr("fill", "white")
+        .attr("fill", getTextColor(positiveColor))
         .attr("font-weight", "bold")
         .text(`+${maxPoint[yField].toFixed(1)}`);
     
@@ -281,7 +292,7 @@ function makeChart(containerSelector, data) {
         .attr("y", minLabelY + labelHeight/2)
         .attr("text-anchor", "middle")
         .attr("dominant-baseline", "middle")
-        .attr("fill", "white")
+        .attr("fill", getTextColor(negativeColor))
         .attr("font-weight", "bold")
         .text(`${minPoint[yField].toFixed(1)}`);
     
