@@ -87,11 +87,22 @@ def make_infographic(
         background_color = data["colors_dark"].get("background_color", "#000000")
 
     chart_content, chart_width, chart_height, chart_offset_x, chart_offset_y = adjust_and_get_bbox(chart_svg_content, background_color)
+    
+    ## start: add for new template
+    chart_aspect_ratio = chart_width / chart_height
+    thin_chart_flag = False
+    if chart_aspect_ratio < 0.9:
+        thin_chart_flag = True
+    print(f"chart_aspect_ratio: {chart_aspect_ratio}")
+    print(f"thin_chart_flag: {thin_chart_flag}")
+    ## end
+    
     chart_svg_content = f"<svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='{chart_width}' height='{chart_height}'>{chart_content}</svg>"
     mask = calculate_mask_v2(chart_svg_content, chart_width, chart_height, background_color)
+
     title_candidates = []
     min_title_width = max(250, chart_width / 2)
-    max_title_width = chart_width - 150
+    max_title_width = max(chart_width, 600)
     steps = np.ceil((max_title_width - min_title_width) / 100).astype(int)
 
     # Visualize the mask for debugging
@@ -133,6 +144,11 @@ def make_infographic(
         img_str = base64.b64encode(buf.read()).decode('utf-8')
         return img_str
     
+    
+    # 把mask保存为png
+    mask_img = visualize_mask(mask, "Mask")
+    with open("tmp/mask.png", "wb") as f:
+        f.write(base64.b64decode(mask_img))
     for i in range(steps + 1):
         width = min_title_width + i * (max_title_width - min_title_width) / steps
         title_content = title_styler_process(input_data=data, max_width=int(width), text_align="left", show_embellishment=False)
@@ -241,15 +257,16 @@ def make_infographic(
     
     # 如果没有找到合适的best_title（width太大或其他原因），使用默认处理逻辑
     if best_title is None:
+        print("title_candidates", title_candidates)
         default_title = {
             "title": (0, 0),
             "chart": (0, title_candidates[-1]["height"] + between_padding),
             "text-align": "left",
             "title-to-chart": "TL",
-            "width": chart_width,
+            "width": title_candidates[-1]["width"],
             "height": title_candidates[-1]["height"],
             "total_height": title_candidates[-1]["height"] + chart_height + between_padding,
-            "total_width": chart_width,
+            "total_width": max(title_candidates[-1]["width"], chart_width),
             "is_first": True,
             "area": (title_candidates[-1]["height"] + between_padding + chart_height) * (chart_width)
         }
@@ -263,6 +280,50 @@ def make_infographic(
             title_height = title["height"] + between_padding
             offset_list = [0, 25, 50, 75, 100, 125, 150]
 
+            # for top
+            range_start = max(0, chart_width // 2 - title_width // 2)
+            range_end = min(chart_width, range_start + title_width)
+            min_top = int(np.min(mask_top[range_start:range_end]))
+            area = (max(title_height - min_top, 0) + chart_height) * chart_width
+            best_area = other_title["top"]["area"] if "top" in other_title else default_area
+            if area < best_area:
+                other_title["top"] = {
+                    "title": (range_start, 0),
+                    "chart": (0, max(title_height - min_top, 0)),
+                    "text-align": "center",
+                    "title-to-chart": "T",
+                    "width": title["width"],
+                    "height": title["height"],
+                    "total_height": max(title_height - min_top, 0) + chart_height,
+                    "total_width": max(title_width, chart_width),
+                    "area": area
+                }
+
+            # for bottom
+            range_start = max(0,chart_width // 2 - title_width // 2)
+            range_end = min(chart_width, range_start + title_width)
+            print(f"range_start: {range_start}, range_end: {range_end}")
+            max_bottom = int(np.max(mask_bottom[range_start:range_end]))
+            print(f"max_bottom: {max_bottom}")
+            area = (max(title_height - (chart_height - max_bottom), 0) + chart_height) * chart_width
+            best_area = other_title["bottom"]["area"] if "bottom" in other_title else default_area
+            title_y = chart_height - title_height + max(title_height - (chart_height - max_bottom), 0) + between_padding
+            print(f"title_y: {title_y}")
+            if area < best_area:
+                other_title["bottom"] = {
+                    "title": (range_start, title_y),
+                    "chart": (0, 0),
+                    "text-align": "center",
+                    "title-to-chart": "B",
+                    "width": title["width"],
+                    "height": title["height"],
+                    "total_height": max(title_y + title_height, chart_height),
+                    "total_width": max(title_width, chart_width),
+                    "area": area
+                }
+            if thin_chart_flag:
+                continue
+            
             # for Left-Top 
             for offset in offset_list:
                 width = title_width - offset
@@ -282,44 +343,8 @@ def make_infographic(
                         "area": area
                     }
 
-            # for top
-            range_start = chart_width // 2 - title_width // 2
-            range_end = range_start + title_width
-            min_top = int(np.min(mask_top[range_start:range_end]))
-            area = (max(title_height - min_top, 0) + chart_height) * chart_width
-            best_area = other_title["top"]["area"] if "top" in other_title else default_area
-            if area < best_area:
-                other_title["top"] = {
-                    "title": (range_start, 0),
-                    "chart": (0, max(title_height - min_top, 0)),
-                    "text-align": "center",
-                    "title-to-chart": "T",
-                    "width": title["width"],
-                    "height": title["height"],
-                    "total_height": max(title_height - min_top, 0) + chart_height,
-                    "total_width": chart_width,
-                    "area": area
-                }
 
-            # for bottom
-            range_start = chart_width // 2 - title_width // 2
-            range_end = range_start + title_width
-            max_bottom = int(np.max(mask_bottom[range_start:range_end]))
-            area = (max(title_height - (chart_height - max_bottom), 0) + chart_height) * chart_width
-            best_area = other_title["bottom"]["area"] if "bottom" in other_title else default_area
-            title_y = chart_height - title_height + max(title_height - (chart_height - max_bottom), 0) + between_padding
-            if area < best_area:
-                other_title["bottom"] = {
-                    "title": (range_start, title_y),
-                    "chart": (0, 0),
-                    "text-align": "center",
-                    "title-to-chart": "B",
-                    "width": title["width"],
-                    "height": title["height"],
-                    "total_height": max(title_y + title_height, chart_height),
-                    "total_width": chart_width,
-                    "area": area
-                }
+
                 
             # for Left-Bottom
             for offset in offset_list:
@@ -473,11 +498,12 @@ def make_infographic(
             best_title = default_title
         else:
             title_options = [default_title] + list(other_title.values())
+            print("title_options", title_options)
             min_area = min(title_options, key=lambda x: x["area"])["area"]
             title_options = [t for t in title_options if t["area"] <= min_area * area_threshold]
             option_weights = [2 if t["title-to-chart"] == "TL" else 1 for t in title_options]
             best_title = random.choices(title_options, weights=option_weights, k=1)[0]
-
+            print("best_title", best_title)
     title_content = title_styler_process(input_data=data, \
                                          max_width=best_title["width"], \
                                          text_align=best_title["text-align"], \
@@ -488,14 +514,14 @@ def make_infographic(
     total_height = best_title["total_height"] + padding * 2
     total_width = best_title["total_width"] + padding * 2
     
-    mode = "background"
-    # 随机从side和background和overlay中选择一个
-    if random.random() < 0.5:
-        mode = "side"
-    elif random.random() < 0.5:
-        mode = "background"
-    else:
-        mode = "overlay"
+    mode = "side"
+    # # 随机从side和background和overlay中选择一个
+    # if random.random() < 0.5:
+    #     mode = "side"
+    # elif random.random() < 0.5:
+    #     mode = "background"
+    # else:
+    #     mode = "overlay"
     
     final_svg = f"""<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="{total_width}" height="{total_height}" style="font-family: Arial, 'Liberation Sans', 'DejaVu Sans', sans-serif;">
     <g class="chart" transform="translate({padding + best_title['chart'][0]}, {padding + best_title['chart'][1]})">{chart_content}</g>

@@ -5,14 +5,14 @@ REQUIREMENTS_BEGIN
     "chart_name": "horizontal_bar_chart_0",
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],
-    "required_fields_range": [[3, 20], [0, 100]],
+    "required_fields_range": [[3, 20], [0, 100000]],
     "required_fields_icons": [],
     "required_other_icons": [],
     "required_fields_colors": [],
-    "required_other_colors": ["primary", "secondary", "background"],
+    "required_other_colors": [],
     "supported_effects": ["gradient", "opacity"],
-    "min_height": 600,
-    "min_width": 800,
+    "min_height": 300,
+    "min_width": 300,
     "background": "light",
     "icon_mark": "none",
     "icon_label": "none",
@@ -56,7 +56,7 @@ function makeChart(containerSelector, data) {
     // ---------- 2. 尺寸和布局设置 ----------
     
     // 设置图表总尺寸
-    const width = variables.width || 600;
+    const width = variables.width || 300;
     const height = variables.height || 400;
     
     // 设置边距

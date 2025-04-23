@@ -44,7 +44,7 @@ def find_best_size_and_position(main_mask: np.ndarray, image_content: str, paddi
     
     # 二分查找最佳尺寸
     min_size = max(1, 128 // grid_size)  # 最小尺寸也要降采样
-    max_size = int(min(downsampled_main.shape) * 0.5)
+    max_size = int(min(downsampled_main.shape) * 1)
     best_size = min_size
     best_x = downsampled_padding
     best_y = downsampled_padding
