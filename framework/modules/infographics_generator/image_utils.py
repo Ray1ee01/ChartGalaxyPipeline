@@ -1,6 +1,6 @@
 import numpy as np
 from typing import Tuple
-from .mask_utils import calculate_mask
+from .mask_utils import calculate_mask, expand_mask
 import os
 from PIL import Image
 
@@ -59,7 +59,8 @@ def find_best_size_and_position(main_mask: np.ndarray, image_content: str, paddi
             <image width="{original_size}" height="{original_size}" href="{image_content}"/>
         </svg>"""
         image_mask = calculate_mask(temp_svg, original_size, original_size, 0, grid_size=grid_size, bg_threshold=240)
-        
+        if mode == "background":
+            image_mask = expand_mask(image_mask, 10)
         # Save the original image mask to PNG for debugging
         os.makedirs('tmp', exist_ok=True)
         mask_image = Image.fromarray((image_mask * 255).astype(np.uint8))
@@ -128,7 +129,7 @@ def find_best_size_and_position(main_mask: np.ndarray, image_content: str, paddi
         if mode == "side":
             overlap_threshold = 0.01
         elif mode == "background":
-            overlap_threshold = 0.05
+            overlap_threshold = 0.1
         elif mode == "overlay":
             overlap_threshold = 0.8
         

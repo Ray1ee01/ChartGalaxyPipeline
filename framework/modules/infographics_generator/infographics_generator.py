@@ -50,7 +50,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from modules.chart_engine.chart_engine import load_data_from_json, get_template_for_chart_name, render_chart_to_svg
 from modules.chart_engine.template.template_registry import scan_templates
 from modules.title_styler.title_styler import process as title_styler_process
-from modules.infographics_generator.mask_utils import fill_columns_between_bounds, calculate_mask_v2
+from modules.infographics_generator.mask_utils import fill_columns_between_bounds, calculate_mask_v2, expand_mask, calculate_mask_v3
 from modules.infographics_generator.svg_utils import extract_svg_content, extract_large_rect, adjust_and_get_bbox, add_gradient_to_rect
 from modules.infographics_generator.image_utils import find_best_size_and_position
 from modules.infographics_generator.template_utils import (
@@ -547,9 +547,69 @@ def make_infographic(
     if primary_image:
         if "base64," not in primary_image:
             primary_image = f"data:image/png;base64,{primary_image}"
-        
-        image_size, best_x, best_y = find_best_size_and_position(original_mask, primary_image, padding, mode=mode)
+        # try side mask
+        side_mask = expand_mask(original_mask, 15)
+        side_image_size, side_best_x, side_best_y = find_best_size_and_position(side_mask, primary_image, padding, mode="side")
+        side_mask_img = visualize_mask(side_mask, "Side Mask")
+        with open("./tmp/side_mask.png", "wb") as f:
+            f.write(base64.b64decode(side_mask_img))
+        # try overlay mask
+        overlay_mask = calculate_mask_v3(final_svg + "\n</svg>", total_width, total_height, background_color)
+        overlay_image_size, overlay_best_x, overlay_best_y = find_best_size_and_position(overlay_mask, primary_image, padding, mode="overlay")
+        overlay_mask_img = visualize_mask(overlay_mask, "Overlay Mask")
+        with open("./tmp/overlay_mask.png", "wb") as f:
+            f.write(base64.b64decode(overlay_mask_img))
+        # try background mask
+        background_mask = original_mask
+        background_image_size, background_best_x, background_best_y = find_best_size_and_position(background_mask, primary_image, padding, mode="background")
+        background_mask_img = visualize_mask(background_mask, "Background Mask")
+        with open("./tmp/background_mask.png", "wb") as f:
+            f.write(base64.b64decode(background_mask_img))
+            
+    # if side_image_size > 120 then side by side;
+    # elif overlay_size > 120 then overlay;
+    # elif background > 240 then background；
+    # else none
     
+    # if side_image_size > 120:
+    #     image_to_chart = "side"
+    # elif overlay_image_size > 120:
+    #     image_to_chart = "overlay"
+    # elif background_image_size > 240:
+    #     image_to_chart = "background"
+    # else:
+    #     image_to_chart = "none"
+    
+    measure_side_size = min(side_image_size, 120)
+    measure_overlay_size = min(overlay_image_size, 120)
+    measure_background_size = min(background_image_size, 200)
+    # 随机概率等于size的比值
+    sum_size = measure_side_size + measure_overlay_size + measure_background_size
+    side_probability = measure_side_size / sum_size
+    overlay_probability = measure_overlay_size / sum_size
+    background_probability = measure_background_size / sum_size
+    print("size", measure_side_size, measure_overlay_size, measure_background_size)
+    print("probability", side_probability, overlay_probability, background_probability)
+    random_value = random.random()
+    if random_value < side_probability:
+        image_size = side_image_size
+        best_x = side_best_x
+        best_y = side_best_y
+        mode = "side"
+        print("side")
+    elif random_value < side_probability + overlay_probability:
+        image_size = overlay_image_size
+        best_x = overlay_best_x
+        best_y = overlay_best_y
+        mode = "overlay"
+        print("overlay")
+    else:
+        image_size = background_image_size
+        best_x = background_best_x
+        best_y = background_best_y
+        mode = "background"
+        print("background")
+        
     text_color = data["colors"].get("text_color", "#000000")
     if dark:
         text_color = "#FFFFFF"
@@ -619,7 +679,6 @@ def make_infographic(
         text_color = "#FFFFFF"
             
     chart_content, background_element = extract_large_rect(chart_content)
-    print("background_element", background_element)
     if background_element == "":
         background_element = add_gradient_to_rect(f'<rect x="0" y="0" width="{total_width}" height="{total_height}" fill="{background_color}" />')
     else:
