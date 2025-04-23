@@ -550,21 +550,12 @@ def make_infographic(
         # try side mask
         side_mask = expand_mask(original_mask, 15)
         side_image_size, side_best_x, side_best_y = find_best_size_and_position(side_mask, primary_image, padding, mode="side")
-        side_mask_img = visualize_mask(side_mask, "Side Mask")
-        with open("./tmp/side_mask.png", "wb") as f:
-            f.write(base64.b64decode(side_mask_img))
         # try overlay mask
         overlay_mask = calculate_mask_v3(final_svg + "\n</svg>", total_width, total_height, background_color)
         overlay_image_size, overlay_best_x, overlay_best_y = find_best_size_and_position(overlay_mask, primary_image, padding, mode="overlay")
-        overlay_mask_img = visualize_mask(overlay_mask, "Overlay Mask")
-        with open("./tmp/overlay_mask.png", "wb") as f:
-            f.write(base64.b64decode(overlay_mask_img))
         # try background mask
         background_mask = original_mask
         background_image_size, background_best_x, background_best_y = find_best_size_and_position(background_mask, primary_image, padding, mode="background")
-        background_mask_img = visualize_mask(background_mask, "Background Mask")
-        with open("./tmp/background_mask.png", "wb") as f:
-            f.write(base64.b64decode(background_mask_img))
             
     # if side_image_size > 120 then side by side;
     # elif overlay_size > 120 then overlay;
