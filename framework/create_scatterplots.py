@@ -96,13 +96,14 @@ def copy_files_with_prefix(index, dir_path, scatterplot_path, target_dir):
     # 获取要复制的文件路径
     chart_png_path = os.path.join(dir_path, 'chart.png')
     data_json_path = os.path.join(dir_path, 'data.json')
+    svg_path = os.path.join(dir_path, 'chart.svg')
     
     # 创建带索引前缀的目标文件名
     prefix = f"{index:03d}_"
     target_chart_png = os.path.join(target_dir, f"{prefix}chart.png")
     target_data_json = os.path.join(target_dir, f"{prefix}data.json")
     target_scatterplot = os.path.join(target_dir, f"{prefix}scatterplot.png")
-    
+    target_svg = os.path.join(target_dir, f"{prefix}chart.svg")
     # 复制文件
     if os.path.exists(chart_png_path):
         shutil.copy2(chart_png_path, target_chart_png)
@@ -121,6 +122,12 @@ def copy_files_with_prefix(index, dir_path, scatterplot_path, target_dir):
         print(f"已复制: {target_scatterplot}")
     else:
         print(f"文件不存在: {scatterplot_path}")
+
+    if os.path.exists(svg_path):
+        shutil.copy2(svg_path, target_svg)
+        print(f"已复制: {target_svg}")
+    else:
+        print(f"文件不存在: {svg_path}")
 
 def main():
     base_dir = 'output/scatter'

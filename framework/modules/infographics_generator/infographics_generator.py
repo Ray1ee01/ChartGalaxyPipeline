@@ -522,7 +522,6 @@ def make_infographic(
     if primary_image:
         if "base64," not in primary_image:
             primary_image = f"data:image/png;base64,{primary_image}"
-        
         image_size, best_x, best_y = find_best_size_and_position(original_mask, primary_image, padding, mode=mode)
     
     text_color = data["colors"].get("text_color", "#000000")

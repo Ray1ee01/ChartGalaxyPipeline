@@ -49,6 +49,14 @@ def find_best_size_and_position(main_mask: np.ndarray, image_content: str, paddi
     best_x = downsampled_padding
     best_y = downsampled_padding
     best_overlap_ratio = float('inf')
+        
+    overlap_threshold = 0.01
+    if mode == "side":
+        overlap_threshold = 0.01
+    elif mode == "background":
+        overlap_threshold = 0.05
+    elif mode == "overlay":
+        overlap_threshold = 0.8
     
     while max_size - min_size >= 2:  # 由于降采样，可以用更小的阈值
         mid_size = (min_size + max_size) // 2
@@ -124,14 +132,6 @@ def find_best_size_and_position(main_mask: np.ndarray, image_content: str, paddi
         
         print(f"Trying size {mid_size * grid_size}x{mid_size * grid_size}, minimum overlap ratio: {min_overlap:.3f}")
         
-        overlap_threshold = 0.01
-        if mode == "side":
-            overlap_threshold = 0.01
-        elif mode == "background":
-            overlap_threshold = 0.05
-        elif mode == "overlay":
-            overlap_threshold = 0.8
-        
         if mode == "side" or mode == "background":
             if min_overlap < overlap_threshold:
                 best_size = mid_size
@@ -150,7 +150,9 @@ def find_best_size_and_position(main_mask: np.ndarray, image_content: str, paddi
                 min_size = mid_size + 1
             else:
                 max_size = mid_size - 1
-    
+
+    if best_overlap_ratio > overlap_threshold:
+        return 0, 0, 0
     # 将结果转换回原始尺度
     final_size = best_size * grid_size
     final_x = best_x * grid_size
