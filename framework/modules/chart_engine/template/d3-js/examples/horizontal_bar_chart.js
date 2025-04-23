@@ -364,11 +364,7 @@ function makeChart(containerSelector, data) {
                 .attr("dy", "0.35em")
                 .attr("text-anchor", "start")
                 .style("font-family", typography.annotation.font_family)
-<<<<<<< HEAD
-                .style("font-size", typography.annotation.font_size)
-=======
                 .style("font-size", `${Math.min(20,Math.max(barHeight * 0.6, parseFloat(typography.annotation.font_size)))}px`)
->>>>>>> origin/develop-bowen-barchart
                 .style("font-weight", typography.annotation.font_weight)
                 .style("fill", colors.text_color)
                 .text(formattedValue);

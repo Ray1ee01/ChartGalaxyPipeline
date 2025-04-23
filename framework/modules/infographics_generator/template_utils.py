@@ -8,7 +8,7 @@ def get_unique_fields_and_types(
         required_fields_range: Optional[Union[List[List[int]], List[List[List[int]]]]] = None
     ) -> Tuple[List[str], Dict[str, str], List[List[int]]]:
     """Extract unique fields and their corresponding types from nested structure"""
-    field_order = ['x', 'y', 'y2', 'group']  # Define the order of fields
+    field_order = ['x', 'y', 'y2', 'group', 'group2']  # Define the order of fields
     field_types = {}
     field_ranges = {}
     
@@ -111,6 +111,7 @@ def check_template_compatibility(data: Dict, templates: Dict, specific_chart_nam
                 
                 if 'requirements' in template_info:
                     req = template_info['requirements']
+                    hierarchy = req.get('hierarchy', [])
                     if 'required_fields' in req and 'required_fields_type' in req:
                         ordered_fields, field_types, ordered_ranges = get_unique_fields_and_types(
                             req['required_fields'],
@@ -154,6 +155,9 @@ def check_template_compatibility(data: Dict, templates: Dict, specific_chart_nam
                                 if len(unique_values) > range[1] or len(unique_values) < range[0]:
                                     flag = False
                                     break
+                                elif "dual_direction" in chart_name and min_value >= 0:
+                                    flag = False
+                                    break
                                 else:
                                     pass
                                     #if specific_chart_name and specific_chart_name == chart_name:
@@ -162,11 +166,40 @@ def check_template_compatibility(data: Dict, templates: Dict, specific_chart_nam
                                 key = data["data"]["columns"][i]["name"]
                                 min_value = min(value[key] for value in data["data"]["data"])
                                 max_value = max(value[key] for value in data["data"]["data"])
-                                if min_value > range[1] or max_value < range[0]:
-                                    #if specific_chart_name and specific_chart_name == chart_name:
-                                    #    print(f"template {template_key} miss match", min_value, max_value, range)
+                                if min_value < range[0] or max_value > range[1]:
                                     flag = False
                                     break
+                        for i, field in enumerate(ordered_fields):
+                            if field == "group":
+                                x_col = [j for j, field2 in enumerate(ordered_fields) if field2 == "x"][0]
+                                x_name = data["data"]["columns"][x_col]["name"]
+                                field_name = data["data"]["columns"][i]["name"]
+                                num_unique_x  = len(list(set(value[x_name] for value in data["data"]["data"])))
+                                num_unique_comb = len(list(set(value[x_name] + ' ' + value[field_name] for value in data["data"]["data"])))
+                                if field in hierarchy:
+                                    if num_unique_comb > num_unique_x:
+                                        flag = False
+                                        break
+                                else:
+                                    if num_unique_comb == num_unique_x:
+                                        flag = False
+                                        break
+                            elif field == "group2":
+                                x_col = [j for j, field2 in enumerate(ordered_fields) if field2 == "x"][0]
+                                group_col = [j for j, field2 in enumerate(ordered_fields) if field2 == "group"][0]
+                                x_name = data["data"]["columns"][x_col]["name"]
+                                group_name = data["data"]["columns"][group_col]["name"]
+                                field_name = data["data"]["columns"][i]["name"]
+                                num_unique_x  = len(list(set(value[x_name] + ' ' + value[group_name] for value in data["data"]["data"])))
+                                num_unique_comb = len(list(set(value[x_name] + ' ' + value[group_name] + ' ' + value[field_name] for value in data["data"]["data"])))
+                                if field in hierarchy:
+                                    if num_unique_comb > num_unique_x:
+                                        flag = False
+                                        break
+                                else:
+                                    if num_unique_comb == num_unique_x:
+                                        flag = False
+                                        break
                         if flag:
                             if specific_chart_name == None or specific_chart_name == chart_name:
                                 compatible_templates.append((template_key, ordered_fields))

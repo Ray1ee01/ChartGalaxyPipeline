@@ -491,7 +491,7 @@ def make_infographic(
     
     mode = "background"
     # 随机从side和background和overlay中选择一个
-    if random.random() < 0.5:
+    if random.random() < 1:
         mode = "side"
     elif random.random() < 0.5:
         mode = "background"

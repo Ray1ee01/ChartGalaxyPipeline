@@ -145,12 +145,6 @@ def make_options(json_data):
     min_dimension = min(chart_width, chart_height)
     base_radius = min(min_dimension / 2 - 15, 150)
     
-    # Find z_field min and max values for scaling
-    z_values = [item[z_field] for item in data]
-    min_z = min(z_values) if z_values else 0
-    max_z = max(z_values) if z_values else 100
-    z_range = max_z - min_z if max_z > min_z else 1
-    
     # Define gauge settings
     ring_width = 15  # Width of gauge ring
     
@@ -179,9 +173,8 @@ def make_options(json_data):
         y_value = category_data[y_field]
         z_value = category_data[z_field]
         
-        # Calculate bubble size based on z_value
-        size_factor = 0.6 + (0.4 * (z_value - min_z) / z_range) if z_range > 0 else 0.8
-        max_radius = base_radius * size_factor
+        # 不再基于z_value计算气泡大小，所有气泡使用相同的最大半径
+        max_radius = base_radius  # 直接使用最大半径
         
         # Add category title
         options["title"].append({
