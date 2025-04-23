@@ -6,8 +6,22 @@ from logging import getLogger
 import logging
 import time
 import numpy as np
+import subprocess
+import re
 from numpy.lib.stride_tricks import as_strided
 from lxml import etree
+from modules.infographics_generator.svg_utils import svg_to_png
+from PIL import Image as PILImage
+
+from config import api_key as API_KEY, base_url as API_PROVIDER
+
+import base64
+import requests
+from io import BytesIO
+import tempfile
+import random
+import uuid
+import fcntl  # 添加fcntl模块用于文件锁
 
 # 创建tmp目录（如果不存在）
 os.makedirs("tmp", exist_ok=True)
@@ -36,8 +50,8 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from modules.chart_engine.chart_engine import load_data_from_json, get_template_for_chart_name, render_chart_to_svg
 from modules.chart_engine.template.template_registry import scan_templates
 from modules.title_styler.title_styler import process as title_styler_process
-from modules.infographics_generator.mask_utils import calculate_mask, calculate_content_height, calculate_content_width, calculate_bbox, calculate_mask_v2
-from modules.infographics_generator.svg_utils import extract_svg_content, remove_large_rects, get_svg_actual_bbox, adjust_and_get_bbox
+from modules.infographics_generator.mask_utils import fill_columns_between_bounds, calculate_mask_v2
+from modules.infographics_generator.svg_utils import extract_svg_content, extract_large_rect, adjust_and_get_bbox, add_gradient_to_rect
 from modules.infographics_generator.image_utils import find_best_size_and_position
 from modules.infographics_generator.template_utils import (
     analyze_templates,
@@ -51,7 +65,7 @@ from modules.infographics_generator.color_utils import is_dark_color, lighten_co
 
 padding = 50
 outer_padding = 15
-between_padding = 45
+between_padding = 35
 grid_size = 5
 
 
@@ -60,7 +74,9 @@ def make_infographic(
     chart_svg_content: str,
     padding: int,
     between_padding: int,
-    dark: bool
+    dark: bool,
+    html_path: str,
+    mask_path: str
 ) -> str:
     if not dark:
         background_color = data["colors"].get("background_color", "#FFFFFF")
@@ -70,7 +86,7 @@ def make_infographic(
     else:
         background_color = data["colors_dark"].get("background_color", "#000000")
 
-    chart_content, chart_width, chart_height = adjust_and_get_bbox(chart_svg_content, background_color)
+    chart_content, chart_width, chart_height, chart_offset_x, chart_offset_y = adjust_and_get_bbox(chart_svg_content, background_color)
     chart_svg_content = f"<svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='{chart_width}' height='{chart_height}'>{chart_content}</svg>"
     mask = calculate_mask_v2(chart_svg_content, chart_width, chart_height, background_color)
     title_candidates = []
@@ -117,19 +133,6 @@ def make_infographic(
         img_str = base64.b64encode(buf.read()).decode('utf-8')
         return img_str
     
-    # Generate visualization
-    mask_img = visualize_mask(mask, "Chart Mask")
-    
-    # Save the visualization to a file for inspection
-    mask_output_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "mask_debug.png")
-    with open(mask_output_path, "wb") as f:
-        f.write(base64.b64decode(mask_img))
-    
-    logger.info(f"Mask visualization saved to: {mask_output_path}")
-    
-    # You can also display the dimensions in the logs
-    logger.info(f"Mask dimensions: {mask.shape[0]}x{mask.shape[1]}")
-
     for i in range(steps + 1):
         width = min_title_width + i * (max_title_width - min_title_width) / steps
         title_content = title_styler_process(input_data=data, max_width=int(width), text_align="left", show_embellishment=False)
@@ -146,238 +149,340 @@ def make_infographic(
     mask_bottom = mask.shape[0] - 1 - np.argmax(np.flip(mask, axis=0), axis=0)  # 每一列最后一个1的位置
     mask_left = np.argmax(mask, axis=1)  # 每一行第一个1的位置
     mask_right = mask.shape[1] - 1 - np.argmax(np.flip(mask, axis=1), axis=1)  # 每一行最后一个1的位置
-
-    default_title = {
-        "title": (0, 0),
-        "chart": (0, title_candidates[-1]["height"] + between_padding),
-        "text-align": "left",
-        "title-to-chart": "TL",
-        "width": chart_width,
-        "total_height": title_candidates[-1]["height"] + chart_height + between_padding,
-        "total_width": chart_width,
-        "is_first": True,
-        "area": (title_candidates[-1]["height"] + between_padding + chart_height) * (chart_width)
-    }
-    area_threshold = 1.05
-    default_area = default_title["area"] * area_threshold
-    other_title = {
-    }
-
-    for title in title_candidates:
-        title_width = title["width"] + between_padding
-        title_height = title["height"] + between_padding
-        offset_list = [0, 25, 50, 75, 100, 125, 150]
-
-        # for Left-Top 
-        for offset in offset_list:
-            width = title_width - offset
-            min_top = int(np.min(mask_top[:width]))
-            area = (max(title_height - min_top, 0) + chart_height) * (chart_width + offset)
-            best_area = other_title["left-top"]["area"] if "left-top" in other_title else default_area
-            if area < best_area:
-                other_title["left-top"] = {
-                    "title": (0, 0),
-                    "title-to-chart": "TL",
-                    "chart": (offset, max(title_height - min_top, 0)),
-                    "text-align": "left",
-                    "width": title["width"],
-                    "total_height": max(title_height - min_top, 0) + chart_height,
-                    "total_width": chart_width + offset, 
-                    "area": area
-                }
-
-        # for top
-        range_start = chart_width // 2 - title_width // 2
-        range_end = range_start + title_width
-        min_top = int(np.min(mask_top[range_start:range_end]))
-        area = (max(title_height - min_top, 0) + chart_height) * chart_width
-        best_area = other_title["top"]["area"] if "top" in other_title else default_area
-        if area < best_area:
-            other_title["top"] = {
-                "title": (range_start, 0),
-                "chart": (0, max(title_height - min_top, 0)),
-                "text-align": "center",
-                "title-to-chart": "T",
-                "width": title["width"],
-                "total_height": max(title_height - min_top, 0) + chart_height,
-                "total_width": chart_width,
-                "area": area
-            }
-
-        # for bottom
-        range_start = chart_width // 2 - title_width // 2
-        range_end = range_start + title_width
-        max_bottom = int(np.max(mask_bottom[range_start:range_end]))
-        area = (max(title_height - (chart_height - max_bottom), 0) + chart_height) * chart_width
-        best_area = other_title["bottom"]["area"] if "bottom" in other_title else default_area
-        title_y = chart_height - title_height + max(title_height - (chart_height - max_bottom), 0) + between_padding
-        if area < best_area:
-            other_title["bottom"] = {
-                "title": (range_start, title_y),
-                "chart": (0, 0),
-                "text-align": "center",
-                "title-to-chart": "B",
-                "width": title["width"],
-                "total_height": max(title_y + title_height, chart_height),
-                "total_width": chart_width,
-                "area": area
-            }
-            
-        # for Left-Bottom
-        for offset in offset_list:
-            width = title_width - offset
-            max_bottom = int(np.max(mask_bottom[:width]))
-            area = (max(title_height - (chart_height - max_bottom), 0) + chart_height) * (chart_width + offset)
-            best_area = other_title["left-bottom"]["area"] if "left-bottom" in other_title else default_area
-            if area < best_area:
-                other_title["left-bottom"] = {
-                    "title": (0, chart_height - title_height + max(title_height - (chart_height - max_bottom), 0) + between_padding),
-                    "chart": (offset, 0),
-                    "text-align": "left",
-                    "title-to-chart": "BL",
-                    "width": title["width"],
-                    "total_height": max(title_height - (chart_height - max_bottom), 0) + chart_height,
-                    "total_width": chart_width + offset, 
-                    "area": area
-                }
-
-        # for Right-Top
-        for offset in offset_list:
-            width = title_width - offset
-            min_top = int(np.min(mask_top[-width:]))
-            area = (max(title_height - min_top, 0) + chart_height) * (chart_width + offset)
-            best_area = other_title["right-top"]["area"] if "right-top" in other_title else default_area
-            if area < best_area:
-                other_title["right-top"] = {
-                    "title": (chart_width - width, 0),
-                    "chart": (0, max(title_height - min_top, 0)),
-                    "text-align": "right",
-                    "title-to-chart": "TR",
-                    "width": title["width"],
-                    "total_height": max(title_height - min_top, 0) + chart_height,
-                    "total_width": chart_width + offset, 
-                    "area": area
-                }
+    
+    # 从中间列开始,计算每行向左和向右第一个1的位置
+    mid_col = mask.shape[1] // 2
+    mask_left_from_mid = np.zeros(mask.shape[0], dtype=np.int32)
+    mask_right_from_mid = np.zeros(mask.shape[0], dtype=np.int32)
+    
+    for row in range(mask.shape[0]):
+        # 向左搜索第一个1
+        left_pos = mid_col
+        while left_pos >= 0 and mask[row][left_pos] == 0:
+            left_pos -= 1
+        mask_left_from_mid[row] = left_pos if left_pos >= 0 else -1
         
-        # for Right-Bottom
-        for offset in offset_list:
-            width = title_width - offset
-            max_bottom = int(np.max(mask_bottom[-width:]))
-            area = (max(title_height - (chart_height - max_bottom), 0) + chart_height) * (chart_width + offset)
-            best_area = other_title["right-bottom"]["area"] if "right-bottom" in other_title else default_area
-            if area < best_area:
-                other_title["right-bottom"] = {
-                    "title": (chart_width - width, chart_height - title_height + max(title_height - (chart_height - max_bottom), 0) + between_padding),
-                    "chart": (0, 0),
-                    "text-align": "right",
-                    "title-to-chart": "BR",
-                    "width": title["width"],
-                    "total_height": max(title_height - (chart_height - max_bottom), 0) + chart_height,
-                    "total_width": chart_width + offset, 
-                    "area": area
-                }
+        # 向右搜索第一个1
+        right_pos = mid_col
+        while right_pos < mask.shape[1] and mask[row][right_pos] == 0:
+            right_pos += 1
+        mask_right_from_mid[row] = right_pos if right_pos < mask.shape[1] else -1
+
+    smooth_threshold = 50
+    # 从中间开始对mask_right_from_mid进行平滑
+    mid_row = len(mask_right_from_mid) // 2
+    # 向下平滑
+    for i in range(mid_row + 2, len(mask_right_from_mid)):
+        if abs(mask_right_from_mid[i] - mask_right_from_mid[i-1]) > smooth_threshold:
+            mask_right_from_mid[i] = mask_right_from_mid[i-1] + (mask_right_from_mid[i-1] - mask_right_from_mid[i-2])
+    # 向上平滑
+    for i in range(mid_row - 2, -1, -1):
+        if abs(mask_right_from_mid[i] - mask_right_from_mid[i+1]) > smooth_threshold:
+            mask_right_from_mid[i] = mask_right_from_mid[i+1] + (mask_right_from_mid[i+1] - mask_right_from_mid[i+2])
             
-        if title_height > chart_height:
-            continue
+    # 从中间开始对mask_left_from_mid进行平滑
+    # 向下平滑
+    for i in range(mid_row + 2, len(mask_left_from_mid)):
+        if abs(mask_left_from_mid[i] - mask_left_from_mid[i-1]) > smooth_threshold:
+            mask_left_from_mid[i] = mask_left_from_mid[i-1] + (mask_left_from_mid[i-1] - mask_left_from_mid[i-2])
+    # 向上平滑
+    for i in range(mid_row - 2, -1, -1):
+        if abs(mask_left_from_mid[i] - mask_left_from_mid[i+1]) > smooth_threshold:
+            mask_left_from_mid[i] = mask_left_from_mid[i+1] + (mask_left_from_mid[i+1] - mask_left_from_mid[i+2])
 
-        offset_list = [50, 75, 100, 125, 150]
-        # for left
-        for offset in offset_list:
-            range_start = offset
-            range_end = range_start + title_height
-            if range_end > chart_height - offset_list[0]:
-                continue
-            min_left = int(np.min(mask_left[range_start:range_end]))
-            area = (max(title_width - min_left, 0) + chart_width) * (chart_height)
-            best_area = other_title["left"]["area"] if "left" in other_title else default_area
-            if area < best_area:
-                other_title["left"] = {
-                    "title": (0, range_start),
-                    "chart": (offset, 0),
-                    "text-align": "left",
-                    "title-to-chart": "L",
-                    "width": title["width"],
+    # 统计距离
+    distance_list = []
+    for i in range(len(mask_left_from_mid)):
+        distance_list.append(mask_right_from_mid[i] - mask_left_from_mid[i])
+    # 统计平均距离
+    average_distance = np.mean(distance_list)
+    
+    mask = np.zeros(mask.shape)
+    for i in range(len(mask)):
+        mask[i][mask_left_from_mid[i]:mask_right_from_mid[i]] = 1
+    mask_img = visualize_mask(mask, "Mask after smoothing")
+    
+    # 使用临时文件替代固定路径
+    with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as temp_file:
+        temp_file_path = temp_file.name
+        temp_file.write(base64.b64decode(mask_img))
+    
+    mask_1_count = np.sum(mask)
+    mask_0_count = np.sum(1 - mask)
+    mask_1_ratio = mask_1_count / (mask_1_count + mask_0_count)
+    
+    # 初始化best_title默认值为None，用于后续检查
+    best_title = None
+    
+    if mask_1_ratio > 0.25:
+        width = average_distance*2
+        title_content = title_styler_process(input_data=data, max_width=int(width), text_align="center", show_embellishment=False, show_sub_title=False)
+        title_svg_content = title_content  # Assuming title_content is the SVG content
+        svg_tree = etree.fromstring(title_svg_content.encode())
+        width = int(float(svg_tree.get("width", 0)))
+        height = int(float(svg_tree.get("height", 0)))
+        title_candidates = [{"width": width, "height": height}]
+        # 从上到下，找到第一个distance_list中大于width的index
+        for i in range(len(distance_list)):
+            if distance_list[i] > width:
+                best_title = {
+                    "width": width,
+                    "height": height,
+                    "text-align": "center",
+                    "is_first": False,
+                    "title-to-chart": "C",
                     "total_height": chart_height,
-                    "total_width": chart_width + offset,
-                    "area": area
-                }
-
-        for offset in offset_list:
-            range_start = chart_height - title_height - offset
-            range_end = range_start + title_height
-            if range_start < offset_list[0]:
-                continue
-            min_left = int(np.min(mask_left[range_start:range_end]))
-            area = (max(title_width - min_left, 0) + chart_width) * (chart_height)
-            best_area = other_title["left"]["area"] if "left" in other_title else default_area
-            if area < best_area:
-                other_title["left"] = {
-                    "title": (0, range_start),
-                    "chart": (offset, 0),
-                    "text-align": "left",
-                    "title-to-chart": "L",
-                    "width": title["width"],
-                    "total_height": chart_height,
-                    "total_width": chart_width + offset,
-                    "area": area
-                }
-
-        # for right
-        for offset in offset_list:
-            range_start = offset
-            range_end = range_start + title_height
-            if range_end > chart_height - offset_list[0]:
-                continue
-            max_right = int(np.max(mask_right[range_start:range_end]))
-            area = (max(title_width - (chart_width - max_right), 0) + chart_width) * (chart_height)
-            best_area = other_title["right"]["area"] if "right" in other_title else default_area
-            title_x = max(chart_width - title_width, max_right + between_padding)
-            if area < best_area:
-                other_title["right"] = {
-                    "title": (title_x, range_start),
+                    "total_width": chart_width,
                     "chart": (0, 0),
-                    "text-align": "right",
-                    "title-to-chart": "R",
-                    "width": title["width"],
-                    "total_height": chart_height,
-                    "total_width": max(title_x + title_width, chart_width),
-                    "area": area
+                    "title": (chart_width // 2 - width // 2, i),
+                    "show_sub_title": False
                 }
-        for offset in offset_list:
-            range_start = chart_height - title_height - offset
-            range_end = range_start + title_height
-            if range_start < offset_list[0]:
-                continue
-            max_right = int(np.max(mask_right[range_start:range_end]))
-            area = (max(title_width - (chart_width - max_right), 0) + chart_width) * (chart_height)
-            best_area = other_title["right"]["area"] if "right" in other_title else default_area
-            title_x = max(chart_width - title_width, max_right + between_padding)
+                break
+    
+    # 如果没有找到合适的best_title（width太大或其他原因），使用默认处理逻辑
+    if best_title is None:
+        default_title = {
+            "title": (0, 0),
+            "chart": (0, title_candidates[-1]["height"] + between_padding),
+            "text-align": "left",
+            "title-to-chart": "TL",
+            "width": chart_width,
+            "height": title_candidates[-1]["height"],
+            "total_height": title_candidates[-1]["height"] + chart_height + between_padding,
+            "total_width": chart_width,
+            "is_first": True,
+            "area": (title_candidates[-1]["height"] + between_padding + chart_height) * (chart_width)
+        }
+        area_threshold = 1.05
+        default_area = default_title["area"] * area_threshold
+        other_title = {
+        }
+
+        for title in title_candidates:
+            title_width = title["width"] + between_padding
+            title_height = title["height"] + between_padding
+            offset_list = [0, 25, 50, 75, 100, 125, 150]
+
+            # for Left-Top 
+            for offset in offset_list:
+                width = title_width - offset
+                min_top = int(np.min(mask_top[:width]))
+                area = (max(title_height - min_top, 0) + chart_height) * (chart_width + offset)
+                best_area = other_title["left-top"]["area"] if "left-top" in other_title else default_area
+                if area < best_area:
+                    other_title["left-top"] = {
+                        "title": (0, 0),
+                        "title-to-chart": "TL",
+                        "chart": (offset, max(title_height - min_top, 0)),
+                        "text-align": "left",
+                        "width": title["width"],
+                        "height": title["height"],
+                        "total_height": max(title_height - min_top, 0) + chart_height,
+                        "total_width": chart_width + offset, 
+                        "area": area
+                    }
+
+            # for top
+            range_start = chart_width // 2 - title_width // 2
+            range_end = range_start + title_width
+            min_top = int(np.min(mask_top[range_start:range_end]))
+            area = (max(title_height - min_top, 0) + chart_height) * chart_width
+            best_area = other_title["top"]["area"] if "top" in other_title else default_area
             if area < best_area:
-                other_title["right"] = {
-                    "title": (title_x, range_start),
-                    "chart": (0, 0),
-                    "text-align": "right",
-                    "title-to-chart": "R",
+                other_title["top"] = {
+                    "title": (range_start, 0),
+                    "chart": (0, max(title_height - min_top, 0)),
+                    "text-align": "center",
+                    "title-to-chart": "T",
                     "width": title["width"],
-                    "total_height": chart_height,
-                    "total_width": max(title_x + title_width, chart_width),
+                    "height": title["height"],
+                    "total_height": max(title_height - min_top, 0) + chart_height,
+                    "total_width": chart_width,
                     "area": area
                 }
 
-    if len(other_title.values()) == 0:
-        best_title = default_title
-    else:
-        import random
-        title_options = [default_title] + list(other_title.values())
-        min_area = min(title_options, key=lambda x: x["area"])["area"]
-        title_options = [t for t in title_options if t["area"] <= min_area * area_threshold]
-        option_weights = [2 if t["title-to-chart"] == "TL" else 1 for t in title_options]
-        best_title = random.choices(title_options, weights=option_weights, k=1)[0]
+            # for bottom
+            range_start = chart_width // 2 - title_width // 2
+            range_end = range_start + title_width
+            max_bottom = int(np.max(mask_bottom[range_start:range_end]))
+            area = (max(title_height - (chart_height - max_bottom), 0) + chart_height) * chart_width
+            best_area = other_title["bottom"]["area"] if "bottom" in other_title else default_area
+            title_y = chart_height - title_height + max(title_height - (chart_height - max_bottom), 0) + between_padding
+            if area < best_area:
+                other_title["bottom"] = {
+                    "title": (range_start, title_y),
+                    "chart": (0, 0),
+                    "text-align": "center",
+                    "title-to-chart": "B",
+                    "width": title["width"],
+                    "height": title["height"],
+                    "total_height": max(title_y + title_height, chart_height),
+                    "total_width": chart_width,
+                    "area": area
+                }
+                
+            # for Left-Bottom
+            for offset in offset_list:
+                width = title_width - offset
+                max_bottom = int(np.max(mask_bottom[:width]))
+                area = (max(title_height - (chart_height - max_bottom), 0) + chart_height) * (chart_width + offset)
+                best_area = other_title["left-bottom"]["area"] if "left-bottom" in other_title else default_area
+                if area < best_area:
+                    other_title["left-bottom"] = {
+                        "title": (0, chart_height - title_height + max(title_height - (chart_height - max_bottom), 0) + between_padding),
+                        "chart": (offset, 0),
+                        "text-align": "left",
+                        "title-to-chart": "BL",
+                        "width": title["width"],
+                        "height": title["height"],
+                        "total_height": max(title_height - (chart_height - max_bottom), 0) + chart_height,
+                        "total_width": chart_width + offset, 
+                        "area": area
+                    }
+
+            # for Right-Top
+            for offset in offset_list:
+                width = title_width - offset
+                min_top = int(np.min(mask_top[-width:]))
+                area = (max(title_height - min_top, 0) + chart_height) * (chart_width + offset)
+                best_area = other_title["right-top"]["area"] if "right-top" in other_title else default_area
+                if area < best_area:
+                    other_title["right-top"] = {
+                        "title": (chart_width - width, 0),
+                        "chart": (0, max(title_height - min_top, 0)),
+                        "text-align": "right",
+                        "title-to-chart": "TR",
+                        "width": title["width"],
+                        "height": title["height"],
+                        "total_height": max(title_height - min_top, 0) + chart_height,
+                        "total_width": chart_width + offset, 
+                        "area": area
+                    }
+            
+            # for Right-Bottom
+            for offset in offset_list:
+                width = title_width - offset
+                max_bottom = int(np.max(mask_bottom[-width:]))
+                area = (max(title_height - (chart_height - max_bottom), 0) + chart_height) * (chart_width + offset)
+                best_area = other_title["right-bottom"]["area"] if "right-bottom" in other_title else default_area
+                if area < best_area:
+                    other_title["right-bottom"] = {
+                        "title": (chart_width - width, chart_height - title_height + max(title_height - (chart_height - max_bottom), 0) + between_padding),
+                        "chart": (0, 0),
+                        "text-align": "right",
+                        "title-to-chart": "BR",
+                        "width": title["width"],
+                        "height": title["height"],
+                        "total_height": max(title_height - (chart_height - max_bottom), 0) + chart_height,
+                        "total_width": chart_width + offset, 
+                        "area": area
+                    }
+                
+            if title_height > chart_height:
+                continue
+
+            offset_list = [50, 75, 100, 125, 150]
+            # for left
+            for offset in offset_list:
+                range_start = offset
+                range_end = range_start + title_height
+                if range_end > chart_height - offset_list[0]:
+                    continue
+                min_left = int(np.min(mask_left[range_start:range_end]))
+                area = (max(title_width - min_left, 0) + chart_width) * (chart_height)
+                best_area = other_title["left"]["area"] if "left" in other_title else default_area
+                if area < best_area:
+                    other_title["left"] = {
+                        "title": (0, range_start),
+                        "chart": (max(title_width - min_left, 0), 0),
+                        "text-align": "left",
+                        "title-to-chart": "L",
+                        "width": title["width"],
+                        "height": title["height"],
+                        "total_height": chart_height,
+                        "total_width": max(title_width - min_left, 0) + chart_width,
+                        "area": area
+                    }
+
+            for offset in offset_list:
+                range_start = chart_height - title_height - offset
+                range_end = range_start + title_height
+                if range_start < offset_list[0]:
+                    continue
+                min_left = int(np.min(mask_left[range_start:range_end]))
+                area = (max(title_width - min_left, 0) + chart_width) * (chart_height)
+                best_area = other_title["left"]["area"] if "left" in other_title else default_area
+                if area < best_area:
+                    other_title["left"] = {
+                        "title": (0, range_start),
+                        "chart": (max(title_width - min_left, 0), 0),
+                        "text-align": "left",
+                        "title-to-chart": "L",
+                        "width": title["width"],
+                        "height": title["height"],
+                        "total_height": chart_height,
+                        "total_width": max(title_width - min_left, 0) + chart_width,
+                        "area": area
+                    }
+
+            # for right
+            for offset in offset_list:
+                range_start = offset
+                range_end = range_start + title_height
+                if range_end > chart_height - offset_list[0]:
+                    continue
+                max_right = int(np.max(mask_right[range_start:range_end]))
+                area = (max(title_width - (chart_width - max_right), 0) + chart_width) * (chart_height)
+                best_area = other_title["right"]["area"] if "right" in other_title else default_area
+                title_x = max(chart_width - title_width, max_right + between_padding)
+                if area < best_area:
+                    other_title["right"] = {
+                        "title": (title_x, range_start + between_padding),
+                        "chart": (0, 0),
+                        "text-align": "right",
+                        "title-to-chart": "R",
+                        "width": title["width"],
+                        "height": title["height"],
+                        "total_height": chart_height,
+                        "total_width": max(title_x + title_width, chart_width),
+                        "area": area
+                    }
+            for offset in offset_list:
+                range_start = chart_height - title_height - offset
+                range_end = range_start + title_height
+                if range_start < offset_list[0]:
+                    continue
+                max_right = int(np.max(mask_right[range_start:range_end]))
+                area = (max(title_width - (chart_width - max_right), 0) + chart_width) * (chart_height)
+                best_area = other_title["right"]["area"] if "right" in other_title else default_area
+                title_x = max(chart_width - title_width, max_right + between_padding)
+                if area < best_area:
+                    other_title["right"] = {
+                        "title": (title_x, range_start),
+                        "chart": (0, 0),
+                        "text-align": "right",
+                        "title-to-chart": "R",
+                        "width": title["width"],
+                        "height": title["height"],
+                        "total_height": chart_height,
+                        "total_width": max(title_x + title_width, chart_width),
+                        "area": area
+                    }
+
+        if len(other_title.values()) == 0:
+            best_title = default_title
+        else:
+            title_options = [default_title] + list(other_title.values())
+            min_area = min(title_options, key=lambda x: x["area"])["area"]
+            title_options = [t for t in title_options if t["area"] <= min_area * area_threshold]
+            option_weights = [2 if t["title-to-chart"] == "TL" else 1 for t in title_options]
+            best_title = random.choices(title_options, weights=option_weights, k=1)[0]
 
     title_content = title_styler_process(input_data=data, \
                                          max_width=best_title["width"], \
                                          text_align=best_title["text-align"], \
-                                         show_embellishment=best_title["text-align"] == "left" and best_title.get("is_first", False))
+                                         show_embellishment=best_title["text-align"] == "left" and best_title.get("is_first", False), \
+                                         show_sub_title=best_title.get("show_sub_title", True))
     title_inner_content = extract_svg_content(title_content)
     
     total_height = best_title["total_height"] + padding * 2
@@ -386,8 +491,17 @@ def make_infographic(
     final_svg = f"""<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="{total_width}" height="{total_height}" style="font-family: Arial, 'Liberation Sans', 'DejaVu Sans', sans-serif;">
     <g class="chart" transform="translate({padding + best_title['chart'][0]}, {padding + best_title['chart'][1]})">{chart_content}</g>
     <g class="text" transform="translate({padding + best_title['title'][0]}, {padding + best_title['title'][1]})">{title_inner_content}</g>"""
-    original_mask = calculate_mask(final_svg + "\n</svg>", total_width, total_height, 0)
+    original_mask = calculate_mask_v2(final_svg + "\n</svg>", total_width, total_height, background_color)
+    original_mask = fill_columns_between_bounds(original_mask, padding + best_title['title'][0], padding + best_title['title'][0] + best_title['width'], \
+                                padding + best_title['title'][1], padding + best_title['title'][1] + best_title['height'])
     
+    # Generate visualization
+    mask_img = visualize_mask(original_mask, "Chart Mask")
+    
+    # Save the visualization to a file for inspection
+    with open(mask_path, "wb") as f:
+        f.write(base64.b64decode(mask_img))
+
     primary_image = data.get("images", {}).get("other", {}).get("primary")
 
     image_element = ""
@@ -397,10 +511,58 @@ def make_infographic(
             primary_image = f"data:image/png;base64,{primary_image}"
         
         image_size, best_x, best_y = find_best_size_and_position(original_mask, primary_image, padding)
-        image_size -= between_padding * 2
-        best_x += between_padding
-        best_y += between_padding
-        if image_size > 100:
+    
+    text_color = data["colors"].get("text_color", "#000000")
+    if dark:
+        text_color = "#FFFFFF"
+
+    if image_size <= 100:
+        image_to_chart = "none"
+    else:
+        # 计算图片区域
+        image_rect = {
+            'x': best_x,
+            'y': best_y,
+            'width': image_size,
+            'height': image_size
+        }
+        
+        # 定义九宫格区域
+        grid_areas = {
+            'TL': {'x': 0, 'y': 0, 'width': total_width/3, 'height': total_height/3},
+            'T': {'x': total_width/3, 'y': 0, 'width': total_width/3, 'height': total_height/3},
+            'TR': {'x': 2*total_width/3, 'y': 0, 'width': total_width/3, 'height': total_height/3},
+            'L': {'x': 0, 'y': total_height/3, 'width': total_width/3, 'height': total_height/3},
+            'C': {'x': total_width/3, 'y': total_height/3, 'width': total_width/3, 'height': total_height/3},
+            'R': {'x': 2*total_width/3, 'y': total_height/3, 'width': total_width/3, 'height': total_height/3},
+            'BL': {'x': 0, 'y': 2*total_height/3, 'width': total_width/3, 'height': total_height/3},
+            'B': {'x': total_width/3, 'y': 2*total_height/3, 'width': total_width/3, 'height': total_height/3},
+            'BR': {'x': 2*total_width/3, 'y': 2*total_height/3, 'width': total_width/3, 'height': total_height/3}
+        }
+        
+        # 计算与每个区域的重叠面积
+        max_overlap = 0
+        image_to_chart = 'none'
+        
+        for position, area in grid_areas.items():
+            # 计算重叠区域
+            overlap_x = max(0, min(image_rect['x'] + image_rect['width'], area['x'] + area['width']) - 
+                          max(image_rect['x'], area['x']))
+            overlap_y = max(0, min(image_rect['y'] + image_rect['height'], area['y'] + area['height']) - 
+                          max(image_rect['y'], area['y']))
+            overlap_area = overlap_x * overlap_y
+            
+            if overlap_area > max_overlap:
+                max_overlap = overlap_area
+                image_to_chart = position
+
+        image_size -= between_padding
+        if 'B' in image_to_chart:
+            best_y += between_padding / 2
+        if 'R' in image_to_chart:
+            best_x += between_padding / 2
+
+        if image_size > 100 - between_padding:
             image_element = f"""
         <image
             class="image"
@@ -411,69 +573,18 @@ def make_infographic(
             preserveAspectRatio="none"
             href="{primary_image}"
         />"""
-            final_svg += image_element
-    
-    text_color = data["colors"].get("text_color", "#000000")
-    if dark:
-        text_color = "#FFFFFF"
-
-    if image_element == "":
-        image_to_chart = "none"
+            
+    chart_content, background_element = extract_large_rect(chart_content)
+    print("background_element", background_element)
+    if background_element == "":
+        background_element = add_gradient_to_rect(f'<rect x="0" y="0" width="{total_width}" height="{total_height}" fill="{background_color}" />')
     else:
-        image_center_x = best_x + image_size / 2
-        image_center_y = best_y + image_size / 2
-        canvas_center_x = total_width / 2
-        canvas_center_y = total_height / 2
-        distance_x = abs(image_center_x - canvas_center_x)
-        distance_y = abs(image_center_y - canvas_center_y)
-        
-        if distance_x > total_width * 0.25 and distance_y > total_height * 0.2:
-            if image_center_x < canvas_center_x and image_center_y < canvas_center_y:
-                image_to_chart = "TL"  # 左上
-            elif image_center_x > canvas_center_x and image_center_y < canvas_center_y:
-                image_to_chart = "TR"  # 右上
-            elif image_center_x < canvas_center_x and image_center_y > canvas_center_y:
-                image_to_chart = "BL"  # 左下
-            else:
-                image_to_chart = "BR"  # 右下
-                
-        elif distance_x > total_width * 0.25:
-            if image_center_x < canvas_center_x:
-                image_to_chart = "L"   # 左侧
-            else:
-                image_to_chart = "R"   # 右侧
-
-        elif distance_y > total_height * 0.2:
-            if image_center_y < canvas_center_y:
-                image_to_chart = "T"   # 上方
-            else:
-                image_to_chart = "B"   # 下方
-        else:
-            chart_x = padding + best_title['chart'][0]
-            chart_y = padding + best_title['chart'][1]
-            center_padding = padding * 2
-            chart_center_x = chart_x + center_padding
-            chart_center_y = chart_y + center_padding
-            chart_center_width = chart_width - center_padding * 2
-            chart_center_height = chart_height - center_padding * 2
-            
-            # 检查图片是否完全在chart_center的bounding box中
-            if (best_x >= chart_center_x and 
-                best_y >= chart_center_y and 
-                best_x + image_size <= chart_center_x + chart_center_width and 
-                best_y + image_size <= chart_center_y + chart_center_height):
-                image_to_chart = "C"  # 中心
-            else:
-                if abs(image_center_x - canvas_center_x) > abs(image_center_y - canvas_center_y):
-                    image_to_chart = "L" if image_center_x < canvas_center_x else "R"
-                else:
-                    image_to_chart = "T" if image_center_y < canvas_center_y else "B"
-            
-            
-            
-        
+        background_element = re.sub(r'width="[^"]+"', f'width="{total_width}"', background_element)
+        background_element = re.sub(r'height="[^"]+"', f'height="{total_height}"', background_element)
+        background_layer = add_gradient_to_rect(f'<rect x="0" y="0" width="{total_width}" height="{total_height}" fill="{background_color}" />')
+        background_element = background_layer + background_element
     final_svg = f"""<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="{total_width}" height="{total_height}" style="font-family: Arial, 'Liberation Sans', 'DejaVu Sans', sans-serif;">
-    <rect x="0" y="0" width="{total_width}" height="{total_height}" fill="{background_color}" />
+    {background_element}
     <g class="chart" transform="translate({padding + best_title['chart'][0]}, {padding + best_title['chart'][1]})">{chart_content}</g>
     <g class="text" fill="{text_color}" transform="translate({padding + best_title['title'][0]}, {padding + best_title['title'][1]})">{title_inner_content}</g>
     {image_element}\n</svg>"""
@@ -487,7 +598,40 @@ def make_infographic(
         "title_width": best_title["width"]
     }
     
+    html_chart_x = padding + best_title['chart'][0] + chart_offset_x
+    html_chart_y = padding + best_title['chart'][1] + chart_offset_y
+    html_text_x = padding + best_title['title'][0]
+    html_text_y = padding + best_title['title'][1]
+
+    with open(html_path, 'r', encoding='utf-8') as f:
+        html_content = f.read()
+    
+    # Find the last script tag and inject the setTimeout code at the end
+    src_end = html_content.rfind('</script>')
+    if src_end != -1:
+        inject_code = """
+        // 500ms后检查SVG是否已生成
+        setTimeout(function() {
+            const svg = document.querySelector('#chart-container svg');
+            if (svg) {
+                const originalContent = svg.innerHTML;
+                svg.setAttribute('width', '%d');
+                svg.setAttribute('height', '%d');
+                svg.innerHTML = `%s` +
+                '<g class="chart" transform="translate(%d, %d)">' + originalContent + '</g>' +
+                '<g class="text" fill="%s" transform="translate(%d, %d)">' + `%s` + '</g>' +
+                `%s`;
+            }
+        }, 1000);
+        """ % (total_width, total_height, background_element, html_chart_x, html_chart_y, text_color, html_text_x, html_text_y, title_inner_content, image_element)
+        
+        new_html_content = html_content[:src_end] + inject_code + html_content[src_end:]
+        
+        with open(html_path, 'w', encoding='utf-8') as f:
+            f.write(new_html_content)
+
     return final_svg, layout_info
+
 
 
 def process(input: str, output: str, base_url: str, api_key: str, chart_name: str = None) -> bool:
@@ -504,41 +648,35 @@ def process(input: str, output: str, base_url: str, api_key: str, chart_name: st
     Returns:
         bool: 处理是否成功
     """
-    try:
-        start_time = time.time()
+    start_time = time.time()
+    
+    # 读取输入文件
+    file_read_start = time.time()
+    with open(input, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    data["name"] = input
+    file_read_time = time.time() - file_read_start
+    # logger.info(f"Reading input file took: {file_read_time:.4f} seconds")
+    
+    # 扫描并获取所有可用的模板
+    scan_templates_start = time.time()
+    templates = scan_templates()
+    scan_templates_time = time.time() - scan_templates_start
+    # logger.info(f"Scanning templates took: {scan_templates_time:.4f} seconds")
+    
+    # 分析模板并获取要求
+    analyze_templates_start = time.time()
+    template_count, template_requirements = analyze_templates(templates)
+    compatible_templates = check_template_compatibility(data, templates, chart_name)
+    analyze_templates_time = time.time() - analyze_templates_start
+    # logger.info(f"Analyzing templates took: {analyze_templates_time:.4f} seconds")
         
-        # 读取输入文件
-        file_read_start = time.time()
-        with open(input, "r", encoding="utf-8") as f:
-            data = json.load(f)
-        data["name"] = input
-        file_read_time = time.time() - file_read_start
-        # logger.info(f"Reading input file took: {file_read_time:.4f} seconds")
-        
-        # 扫描并获取所有可用的模板
-        scan_templates_start = time.time()
-        templates = scan_templates()
-        scan_templates_time = time.time() - scan_templates_start
-        # logger.info(f"Scanning templates took: {scan_templates_time:.4f} seconds")
-        
-        # 分析模板并获取要求
-        analyze_templates_start = time.time()
-        template_count, template_requirements = analyze_templates(templates)
-        compatible_templates = check_template_compatibility(data, templates, chart_name)
-        analyze_templates_time = time.time() - analyze_templates_start
-        # logger.info(f"Analyzing templates took: {analyze_templates_time:.4f} seconds")
-            
-        # 如果指定了chart_name，尝试使用它
-        if chart_name:
-            # 在兼容的模板中查找指定的chart_name
-            compatible_templates = [t for t in compatible_templates if chart_name == t[0].split('/')[-1]]
-            if len(compatible_templates) > 0:
-                pass
-            else:
-                # logger.error(f"Specified chart_name '{chart_name}' not compatible with data")
-                return False
-            logger.info("input file: %s", input)
-            logger.info("output file: %s", output)
+    # 如果指定了chart_name，尝试使用它
+    if chart_name:
+        # 在兼容的模板中查找指定的chart_name
+        compatible_templates = [t for t in compatible_templates if chart_name == t[0].split('/')[-1]]
+        if len(compatible_templates) > 0:
+            pass
         else:
             logger.info("input file: %s", input)
             logger.info("output file: %s", output)
@@ -585,19 +723,66 @@ def process(input: str, output: str, base_url: str, api_key: str, chart_name: st
         if engine_obj is None or template is None:
             logger.error(f"Failed to load template: {engine}/{chart_type}/{chart_name}")
             return False
-        get_template_time = time.time() - get_template_start
-        logger.info(f"Getting template took: {get_template_time:.4f} seconds")
-        
-        # 创建临时目录
-        tmp_dir = "./tmp"
-        os.makedirs(tmp_dir, exist_ok=True)
-        
-        # 处理输出文件名，将路径分隔符替换为下划线
-        safe_output_name = os.path.basename(output).replace('/', '_').replace('\\', '_')
-        
-        # 生成图表SVG，使用安全的文件名
-        chart_svg_path = os.path.join(tmp_dir, f"{os.path.splitext(safe_output_name)[0]}.chart.tmp")
+        logger.info("input file: %s", input)
+        logger.info("output file: %s", output)
+    else:
+        logger.info("input file: %s", input)
+        logger.info("output file: %s", output)
+        # 检查与当前数据的兼容性
+        logger.info(f"\nNumber of compatible templates: {len(compatible_templates)}")
+        if not compatible_templates:
+            logger.error("No compatible templates found for the given data")
+            return False
+    
+    # 选择模板
+    select_template_start = time.time()
+    engine, chart_type, chart_name, ordered_fields = select_template(compatible_templates)
+    select_template_time = time.time() - select_template_start
+    # logger.info(f"Selecting template took: {select_template_time:.4f} seconds")
+    
+    # 打印选择的模板信息
+    logger.info(f"\nSelected template: {engine}/{chart_type}/{chart_name}")
+    logger.info(f"Engine: {engine}")
+    logger.info(f"Chart type: {chart_type}")
+    logger.info(f"Chart name: {chart_name}\n")
 
+    # print("requirements", template_requirements)
+
+    # 处理模板要求
+    process_req_start = time.time()
+    requirements = template_requirements[f"{engine}/{chart_type}/{chart_name}"]
+    process_template_requirements(requirements, data, engine, chart_name)
+    process_req_time = time.time() - process_req_start
+    logger.info(f"Processing template requirements took: {process_req_time:.4f} seconds")
+    
+    # 处理数据
+    process_data_start = time.time()
+    for i, field in enumerate(ordered_fields):
+        data["data"]["columns"][i]["role"] = field
+    process_temporal_data(data)
+    process_numerical_data(data)
+    process_data_time = time.time() - process_data_start
+    logger.info(f"Processing data took: {process_data_time:.4f} seconds")
+    
+    # 获取图表模板
+    get_template_start = time.time()
+    engine_obj, template = get_template_for_chart_name(chart_name)
+    if engine_obj is None or template is None:
+        logger.error(f"Failed to load template: {engine}/{chart_type}/{chart_name}")
+        return False
+    get_template_time = time.time() - get_template_start
+    logger.info(f"Getting template took: {get_template_time:.4f} seconds")
+    
+    # 创建临时目录
+    tmp_dir = "./tmp"
+    os.makedirs(tmp_dir, exist_ok=True)
+    
+    # 处理输出文件名，将路径分隔符替换为下划线
+    safe_output_name = os.path.basename(output).replace('/', '_').replace('\\', '_')
+    
+    # 生成图表SVG，使用安全的文件名
+    chart_svg_path = os.path.join(tmp_dir, f"{os.path.splitext(safe_output_name)[0]}.chart.tmp")
+    try:
         if '-' in engine:
             framework, framework_type = engine.split('-')
         elif '_' in engine:
@@ -608,20 +793,39 @@ def process(input: str, output: str, base_url: str, api_key: str, chart_name: st
 
         # 渲染图表
         render_chart_start = time.time()
-
+        timestamp = int(time.time())
+        output_dir = os.path.dirname(output)
+        output_filename = os.path.basename(output)
+        
+        # 创建子文件夹
+        subfolder_name = f"{timestamp}_{chart_name}_{os.path.splitext(output_filename)[0]}"
+        subfolder_path = os.path.join(output_dir, subfolder_name)
+        os.makedirs(subfolder_path, exist_ok=True)
+        
+        # 在子文件夹中创建文件路径
+        new_filename = "chart.svg"
+        output_path = os.path.join(subfolder_path, new_filename)
+        info_filename = "info.json"
+        info_path = os.path.join(subfolder_path, info_filename)
+        html_filename = "chart.html" 
+        html_path = os.path.join(subfolder_path, html_filename)
+        png_filename = "chart.png"
+        png_path = os.path.join(subfolder_path, png_filename)
+        mask_filename = "chart.mask.png"
+        mask_path = os.path.join(subfolder_path, mask_filename)
+        datatable_name = "data.json"
+        datatable_path = os.path.join(subfolder_path, datatable_name)
         #try:
         render_chart_to_svg(
             json_data=data,
             output_svg_path=chart_svg_path,
             js_file=template,
             framework=framework, # Extract framework name (echarts/d3)
-            framework_type=framework_type
+            framework_type=framework_type,
+            html_output_path=html_path
         )
         render_chart_time = time.time() - render_chart_start
         logger.info(f"Rendering chart took: {render_chart_time:.4f} seconds")
-            
-        # 读取生成的SVG内容
-        read_svg_start = time.time()
         
         with open(chart_svg_path, "r", encoding="utf-8") as f:
             chart_svg_content = f.read()
@@ -629,46 +833,90 @@ def process(input: str, output: str, base_url: str, api_key: str, chart_name: st
                 return False
             chart_inner_content = extract_svg_content(chart_svg_content)
 
-        print("try to assemble infographic")
         assemble_start = time.time()
-
-        print("template_requirements", requirements)
         final_svg, layout_info = make_infographic(
             data=data,
             chart_svg_content=chart_inner_content,
             padding=padding,
             between_padding=between_padding,
-            dark=requirements.get("background", "light") == "dark"
+            dark=requirements.get("background", "light") == "dark",
+            html_path=html_path,
+            mask_path=mask_path
         )
+        layout_info["chart_variation"] = chart_name
+        layout_info["chart_type"] = chart_type
+        layout_info["data_source"] = input
 
         assemble_time = time.time() - assemble_start
         logger.info(f"Assembling infographic took: {assemble_time:.4f} seconds")
+        # 读取生成的SVG内容
+        read_svg_start = time.time()
         
         if final_svg is None:
             logger.error("Failed to assemble infographic: SVG content extraction failed")
             return False
         
-        # 获取当前时间戳
-        timestamp = int(time.time())
-        output_dir = os.path.dirname(output)
-        output_filename = os.path.basename(output)        
-        new_filename = f"{timestamp}_{chart_name}_{os.path.splitext(output_filename)[0]}.svg"        
-        output_path = os.path.join(output_dir, new_filename)        
+        # 使用文件锁保护写入操作
         with open(output_path, "w", encoding="utf-8") as f:
-            f.write(final_svg)
+            try:
+                fcntl.flock(f, fcntl.LOCK_EX)  # 获取独占锁
+                f.write(final_svg)
+            finally:
+                fcntl.flock(f, fcntl.LOCK_UN)  # 释放锁
 
-        info_filename = f"{timestamp}_{chart_name}_{os.path.splitext(output_filename)[0]}.json"
-        info_path = os.path.join(output_dir, info_filename)
         with open(info_path, "w", encoding="utf-8") as f:
-            json.dump(layout_info, f, ensure_ascii=False, indent=4)
+            try:
+                fcntl.flock(f, fcntl.LOCK_EX)  # 获取独占锁
+                layout_info_str = json.dumps(layout_info, indent=4)
+                f.write(layout_info_str)
+            finally:
+                fcntl.flock(f, fcntl.LOCK_UN)  # 释放锁
+
+        with open(datatable_path, "w", encoding="utf-8") as f:
+            try:
+                fcntl.flock(f, fcntl.LOCK_EX)  # 获取独占锁
+                datatable_str = json.dumps(data["data"], indent=4)
+                f.write(datatable_str)
+            finally:
+                fcntl.flock(f, fcntl.LOCK_UN)  # 释放锁
+
+        subprocess.run([
+            'rsvg-convert',
+            '-f', 'png',
+            '-o', png_path,
+            '--dpi-x', '300',
+            '--dpi-y', '300',
+            '--background-color', '#ffffff',
+            output_path
+        ], check=True)
     except Exception as e:
         logger.error(f"Error processing infographics: {e}")
         return False
-    finally:
+    
+    # 获取当前时间戳
+    timestamp = int(time.time())
+    output_dir = os.path.dirname(output)
+    output_filename = os.path.basename(output)        
+    new_filename = f"{timestamp}_{chart_name}_{os.path.splitext(output_filename)[0]}.svg"        
+    output_path = os.path.join(output_dir, new_filename)
+    
+    # 保存最终的SVG
+    save_start = time.time()
+    with open(output_path, "w", encoding="utf-8") as f:
         try:
-            os.remove(chart_svg_path)
-        except Exception as e:
-            pass
+            fcntl.flock(f, fcntl.LOCK_EX)  # 获取独占锁
+            f.write(final_svg)
+        finally:
+            fcntl.flock(f, fcntl.LOCK_UN)  # 释放锁
+    save_time = time.time() - save_start
+    # except Exception as e:
+    #     logger.error(f"Error processing infographics: {e}")
+    #     return False
+    # finally:
+    #     try:
+    #         os.remove(chart_svg_path)
+    #     except Exception as e:
+    #         pass
     
     '''
     total_time = time.time() - start_time
