@@ -2,6 +2,9 @@ from typing import Dict, List, Tuple, Optional, Union
 import random
 from modules.infographics_generator.color_utils import get_contrast_color
 
+# 添加全局字典来跟踪模板使用频率
+template_usage_counter = {}
+
 def get_unique_fields_and_types(
         required_fields: Union[List[str], List[List[str]]],
         required_fields_type: Union[List[List[str]], List[List[List[str]]]],
@@ -208,8 +211,43 @@ def check_template_compatibility(data: Dict, templates: Dict, specific_chart_nam
     return compatible_templates
 
 def select_template(compatible_templates: List[str]) -> Tuple[str, str, str]:
-    """随机选择一个兼容的模板"""
-    [selected_template, ordered_fields] = random.choice(compatible_templates)
+    """
+    根据模板使用频率选择一个兼容的模板
+    使用次数较少的模板有更高的被选择概率
+    权重范围为1-5，使用平滑的反比例函数
+    """
+    global template_usage_counter
+    
+    # 初始化模板使用次数
+    for template_info in compatible_templates:
+        template_key = template_info[0]
+        if template_key not in template_usage_counter:
+            template_usage_counter[template_key] = 0
+    
+    # 计算每个模板的权重：使用平滑的反比例函数
+    template_weights = []
+    for template_info in compatible_templates:
+        template_key = template_info[0]
+        usage_count = template_usage_counter[template_key]
+        
+        # 使用平滑的反比例函数: 1 + 4/(1 + usage_count/3)
+        # 当usage_count为0时，权重为5
+        # 随着usage_count增加，权重会平滑地下降并逐渐接近1
+        weight = 1.0 + 4.0 / (1.0 + usage_count / 3.0)
+        template_weights.append(weight)
+    
+    # 根据权重随机选择模板
+    selected_index = random.choices(
+        range(len(compatible_templates)), 
+        weights=template_weights, 
+        k=1
+    )[0]
+    
+    [selected_template, ordered_fields] = compatible_templates[selected_index]
+    
+    # 更新使用计数
+    template_usage_counter[selected_template] += 1
+    
     engine, chart_type, chart_name = selected_template.split('/')
     return engine, chart_type, chart_name, ordered_fields
 

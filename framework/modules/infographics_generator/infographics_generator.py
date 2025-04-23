@@ -215,6 +215,7 @@ def make_infographic(
     # 初始化best_title默认值为None，用于后续检查
     best_title = None
     
+    '''
     if mask_1_ratio > 0.25 and mask_1_ratio < 0.5:
         width = average_distance*2
         title_content = title_styler_process(input_data=data, max_width=int(width), text_align="center", show_embellishment=False, show_sub_title=False)
@@ -239,7 +240,7 @@ def make_infographic(
                     "show_sub_title": False
                 }
                 break
-    
+    '''
     # 如果没有找到合适的best_title（width太大或其他原因），使用默认处理逻辑
     if best_title is None:
         default_title = {
@@ -528,7 +529,7 @@ def make_infographic(
     if dark:
         text_color = "#FFFFFF"
 
-    if image_size <= 100:
+    if image_size <= 64:
         image_to_chart = "none"
     else:
         # 计算图片区域
@@ -875,40 +876,58 @@ def process(input: str, output: str, base_url: str, api_key: str, chart_name: st
         if final_svg is None:
             logger.error("Failed to assemble infographic: SVG content extraction failed")
             return False
+        # 使用文件锁保护写入操作,最多重试3次
+        max_retries = 3
+        retry_count = 0
         
-        # 使用文件锁保护写入操作
-        with open(output_path, "w", encoding="utf-8") as f:
+        while retry_count < max_retries:
             try:
-                fcntl.flock(f, fcntl.LOCK_EX)  # 获取独占锁
-                f.write(final_svg)
-            finally:
-                fcntl.flock(f, fcntl.LOCK_UN)  # 释放锁
+                # 写入SVG文件
+                with open(output_path, "w", encoding="utf-8") as f:
+                    try:
+                        fcntl.flock(f, fcntl.LOCK_EX)  # 获取独占锁
+                        f.write(final_svg)
+                    finally:
+                        fcntl.flock(f, fcntl.LOCK_UN)  # 释放锁
 
-        with open(info_path, "w", encoding="utf-8") as f:
-            try:
-                fcntl.flock(f, fcntl.LOCK_EX)  # 获取独占锁
-                layout_info_str = json.dumps(layout_info, indent=4)
-                f.write(layout_info_str)
-            finally:
-                fcntl.flock(f, fcntl.LOCK_UN)  # 释放锁
+                # 写入info文件
+                with open(info_path, "w", encoding="utf-8") as f:
+                    try:
+                        fcntl.flock(f, fcntl.LOCK_EX)  # 获取独占锁
+                        layout_info_str = json.dumps(layout_info, indent=4)
+                        f.write(layout_info_str)
+                    finally:
+                        fcntl.flock(f, fcntl.LOCK_UN)  # 释放锁
 
-        with open(datatable_path, "w", encoding="utf-8") as f:
-            try:
-                fcntl.flock(f, fcntl.LOCK_EX)  # 获取独占锁
-                datatable_str = json.dumps(data["data"], indent=4)
-                f.write(datatable_str)
-            finally:
-                fcntl.flock(f, fcntl.LOCK_UN)  # 释放锁
+                # 写入datatable文件
+                with open(datatable_path, "w", encoding="utf-8") as f:
+                    try:
+                        fcntl.flock(f, fcntl.LOCK_EX)  # 获取独占锁
+                        datatable_str = json.dumps(data["data"], indent=4)
+                        f.write(datatable_str)
+                    finally:
+                        fcntl.flock(f, fcntl.LOCK_UN)  # 释放锁
 
-        subprocess.run([
-            'rsvg-convert',
-            '-f', 'png',
-            '-o', png_path,
-            '--dpi-x', '300',
-            '--dpi-y', '300',
-            '--background-color', '#ffffff',
-            output_path
-        ], check=True)
+                # 转换为PNG
+                subprocess.run([
+                    'rsvg-convert',
+                    '-f', 'png',
+                    '-o', png_path,
+                    '--dpi-x', '300',
+                    '--dpi-y', '300',
+                    '--background-color', '#ffffff',
+                    output_path
+                ], check=True)
+                
+                # 如果所有操作都成功,跳出循环
+                break
+                
+            except Exception as e:
+                retry_count += 1
+                if retry_count >= max_retries:
+                    raise Exception(f"重试{max_retries}次后仍然失败")
+                time.sleep(1)  # 等待1秒后重试
+
     except Exception as e:
         logger.error(f"Error processing infographics: {e}")
         return False
