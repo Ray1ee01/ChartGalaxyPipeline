@@ -2,11 +2,11 @@
 REQUIREMENTS_BEGIN
 {
     "chart_type": "bubble_chart",
-    "chart_name": "bubble_chart_05",
+    "chart_name": "bubble_circle_chart_05",
     "is_composite": false,
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],
-    "required_fields_range": [[2, 30], [0, "inf"]],
+    "required_fields_range": [[2, 20], [0, "inf"]],
     "required_fields_icons": [],
     "required_other_icons": [],
     "required_fields_colors": ["x"],
@@ -231,6 +231,21 @@ function makeChart(containerSelector, dataJSON) {
         return ctx.measureText(text).width;
     }
 
+    // ---- 类别标签换行控制 ----
+    const minCatFontSize = 10; // 维度标签最小字号 (再小就换行或省略)
+    const catLineHeight = 0.3; // 维度标签换行行高倍数（相对于字号）
+    const needsWrapping = true; // 需要时是否允许换行
+
+    // 弦长计算函数 - 根据到圆心的距离计算该位置的最大水平宽度
+    function getChordLength(radius, distanceFromCenter) {
+        // 检查 distanceFromCenter 是否有效
+        if (Math.abs(distanceFromCenter) >= radius) {
+            return 0; // 如果距离大于或等于半径，弦长为0
+        }
+        // 根据毕达哥拉斯定理，在距离圆心d的位置，水平弦长=2*√(r²-d²)
+        return 2 * Math.sqrt(radius * radius - distanceFromCenter * distanceFromCenter);
+    }
+
     // 计算颜色亮度的函数 (用于确定文本颜色)
     function getColorBrightness(color) {
         // 处理rgba格式
@@ -284,7 +299,7 @@ function makeChart(containerSelector, dataJSON) {
         const r = d.r;
         const valText = `${d.val}${yUnit}`;
         let catText = d.id.startsWith("__") ? "" : d.id;
-        const maxTextWidth = r * 1.65; // 圆内文本允许的最大宽度
+        const maxTextWidth = r * 1.65; // 圆内文本允许的最大宽度 (这是一个简化估计)
         
         // 根据圆的背景色选择合适的文本颜色
         const backgroundColor = d.color;
@@ -301,31 +316,135 @@ function makeChart(containerSelector, dataJSON) {
             )
         );
 
-        // 2. 检查文本是否合适并在必要时减小字体大小
+        // 2. 检查文本宽度并调整字体大小
         let valueWidth = getTextWidthCanvas(valText, valueFontFamily, currentFontSize, valueFontWeight);
         let categoryWidth = catText ? getTextWidthCanvas(catText, categoryFontFamily, currentFontSize, categoryFontWeight) : 0;
+        let categoryLines = 1; // 默认类别标签只有一行
+        let categoryLabelHeight = currentFontSize; // 类别标签默认高度
+        let shouldWrapCategory = false; // 默认不换行
+        let categoryMaxWidth = 0; // 类别标签在对应位置的最大宽度
 
-        while (currentFontSize > minAcceptableFontSize && (valueWidth > maxTextWidth || (catText && categoryWidth > maxTextWidth))) {
-            currentFontSize -= 1;
+        // 估算文本放置的垂直位置（简化处理，假设类别在上，数值在下）
+        const estimatedCategoryY = catText ? -currentFontSize * 0.55 : 0;
+        const estimatedValueY = catText ? currentFontSize * 0.55 : 0;
+
+        // 循环减小字体，直到两个标签都能放下，或达到最小字号
+        while (currentFontSize > minAcceptableFontSize) {
             valueWidth = getTextWidthCanvas(valText, valueFontFamily, currentFontSize, valueFontWeight);
-            if (catText) {
-                categoryWidth = getTextWidthCanvas(catText, categoryFontFamily, currentFontSize, categoryFontWeight);
+            categoryWidth = catText ? getTextWidthCanvas(catText, categoryFontFamily, currentFontSize, categoryFontWeight) : 0;
+
+            // 计算类别标签在该垂直位置允许的最大宽度
+            categoryMaxWidth = catText ? getChordLength(r, Math.abs(estimatedCategoryY)) * 0.9 : 0; // 乘以0.9留边距
+            // 计算数值标签在该垂直位置允许的最大宽度
+            const valueMaxWidth = getChordLength(r, Math.abs(estimatedValueY)) * 0.9; // 乘以0.9留边距
+
+            // 检查宽度是否合适
+            const valueFits = valueWidth <= valueMaxWidth;
+            let categoryFits = !catText || categoryWidth <= categoryMaxWidth;
+            shouldWrapCategory = false; // 重置换行标记
+
+            // 如果类别标签不适合，并且允许换行，并且字号足够大，尝试换行
+            if (catText && !categoryFits && needsWrapping && currentFontSize >= minCatFontSize) {
+                 shouldWrapCategory = true;
+                 // 使用临时canvas估算换行后的行数和总高度
+                 const tempCanvas = document.createElement('canvas');
+                 const tempCtx = tempCanvas.getContext('2d');
+                 tempCtx.font = `${categoryFontWeight} ${currentFontSize}px ${categoryFontFamily}`;
+                 const words = catText.split(/\s+/);
+                 let lines = [];
+                 let line = [];
+                 let word;
+                 let fitsWithWrapping = true;
+
+                 if (words.length <= 1) { // 按字符模拟换行
+                     const chars = catText.split('');
+                     let currentLine = '';
+                     for (let i = 0; i < chars.length; i++) {
+                         const testLine = currentLine + chars[i];
+                         if (tempCtx.measureText(testLine).width <= categoryMaxWidth || currentLine.length === 0) {
+                             currentLine += chars[i];
+                         } else {
+                             // 检查单行是否太高
+                             if ((lines.length + 1) * currentFontSize * (1 + catLineHeight) > r * 1.8) { // 检查总高度
+                                 fitsWithWrapping = false;
+                                 break;
+                             }
+                             lines.push(currentLine);
+                             currentLine = chars[i];
+                         }
+                     }
+                     if (fitsWithWrapping) lines.push(currentLine);
+                 } else { // 按单词模拟换行
+                    while (word = words.shift()) {
+                         line.push(word);
+                         const testLine = line.join(" ");
+                         if (tempCtx.measureText(testLine).width > categoryMaxWidth && line.length > 1) {
+                             line.pop();
+                             // 检查单行是否太高
+                             if ((lines.length + 1) * currentFontSize * (1 + catLineHeight) > r * 1.8) {
+                                 fitsWithWrapping = false;
+                                 break;
+                             }
+                             lines.push(line.join(" "));
+                             line = [word];
+                         }
+                     }
+                     if (fitsWithWrapping) lines.push(line.join(" "));
+                 }
+                
+                 if(fitsWithWrapping && lines.length > 0){ 
+                     categoryLines = lines.length; // 更新行数
+                     categoryLabelHeight = categoryLines * currentFontSize * (1 + catLineHeight); // 更新总高度
+                     categoryFits = true; // 标记为可通过换行解决
+                 } else {
+                     // 即使换行也放不下，或者换行后太高
+                     categoryFits = false;
+                     shouldWrapCategory = false;
+                 }
+             } else if (catText && !categoryFits) {
+                 // 字号太小不能换行，或者不允许换行
+                 shouldWrapCategory = false;
+             }
+
+            // 如果两个标签都合适 (类别可能通过换行解决)
+            if (valueFits && categoryFits) {
+                break; // 找到合适的字号，跳出循环
             }
+
+            // 如果不合适，减小字号继续尝试
+            currentFontSize -= 1;
         }
 
-        // 3. 确定最终字体大小和是否显示维度标签
+        // 3. 确定最终字体大小和是否显示标签
         const finalFontSize = currentFontSize;
-        const showValue = valueWidth <= maxTextWidth && finalFontSize >= minAcceptableFontSize;
-        const showCategory = catText && categoryWidth <= maxTextWidth && r >= minRadiusForCategoryLabel && finalFontSize >= minAcceptableFontSize; // 同时检查半径大小
+        const showValue = valueWidth <= getChordLength(r, Math.abs(estimatedValueY)) * 0.9 && finalFontSize >= minAcceptableFontSize;
+        const showCategory = catText && finalFontSize >= minAcceptableFontSize && (getTextWidthCanvas(catText, categoryFontFamily, finalFontSize, categoryFontWeight) <= getChordLength(r, Math.abs(estimatedCategoryY)) * 0.9 || shouldWrapCategory) && r >= minRadiusForCategoryLabel;
 
-        // 4. 渲染标签
+        // 4. 渲染标签 - 动态调整垂直位置
+        let finalValueY = 0;
+        let finalCategoryY = 0;
+        
+        if (showValue && showCategory) {
+            // 计算总高度
+            const totalHeight = categoryLabelHeight + finalFontSize + finalFontSize * catLineHeight; // 类别高度 + 数值高度 + 间距
+            // 垂直居中这个整体
+            const startY = -totalHeight / 2;
+            finalCategoryY = startY; // 类别标签从顶部开始
+            finalValueY = startY + categoryLabelHeight + finalFontSize * catLineHeight; // 数值标签在类别下方加间距
+        } else if (showValue) {
+            finalValueY = 0; // 只显示数值，垂直居中
+        } else if (showCategory) {
+            // 只显示类别，将其垂直居中（考虑可能的多行）
+            finalCategoryY = -categoryLabelHeight / 2;
+        }
+
+        // 渲染数值标签
         if (showValue) {
-            const valueY = showCategory ? -finalFontSize * 0.55 : 0; // 根据是否显示维度标签调整位置
             gNode.append("text")
                 .attr("class", "value-label")
                 .attr("text-anchor", "middle")
-                .attr("dominant-baseline", "middle") // 垂直居中
-                .attr("y", valueY)
+                .attr("dominant-baseline", "hanging") // 基线改为 hanging，方便从y值向下渲染
+                .attr("y", finalValueY)
                 .style("font-size", `${finalFontSize}px`)
                 .style("font-weight", valueFontWeight)
                 .style("font-family", valueFontFamily)
@@ -334,19 +453,75 @@ function makeChart(containerSelector, dataJSON) {
                 .text(valText);
         }
 
+        // 渲染类别标签 (可能换行)
         if (showCategory) {
-            const categoryY = finalFontSize * 0.55;
-            gNode.append("text")
+            const catLabel = gNode.append("text")
                 .attr("class", "category-label")
                 .attr("text-anchor", "middle")
-                .attr("dominant-baseline", "middle") // 垂直居中
-                .attr("y", categoryY)
+                .attr("dominant-baseline", "hanging") // 基线改为 hanging
+                .attr("y", finalCategoryY)
                 .style("fill", adaptiveTextColor) // 使用自适应文本颜色
                 .style("font-family", categoryFontFamily)
                 .style("font-weight", categoryFontWeight)
                 .style("font-size", `${finalFontSize}px`)
-                .style("pointer-events", "none")
-                .text(catText); // 不需要换行逻辑
+                .style("pointer-events", "none");
+
+            if (shouldWrapCategory) {
+                // 执行换行逻辑，使用 tspan
+                const words = catText.split(/\s+/);
+                let line = [];
+                let lineNumber = 0;
+                let tspan = catLabel.append("tspan").attr("x", 0).attr("dy", 0); // 第一个tspan的dy为0
+                const tempCanvas = document.createElement('canvas');
+                const tempCtx = tempCanvas.getContext('2d');
+                tempCtx.font = `${categoryFontWeight} ${finalFontSize}px ${categoryFontFamily}`;
+                categoryMaxWidth = getChordLength(r, Math.abs(finalCategoryY + finalFontSize * (1 + catLineHeight) * lineNumber)) * 0.9; // 重新计算当前行的最大宽度
+
+                if (words.length <= 1) { // 按字符换行
+                    const chars = catText.split('');
+                    let currentLine = '';
+                    for (let i = 0; i < chars.length; i++) {
+                        const testLine = currentLine + chars[i];
+                        // 检查宽度是否适合当前行
+                         categoryMaxWidth = getChordLength(r, Math.abs(finalCategoryY + finalFontSize * (1 + catLineHeight) * lineNumber)) * 0.9;
+                        if (tempCtx.measureText(testLine).width <= categoryMaxWidth || currentLine.length === 0) {
+                            currentLine += chars[i];
+                        } else {
+                            tspan.text(currentLine);
+                            lineNumber++;
+                            currentLine = chars[i];
+                            tspan = catLabel.append("tspan")
+                                .attr("x", 0)
+                                .attr("dy", `${1 + catLineHeight}em`) // 后续行的dy
+                                .text(currentLine);
+                        }
+                    }
+                    tspan.text(currentLine);
+                } else { // 按单词换行
+                    let word;
+                    while (word = words.shift()) {
+                        line.push(word);
+                        const testLine = line.join(" ");
+                         // 检查宽度是否适合当前行
+                         categoryMaxWidth = getChordLength(r, Math.abs(finalCategoryY + finalFontSize * (1 + catLineHeight) * lineNumber)) * 0.9;
+                        if (tempCtx.measureText(testLine).width > categoryMaxWidth && line.length > 1) {
+                            line.pop();
+                            tspan.text(line.join(" "));
+                            lineNumber++;
+                            line = [word];
+                            tspan = catLabel.append("tspan")
+                                .attr("x", 0)
+                                .attr("dy", `${1 + catLineHeight}em`) // 后续行的dy
+                                .text(word);
+                        } else {
+                            tspan.text(line.join(" "));
+                        }
+                    }
+                }
+            } else {
+                // 不换行，直接显示
+                catLabel.text(catText);
+            }
         }
     });
 

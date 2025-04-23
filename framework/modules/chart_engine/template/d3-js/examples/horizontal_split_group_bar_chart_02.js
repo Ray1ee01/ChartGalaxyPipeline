@@ -5,7 +5,7 @@ REQUIREMENTS_BEGIN
     "chart_name": "horizontal_split_group_bar_chart_02",
     "is_composite": false,
     "chart_for": "comparison",
-    "required_fields": ["x", "y", "group","group2"],
+    "required_fields": ["x", "y", "group","group"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"],["categorical"]],
     "required_fields_range": [[2, 20], [0, "inf"], [2, 2],[2, 5]],
     "required_fields_icons": [],
@@ -83,9 +83,13 @@ function makeChart(containerSelector, data) {
     if (yColumn) valueField = yColumn.name; 
     
     // 处理分组字段 - 第一个是意见类型，第二个是支持者类型
+    if (groupColumns.length > 0) {
+        opinionGroupField = groupColumns[0].name; // 第一个分组字段（意见类型）
+        if (groupColumns.length > 1) {
+            supporterGroupField = groupColumns[1].name; // 第二个分组字段（支持者类型）
+        } 
+    }
     
-    opinionGroupField = dataColumns.find(col => col.role === "group").name;
-    supporterGroupField = dataColumns.find(col => col.role === "group2").name;
     // 获取y轴字段单位（如果存在）
     if (yColumn && yColumn.unit && yColumn.unit !== "none") {
         valueUnit = yColumn.unit;

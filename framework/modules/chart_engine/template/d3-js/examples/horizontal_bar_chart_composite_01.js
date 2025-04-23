@@ -9,7 +9,6 @@ REQUIREMENTS_BEGIN
         [["categorical"], ["numerical"], ["categorical"]],
         [["categorical"], ["numerical"], ["categorical"]]
     ],
-    "hierarchy":["group"],
     "required_fields_range": [
         [[2, 30], [0, 100], [2, 30]],
         [[2, 30], [0, 1000]], [2, 30]

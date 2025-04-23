@@ -99,7 +99,7 @@ function makeChart(containerSelector, data) {
     // 创建按y值降序排序的数据
     const sortedData = chartData.map(d => ({
         x: d[xField],
-        y: d[yField]
+        y: +d[yField] // 确保y是数值类型
     })).sort((a, b) => b.y - a.y);
     
     // ---------- 5. 创建SVG容器 ----------
@@ -172,24 +172,6 @@ function makeChart(containerSelector, data) {
         });
     }
     
-    // 计算动态文本大小函数
-    const calculateFontSize = (text, maxWidth, baseSize = 14) => {
-        // 估算平均字符宽度(假设为基础大小的60%)
-        const avgCharWidth = baseSize * 0.6;
-        // 计算估计的文本宽度
-        const textWidth = text.length * avgCharWidth;
-        // 如果文本宽度小于最大宽度，返回基础大小
-        if (textWidth < maxWidth) {
-            return baseSize;
-        }
-        // 如果文本宽度超过最大宽度的两倍，则不显示
-        if (textWidth > maxWidth * 2) {
-            return 0; // 表示不显示文本
-        }
-        // 否则，按比例缩放字体大小
-        return Math.max(8, Math.floor(baseSize * (maxWidth / textWidth)));
-    };
-    
     // ---------- 7. 创建图表 ----------
     
     // 创建图表组
@@ -204,13 +186,124 @@ function makeChart(containerSelector, data) {
     
     const yMax = d3.max(sortedData, d => d.y);
     const yScale = d3.scaleLinear()
-        .domain([0, yMax * 1.1]) // 添加10%的填充
+        .domain([0, yMax > 0 ? yMax * 1.1 : 1]) // 处理y都为0的情况，并添加10%的填充
         .range([innerHeight, 0]);
     
-    // 没有水平网格线
-    
-    
-    
+    // *******************************************************************
+    // ** 开始修改：预计算标签字体大小和最大行数 **
+    // *******************************************************************
+    const defaultLabelFontSize = parseFloat(typography.label.font_size || 12);
+    const minLabelFontSize = 8; // 最小字体大小
+    const currentBarWidth = xScale.bandwidth(); // 使用实际的bar宽度
+    let finalLabelFontSize = defaultLabelFontSize;
+    let maxLinesNeeded = 1; // 记录所有标签所需的最大行数
+    const labelFontFamily = typography.label.font_family || "Arial";
+    const labelFontWeight = typography.label.font_weight || "normal";
+    const lineHeightFactor = 1.2; // 行高倍数
+
+    // 文本宽度测量辅助函数 (使用 canvas 提高性能)
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    function getTextWidthCanvas(text, fontFamily, fontSize, fontWeight) {
+        ctx.font = `${fontWeight || 'normal'} ${fontSize}px ${fontFamily || 'Arial'}`;
+        return ctx.measureText(text).width;
+    }
+
+    // 第一遍计算：确定统一的字体大小
+    if (currentBarWidth > 0) { // 确保 barWidth 有效
+        let maxRatio = 1;
+        sortedData.forEach(d => {
+            const labelText = String(d.x); // 确保是字符串
+            const textWidth = getTextWidthCanvas(labelText, labelFontFamily, defaultLabelFontSize, labelFontWeight);
+            const ratio = textWidth / currentBarWidth;
+            if (ratio > maxRatio) {
+                maxRatio = ratio;
+            }
+        });
+
+        if (maxRatio > 1) {
+            finalLabelFontSize = Math.max(minLabelFontSize, Math.floor(defaultLabelFontSize / maxRatio));
+        }
+
+        // 第二遍计算：确定是否需要换行以及最大行数 (使用最终字体大小)
+        sortedData.forEach(d => {
+            const labelText = String(d.x);
+            const textWidth = getTextWidthCanvas(labelText, labelFontFamily, finalLabelFontSize, labelFontWeight);
+
+            if (textWidth > currentBarWidth) {
+                // 模拟换行计算行数
+                const words = labelText.split(/\s+/); // 按空格分词
+                let currentLine = '';
+                let lines = 1;
+                let simulationSuccess = false; // 标记模拟是否成功
+
+                if (words.length > 1) { // 优先按单词换行
+                    for (let i = 0; i < words.length; i++) {
+                        const testLine = currentLine ? currentLine + " " + words[i] : words[i];
+                        const testWidth = getTextWidthCanvas(testLine, labelFontFamily, finalLabelFontSize, labelFontWeight);
+                        if (testWidth > currentBarWidth && currentLine !== '') {
+                            lines++;
+                            currentLine = words[i];
+                            // 检查单个单词是否也超长
+                            if (getTextWidthCanvas(currentLine, labelFontFamily, finalLabelFontSize, labelFontWeight) > currentBarWidth) {
+                                // 单个单词超长，需要转字符换行
+                                simulationSuccess = false;
+                                break; // 退出单词循环
+                            }
+                        } else {
+                            currentLine = testLine;
+                        }
+                    }
+                     if(currentLine !== '') simulationSuccess = true; // 如果有剩余单词则标记成功
+
+                }
+
+                // 如果单词换行不成功或只有一个单词，尝试字符换行
+                if(words.length <= 1 || !simulationSuccess) {
+                    lines = 1; // 重置行数
+                    const chars = labelText.split('');
+                    currentLine = '';
+                    for (let i = 0; i < chars.length; i++) {
+                        const testLine = currentLine + chars[i];
+                        if (getTextWidthCanvas(testLine, labelFontFamily, finalLabelFontSize, labelFontWeight) > currentBarWidth && currentLine !== '') {
+                            lines++;
+                            currentLine = chars[i];
+                        } else {
+                            currentLine += chars[i];
+                        }
+                    }
+                }
+
+
+                if (lines > maxLinesNeeded) {
+                    maxLinesNeeded = lines;
+                }
+            }
+        });
+    } else {
+        // 如果barWidth无效，则使用默认字体大小且不换行
+        finalLabelFontSize = defaultLabelFontSize;
+        maxLinesNeeded = 1;
+    }
+    // *******************************************************************
+    // ** 结束修改：预计算标签字体大小和最大行数 **
+    // *******************************************************************
+
+    // *******************************************************************
+    // ** 开始修改：计算图标的统一Y位置 **
+    // *******************************************************************
+    const labelStartY = innerHeight + 35; // 标签开始的 Y 位置 (保持和原来一致)
+    const lineHeight = finalLabelFontSize * lineHeightFactor; // 行高
+    const labelBottomApprox = labelStartY + (maxLinesNeeded - 1) * lineHeight + finalLabelFontSize * 0.71; // 估算最下方标签基线位置
+    const iconRadius = 15; // 图标半径
+    const iconYPosition = labelBottomApprox + iconRadius + 5; // 在标签下方留出 5px 间距放置图标中心
+    const iconBottomY = iconYPosition + iconRadius; // 图标底部的Y坐标
+    const barExtensionBuffer = 5; // 柱子比图标底部多延伸的距离
+    const barBottomY = iconBottomY + barExtensionBuffer; // 柱子需要延伸到的最终Y坐标
+    // *******************************************************************
+    // ** 结束修改：计算图标的统一Y位置 **
+    // *******************************************************************
+
     // 添加延伸到图标的柱子
     chart.selectAll(".bar")
         .data(sortedData)
@@ -220,12 +313,12 @@ function makeChart(containerSelector, data) {
         .attr("x", d => xScale(d.x))
         .attr("y", d => yScale(d.y))
         .attr("width", xScale.bandwidth())
-        .attr("height", d => innerHeight + 75 - yScale(d.y)) // 延伸到图标
+        .attr("height", d => Math.max(0, barBottomY - yScale(d.y)))
         .attr("fill", d => {
             if (variables.has_gradient) {
                 const safeCategory = typeof d.x === 'string' ? 
                     d.x.toString().replace(/[^a-zA-Z0-9]/g, '-').toLowerCase() : 
-                    `category-${sortedData.indexOf(d)}`;
+                    `category-${sortedData.findIndex(item => item.x === d.x)}`; // 修正: 使用 findIndex 确保唯一性
                 return `url(#gradient-${safeCategory})`;
             } 
             return getColor();
@@ -241,44 +334,40 @@ function makeChart(containerSelector, data) {
         .on("mouseout", function() {
             d3.select(this).attr("opacity", 1);
         });
-    // 添加波浪形背景到图表 - 添加在柱状图之后，但在文本和图标之前
-    function createWavePattern(width, height, amplitude, frequency) {
-        let path = `M0,${height} `;
-        
-        // 创建顶部波浪边缘
-        for (let x = 0; x <= width; x += width/frequency) {
-            const y = amplitude * Math.sin((x / width) * Math.PI * frequency);
-            path += `L${x},${height/4 + y} `; // 使波浪线更高，进入柱状图区域
-        }
-        
-        // 完成路径回到起点
-        path += `L${width},${height} L0,${height} Z`;
-        
-        return path;
-    }
     
-    // // 添加波浪形背景到图表
-    // const waveBackground = svg.append("path")
-    //     .attr("d", createWavePattern(width, 180, 8, 20))
-    //     .attr("transform", `translate(0, ${height-180})`)
-    //     .attr("fill", "#4d627f")
-    //     .attr("class","background")
-    //     .attr("opacity", 0.9);
-
     // 在柱子上方添加数值标签
+    const defaultAnnotationFontSize = parseFloat(typography.annotation.font_size || 12);
+    const minAnnotationFontSize = 6; // 数值标签最小字体
+    const annotationFontFamily = typography.annotation.font_family || "Arial";
+    const annotationFontWeight = typography.annotation.font_weight || "bold";
+
     chart.selectAll(".value-label")
         .data(sortedData)
         .enter()
         .append("text")
         .attr("class", "value-label")
         .attr("x", d => xScale(d.x) + xScale.bandwidth() / 2)
-        .attr("y", d => yScale(d.y) - 10)
+        .attr("y", d => yScale(d.y) - 5)
         .attr("text-anchor", "middle")
-        .style("font-family", typography.annotation.font_family)
-        .style("font-size", "14px")
-        .style("font-weight", "bold")
-        .style("fill", colors.text_color)
-        .text(d => d.y > 0 ? `+${d.y.toFixed(1)}` : d.y.toFixed(1));
+        .style("font-family", annotationFontFamily)
+        .style("font-weight", annotationFontWeight)
+        .style("fill", colors.text_color || "#333333")
+        .each(function(d) {
+            const valueText = (typeof d.y === 'number' ? d.y.toFixed(1) : String(d.y)) + (yUnit || "");
+            const maxWidth = xScale.bandwidth() * 1.1; // 最大允许宽度为柱宽的1.1倍
+            let finalValueFontSize = defaultAnnotationFontSize;
+
+            if (maxWidth > 0) { // 仅当宽度有效时计算
+                const textWidth = getTextWidthCanvas(valueText, annotationFontFamily, defaultAnnotationFontSize, annotationFontWeight);
+                if (textWidth > maxWidth) {
+                    finalValueFontSize = Math.max(minAnnotationFontSize, Math.floor(defaultAnnotationFontSize * (maxWidth / textWidth)));
+                }
+            }
+
+            d3.select(this)
+                .style("font-size", `${finalValueFontSize}px`)
+                .text(valueText);
+        });
     
     // 在维度标签上方添加水平线
     chart.append("line")
@@ -289,39 +378,95 @@ function makeChart(containerSelector, data) {
         .attr("stroke", "#e0e0e0")
         .attr("stroke-width", 1);
     
-    // 添加维度标签(带动态大小调整)
+    // *******************************************************************
+    // ** 开始修改：添加维度标签 (统一字体大小，自动换行) **
+    // *******************************************************************
     chart.selectAll(".dimension-label")
         .data(sortedData)
         .enter()
         .append("text")
         .attr("class", "dimension-label")
-        .attr("x", d => xScale(d.x) + xScale.bandwidth() / 2)
-        .attr("y", innerHeight + 35) // 位于图标上方的位置
         .attr("text-anchor", "middle")
-        .style("font-family", typography.label.font_family)
-        .style("font-weight", "bold")
-        .style("fill", "#ffffff") // 白色
+        .style("font-family", labelFontFamily)
+        .style("font-size", `${finalLabelFontSize}px`) // 应用预计算的字体大小
+        .style("font-weight", labelFontWeight)
+        .style("fill", "#ffffff") // 使用默认文本颜色
         .each(function(d) {
-            const fontSize = calculateFontSize(d.x, xScale.bandwidth(), 12);
-            if (fontSize > 0) {
-                d3.select(this)
-                    .style("font-size", `${fontSize}px`)
-                    .text(d.x);
+            const labelText = String(d.x);
+            const textWidth = getTextWidthCanvas(labelText, labelFontFamily, finalLabelFontSize, labelFontWeight);
+            const textElement = d3.select(this);
+            const xPos = xScale(d.x) + xScale.bandwidth() / 2;
+            const availableWidth = xScale.bandwidth();
+
+            if (textWidth > availableWidth && availableWidth > 0) {
+                // 需要换行 (重复之前的换行逻辑来渲染)
+                const words = labelText.split(/\s+/);
+                let lines = [];
+                let currentLine = '';
+                let simulationSuccess = false;
+
+                if(words.length > 1){
+                     for (let i = 0; i < words.length; i++) {
+                        const testLine = currentLine ? currentLine + " " + words[i] : words[i];
+                        const testWidth = getTextWidthCanvas(testLine, labelFontFamily, finalLabelFontSize, labelFontWeight);
+                        if (testWidth > availableWidth && currentLine !== '') {
+                            lines.push(currentLine);
+                            currentLine = words[i];
+                            if (getTextWidthCanvas(currentLine, labelFontFamily, finalLabelFontSize, labelFontWeight) > availableWidth) {
+                                simulationSuccess = false; break;
+                            }
+                        } else { currentLine = testLine; }
+                    }
+                    if(currentLine !== '') { lines.push(currentLine); simulationSuccess = true; }
+                }
+                 if(words.length <= 1 || !simulationSuccess) {
+                    lines = [];
+                    const chars = labelText.split('');
+                    currentLine = '';
+                    for (let i = 0; i < chars.length; i++) {
+                        const testLine = currentLine + chars[i];
+                        if (getTextWidthCanvas(testLine, labelFontFamily, finalLabelFontSize, labelFontWeight) > availableWidth && currentLine !== '') {
+                            lines.push(currentLine); currentLine = chars[i];
+                        } else { currentLine += chars[i]; }
+                    }
+                     lines.push(currentLine);
+                 }
+
+                lines.forEach((line, i) => {
+                    textElement.append("tspan")
+                        .attr("x", xPos)
+                        .attr("y", labelStartY + i * lineHeight)
+                        .attr("dy", "0.71em")
+                        .text(line);
+                });
+            } else {
+                // 不需要换行
+                textElement.append("tspan")
+                   .attr("x", xPos)
+                   .attr("y", labelStartY)
+                   .attr("dy", "0.71em")
+                   .text(labelText);
             }
         });
-    
-    // 添加圆形图标(仅轮廓无填充)
+    // *******************************************************************
+    // ** 结束修改：添加维度标签 **
+    // *******************************************************************
+
+
+    // *******************************************************************
+    // ** 开始修改：添加圆形图标 - 动态调整 Y 位置 **
+    // *******************************************************************
     chart.selectAll(".icon-circle")
         .data(sortedData)
         .enter()
         .append("g")
         .attr("class", "icon-circle")
-        .attr("transform", d => `translate(${xScale(d.x) + xScale.bandwidth() / 2}, ${innerHeight + 55})`)
+        .attr("transform", d => `translate(${xScale(d.x) + xScale.bandwidth() / 2}, ${iconYPosition})`) // 应用动态Y位置
         .each(function(d) {
             // 添加圆形轮廓
             d3.select(this)
                 .append("circle")
-                .attr("r", 15)
+                .attr("r", iconRadius) // 使用变量
                 .attr("fill", "none") // 无填充
                 .attr("stroke", "#2D3748") // 更深灰色的描边
                 .attr("stroke-width", 0.1);
@@ -338,8 +483,11 @@ function makeChart(containerSelector, data) {
                     .attr("height", 24);
             }
         });
-    
-    
+    // *******************************************************************
+    // ** 结束修改：添加圆形图标 **
+    // *******************************************************************
+
+
     // 返回SVG节点
     return svg.node();
 }

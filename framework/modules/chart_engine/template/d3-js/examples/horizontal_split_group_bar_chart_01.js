@@ -4,9 +4,9 @@ REQUIREMENTS_BEGIN
     "chart_type": "Horizontal Grouped Bar Chart",
     "chart_name": "horizontal_split_group_bar_chart_01",
     "is_composite": false,
-    "required_fields": ["x", "y", "group", "group2"],
+    "required_fields": ["x", "y", "group", "group"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"],["categorical"]],
-    "required_fields_range": [[2, 20], [0, 100], [2, 2],[2, 5]],
+    "required_fields_range": [[2, 20], [0, 100], [2, 5],[2, 2]],
     "required_fields_icons": [],
     "required_other_icons": [],
     "required_fields_colors": ["group"],
@@ -85,10 +85,18 @@ function makeChart(containerSelector, data) {
     if (xColumn) parentTypeField = xColumn.name; else parentTypeField = "Parent Type";
     if (yColumn) valueField = yColumn.name; else valueField = "Percentage";
     
-    
-    genderField = dataColumns.find(col => col.role === "group").name; // 默认值
-    careerImpactField = dataColumns.find(col => col.role === "group2").name; // 默认值
-    
+    // 处理分组字段
+    if (groupColumns.length > 0) {
+        genderField = groupColumns[0].name; // 第一个分组字段
+        if (groupColumns.length > 1) {
+            careerImpactField = groupColumns[1].name; // 第二个分组字段
+        } else {
+            careerImpactField = "Career Impact"; // 默认值
+        }
+    } else {
+        genderField = "Gender"; // 默认值
+        careerImpactField = "Career Impact"; // 默认值
+    }
     
     // 获取y轴字段单位（如果存在）
     if (yColumn && yColumn.unit && yColumn.unit !== "none") {

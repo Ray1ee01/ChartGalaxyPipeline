@@ -57,7 +57,7 @@ function makeChart(containerSelector, data) {
     
     // 设置图表总尺寸
     const width = variables.width || 800;
-    const height = variables.height || 600;
+    const originalHeight = variables.height || 600;
     
     // 设置边距 - 这个样式需要更多的上部和下部空间用于标签
     const margin = {
@@ -94,7 +94,22 @@ function makeChart(containerSelector, data) {
     const sortedData = [...chartData].sort((a, b) => b[valueField] - a[valueField]);
     const sortedDimensions = sortedData.map(d => d[dimensionField]);
     
-    // ---------- 5. 计算标签宽度和图表尺寸 ----------
+    // ---------- 5. 计算标签宽度、动态高度和图表尺寸 ----------
+    
+    // 动态调整高度
+    const numDimensions = sortedDimensions.length;
+    let adjustedHeight = originalHeight;
+    const maxHeightFactor = 1.88;
+    
+    if (numDimensions > 18) {
+        // 根据条目数量比例计算建议高度
+        const suggestedHeight = originalHeight * (numDimensions / 18);
+        // 限制最大高度
+        adjustedHeight = Math.min(suggestedHeight, originalHeight * maxHeightFactor);
+    }
+    
+    // 使用调整后的高度
+    const height = adjustedHeight;
     
     // 创建临时SVG来测量文本宽度
     const tempSvg = d3.select(containerSelector)
@@ -159,8 +174,8 @@ function makeChart(containerSelector, data) {
     const svg = d3.select(containerSelector)
         .append("svg")
         .attr("width", "100%")
-        .attr("height", height)
-        .attr("viewBox", `0 0 ${width} ${height}`)
+        .attr("height", height) // 使用调整后的高度
+        .attr("viewBox", `0 0 ${width} ${height}`) // 使用调整后的高度
         .attr("style", "max-width: 100%; height: auto;")
         .attr("xmlns", "http://www.w3.org/2000/svg")
         .attr("xmlns:xlink", "http://www.w3.org/1999/xlink");
@@ -225,7 +240,7 @@ function makeChart(containerSelector, data) {
         .domain([0, d3.max(chartData, d => +d[valueField]) * 1.1]) // 添加10%边距
         .range([0, innerWidth]);
     
-   // ---------- 4. 在“正式渲染”前，测量合适的维度标签字体大小 ----------
+   // ---------- 4. 在"正式渲染"前，测量合适的维度标签字体大小 ----------
 
     // 4.1 建立一个临时 svg 用于测量文本
     const tempSvg2 = d3.select(containerSelector)
@@ -239,9 +254,9 @@ function makeChart(containerSelector, data) {
     let fontSize = parseFloat(defaultFontSizeStr);
 
     // 设置最小字号，避免太小看不清
-    const minFontSize = 8;
+    const minFontSize = 4; // 保证最小字体是 4
 
-    // 4.3 定义一个函数，用给定的字号去测量“所有”维度文本的最大高度
+    // 4.3 定义一个函数，用给定的字号去测量"所有"维度文本的最大高度
     function getMaxTextHeightForFontSize(testFontSize) {
         let maxH = 0;
         sortedDimensions.forEach(dim => {
@@ -297,6 +312,29 @@ function makeChart(containerSelector, data) {
         return d3.rgb(getBarColor()).darker(0.2);
     };
     
+    // ---- 动态计算维度标签位置 ----
+    // 计算两个条形图之间的距离
+    const barGap = yScale.step() - yScale.bandwidth();
+    
+    // 设置一个安全的最小距离，确保标签与条形图不会重叠
+    const minSafeLabelDistance = Math.max(3, barGap / 4);
+    
+    // 调整字体大小计算部分，让它更合理地配合条形间距
+    function calculateOptimalFontSize() {
+        // 计算条形之间的可用空间 (即下方空间)
+        const availableSpaceBelow = yScale.step() - yScale.bandwidth();
+        
+        // 基于可用空间估算理想字体大小
+        // 字体高度约等于字体大小，留一点点空隙 (e.g., 2px)
+        const fontSizeEstimate = Math.floor(availableSpaceBelow - 2);
+        
+        // 限制在合理范围内，确保不小于 minFontSize
+        return Math.max(minFontSize, Math.min(fontSize, fontSizeEstimate));
+    }
+    
+    // 调整现有的fontSize计算
+    fontSize = calculateOptimalFontSize();
+    
     // 为每个维度绘制条形和标签
     sortedDimensions.forEach(dimension => {
         const dataPoint = chartData.find(d => d[dimensionField] === dimension);
@@ -322,11 +360,15 @@ function makeChart(containerSelector, data) {
                 .style("stroke-width", variables.has_stroke ? 1 : 0)
                 .style("filter", variables.has_shadow ? "url(#shadow)" : "none");
             
-            // 添加维度标签（在条形下方）
+            // 计算标签位置 - 放置在条形下方，避免重叠
+            const labelYPosition = barHeight + minSafeLabelDistance; // 在条形下方留出安全距离
+            
+            // 添加维度标签
             barGroup.append("text")
-                .attr("x", 0)
-                .attr("y", barHeight + 16) // 条形下方16px
-                .attr("text-anchor", "start")
+                .attr("x", 0) // 标签从条形左侧开始
+                .attr("y", labelYPosition)
+                .attr("dy", "0.71em") // 调整基线使文本顶部接近labelYPosition
+                .attr("text-anchor", "start") // 左对齐
                 .style("font-family", typography.label.font_family)
                 .style("font-size", fontSize + "px")
                 .style("font-weight", typography.label.font_weight)
@@ -350,7 +392,7 @@ function makeChart(containerSelector, data) {
                 .text(formattedValue);
         }
     });
-    d
+    
     // 返回SVG节点
     return svg.node();
 }
