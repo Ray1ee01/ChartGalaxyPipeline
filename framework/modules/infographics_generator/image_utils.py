@@ -131,7 +131,7 @@ def find_best_size_and_position(main_mask: np.ndarray, image_content: str, paddi
         elif mode == "background":
             overlap_threshold = 0.1
         elif mode == "overlay":
-            overlap_threshold = 0.8
+            overlap_threshold = 0.6
         
         if mode == "side" or mode == "background":
             if min_overlap < overlap_threshold:
