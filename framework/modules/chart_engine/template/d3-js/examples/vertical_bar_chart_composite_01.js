@@ -273,7 +273,7 @@ function makeChart(containerSelector, data) {
         .attr("y1", d => leftYScale(d))
         .attr("x2", chartWidth)
         .attr("y2", d => leftYScale(d))
-        .attr("stroke", "#e0e0e0")
+        .attr("stroke", "#ffffff")
         .attr("stroke-width", 1);
     
     // 创建并添加左侧图表的X轴
@@ -293,6 +293,7 @@ function makeChart(containerSelector, data) {
             g.select(".domain").remove(); // 移除轴线
             
             g.selectAll("text")
+                .style("fill", colors.text_color)
                 .style("font-family", typography.label.font_family)
                 .style("font-size", typography.label.font_size)
                 .style("font-weight", typography.label.font_weight);

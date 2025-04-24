@@ -80,11 +80,14 @@ def make_infographic(
 ) -> str:
     if not dark:
         background_color = data["colors"].get("background_color", "#FFFFFF")
+        text_color = data["colors"].get("text_color", "#000000")
         if is_dark_color(background_color):
             background_color = lighten_color(background_color, amount=0.3)
             data["colors"]["background_color"] = background_color
     else:
         background_color = data["colors_dark"].get("background_color", "#000000")
+        text_color = data["colors_dark"].get("text_color", "#FFFFFF")
+
 
     chart_content, chart_width, chart_height, chart_offset_x, chart_offset_y = adjust_and_get_bbox(chart_svg_content, background_color)
     
@@ -592,6 +595,7 @@ def make_infographic(
     measure_background_size = min(background_image_size, 300)
     # 随机概率等于size的比值
     sum_size = measure_side_size + measure_overlay_size + measure_background_size
+    print("sum_size", sum_size)
     side_probability = measure_side_size / sum_size
     overlay_probability = measure_overlay_size / sum_size
     background_probability = measure_background_size / sum_size
