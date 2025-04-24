@@ -1,8 +1,8 @@
 /*
 REQUIREMENTS_BEGIN
 {
-    "chart_type": "Layered Area Chart",
-    "chart_name": "layered_area_chart_02",
+    "chart_type": "Small Multiple Area Chart",
+    "chart_name": "small_multiple_area_chart_01",
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["temporal"], ["numerical"], ["categorical"]],
     "required_fields_range": [[5, 50], [0, "inf"], [2, 20]],

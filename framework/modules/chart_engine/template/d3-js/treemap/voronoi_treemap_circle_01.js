@@ -1,8 +1,8 @@
 /*
 REQUIREMENTS_BEGIN
 {
-    "chart_type": "Circular Voronoi Map",
-    "chart_name": "voronoi_treemap_03",
+    "chart_type": "Voronoi Treemap(Circle)",
+    "chart_name": "voronoi_treemap_circle_01",
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],
     "required_fields_range": [[3, 40], [0, "inf"]],
@@ -70,10 +70,10 @@ function makeChart(containerSelector, data) {
     // 创建颜色比例尺
     const colorScale = d => {
         if (colors.field && colors.field[d]) {
-            return d3.interpolateRgb("white", colors.field[d])(1);
+            return colors.field[d];
         }
         const uniqueCategories = [...new Set(chartData.map(d => d[categoryField]))];
-        return d3.interpolateRgb("white", d3.schemeTableau10[uniqueCategories.indexOf(d) % 10])(1);
+        return d3.schemeTableau10[uniqueCategories.indexOf(d) % 10];
     };
     
     // 计算圆形裁剪区域
@@ -128,17 +128,6 @@ function makeChart(containerSelector, data) {
         .append("g")
         .attr("class", "cell");
     
-    // 为每个cell创建clipPath
-    cells.each(function(d) {
-        const cellId = `clip-${d.site.originalObject.data.originalData.name.replace(/\s+/g, '-')}`;
-        svg.append("clipPath")
-            .attr("id", cellId)
-            .append("path")
-            .attr("d", "M" + d.join("L") + "Z");
-        
-        d3.select(this).attr("clip-path", `url(#${cellId})`);
-    });
-    
     // 添加单元格
     cells.append("path")
         .attr("d", d => {
@@ -154,119 +143,7 @@ function makeChart(containerSelector, data) {
         })
         .attr("fill-opacity", 0.8)
         .attr("stroke", "#fff")
-        .attr("stroke-width", 2);
-    
-    // 添加图片
-    cells.append("image")
-        .attr("x", d => {
-            try {
-                const centroid = d3.polygonCentroid(d);
-                // 计算cell的边界
-                let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-                d.forEach(point => {
-                    minX = Math.min(minX, point[0]);
-                    minY = Math.min(minY, point[1]);
-                    maxX = Math.max(maxX, point[0]);
-                    maxY = Math.max(maxY, point[1]);
-                });
-                
-                const cellWidth = maxX - minX;
-                const cellHeight = maxY - minY;
-                
-                // 自适应图片大小
-                const imageSize = Math.min(cellWidth * 0.6, cellHeight * 0.6, 48);
-                const imageX = centroid[0] - imageSize / 2;
-                
-                // 确保图片在cell内
-                return Math.max(minX, Math.min(maxX - imageSize, imageX));
-            } catch (e) {
-                return 0;
-            }
-        })
-        .attr("y", d => {
-            try {
-                const centroid = d3.polygonCentroid(d);
-                // 计算cell的边界
-                let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-                d.forEach(point => {
-                    minX = Math.min(minX, point[0]);
-                    minY = Math.min(minY, point[1]);
-                    maxX = Math.max(maxX, point[0]);
-                    maxY = Math.max(maxY, point[1]);
-                });
-                
-                const cellHeight = maxY - minY;
-                const imageSize = Math.min((maxX - minX) * 0.6, cellHeight * 0.6, 48);
-                const imageY = centroid[1] - imageSize - 5; // 图片在重心上方，留出5px间距
-                
-                // 确保图片在cell内
-                return Math.max(minY, Math.min(maxY - imageSize, imageY));
-            } catch (e) {
-                return 0;
-            }
-        })
-        .attr("width", d => {
-            try {
-                // 计算cell的边界
-                let minX = Infinity, maxX = -Infinity;
-                d.forEach(point => {
-                    minX = Math.min(minX, point[0]);
-                    maxX = Math.max(maxX, point[0]);
-                });
-                
-                const cellWidth = maxX - minX;
-                return Math.min(cellWidth * 0.6, 48);
-            } catch (e) {
-                return 48;
-            }
-        })
-        .attr("height", d => {
-            try {
-                // 计算cell的边界
-                let minY = Infinity, maxY = -Infinity;
-                d.forEach(point => {
-                    minY = Math.min(minY, point[1]);
-                    maxY = Math.max(maxY, point[1]);
-                });
-                
-                const cellHeight = maxY - minY;
-                return Math.min(cellHeight * 0.6, 48);
-            } catch (e) {
-                return 48;
-            }
-        })
-        .attr("xlink:href", d => {
-            try {
-                const name = d.site.originalObject.data.originalData.name;
-                return images.field[name] || "";
-            } catch (e) {
-                return "";
-            }
-        })
-        .attr("opacity", 0.5)
-        .each(function(d) {
-            try {
-                // 计算多边形的边界框
-                let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-                d.forEach(point => {
-                    minX = Math.min(minX, point[0]);
-                    minY = Math.min(minY, point[1]);
-                    maxX = Math.max(maxX, point[0]);
-                    maxY = Math.max(maxY, point[1]);
-                });
-                
-                const boxWidth = maxX - minX;
-                const boxHeight = maxY - minY;
-                
-                // 如果单元格太小，隐藏图片
-                if (boxWidth < 30 || boxHeight < 30) {
-                    d3.select(this).style("display", "none");
-                }
-            } catch (e) {
-                console.error("Error in image sizing:", e);
-                d3.select(this).style("display", "none");
-            }
-        });
+        .attr("stroke-width", 1);
     
     // 添加文本标签
     cells.append("text")
@@ -280,19 +157,7 @@ function makeChart(containerSelector, data) {
         })
         .attr("y", d => {
             try {
-                const centroid = d3.polygonCentroid(d);
-                // 计算cell的边界
-                let minY = Infinity, maxY = -Infinity;
-                d.forEach(point => {
-                    minY = Math.min(minY, point[1]);
-                    maxY = Math.max(maxY, point[1]);
-                });
-                
-                const cellHeight = maxY - minY;
-                const textY = centroid[1] + cellHeight * 0.2; // 文本在重心下方，距离为cell高度的20%
-                
-                // 确保文本在cell内
-                return Math.min(maxY - 10, textY);
+                return d3.polygonCentroid(d)[1];
             } catch (e) {
                 console.error("Error calculating centroid:", e);
                 return 0;
@@ -301,22 +166,7 @@ function makeChart(containerSelector, data) {
         .attr("text-anchor", "middle")
         .attr("dominant-baseline", "middle")
         .attr("fill", "#fff")
-        .attr("font-size", d => {
-            try {
-                // 计算cell的边界
-                let minX = Infinity, maxX = -Infinity;
-                d.forEach(point => {
-                    minX = Math.min(minX, point[0]);
-                    maxX = Math.max(maxX, point[0]);
-                });
-                
-                const cellWidth = maxX - minX;
-                // 字体大小自适应，最大24px，最小12px
-                return Math.min(24, Math.max(12, cellWidth * 0.15)) + "px";
-            } catch (e) {
-                return "24px";
-            }
-        })
+        .attr("font-size", "16px")
         .attr("font-weight", "bold")
         .text(d => {
             try {
@@ -365,19 +215,7 @@ function makeChart(containerSelector, data) {
         })
         .attr("y", d => {
             try {
-                const centroid = d3.polygonCentroid(d);
-                // 计算cell的边界
-                let minY = Infinity, maxY = -Infinity;
-                d.forEach(point => {
-                    minY = Math.min(minY, point[1]);
-                    maxY = Math.max(maxY, point[1]);
-                });
-                
-                const cellHeight = maxY - minY;
-                const textY = centroid[1] + cellHeight * 0.35; // 值文本在名称文本下方，距离为cell高度的35%
-                
-                // 确保文本在cell内
-                return Math.min(maxY - 10, textY);
+                return d3.polygonCentroid(d)[1] + 15;
             } catch (e) {
                 return 0;
             }
@@ -386,22 +224,7 @@ function makeChart(containerSelector, data) {
         .attr("dominant-baseline", "middle")
         .attr("fill", "#fff")
         .attr("fill-opacity", 0.7)
-        .attr("font-size", d => {
-            try {
-                // 计算cell的边界
-                let minX = Infinity, maxX = -Infinity;
-                d.forEach(point => {
-                    minX = Math.min(minX, point[0]);
-                    maxX = Math.max(maxX, point[0]);
-                });
-                
-                const cellWidth = maxX - minX;
-                // 字体大小自适应，最大21px，最小10px
-                return Math.min(21, Math.max(10, cellWidth * 0.12)) + "px";
-            } catch (e) {
-                return "21px";
-            }
-        })
+        .attr("font-size", "14px")
         .text(d => {
             try {
                 return format(d.site.originalObject.data.originalData.weight);

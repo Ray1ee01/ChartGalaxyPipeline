@@ -2,7 +2,7 @@
 REQUIREMENTS_BEGIN
 {
     "chart_type": "Bubble Chart",
-    "chart_name": "bubble_chart_01",
+    "chart_name": "bubble_chart_02",
     "required_fields": ["x", "y", "y2"],
     "required_fields_type": [["categorical"], ["numerical"], ["numerical"]],
     "required_fields_range": [[2, 12], [0, "inf"], [0, "inf"]],

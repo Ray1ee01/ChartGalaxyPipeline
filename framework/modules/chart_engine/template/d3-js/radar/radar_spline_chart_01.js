@@ -1,8 +1,8 @@
 /*
 REQUIREMENTS_BEGIN
 {
-    "chart_type": "Radar Line Chart",
-    "chart_name": "radar_line_chart_04",
+    "chart_type": "Radar Spline Chart",
+    "chart_name": "radar_spline_chart_01",
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],
     "required_fields_range": [[3, 12], [0, "inf"]],
@@ -12,8 +12,8 @@ REQUIREMENTS_BEGIN
     "required_other_colors": ["primary"],
     "supported_effects": [],
     "min_height": 400,
-    "min_width": 400,   
-    "background": "dark",
+    "min_width": 400,
+    "background": "light",
     "icon_mark": "none",
     "icon_label": "none",
     "has_x_axis": "no",
@@ -28,7 +28,7 @@ function makeChart(containerSelector, data) {
     const chartData = jsonData.data.data;
     const variables = jsonData.variables;
     const typography = jsonData.typography;
-    const colors = jsonData.colors_dark || {};
+    const colors = jsonData.colors || {};
     const dataColumns = jsonData.data.columns || [];
     const images = jsonData.images || {};
     
@@ -135,7 +135,7 @@ function makeChart(containerSelector, data) {
             }
             return angle < Math.PI ? "hanging" : "auto";
         })
-        .attr("fill", "#fff")
+        .attr("fill", "#333")
         .attr("font-size", "16px")
         .attr("font-weight", "bold")
         .text(d => d);
@@ -150,7 +150,7 @@ function makeChart(containerSelector, data) {
         .attr("y", d => -radiusScale(d))
         .attr("text-anchor", "start")
         .attr("font-size", "14px")
-        .attr("fill", "#ddd")
+        .attr("fill", "#666")
         .text(d => d);
     
     // 创建折线生成器

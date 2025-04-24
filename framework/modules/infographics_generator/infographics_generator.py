@@ -235,7 +235,8 @@ def make_infographic(
     # 初始化best_title默认值为None，用于后续检查
     best_title = None
     
-    
+
+    """
     if mask_1_ratio > 0.25 and mask_1_ratio < 0.5:
         width = average_distance*2
         title_content = title_styler_process(input_data=data, max_width=int(width), text_align="center", show_embellishment=False, show_sub_title=False)
@@ -259,7 +260,7 @@ def make_infographic(
                     "show_sub_title": False
                 }
                 break
-    
+    """
     # 如果没有找到合适的best_title（width太大或其他原因），使用默认处理逻辑
     if best_title is None:
         # print("title_candidates", title_candidates)
@@ -562,7 +563,7 @@ def make_infographic(
 
         min_acceptable_size = 96
         if measure_side_size > min_acceptable_size or measure_overlay_size > min_acceptable_size:
-            if side_image_size >= overlay_image_size - 15:
+            if side_image_size >= overlay_image_size * 0.66:
                 image_size = side_image_size
                 best_x = side_best_x
                 best_y = side_best_y

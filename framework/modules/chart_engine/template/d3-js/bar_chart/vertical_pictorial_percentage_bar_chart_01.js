@@ -1,8 +1,8 @@
 /*
 REQUIREMENTS_BEGIN
 {
-    "chart_type": "bottle_bar_chart",
-    "chart_name": "bottle_bar_chart_01",
+    "chart_type": "Vertical Pictorial Percentage Bar Chart",
+    "chart_name": "vertical_pictorial_percentage_bar_chart_01",
     "is_composite": false,
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],

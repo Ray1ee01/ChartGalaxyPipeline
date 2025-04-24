@@ -1,8 +1,8 @@
 /*
 REQUIREMENTS_BEGIN
 {
-    "chart_type": "donut_chart",
-    "chart_name": "donut_chart_01",
+    "chart_type": "semicircle_donut_chart",
+    "chart_name": "semicircle_donut_chart_00",
     "is_composite": false,
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],
@@ -50,8 +50,8 @@ function makeChart(containerSelector, data) {
     const xField = dataColumns[0].name;
     const yField = dataColumns[1].name;
     // Set dimensions and margins
-    const width = variables.width;
-    const height = variables.height;
+    const width = variables.width*2;
+    const height = variables.height*2;
     const margin = { top: 40, right: 40, bottom: 40, left: 40 };
     const chartWidth = width - margin.left - margin.right;
     const chartHeight = height - margin.top - margin.bottom;
@@ -74,14 +74,9 @@ function makeChart(containerSelector, data) {
     const g = svg.append("g")
         .attr("transform", `translate(${centerX}, ${centerY})`);
     
-    // 创建饼图生成器
-    const pie = d3.pie()
-        .value(d => d[yField])
-        .sort(null);
-
-    // 创建弧形生成器
+    // 绘制半圆饼图
     const arc = d3.arc()
-        .innerRadius(maxRadius * 0.6) // 内半径，形成甜甜圈效果
+        .innerRadius(maxRadius * 0.5)
         .outerRadius(maxRadius)
         .padAngle(0.02)
         .cornerRadius(5);
@@ -90,33 +85,66 @@ function makeChart(containerSelector, data) {
     const total = d3.sum(chartData, d => d[yField]);
     const dataWithPercentages = chartData.map(d => ({
         ...d,
-        percentage: (d[yField] / total) * 100
+        percentage: d[yField] / total
     }));
 
-    // 绘制甜甜圈图的各个部分
+    // 创建弧度数据
+    const arcData = d3.pie()
+        .value(d => d.percentage)
+        .sort(null)
+        .startAngle(-Math.PI / 2)  // 设置起始角度为-90度
+        .endAngle(Math.PI / 2)     // 设置结束角度为90度
+        .innerRadius(maxRadius * 0.6)  // 设置内径为外径的60%
+        .outerRadius(maxRadius);       // 设置外径
+
+    // 绘制每个组的弧线
     const arcs = g.selectAll("path")
-        .data(pie(dataWithPercentages))
-        .enter()
-        .append("path")
-        .attr("fill", (d, i) => colors.field[d.data[xField]] || colors.other.primary)
+        .data(arcData(dataWithPercentages))
+        .enter().append("path")
+        .attr("fill", d => colors.field[d.data[xField]] || colors.other.primary)
         .attr("d", arc);
 
-    // 添加标签
-    const labelArc = d3.arc()
-        .innerRadius(maxRadius * 0.8)
-        .outerRadius(maxRadius * 0.8);
-
+    // 绘制标签
     const labels = g.selectAll("text")
-        .data(pie(dataWithPercentages))
-        .enter()
-        .append("text")
-        .attr("transform", d => `translate(${labelArc.centroid(d)})`)
+        .data(dataWithPercentages)
+        .enter().append("text")
         .attr("text-anchor", "middle")
         .attr("dy", ".35em")
-        .style("fill", colors.text_color)
-        .style("font-family", typography.label.font_family)
-        .style("font-size", typography.label.font_size)
-        .text(d => `${d.data.percentage.toFixed(1)}%`);
+        .text(d => d.data.percentage >= 2 ? `${d.data.percentage.toFixed(1)}%` : '');
 
+
+    // 添加图例 - 放在图表上方
+    const legendGroup = svg.append("g")
+    .attr("transform", `translate(0, -50)`);
+    
+    // 计算字段名宽度并添加间距
+    const titleWidth = xField.length * 10;
+    const titleMargin = 15;
+    
+    let xs = [...new Set(chartData.map(d => d[xField]))];
+
+    const legendSize = layoutLegend(legendGroup, xs, colors, {
+        x: titleWidth + titleMargin,
+        y: 0,
+        fontSize: 14,
+        fontWeight: "bold",
+        align: "left",
+        maxWidth: chartWidth - titleWidth - titleMargin,
+        shape: "rect",
+    });
+
+    // 添加字段名称
+    legendGroup.append("text")
+        .attr("x", 0)
+        .attr("y", legendSize.height / 2)
+        .attr("dominant-baseline", "middle")
+        .attr("fill", "#333")
+        .style("font-size", "16px")
+        .style("font-weight", "bold")
+        .text(xField);
+    
+    // 将图例组向上移动 height/2, 并居中
+    legendGroup.attr("transform", `translate(${(chartWidth - legendSize.width - titleWidth - titleMargin) / 2}, ${-legendSize.height / 2 - 20})`);
+    
     return svg.node();
 }

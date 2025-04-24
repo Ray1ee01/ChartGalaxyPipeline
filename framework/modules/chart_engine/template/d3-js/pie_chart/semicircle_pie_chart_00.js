@@ -2,7 +2,7 @@
 REQUIREMENTS_BEGIN
 {
     "chart_type": "semicircle_pie_chart",
-    "chart_name": "semicircle_pie_chart_01",
+    "chart_name": "semicircle_pie_chart_00",
     "is_composite": false,
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],
@@ -108,7 +108,41 @@ function makeChart(containerSelector, data) {
         .enter().append("text")
         .attr("text-anchor", "middle")
         .attr("dy", ".35em")
-        .text(d => `${d.percentage.toFixed(2)}%`);
+        .text(d => d.data.percentage >= 2 ? `${d.data.percentage.toFixed(1)}%` : '');
 
+
+    // 添加图例 - 放在图表上方
+    const legendGroup = svg.append("g")
+    .attr("transform", `translate(0, -50)`);
+    
+    // 计算字段名宽度并添加间距
+    const titleWidth = xField.length * 10;
+    const titleMargin = 15;
+    
+    let xs = [...new Set(chartData.map(d => d[xField]))];
+
+    const legendSize = layoutLegend(legendGroup, xs, colors, {
+        x: titleWidth + titleMargin,
+        y: 0,
+        fontSize: 14,
+        fontWeight: "bold",
+        align: "left",
+        maxWidth: chartWidth - titleWidth - titleMargin,
+        shape: "rect",
+    });
+
+    // 添加字段名称
+    legendGroup.append("text")
+        .attr("x", 0)
+        .attr("y", legendSize.height / 2)
+        .attr("dominant-baseline", "middle")
+        .attr("fill", "#333")
+        .style("font-size", "16px")
+        .style("font-weight", "bold")
+        .text(xField);
+    
+    // 将图例组向上移动 height/2, 并居中
+    legendGroup.attr("transform", `translate(${(chartWidth - legendSize.width - titleWidth - titleMargin) / 2}, ${-legendSize.height / 2 - 20})`);
+    
     return svg.node();
 }

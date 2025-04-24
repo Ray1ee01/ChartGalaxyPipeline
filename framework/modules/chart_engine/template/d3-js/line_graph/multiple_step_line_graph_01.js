@@ -1,8 +1,8 @@
 /*
 REQUIREMENTS_BEGIN
 {
-    "chart_type": "Multiple Line Graph",
-    "chart_name": "multiple_line_graph_11",
+    "chart_type": "Multiple Step Line Graph",
+    "chart_name": "multiple_step_line_graph_01",
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["temporal"], ["numerical"], ["categorical"]],
     "required_fields_range": [[3, 30], ["-inf", "inf"], [2, 6]],
@@ -77,7 +77,7 @@ function makeChart(containerSelector, data) {
     // 为了美观，稍微扩展Y轴范围
     const yPadding = (yMax - yMin) * 0.3;
     const yDomainMax = yMax + yPadding;
-    const yDomainMin = Math.max(0, yMin - yPadding); // 确保下限不小于0
+    const yDomainMin = Math.min(0, yMin - yPadding);
     
     const yScale = d3.scaleLinear()
         .domain([yDomainMin, yDomainMax])
@@ -165,7 +165,7 @@ function makeChart(containerSelector, data) {
     const line = d3.line()
         .x(d => xScale(parseDate(d[xField])))
         .y(d => yScale(d[yField]))
-        .curve(d3.curveLinear); // 改为折线
+        .curve(d3.curveStepAfter);
     
     // 收集需要标注的数据点 - 按起点/终点/中点分类
     const startPoints = [];

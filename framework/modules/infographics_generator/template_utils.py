@@ -78,7 +78,7 @@ def analyze_templates(templates: Dict) -> Tuple[int, Dict[str, str], int]:
                     if 'required_fields' in req and 'required_fields_type' in req:
                         template_requirements[f"{engine}/{chart_type}/{chart_name}"] = template_info['requirements']
                     
-    #print("template_count", template_count)
+    print("template_count", template_count)
     #f = open("template_list.txt", "w")
     #f.write("\n".join(template_list))
     #f.close()

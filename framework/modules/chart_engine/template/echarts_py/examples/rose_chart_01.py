@@ -1,8 +1,8 @@
 '''
 REQUIREMENTS_BEGIN
 {
-    "chart_type": "Multiple Rose Chart",
-    "chart_name": "multiple_rose_chart_01",
+    "chart_type": "Rose Chart",
+    "chart_name": "rose_chart_01",
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
     "required_fields_range": [[2, 8], [0, "inf"], [2, 12]],
