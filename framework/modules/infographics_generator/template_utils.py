@@ -87,9 +87,47 @@ def analyze_templates(templates: Dict) -> Tuple[int, Dict[str, str], int]:
 
 block_list = ["multiple_line_graph_06", "layered_area_chart_02", "multiple_area_chart_01", "stacked_area_chart_01", "stacked_area_chart_03"]
 
+def check_field_color_compatibility(requirements: Dict, data: Dict) -> bool:
+    """Check if the field color is compatible with the template"""
+    if len(requirements.get('required_fields_colors', [])) > 0 and len(data.get("colors", {}).get("field", [])) == 0:
+        return False
+    for field in requirements.get('required_fields_colors', []):
+        field_column = None
+        for col in data.get("data", {}).get("columns", []):
+            if col["role"] == field:
+                field_column = col
+                break
+        if field_column is None:
+            return False
+        field_name = field_column["name"]
+        for value in data.get("data", {}).get("data", []):
+            if value[field_name] not in data.get("colors", {}).get("field", []):
+                return False
+    return True
+
+def check_field_icon_compatibility(requirements: Dict, data: Dict) -> bool:
+    """Check if the field icon is compatible with the template"""
+    if len(requirements.get('required_fields_icons', [])) > 0 and len(data.get("images", {}).get("field", [])) == 0:
+        return False
+    for field in requirements.get('required_fields_icons', []):
+        field_column = None
+        for col in data.get("data", {}).get("columns", []):
+            if col["role"] == field:
+                field_column = col
+                break
+        if field_column is None:
+            return False
+        field_name = field_column["name"]
+        for value in data.get("data", {}).get("data", []):
+            if value[field_name] not in data.get("images", {}).get("field", []):
+                return False
+    return True
+
 def check_template_compatibility(data: Dict, templates: Dict, specific_chart_name: str = None) -> List[str]:
     """Check which templates are compatible with the given data"""
     compatible_templates = []
+    
+    print(f"specific_chart_name: {specific_chart_name}")
     
     # Get the combination type from the data
     combination_type = data.get("data", {}).get("type_combination", "")
@@ -128,6 +166,12 @@ def check_template_compatibility(data: Dict, templates: Dict, specific_chart_nam
                                 continue
 
                             if len(req.get('required_fields_icons', [])) > 0 and len(data.get("images", {}).get("field", [])) == 0:
+                                continue
+
+                            if not check_field_color_compatibility(req, data):
+                                continue
+                            
+                            if not check_field_icon_compatibility(req, data):
                                 continue
 
                             if len(data_types) == len(combination_types):
@@ -262,16 +306,16 @@ def process_template_requirements(requirements: Dict, data: Dict, engine: str, c
             elif key == "negative" and "negative" not in data["colors"]["other"]:
                 data["colors"]["other"]["negative"] = get_contrast_color(data["colors"]["other"]["primary"]) 
 
-    if ('donut' in chart_name or 'pie' in chart_name) and engine == 'vegalite_py':
-        data["variables"]["height"] = 500
-        data["variables"]["width"] = 500
-    else:
-        if "min_height" in requirements:
-            data["variables"]["height"] = max(600, requirements["min_height"])
-        elif 'height' in requirements:
-            data["variables"]["height"] = max(600, requirements["height"][0])
+    # if ('donut' in chart_name or 'pie' in chart_name) and engine == 'vegalite_py':
+    #     data["variables"]["height"] = 500
+    #     data["variables"]["width"] = 500
+    # else:
+    #     if "min_height" in requirements:
+    #         data["variables"]["height"] = max(600, requirements["min_height"])
+    #     elif 'height' in requirements:
+    #         data["variables"]["height"] = max(600, requirements["height"][0])
 
-        if "min_width" in requirements:
-            data["variables"]["width"] = max(800, requirements["min_width"])
-        elif 'width' in requirements:
-            data["variables"]["width"] = max(600, requirements["width"][0])
+    #     if "min_width" in requirements:
+    #         data["variables"]["width"] = max(800, requirements["min_width"])
+    #     elif 'width' in requirements:
+    #         data["variables"]["width"] = max(600, requirements["width"][0])

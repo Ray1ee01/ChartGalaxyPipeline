@@ -1,8 +1,8 @@
 /*
 REQUIREMENTS_BEGIN
 {
-    "chart_type": "Multiple Area Chart",
-    "chart_name": "multiple_area_chart_02",
+    "chart_type": "Spline Multiple Area Chart",
+    "chart_name": "spline_multiple_area_chart_01",
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["temporal"], ["numerical"], ["categorical"]],
     "required_fields_range": [[5, 50], [0, "inf"], [2, 2]],

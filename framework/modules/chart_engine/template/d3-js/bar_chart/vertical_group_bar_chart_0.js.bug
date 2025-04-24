@@ -5,10 +5,10 @@ REQUIREMENTS_BEGIN
     "chart_name": "vertical_group_bar_chart_0",
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
-    "required_fields_range": [[3, 20], [0, 100], [3, 20]],
+    "required_fields_range": [[3, 6], [0, 100], [3, 4]],
     "required_fields_icons": [],
     "required_other_icons": [],
-    "required_fields_colors": [],
+    "required_fields_colors": ["group"],
     "required_other_colors": ["primary", "secondary", "background"],
     "supported_effects": ["gradient", "opacity"],
     "min_height": 600,
@@ -140,10 +140,10 @@ function makeChart(containerSelector, data) {
         .range([chartHeight, 0])
         .nice();
 
-    // 颜色比例尺
-    const colorScale = d3.scaleOrdinal()
-        .domain(groups)
-        .range(d3.schemeCategory10);
+    // // 颜色比例尺
+    // const colorScale = d3.scaleOrdinal()
+    //     .domain(groups)
+    //     .range(d3.schemeCategory10);
 
     // 确定标签的最大长度：
     let minXLabelRatio = 1.0;
@@ -187,7 +187,7 @@ function makeChart(containerSelector, data) {
         .style("font-family", typography.label.font_family)
         .style("font-size", typography.label.font_size)
         .style("text-anchor", minXLabelRatio < 1.0 ? "end" : "middle")
-        .attr("transform", minXLabelRatio < 1.0 ? "rotate(-45)" : "rotate(0)") 
+        .attr("transform", minXLabelRatio < 1.0 ? "rotate(-45)" : "rotate(0)")
         .style("fill", colors.text_color);
     
     // 添加Y轴
@@ -202,9 +202,10 @@ function makeChart(containerSelector, data) {
         .call(yAxis)
         .call(g => g.select(".domain").remove())  // 移除轴线
         .selectAll("text")
-        .style("font-family", typography.label.font_family)
-        .style("font-size", typography.label.font_size)
-        .style("fill", colors.text_color);
+        .remove()
+        // .style("font-family", typography.label.font_family)
+        // .style("font-size", typography.label.font_size)
+        // .style("fill", colors.text_color)
     
     // 修改条形图绘制部分
     const barGroups = chartGroup.selectAll(".bar-group")
@@ -221,7 +222,7 @@ function makeChart(containerSelector, data) {
             .attr("y", d => yScale(d.groups[group] || 0))
             .attr("width", groupScale.bandwidth())
             .attr("height", d => chartHeight - yScale(d.groups[group] || 0))
-            .attr("fill", colorScale(group));
+            .attr("fill", colors.field[group]);
 
         // 添加数值标签
         barGroups.append("text")

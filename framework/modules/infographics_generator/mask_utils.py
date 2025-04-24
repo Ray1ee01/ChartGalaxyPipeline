@@ -8,6 +8,145 @@ from typing import Tuple
 import tempfile
 from bs4 import BeautifulSoup
 import scipy.ndimage as ndimage
+<<<<<<< HEAD
+=======
+
+def calculate_mask_v3(svg_content: str, width: int, height: int, background_color: str, grid_size: int = 5, max_difference = 15) -> np.ndarray:
+    """将SVG转换为基于背景色的二值化mask数组"""
+    width = int(width)
+    height = int(height)
+    
+    # 将背景色转换为RGB格式
+    original_background_color = background_color
+    background_color = tuple(int(background_color[i:i+2], 16) for i in (1, 3, 5))
+    
+    # 预处理SVG内容，删除背景元素和细线条
+    
+    # 解析SVG内容
+    soup = BeautifulSoup(svg_content, 'xml')
+    
+    # 删除class="background"的所有元素
+    background_elements = soup.select('[class="background"]')
+    for element in background_elements:
+        element.decompose()
+    
+    # 删除stroke-width<=1的所有line元素
+    thin_lines = soup.find_all('line')
+    for line in thin_lines:
+        stroke_width = line.get('stroke-width')
+        if stroke_width and float(stroke_width) <= 1:
+            line.decompose()
+    # 删除所有text元素
+    text_elements = soup.find_all('text')
+    for text in text_elements:
+        text.decompose()
+    
+    # 重新获取处理后的SVG内容
+    svg_content = str(soup)
+    
+    # 创建临时文件
+    with tempfile.NamedTemporaryFile(suffix='.svg', delete=False) as mask_svg_file, \
+         tempfile.NamedTemporaryFile(suffix='.png', delete=False) as temp_mask_png_file:
+        mask_svg = mask_svg_file.name
+        temp_mask_png = temp_mask_png_file.name
+        
+        # 修改SVG内容，移除渐变
+        # 将渐变填充替换为可见的纯色填充，而不是none
+        mask_svg_content = re.sub(r'fill="url\(#[^"]*\)"', 'fill="#333333"', svg_content)
+        mask_svg_content = re.sub(r'stroke="url\(#[^"]*\)"', 'stroke="#333333"', mask_svg_content)
+        mask_svg_content = mask_svg_content.replace('&', '&amp;')
+        
+        # 提取SVG内容并添加新的SVG标签
+        svg_content_match = re.search(r'<svg[^>]*>(.*?)</svg>', mask_svg_content, re.DOTALL)
+        if svg_content_match:
+            inner_content = svg_content_match.group(1)
+            # 创建新的SVG标签
+            mask_svg_content = f'<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="{width}" height="{height}"> \
+            <rect width="{width}" height="{height}" fill="{original_background_color}" /> \
+            {inner_content} \
+            </svg>'
+        
+        mask_svg_file.write(mask_svg_content.encode('utf-8'))
+        
+    subprocess.run([
+        'rsvg-convert',
+        '-f', 'png',
+        '-o', temp_mask_png,
+        '--dpi-x', '300',
+        '--dpi-y', '300',
+        '--background-color', original_background_color,
+        mask_svg
+    ], check=True)
+    
+    # 读取为numpy数组并处理
+    img = Image.open(temp_mask_png).convert('RGB')
+    img_array = np.array(img)
+    
+    # 确保图像尺寸匹配预期尺寸
+    actual_height, actual_width = img_array.shape[:2]
+    if actual_width != width or actual_height != height:
+        img = img.resize((width, height), Image.LANCZOS)
+        img_array = np.array(img)
+    
+    # 转换为二值mask
+    mask = np.ones((height, width), dtype=np.uint8)
+    
+    # 计算img_array中的众数颜色(排除白色）（允许有(10, 10, 10)的容差）
+    # 将图像数组重塑为二维数组,每行代表一个像素的RGB值
+    pixels = img_array.reshape(-1, 3)
+    
+    # 创建一个容差范围内的颜色比较函数
+    def colors_close(c1, c2, tolerance=10):
+        return np.all(np.abs(c1 - c2) <= tolerance)
+    
+    # 排除接近白色的像素 (255,255,255)
+    non_white_pixels = pixels[~np.all(pixels > 220, axis=1)]
+    
+    if len(non_white_pixels) == 0:
+        mode_color = np.array([0, 0, 0])  # 如果没有非白色像素，返回黑色
+    else:
+        # 使用numpy向量化操作加速颜色计数
+        unique_pixels = np.unique(non_white_pixels, axis=0)
+        color_counts = {}
+        
+        # 对每个唯一像素值计算相似颜色的数量
+        for unique_pixel in unique_pixels:
+            # 计算所有像素与当前像素的差异
+            diff = np.abs(non_white_pixels - unique_pixel)
+            # 找出在容差范围内的像素
+            similar_pixels = np.all(diff <= 10, axis=1)
+            # 统计数量
+            count = np.sum(similar_pixels)
+            color_counts[tuple(unique_pixel)] = count
+        
+        # 找出出现最多的颜色
+        mode_color = np.array(max(color_counts.items(), key=lambda x: x[1])[0])
+        print(mode_color)
+    # 使用mode_color作为众数颜色
+    mask = np.zeros((height, width), dtype=np.uint8)
+    for i in range(height):
+        for j in range(width):
+            if colors_close(img_array[i, j], mode_color):
+                mask[i, j] = 1
+    
+    # 使用扫描线算法填充mask（从上到下，从左到右，如果15以内有1，则填充）
+    fill_mask = np.zeros((height, width), dtype=np.uint8)
+    for i in range(height):
+        for j in range(width):
+            if mask[i, j] == 1:
+                for k in range(i-7, i+7):
+                    for l in range(j-7, j+7):
+                        if k >= 0 and k < height and l >= 0 and l < width:
+                            fill_mask[k, l] = 1
+    mask = fill_mask
+    # 删除临时文件
+    os.remove(mask_svg)
+    os.remove(temp_mask_png)
+    
+    return mask
+
+
+>>>>>>> origin/develop
 
 def calculate_mask_v2(svg_content: str, width: int, height: int, background_color: str, grid_size: int = 5, max_difference = 15) -> np.ndarray:
     """将SVG转换为基于背景色的二值化mask数组"""

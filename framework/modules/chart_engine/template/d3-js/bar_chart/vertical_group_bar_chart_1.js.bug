@@ -140,10 +140,10 @@ function makeChart(containerSelector, data) {
         .range([chartHeight, 0])
         .nice();
 
-    // 颜色比例尺
-    const colorScale = d3.scaleOrdinal()
-        .domain(groups)
-        .range(d3.schemeCategory10);
+    // // 颜色比例尺
+    // const colorScale = d3.scaleOrdinal()
+    //     .domain(groups)
+    //     .range(d3.schemeCategory10);
 
     // 确定标签的最大长度：
     let minXLabelRatio = 1.0;
@@ -221,7 +221,7 @@ function makeChart(containerSelector, data) {
             .attr("y", d => yScale(d.groups[group] || 0))
             .attr("width", groupScale.bandwidth())
             .attr("height", d => chartHeight - yScale(d.groups[group] || 0))
-            .attr("fill", colorScale(group));
+            .attr("fill", colors.field[group]);
 
         // 添加数值标签
         barGroups.append("text")

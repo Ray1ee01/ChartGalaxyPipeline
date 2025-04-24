@@ -168,6 +168,104 @@ def extract_large_rect(svg_content: str) -> tuple[str, str]:
         print(f"提取背景元素时发生错误: {e}")
         return svg_content, ''
 
+def extract_background_element(svg_content: str) -> str:
+    """
+    提取SVG中属于class="chart"下面且class="background"的元素,并把他们移动到svg的顶层，放置在image元素的前面
+    注意：需要保持位置不变，因此需要将transform属性累加
+    """
+    try:
+        # 确保SVG内容被正确的<svg>标签包围
+        if not svg_content.strip().startswith('<svg'):
+            svg_content = f'<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">{svg_content}</svg>'
+        
+        # 解析SVG内容
+        svg_tree = etree.fromstring(svg_content.encode())
+        
+        # 查找所有class="chart"元素下的class="background"元素
+        namespaces = {'svg': 'http://www.w3.org/2000/svg'}
+        background_elements = svg_tree.xpath("//*[contains(@class, 'chart')]//*[contains(@class, 'background')]")
+        
+        if not background_elements:
+            return svg_content
+            
+        # 存储提取的背景元素
+        extracted_elements = []
+        
+        for element in background_elements:
+            # 计算累积的transform
+            current = element
+            total_transform = ""
+            transforms = []
+            
+            while current is not None and current != svg_tree:
+                transform = current.get("transform")
+                if transform:
+                    transforms.insert(0, transform)
+                current = current.getparent()
+            
+            if transforms:
+                total_transform = " ".join(transforms)
+            
+            # 创建新元素，复制原始元素的所有属性
+            new_element = etree.Element(element.tag)
+            for key, value in element.attrib.items():
+                if key != "transform":  # 不复制原始的transform
+                    new_element.set(key, value)
+            
+            # 设置累积后的transform
+            if total_transform:
+                new_element.set("transform", total_transform)
+            
+            # 保存新元素的字符串表示
+            extracted_elements.append(etree.tostring(new_element, encoding='unicode'))
+            
+            # 从原位置移除元素
+            element.getparent().remove(element)
+        print("svg_tree", svg_tree)
+        # 找到第一个image元素 (tag是image且class是image)
+        # 使用xpath查找所有image元素,不管是否有class属性
+        first_image = svg_tree.xpath(".//image")
+        if first_image:
+            first_image = first_image[0]
+        else:
+            # 如果没有找到image元素,尝试使用命名空间查找
+            namespaces = {'svg': 'http://www.w3.org/2000/svg'}
+            first_image = svg_tree.xpath(".//svg:image", namespaces=namespaces)
+            if first_image:
+                first_image = first_image[0]
+            else:
+                first_image = None
+        print("找到的image元素:", first_image)
+        
+        
+        # 将提取的元素插入到适当的位置
+        if first_image is not None:
+            print("first_image", first_image)
+            # 如果存在image元素，将背景元素插入到其前面
+            parent = first_image.getparent()
+            for elem_str in extracted_elements:
+                new_elem = etree.fromstring(elem_str)
+                parent.insert(parent.index(first_image), new_elem)
+        else:
+            print("no first_image")
+            # 如果不存在image元素，将背景元素添加到SVG的开始位置
+            for elem_str in reversed(extracted_elements):
+                new_elem = etree.fromstring(elem_str)
+                svg_tree.insert(0, new_elem)
+        
+        # 转换回字符串
+        result = etree.tostring(svg_tree, encoding='unicode')
+        
+        # 如果原始输入没有svg标签，则提取内部内容
+        if not svg_content.strip().startswith('<svg'):
+            result = extract_svg_content(result) or ''
+            
+        return result
+        
+    except Exception as e:
+        print(f"提取背景元素时发生错误: {e}")
+        return svg_content
+
 def parse_translate(transform_str):
     """Parse translate(x, y) from the transform attribute."""
     match = re.search(r'translate\(\s*([-\d.]+)(?:[\s,]+([-\d.]+))?\s*\)', transform_str)
