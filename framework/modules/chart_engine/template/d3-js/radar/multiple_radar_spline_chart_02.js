@@ -1,19 +1,19 @@
 /*
 REQUIREMENTS_BEGIN
 {
-    "chart_type": "Radar Line Chart",
-    "chart_name": "radar_line_chart_02",
-    "required_fields": ["x", "y"],
-    "required_fields_type": [["categorical"], ["numerical"]],
-    "required_fields_range": [[3, 12], [0, "inf"]],
+    "chart_type": "Multiple Radar Spline Chart",
+    "chart_name": "multiple_radar_spline_chart_02",
+    "required_fields": ["x", "y", "group"],
+    "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
+    "required_fields_range": [[3, 12], [0, "inf"], [1, 6]],
     "required_fields_icons": [],
     "required_other_icons": [],
-    "required_fields_colors": [],
-    "required_other_colors": ["primary"],
+    "required_fields_colors": ["group"],
+    "required_other_colors": [],
     "supported_effects": [],
     "min_height": 400,
     "min_width": 400,
-    "background": "light",
+    "background": "dark",
     "icon_mark": "none",
     "icon_label": "none",
     "has_x_axis": "no",
@@ -28,7 +28,7 @@ function makeChart(containerSelector, data) {
     const chartData = jsonData.data.data;
     const variables = jsonData.variables;
     const typography = jsonData.typography;
-    const colors = jsonData.colors || {};
+    const colors = jsonData.colors_dark || {};
     const dataColumns = jsonData.data.columns || [];
     const images = jsonData.images || {};
     
@@ -38,6 +38,7 @@ function makeChart(containerSelector, data) {
     // 获取字段名
     const categoryField = dataColumns[0].name;
     const valueField = dataColumns[1].name;
+    const groupField = dataColumns[2].name;
     
     // 设置尺寸和边距
     const width = variables.width;
@@ -62,11 +63,26 @@ function makeChart(containerSelector, data) {
     const g = svg.append("g")
         .attr("transform", `translate(${width/2}, ${height/2})`);
     
-    // 获取唯一类别
+    // 获取唯一类别和分组
     const categories = [...new Set(chartData.map(d => d[categoryField]))];
     
-    // 获取主色调
-    const mainColor = colors.other && colors.other.primary ? colors.other.primary : "#1f77b4";
+    // 计算每个分组的平均值并按降序排序
+    const groupAvgs = [...new Set(chartData.map(d => d[groupField]))]
+        .map(group => ({
+            group,
+            avg: d3.mean(chartData.filter(d => d[groupField] === group), d => d[valueField])
+        }))
+        .sort((a, b) => b.avg - a.avg);
+    
+    const groups = groupAvgs.map(d => d.group);
+    
+    // 创建颜色比例尺
+    const colorScale = d => {
+        if (colors.field && colors.field[d]) {
+            return colors.field[d];
+        }
+        return d3.schemeTableau10[groups.indexOf(d) % 10];
+    };
     
     // 创建角度比例尺
     const angleScale = d3.scalePoint()
@@ -135,7 +151,7 @@ function makeChart(containerSelector, data) {
             }
             return angle < Math.PI ? "hanging" : "auto";
         })
-        .attr("fill", "#333")
+        .attr("fill", "#fff")
         .attr("font-size", "16px")
         .attr("font-weight", "bold")
         .text(d => d);
@@ -150,13 +166,16 @@ function makeChart(containerSelector, data) {
         .attr("y", d => -radiusScale(d))
         .attr("text-anchor", "start")
         .attr("font-size", "14px")
-        .attr("fill", "#666")
+        .attr("fill", "#ddd")
         .text(d => d);
     
-    // 创建折线生成器
-    const lineGenerator = () => {
+    // 按组分组数据
+    const groupedData = d3.group(chartData, d => d[groupField]);
+    
+    // 创建样条曲线生成器
+    const lineGenerator = d => {
         const points = categories.map(cat => {
-            const point = chartData.find(item => item[categoryField] === cat);
+            const point = d.find(item => item[categoryField] === cat);
             if (point) {
                 const angle = angleScale(cat) - Math.PI/2;
                 const distance = radiusScale(point[valueField]);
@@ -168,63 +187,78 @@ function makeChart(containerSelector, data) {
             return [0, 0]; // 如果没有数据，默认为中心点
         });
         
-        // 使用Catmull-Rom曲线连接点
+        // 为了闭合曲线，我们需要复制第一个点到最后
+        const closedPoints = [...points];
+        
+        // 使用基本的曲线插值器,但降低tension值使曲线更平滑
         return d3.line()
-            .curve(d3.curveCatmullRomClosed.alpha(0.5))(points);
+            .curve(d3.curveCatmullRomClosed.alpha(0.5))(closedPoints);
     };
     
-    // 绘制雷达折线
-    g.append("path")
-        .attr("class", "radar-line")
-        .attr("d", lineGenerator())
-        .attr("fill", mainColor)
-        .attr("fill-opacity", 0)
-        .attr("stroke", mainColor)
-        .attr("stroke-width", 6);
+    // 绘制每个组的雷达曲线
+    groupedData.forEach((values, group) => {
+        // 绘制曲线
+        g.append("path")
+            .datum(values)
+            .attr("class", `radar-line-${group}`)
+            .attr("d", lineGenerator)
+            .attr("fill", colorScale(group))
+            .attr("fill-opacity", 0)
+            .attr("stroke", colorScale(group))
+            .attr("stroke-width", 4);
+        
+        // 绘制数据点
+        categories.forEach(cat => {
+            const point = values.find(item => item[categoryField] === cat);
+            if (point) {
+                const angle = angleScale(cat) - Math.PI/2;
+                const distance = radiusScale(point[valueField]);
+                
+                g.append("circle")
+                    .attr("class", `radar-point-${group}`)
+                    .attr("cx", distance * Math.cos(angle))
+                    .attr("cy", distance * Math.sin(angle))
+                    .attr("r", 6)
+                    .attr("fill", colorScale(group))
+                    .attr("stroke", "#fff")
+                    .attr("stroke-width", 2);
+            }
+        });
+    });
     
-    // 绘制数据点
-    categories.forEach((cat, index) => {
-        const point = chartData.find(item => item[categoryField] === cat);
-        if (point) {
-            const angle = angleScale(cat) - Math.PI/2;
-            const distance = radiusScale(point[valueField]);
-            
-            g.append("circle")
-                .attr("class", "radar-point")
-                .attr("cx", distance * Math.cos(angle))
-                .attr("cy", distance * Math.sin(angle))
-                .attr("r", 6)
-                .attr("fill", mainColor)
-                .attr("stroke", "#fff")
-                .attr("stroke-width", 3);
-
-            // 添加数值标签背景
-            const labelText = point[valueField].toString();
-            const textWidth = getTextWidth(labelText, 14);
-
-            const textX = index === 0 ? (distance + 30) * Math.cos(angle) - 20 : (distance + 30) * Math.cos(angle);
-            const textY = index === 0 ? (distance + 15) * Math.sin(angle) : (distance + 30) * Math.sin(angle);
-
-            g.append("rect")
-                .attr("class", "value-label-bg")
-                .attr("x", textX - textWidth/2 - 4)
-                .attr("y", textY - 8)
-                .attr("width", textWidth + 8)
-                .attr("height", 16)
-                .attr("fill", colors.other.primary)
-                .attr("rx", 3);
-
-            // 添加数值标签
-            g.append("text")
-                .attr("class", "value-label")
-                .attr("x", textX)
-                .attr("y", textY)
-                .attr("text-anchor", "middle") 
-                .attr("dominant-baseline", "middle")
-                .attr("font-size", "14px")
-                .attr("fill", "#fff")
-                .text(labelText);
-        }
+    // 添加优化后的图例
+    const legendGroup = svg.append("g")
+        .attr("class", "legend")
+        .attr("transform", `translate(${width - margin.right - 100}, ${margin.top - 50})`);
+    
+    // 添加图例项
+    groups.forEach((group, i) => {
+        const legendRow = legendGroup.append("g")
+            .attr("transform", `translate(0, ${i * 25 + 20})`);
+        
+        // 添加图例线条
+        legendRow.append("path")
+            .attr("d", "M0,7 L30,7")
+            .attr("stroke", colorScale(group))
+            .attr("stroke-width", 2)
+            .attr("fill", "none");
+        
+        // 添加图例点
+        legendRow.append("circle")
+            .attr("cx", 15)
+            .attr("cy", 7)
+            .attr("r", 4)
+            .attr("fill", colorScale(group))
+            .attr("stroke", "#fff")
+            .attr("stroke-width", 1);
+        
+        // 添加图例文本
+        legendRow.append("text")
+            .attr("x", 40)
+            .attr("y", 11)
+            .attr("font-size", "14px")
+            .attr("fill", "#fff")
+            .text(group);
     });
     
     return svg.node();

@@ -1,8 +1,8 @@
 /*
 REQUIREMENTS_BEGIN
 {
-    "chart_type": "Voronoi Map",
-    "chart_name": "voronoi_treemap_01",
+    "chart_type": "Voronoi Treemap(Rectangle)",
+    "chart_name": "voronoi_treemap_rectangle_01",
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],
     "required_fields_range": [[3, 40], [0, "inf"]],

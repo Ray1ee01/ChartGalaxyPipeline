@@ -1,8 +1,8 @@
 /*
 REQUIREMENTS_BEGIN
 {
-    "chart_type": "Multiple Radar Chart",
-    "chart_name": "multiple_radar_chart_04",
+    "chart_type": "Multiple Radar Spline Chart",
+    "chart_name": "multiple_radar_spline_chart_01",
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
     "required_fields_range": [[3, 12], [0, "inf"], [1, 6]],
@@ -13,7 +13,7 @@ REQUIREMENTS_BEGIN
     "supported_effects": [],
     "min_height": 400,
     "min_width": 400,
-    "background": "dark",
+    "background": "light",
     "icon_mark": "none",
     "icon_label": "none",
     "has_x_axis": "no",
@@ -28,7 +28,7 @@ function makeChart(containerSelector, data) {
     const chartData = jsonData.data.data;
     const variables = jsonData.variables;
     const typography = jsonData.typography;
-    const colors = jsonData.colors_dark || {};
+    const colors = jsonData.colors || {};
     const dataColumns = jsonData.data.columns || [];
     const images = jsonData.images || {};
     
@@ -151,7 +151,7 @@ function makeChart(containerSelector, data) {
             }
             return angle < Math.PI ? "hanging" : "auto";
         })
-        .attr("fill", "#fff")
+        .attr("fill", "#333")
         .attr("font-size", "16px")
         .attr("font-weight", "bold")
         .text(d => d);
@@ -166,7 +166,7 @@ function makeChart(containerSelector, data) {
         .attr("y", d => -radiusScale(d))
         .attr("text-anchor", "start")
         .attr("font-size", "14px")
-        .attr("fill", "#ddd")
+        .attr("fill", "#666")
         .text(d => d);
     
     // 按组分组数据
@@ -257,7 +257,7 @@ function makeChart(containerSelector, data) {
             .attr("x", 40)
             .attr("y", 11)
             .attr("font-size", "14px")
-            .attr("fill", "#fff")
+            .attr("fill", "#333")
             .text(group);
     });
     
