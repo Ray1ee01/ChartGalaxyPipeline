@@ -103,7 +103,10 @@ def make_infographic(
     mask = expand_mask(mask, 15)
     title_candidates = []
     min_title_width = max(250, chart_width / 2)
-    max_title_width = max(chart_width, 600)
+    if thin_chart_flag:
+        max_title_width = max(chart_width, 600)
+    else:
+        max_title_width = chart_width
     steps = np.ceil((max_title_width - min_title_width) / 100).astype(int)
 
     # Visualize the mask for debugging
@@ -148,8 +151,9 @@ def make_infographic(
     
     # 把mask保存为png
     mask_img = visualize_mask(mask, "Mask")
-    with open("tmp/mask.png", "wb") as f:
-        f.write(base64.b64decode(mask_img))
+    # with open("tmp/mask.png", "wb") as f:
+    #     f.write(base64.b64decode(mask_img))
+
     for i in range(steps + 1):
         width = min_title_width + i * (max_title_width - min_title_width) / steps
         title_content = title_styler_process(input_data=data, max_width=int(width), text_align="left", show_embellishment=False)
@@ -249,7 +253,7 @@ def make_infographic(
                     "is_first": False,
                     "title-to-chart": "C",
                     "total_height": chart_height,
-                    "total_width": chart_width,
+                    "total_width": max(chart_width, width),
                     "chart": (0, 0),
                     "title": (chart_width // 2 - width // 2, i),
                     "show_sub_title": False
@@ -296,7 +300,7 @@ def make_infographic(
                     "width": title["width"],
                     "height": title["height"],
                     "total_height": max(title_height - min_top, 0) + chart_height,
-                    "total_width": max(title_width, chart_width),
+                    "total_width": max(range_start + title_width, chart_width),
                     "area": area
                 }
 
@@ -319,7 +323,7 @@ def make_infographic(
                     "width": title["width"],
                     "height": title["height"],
                     "total_height": max(title_y + title_height, chart_height),
-                    "total_width": max(title_width, chart_width),
+                    "total_width": max(range_start + title_width, chart_width),
                     "area": area
                 }
             if thin_chart_flag:
@@ -340,12 +344,9 @@ def make_infographic(
                         "width": title["width"],
                         "height": title["height"],
                         "total_height": max(title_height - min_top, 0) + chart_height,
-                        "total_width": chart_width + offset, 
+                        "total_width": max(chart_width + offset, title_width),
                         "area": area
                     }
-
-
-
                 
             # for Left-Bottom
             for offset in offset_list:
@@ -362,7 +363,7 @@ def make_infographic(
                         "width": title["width"],
                         "height": title["height"],
                         "total_height": max(title_height - (chart_height - max_bottom), 0) + chart_height,
-                        "total_width": chart_width + offset, 
+                        "total_width": max(chart_width + offset, title_width),
                         "area": area
                     }
 
@@ -381,7 +382,7 @@ def make_infographic(
                         "width": title["width"],
                         "height": title["height"],
                         "total_height": max(title_height - min_top, 0) + chart_height,
-                        "total_width": chart_width + offset, 
+                        "total_width": max(chart_width + offset, title_width),
                         "area": area
                     }
             
@@ -400,7 +401,7 @@ def make_infographic(
                         "width": title["width"],
                         "height": title["height"],
                         "total_height": max(title_height - (chart_height - max_bottom), 0) + chart_height,
-                        "total_width": chart_width + offset, 
+                        "total_width": max(chart_width + offset, title_width),
                         "area": area
                     }
                 
@@ -541,6 +542,9 @@ def make_infographic(
     primary_image = data.get("images", {}).get("other", {}).get("primary")
 
     image_element = ""
+    overlay_image_size = 0
+    side_image_size = 0
+    background_image_size = 0
     if primary_image:
         if "base64," not in primary_image:
             primary_image = f"data:image/png;base64,{primary_image}"
@@ -558,14 +562,7 @@ def make_infographic(
 
         min_acceptable_size = 96
         if measure_side_size > min_acceptable_size or measure_overlay_size > min_acceptable_size:
-            overlay_weight = 1
-            side_weight = 1
-            side_term = measure_side_size ** 2.5
-            overlay_term = measure_overlay_size ** 2.5
-            sum_size = side_term * side_weight + overlay_term * overlay_weight
-            side_probability = side_term * side_weight / sum_size
-            random_value = random.random()
-            if random_value < side_probability:
+            if side_image_size >= overlay_image_size - 15:
                 image_size = side_image_size
                 best_x = side_best_x
                 best_y = side_best_y
@@ -697,7 +694,11 @@ def make_infographic(
         "title_to_chart": best_title["title-to-chart"],
         "image_to_chart": image_to_chart,
         "text_align": best_title["text-align"],
-        "title_width": best_title["width"]
+        "title_width": best_title["width"],
+        "image_mode": image_mode,
+        "side_image_size": side_image_size,
+        "overlay_image_size": overlay_image_size,
+        "background_image_size": background_image_size
     }
     
     html_chart_x = padding + best_title['chart'][0] + chart_offset_x

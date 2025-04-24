@@ -50,7 +50,13 @@ def find_best_size_and_position(main_mask: np.ndarray, image_content: str, paddi
     best_size = min_size
     best_x = downsampled_padding
     best_y = downsampled_padding
-    best_overlap_ratio = float('inf')
+    
+    if mode == "side":
+        best_overlap_ratio = float('inf')
+    elif mode == "background":
+        best_overlap_ratio = float('inf')
+    else:
+        best_overlap_ratio = 0
         
     overlap_threshold = 0.01
     if mode == "side":

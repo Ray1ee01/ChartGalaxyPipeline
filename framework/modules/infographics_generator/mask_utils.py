@@ -88,9 +88,6 @@ def calculate_mask_v3(svg_content: str, width: int, height: int, background_colo
     
     # 转换为二值mask
     mask = np.ones((height, width), dtype=np.uint8)
-    
-    # 计算img_array中的众数颜色(排除白色）（允许有(10, 10, 10)的容差）
-    # 将图像数组重塑为二维数组,每行代表一个像素的RGB值
     pixels = img_array.reshape(-1, 3)
     
     # 创建一个容差范围内的颜色比较函数
@@ -98,7 +95,7 @@ def calculate_mask_v3(svg_content: str, width: int, height: int, background_colo
         return np.all(np.abs(c1 - c2) <= tolerance)
     
     # 排除接近白色的像素 (255,255,255)
-    non_white_pixels = pixels[~np.all(pixels > 220, axis=1)]
+    non_white_pixels = pixels[~np.all(np.abs(pixels - background_color) <= 10, axis=1)]
     
     if len(non_white_pixels) == 0:
         mode_color = np.array([0, 0, 0])  # 如果没有非白色像素，返回黑色
