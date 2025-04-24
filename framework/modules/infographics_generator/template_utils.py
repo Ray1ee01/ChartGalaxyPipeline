@@ -112,101 +112,103 @@ def check_template_compatibility(data: Dict, templates: Dict, specific_chart_nam
                     
                 template_key = f"{engine}/{chart_type}/{chart_name}"
                 
-                if 'requirements' in template_info:
-                    req = template_info['requirements']
-                    hierarchy = req.get('hierarchy', [])
-                    if 'required_fields' in req and 'required_fields_type' in req:
-                        ordered_fields, field_types, ordered_ranges = get_unique_fields_and_types(
-                            req['required_fields'],
-                            req['required_fields_type'],
-                            req.get('required_fields_range', None)
-                        )
-                        data_types = [field_types[field] for field in ordered_fields]
-                        data_type_str = ' + '.join(data_types)
-                        if len(req.get('required_fields_colors', [])) > 0 and len(data.get("colors", {}).get("field", [])) == 0:
-                            continue
-
-                        if len(req.get('required_fields_icons', [])) > 0 and len(data.get("images", {}).get("field", [])) == 0:
-                            continue
-
-                        if len(data_types) == len(combination_types):
-                            check_flag = True
-                            for data_type, combination_type in zip(data_types, combination_types[:len(data_types)]):
-                                if data_type == "categorical" and (combination_type == "temporal" or combination_type == "categorical"):
-                                    pass
-                                elif data_type == "numerical" and combination_type == "numerical":
-                                    pass
-                                elif data_type == "temporal" and combination_type == "temporal":
-                                    pass
-                                else:
-                                    check_flag = False
-                                    break
-                            if not check_flag:
+                try:
+                    if 'requirements' in template_info:
+                        req = template_info['requirements']
+                        hierarchy = req.get('hierarchy', [])
+                        if 'required_fields' in req and 'required_fields_type' in req:
+                            ordered_fields, field_types, ordered_ranges = get_unique_fields_and_types(
+                                req['required_fields'],
+                                req['required_fields_type'],
+                                req.get('required_fields_range', None)
+                            )
+                            data_types = [field_types[field] for field in ordered_fields]
+                            data_type_str = ' + '.join(data_types)
+                            if len(req.get('required_fields_colors', [])) > 0 and len(data.get("colors", {}).get("field", [])) == 0:
                                 continue
-                        else:
-                            continue
 
-                        flag = True
-                        for i, range in enumerate(ordered_ranges):
-                            if i >= len(data["data"]["columns"]):
-                                flag = False
-                                break
+                            if len(req.get('required_fields_icons', [])) > 0 and len(data.get("images", {}).get("field", [])) == 0:
+                                continue
 
-                            if data["data"]["columns"][i]["data_type"] in ["temporal", "categorical"]:
-                                key = data["data"]["columns"][i]["name"]
-                                unique_values = list(set(value[key] for value in data["data"]["data"]))
-                                if len(unique_values) > range[1] or len(unique_values) < range[0]:
+                            if len(data_types) == len(combination_types):
+                                check_flag = True
+                                for data_type, combination_type in zip(data_types, combination_types[:len(data_types)]):
+                                    if data_type == "categorical" and (combination_type == "temporal" or combination_type == "categorical"):
+                                        pass
+                                    elif data_type == "numerical" and combination_type == "numerical":
+                                        pass
+                                    elif data_type == "temporal" and combination_type == "temporal":
+                                        pass
+                                    else:
+                                        check_flag = False
+                                        break
+                                if not check_flag:
+                                    continue
+                            else:
+                                continue
+
+                            flag = True
+                            for i, range in enumerate(ordered_ranges):
+                                if i >= len(data["data"]["columns"]):
                                     flag = False
                                     break
-                                elif "dual_direction" in chart_name and min_value >= 0:
-                                    flag = False
-                                    break
-                                else:
-                                    pass
-                                    #if specific_chart_name and specific_chart_name == chart_name:
-                                    #    print(f"template {template_key} matched", data["name"], len(unique_values), range)
-                            elif data["data"]["columns"][i]["data_type"] in ["numerical"]:
-                                key = data["data"]["columns"][i]["name"]
-                                min_value = min(value[key] for value in data["data"]["data"])
-                                max_value = max(value[key] for value in data["data"]["data"])
-                                if min_value < range[0] or max_value > range[1]:
-                                    flag = False
-                                    break
-                        for i, field in enumerate(ordered_fields):
-                            if field == "group":
-                                x_col = [j for j, field2 in enumerate(ordered_fields) if field2 == "x"][0]
-                                x_name = data["data"]["columns"][x_col]["name"]
-                                field_name = data["data"]["columns"][i]["name"]
-                                num_unique_x  = len(list(set(value[x_name] for value in data["data"]["data"])))
-                                num_unique_comb = len(list(set(value[x_name] + ' ' + value[field_name] for value in data["data"]["data"])))
-                                if field in hierarchy:
-                                    if num_unique_comb > num_unique_x:
+
+                                if data["data"]["columns"][i]["data_type"] in ["temporal", "categorical"]:
+                                    key = data["data"]["columns"][i]["name"]
+                                    unique_values = list(set(value[key] for value in data["data"]["data"]))
+                                    if len(unique_values) > range[1] or len(unique_values) < range[0]:
                                         flag = False
                                         break
-                                else:
-                                    if num_unique_comb == num_unique_x:
+                                    elif "dual_direction" in chart_name and min_value >= 0:
                                         flag = False
                                         break
-                            elif field == "group2":
-                                x_col = [j for j, field2 in enumerate(ordered_fields) if field2 == "x"][0]
-                                group_col = [j for j, field2 in enumerate(ordered_fields) if field2 == "group"][0]
-                                x_name = data["data"]["columns"][x_col]["name"]
-                                group_name = data["data"]["columns"][group_col]["name"]
-                                field_name = data["data"]["columns"][i]["name"]
-                                num_unique_x  = len(list(set(value[x_name] + ' ' + value[group_name] for value in data["data"]["data"])))
-                                num_unique_comb = len(list(set(value[x_name] + ' ' + value[group_name] + ' ' + value[field_name] for value in data["data"]["data"])))
-                                if field in hierarchy:
-                                    if num_unique_comb > num_unique_x:
+                                    else:
+                                        pass
+                                        #if specific_chart_name and specific_chart_name == chart_name:
+                                        #    print(f"template {template_key} matched", data["name"], len(unique_values), range)
+                                elif data["data"]["columns"][i]["data_type"] in ["numerical"]:
+                                    key = data["data"]["columns"][i]["name"]
+                                    min_value = min(value[key] for value in data["data"]["data"])
+                                    max_value = max(value[key] for value in data["data"]["data"])
+                                    if min_value < range[0] or max_value > range[1]:
                                         flag = False
                                         break
-                                else:
-                                    if num_unique_comb == num_unique_x:
-                                        flag = False
-                                        break
-                        if flag:
-                            if specific_chart_name == None or specific_chart_name == chart_name:
-                                compatible_templates.append((template_key, ordered_fields))
-                        
+                            for i, field in enumerate(ordered_fields):
+                                if field == "group":
+                                    x_col = [j for j, field2 in enumerate(ordered_fields) if field2 == "x"][0]
+                                    x_name = data["data"]["columns"][x_col]["name"]
+                                    field_name = data["data"]["columns"][i]["name"]
+                                    num_unique_x  = len(list(set(value[x_name] for value in data["data"]["data"])))
+                                    num_unique_comb = len(list(set(str(value[x_name]) + ' ' + str(value[field_name]) for value in data["data"]["data"])))
+                                    if field in hierarchy:
+                                        if num_unique_comb > num_unique_x:
+                                            flag = False
+                                            break
+                                    else:
+                                        if num_unique_comb == num_unique_x:
+                                            flag = False
+                                            break
+                                elif field == "group2":
+                                    x_col = [j for j, field2 in enumerate(ordered_fields) if field2 == "x"][0]
+                                    group_col = [j for j, field2 in enumerate(ordered_fields) if field2 == "group"][0]
+                                    x_name = data["data"]["columns"][x_col]["name"]
+                                    group_name = data["data"]["columns"][group_col]["name"]
+                                    field_name = data["data"]["columns"][i]["name"]
+                                    num_unique_x  = len(list(set(str(value[x_name]) + ' ' + str(value[group_name]) for value in data["data"]["data"])))
+                                    num_unique_comb = len(list(set(str(value[x_name]) + ' ' + str(value[group_name]) + ' ' + str(value[field_name]) for value in data["data"]["data"])))
+                                    if field in hierarchy:
+                                        if num_unique_comb > num_unique_x:
+                                            flag = False
+                                            break
+                                    else:
+                                        if num_unique_comb == num_unique_x:
+                                            flag = False
+                                            break
+                            if flag:
+                                if specific_chart_name == None or specific_chart_name == chart_name:
+                                    compatible_templates.append((template_key, ordered_fields))
+                except:
+                    pass
     #print("compatible_templates", compatible_templates)
     return compatible_templates
 
