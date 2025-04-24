@@ -573,107 +573,94 @@ def make_infographic(
         # background_mask_img = visualize_mask(background_mask, "Background Mask")
         # with open("./tmp/background_mask.png", "wb") as f:
         #     f.write(base64.b64decode(background_mask_img))
-    # if side_image_size > 120 then side by side;
-    # elif overlay_size > 120 then overlay;
-    # elif background > 240 then background；
-    # else none
     
-    # if side_image_size > 120:
-    #     image_to_chart = "side"
-    # elif overlay_image_size > 120:
-    #     image_to_chart = "overlay"
-    # elif background_image_size > 240:
-    #     image_to_chart = "background"
-    # else:
-    #     image_to_chart = "none"
-    
-    measure_side_size = min(side_image_size, 300)
-    measure_overlay_size = min(overlay_image_size, 300)
-    measure_background_size = min(background_image_size, 300)
-    # 随机概率等于size的比值
-    sum_size = measure_side_size + measure_overlay_size + measure_background_size
-    side_probability = measure_side_size / sum_size
-    overlay_probability = measure_overlay_size / sum_size
-    background_probability = measure_background_size / sum_size
-    print("size", measure_side_size, measure_overlay_size, measure_background_size)
-    print("probability", side_probability, overlay_probability, background_probability)
-    random_value = random.random()
-    if random_value < side_probability:
-        image_size = side_image_size
-        best_x = side_best_x
-        best_y = side_best_y
-        mode = "side"
-        print("side")
-    elif random_value < side_probability + overlay_probability:
-        image_size = overlay_image_size
-        best_x = overlay_best_x
-        best_y = overlay_best_y
-        mode = "overlay"
-        print("overlay")
-    else:
-        image_size = background_image_size
-        best_x = background_best_x
-        best_y = background_best_y
-        mode = "background"
-        print("background")
+        measure_side_size = min(side_image_size, 300)
+        measure_overlay_size = min(overlay_image_size, 300)
+        measure_background_size = min(background_image_size, 300)
+        # 随机概率等于size的比值
+        sum_size = measure_side_size + measure_overlay_size + measure_background_size
+        side_probability = measure_side_size / sum_size
+        overlay_probability = measure_overlay_size / sum_size
+        background_probability = measure_background_size / sum_size
+        print("size", measure_side_size, measure_overlay_size, measure_background_size)
+        print("probability", side_probability, overlay_probability, background_probability)
+        random_value = random.random()
+        if random_value < side_probability:
+            image_size = side_image_size
+            best_x = side_best_x
+            best_y = side_best_y
+            mode = "side"
+            print("side")
+        elif random_value < side_probability + overlay_probability:
+            image_size = overlay_image_size
+            best_x = overlay_best_x
+            best_y = overlay_best_y
+            mode = "overlay"
+            print("overlay")
+        else:
+            image_size = background_image_size
+            best_x = background_best_x
+            best_y = background_best_y
+            mode = "background"
+            print("background")
         
-    text_color = data["colors"].get("text_color", "#000000")
-    if dark:
-        text_color = "#FFFFFF"
+        text_color = data["colors"].get("text_color", "#000000")
+        if dark:
+            text_color = "#FFFFFF"
 
-    if image_size <= 64:
-        image_to_chart = "none"
-    else:
-        # 计算图片区域
-        image_rect = {
-            'x': best_x,
-            'y': best_y,
-            'width': image_size,
-            'height': image_size
-        }
-        
-        # 定义九宫格区域
-        grid_areas = {
-            'TL': {'x': 0, 'y': 0, 'width': total_width/3, 'height': total_height/3},
-            'T': {'x': total_width/3, 'y': 0, 'width': total_width/3, 'height': total_height/3},
-            'TR': {'x': 2*total_width/3, 'y': 0, 'width': total_width/3, 'height': total_height/3},
-            'L': {'x': 0, 'y': total_height/3, 'width': total_width/3, 'height': total_height/3},
-            'C': {'x': total_width/3, 'y': total_height/3, 'width': total_width/3, 'height': total_height/3},
-            'R': {'x': 2*total_width/3, 'y': total_height/3, 'width': total_width/3, 'height': total_height/3},
-            'BL': {'x': 0, 'y': 2*total_height/3, 'width': total_width/3, 'height': total_height/3},
-            'B': {'x': total_width/3, 'y': 2*total_height/3, 'width': total_width/3, 'height': total_height/3},
-            'BR': {'x': 2*total_width/3, 'y': 2*total_height/3, 'width': total_width/3, 'height': total_height/3}
-        }
-        
-        # 计算与每个区域的重叠面积
-        max_overlap = 0
-        image_to_chart = 'none'
-        
-        for position, area in grid_areas.items():
-            # 计算重叠区域
-            overlap_x = max(0, min(image_rect['x'] + image_rect['width'], area['x'] + area['width']) - 
-                          max(image_rect['x'], area['x']))
-            overlap_y = max(0, min(image_rect['y'] + image_rect['height'], area['y'] + area['height']) - 
-                          max(image_rect['y'], area['y']))
-            overlap_area = overlap_x * overlap_y
+        if image_size <= 64:
+            image_to_chart = "none"
+        else:
+            # 计算图片区域
+            image_rect = {
+                'x': best_x,
+                'y': best_y,
+                'width': image_size,
+                'height': image_size
+            }
             
-            if overlap_area > max_overlap:
-                max_overlap = overlap_area
-                image_to_chart = position
+            # 定义九宫格区域
+            grid_areas = {
+                'TL': {'x': 0, 'y': 0, 'width': total_width/3, 'height': total_height/3},
+                'T': {'x': total_width/3, 'y': 0, 'width': total_width/3, 'height': total_height/3},
+                'TR': {'x': 2*total_width/3, 'y': 0, 'width': total_width/3, 'height': total_height/3},
+                'L': {'x': 0, 'y': total_height/3, 'width': total_width/3, 'height': total_height/3},
+                'C': {'x': total_width/3, 'y': total_height/3, 'width': total_width/3, 'height': total_height/3},
+                'R': {'x': 2*total_width/3, 'y': total_height/3, 'width': total_width/3, 'height': total_height/3},
+                'BL': {'x': 0, 'y': 2*total_height/3, 'width': total_width/3, 'height': total_height/3},
+                'B': {'x': total_width/3, 'y': 2*total_height/3, 'width': total_width/3, 'height': total_height/3},
+                'BR': {'x': 2*total_width/3, 'y': 2*total_height/3, 'width': total_width/3, 'height': total_height/3}
+            }
+            
+            # 计算与每个区域的重叠面积
+            max_overlap = 0
+            image_to_chart = 'none'
+            
+            for position, area in grid_areas.items():
+                # 计算重叠区域
+                overlap_x = max(0, min(image_rect['x'] + image_rect['width'], area['x'] + area['width']) - 
+                            max(image_rect['x'], area['x']))
+                overlap_y = max(0, min(image_rect['y'] + image_rect['height'], area['y'] + area['height']) - 
+                            max(image_rect['y'], area['y']))
+                overlap_area = overlap_x * overlap_y
+                
+                if overlap_area > max_overlap:
+                    max_overlap = overlap_area
+                    image_to_chart = position
 
-        if image_size > 80:
-            image_element = f"""
-                <image
-                    class="image"
-                    x="{best_x}"
-                    y="{best_y}"
-                    width="{image_size}"
-                    height="{image_size}"
-                    preserveAspectRatio="none"
-                    href="{primary_image}"
-                    opacity="{0.3 if mode=='background' or mode=='overlay' else 1}"
-                />"""
-            final_svg += image_element
+            if image_size > 80:
+                image_element = f"""
+                    <image
+                        class="image"
+                        x="{best_x}"
+                        y="{best_y}"
+                        width="{image_size}"
+                        height="{image_size}"
+                        preserveAspectRatio="none"
+                        href="{primary_image}"
+                        opacity="{0.3 if mode=='background' or mode=='overlay' else 1}"
+                    />"""
+                final_svg += image_element
     
     text_color = data["colors"].get("text_color", "#000000")
     if dark:

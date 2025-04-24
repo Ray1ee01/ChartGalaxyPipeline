@@ -1,7 +1,7 @@
 '''
 REQUIREMENTS_BEGIN
 {
-    "chart_type": "Gauge Chart",
+    "chart_type": "Multiple Gauge Chart",
     "chart_name": "multiple_gauge_chart_01",
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],

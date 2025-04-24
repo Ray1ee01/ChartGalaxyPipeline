@@ -1,7 +1,7 @@
 '''
 REQUIREMENTS_BEGIN
 {
-    "chart_type": "Donut Chart",
+    "chart_type": "Multiple Semi Donut Chart",
     "chart_name": "multiple_semidonut_chart_01",
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],

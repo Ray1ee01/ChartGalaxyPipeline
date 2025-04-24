@@ -1,8 +1,8 @@
 /*
 REQUIREMENTS_BEGIN
 {
-    "chart_type": "Bar Chart",
-    "chart_name": "stacked_bar_chart_01",
+    "chart_type": "Stacked Bar Chart",
+    "chart_name": "echarts_stacked_bar_chart_01",
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
     "required_fields_range": [[2, 10], [0, 100], [2, 8]],
