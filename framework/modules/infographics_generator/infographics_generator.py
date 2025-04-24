@@ -51,7 +51,7 @@ from modules.chart_engine.chart_engine import load_data_from_json, get_template_
 from modules.chart_engine.template.template_registry import scan_templates
 from modules.title_styler.title_styler import process as title_styler_process
 from modules.infographics_generator.mask_utils import fill_columns_between_bounds, calculate_mask_v2, expand_mask, calculate_mask_v3
-from modules.infographics_generator.svg_utils import extract_svg_content, extract_large_rect, adjust_and_get_bbox, add_gradient_to_rect
+from modules.infographics_generator.svg_utils import extract_svg_content, extract_large_rect, adjust_and_get_bbox, add_gradient_to_rect, extract_background_element
 from modules.infographics_generator.image_utils import find_best_size_and_position
 from modules.infographics_generator.template_utils import (
     analyze_templates,
@@ -526,6 +526,12 @@ def make_infographic(
     final_svg = f"""<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="{total_width}" height="{total_height}" style="font-family: Arial, 'Liberation Sans', 'DejaVu Sans', sans-serif;">
     <g class="chart" transform="translate({padding + best_title['chart'][0]}, {padding + best_title['chart'][1]})">{chart_content}</g>
     <g class="text" transform="translate({padding + best_title['title'][0]}, {padding + best_title['title'][1]})">{title_inner_content}</g>"""
+    chart_bbox = {
+        "x": padding + best_title['chart'][0],
+        "y": padding + best_title['chart'][1],
+        "width": chart_width,
+        "height": chart_height
+    }
     if mode == "overlay":
         print("remove_image_element")
         final_svg = remove_image_element(final_svg)
@@ -550,13 +556,22 @@ def make_infographic(
         # try side mask
         side_mask = expand_mask(original_mask, 15)
         side_image_size, side_best_x, side_best_y = find_best_size_and_position(side_mask, primary_image, padding, mode="side")
+        side_mask_img = visualize_mask(side_mask, "Side Mask")
+        with open("./tmp/side_mask.png", "wb") as f:
+            f.write(base64.b64decode(side_mask_img))
         # try overlay mask
         overlay_mask = calculate_mask_v3(final_svg + "\n</svg>", total_width, total_height, background_color)
+        overlay_mask = expand_mask(overlay_mask, 5)
         overlay_image_size, overlay_best_x, overlay_best_y = find_best_size_and_position(overlay_mask, primary_image, padding, mode="overlay")
+        overlay_mask_img = visualize_mask(overlay_mask, "Overlay Mask")
+        with open("./tmp/overlay_mask.png", "wb") as f:
+            f.write(base64.b64decode(overlay_mask_img))
         # try background mask
         background_mask = original_mask
-        background_image_size, background_best_x, background_best_y = find_best_size_and_position(background_mask, primary_image, padding, mode="background")
-            
+        background_image_size, background_best_x, background_best_y = find_best_size_and_position(background_mask, primary_image, padding, mode="background", chart_bbox=chart_bbox)
+        background_mask_img = visualize_mask(background_mask, "Background Mask")
+        with open("./tmp/background_mask.png", "wb") as f:
+            f.write(base64.b64decode(background_mask_img))
     # if side_image_size > 120 then side by side;
     # elif overlay_size > 120 then overlay;
     # elif background > 240 then background；
@@ -571,9 +586,9 @@ def make_infographic(
     # else:
     #     image_to_chart = "none"
     
-    measure_side_size = min(side_image_size, 120)
-    measure_overlay_size = min(overlay_image_size, 120)
-    measure_background_size = min(background_image_size, 200)
+    measure_side_size = min(side_image_size, 300)
+    measure_overlay_size = min(overlay_image_size, 300)
+    measure_background_size = min(background_image_size, 300)
     # 随机概率等于size的比值
     sum_size = measure_side_size + measure_overlay_size + measure_background_size
     side_probability = measure_side_size / sum_size
@@ -582,13 +597,13 @@ def make_infographic(
     print("size", measure_side_size, measure_overlay_size, measure_background_size)
     print("probability", side_probability, overlay_probability, background_probability)
     random_value = random.random()
-    if random_value < side_probability:
+    if random_value < side_probability and False:
         image_size = side_image_size
         best_x = side_best_x
         best_y = side_best_y
         mode = "side"
         print("side")
-    elif random_value < side_probability + overlay_probability:
+    elif random_value < side_probability + overlay_probability and False:
         image_size = overlay_image_size
         best_x = overlay_best_x
         best_y = overlay_best_y
@@ -690,6 +705,8 @@ def make_infographic(
         <g class="chart" transform="translate({padding + best_title['chart'][0]}, {padding + best_title['chart'][1]})">{chart_content}</g>
         <g class="text" fill="{text_color}" transform="translate({padding + best_title['title'][0]}, {padding + best_title['title'][1]})">{title_inner_content}</g>
         </svg>"""
+        final_svg = extract_background_element(final_svg)
+        
 
     layout_info = {
         "text_color": text_color,

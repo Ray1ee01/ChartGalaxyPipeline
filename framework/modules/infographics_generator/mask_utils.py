@@ -34,6 +34,10 @@ def calculate_mask_v3(svg_content: str, width: int, height: int, background_colo
         stroke_width = line.get('stroke-width')
         if stroke_width and float(stroke_width) <= 1:
             line.decompose()
+    # 删除所有text元素
+    text_elements = soup.find_all('text')
+    for text in text_elements:
+        text.decompose()
     
     # 重新获取处理后的SVG内容
     svg_content = str(soup)
@@ -122,22 +126,17 @@ def calculate_mask_v3(svg_content: str, width: int, height: int, background_colo
         for j in range(width):
             if colors_close(img_array[i, j], mode_color):
                 mask[i, j] = 1
-                
     
-    
-    # for y in range(0, height, grid_size):
-    #     for x in range(0, width, grid_size):
-    #         y_end = min(y + grid_size, height)
-    #         x_end = min(x + grid_size, width)
-            
-    #         if y_end > y and x_end > x:
-    #             grid = img_array[y:y_end, x:x_end]
-    #             if grid.size > 0:
-    #                 # 计算与背景色的差异
-    #                 background_diff = np.sqrt(np.sum((grid - background_color) ** 2, axis=2))
-    #                 white_ratio = np.mean(background_diff < max_difference)
-    #                 mask[y:y_end, x:x_end] = 0 if white_ratio > 0.95 else 1
-    
+    # 使用扫描线算法填充mask（从上到下，从左到右，如果15以内有1，则填充）
+    fill_mask = np.zeros((height, width), dtype=np.uint8)
+    for i in range(height):
+        for j in range(width):
+            if mask[i, j] == 1:
+                for k in range(i-7, i+7):
+                    for l in range(j-7, j+7):
+                        if k >= 0 and k < height and l >= 0 and l < width:
+                            fill_mask[k, l] = 1
+    mask = fill_mask
     # 删除临时文件
     os.remove(mask_svg)
     os.remove(temp_mask_png)
