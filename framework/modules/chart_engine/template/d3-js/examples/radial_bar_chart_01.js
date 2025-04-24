@@ -2,7 +2,7 @@
 REQUIREMENTS_BEGIN
 {
     "chart_type": "Radial Bar Chart",
-    "chart_name": "radial_bar_chart_01",
+    "chart_name": "simple_radial_bar_chart_01",
     "is_composite": false,
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],

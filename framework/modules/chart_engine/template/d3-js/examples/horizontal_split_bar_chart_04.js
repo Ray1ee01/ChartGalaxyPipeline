@@ -663,6 +663,7 @@ function makeChart(containerSelector, data) {
             const formattedValue = valueUnit ? 
             `${dataPoint[valueField]}${valueUnit}` : 
             `${dataPoint[valueField]}`;
+            const barHeight = yScale.bandwidth();
                 
             // 绘制右侧标签 - 使用统一的位置和左对齐
             g.append("text")

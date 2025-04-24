@@ -50,8 +50,9 @@ def calculate_mask_v3(svg_content: str, width: int, height: int, background_colo
         
         # 修改SVG内容，移除渐变
         # 将渐变填充替换为可见的纯色填充，而不是none
-        mask_svg_content = re.sub(r'fill="url\(#[^"]*\)"', 'fill="#333333"', svg_content)
-        mask_svg_content = re.sub(r'stroke="url\(#[^"]*\)"', 'stroke="#333333"', mask_svg_content)
+        mask_svg_content = svg_content
+        # mask_svg_content = re.sub(r'fill="url\(#[^"]*\)"', 'fill="#333333"', mask_svg_content)
+        # mask_svg_content = re.sub(r'stroke="url\(#[^"]*\)"', 'stroke="#333333"', mask_svg_content)
         mask_svg_content = mask_svg_content.replace('&', '&amp;')
         
         # 提取SVG内容并添加新的SVG标签
@@ -88,42 +89,27 @@ def calculate_mask_v3(svg_content: str, width: int, height: int, background_colo
     
     # 转换为二值mask
     mask = np.ones((height, width), dtype=np.uint8)
-    pixels = img_array.reshape(-1, 3)
+    # 随机采样300个点
+    total_pixels = height * width
+    sample_indices = np.random.choice(total_pixels, min(300, total_pixels), replace=False)
+    sample_pixels = img_array.reshape(-1, 3)[sample_indices]
     
-    # 创建一个容差范围内的颜色比较函数
-    def colors_close(c1, c2, tolerance=10):
-        return np.all(np.abs(c1 - c2) <= tolerance)
+    # 排除接近背景色的像素
+    non_bg_pixels = sample_pixels[~np.all(np.abs(sample_pixels - background_color) <= 10, axis=1)]
     
-    # 排除接近白色的像素 (255,255,255)
-    non_white_pixels = pixels[~np.all(np.abs(pixels - background_color) <= 10, axis=1)]
-    
-    if len(non_white_pixels) == 0:
-        mode_color = np.array([0, 0, 0])  # 如果没有非白色像素，返回黑色
+    if len(non_bg_pixels) == 0:
+        mode_color = np.array([0, 0, 0])  # 如果没有非背景色像素，返回黑色
     else:
-        # 使用numpy向量化操作加速颜色计数
-        unique_pixels = np.unique(non_white_pixels, axis=0)
-        color_counts = {}
-        
-        # 对每个唯一像素值计算相似颜色的数量
-        for unique_pixel in unique_pixels:
-            # 计算所有像素与当前像素的差异
-            diff = np.abs(non_white_pixels - unique_pixel)
-            # 找出在容差范围内的像素
-            similar_pixels = np.all(diff <= 10, axis=1)
-            # 统计数量
-            count = np.sum(similar_pixels)
-            color_counts[tuple(unique_pixel)] = count
-        
-        # 找出出现最多的颜色
-        mode_color = np.array(max(color_counts.items(), key=lambda x: x[1])[0])
-        print(mode_color)
-    # 使用mode_color作为众数颜色
+        # 将像素转换为元组以便计数
+        pixels_tuple = [tuple(p) for p in non_bg_pixels]
+        # 直接用Counter找出最常见的颜色
+        from collections import Counter
+        mode_color = np.array(Counter(pixels_tuple).most_common(1)[0][0])
+    
+    # 使用mode_color作为众数颜色创建mask
     mask = np.zeros((height, width), dtype=np.uint8)
-    for i in range(height):
-        for j in range(width):
-            if colors_close(img_array[i, j], mode_color):
-                mask[i, j] = 1
-                
+    color_diff = np.sqrt(np.sum((img_array - mode_color) ** 2, axis=2))
+    mask[color_diff <= 10] = 1
     fill_mask = np.zeros((height, width), dtype=np.uint8)
     
     mask_padding = 15

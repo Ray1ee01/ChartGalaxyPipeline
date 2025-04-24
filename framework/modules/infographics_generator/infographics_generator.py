@@ -563,7 +563,7 @@ def make_infographic(
 
         min_acceptable_size = 96
         if measure_side_size > min_acceptable_size or measure_overlay_size > min_acceptable_size:
-            if side_image_size >= overlay_image_size * 0.66:
+            if side_image_size >= overlay_image_size * 0.45:
                 image_size = side_image_size
                 best_x = side_best_x
                 best_y = side_best_y
