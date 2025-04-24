@@ -335,9 +335,8 @@ class DifferenceFactGenerator(DataFactGenerator):
                     f"to {after_change_positions_str}."
                 )
                 reason = (
-                    f"The {self.y_column} for {group_value} increases from {before_change_values_str} at "
-                    f"{before_change_positions_str} to {after_change_values_str} at {after_change_positions_str}, "
-                    f"indicating a sharp change."
+                    f"The {self.y_column} for {group_value} differs significantly between {before_change_values_str} at "
+                    f"{before_change_positions_str} and {after_change_values_str} at {after_change_positions_str}."
                 )
             else:
                 annotation = (
@@ -345,9 +344,9 @@ class DifferenceFactGenerator(DataFactGenerator):
                     f"{before_change_positions_str} to {after_change_positions_str}."
                 )
                 reason = (
-                    f"Across these points, the {self.y_column} for {group_value} increases from "
-                    f"{before_change_values_str} at {before_change_positions_str} to "
-                    f"{after_change_values_str} at {after_change_positions_str}, suggesting significant shifts in value."
+                    f"Across these points, the {self.y_column} for {group_value} differs significantly between "
+                    f"{before_change_values_str} at {before_change_positions_str} and "
+                    f"{after_change_values_str} at {after_change_positions_str}."
                 )
 
             return annotation, reason
