@@ -50,13 +50,8 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from modules.chart_engine.chart_engine import load_data_from_json, get_template_for_chart_name, render_chart_to_svg
 from modules.chart_engine.template.template_registry import scan_templates
 from modules.title_styler.title_styler import process as title_styler_process
-<<<<<<< HEAD
-from modules.infographics_generator.mask_utils import fill_columns_between_bounds, calculate_mask_v2, expand_mask
-from modules.infographics_generator.svg_utils import extract_svg_content, extract_large_rect, adjust_and_get_bbox, add_gradient_to_rect
-=======
 from modules.infographics_generator.mask_utils import fill_columns_between_bounds, calculate_mask_v2, expand_mask, calculate_mask_v3
 from modules.infographics_generator.svg_utils import extract_svg_content, extract_large_rect, adjust_and_get_bbox, add_gradient_to_rect, extract_background_element
->>>>>>> origin/develop
 from modules.infographics_generator.image_utils import find_best_size_and_position
 from modules.infographics_generator.template_utils import (
     analyze_templates,
@@ -104,11 +99,7 @@ def make_infographic(
     
     chart_svg_content = f"<svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='{chart_width}' height='{chart_height}'>{chart_content}</svg>"
     mask = calculate_mask_v2(chart_svg_content, chart_width, chart_height, background_color)
-<<<<<<< HEAD
     mask = expand_mask(mask, 15)
-=======
-
->>>>>>> origin/develop
     title_candidates = []
     min_title_width = max(250, chart_width / 2)
     max_title_width = max(chart_width, 600)
@@ -524,16 +515,6 @@ def make_infographic(
     total_height = best_title["total_height"] + padding * 2
     total_width = best_title["total_width"] + padding * 2
     
-<<<<<<< HEAD
-    mode = "background"
-    # 随机从side和background和overlay中选择一个
-    if random.random() < 1:
-        mode = "side"
-    elif random.random() < 0.5:
-        mode = "background"
-    else:
-        mode = "overlay"
-=======
     mode = "side"
     # # 随机从side和background和overlay中选择一个
     # if random.random() < 0.5:
@@ -542,7 +523,6 @@ def make_infographic(
     #     mode = "background"
     # else:
     #     mode = "overlay"
->>>>>>> origin/develop
     
     final_svg = f"""<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="{total_width}" height="{total_height}" style="font-family: Arial, 'Liberation Sans', 'DejaVu Sans', sans-serif;">
     <g class="chart" transform="translate({padding + best_title['chart'][0]}, {padding + best_title['chart'][1]})">{chart_content}</g>
@@ -574,9 +554,6 @@ def make_infographic(
     if primary_image:
         if "base64," not in primary_image:
             primary_image = f"data:image/png;base64,{primary_image}"
-<<<<<<< HEAD
-        image_size, best_x, best_y = find_best_size_and_position(original_mask, primary_image, padding, mode=mode)
-=======
         # try side mask
         side_mask = expand_mask(original_mask, 15)
         side_image_size, side_best_x, side_best_y = find_best_size_and_position(side_mask, primary_image, padding, mode="side")
@@ -600,7 +577,6 @@ def make_infographic(
     # elif overlay_size > 120 then overlay;
     # elif background > 240 then background；
     # else none
->>>>>>> origin/develop
     
     # if side_image_size > 120:
     #     image_to_chart = "side"

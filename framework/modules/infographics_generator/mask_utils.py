@@ -8,8 +8,6 @@ from typing import Tuple
 import tempfile
 from bs4 import BeautifulSoup
 import scipy.ndimage as ndimage
-<<<<<<< HEAD
-=======
 
 def calculate_mask_v3(svg_content: str, width: int, height: int, background_color: str, grid_size: int = 5, max_difference = 15) -> np.ndarray:
     """将SVG转换为基于背景色的二值化mask数组"""
@@ -146,7 +144,6 @@ def calculate_mask_v3(svg_content: str, width: int, height: int, background_colo
     return mask
 
 
->>>>>>> origin/develop
 
 def calculate_mask_v2(svg_content: str, width: int, height: int, background_color: str, grid_size: int = 5, max_difference = 15) -> np.ndarray:
     """将SVG转换为基于背景色的二值化mask数组"""
