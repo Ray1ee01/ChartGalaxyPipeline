@@ -2,7 +2,7 @@
 REQUIREMENTS_BEGIN
 {
     "chart_type": "Multiple Line Graph",
-    "chart_name": "difference_line_graph_03",
+    "chart_name": "multiple_line_graph_01",
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["temporal"], ["numerical"], ["categorical"]],
     "required_fields_range": [[5, 30], [0, "inf"], [2, 2]],

@@ -1,8 +1,8 @@
 /*
 REQUIREMENTS_BEGIN
 {
-    "chart_type": "Multiple Line Graph",
-    "chart_name": "multiple_line_graph_04",
+    "chart_type": "Small Multiple Line Graph",
+    "chart_name": "small_multiple_line_graph_01",
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["temporal"], ["numerical"], ["categorical"]],
     "required_fields_range": [[5, 30], ["-inf", "inf"], [2, 8]],
