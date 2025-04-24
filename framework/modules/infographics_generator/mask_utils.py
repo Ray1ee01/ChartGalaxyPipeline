@@ -126,18 +126,31 @@ def calculate_mask_v3(svg_content: str, width: int, height: int, background_colo
         for j in range(width):
             if colors_close(img_array[i, j], mode_color):
                 mask[i, j] = 1
-    
-    # 使用扫描线算法填充mask（从上到下，从左到右，如果15以内有1，则填充）
+                
     fill_mask = np.zeros((height, width), dtype=np.uint8)
+    
+    mask_padding = 15
     for i in range(height):
+        last_j = -mask_padding
         for j in range(width):
             if mask[i, j] == 1:
-                for k in range(i-7, i+7):
-                    for l in range(j-7, j+7):
-                        if k >= 0 and k < height and l >= 0 and l < width:
-                            fill_mask[k, l] = 1
+                if j - last_j < mask_padding:
+                    fill_mask[i, last_j:j+1] = 1
+                else:
+                    fill_mask[i, j] = 1
+                last_j = j
+
+    for j in range(width):
+        last_i = -mask_padding
+        for i in range(height):
+            if mask[i, j] == 1:
+                if i - last_i < mask_padding:
+                    fill_mask[last_i:i+1, j] = 1
+                else:
+                    fill_mask[i, j] = 1
+                last_i = i
+
     mask = fill_mask
-    # 删除临时文件
     os.remove(mask_svg)
     os.remove(temp_mask_png)
     

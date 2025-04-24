@@ -80,13 +80,11 @@ def make_infographic(
 ) -> str:
     if not dark:
         background_color = data["colors"].get("background_color", "#FFFFFF")
-        text_color = data["colors"].get("text_color", "#000000")
         if is_dark_color(background_color):
             background_color = lighten_color(background_color, amount=0.3)
             data["colors"]["background_color"] = background_color
     else:
         background_color = data["colors_dark"].get("background_color", "#000000")
-        text_color = data["colors_dark"].get("text_color", "#FFFFFF")
 
 
     chart_content, chart_width, chart_height, chart_offset_x, chart_offset_y = adjust_and_get_bbox(chart_svg_content, background_color)
@@ -96,8 +94,8 @@ def make_infographic(
     thin_chart_flag = False
     if chart_aspect_ratio < 0.9:
         thin_chart_flag = True
-    print(f"chart_aspect_ratio: {chart_aspect_ratio}")
-    print(f"thin_chart_flag: {thin_chart_flag}")
+    # print(f"chart_aspect_ratio: {chart_aspect_ratio}")
+    # print(f"thin_chart_flag: {thin_chart_flag}")
     ## end
     
     chart_svg_content = f"<svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='{chart_width}' height='{chart_height}'>{chart_content}</svg>"
@@ -233,7 +231,7 @@ def make_infographic(
     # 初始化best_title默认值为None，用于后续检查
     best_title = None
     
-    '''
+    
     if mask_1_ratio > 0.25 and mask_1_ratio < 0.5:
         width = average_distance*2
         title_content = title_styler_process(input_data=data, max_width=int(width), text_align="center", show_embellishment=False, show_sub_title=False)
@@ -242,7 +240,6 @@ def make_infographic(
         width = int(float(svg_tree.get("width", 0)))
         height = int(float(svg_tree.get("height", 0)))
         title_candidates = [{"width": width, "height": height}]
-        # 从上到下，找到第一个distance_list中大于width的index
         for i in range(len(distance_list)):
             if distance_list[i] > width:
                 best_title = {
@@ -258,10 +255,10 @@ def make_infographic(
                     "show_sub_title": False
                 }
                 break
-    '''
+    
     # 如果没有找到合适的best_title（width太大或其他原因），使用默认处理逻辑
     if best_title is None:
-        print("title_candidates", title_candidates)
+        # print("title_candidates", title_candidates)
         default_title = {
             "title": (0, 0),
             "chart": (0, title_candidates[-1]["height"] + between_padding),
@@ -306,13 +303,13 @@ def make_infographic(
             # for bottom
             range_start = max(0,chart_width // 2 - title_width // 2)
             range_end = min(chart_width, range_start + title_width)
-            print(f"range_start: {range_start}, range_end: {range_end}")
+            # print(f"range_start: {range_start}, range_end: {range_end}")
             max_bottom = int(np.max(mask_bottom[range_start:range_end]))
-            print(f"max_bottom: {max_bottom}")
+            # print(f"max_bottom: {max_bottom}")
             area = (max(title_height - (chart_height - max_bottom), 0) + chart_height) * chart_width
             best_area = other_title["bottom"]["area"] if "bottom" in other_title else default_area
             title_y = chart_height - title_height + max(title_height - (chart_height - max_bottom), 0) + between_padding
-            print(f"title_y: {title_y}")
+            # print(f"title_y: {title_y}")
             if area < best_area:
                 other_title["bottom"] = {
                     "title": (range_start, title_y),
@@ -502,12 +499,12 @@ def make_infographic(
             best_title = default_title
         else:
             title_options = [default_title] + list(other_title.values())
-            print("title_options", title_options)
+            # print("title_options", title_options)
             min_area = min(title_options, key=lambda x: x["area"])["area"]
             title_options = [t for t in title_options if t["area"] <= min_area * area_threshold]
             option_weights = [2 if t["title-to-chart"] == "TL" else 1 for t in title_options]
             best_title = random.choices(title_options, weights=option_weights, k=1)[0]
-            print("best_title", best_title)
+            # print("best_title", best_title)
     title_content = title_styler_process(input_data=data, \
                                          max_width=best_title["width"], \
                                          text_align=best_title["text-align"], \
@@ -518,14 +515,7 @@ def make_infographic(
     total_height = best_title["total_height"] + padding * 2
     total_width = best_title["total_width"] + padding * 2
     
-    mode = "side"
-    # # 随机从side和background和overlay中选择一个
-    # if random.random() < 0.5:
-    #     mode = "side"
-    # elif random.random() < 0.5:
-    #     mode = "background"
-    # else:
-    #     mode = "overlay"
+    image_mode = "side"
     
     final_svg = f"""<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="{total_width}" height="{total_height}" style="font-family: Arial, 'Liberation Sans', 'DejaVu Sans', sans-serif;">
     <g class="chart" transform="translate({padding + best_title['chart'][0]}, {padding + best_title['chart'][1]})">{chart_content}</g>
@@ -536,91 +526,68 @@ def make_infographic(
         "width": chart_width,
         "height": chart_height
     }
-    if mode == "overlay":
-        print("remove_image_element")
-        final_svg = remove_image_element(final_svg)
+    if image_mode == "overlay":
+        pass
+        # print("remove_image_element")
+        # final_svg = remove_image_element(final_svg)
     original_mask = calculate_mask_v2(final_svg + "\n</svg>", total_width, total_height, background_color)
     original_mask = fill_columns_between_bounds(original_mask, padding + best_title['title'][0], padding + best_title['title'][0] + best_title['width'], \
                                 padding + best_title['title'][1], padding + best_title['title'][1] + best_title['height'])
-    original_mask = expand_mask(original_mask, 15)
-    # Generate visualization
+
     mask_img = visualize_mask(original_mask, "Chart Mask")
-    
-    # Save the visualization to a file for inspection
     with open(mask_path, "wb") as f:
         f.write(base64.b64decode(mask_img))
 
     primary_image = data.get("images", {}).get("other", {}).get("primary")
 
     image_element = ""
-    # 处理primary图片
     if primary_image:
         if "base64," not in primary_image:
             primary_image = f"data:image/png;base64,{primary_image}"
-        # try side mask
+
         side_mask = expand_mask(original_mask, 15)
         side_image_size, side_best_x, side_best_y = find_best_size_and_position(side_mask, primary_image, padding, mode="side")
-        # side_mask_img = visualize_mask(side_mask, "Side Mask")
-        # with open("./tmp/side_mask.png", "wb") as f:
-        #     f.write(base64.b64decode(side_mask_img))
-        # try overlay mask
+        measure_side_size = min(side_image_size, 256)
+
         overlay_mask = calculate_mask_v3(final_svg + "\n</svg>", total_width, total_height, background_color)
         overlay_mask = expand_mask(overlay_mask, 5)
         overlay_image_size, overlay_best_x, overlay_best_y = find_best_size_and_position(overlay_mask, primary_image, padding, mode="overlay")
-        # overlay_mask_img = visualize_mask(overlay_mask, "Overlay Mask")
-        # with open("./tmp/overlay_mask.png", "wb") as f:
-        #     f.write(base64.b64decode(overlay_mask_img))
-        # try background mask
-        background_mask = original_mask
-        background_image_size, background_best_x, background_best_y = find_best_size_and_position(background_mask, primary_image, padding, mode="background", chart_bbox=chart_bbox)
-        # background_mask_img = visualize_mask(background_mask, "Background Mask")
-        # with open("./tmp/background_mask.png", "wb") as f:
-        #     f.write(base64.b64decode(background_mask_img))
-    # if side_image_size > 120 then side by side;
-    # elif overlay_size > 120 then overlay;
-    # elif background > 240 then background；
-    # else none
-    
-    # if side_image_size > 120:
-    #     image_to_chart = "side"
-    # elif overlay_image_size > 120:
-    #     image_to_chart = "overlay"
-    # elif background_image_size > 240:
-    #     image_to_chart = "background"
-    # else:
-    #     image_to_chart = "none"
-    
-    measure_side_size = min(side_image_size, 300)
-    measure_overlay_size = min(overlay_image_size, 300)
-    measure_background_size = min(background_image_size, 300)
-    # 随机概率等于size的比值
-    sum_size = measure_side_size + measure_overlay_size + measure_background_size
-    print("sum_size", sum_size)
-    side_probability = measure_side_size / sum_size
-    overlay_probability = measure_overlay_size / sum_size
-    background_probability = measure_background_size / sum_size
-    print("size", measure_side_size, measure_overlay_size, measure_background_size)
-    print("probability", side_probability, overlay_probability, background_probability)
-    random_value = random.random()
-    if random_value < side_probability:
-        image_size = side_image_size
-        best_x = side_best_x
-        best_y = side_best_y
-        mode = "side"
-        print("side")
-    elif random_value < side_probability + overlay_probability:
-        image_size = overlay_image_size
-        best_x = overlay_best_x
-        best_y = overlay_best_y
-        mode = "overlay"
-        print("overlay")
-    else:
-        image_size = background_image_size
-        best_x = background_best_x
-        best_y = background_best_y
-        mode = "background"
-        print("background")
-        
+        measure_overlay_size = min(overlay_image_size, 256)
+        # overlay_mask_img = PILImage.fromarray((overlay_mask * 255).astype(np.uint8))
+        # overlay_mask_img.save('./tmp/overlay_mask.png')
+
+        min_acceptable_size = 96
+        if measure_side_size > min_acceptable_size or measure_overlay_size > min_acceptable_size:
+            overlay_weight = 1
+            side_weight = 1
+            side_term = measure_side_size ** 2.5
+            overlay_term = measure_overlay_size ** 2.5
+            sum_size = side_term * side_weight + overlay_term * overlay_weight
+            side_probability = side_term * side_weight / sum_size
+            random_value = random.random()
+            if random_value < side_probability:
+                image_size = side_image_size
+                best_x = side_best_x
+                best_y = side_best_y
+                image_mode = "side"
+            else:
+                image_size = overlay_image_size
+                best_x = overlay_best_x
+                best_y = overlay_best_y
+                image_mode = "overlay"
+        else:
+            background_mask = original_mask
+            background_image_size, background_best_x, background_best_y = find_best_size_and_position(background_mask, primary_image, padding, mode="background", chart_bbox=chart_bbox)
+            measure_background_size = min(background_image_size, 512)
+
+            if measure_background_size > 128:
+                image_size = background_image_size
+                best_x = background_best_x
+                best_y = background_best_y
+                image_mode = "background"
+            else:
+                image_size = 0
+
     text_color = data["colors"].get("text_color", "#000000")
     if dark:
         text_color = "#FFFFFF"
@@ -653,19 +620,39 @@ def make_infographic(
         max_overlap = 0
         image_to_chart = 'none'
         
-        for position, area in grid_areas.items():
-            # 计算重叠区域
-            overlap_x = max(0, min(image_rect['x'] + image_rect['width'], area['x'] + area['width']) - 
-                          max(image_rect['x'], area['x']))
-            overlap_y = max(0, min(image_rect['y'] + image_rect['height'], area['y'] + area['height']) - 
-                          max(image_rect['y'], area['y']))
-            overlap_area = overlap_x * overlap_y
-            
-            if overlap_area > max_overlap:
-                max_overlap = overlap_area
-                image_to_chart = position
+        if image_mode == "side" or image_mode == "background":
+            for position, area in grid_areas.items():
+                # 计算重叠区域
+                overlap_x = max(0, min(image_rect['x'] + image_rect['width'], area['x'] + area['width']) - 
+                            max(image_rect['x'], area['x']))
+                overlap_y = max(0, min(image_rect['y'] + image_rect['height'], area['y'] + area['height']) - 
+                            max(image_rect['y'], area['y']))
+                overlap_area = overlap_x * overlap_y
+                
+                if overlap_area > max_overlap:
+                    max_overlap = overlap_area
+                    image_to_chart = position
+        elif image_mode == "overlay":
+            image_to_chart = "C"
 
-        if image_size > 80:
+        if image_size > 64:
+            if (image_mode == "side" or image_mode == "overlay") and image_size > 192:
+                delta = between_padding / 2
+                image_size -= delta * 2
+                if image_to_chart == "C":
+                    best_x += delta
+                    best_y += delta
+                if "B" in image_to_chart:
+                    best_y += delta * 2
+                if "R" in image_to_chart:
+                    best_x += delta * 2
+
+            image_opacity = 1
+            if image_mode == "background":
+                image_opacity = 0.3
+            elif image_mode == "overlay":
+                image_opacity = 0.5
+
             image_element = f"""
                 <image
                     class="image"
@@ -675,13 +662,9 @@ def make_infographic(
                     height="{image_size}"
                     preserveAspectRatio="none"
                     href="{primary_image}"
-                    opacity="{0.3 if mode=='background' or mode=='overlay' else 1}"
+                    opacity="{image_opacity}"
                 />"""
             final_svg += image_element
-    
-    text_color = data["colors"].get("text_color", "#000000")
-    if dark:
-        text_color = "#FFFFFF"
             
     chart_content, background_element = extract_large_rect(chart_content)
     if background_element == "":
@@ -691,13 +674,14 @@ def make_infographic(
         background_element = re.sub(r'height="[^"]+"', f'height="{total_height}"', background_element)
         background_layer = add_gradient_to_rect(f'<rect x="0" y="0" width="{total_width}" height="{total_height}" fill="{background_color}" />')
         background_element = background_layer + background_element
-    if mode == "side" or mode == "overlay":
+
+    if image_mode == "side" or image_mode == "overlay":
         final_svg = f"""<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="{total_width}" height="{total_height}" style="font-family: Arial, 'Liberation Sans', 'DejaVu Sans', sans-serif;">
         {background_element}
         <g class="chart" transform="translate({padding + best_title['chart'][0]}, {padding + best_title['chart'][1]})">{chart_content}</g>
         <g class="text" fill="{text_color}" transform="translate({padding + best_title['title'][0]}, {padding + best_title['title'][1]})">{title_inner_content}</g>
         {image_element}\n</svg>"""
-    elif mode == "background":
+    elif image_mode == "background":
         final_svg = f"""<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="{total_width}" height="{total_height}" style="font-family: Arial, 'Liberation Sans', 'DejaVu Sans', sans-serif;">
         {background_element}
         {image_element}\n
@@ -864,7 +848,6 @@ def process(input: str, output: str, base_url: str, api_key: str, chart_name: st
     logger.info(f"Chart type: {chart_type}")
     logger.info(f"Chart name: {chart_name}\n")
 
-    # print("requirements", template_requirements)
 
     # 处理模板要求
     process_req_start = time.time()
