@@ -168,8 +168,6 @@ def find_best_size_and_position(main_mask: np.ndarray, image_content: str, paddi
         
         print(f"Trying size {mid_size * grid_size}x{mid_size * grid_size}, minimum overlap ratio: {min_overlap:.3f}")
         
-<<<<<<< HEAD
-=======
         overlap_threshold = 0.01
         if mode == "side":
             overlap_threshold = 0.01
@@ -178,7 +176,6 @@ def find_best_size_and_position(main_mask: np.ndarray, image_content: str, paddi
         elif mode == "overlay":
             overlap_threshold = 0.95
         
->>>>>>> origin/develop
         if mode == "side" or mode == "background":
             if min_overlap < overlap_threshold:
                 best_size = mid_size
