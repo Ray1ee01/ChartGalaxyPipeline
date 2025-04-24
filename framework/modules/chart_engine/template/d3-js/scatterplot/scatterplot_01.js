@@ -66,7 +66,7 @@ function makeChart(containerSelector, data) {
     
     // 检查数据是否包含负值或0值
     function hasNegativeOrZeroValues(data, field) {
-        return data.some(d => d[field] <= 0);
+        return data.some(d => d[field] < 1);
     }
     
     // 判断数据分布是否不均匀
