@@ -2,7 +2,7 @@
 REQUIREMENTS_BEGIN
 {
     "chart_type": "bubble_chart",
-    "chart_name": "bubble_chart_06",
+    "chart_name": "bubble_circle_chart_06",
     "is_composite": false,
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],

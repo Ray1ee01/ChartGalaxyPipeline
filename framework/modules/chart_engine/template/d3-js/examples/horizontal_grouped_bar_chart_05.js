@@ -4,9 +4,8 @@ REQUIREMENTS_BEGIN
     "chart_type": "Horizontal Grouped Bar Chart",
     "chart_name": "horizontal_grouped_bar_chart_05",
     "is_composite": false,
-    "required_fields": ["x", "y", "group", "group2"],
+    "required_fields": ["x", "y", "group1", "group2"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"], ["categorical"]],
-    "hierarchy":["group","group2"],
     "required_fields_range": [[2, 20], [0, "inf"], [2, 5], [2, 5]],
     "required_fields_icons": ["dimension", "group"],
     "required_other_icons": [],
@@ -75,9 +74,9 @@ function makeChart(containerSelector, data) {
     const valueField = dataColumns.find(col => col.role === "y").name;
     
     // 提取群组字段（默认取前两个group角色的列）
-    
-    const primaryGroupField = dataColumns.find(col => col.role === "group").name;
-    const secondaryGroupField = dataColumns.find(col => col.role === "group2").name;
+    const groupColumns = dataColumns.filter(col => col.role === "group");
+    const primaryGroupField = groupColumns[0].name;
+    const secondaryGroupField = groupColumns[1].name;
     
     // 获取字段单位（如果存在）
     let dimensionUnit = "";
