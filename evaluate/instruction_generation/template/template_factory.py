@@ -1,6 +1,6 @@
 from typing import Dict, Callable, Tuple, Any
-from .base_generator import BaseGenerator
-from .template_handlers import TemplateHandlers
+from template.base_generator import BaseGenerator
+from template.template_handlers import TemplateHandlers
 import logging
 
 logger = logging.getLogger("InstructionGeneration.Template.TemplateFactory")

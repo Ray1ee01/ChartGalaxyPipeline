@@ -2,7 +2,7 @@ import json
 import textwrap
 from typing import Optional
 
-from .base import BaseQAGenerator
+from model.base import BaseQAGenerator
 
 
 class IdentifyQAGenerator(BaseQAGenerator):

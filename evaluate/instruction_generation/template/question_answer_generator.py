@@ -1,7 +1,7 @@
 import json
 from typing import Dict, List, Tuple, Any, Optional
-from .base_generator import BaseGenerator
-from .template_factory import TemplateFactory
+from template.base_generator import BaseGenerator
+from template.template_factory import TemplateFactory
 import logging
 
 logger = logging.getLogger("InstructionGeneration.Template.QuestionAnswerGenerator")

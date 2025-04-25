@@ -112,7 +112,7 @@ def calculate_mask_v3(svg_content: str, width: int, height: int, background_colo
     mask[color_diff <= 10] = 1
     fill_mask = np.zeros((height, width), dtype=np.uint8)
     
-    mask_padding = 15
+    mask_padding = 8
     for i in range(height):
         last_j = -mask_padding
         for j in range(width):

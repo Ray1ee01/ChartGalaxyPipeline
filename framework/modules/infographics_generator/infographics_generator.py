@@ -654,8 +654,8 @@ def make_infographic(
             image_element = f"""
                 <image
                     class="image"
-                    x="{best_x}"
-                    y="{best_y}"
+                    x="{best_x + padding}"
+                    y="{best_y + padding}"
                     width="{image_size}"
                     height="{image_size}"
                     preserveAspectRatio="none"
@@ -664,6 +664,8 @@ def make_infographic(
                 />"""
             final_svg += image_element
             
+    total_width += padding * 2
+    total_height += padding
     chart_content, background_element = extract_large_rect(chart_content)
     if background_element == "":
         background_element = add_gradient_to_rect(f'<rect x="0" y="0" width="{total_width}" height="{total_height}" fill="{background_color}" />')
@@ -676,15 +678,15 @@ def make_infographic(
     if image_mode == "side" or image_mode == "overlay":
         final_svg = f"""<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="{total_width}" height="{total_height}" style="font-family: Arial, 'Liberation Sans', 'DejaVu Sans', sans-serif;">
         {background_element}
-        <g class="chart" transform="translate({padding + best_title['chart'][0]}, {padding + best_title['chart'][1]})">{chart_content}</g>
-        <g class="text" fill="{text_color}" transform="translate({padding + best_title['title'][0]}, {padding + best_title['title'][1]})">{title_inner_content}</g>
+        <g class="chart" transform="translate({padding * 2 + best_title['chart'][0]}, {padding * 2 + best_title['chart'][1]})">{chart_content}</g>
+        <g class="text" fill="{text_color}" transform="translate({padding * 2 + best_title['title'][0]}, {padding * 2 + best_title['title'][1]})">{title_inner_content}</g>
         {image_element}\n</svg>"""
     elif image_mode == "background":
         final_svg = f"""<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="{total_width}" height="{total_height}" style="font-family: Arial, 'Liberation Sans', 'DejaVu Sans', sans-serif;">
         {background_element}
         {image_element}\n
-        <g class="chart" transform="translate({padding + best_title['chart'][0]}, {padding + best_title['chart'][1]})">{chart_content}</g>
-        <g class="text" fill="{text_color}" transform="translate({padding + best_title['title'][0]}, {padding + best_title['title'][1]})">{title_inner_content}</g>
+        <g class="chart" transform="translate({padding * 2 + best_title['chart'][0]}, {padding * 2 + best_title['chart'][1]})">{chart_content}</g>
+        <g class="text" fill="{text_color}" transform="translate({padding * 2 + best_title['title'][0]}, {padding * 2 + best_title['title'][1]})">{title_inner_content}</g>
         </svg>"""
         final_svg = extract_background_element(final_svg)
         

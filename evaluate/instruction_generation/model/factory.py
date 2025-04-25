@@ -1,7 +1,7 @@
-from .closeQA import *
-from .openQA import *
-from .infographicsQA import *
-from .base import SingleData, BaseQAGenerator
+from model.closeQA import *
+from model.openQA import *
+from model.infographicsQA import *
+from model.base import SingleData, BaseQAGenerator
 
 class QAGeneratorFactory:
     """ QA 生成器工厂 """

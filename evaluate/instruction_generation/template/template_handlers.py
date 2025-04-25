@@ -1,5 +1,5 @@
 from typing import Tuple, Optional
-from .base_generator import BaseGenerator
+from template.base_generator import BaseGenerator
 
 class TemplateHandlers:
     def __init__(self, base_generator: BaseGenerator):

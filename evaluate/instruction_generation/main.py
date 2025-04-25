@@ -1,8 +1,8 @@
 import json
 
-from .model.factory import QAGeneratorFactory
-from .template.question_answer_generator import QuestionAnswerGenerator
-from .model.base import SingleData
+from model.factory import QAGeneratorFactory
+from template.question_answer_generator import QuestionAnswerGenerator
+from model.base import SingleData
 from tqdm import tqdm
 import logging
 import random
@@ -20,7 +20,7 @@ def process(data_path, image_path, output_path="./output.json", template_path=No
     if num > 20:
         logger.warning("可能数量超过了最大可提供数量")
 
-    model_generating_num = num // 5 * 4
+    model_generating_num = num // 5 * 3
     template_generating_num = max(0, num - model_generating_num)
 
     if use_model:
@@ -84,8 +84,8 @@ def process(data_path, image_path, output_path="./output.json", template_path=No
 
 if __name__ == "__main__":
     process(
-        data_path="/data1/lizhen/resources/result/data_pool_v2/11592.json",
-        image_path="/home/lizhen/ChartPipeline/evaluate/instruction_generation/image.png",
+        data_path="/data/lizhen/resources/result/data_pool_v3/aug_cn_4745.json",
+        image_path="/home/lizhen/ChartPipeline/framework/output/0424_1/1745514551_horizontal_lollipop_chart_01_aug_cn_4745/chart.png",
         output_path="./output.json",
         template_path="/home/lizhen/ChartPipeline/evaluate/instruction_generation/example.json",
         write2disk=True
