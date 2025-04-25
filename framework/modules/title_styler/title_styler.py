@@ -206,11 +206,11 @@ class TitleGenerator:
                 description_width = self.description_bounding_box['max_x'] - self.description_bounding_box['min_x']
                 description_shift_x = title_width - description_width
             
-            description_transform = f'translate({description_shift_x}, {description_shift_y})'
+            description_transform = f'translate({0}, {description_shift_y})'
             self.description_svg = self.description_svg.replace('transform="', f'transform="{description_transform} ')
-            self.description_bounding_box['min_x'] += description_shift_x
+            self.description_bounding_box['min_x'] += 0
             self.description_bounding_box['min_y'] += description_shift_y
-            self.description_bounding_box['max_x'] += description_shift_x
+            self.description_bounding_box['max_x'] += 0
             self.description_bounding_box['max_y'] += description_shift_y
         
         # 如果显示装饰块，调整其位置和大小
@@ -289,7 +289,7 @@ class TitleGenerator:
 
     def generate_text_element(self, text: str, typography: Dict, max_width: int = 0, text_align: str = "left"):
         """生成文本元素，包括SVG和边界框"""
-        text_svg = self.generate_one_line_text(typography, text)
+        text_svg = self.generate_one_line_text(typography, text, max_width, text_align)
         
         # 使用PIL直接测量文本尺寸
         font_family = typography.get('font_family', 'Arial')
@@ -328,12 +328,21 @@ class TitleGenerator:
         }
         return rect, bounding_box
 
-    def generate_one_line_text(self, typography: Dict, text: str):
+    def generate_one_line_text(self, typography: Dict, text: str, max_width: int = 0, text_align: str = "left"):
         font_family = typography.get('font_family', 'Arial')
         font_size = typography.get('font_size', '16px')
         font_weight = typography.get('font_weight', 'normal')
         
-        text_left = f'<text dominant-baseline="hanging" text-anchor="start" style="font-family: {font_family}; font-size: {font_size}; font-weight: {font_weight};" transform="translate(0, 0)">'
+        text_anchor = "start"
+        x = 0
+        if text_align == "center":
+            text_anchor = "middle"
+            x = max_width / 2
+        elif text_align == "right":
+            text_anchor = "end"
+            x = max_width
+        text_left = f'<text dominant-baseline="hanging" text-anchor="{text_anchor}" style="font-family: {font_family}; font-size: {font_size}; font-weight: {font_weight};" \
+            transform="translate({x}, 0)">'
         text_right = '</text>'
         return text_left + text + text_right
 

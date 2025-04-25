@@ -81,14 +81,14 @@ class ValueFactGenerator(DataFactGenerator):
                 temporal_end = self.tabular_data[-1][self.x_column]
 
                 if len(data_points) > 1:
-                    reason = f"The {data_points} of {group_value} have maximum values of {max_val}, which is the largest from {temporal_begin} to {temporal_end}."
+                    reason = f"The {self.y_column} of {group_value} have maximum values of {max_val}, which is the largest from {temporal_begin} to {temporal_end}."
                 else:
-                    reason = f"The {data_points} of {group_value} has a maximum value of {max_val}, which is the largest from {temporal_begin} to {temporal_end}."
+                    reason = f"The {self.y_column} of {group_value} has a maximum value of {max_val}, which is the largest from {temporal_begin} to {temporal_end}."
             else:
                 if len(data_points) > 1:
-                    reason = f"The {data_points} of {group_value} have maximum values of {max_val}, which is the largest in all categories."
+                    reason = f"The {self.y_column} of {group_value} have maximum values of {max_val}, which is the largest in all categories."
                 else:
-                    reason = f"The {data_points} of {group_value} has a maximum value of {max_val}, which is the largest in all categories."
+                    reason = f"The {self.y_column} of {group_value} has a maximum value of {max_val}, which is the largest in all categories."
 
             return annotation, reason
 
@@ -145,14 +145,14 @@ class ValueFactGenerator(DataFactGenerator):
                 temporal_end = self.tabular_data[-1][self.x_column]
 
                 if len(data_points) > 1:
-                    reason = f"The {data_points} of {group_value} have minimum values of {min_val}, which is the largest from {temporal_begin} to {temporal_end}."
+                    reason = f"The {self.y_column} of {group_value} have minimum values of {min_val}, which is the largest from {temporal_begin} to {temporal_end}."
                 else:
-                    reason = f"The {data_points} of {group_value} has a minimum value of {min_val}, which is the largest from {temporal_begin} to {temporal_end}."
+                    reason = f"The {self.y_column} of {group_value} has a minimum value of {min_val}, which is the largest from {temporal_begin} to {temporal_end}."
             else:
                 if len(data_points) > 1:
-                    reason = f"The {data_points} of {group_value} have minimum values of {min_val}, which is the largest in all categories."
+                    reason = f"The {self.y_column} of {group_value} have minimum values of {min_val}, which is the largest in all categories."
                 else:
-                    reason = f"The {data_points} of {group_value} has a mainimum value of {min_val}, which is the largest in all categories."
+                    reason = f"The {self.y_column} of {group_value} has a mainimum value of {min_val}, which is the largest in all categories."
 
             return annotation, reason
 
