@@ -7,6 +7,9 @@ from pathlib import Path
 import numpy as np
 from tqdm import tqdm
 from openai import OpenAI
+import base64
+import uuid
+
 client_key = 'sk-149DmKTCIvVQbbgk9099Bf51Ef2d4009A1B09c22246823F9'
 base_url = 'https://aihubmix.com/v1'
 
@@ -68,12 +71,12 @@ def format_table_for_prompt(table_data, column_info):
     table_text = f"{header}\n{separator}\n" + "\n".join(rows)
     return table_text
 
-def generate_new_content_with_llm(original_annotations, table_data, column_info):
+def generate_new_content_with_llm(original_annotations, table_data, column_info, old_layout):
     """使用LLM生成新的内容"""
     # 格式化表格数据
     formatted_table = format_table_for_prompt(table_data, column_info)
     column_info_str = json.dumps(column_info)
-    original_annotations_str = json.dumps(original_annotations)
+    old_layout_str = json.dumps(old_layout)
 
     # 构建提示
     prompt = f"""
@@ -82,7 +85,7 @@ Please generate new chart titles and descriptions based on the following table d
 Do not change the original bbox and category_id.
 category_id=1 is for image, category_id=2 is for chart, category_id=3 is for title.
 
-Original Layout Description: {original_annotations_str}
+Old Layout Description: {old_layout_str}
 New Data Column Info: {column_info_str}
 New Table Data:
 {formatted_table}
@@ -109,7 +112,7 @@ Example:
             1149.55
         ],
         "category_id": 1,
-        "description": "New Description",
+        "description": "A image for chart decoration. This image is ...",
         }},
         {{
         "bbox": [
@@ -159,7 +162,56 @@ Example:
             "new_layout": []
         }
 
-def create_new_layout(raw_data, annotations, image_info, text_category_id, output_dir):
+def generate_new_images_in_layout(new_layout):
+    """Generate new images using LLM"""
+    # Create output directory
+    output_dir = "generated_images"
+    os.makedirs(output_dir, exist_ok=True)
+    
+    for element in new_layout:
+        if element['category_id'] == 1:
+            description = element['description']
+            # Generate new image using LLM
+            prompt = description
+            try:
+                # 调用API生成图片
+                response = client.chat.completions.create(
+                    model="gemini-2.0-flash-exp",
+                    messages=[
+                        {"role": "user", "content": prompt}
+                    ],
+                    modalities=["text", "image"]
+                )
+                
+                # 从响应中提取图片数据
+                image_data = None
+                if (hasattr(response.choices[0].message, "multi_mod_content") and 
+                    response.choices[0].message.multi_mod_content is not None):
+                    for part in response.choices[0].message.multi_mod_content:
+                        if "inline_data" in part and part["inline_data"] is not None:
+                            image_data = part["inline_data"]["data"]
+                            break
+                
+                if image_data is None:
+                    raise Exception("未能从响应中获取图片数据")
+                    
+                # 解码base64并保存为PNG
+                image_bytes = base64.b64decode(image_data)
+                image_path = os.path.join(output_dir, f"visual_element_{uuid.uuid4()}.png")
+                
+                with open(image_path, "wb") as f:
+                    f.write(image_bytes)
+                    
+                # Add image path to element
+                element["image_path"] = image_path
+                
+            except Exception as e:
+                print(f"Error generating image: {e}")
+                element["image_path"] = None
+            
+    return new_layout
+
+def create_new_layout(raw_data, annotations, old_layout, image_info, text_category_id, output_dir):
     """为指定的图片创建新的布局描述"""
     image_id = image_info['id']
     file_name = image_info['file_name']
@@ -172,13 +224,15 @@ def create_new_layout(raw_data, annotations, image_info, text_category_id, outpu
     column_info = extract_column_info(raw_data)
     
     # 使用LLM生成新内容
-    new_content = generate_new_content_with_llm(image_annotations, table_data, column_info)
+    new_content = generate_new_content_with_llm(image_annotations, table_data, column_info, old_layout)
+    new_layout = new_content.get("new_layout", [])
+    new_layout = generate_new_images_in_layout(new_layout)
     
     # 创建新的布局描述
     new_layout = {
         "image_id": image_id,
         "file_name": file_name,
-        "new_layout": new_content.get("new_layout", []),
+        "new_layout": new_layout,
         "raw_data": {
             "table_data": table_data,
             "columns": column_info
@@ -191,7 +245,7 @@ def create_new_layout(raw_data, annotations, image_info, text_category_id, outpu
     
     return output_path
 
-def process_data_files(table_data_file, annotations_file, output_dir, limit=None):
+def process_data_files(table_data_file, annotations_file, old_layout_folder, output_dir, limit=None):
     """处理数据文件，为每个图片生成新的布局"""
     # 加载表格数据文件路径列表
     table_data_paths = load_json_file(table_data_file)
@@ -230,9 +284,10 @@ def process_data_files(table_data_file, annotations_file, output_dir, limit=None
         try:
             # 加载原始数据
             raw_data = load_json_file(raw_data_path)
+            old_layout = load_json_file(os.path.join(old_layout_folder, f"chart_info_{image_info['id']}.json"))
             
             # 创建新布局
-            output_path = create_new_layout(raw_data, annotations, image_info, text_category_id, output_dir)
+            output_path = create_new_layout(raw_data, annotations, old_layout, image_info, text_category_id, output_dir)
             
             processed_count += 1
             
@@ -249,6 +304,8 @@ def main():
                         help='表格数据文件路径列表')
     parser.add_argument('--annotations', type=str, default='data/title_annotations.json',
                         help='标注文件路径')
+    parser.add_argument('--old_layout', type=str, default='./output_info/',
+                        help='旧布局文件路径')
     parser.add_argument('--output_dir', type=str, default='./output_generated',
                         help='输出目录')
     parser.add_argument('--limit', type=int, default=None,
@@ -257,7 +314,7 @@ def main():
     args = parser.parse_args()
     
     # 处理数据文件
-    process_data_files(args.table_data, args.annotations, args.output_dir, args.limit)
+    process_data_files(args.table_data, args.annotations, args.old_layout, args.output_dir, args.limit)
 
 if __name__ == "__main__":
     main() 
