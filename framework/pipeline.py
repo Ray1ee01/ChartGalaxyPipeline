@@ -88,6 +88,12 @@ MODULES = [
         "output_type": "json"
     },
     {
+        "name": "all",
+        "description": "综合模块(datafact+title+color+image)",
+        "input_type": "json",
+        "output_type": "json"
+    },
+    {
         "name": "infographics_generator",
         "description": "信息图表生成模块",
         "input_type": "json",
@@ -126,93 +132,93 @@ def run_pipeline(input_path, output_path=None, temp_dir=None, modules_to_run=Non
         threads (int, optional): 处理目录时的并发线程数，仅在input_path为目录时生效
         chart_name (str, optional): 指定图表名称，仅对infographics_generator模块有效
     """
-    try:
-        print("modules_to_run: ", modules_to_run)
-        # 如果是create_index模块，单独处理
-        if modules_to_run and 'create_index' in modules_to_run:
-            return run_single_file(
-                input_path=input_path,
-                output_path=output_path,
-                temp_dir=temp_dir,
-                modules_to_run=modules_to_run,
-                chart_name=chart_name
-            )
-            
-        input_path = Path(input_path)
-        output_path = Path(output_path) if output_path else input_path
-        temp_dir = Path(temp_dir) if temp_dir else Path("./tmp")
+    # try:
+    print("modules_to_run: ", modules_to_run)
+    # 如果是create_index模块，单独处理
+    if modules_to_run and 'create_index' in modules_to_run:
+        return run_single_file(
+            input_path=input_path,
+            output_path=output_path,
+            temp_dir=temp_dir,
+            modules_to_run=modules_to_run,
+            chart_name=chart_name
+        )
+        
+    input_path = Path(input_path)
+    output_path = Path(output_path) if output_path else input_path
+    temp_dir = Path(temp_dir) if temp_dir else Path("./tmp")
 
-        if input_path.is_dir():
-            # 如果指定了输出目录且不同于输入目录，创建输出目录
-            if output_path != input_path:
-                output_path.mkdir(parents=True, exist_ok=True)
-            
-            # 获取输入目录下所有JSON文件
-            input_files = list(input_path.glob('*.json'))
-            random.shuffle(input_files)  # 随机打乱文件顺序
-            
-            if threads and threads > 1:
-                # 使用线程池并行处理文件
-                with ProcessPoolExecutor(max_workers=threads) as executor:
-                    futures = []
-                    for input_file in input_files:
-                        # 如果是inplace处理，输出路径就是输入路径
-                        if output_path == input_path:
-                            output_file = input_file
-                        else:
-                            # 确保输出文件保持相同的文件名
-                            output_file = output_path / input_file.name
-                            
-                        future = executor.submit(
-                            run_single_file,
-                            input_path=input_file,
-                            output_path=output_file,
-                            temp_dir=temp_dir,
-                            modules_to_run=modules_to_run,
-                            chart_name=chart_name
-                        )
-                        futures.append(future)
-                    
-                    # 等待所有任务完成并检查结果
-                    results = [future.result() for future in futures]
-                    return all(results)
-            else:
-                # 单线程顺序处理
-                success = True
+    if input_path.is_dir():
+        # 如果指定了输出目录且不同于输入目录，创建输出目录
+        if output_path != input_path:
+            output_path.mkdir(parents=True, exist_ok=True)
+        
+        # 获取输入目录下所有JSON文件
+        input_files = list(input_path.glob('*.json'))
+        random.shuffle(input_files)  # 随机打乱文件顺序
+        
+        if threads and threads > 1:
+            # 使用线程池并行处理文件
+            with ProcessPoolExecutor(max_workers=threads) as executor:
+                futures = []
                 for input_file in input_files:
+                    # 如果是inplace处理，输出路径就是输入路径
                     if output_path == input_path:
                         output_file = input_file
                     else:
+                        # 确保输出文件保持相同的文件名
                         output_file = output_path / input_file.name
-                    
-                    success &= run_single_file(
+                        
+                    future = executor.submit(
+                        run_single_file,
                         input_path=input_file,
                         output_path=output_file,
                         temp_dir=temp_dir,
                         modules_to_run=modules_to_run,
                         chart_name=chart_name
                     )
-                return success
+                    futures.append(future)
+                
+                # 等待所有任务完成并检查结果
+                results = [future.result() for future in futures]
+                return all(results)
         else:
-            # 单文件处理
-            if output_path == input_path:
-                output_file = input_path
-            else:
-                # 如果指定了不同的输出路径，确保它的父目录存在
-                output_path.parent.mkdir(parents=True, exist_ok=True)
-                output_file = output_path
+            # 单线程顺序处理
+            success = True
+            for input_file in input_files:
+                if output_path == input_path:
+                    output_file = input_file
+                else:
+                    output_file = output_path / input_file.name
+                
+                success &= run_single_file(
+                    input_path=input_file,
+                    output_path=output_file,
+                    temp_dir=temp_dir,
+                    modules_to_run=modules_to_run,
+                    chart_name=chart_name
+                )
+            return success
+    else:
+        # 单文件处理
+        if output_path == input_path:
+            output_file = input_path
+        else:
+            # 如果指定了不同的输出路径，确保它的父目录存在
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            output_file = output_path
 
-            return run_single_file(
-                input_path=input_path,
-                output_path=output_file,
-                temp_dir=temp_dir,
-                modules_to_run=modules_to_run,
-                chart_name=chart_name
-            )
+        return run_single_file(
+            input_path=input_path,
+            output_path=output_file,
+            temp_dir=temp_dir,
+            modules_to_run=modules_to_run,
+            chart_name=chart_name
+        )
             
-    except Exception as e:
-        logger.error(f"管道执行失败: {str(e)}")
-        return False
+    # except Exception as e:
+    #     logger.error(f"管道执行失败: {str(e)}")
+    #     return False
     
 def run_single_file(input_path, output_path, temp_dir=None, modules_to_run=None, chart_name=None):
     """
@@ -297,8 +303,65 @@ def run_single_file(input_path, output_path, temp_dir=None, modules_to_run=None,
         module_desc = module_config["description"]
         # logger.info(f"执行模块 {i+1}/{len(modules_to_run)}: {module_name} - {module_desc}")
         
+        # 特殊处理all模块，依次执行datafact_generator、title_generator、color_recommender和image_recommender
+        if module_name == "all":
+            # 数据洞察模块
+            preprocess_module = import_module(f"modules.preprocess.preprocess")
+            if not should_skip_module(module_name, output_path):
+                preprocess_module.process(input=str(current_input), output=str(output_path))
+                current_input = output_path
+
+            datafact_module = import_module("modules.datafact_generator.datafact_generator")
+            if not should_skip_module("datafact_generator", output_path):
+                datafact_module.process(input=str(current_input), output=str(output_path))
+                current_input = output_path
+            
+            # 标题生成模块
+            title_module = import_module("modules.title_generator.title_generator")
+            if not should_skip_module("title_generator", output_path):
+                title_module.process(
+                    input=str(current_input), 
+                    output=str(output_path),
+                    base_url=base_url,
+                    api_key=api_key,
+                    embed_model_path=embed_model_path,
+                    topk=topk,
+                    data_path=text_data_path,
+                    index_path=text_index_path
+                )
+                current_input = output_path
+            
+            # 色彩推荐模块
+            color_module = import_module("modules.color_recommender.color_recommender")
+            if not should_skip_module("color_recommender", output_path):
+                color_module.process(
+                    input=str(current_input), 
+                    output=str(output_path),
+                    base_url=base_url,
+                    api_key=api_key,
+                    embed_model_path=embed_model_path,
+                    data_path=color_data_path,
+                    index_path=color_index_path
+                )
+                current_input = output_path
+            
+            # 图像推荐模块
+            image_module = import_module("modules.image_recommender.image_recommender")
+            if not should_skip_module("image_recommender", output_path):
+                image_module.process(
+                    input=str(current_input), 
+                    output=str(output_path),
+                    base_url=base_url,
+                    api_key=api_key,
+                    embed_model_path=embed_model_path,
+                    data_path=image_data_path,
+                    index_path=image_index_path,
+                    resource_path=image_resource_path
+                )
+                current_input = output_path
+        
         # 特殊处理title_generator模块，传入配置参数
-        if module_name == "title_generator":
+        elif module_name == "title_generator":
             module = import_module(f"modules.{module_name}.{module_name}")
             if not should_skip_module(module_name, output_path):
                 module.process(
@@ -405,10 +468,10 @@ def should_skip_module(module_name: str, output_path: Path) -> bool:
             data = json.load(f)
             
         skip_conditions = {
-            "preprocess": lambda d: "metadata" in d and "data" in d and "variables" in d,
+            "preprocess": lambda d: "metadata" in d and "data" in d and "variables" in d and "processed" in d,
             "chart_type_recommender": lambda d: "chart_type" in d,
             "datafact_generator": lambda d: "datafacts" in d,
-            "title_generator": lambda d: "titles" in d,
+            "title_generator": lambda d: False,#"titles" in d,
             "layout_recommender": lambda d: "variation" in d,
             "color_recommender": lambda d: "colors" in d,
             "image_recommender": lambda d: "images" in d

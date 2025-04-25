@@ -163,15 +163,24 @@ def split_text_into_lines(text, max_width, font_family="Arial", font_size=16, fo
     return lines
 
 class TitleGenerator:
-    def __init__(self, json_data: Dict, max_width = 0, text_align = "left", show_embellishment = True):
+    def __init__(self, json_data: Dict, max_width = 0, text_align = "left", show_embellishment = True, show_sub_title = True):
         self.json_data = json_data
         self.max_width = max_width
         self.text_align = text_align  # 保留接口，但内部只实现左对齐
         self.show_embellishment = show_embellishment
+        self.show_sub_title = show_sub_title
 
     def generate(self):
         self.main_title_svg, self.main_title_bounding_box = self.generate_main_title()
-        self.description_svg, self.description_bounding_box = self.generate_description()
+        if self.show_sub_title:
+            self.description_svg, self.description_bounding_box = self.generate_description()
+        else:
+            self.description_svg = ""
+            self.description_bounding_box = {
+                'width': 0, 'height': 0,
+                'min_x': 0, 'min_y': 0,
+                'max_x': 0, 'max_y': 0
+            }
         primary_color = self.json_data['colors']['other']['primary']
         
         if self.show_embellishment:
@@ -188,17 +197,21 @@ class TitleGenerator:
         return self.composite()
 
     def composite(self):
-        description_shift_y = self.main_title_bounding_box['max_y'] + 25 - self.description_bounding_box['min_y']
-        
-        # 左对齐情况下，直接使用标题的min_x作为基准
-        description_shift_x = self.main_title_bounding_box['min_x'] - self.description_bounding_box['min_x']
-        
-        description_transform = f'translate({description_shift_x}, {description_shift_y})'
-        self.description_svg = self.description_svg.replace('transform="', f'transform="{description_transform} ')
-        self.description_bounding_box['min_x'] += description_shift_x
-        self.description_bounding_box['min_y'] += description_shift_y
-        self.description_bounding_box['max_x'] += description_shift_x
-        self.description_bounding_box['max_y'] += description_shift_y
+        if self.show_sub_title:
+            description_shift_y = self.main_title_bounding_box['max_y'] + 15 - self.main_title_bounding_box['min_y']
+            description_shift_x = self.description_bounding_box['min_x'] - self.main_title_bounding_box['min_x']
+
+            if self.text_align == "right":
+                title_width = self.main_title_bounding_box['max_x'] - self.main_title_bounding_box['min_x']
+                description_width = self.description_bounding_box['max_x'] - self.description_bounding_box['min_x']
+                description_shift_x = title_width - description_width
+            
+            description_transform = f'translate({0}, {description_shift_y})'
+            self.description_svg = self.description_svg.replace('transform="', f'transform="{description_transform} ')
+            self.description_bounding_box['min_x'] += 0
+            self.description_bounding_box['min_y'] += description_shift_y
+            self.description_bounding_box['max_x'] += 0
+            self.description_bounding_box['max_y'] += description_shift_y
         
         # 如果显示装饰块，调整其位置和大小
         if self.show_embellishment:
@@ -238,22 +251,22 @@ class TitleGenerator:
         # 计算整体边界框
         min_x = min(
             self.main_title_bounding_box['min_x'], 
-            self.description_bounding_box['min_x'],
+            self.description_bounding_box['min_x'] if self.show_sub_title else float('inf'),
             self.embellishment_bounding_box['min_x'] if self.show_embellishment else float('inf')
         )
         min_y = min(
             self.main_title_bounding_box['min_y'], 
-            self.description_bounding_box['min_y'],
+            self.description_bounding_box['min_y'] if self.show_sub_title else float('inf'),
             self.embellishment_bounding_box['min_y'] if self.show_embellishment else float('inf')
         )
         max_x = max(
             self.main_title_bounding_box['max_x'], 
-            self.description_bounding_box['max_x'],
+            self.description_bounding_box['max_x'] if self.show_sub_title else float('-inf'),
             self.embellishment_bounding_box['max_x'] if self.show_embellishment else float('-inf')
         )
         max_y = max(
             self.main_title_bounding_box['max_y'], 
-            self.description_bounding_box['max_y'],
+            self.description_bounding_box['max_y'] if self.show_sub_title else float('-inf'),
             self.embellishment_bounding_box['max_y'] if self.show_embellishment else float('-inf')
         )
         
@@ -276,7 +289,7 @@ class TitleGenerator:
 
     def generate_text_element(self, text: str, typography: Dict, max_width: int = 0, text_align: str = "left"):
         """生成文本元素，包括SVG和边界框"""
-        text_svg = self.generate_one_line_text(typography, text)
+        text_svg = self.generate_one_line_text(typography, text, max_width, text_align)
         
         # 使用PIL直接测量文本尺寸
         font_family = typography.get('font_family', 'Arial')
@@ -293,13 +306,13 @@ class TitleGenerator:
 
     def generate_main_title(self):
         """生成主标题"""
-        main_title_text = self.json_data['metadata']['title']
+        main_title_text = self.json_data['titles']['main_title']
         typography = self.json_data['typography']['title']
         return self.generate_text_element(main_title_text, typography, self.max_width, self.text_align)
 
     def generate_description(self):
         """生成描述文本"""
-        description_text = self.json_data['metadata']['description']
+        description_text = self.json_data['titles']['sub_title']
         typography = self.json_data['typography']['description']
         return self.generate_text_element(description_text, typography, self.max_width, self.text_align)
 
@@ -315,12 +328,21 @@ class TitleGenerator:
         }
         return rect, bounding_box
 
-    def generate_one_line_text(self, typography: Dict, text: str):
+    def generate_one_line_text(self, typography: Dict, text: str, max_width: int = 0, text_align: str = "left"):
         font_family = typography.get('font_family', 'Arial')
         font_size = typography.get('font_size', '16px')
         font_weight = typography.get('font_weight', 'normal')
         
-        text_left = f'<text dominant-baseline="hanging" text-anchor="start" style="font-family: {font_family}; font-size: {font_size}; font-weight: {font_weight};" transform="translate(0, 0)">'
+        text_anchor = "start"
+        x = 0
+        if text_align == "center":
+            text_anchor = "middle"
+            x = max_width / 2
+        elif text_align == "right":
+            text_anchor = "end"
+            x = max_width
+        text_left = f'<text dominant-baseline="hanging" text-anchor="{text_anchor}" style="font-family: {font_family}; font-size: {font_size}; font-weight: {font_weight};" \
+            transform="translate({x}, 0)">'
         text_right = '</text>'
         return text_left + text + text_right
 
@@ -391,7 +413,8 @@ def process(
     input_data: Dict = None,
     max_width: int = 500,
     text_align: str = "left",
-    show_embellishment: bool = True
+    show_embellishment: bool = True,
+    show_sub_title: bool = True
 ) -> Union[bool, str]:
     """
     Process function for generating styled title SVG from input data.
@@ -422,7 +445,8 @@ def process(
         # Generate the title SVG
         title_generator = TitleGenerator(data, max_width=max_width, 
                                          text_align=text_align, 
-                                         show_embellishment=show_embellishment)
+                                         show_embellishment=show_embellishment,
+                                         show_sub_title=show_sub_title)
         svg_content, bounding_box = title_generator.generate()
 
         if output:

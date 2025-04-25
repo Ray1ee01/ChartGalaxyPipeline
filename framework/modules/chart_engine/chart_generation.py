@@ -126,7 +126,8 @@ if __name__ == '__main__':
                 js_file=js_wrapper_file,
                 width=width,
                 height=height,
-                framework="echarts"  # 统一使用echarts框架
+                framework="echarts",  # 统一使用echarts框架
+                html_output_path=html_output_path,  # Pass HTML output path
             )
             
             if svg_file is None:

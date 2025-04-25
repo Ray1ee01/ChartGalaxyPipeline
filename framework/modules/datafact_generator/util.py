@@ -60,28 +60,22 @@ class DataFactGenerator:
         self.grouped_data = divide_data_by_group(self.data_columns, self.tabular_data)
 
         # metadata
-        role_map = {col["role"]: col["name"] for col in self.data_columns}
-        self.x_column = role_map.get("x")
-        self.y_column = role_map.get("y")
-        self.group_column = role_map.get("group") # 可能为 None
+        self.x_column = self.data_columns[0]["name"]
+        self.y_column = self.data_columns[1]["name"]
+        self.group_column = self.data_columns[2]["name"] if len(self.data_columns) > 2 and self.data_columns[2]["data_type"] in ["categorical", "temporal"] else None
 
         is_temporal = False
-        for col in self.data_columns:
-            if col["role"] == "x":
-                if col["data_type"] == "temporal":
-                    is_temporal = True
-                else:
-                    is_temporal = False
-                break
+        col = self.data_columns[0]
+        if col["data_type"] == "temporal":
+            is_temporal = True
+        else:
+            is_temporal = False
         self.is_temporal = is_temporal
 
 def divide_data_by_group(data_columns: list[dict[str, Any]], data: list[dict[str, Any]]) -> dict[str, dict[str, list[Any]]]:
-    role_map = {col["role"]: col["name"] for col in data_columns}
-
-    x_column = role_map.get("x")
-    y_column = role_map.get("y")
-    group_column = role_map.get("group") # 可能为 None
-
+    x_column = data_columns[0]["name"]
+    y_column = data_columns[1]["name"]
+    group_column = data_columns[2]["name"] if len(data_columns) > 2 and data_columns[2]["data_type"] in ["categorical", "temporal"] else None
     grouped_data = {}
 
     for idx, row in enumerate(data):

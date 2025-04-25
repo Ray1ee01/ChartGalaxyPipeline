@@ -5,7 +5,7 @@ REQUIREMENTS_BEGIN
     "chart_name": "multiple_line_graph_09",
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["temporal"], ["numerical"], ["categorical"]],
-    "required_fields_range": [[5, 30], [0, "inf"], [2, 10]],
+    "required_fields_range": [[5, 30], ["-inf", "inf"], [2, 10]],
     "required_fields_icons": ["group"],
     "required_other_icons": [],
     "required_fields_colors": ["group"],
@@ -79,7 +79,7 @@ function makeChart(containerSelector, data) {
     // 为了美观，稍微扩展Y轴范围
     const yPadding = (yMax - yMin) * 0.3;
     const yDomainMax = yMax + yPadding;
-    const yDomainMin = Math.max(0, yMin - yPadding); // 确保下限不小于0
+    const yDomainMin = Math.min(0, yMin - yPadding);
     
     const yScale = d3.scaleLinear()
         .domain([yDomainMin, yDomainMax])

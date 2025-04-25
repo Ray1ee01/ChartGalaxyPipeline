@@ -77,7 +77,7 @@ function makeChart(containerSelector, data) {
     // 为了美观，稍微扩展Y轴范围
     const yPadding = (yMax - yMin) * 0.3;
     const yDomainMax = yMax + yPadding;
-    const yDomainMin = Math.max(0, yMin - yPadding); // 确保下限不小于0
+    const yDomainMin = Math.min(0, yMin - yPadding);
     
     const yScale = d3.scaleLinear()
         .domain([yDomainMin, yDomainMax])

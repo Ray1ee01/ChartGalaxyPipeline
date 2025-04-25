@@ -1,7 +1,7 @@
 '''
 REQUIREMENTS_BEGIN
 {
-    "chart_type": "Pie Chart",
+    "chart_type": "Multiple Pie Chart",
     "chart_name": "multiple_pie_chart_01",
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],

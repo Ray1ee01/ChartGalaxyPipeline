@@ -1,7 +1,7 @@
 '''
 REQUIREMENTS_BEGIN
 {
-    "chart_type": "Donut Chart",
+    "chart_type": "Multiple Donut Chart",
     "chart_name": "multiple_donut_chart_02",
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],

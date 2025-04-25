@@ -269,8 +269,11 @@ class RagTitleGenerator:
             "Based on the above examples (if any), please generate a clear and concise TITLE for the following data.\n"
             f"{processed_text}\n\n"
             "Important instructions:\n"
-            "1. The title should focus solely on what the data is about, without analyzing specific "
-            "data characteristics, trends, distributions, or comparisons.\n"
+            "1. The title should focus on the most significant feature of the data. "
+            "You can choose one or more key insights from the Data Facts that best "
+            "illustrate the issue, or identify the most notable feature yourself.\n"
+            # "2. The title should focus solely on what the data is about, without analyzing specific "
+            # "data characteristics, trends, distributions, or comparisons.\n"
             f"2. The title should be strictly under {max_title_words} words.\n"
             "3. Use exact terminology from the data sources.\n"
             "4. Do NOT use these verbs: show, reveal, illustrate, analyze.\n"
@@ -292,21 +295,17 @@ class RagTitleGenerator:
             "Based on the above examples (if any), please generate a precise DESCRIPTION for the following data.\n"
             f"{processed_text}\n\n"
             "Important instructions:\n"
-            "1. The description should focus on the most significant feature of the data. "
-            "You can choose one or more key insights from the Data Facts that best "
-            "illustrate the issue, or identify the most notable feature yourself.\n"
-            "2. Do NOT describe statistical properties (e.g., highest/lowest values, changes over time, "
+            "1. Do NOT describe statistical properties (e.g., highest/lowest values, changes over time, "
             "ratios, percentages). Simply summarize what the dataset reports.\n"
-            "3. Use one of the following structured templates where applicable (choose the highest-priority one that fits):\n"
+            "2. Use one of the following structured templates where applicable (choose the highest-priority one that fits):\n"
             "   - Share/Percentage of [group] (who [action/characteristic]) (by [region/timeframe] (in [units])).\n"
             "   - Number/Total/Amount of [entity] (in [region/timeframe]) (, measured in [units]).\n"
             "   - Top/Leading N [entities] by [indicator] (, in [timeframe/region]).\n"
             "   - [Indicator] for [group/topic] (in [region/timeframe]) (, measured in [units]).\n"
-            f"4. The description should be strictly under {max_description_words} words.\n"
-            "5. Use exact terminology from the data sources.\n"
-            "6. Do NOT use these verbs: show, reveal, illustrate, analyze.\n"
-            "7. Avoid subjective statements (e.g., 'An analysis of...'). Focus on main metrics: Share, Rate, Number, Percentage.\n"
-            "8. ONLY return the description as a string, no extra text."
+            f"3. The description should be strictly under {max_description_words} words.\n"
+            "4. Use exact terminology from the data sources.\n"
+            "5. Do NOT use these verbs: show, reveal, illustrate, analyze.\n"
+            "6. ONLY return the description as a string, no extra text."
         )
 
         response_description = self.client.chat.completions.create(
@@ -366,6 +365,8 @@ def process(
                 data = json.load(f)
         else:
             data = input_data
+        if output is None:
+            output = input
 
         main_title, sub_title = generator.generate_title_description(data, topk=topk)
 

@@ -1,0 +1,439 @@
+# Political
+1. Voter Turnout Percentages by Country (2000-2024)
+2. Military Spending as % of GDP by Nation
+3. Gender Representation in Global Parliaments
+4. Campaign Finance Comparison Across Elections
+5. Trust in Government Institutions (Survey Data)
+6. Corruption Perception Index Rankings
+7. Political Polarization Metrics Over Time
+8. Electoral College vs. Popular Vote Margins
+9. Lobbying Expenditures by Industry Sector
+10. UN Resolution Voting Patterns
+11. Democratic Index Scores by Region
+12. Presidential Approval Ratings Comparison
+13. Refugee Acceptance Rates by Country
+14. Election Spending Per Voter Metrics
+15. Political Party Membership Trends
+16. Social Program Budget Allocation Comparison
+17. Media Coverage Minutes by Political Issue
+18. Sanctions Economic Impact Assessment
+19. Public Opinion Shifts on Policy Issues
+20. Diplomatic Mission Distribution by Country
+
+# Sports
+1. Medal Count Distribution in Olympic Games
+2. Athlete Salary Comparison Across Sports Leagues
+3. TV Viewership Statistics for Major Championships
+4. Win-Loss Ratios of Top Teams in Last Decade
+5. Revenue Generation by Sport Type
+6. Player Performance Metrics Comparison
+7. Stadium Attendance Trends (2010-2025)
+8. Injury Rates by Sport and Position
+9. Sports Betting Market Growth Analysis
+10. Sponsorship Deal Values by Sport
+11. Transfer Fee Inflation in Soccer
+12. Gender Pay Gap in Professional Sports
+13. Championship Tournament Ratings Comparison
+14. Sports Equipment Sales Volumes
+15. Youth Participation Rates by Sport
+16. Training Hours vs. Performance Correlation
+17. Ticket Price Evolution for Major Events
+18. Athlete Endorsement Revenue Breakdown
+19. Fan Demographic Analysis by Sport
+20. Sports Streaming Subscription Growth Metrics
+
+# Environmental
+1. Carbon Emission Trends by Country (1990-2025)
+2. Deforestation Rates Across Major Rainforests
+3. Renewable Energy Adoption Percentage by Region
+4. Ocean Plastic Concentration Measurements
+5. Species Extinction Rate Comparison
+6. Air Quality Index Rankings of Major Cities
+7. Global Temperature Anomaly Progression
+8. Waste Recycling Rates Across Nations
+9. Water Scarcity Risk Assessment by Region
+10. Ecosystem Services Economic Valuation
+11. Climate Funding Allocation Analysis
+12. Habitat Loss Percentages by Ecosystem
+13. Carbon Footprint Comparison by Industry
+14. Green Technology Investment Trends
+15. Sea Level Rise Measurements by Coastline
+16. Greenhouse Gas Emission Sources Breakdown
+17. Sustainable City Performance Metrics
+18. Pollution Health Cost Estimates
+19. Biodiversity Index Comparison by Country
+20. Energy Efficiency Gains by Sector
+
+# Technology
+1. Smartphone Market Share Evolution
+2. Data Breach Impact by Industry
+3. Technology Adoption Rates by Demographic
+4. R&D Spending Comparison by Tech Companies
+5. Patent Filing Trends by Country
+6. Internet Speed Rankings Globally
+7. Cloud Computing Growth Metrics
+8. AI Investment by Application Area
+9. Semiconductor Manufacturing Capacity
+10. Software Development Cost Comparison
+11. Technology Job Growth by Specialty
+12. Digital Transformation ROI by Industry
+13. Venture Capital Funding in Tech Sectors
+14. Internet of Things Device Proliferation
+15. Quantum Computing Performance Benchmarks
+16. Cybersecurity Spending Distribution
+17. 5G Coverage Expansion Measurements
+18. Tech Startup Valuation Comparison
+19. Digital Divide Metrics by Region
+20. Robotics Deployment by Industry Sector
+
+# Cuisine
+1. Global Spice Consumption Patterns
+2. Restaurant Industry Revenue by Cuisine Type
+3. Food Waste Measurement by Country
+4. Ingredient Price Fluctuation Analysis
+5. Nutritional Content Comparison of Diets
+6. Food Miles Calculation for Common Products
+7. Restaurant Rating Distribution Analysis
+8. Cooking Method Energy Efficiency
+9. Food Delivery Market Growth by Region
+10. Coffee Consumption Metrics Globally
+11. Organic Food Premium Cost Analysis
+12. Food Allergy Prevalence by Region
+13. Restaurant Startup Cost Breakdown
+14. Caloric Intake Comparison Across Cultures
+15. Food Export Value by Country
+16. Chef-to-Population Ratio by City
+17. Food Festival Attendance Metrics
+18. Fast Food Consumption Trends
+19. Wine Production Volume by Region
+20. Cuisine Popularity on Social Media Metrics
+
+# Public Health
+1. Vaccination Coverage Rates by Country
+2. Healthcare Spending as % of GDP Comparison
+3. Life Expectancy Trends by Region
+4. Disease Burden Distribution Analysis
+5. Medical Professional Density by Population
+6. Pharmaceutical R&D Investment Comparison
+7. Mental Health Disorder Prevalence Rates
+8. Hospital Bed Availability per Capita
+9. Insurance Coverage Percentage by Country
+10. Preventable Death Statistics Analysis
+11. Health Literacy Score Comparison
+12. Maternal Mortality Rate Trends
+13. Obesity Rate Evolution by Country
+14. Healthcare Access Inequality Metrics
+15. Pandemic Response Effectiveness Measures
+16. Public Health Budget Allocation Comparison
+17. Telemedicine Adoption Rate Growth
+18. Antibiotic Resistance Prevalence Mapping
+19. Smoking Rate Decline Comparison
+20. Healthcare Worker Burnout Statistics
+
+# Space Exploration
+1. Space Mission Budget Comparison by Country
+2. Satellite Launch Frequency Trends
+3. Exoplanet Discovery Rate Timeline
+4. Space Debris Quantity Measurement
+5. Mars Mission Cost Analysis
+6. Astronaut Time in Space Records
+7. Rocket Launch Success Rate Comparison
+8. Space Tourism Investment Growth
+9. Telescope Resolution Capability Evolution
+10. Space Agency Funding Comparison
+11. Private vs. Public Space Investment Trends
+12. Space Mining Economic Potential Analysis
+13. Interplanetary Mission Duration Comparison
+14. Radiation Exposure Measurement in Space
+15. Mission Control Staff Size by Program
+16. Spacecraft Velocity Achievement Records
+17. Space Industry Job Creation Metrics
+18. Satellite Communication Bandwidth Growth
+19. International Space Station Cost Breakdown
+20. Lunar Surface Exploration Coverage Metrics
+
+# Economic Trends
+1. GDP Growth Rate Comparison by Country
+2. Inflation Rate Fluctuation Analysis
+3. Income Inequality Gini Coefficient Trends
+4. Stock Market Performance Metrics
+5. Currency Exchange Rate Volatility
+6. Employment Rate by Sector Analysis
+7. National Debt as Percentage of GDP
+8. Housing Price Index Comparison
+9. Interest Rate Historical Patterns
+10. Trade Balance Metrics by Nation
+11. Foreign Direct Investment Flow Analysis
+12. Consumer Spending Distribution
+13. Cryptocurrency Market Capitalization
+14. Corporate Profit Margin Comparison
+15. Economic Mobility Metrics by Region
+16. Tax Revenue Collection Efficiency
+17. E-commerce Growth Rate by Market
+18. Retirement Savings Adequacy Measurement
+19. Gig Economy Worker Percentage Growth
+20. Economic Impact of Natural Disasters
+
+# Art
+1. Auction Price Records by Art Movement
+2. Museum Attendance Figures Comparison
+3. Art Market Volume by Region
+4. Artist Income Distribution Analysis
+5. Public Art Funding by City
+6. Gallery Space Square Footage Trends
+7. Art Education Budget Allocation
+8. Art Media Popularity Evolution
+9. Exhibition Cost-to-Revenue Ratio
+10. Art Collection Insurance Value Trends
+11. Digital Art NFT Sales Volume
+12. Art Festival Economic Impact Measurement
+13. Artist Gender Representation in Museums
+14. Art Restoration Cost Analysis
+15. Art Book Publishing Revenue
+16. Online Art Marketplace Growth Metrics
+17. Color Usage Frequency in Art Periods
+18. Creative Industry Employment Statistics
+19. Art Grant Distribution Analysis
+20. Museum Acquisition Budget Comparison
+
+# Transportation
+1. Carbon Emissions by Transport Mode
+2. Public Transit Ridership Trends by City
+3. Vehicle Ownership Rates by Country
+4. Traffic Congestion Cost Analysis
+5. Airline Passenger Volume Comparison
+6. High-Speed Rail Network Coverage
+7. Electric Vehicle Adoption Rate Growth
+8. Shipping Container Volume by Port
+9. Transportation Infrastructure Investment
+10. Fuel Efficiency Improvement Metrics
+11. Average Commute Time by City
+12. Ride-sharing Market Penetration
+13. Autonomous Vehicle Testing Miles
+14. Bicycle Infrastructure Expenditure
+15. Traffic Fatality Rate Comparison
+16. Transportation Cost as % of Household Budget
+17. Flight Delay Frequency Analysis
+18. Vehicle Manufacturing Output by Country
+19. Logistics Efficiency Index Comparison
+20. Pedestrian Zone Economic Impact
+
+# Social Media
+1. User Engagement Metrics by Platform
+2. Average Time Spent on Social Media by Age
+3. Content Creator Income Distribution
+4. Ad Revenue per User Comparison
+5. Algorithm Change Impact on Reach
+6. User Growth Rate by Platform
+7. Social Media Job Creation Metrics
+8. Misinformation Spread Velocity Analysis
+9. Demographic Distribution Across Platforms
+10. Sentiment Analysis of Content Categories
+11. Social Commerce Conversion Rates
+12. Platform Switching Behavior Metrics
+13. Video vs. Image Engagement Comparison
+14. Hashtag Effectiveness Measurement
+15. Privacy Concern Survey Results
+16. Social Media Marketing ROI by Industry
+17. Influencer Follower-to-Engagement Ratios
+18. Content Moderation Cost Analysis
+19. Platform Valuation Comparison
+20. Social Media Impact on News Consumption
+
+# Historical
+1. Population Growth Trends Through Centuries
+2. War Casualty Figures Comparison
+3. Economic Output by Empire Size
+4. Literacy Rate Evolution Timeline
+5. Disease Mortality Rate Historical Comparison
+6. Technological Innovation Adoption Rates
+7. Trade Route Volume Analysis
+8. Civilization Longevity Comparison
+9. Language Speaker Population Changes
+10. Currency Value Fluctuation Through History
+11. Migration Pattern Quantification
+12. Architectural Style Distribution Timeline
+13. Life Expectancy Historical Progression
+14. Climate Change Impact on Civilizations
+15. Royal Dynasty Wealth Comparison
+16. Historical Document Preservation Costs
+17. Archaeological Discovery Frequency
+18. Political System Duration Analysis
+19. Religious Adherent Population Changes
+20. Historical Artifact Value Appreciation
+
+# Educational Systems
+1. Educational Spending per Student by Country
+2. Teacher-to-Student Ratio Comparison
+3. Test Score Trends by Education System
+4. Higher Education Enrollment Rates
+5. Student Debt Level Analysis
+6. Graduation Rate Comparison
+7. Education Technology Investment Growth
+8. Learning Outcome Measurement by Method
+9. School Infrastructure Quality Index
+10. Educational Inequality Metrics
+11. Teacher Salary Comparison by Region
+12. Online Course Completion Rates
+13. Vocational vs. Academic Education ROI
+14. School Choice Program Impact Analysis
+15. Education Budget Allocation Breakdown
+16. STEM Education Gender Gap Measurement
+17. Literacy Rate Correlation with Development
+18. Textbook Cost Evolution Analysis
+19. International Student Mobility Trends
+20. Educational Attainment by Demographic
+
+# Wildlife Conservation
+1. Endangered Species Population Trends
+2. Conservation Funding by Region
+3. Habitat Restoration Success Rates
+4. Wildlife Trafficking Volume Measurement
+5. Protected Area Coverage Percentage
+6. Conservation Job Creation Analysis
+7. Species Recovery Program Cost-Effectiveness
+8. Biodiversity Index by Ecosystem
+9. Poaching Incident Frequency Trends
+10. Wildlife Tourism Economic Impact
+11. Breeding Program Success Metrics
+12. Conservation Technology Investment
+13. Human-Wildlife Conflict Incidence Measurement
+14. Wildlife Corridor Effectiveness Analysis
+15. Climate Change Impact on Species Migration
+16. Invasive Species Control Cost Analysis
+17. Conservation NGO Funding Distribution
+18. Volunteer Hours Value in Conservation
+19. Wildlife Population Density Comparison
+20. Conservation Law Enforcement Effectiveness
+
+# Fashion Industry
+1. Fast Fashion Environmental Impact Metrics
+2. Designer Brand Revenue Comparison
+3. Sustainable Fashion Market Growth
+4. Textile Waste Measurement by Country
+5. Fashion Week ROI Analysis
+6. Clothing Price Evolution by Market Segment
+7. Fashion E-commerce Conversion Rates
+8. Worker Wage Comparison Across Regions
+9. Fashion Carbon Footprint by Production Stage
+10. Second-hand Fashion Market Value Growth
+11. Fashion Influencer Marketing Effectiveness
+12. Supply Chain Transparency Score Comparison
+13. Fashion Employment Demographics Analysis
+14. Material Cost Impact on Pricing
+15. Fashion Retail Space Efficiency Metrics
+16. Trend Cycle Duration Analysis
+17. Fashion Start-up Survival Rates
+18. Seasonal Collection Revenue Distribution
+19. Consumer Spending on Fashion by Demographic
+20. Fashion Education Graduate Employment Rates
+
+# Urban Development
+1. Urban Density Comparison by City
+2. Public Space Allocation Percentage
+3. Housing Affordability Index by Metropolitan Area
+4. Infrastructure Investment per Capita
+5. Urban Tree Canopy Coverage Measurement
+6. Commute Time Evolution by Transport Mode
+7. Urban Heat Island Effect Temperature Differential
+8. Mixed-Use Development Economic Impact
+9. Urban Population Growth Rate Comparison
+10. Smart City Technology Implementation ROI
+11. Gentrification Impact on Property Values
+12. Urban Water Management Efficiency Metrics
+13. Pedestrian-Friendly Design Cost-Benefit Analysis
+14. Urban Crime Rate Correlation with Design Features
+15. Building Energy Efficiency Comparison
+16. Urban Food Desert Distribution
+17. Public Transit Accessibility Measurement
+18. Urban Redevelopment Investment Returns
+19. Urban Air Quality Improvement Analysis
+20. City Budget Allocation Comparison
+
+# Entertainment
+1. Streaming Platform Subscriber Growth Comparison
+2. Box Office Revenue Trends by Genre
+3. Video Game Sales Volume by Platform
+4. Concert Ticket Price Evolution
+5. Media Production Budget vs. Revenue Analysis
+6. Entertainment Time Share by Medium
+7. Celebrity Endorsement Value Metrics
+8. Franchise Economic Impact Measurement
+9. Music Streaming Royalty Distribution
+10. Theme Park Attendance Comparison
+11. Entertainment Industry Employment Distribution
+12. Film Production Location Economic Benefit
+13. Event Ticket Resale Market Value
+14. Gaming Industry Revenue Streams Breakdown
+15. Media Consumption Habits by Demographic
+16. Entertainment Stock Performance Comparison
+17. Merchandise Sales as Percentage of Revenue
+18. Award Show Viewership Decline Analysis
+19. Content Piracy Economic Impact Measurement
+20. Virtual Reality Entertainment Adoption Metrics
+
+# Agricultural
+1. Crop Yield Comparison by Farming Method
+2. Agricultural Water Usage Efficiency
+3. Farm Size Distribution by Country
+4. Pesticide Usage Reduction Trends
+5. Organic vs. Conventional Price Premium
+6. Agricultural Subsidies Distribution Analysis
+7. Soil Health Measurement by Region
+8. Farm Equipment Investment ROI
+9. Agricultural Export Value by Product
+10. Food Loss Percentage in Supply Chain
+11. Farm Labor Productivity Comparison
+12. Land Use Efficiency Metrics
+13. Climate Impact on Crop Yields
+14. Agricultural Carbon Sequestration Potential
+15. Livestock Production Efficiency Comparison
+16. Vertical Farming Space Efficiency Analysis
+17. Agricultural Technology Adoption Rates
+18. Seed Variety Performance Metrics
+19. Agricultural Education Impact on Productivity
+20. Farm Income Distribution Analysis
+
+# Cultural Traditions
+1. Festival Economic Impact by Country
+2. Cultural Heritage Tourism Visitor Numbers
+3. Traditional Craft Practitioner Demographics
+4. Language Preservation Investment Effectiveness
+5. Cultural Celebration Participation Rate Trends
+6. Traditional Knowledge Transmission Metrics
+7. Cultural Event Funding Source Distribution
+8. Heritage Site Visitor Impact Measurement
+9. Traditional Music Recording Sales Comparison
+10. Cultural Practice Adaptation Rate Analysis
+11. Traditional Food Economic Value Chain
+12. Cultural Education Hours in School Systems
+13. Traditional Dress Production Economic Impact
+14. Cultural Identity Survey Results by Generation
+15. Heritage Building Restoration Cost Analysis
+16. Cultural Exchange Program Participation Trends
+17. Traditional Performance Attendance Metrics
+18. Cultural Institution Funding Comparison
+19. Digital Documentation of Traditions Investment
+20. Cultural Tourism Revenue Distribution
+
+# Energy
+1. Renewable Energy Cost Decline Curves
+2. Power Generation Mix by Country
+3. Energy Consumption per Capita Comparison
+4. Grid Reliability Metrics by Energy Source
+5. Carbon Intensity of Electricity Generation
+6. Energy Storage Capacity Growth Trends
+7. Solar Panel Efficiency Evolution
+8. Energy Subsidy Distribution Analysis
+9. Nuclear Power Plant Construction Cost Comparison
+10. Energy Infrastructure Investment by Source
+11. Building Energy Efficiency Improvement Metrics
+12. Smart Grid Implementation Cost-Benefit Analysis
+13. Oil Price Historical Volatility Measurement
+14. Energy Poverty Rate Comparison by Region
+15. Energy Job Creation by Sector
+16. Power Plant Capacity Factor Analysis
+17. Transmission Loss Percentage by Grid Type
+18. Energy Innovation Patent Filing Trends
+19. Energy Return on Investment by Source
+20. Energy Market Price Fluctuation Analysis

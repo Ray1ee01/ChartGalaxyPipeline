@@ -110,10 +110,14 @@ def load_themes(file_path: str) -> List[Dict]:
     """Load themes from JSON file"""
     with open(file_path, 'r', encoding='utf-8') as f:
         return json.load(f)
-
-def generate_scenarios_for_theme(theme: Dict) -> List[str]:
-    """Step 1: Generate specific scenarios for a given theme"""
-    prompt = f"""As a data visualization expert, generate 20 diverse and specific scenarios where charts about "{theme['theme']}" ({theme['description']}) would be valuable.
+def generate_scenarios_for_theme(theme: Dict, num_scenarios: int = 5) -> List[str]:
+    """Step 1: Generate specific scenarios for a given theme
+    
+    Args:
+        theme: 主题字典
+        num_scenarios: 要生成的场景数量,默认为5个
+    """
+    prompt = f"""As a data visualization expert, generate {num_scenarios} diverse and specific scenarios where charts about "{theme['theme']}" ({theme['description']}) would be valuable.
 
     REQUIREMENTS:
     - Each scenario must be concrete, specific, and realistic
@@ -123,8 +127,14 @@ def generate_scenarios_for_theme(theme: Dict) -> List[str]:
     - Make each scenario distinctly different from others
     - Scenarios should represent practical visualization needs
     
+    ANALYSIS OBJECT DIVERSITY REQUIREMENTS:
+    - Each scenario must have a clear analysis object (what is being analyzed)
+    - Ensure analysis objects vary across scenarios (countries, companies, technologies, demographics, etc.)
+    - Different scenarios can have overlapping analysis objects, but should not be identical
+    - For example, if one scenario analyzes "renewable energy usage in EU countries", another might analyze "renewable energy adoption by tech companies"
+    
     FORMAT:
-    Return a numbered list (1-20) with one scenario per line. 
+    Return a numbered list (1-{num_scenarios}) with one scenario per line. 
     DO NOT include any introductory or explanatory text.
     """
     
@@ -140,7 +150,7 @@ def generate_scenarios_for_theme(theme: Dict) -> List[str]:
             if scenario:
                 scenarios.append(scenario)
     
-    return scenarios[:20]
+    return scenarios[:num_scenarios]
 
 def select_relevant_datafacts(theme: Dict, scenario: str) -> List[Dict]:
     """Step 2: Select relevant datafacts for the theme and scenario"""
@@ -185,7 +195,7 @@ def select_relevant_datafacts(theme: Dict, scenario: str) -> List[Dict]:
                     selected_facts.append(fact)
                     break
     
-    return selected_facts[:5]
+    return selected_facts[:3]
 
 def extract_json_from_response(response: str) -> str:
     """Extract JSON from LLM response using regex"""
@@ -247,97 +257,6 @@ def validate_generated_data(generated_data, column_recommendation):
                     validation["issues"].append(f"Row {i}, column '{col['name']}' has non-numeric value: {row[col['name']]}")
     
     return validation
-
-def generate_fallback_data(column_recommendation):
-    """当数据生成失败时，生成基本的回退数据"""
-    # 生成简单的示例数据
-    data = []
-    cols = column_recommendation.get("columns", [])
-    
-    # 为每种列类型设置基础值
-    categorical_values = {
-        "Region": ["North", "South", "East", "West"],
-        "Country": ["USA", "China", "Germany", "Brazil", "India"],
-        "Category": ["A", "B", "C", "D"],
-        "Product": ["Product 1", "Product 2", "Product 3"],
-        "Type": ["Type A", "Type B", "Type C"]
-    }
-    
-    temporal_values = {
-        "Year": ["2020", "2021", "2022", "2023"],
-        "Quarter": ["Q1", "Q2", "Q3", "Q4"],
-        "Month": ["Jan", "Feb", "Mar", "Apr", "May", "Jun"]
-    }
-    
-    # 确定每列的可能值
-    column_values = {}
-    for col in cols:
-        if col["data_type"] == "categorical":
-            # 选择一个合理的分类列表
-            for key, values in categorical_values.items():
-                if key.lower() in col["name"].lower():
-                    column_values[col["name"]] = values
-                    break
-            # 如果没有匹配的，使用默认值
-            if col["name"] not in column_values:
-                column_values[col["name"]] = [f"{col['name']} {i}" for i in range(1, 5)]
-        
-        elif col["data_type"] == "temporal":
-            # 选择一个合理的时间列表
-            for key, values in temporal_values.items():
-                if key.lower() in col["name"].lower():
-                    column_values[col["name"]] = values
-                    break
-            # 如果没有匹配的，使用默认年份
-            if col["name"] not in column_values:
-                column_values[col["name"]] = ["2020", "2021", "2022"]
-    
-    # 生成所有组合
-    import itertools
-    categorical_and_temporal_cols = [col["name"] for col in cols 
-                                    if col["data_type"] in ["categorical", "temporal"]]
-    
-    if categorical_and_temporal_cols:
-        # 生成组合
-        combinations = list(itertools.product(
-            *[column_values[col] for col in categorical_and_temporal_cols]
-        ))
-        
-        # 为每个组合生成一行数据
-        for combo in combinations:
-            row = {}
-            # 添加分类和时间值
-            for i, col in enumerate(categorical_and_temporal_cols):
-                row[col] = combo[i]
-            
-            # 添加数值列
-            for col in cols:
-                if col["data_type"] == "numerical":
-                    import random
-                    # 生成合理范围内的随机值
-                    row[col["name"]] = round(random.uniform(10, 100), 2)
-            
-            data.append(row)
-    else:
-        # 如果没有分类或时间列，至少生成几行数据
-        for i in range(5):
-            row = {}
-            for col in cols:
-                if col["data_type"] == "numerical":
-                    import random
-                    row[col["name"]] = round(random.uniform(10, 100), 2)
-                else:
-                    row[col["name"]] = f"{col['name']} {i+1}"
-            data.append(row)
-    
-    return {
-        "data": data,
-        "main_insight": "This is auto-generated fallback data. The original data generation failed.",
-        "titles": {
-            "main_title": f"Sample {column_recommendation.get('selected_combination', 'Data')}",
-            "sub_title": "Automatically generated example"
-        }
-    }
 
 def recommend_columns(theme: Dict, scenario: str, selected_fact: Dict) -> Dict:
     """Step 3: Recommend column structure based on theme, scenario and selected facts"""
@@ -468,38 +387,29 @@ def generate_data(theme: Dict, scenario: str, selected_facts: List[Dict], column
         facts_str = "\n".join([f"- {fact['category']}: {fact['description']}" for fact in selected_facts])
         columns_str = "\n".join([f"- {col['name']} ({col['data_type']}): {col['description']}" for col in column_recommendation['columns']])
         
-        # Determine data size constraints based on column combination with random values
+        # Determine data size constraints based on column combination using ranges
         combination = column_recommendation['selected_combination']
         constraints = []
         
-        # Generate specific random values for different combinations
+        # Generate range constraints for different combinations
         if combination == "categorical + numerical" or combination == "categorical + numerical + numerical":
-            cat_values = random.randint(5, 15)
-            constraints.append(f"First categorical column must have exactly {cat_values} unique values")
+            constraints.append("First categorical column should have between 5-20 unique values")
         
         elif combination == "categorical + numerical + categorical" or combination == "categorical + numerical + numerical + categorical":
-            cat1_values = random.randint(5, 15)
-            cat2_values = random.randint(2, 6)
-            constraints.append(f"First categorical column must have exactly {cat1_values} unique values")
-            constraints.append(f"Second categorical column must have exactly {cat2_values} unique values")
-            max_combinations = min(60, cat1_values * cat2_values)  # Ensure logical limit
-            constraints.append(f"Total unique combinations must not exceed {max_combinations}")
+            constraints.append("First categorical column should have between 5-20 unique values")
+            constraints.append("Second categorical column should have between 2-6 unique values")
+            constraints.append("Total unique combinations should not exceed 60")
         
         elif combination == "temporal + numerical":
-            time_points = random.randint(5, 15)
-            constraints.append(f"Include exactly {time_points} time points")
+            constraints.append("Number of time points should be between 5-20")
         
         elif combination == "temporal + numerical + categorical":
-            time_points = random.randint(5, 15)
-            categories = random.randint(2, 7)
-            constraints.append(f"Include exactly {time_points} time points")
-            constraints.append(f"Include exactly {categories} categories")
+            constraints.append("Number of time points should be between 5-20")
+            constraints.append("Number of categories should be between 2-7")
         
         elif combination == "categorical + numerical + temporal":
-            cat_values = random.randint(5, 15)
-            time_points = random.randint(2, 4)
-            constraints.append(f"First categorical column must have exactly {cat_values} unique values")
-            constraints.append(f"Include exactly {time_points} time points")
+            constraints.append("First categorical column should have between 5-20 unique values")
+            constraints.append("Number of time points should be between 2-4")
         
         constraints_str = "\n".join([f"- {constraint}" for constraint in constraints])
         
@@ -528,6 +438,8 @@ def generate_data(theme: Dict, scenario: str, selected_facts: List[Dict], column
         DATA CONTENT REQUIREMENTS:
         - Generate extremely realistic data that could pass for authentic published statistics
         - Ensure data exhibits the selected key facts while maintaining natural variability
+        - ONLY generate data for the columns specified in COLUMN STRUCTURE above
+        - DO NOT include any additional columns or attributes not listed in COLUMN STRUCTURE
         
         FORMAT:
         Return only valid JSON with this structure:
@@ -569,6 +481,7 @@ def process_theme(theme: Dict, syn_data_dir: str) -> Dict:
     result = {
         'theme': theme['theme'],
         'base_description': theme['description'],
+        'main_category': theme.get('main_category', ''),  # 添加main_category
         'scenarios': []
     }
     
@@ -611,7 +524,7 @@ def process_theme(theme: Dict, syn_data_dir: str) -> Dict:
                         'titles': generated_data.get('titles', {'main_title': '', 'sub_title': ''})
                     }
                     
-                    save_individual_data(theme['theme'], scenario_result, scenario_num, syn_data_dir)
+                    save_individual_data(theme['theme'], scenario_result, scenario_num, syn_data_dir, theme.get('main_category', None))
                     
                 thread_safe_print(f"    ✓ Completed")
             
@@ -636,6 +549,7 @@ def process_theme_wrapper(args):
         return theme['theme'], {
             'theme': theme['theme'],
             'base_description': theme['description'],
+            'main_category': theme.get('main_category', ''),  # 添加main_category
             'scenarios': []
         }
 
@@ -645,12 +559,16 @@ def save_results(results: Dict, output_file: str):
         with open(output_file, 'w', encoding='utf-8') as f:
             json.dump(results, f, indent=2, ensure_ascii=False)
 
-def save_individual_data(theme_name: str, scenario_data: Dict, index: int, syn_data_dir: str):
+def save_individual_data(theme_name: str, scenario_data: Dict, index: int, syn_data_dir: str, main_category: str = None):
     """Save individual scenario data to separate JSON files in syn_data directory"""
-    # Create safe filename from theme and index
-    safe_theme_name = "".join(c for c in theme_name if c.isalnum() or c in [' ', '_']).strip().replace(' ', '_')
+    # Create safe filename from main_category (if available) or theme
+    if main_category:
+        prefix = "".join(c for c in main_category if c.isalnum() or c in [' ', '_']).strip().replace(' ', '_')
+    else:
+        prefix = "".join(c for c in theme_name if c.isalnum() or c in [' ', '_']).strip().replace(' ', '_')
+    
     timestamp = datetime.now().strftime("%H%M%S")
-    filename = f"{safe_theme_name}_scenario_{index}_{timestamp}_{random.randint(10000, 99999)}.json"
+    filename = f"{prefix}_scenario_{index}_{timestamp}_{random.randint(10000, 99999)}.json"
     filepath = os.path.join(syn_data_dir, filename)
     
     try:
@@ -665,7 +583,7 @@ def save_individual_data(theme_name: str, scenario_data: Dict, index: int, syn_d
 def main():
     # File paths
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    theme_file = os.path.join(current_dir, 'theme.json')
+    theme_file = os.path.join(current_dir, 'theme_new.json')
     output_file = os.path.join(current_dir, 'theme_analysis.json')
     
     thread_safe_print(f"Starting data generation process")

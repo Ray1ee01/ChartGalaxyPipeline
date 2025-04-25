@@ -1,10 +1,10 @@
 import numpy as np
 from typing import Tuple
-from .mask_utils import calculate_mask
+from .mask_utils import calculate_mask, expand_mask
 import os
 from PIL import Image
 
-def find_best_size_and_position(main_mask: np.ndarray, image_content: str, padding: int) -> Tuple[int, int, int]:
+def find_best_size_and_position(main_mask: np.ndarray, image_content: str, padding: int, mode: str = "side", chart_bbox: dict = None) -> Tuple[int, int, int]:
     """
     通过降采样加速查找最佳图片尺寸和位置
     
@@ -12,6 +12,8 @@ def find_best_size_and_position(main_mask: np.ndarray, image_content: str, paddi
         main_mask: 主要内容的mask
         image_content: base64图片内容
         padding: 边界padding
+        mode: 放置模式，可选"side"、"background"或"overlay"
+        chart_bbox: 图表边界框，格式为{"x": x, "y": y, "width": width, "height": height}
     
     Returns:
         Tuple[int, int, int]: (image_size, best_x, best_y)
@@ -44,11 +46,25 @@ def find_best_size_and_position(main_mask: np.ndarray, image_content: str, paddi
     
     # 二分查找最佳尺寸
     min_size = max(1, 128 // grid_size)  # 最小尺寸也要降采样
-    max_size = int(min(downsampled_main.shape) * 0.5)
+    max_size = int(min(downsampled_main.shape) * 1)
     best_size = min_size
     best_x = downsampled_padding
     best_y = downsampled_padding
-    best_overlap_ratio = float('inf')
+    
+    if mode == "side":
+        best_overlap_ratio = float('inf')
+    elif mode == "background":
+        best_overlap_ratio = float('inf')
+    else:
+        best_overlap_ratio = 0
+        
+    overlap_threshold = 0.01
+    if mode == "side":
+        overlap_threshold = 0.01
+    elif mode == "background":
+        overlap_threshold = 0.05
+    elif mode == "overlay":
+        overlap_threshold = 0.97
     
     while max_size - min_size >= 2:  # 由于降采样，可以用更小的阈值
         mid_size = (min_size + max_size) // 2
@@ -59,7 +75,8 @@ def find_best_size_and_position(main_mask: np.ndarray, image_content: str, paddi
             <image width="{original_size}" height="{original_size}" href="{image_content}"/>
         </svg>"""
         image_mask = calculate_mask(temp_svg, original_size, original_size, 0, grid_size=grid_size, bg_threshold=240)
-        
+        if mode == "background":
+            image_mask = expand_mask(image_mask, 10)
         # Save the original image mask to PNG for debugging
         os.makedirs('tmp', exist_ok=True)
         mask_image = Image.fromarray((image_mask * 255).astype(np.uint8))
@@ -76,49 +93,116 @@ def find_best_size_and_position(main_mask: np.ndarray, image_content: str, paddi
                 downsampled_image[i, j] = 1 if np.any(grid == 1) else 0
         
         # 计算有效的搜索范围
-        y_range = downsampled_h - mid_size - downsampled_padding * 2
-        x_range = downsampled_w - mid_size - downsampled_padding * 2
-        
-        if y_range <= 0 or x_range <= 0:
-            max_size = mid_size - 1
-            continue
+        if mode == "background" and chart_bbox is not None:
+            # 将chart_bbox转换到降采样尺度
+            chart_x = max(0, chart_bbox["x"] // grid_size)
+            chart_y = max(0, chart_bbox["y"] // grid_size)
+            chart_width = min(chart_bbox["width"] // grid_size, downsampled_w - chart_x)
+            chart_height = min(chart_bbox["height"] // grid_size, downsampled_h - chart_y)
+            
+            # 确保搜索范围在chart_bbox内
+            y_range = chart_height - mid_size - downsampled_padding * 2
+            x_range = chart_width - mid_size - downsampled_padding * 2
+            
+            if y_range <= 0 or x_range <= 0:
+                max_size = mid_size - 1
+                continue
+        else:
+            y_range = downsampled_h - mid_size - downsampled_padding * 2
+            x_range = downsampled_w - mid_size - downsampled_padding * 2
+            
+            if y_range <= 0 or x_range <= 0:
+                max_size = mid_size - 1
+                continue
         
         # 在降采样空间中寻找最佳位置
         min_overlap = float('inf')
+        if mode == "side" or mode == "background":
+            min_overlap = float('inf')
+        elif mode == "overlay":
+            min_overlap = 0
         current_x = downsampled_padding
         current_y = downsampled_padding
+        min_distance = float('inf')
+        mask_center_x = np.mean(np.where(downsampled_main == 1)[1]) if np.any(downsampled_main == 1) else downsampled_w // 2
+        mask_center_y = np.mean(np.where(downsampled_main == 1)[0]) if np.any(downsampled_main == 1) else downsampled_h // 2
+
+        if mode == "background" and chart_bbox is not None:
+            y_start = chart_y + downsampled_padding
+            y_end = chart_y + chart_height - mid_size - downsampled_padding + 1
+            x_start = chart_x + downsampled_padding
+            x_end = chart_x + chart_width - mid_size - downsampled_padding + 1
+        else:
+            y_start = downsampled_padding
+            y_end = downsampled_h - mid_size - downsampled_padding + 1
+            x_start = downsampled_padding
+            x_end = downsampled_w - mid_size - downsampled_padding + 1
         
-        for y in range(downsampled_padding, downsampled_h - mid_size - downsampled_padding + 1):
-            for x in range(downsampled_padding, downsampled_w - mid_size - downsampled_padding + 1):
-                # 提取当前位置的区域
+        for y in range(y_start, y_end):
+            for x in range(x_start, x_end):
                 region = downsampled_main[y:y + mid_size, x:x + mid_size]
                 
-                # 计算重叠
                 overlap = np.sum((region == 1) & (downsampled_image == 1))
                 total = np.sum(downsampled_image == 1)
                 overlap_ratio = overlap / total if total > 0 else 1.0
                 
-                if overlap_ratio < min_overlap:
-                    min_overlap = overlap_ratio
-                    current_x = x
-                    current_y = y
+                if mode == "side" or mode == "background":
+                    if mode == "background" and chart_bbox is not None:
+                        distance_to_left = x - (chart_x + downsampled_padding)
+                        distance_to_right = (chart_x + chart_width - mid_size - downsampled_padding) - x
+                        distance_to_top = y - (chart_y + downsampled_padding)
+                        distance_to_bottom = (chart_y + chart_height - mid_size - downsampled_padding) - y
+                    else:
+                        distance_to_left = x - downsampled_padding
+                        distance_to_right = downsampled_w - mid_size - downsampled_padding - x
+                        distance_to_top = y - downsampled_padding
+                        distance_to_bottom = downsampled_h - mid_size - downsampled_padding - y
+
+                    distance_to_border = min(distance_to_left, distance_to_right, distance_to_top, distance_to_bottom)
+                    if overlap_ratio < min_overlap or (overlap_ratio < overlap_threshold and distance_to_border < min_distance):
+                        min_overlap = overlap_ratio
+                        current_x = x
+                        current_y = y
+                        min_distance = distance_to_border
+                elif mode == "overlay":
+                    distance_to_center = np.sqrt(((x + mid_size / 2 - mask_center_x) ** 2 + (y + mid_size / 2 - mask_center_y) ** 2))
+                    if overlap_ratio > min_overlap or (overlap_ratio > overlap_threshold and distance_to_center < min_distance):
+                        min_overlap = overlap_ratio
+                        current_x = x
+                        current_y = y
+                        min_distance = distance_to_center
         
-        print(f"Trying size {mid_size * grid_size}x{mid_size * grid_size}, minimum overlap ratio: {min_overlap:.3f}")
+        # print(f"Trying size {mid_size * grid_size}x{mid_size * grid_size}, minimum overlap ratio: {min_overlap:.3f}")
         
-        if min_overlap < 0.01:
-            best_size = mid_size
-            best_overlap_ratio = min_overlap
-            best_x = current_x
-            best_y = current_y
-            min_size = mid_size + 1
-        else:
-            max_size = mid_size - 1
-    
-    # 将结果转换回原始尺度
+        if mode == "side" or mode == "background":
+            if min_overlap < overlap_threshold:
+                best_size = mid_size
+                best_overlap_ratio = min_overlap
+                best_x = current_x
+                best_y = current_y
+                min_size = mid_size + 1
+            else:
+                max_size = mid_size - 1
+        elif mode == "overlay":
+            if min_overlap > overlap_threshold:
+                best_size = mid_size
+                best_overlap_ratio = min_overlap
+                best_x = current_x
+                best_y = current_y
+                min_size = mid_size + 1
+            else:
+                max_size = mid_size - 1
+
+    if best_overlap_ratio > overlap_threshold and (mode == "side" or mode == "background"):
+        return 0, 0, 0
+    if best_overlap_ratio < overlap_threshold and mode == "overlay":
+        return 0, 0, 0
+
     final_size = best_size * grid_size
     final_x = best_x * grid_size
     final_y = best_y * grid_size
     
+    '''
     # 生成最终尺寸的图片mask
     temp_svg = f"""<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="{final_size}" height="{final_size}">
         <image width="{final_size}" height="{final_size}" href="{image_content}"/>
@@ -136,5 +220,5 @@ def find_best_size_and_position(main_mask: np.ndarray, image_content: str, paddi
     combined_image.save('tmp/all_mask.png')
     
     print(f"Final result: size={final_size}x{final_size}, position=({final_x}, {final_y}), overlap ratio={best_overlap_ratio:.3f}")
-    
+    '''
     return final_size, final_x, final_y 

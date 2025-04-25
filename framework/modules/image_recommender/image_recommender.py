@@ -24,17 +24,17 @@ class ImageRecommender:
         self.special_icon_index = os.path.join(self.special_icons, 'data.json')
         self.special_categories = ["country"]
         
-    def create_query_text_for_value(self, input_data: Dict, group_value: str) -> str:
+    def create_query_text_for_value(self, input_data: Dict, group_value: str, group_col: str) -> str:
         """Create a text query from input data for finding similar images."""
-        titles = input_data.get("titles", {})
+        # titles = input_data.get("titles", {})
         text_parts = []
 
         text_parts.append(group_value)
-        columns = [col["name"] + " (" + col["description"] + ")" for col in input_data.get("data", {}).get("columns", [])]
+        columns = [col["name"] + " (" + col["description"] + ")" for col in input_data.get("data", {}).get("columns", []) if col["name"] == group_col]
         text_parts.append("Columns: " + ", ".join(columns))
 
-        if "main_title" in titles:
-            text_parts.append(titles["main_title"])
+        # if "main_title" in titles:
+        #    text_parts.append(titles["main_title"])
 
         return "; ".join(text_parts)
 
@@ -157,7 +157,7 @@ class ImageRecommender:
             # Randomly select a type
             import random
             available_types = list(special_icons[category].keys())
-            selected_type = random.choice(available_types)
+            selected_type = "circle"#random.choice(available_types)
             icons = special_icons[category][selected_type]
             
             model = self.model
@@ -187,7 +187,7 @@ class ImageRecommender:
             logger.error(f"Error processing special icons: {str(e)}")
             return None
 
-    def process_normal_icons(self, input_data: Dict, unique_values: List) -> Dict:
+    def process_normal_icons(self, input_data: Dict, unique_values: List, group_col: str) -> Dict:
         """
         Process icons for normal categories using image search
         
@@ -200,7 +200,7 @@ class ImageRecommender:
         """
         all_group_icons = {}
         for value in unique_values:
-            group_query = self.create_query_text_for_value(input_data, str(value))
+            group_query = self.create_query_text_for_value(input_data, str(value), group_col)
             group_icons = self.index_builder.search(group_query, top_k=20, image_type='icon')
             
             all_group_icons[str(value)] = [
@@ -435,7 +435,7 @@ Please respond in JSON format:
                     "data": data_dict,
                     "titles": input_data.get("metadata", {}).get("titles", {})
                 }
-                icons = self.process_normal_icons(column_input, unique_values)
+                icons = self.process_normal_icons(column_input, unique_values, group_col)
                 result["group_icons"][column_key] = icons
         
         return self.process_recommendation_result(result)

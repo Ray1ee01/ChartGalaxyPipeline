@@ -218,7 +218,7 @@ def load_d3js(json_data=None, output_file=None, js_file=None, width=None, height
     <head>
         <meta charset="utf-8">
         <title>D3.js Chart</title>
-        <script src="%s"></script>
+        %s
         <style>
             body {
                 font-family: Arial, sans-serif;
@@ -269,9 +269,16 @@ def load_d3js(json_data=None, output_file=None, js_file=None, width=None, height
     
     # 获取D3.js库文件的绝对路径
     d3_lib_path = os.path.abspath(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static', 'lib', 'd3.min.js'))
-    
+    d3_voronoi_lib_path = os.path.abspath(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static', 'lib', 'd3-voronoi-map.min.js'))
+    d3_weighted_voronoi_lib_path = os.path.abspath(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static', 'lib', 'd3-weighted-voronoi.min.js'))
+    d3_sankey_lib_path = os.path.abspath(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static', 'lib', 'd3-sankey.min.js'))
     # 使用文件协议的URL (用于SVG渲染)
     d3_lib_url = f"file://{d3_lib_path}"
+    d3_voronoi_lib_url = f"file://{d3_voronoi_lib_path}"
+    d3_weighted_voronoi_lib_url = f"file://{d3_weighted_voronoi_lib_path}"
+    d3_sankey_lib_url = f"file://{d3_sankey_lib_path}"
+    lib_urls = [d3_lib_url, d3_voronoi_lib_url, d3_weighted_voronoi_lib_url, d3_sankey_lib_url]
+    lib_urls_str = "\n".join([f"<script src='{url}'></script>" for url in lib_urls])
 
     utils_lib_path = os.path.abspath(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static', 'lib', 'utils.js'))
 
@@ -280,7 +287,7 @@ def load_d3js(json_data=None, output_file=None, js_file=None, width=None, height
     js_code = _load_js_code(js_file)
     
     # Create HTML content    
-    formatted_html = html_template % (d3_lib_url, width, height)
+    formatted_html = html_template % (lib_urls_str, width, height)
     formatted_html = formatted_html.replace('JSON_DATA_PLACEHOLDER', json.dumps(json_data))
     formatted_html = formatted_html.replace('JS_CODE_PLACEHOLDER', js_code)
     formatted_html = formatted_html.replace('UTILS_LIB_PLACEHOLDER', utils_code)
@@ -331,43 +338,6 @@ def render_chart_to_svg(json_data, output_svg_path, \
         height = height or h
     
     if framework.lower() == "vegalite":
-        # json_data['variation'] = {
-        #     "background": "no",
-        #     "image_chart": "side",
-        #     "image_title": "none",
-        #     "icon_mark": "none",
-        #     "axis_label": "none",
-        #     "axes": {
-        #         "x_axis": "yes",
-        #         "y_axis": "no"
-        #     }
-        # }
-        # json_data['colors'] = {
-        #     "field": {
-        #         "Ended": "#a5a5a5",
-        #         "Still active": "#d61822"
-        #     },
-        #     "other": {
-        #         "primary": "#efb118",
-        #         "secondary": "#6cc5b0",
-        #     },
-        #     "available_colors": [
-        #         "#efb118",
-        #         "#6cc5b0",
-        #         "#3ca951",
-        #         "#ff8ab7",
-        #         "#a463f2",
-        #         "#97bbf5"
-        #     ],
-        #     "background_color": "#FFFFFF",
-        #     "text_color": "#000000"
-        # }
-        # json_data['images'] = {
-        #     "other": {
-        #         # 提供一个base64的图片
-        #         "primary": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+ip1sAAAAASUVORK5CYII="
-        #     }
-        # }
         # Use vegalite_py template
         template = js_file
         template_root = "modules.chart_engine.template.vegalite_py"
@@ -432,15 +402,33 @@ def render_chart_to_svg(json_data, output_svg_path, \
             
             with open(html_file, 'r', encoding='utf-8') as f:
                 html_content = f.read()
-            lib_file = 'echarts.min.js' if framework.lower().startswith('echarts') else 'd3.min.js'
-            file_pattern = r'file://.*?/' + lib_file
-            
+                
             if framework.lower().startswith('echarts'):
+                lib_file = 'echarts.min.js'
+                file_pattern = r'file://.*?/' + lib_file
                 cdn_url = "https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"
+                html_content = re.sub(file_pattern, cdn_url, html_content)
             else:  # D3.js
+                # For D3.js, we need to replace three different URLs
+                # Replace d3.min.js
+                d3_file_pattern = r'file://.*?/d3\.min\.js'
                 cdn_url = "https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"
-            
-            html_content = re.sub(file_pattern, cdn_url, html_content)
+                html_content = re.sub(d3_file_pattern, cdn_url, html_content)
+                
+                # Replace d3-voronoi-map.min.js
+                voronoi_file_pattern = r'file://.*?/d3-voronoi-map\.min\.js'
+                cdn_url_voronoi = "https://cdn.jsdelivr.net/npm/d3-voronoi-map@2.1.1/build/d3-voronoi-map.min.js"
+                html_content = re.sub(voronoi_file_pattern, cdn_url_voronoi, html_content)
+                
+                # Replace d3-weighted-voronoi.min.js
+                weighted_voronoi_file_pattern = r'file://.*?/d3-weighted-voronoi\.min\.js'
+                cdn_url_weighted_voronoi = "https://cdn.jsdelivr.net/npm/d3-weighted-voronoi@1.1.3/build/d3-weighted-voronoi.min.js"
+                html_content = re.sub(weighted_voronoi_file_pattern, cdn_url_weighted_voronoi, html_content)
+                
+                # Replace d3-sankey.min.js
+                sankey_file_pattern = r'file://.*?/d3-sankey\.min\.js'
+                cdn_url_sankey = "https://cdn.jsdelivr.net/npm/d3-sankey@0.12.3/dist/d3-sankey.min.js"
+                html_content = re.sub(sankey_file_pattern, cdn_url_sankey, html_content)
             
             with open(html_output_path, 'w', encoding='utf-8') as f:
                 f.write(html_content)
