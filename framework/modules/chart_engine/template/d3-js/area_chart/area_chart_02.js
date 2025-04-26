@@ -26,7 +26,7 @@ REQUIREMENTS_END
 function makeChart(containerSelector, data) {
     // 提取数据
     const jsonData = data;
-    const chartData = jsonData.data.data;
+    let chartData = jsonData.data.data;
     const variables = jsonData.variables;
     const typography = jsonData.typography;
     const colors = jsonData.colors || {};
@@ -39,6 +39,12 @@ function makeChart(containerSelector, data) {
     // 获取字段名
     const xField = dataColumns[0].name;
     const yField = dataColumns[1].name;
+
+    chartData = temporalFilter(chartData, xField);
+    if (chartData.length === 0) {
+        console.log("chartData is empty");
+        return;
+    }
     
     // 设置尺寸和边距
     const width = variables.width;
@@ -72,8 +78,10 @@ function makeChart(containerSelector, data) {
             d3.max(chartData, d => d[yField]) * 1.2   // 确保正值区域足够
         ])
         .range([chartHeight, 0]);
+    const xRange = d3.extent(chartData, d => xScale(parseDate(d[xField])));
+
     
-        // 添加水平网格线 - 放在数据面积之后
+    // 添加水平网格线 - 放在数据面积之后
     g.selectAll("grid-line")
     .data(yScale.ticks(8))
     .enter()
@@ -93,6 +101,8 @@ function makeChart(containerSelector, data) {
     // 处理数据，在正负值交替处添加零点
     const processedData = [];
     
+    const numericalFormatter = createNumericalFormatter(chartData, yField);
+
     for (let i = 0; i < chartData.length; i++) {
         const current = chartData[i];
         const currentValue = current[yField];
@@ -209,7 +219,7 @@ function makeChart(containerSelector, data) {
             .attr("text-anchor", "end")
             .attr("dominant-baseline", "middle")
             .attr("fill", "#666")
-            .text(tick);
+            .text(numericalFormatter(tick));
     });
     
     // 找到最高点和最低点 - 使用原始数据
@@ -224,7 +234,7 @@ function makeChart(containerSelector, data) {
     const maxY = yScale(maxPoint[yField]);
     
     // 标签尺寸
-    const labelWidth = 50;
+    let labelWidth = 50;
     const labelHeight = 20;
     
     // 最高值标签位置 - 上边与最高值齐平
@@ -242,6 +252,13 @@ function makeChart(containerSelector, data) {
     return brightness < 180 ? "#ffffff" : "#000000";
     }
     
+    let displayText = `+${numericalFormatter(maxPoint[yField])}`;
+    let textWidth = getTextWidth(displayText, 12);
+    if (textWidth > labelWidth) {
+        labelWidth = textWidth * 1.3;
+    }
+
+
     // 创建标注气泡 - 三角只占高度的一半
     g.append("path")
         .attr("d", `
@@ -263,38 +280,77 @@ function makeChart(containerSelector, data) {
         .attr("dominant-baseline", "middle")
         .attr("fill", getTextColor(positiveColor))
         .attr("font-weight", "bold")
-        .text(`+${maxPoint[yField].toFixed(1)}`);
+        .text(displayText);
     
     // 添加最低点标注
     const minX = xScale(parseDate(minPoint[xField]));
     const minY = yScale(minPoint[yField]);
-    
+
+    displayText = `${numericalFormatter(minPoint[yField])}`;
+    textWidth = getTextWidth(displayText, 12);
+    if (textWidth > labelWidth) {
+        labelWidth = textWidth * 1.3;
+    }
     // 最低值标签位置 - 下边与最低值齐平
-    const minLabelX = minX - labelWidth - 10;
-    const minLabelY = minY - labelHeight; // 下边与最低值齐平
-    
-    // 创建标注气泡 - 三角只占高度的一半
-    g.append("path")
-        .attr("d", `
-            M${minX - 3},${minY} 
-            L${minLabelX + labelWidth},${minLabelY + labelHeight - labelHeight/4} 
-            L${minLabelX + labelWidth},${minLabelY} 
-            L${minLabelX},${minLabelY} 
-            L${minLabelX},${minLabelY + labelHeight} 
-            L${minLabelX + labelWidth},${minLabelY + labelHeight} 
-            Z
-        `)
-        .attr("fill", negativeColor);
-    
-    // 添加最低值文本
-    g.append("text")
-        .attr("x", minLabelX + labelWidth/2)
-        .attr("y", minLabelY + labelHeight/2)
-        .attr("text-anchor", "middle")
-        .attr("dominant-baseline", "middle")
-        .attr("fill", getTextColor(negativeColor))
-        .attr("font-weight", "bold")
-        .text(`${minPoint[yField].toFixed(1)}`);
+    let minLabelX = minX - labelWidth - 10;
+    let minLabelY = minY - labelHeight;
+    console.log("minLabelX", minLabelX);
+    let leftFlag = true;
+    if (minLabelX < xRange[0]) {
+        minLabelX = minX + 10;
+        leftFlag = false;
+        minLabelY = minY;
+    }
+
+    if (!leftFlag){
+        // 创建标注气泡 - 三角只占高度的一半
+        g.append("path")
+            .attr("d", `
+                M${minX + 3},${minY} 
+                L${minLabelX},${minLabelY - labelHeight/4} 
+                L${minLabelX},${minLabelY - labelHeight} 
+                L${minLabelX + labelWidth},${minLabelY - labelHeight} 
+                L${minLabelX + labelWidth},${minLabelY} 
+                L${minLabelX},${minLabelY} 
+                Z
+            `)
+            .attr("fill", negativeColor);
+    }
+    else {
+        // 创建标注气泡 - 三角只占高度的一半
+        g.append("path")
+            .attr("d", `
+                M${minX - 3},${minY} 
+                L${minLabelX + labelWidth},${minLabelY + labelHeight - labelHeight/4} 
+                L${minLabelX + labelWidth},${minLabelY} 
+                L${minLabelX},${minLabelY} 
+                L${minLabelX},${minLabelY + labelHeight} 
+                L${minLabelX + labelWidth},${minLabelY + labelHeight} 
+                Z
+            `)
+            .attr("fill", negativeColor);
+    }
+    if (leftFlag){
+        // 添加最低值文本
+        g.append("text")
+            .attr("x", minLabelX + labelWidth/2)
+            .attr("y", minLabelY + labelHeight/2)
+            .attr("text-anchor", "middle")
+            .attr("dominant-baseline", "middle")
+            .attr("fill", getTextColor(negativeColor))
+            .attr("font-weight", "bold")
+            .text(displayText);
+    }
+    else{
+        g.append("text")
+            .attr("x", minLabelX + labelWidth/2)
+            .attr("y", minLabelY - labelHeight/2)
+            .attr("text-anchor", "middle")
+            .attr("dominant-baseline", "middle")
+            .attr("fill", getTextColor(negativeColor))
+            .attr("font-weight", "bold")
+            .text(displayText);
+    }
     
     return svg.node();
 } 

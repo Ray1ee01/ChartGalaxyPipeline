@@ -26,7 +26,7 @@ REQUIREMENTS_END
 function makeChart(containerSelector, data) {
     // 提取数据
     const jsonData = data;
-    const chartData = jsonData.data.data;
+    let chartData = jsonData.data.data;
     const variables = jsonData.variables;
     const typography = jsonData.typography;
     const colors = jsonData.colors || {};
@@ -39,7 +39,15 @@ function makeChart(containerSelector, data) {
     // 获取字段名
     const xField = dataColumns[0].name;
     const yField = dataColumns[1].name;
+
+    chartData = temporalFilter(chartData, xField);
+    if (chartData.length === 0) {
+        console.log("chartData is empty");
+        return;
+    }
     
+    const numericalFormatter = createNumericalFormatter(chartData, yField);
+
     // 设置尺寸和边距
     const width = variables.width;
     const height = variables.height;
@@ -200,12 +208,18 @@ function makeChart(containerSelector, data) {
     const addDataLabel = (point, isHighest) => {
         const x = xScale(parseDate(point[xField]));
         const y = yScale(point[yField]);
-        
+        const displayText = numericalFormatter(point[yField]);
+        let textWidth = getTextWidth(displayText, 12);
         // 创建标签背景
-        const labelWidth = 45;
+        let labelWidth = 45;
+        if (textWidth > labelWidth) {
+            labelWidth = textWidth * 1.3;
+        }
         const labelHeight = 25;
         const labelX = x - labelWidth / 2;
         
+
+
         // 根据是最高点还是最低点调整标签位置和三角形方向
         let labelY, trianglePath;
         
@@ -234,6 +248,7 @@ function makeChart(containerSelector, data) {
             .attr("d", trianglePath)
             .attr("fill", areaColor);
         
+
         // 添加文本
         g.append("text")
             .attr("x", x)
@@ -243,7 +258,7 @@ function makeChart(containerSelector, data) {
             .attr("fill", "white")
             .attr("font-weight", "bold")
             .style("font-size", "12px")
-            .text(point[yField].toFixed(2));
+            .text(displayText);
     };
     
     // 只有当最低点不是起点或终点时才添加最低点标注
