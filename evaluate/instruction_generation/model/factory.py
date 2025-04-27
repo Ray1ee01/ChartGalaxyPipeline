@@ -17,8 +17,6 @@ class QAGeneratorFactory:
         "compare": CompareQAGenerator,
         "discover": DiscoverQAGenerator,
 
-        "visual_element_design": VisualElementDesignQAGenerator,
-        "multimedia_integration": MultimediaIntegrationQAGenerator,
         "summarization_narration": SummarizationNarrationQAGenerator
     }
     

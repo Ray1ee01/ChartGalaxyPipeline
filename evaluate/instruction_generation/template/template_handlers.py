@@ -1,5 +1,9 @@
-from typing import Tuple, Optional
+from typing import Tuple, Optional, List, Dict
 from template.base_generator import BaseGenerator
+import os
+import logging
+
+logger = logging.getLogger("InstructionGeneration.Template.TemplateHandlers")
 
 class TemplateHandlers:
     def __init__(self, base_generator: BaseGenerator):
@@ -773,6 +777,133 @@ class TemplateHandlers:
     def handle_template_40(self, template: str) -> Tuple[Optional[str], Optional[str]]:
         """ In which <singular form of X label> was the <Y label> of/in <legend label> minimum ? """
         return self._handle_extreme_value_x(template, 'min', with_legend=True)
+    
+    def handle_template_41(self, template: str) -> Tuple[Optional[str], Optional[str]]:
+        """ What is the position of the title in this infographic? """
+        info = self.generator.get_info()
+        if not info or "title_to_chart" not in info:
+            return None, None
+            
+        position_map = {
+            "L": "left",
+            "R": "right",
+            "T": "top-center",
+            "B": "bottom-center",
+            "TL": "top-left",
+            "TR": "top-right",
+            "BL": "bottom-left",
+            "BR": "bottom-right",
+            "C": "center"
+        }
+        
+        position_code = info["title_to_chart"]
+        position = position_map.get(position_code)
+        
+        if position:
+            return template, position
+        return None, None
+    
+    def handle_template_42(self, template: str) -> Tuple[Optional[str], Optional[str]]:
+        """ What is the position of the main image in this infographic? """
+        info = self.generator.get_info()
+        if not info or "image_to_chart" not in info:
+            return None, None
+            
+        position_map = {
+            "L": "left",
+            "R": "right",
+            "T": "top-center",
+            "B": "bottom-center",
+            "TL": "top-left",
+            "TR": "top-right",
+            "BL": "bottom-left",
+            "BR": "bottom-right",
+            "C": "center"
+        }
+        
+        position_code = info["image_to_chart"]
+        position = position_map.get(position_code)
+        
+        if position:
+            return template, position
+        return None, None
+    
+    def handle_template_43(self, template: str) -> Tuple[Optional[str], Optional[str]]:
+        """ What is the alignment style of the main text content? """
+        info = self.generator.get_info()
+        if not info or "text_align" not in info:
+            return None, None
+            
+        text_align = info["text_align"].lower()
+        
+        alignment_map = {
+            "left": "left-aligned",
+            "right": "right-aligned",
+            "center": "center-aligned",
+            "middle": "center-aligned"
+        }
+        
+        alignment = alignment_map.get(text_align)
+        
+        if alignment:
+            return template, alignment
+        return None, None
+    
+    def handle_template_44(self, template: str) -> Tuple[Optional[str], Optional[int]]:
+        """ How many icons or images are present in this infographic? """
+        svg_path = self.generator.get_svg_path()
+        if not svg_path or not os.path.exists(svg_path):
+            return None, None
+            
+        try:
+            with open(svg_path, 'r', encoding='utf-8') as f:
+                svg_content = f.read()
+                
+            # 计算<image>标签的数量
+            image_count = svg_content.count('<image>')
+            
+            return template, image_count
+        except Exception as e:
+            logger.error(f"读取SVG文件错误: {e}")
+            return None, None
+    
+    def handle_template_45(self, template: str) -> Tuple[Optional[str], Optional[int]]:
+        """ 暂时留空 """
+        return None, None
+    
+    def handle_template_46(self, template: str) -> Tuple[Optional[str], Optional[str]]:
+        """ 留空 """
+        return None, None
+    
+    def handle_template_47(self, template: str) -> Tuple[Optional[str], Optional[str]]:
+        """ What types of charts are included in this infographic? """
+        info = self.generator.get_info()
+        if not info or "chart_type" not in info:
+            return None, None
+            
+        chart_type = info["chart_type"]
+        
+        return template, chart_type
+    
+    def handle_template_48(self, template: str) -> Tuple[Optional[str], Optional[str]]:
+        """ How are images presented in relation to the charts in this infographic? """
+        info = self.generator.get_info()
+        if not info or "image_mode" not in info:
+            return None, None
+            
+        image_mode = info["image_mode"].lower()
+        
+        mode_map = {
+            "overlay": "overlay",
+            "background": "background",
+            "side": "side_by_side"
+        }
+        
+        mode = mode_map.get(image_mode)
+        
+        if mode:
+            return template, mode
+        return None, None
     
 
     

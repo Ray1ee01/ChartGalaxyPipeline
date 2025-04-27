@@ -299,18 +299,6 @@ class SummarizationNarrationQAGenerator(BaseQAGenerator):
                - Balancing comprehensiveness with brevity
                - Translating visual information to textual format
             
-            2. KEY POINT EXTRACTION
-               - Identifying and articulating key insights
-               - Converting visual data into bullet points
-               - Prioritizing information for different audiences
-               - Extracting actionable insights
-            
-            3. NARRATIVE CREATION
-               - Creating explanatory scripts for presentations
-               - Developing storytelling approaches for the data
-               - Sequencing information for logical presentation
-               - Adapting content for different communication formats
-            
             # QUESTION FORMAT
             
             - Ask for creation of summaries, key points, or narratives

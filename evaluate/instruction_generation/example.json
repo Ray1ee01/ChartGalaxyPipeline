@@ -1,122 +1,143 @@
 [
     {
-        "template_1": "What is the sum of <Y label> ?"
+        "template_1": "What is the total sum of <Y label>?"
     },
     {
-        "template_2": "What is the difference between the <Y label> in <ithx tick> and <jthx tick> ?"
+        "template_2": "What is the difference between the <Y label> in <ithx tick> and <jthx tick>?"
     },
     {
-        "template_3": "What is the average <Y label> per <singular form of X label> ?"
+        "template_3": "What is the average <Y label> per <singular form of X label>?"
     },
     {
-        "template_4": "What is the median <Y label> ?"
+        "template_4": "What is the median <Y label>?"
     },
     {
-        "template_5": "What is the total <Y label> of/in <legend label> in the graph?"
+        "template_5": "What is the total <Y label> of <legend label> in the graph?"
     },
     {
-        "template_6": "What is the difference between the <Y label> of/in <legend label> in <ithx tick> and that in <jthx tick> ?"
+        "template_6": "What is the difference between the <Y label> of <legend label> in <ithx tick> and that in <jthx tick>?"
     },
     {
-        "template_7": "What is the difference between the <Y label> of/in <legend label1> in <ithx tick> and the <Y label> of/in <legend label2> in <jthx tick> ?"
+        "template_7": "What is the difference between the <Y label> of <legend label1> in <ithx tick> and the <Y label> of <legend label2> in <jthx tick>?"
     },
     {
-        "template_8": "What is the average <Y label> of/in <legend label> per <singular form of X label> ?"
+        "template_8": "What is the average <Y label> of <legend label> per <singular form of X label>?"
     },
     {
-        "template_9": "In <ithx tick>, what is the difference between the <Y label> of/in <legend label1> and <Y label> of/in <legend label2> ?"
+        "template_9": "In <ithx tick>, what is the difference between the <Y label> of <legend label1> and <legend label2>?"
     },
     {
-        "template_10": "What is the difference between the <Y label> of/in <legend label1> and <Y label> of/in <legend label2> in <ithx tick> ?"
+        "template_10": "What is the difference between the <Y label> of <legend label1> and <legend label2> in <ithx tick>?"
     },
     {
-        "template_11": "In how many <plural form of X label>, is the <Y label> greater than <N> units ?"
+        "template_11": "In how many <plural form of X label> is the <Y label> greater than <N> units?"
     },
     {
-        "template_12": "What is the ratio of the <Y label> in <ithx tick> to that in <jthx tick> ?"
+        "template_12": "What is the ratio of the <Y label> in <ithx tick> to that in <jthx tick>?"
     },
     {
-        "template_13": "Is the <Y label> in <ithx tick> less than that in <jthx tick> ?"
+        "template_13": "Is the <Y label> in <ithx tick> less than that in <jthx tick>?"
     },
     {
-        "template_14": "In how many <plural form of X label>, is the <Y label> of/in <legend label> greater than <N> units ?"
+        "template_14": "In how many <plural form of X label> is the <Y label> of <legend label> greater than <N> units?"
     },
     {
-        "template_15": "What is the ratio of the <Y label> of/in <legend label> in <ithx tick> to that in <jthx tick> ?"
+        "template_15": "What is the ratio of the <Y label> of <legend label> in <ithx tick> to that in <jthx tick>?"
     },
     {
-        "template_16": "Is the <Y label> of/in <legend label> in <ithx tick> less than that in <jthx tick> ?"
+        "template_16": "Is the <Y label> of <legend label> in <ithx tick> less than that in <jthx tick>?"
     },
     {
-        "template_17": "Is the difference between the <Y label> in <ithx tick> and <jthx tick> greater than the difference between any two <plural form of X label> ?"
+        "template_17": "Is the difference between the <Y label> in <ithx tick> and <jthx tick> greater than the difference between any other two <plural form of X label>?"
     },
     {
-        "template_18": "What is the difference between the highest and the second highest <Y label> ?"
+        "template_18": "What is the difference between the highest and second highest <Y label>?"
     },
     {
-        "template_19": "Is the sum of the <Y label> of/in <legend label1> in <ithx tick> and <jthx tick> greater than the maximum <Y label> of/in <legend label2> across all <plural form of X label> ?"
+        "template_19": "Is the sum of the <Y label> of <legend label1> in <ithx tick> and <jthx tick> greater than the maximum <Y label> of <legend label2> across all <plural form of X label>?"
     },
     {
-        "template_20": "Is it the case that in every <singular form of X label>, the sum of the <Y label> of/in <legend label1> and <legend label2> is greater than the sum of <Y label> of <legend label3> and <Y label> of <legend label4> ?"
+        "template_20": "Is it true that in every <singular form of X label>, the sum of <Y label> of <legend label1> and <legend label2> is greater than the sum of <Y label> of <legend label3> and <legend label4>?"
     },
     {
-        "template_21": "Is the sum of the <Y label> in <ithx tick> and <jthx tick> greater than the maximum <Y label> across all <plural form of X label> ?"
+        "template_21": "Is the sum of the <Y label> in <ithx tick> and <jthx tick> greater than the maximum <Y label> across all <plural form of X label>?"
     },
     {
-        "template_22": "What is the difference between the highest and the lowest <Y label> ?"
+        "template_22": "What is the difference between the highest and lowest <Y label>?"
     },
     {
-        "template_23": "In how many <plural form of X label>, is the <Y label> greater than the average <Y label> taken over all <plural form of X label> ?"
+        "template_23": "In how many <plural form of X label> is the <Y label> greater than the average <Y label> across all <plural form of X label>?"
     },
     {
-        "template_24": "Is the difference between the <Y label> of/in <legend label1> in <ithx tick> and <jthx tick> greater than the difference between the <Y label> of/in <legend label2> in <ithx tick> and <jthx tick> ?"
+        "template_24": "Is the difference between the <Y label> of <legend label1> in <ithx tick> and <jthx tick> greater than the difference between the <Y label> of <legend label2> in <ithx tick> and <jthx tick>?"
     },
     {
-        "template_25": "What is the difference between the highest and the second highest <Y label> of/in <legend label> ?"
+        "template_25": "What is the difference between the highest and second highest <Y label> of <legend label>?"
     },
     {
-        "template_26": "What is the difference between the highest and the lowest <Y label> of/in <legend label> ?"
+        "template_26": "What is the difference between the highest and lowest <Y label> of <legend label>?"
     },
     {
-        "template_27": "In how many <plural form of X label>, is the <Y label> of/in <legend label> greater than the average <Y label> of/in <legend label> taken over all <plural form of X label> ?"
+        "template_27": "In how many <plural form of X label> is the <Y label> of <legend label> greater than the average <Y label> of <legend label> across all <plural form of X label>?"
     },
     {
-        "template_28": "Is it the case that in every <singular form of X label>, the sum of the <Y label> of/in <legend label1> and <legend label2> is greater than the <Y label> of/in <legend label3> ?"
+        "template_28": "Is it true that in every <singular form of X label>, the sum of the <Y label> of <legend label1> and <legend label2> is greater than the <Y label> of <legend label3>?"
     },
     {
-        "template_29": "Is the <Y label> of/in <legend label1> strictly greater than the <Y label> of/in <legend label2> over the <plural form of X label> ?"
+        "template_29": "Is the <Y label> of <legend label1> consistently greater than the <Y label> of <legend label2> across all <plural form of X label>?"
     },
     {
-        "template_30": "Is the <Y label> of/in <legend label1> strictly less than the <Y label> of/in <legend label2> over the <plural form of X label> ?"
+        "template_30": "Is the <Y label> of <legend label1> consistently less than the <Y label> of <legend label2> across all <plural form of X label>?"
     },
     {
-        "template_31": "Does the <Y label> of/in <legend label> monotonically increase over the <plural form of X label> ?"
+        "template_31": "Does the <Y label> of <legend label> increase monotonically across the <plural form of X label>?"
     },
     {
-        "template_32": "What is the difference between two consecutive major ticks on the Y-axis ?"
+        "template_32": "What is the difference between two consecutive major ticks on the Y-axis?"
     },
     {
-        "template_33": "Across all <plural form of X label>, what is the maximum <Y label> ?"
+        "template_33": "What is the maximum <Y label> across all <plural form of X label>?"
     },
     {
-        "template_34": "Across all <plural form of X label>, what is the minimum <Y label> ?"
+        "template_34": "What is the minimum <Y label> across all <plural form of X label>?"
     },
     {
-        "template_35": "In which <X label> was the <Y label> maximum ?"
+        "template_35": "In which <X label> was the <Y label> at its maximum?"
     },
     {
-        "template_36": "In which <X label> was the <Y label> minimum ?"
+        "template_36": "In which <X label> was the <Y label> at its minimum?"
     },
     {
-        "template_37": "Across all <plural form of X label>, what is the maximum <Y label> of/in <legend label> ?"
+        "template_37": "What is the maximum <Y label> of <legend label> across all <plural form of X label>?"
     },
     {
-        "template_38": "Across all <plural form of X label>, what is the minimum <Y label> of/in <legend label> ?"
+        "template_38": "What is the minimum <Y label> of <legend label> across all <plural form of X label>?"
     },
     {
-        "template_39": "In which <singular form of X label> was the <Y label> of/in <legend label> maximum ?"
+        "template_39": "In which <singular form of X label> was the <Y label> of <legend label> at its maximum?"
     },
     {
-        "template_40": "In which <singular form of X label> was the <Y label> of/in <legend label> minimum ?"
+        "template_40": "In which <singular form of X label> was the <Y label> of <legend label> at its minimum?"
+    },
+    {
+        "template_41": "What is the position of the title in this infographic? Select one: [top-left, top-center, top-right, left, center, right, bottom-left, bottom-center, bottom-right]"
+    },
+    {
+        "template_42": "What is the position of the main image in this infographic? Select one: [top-left, top-center, top-right, left, center, right, bottom-left, bottom-center, bottom-right]"
+    },
+    {
+        "template_43": "What is the alignment style of the main text content? Select one: [left-aligned, center-aligned, right-aligned]"
+    },
+    {
+        "template_44": "How many icons or images are present in this infographic?"
+    },
+    {
+        "template_45": "How many distinct colors are used for data categories in this chart (excluding background and decorative colors)?"
+    },
+    {
+        "template_46": "What visual encoding channel is used to represent <column name> in this chart? Select one: [size, position, color, length]"
+    },
+    {
+        "template_47": "What types of charts are included in this infographic?"
     }
 ]
