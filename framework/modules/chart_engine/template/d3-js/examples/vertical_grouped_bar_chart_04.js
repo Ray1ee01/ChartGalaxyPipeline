@@ -4,7 +4,7 @@ REQUIREMENTS_BEGIN
     "chart_type": "vertical_grouped_bar_chart_04",
     "chart_name": "vertical_grouped_bar_chart_04",
     "is_composite": false,
-    "required_fields": ["x", "y", "group", "group"],
+    "required_fields": ["x", "y", "group", "group2"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"], ["categorical"]],
     "required_fields_range": [
         [2, 20], 
@@ -76,15 +76,14 @@ function makeChart(containerSelector, data) {
 
     const xColumn = dataColumns.find(col => col.role === "x");
     const yColumn = dataColumns.find(col => col.role === "y");
-    const groupColumns = dataColumns.filter(col => col.role === "group");
+    
 
     
 
     xField = xColumn.name;
     yField = yColumn.name;
-    group1Field = groupColumns[0].name; // 第一分组字段 (e.g., Year)
-    group2Field = groupColumns[1].name; // 第二分组字段 (e.g., Metric)
-
+    group1Field = dataColumns.find(col => col.role === "group").name;
+    group2Field = dataColumns.find(col => col.role === "group2").name;
     if (yColumn.unit && yColumn.unit !== "none") {
         yUnit = yColumn.unit; // 通常是 '%'
     }
@@ -421,7 +420,7 @@ function makeChart(containerSelector, data) {
      // 预计算标签字体大小
     const baseFontSizeLabel = parseFloat(typography.label.font_size) || 12; // For Group1 labels
     const baseFontSizeAnnotation = parseFloat(typography.annotation.font_size) || 10;
-    const minFontSize = 8;
+    const minFontSize = 4;
     let minPrimaryLabelRatio = 1.0;
     let minSecondaryLabelRatio = 1.0;
     const maxLabelWidth = group1Scale.bandwidth() * 1.1; // 允许稍微超出条形 for value labels

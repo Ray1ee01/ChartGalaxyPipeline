@@ -159,7 +159,7 @@ function makeChart(containerSelector, data) {
     // 删除临时SVG
     tempSvg.remove();
     
-    // === 修改点：结合维度标签和组标签最大宽度，重新计算margin.left ===
+    // 结合维度标签和组标签最大宽度，重新计算margin.left
     const maxLabelWidth = Math.max(maxDimensionWidth, maxGroupWidth);
     const dimensionLabelWidth = maxLabelWidth + 20; // 预留额外空间
     margin.left = Math.max(margin.left, dimensionLabelWidth + 20);
@@ -168,17 +168,68 @@ function makeChart(containerSelector, data) {
     const innerWidth = width - margin.left - margin.right;
     const innerHeight = height - margin.top - margin.bottom;
     
-    // 计算每组需要的垂直空间
-    const groupHeight = innerHeight / groups.length;
-    const groupPadding = innerHeight * (variables.has_spacing ? 0.08 : 0.06);  // 组间距
+    // ---------- 6. 动态计算垂直空间分配 ----------
     
-    // 每个维度的条形高度
-    const barHeight = (groupHeight - groupPadding) / dimensions.length;
-    const actualBarHeight = variables.has_spacing ? barHeight * 0.65 : barHeight * 0.75;   // 实际条形高度
+    // 计算每个组内的维度数量
+    const dimensionsPerGroup = {};
+    let totalDimensions = 0;
     
-
+    groups.forEach(group => {
+        // 过滤出该组的数据
+        const groupData = chartData.filter(d => d[groupField] === group);
+        // 找出该组中所有唯一的维度
+        const groupDimensions = [...new Set(groupData.map(d => d[dimensionField]))];
+        // 保存该组的维度数量
+        dimensionsPerGroup[group] = groupDimensions.length;
+        totalDimensions += groupDimensions.length;
+    });
     
-    // ---------- 6. 创建SVG容器 ----------
+    // 设置组间固定间距和组标题空间
+    const groupTitleHeight = 25; // 组标题高度
+    const groupMargin = 20;      // 组之间的固定间距
+    
+    // 计算所有组间距的总和
+    const totalGroupMargins = (groups.length - 1) * groupMargin;
+    
+    // 计算所有组标题的总高度
+    const totalGroupTitlesHeight = groups.length * groupTitleHeight;
+    
+    // 计算条形的可用空间 = 总高度 - 所有组间距 - 所有组标题高度
+    const availableBarSpace = innerHeight - totalGroupMargins - totalGroupTitlesHeight;
+    
+    // 计算单个条形的理想高度
+    const idealBarHeight = availableBarSpace / totalDimensions;
+    
+    // 计算条形间距（为条形高度的一部分）
+    const barPadding = idealBarHeight * 0.2; // 条形间距为条形高度的30%
+    
+    // 准备保存每个组的位置和高度信息
+    const groupPositions = {};
+    let currentY = 0;
+    
+    // 为每个组计算起始位置和高度
+    groups.forEach(group => {
+        const numDimensions = dimensionsPerGroup[group];
+        
+        // 计算该组的总高度（组标题 + 所有条形高度 + 所有条形间距）
+        const totalBarSpacing = (numDimensions - 1) * barPadding; // 组内所有条形间距总和
+        const totalBarsHeight = numDimensions * idealBarHeight;    // 组内所有条形高度总和
+        const groupHeight = groupTitleHeight + totalBarsHeight + totalBarSpacing;
+        
+        // 保存该组的位置信息
+        groupPositions[group] = {
+            startY: currentY,
+            height: groupHeight,
+            barHeight: idealBarHeight,
+            barPadding: barPadding,
+            titleHeight: groupTitleHeight
+        };
+        
+        // 更新当前Y位置（加上组高度和组间距）
+        currentY += groupHeight + groupMargin;
+    });
+    
+    // ---------- 7. 创建SVG容器 ----------
     
     const svg = d3.select(containerSelector)
         .append("svg")
@@ -192,7 +243,7 @@ function makeChart(containerSelector, data) {
     // 创建defs用于滤镜和渐变
     const defs = svg.append("defs");
     
-    // ---------- 6.1 创建视觉效果 ----------
+    // ---------- 7.1 创建视觉效果 ----------
     
     // 添加阴影滤镜（如果启用）
     if (variables.has_shadow) {
@@ -241,7 +292,7 @@ function makeChart(containerSelector, data) {
         });
     }
     
-    // ---------- 7. 创建比例尺 ----------
+    // ---------- 8. 创建比例尺 ----------
     
     // 计算最大值用于X轴比例尺
     const maxValue = d3.max(chartData, d => +d[valueField]);
@@ -251,12 +302,12 @@ function makeChart(containerSelector, data) {
         .domain([0, maxValue * 1.1]) // 添加10%边距
         .range([0, innerWidth]);
     
-    // ---------- 8. 创建主图表组 ----------
+    // ---------- 9. 创建主图表组 ----------
     
     const g = svg.append("g")
         .attr("transform", `translate(${margin.left}, ${margin.top})`);
     
-    // ---------- 9. 辅助函数 ----------
+    // ---------- 10. 辅助函数 ----------
     
     // 获取组颜色
     function getGroupColor(group) {
@@ -272,17 +323,9 @@ function makeChart(containerSelector, data) {
         }
         
         // 默认颜色方案
-        // const defaultColors = {
-        //     "$50 or more": "#ff725c", // 红色
-        //     "$1-49": "#4269d0",      // 蓝色
-        //     "Nothing": "#3ca951"     // 绿色
-        // };
-        // 默认颜色方案（修改部分）
         const defaultColors = d3.schemeTableau10; // 使用D3内置的10色方案
         const groupIndex = groups.indexOf(group);
         return defaultColors[groupIndex % defaultColors.length] || colors.other.primary || "#999";
-
-        // return defaultColors[group] || colors.other.primary || "#999";
     }
     
     // 获取描边颜色
@@ -293,18 +336,18 @@ function makeChart(containerSelector, data) {
     };
     
     
-    
-    // ---------- 10. 绘制图表 ----------
+    // ---------- 11. 绘制图表 ----------
     // 为每个组创建一个分组
     groups.forEach((group, groupIndex) => {
-        // 计算该组的垂直位置
-        const groupStartY = groupIndex * (groupHeight);
+        // 获取该组的位置信息
+        const groupPos = groupPositions[group];
+        const groupStartY = groupPos.startY;
         
-        // Create a group element for the label and its background
+        // 创建组标签及其背景
         const groupLabelGroup = g.append("g")
-            .attr("transform", `translate(0, ${groupStartY - 10})`);
+            .attr("transform", `translate(0, ${groupStartY + groupPos.titleHeight/2})`);
         
-        // Create a temporary hidden text to measure dimensions
+        // 创建一个临时隐藏文本来测量尺寸
         const tempText = groupLabelGroup.append("text")
             .style("visibility", "hidden")
             .style("font-family", typography.label.font_family)
@@ -312,37 +355,37 @@ function makeChart(containerSelector, data) {
             .style("font-weight", typography.label.font_weight)
             .text(group);
         
-        // Get the text dimensions
+        // 获取文本尺寸
         const textWidth = tempText.node().getBBox().width;
         const textHeight = tempText.node().getBBox().height;
-        tempText.remove(); // Remove the temporary text
+        tempText.remove(); // 移除临时文本
         
-        // Add padding for the rectangle
+        // 为矩形添加内边距
         const rectPadding = { x: 4, y: 2 };
-        const shadowOffset = { x: 3, y: 3 }; // Shadow offset
+        const shadowOffset = { x: 3, y: 3 }; // 阴影偏移
         
-        // Create rectangle dimensions
+        // 创建矩形尺寸
         const rectX = -margin.left;
         const rectY = -textHeight/2 - rectPadding.y;
-        const rectWidth = textWidth + rectPadding.x * 2 ;
+        const rectWidth = textWidth + rectPadding.x * 2 + 5;
         const rectHeight = textHeight + rectPadding.y * 2;
         const cornerRadius = rectPadding.y*2;
 
-        // Create a path for a rectangle with rounded right corners
+        // 创建一个右侧圆角矩形的路径
         const createRoundedRectPath = (x, y, width, height, radius) => {
             return [
-                `M ${x} ${y}`,                                        // Start at top-left
-                `H ${x + width - radius}`,                           // Line to top-right minus corner radius
-                `Q ${x + width} ${y} ${x + width} ${y + radius}`,    // Top-right corner
-                `V ${y + height - radius}`,                          // Line to bottom-right minus corner radius
-                `Q ${x + width} ${y + height} ${x + width - radius} ${y + height}`,  // Bottom-right corner
-                `H ${x}`,                                            // Line to bottom-left
-                `V ${y}`,                                            // Line to top-left
-                'Z'                                                  // Close path
+                `M ${x} ${y}`,                                        // 从左上角开始
+                `H ${x + width - radius}`,                           // 线到右上角减去圆角半径
+                `Q ${x + width} ${y} ${x + width} ${y + radius}`,    // 右上角圆角
+                `V ${y + height - radius}`,                          // 线到右下角减去圆角半径
+                `Q ${x + width} ${y + height} ${x + width - radius} ${y + height}`,  // 右下角圆角
+                `H ${x}`,                                            // 线到左下角
+                `V ${y}`,                                            // 线到左上角
+                'Z'                                                  // 闭合路径
             ].join(' ');
         };
 
-        // Create the shadow rectangle
+        // 创建阴影矩形
         const shadowPath = createRoundedRectPath(
             rectX + shadowOffset.x, 
             rectY + shadowOffset.y, 
@@ -353,55 +396,58 @@ function makeChart(containerSelector, data) {
         
         groupLabelGroup.append("path")
             .attr("d", shadowPath)
-            .attr("fill", "#cccccc"); // Gray shadow color
+            .attr("fill", "#cccccc"); // 灰色阴影
         
-        // Create the main white rectangle
+        // 创建主白色矩形
         const mainPath = createRoundedRectPath(rectX, rectY, rectWidth, rectHeight, cornerRadius);
         
         groupLabelGroup.append("path")
             .attr("d", mainPath)
-            .attr("fill", "#ffffff"); // White background color
+            .attr("fill", "#ffffff"); // 白色背景
         
-        // Add the label text LAST so it's on top
+        // 最后添加标签文本，使其位于顶层
         groupLabelGroup.append("text")
-            .attr("x", -margin.left + 10)     // Position text 10px from left margin
+            .attr("x", -margin.left + 6)     // 文本位于左边距的10px处
             .attr("y", 0)
             .attr("dy", "0.35em")
-            .attr("text-anchor", "start")     // Left-align text
+            .attr("text-anchor", "start")     // 左对齐文本
             .style("font-family", typography.label.font_family)
             .style("font-size", typography.label.font_size)
             .style("font-weight", typography.label.font_weight)
-            .style("fill", "#000000")         // Black text color
+            .style("fill", "#000000")         // 黑色文本
             .text(group);
         
         // 筛选该组的数据
         const groupData = chartData.filter(d => d[groupField] === group);
+        
+        // 对该组的维度进行排序
+        const groupDimensions = [...new Set(groupData.map(d => d[dimensionField]))];
+        
         // 为每个维度绘制条形
-        dimensions.forEach((dimension, dimIndex) => {
+        groupDimensions.forEach((dimension, dimIndex) => {
             // 查找数据点
             const dataPoint = groupData.find(d => d[dimensionField] === dimension);
             
             if (dataPoint) {
-                // 条形的垂直位置
-                const barY = groupStartY + dimIndex * barHeight;
+                // 条形的垂直位置（考虑组标题高度、每个条形高度和条形间距）
+                const barY = groupStartY + groupPos.titleHeight + 
+                             dimIndex * (groupPos.barHeight + groupPos.barPadding);
                 
                 // 条形宽度
                 const barWidth = xScale(+dataPoint[valueField]);
                 
                 // 创建标签和图标组
                 const labelGroup = g.append("g")
-                    .attr("transform", `translate(0, ${barY + barHeight/2})`);
-                
-                
+                    .attr("transform", `translate(0, ${barY + groupPos.barHeight/2})`);
                 
                 // 绘制维度标签（右对齐，与图标的左边缘对齐）
                 labelGroup.append("text")
-                    .attr("x",  - 5) // 左侧5像素
+                    .attr("x", -5) // 左侧5像素
                     .attr("y", 0)
                     .attr("dy", "0.35em")
                     .attr("text-anchor", "end") // 右对齐
                     .style("font-family", typography.label.font_family)
-                    .style("font-size", typography.label.font_size)
+                    .style("font-size", `${Math.min(groupPos.barHeight * 0.9, parseFloat(typography.label.font_size))}px`)
                     .style("font-weight", typography.label.font_weight)
                     .style("fill", colors.text_color || "#333")
                     .text(dimension);
@@ -411,7 +457,7 @@ function makeChart(containerSelector, data) {
                     .attr("x", 0)
                     .attr("y", barY)
                     .attr("width", barWidth)
-                    .attr("height", actualBarHeight) // 略小于计算高度，留出间距
+                    .attr("height", groupPos.barHeight) // 使用为该组计算的条形高度
                     .attr("fill", variables.has_gradient ? 
                         `url(#gradient-${group.replace(/\s+/g, '-').toLowerCase()})` : 
                         getGroupColor(group))
@@ -435,7 +481,7 @@ function makeChart(containerSelector, data) {
                 // 创建临时文本元素来计算数值文本的宽度
                 const tempText = g.append("text")
                     .style("font-family", typography.annotation.font_family)
-                    .style("font-size", `${Math.min(18,Math.max(barHeight * 0.5, parseFloat(typography.annotation.font_size)))}px`)
+                    .style("font-size", `${Math.min(18, Math.max(groupPos.barHeight * 0.5, parseFloat(typography.annotation.font_size)))}px`)
                     .style("font-weight", typography.annotation.font_weight)
                     .style("visibility", "hidden")
                     .text(formattedValue);
@@ -447,18 +493,18 @@ function makeChart(containerSelector, data) {
                 tempText.remove();
                 
                 // 检查文本是否适合条形的宽度（考虑内边距）
-                const padding = 3; // 每侧5px内边距
+                const padding = 3; // 每侧3px内边距
                 
                 // 如果条形太窄，无法容纳文本，则放在条形外部
                 if (barWidth < textWidth + padding) {
                     g.append("text")
                         .attr("x", barWidth + 5) // 条形右侧5像素处
-                        .attr("y", barY + actualBarHeight / 2)
+                        .attr("y", barY + groupPos.barHeight / 2)
                         .attr("dy", "0.35em")
                         .attr("text-anchor", "start")
                         .style("fill", colors.text_color || "#333") 
                         .style("font-family", typography.annotation.font_family)
-                        .style("font-size", `${Math.min(18,Math.max(barHeight * 0.5, parseFloat(typography.annotation.font_size)))}px`)
+                        .style("font-size", `${Math.min(groupPos.barHeight * 0.9, parseFloat(typography.annotation.font_size))}px`)
                         .style("font-weight", typography.annotation.font_weight)
                         .style("pointer-events", "none")
                         .text(formattedValue);
@@ -466,12 +512,12 @@ function makeChart(containerSelector, data) {
                     // 文本适合放在条形内部
                     g.append("text")
                         .attr("x", barWidth - 5)
-                        .attr("y", barY + actualBarHeight / 2)
+                        .attr("y", barY + groupPos.barHeight / 2)
                         .attr("dy", "0.35em")
                         .attr("text-anchor", "end")
                         .style("fill", "#ffffff") 
                         .style("font-family", typography.annotation.font_family)
-                        .style("font-size", `${Math.min(18,Math.max(barHeight * 0.5, parseFloat(typography.annotation.font_size)))}px`)
+                        .style("font-size", `${Math.min(groupPos.barHeight * 0.9, parseFloat(typography.annotation.font_size))}px`)
                         .style("font-weight", typography.annotation.font_weight)
                         .style("pointer-events", "none")
                         .text(formattedValue);

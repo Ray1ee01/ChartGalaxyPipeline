@@ -4,7 +4,7 @@ REQUIREMENTS_BEGIN
     "chart_type": "Vertical Grouped Bar Chart",
     "chart_name": "vertical_grouped_bar_chart_01",
     "is_composite": false,
-    "required_fields": ["x", "y", "group","group"],
+    "required_fields": ["x", "y", "group","group2"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"], ["categorical"]],
     "required_fields_range": [[2, 20], [0, "inf"], [2, 2], [2, 2]],
     "required_fields_icons": [],
@@ -81,16 +81,12 @@ function makeChart(containerSelector, data) {
     // 从数据列中安全提取字段名称
     const xColumn = dataColumns.find(col => col.role === "x");
     const yColumn = dataColumns.find(col => col.role === "y");
-    const groupColumns = dataColumns.filter(col => col.role === "group");
+    
     
     if (xColumn) xField = xColumn.name;
     if (yColumn) yField = yColumn.name;
-    if (groupColumns.length > 0) {
-        group1Field = groupColumns[0].name; // 第一个分组字段
-        if (groupColumns.length > 1) {
-            group2Field = groupColumns[1].name; // 第二个分组字段
-        }
-    }
+    group1Field = dataColumns.filter(col => col.role === "group").name;
+    group2Field = dataColumns.filter(col => col.role === "group2").name;
     
     // 获取字段单位（如果存在）
     if (yColumn && yColumn.unit && yColumn.unit !== "none") {
@@ -258,7 +254,7 @@ function makeChart(containerSelector, data) {
             const ratio = targetLength / tempTextLength;
             
             // 计算新的字体大小
-            const newFontSize = Math.max(8,  Math.floor(10 * ratio)); // 限制字体大小在8px到16px之间
+            const newFontSize = Math.max(4,  Math.floor(10 * ratio)); // 限制字体大小在8px到16px之间
             
             // 移除临时文本
             tempText.remove();

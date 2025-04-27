@@ -15,7 +15,7 @@ REQUIREMENTS_BEGIN
     "min_height": 400,
     "min_width": 400,
     "background": "no",
-    "icon_mark": "overlay",
+    "icon_mark": "none",
     "icon_label": "none",
     "has_x_axis": "yes",
     "has_y_axis": "no"
@@ -443,11 +443,185 @@ function makeChart(containerSelector, data) {
     
     // 找出所有数据中的最大值，用于定位图标
     const globalMaxHeight = d3.max(useData, d => +d[yField]);
-    // 计算图标应该放置的y位置 - 所有图标都在全局最高的柱子的四分之一处
-    const globalIconYPosition = yScale(globalMaxHeight * 0.25);
     
     // 计算圆形半径 - 应为柱子宽度的60%
     const circleRadius = barWidth * 0.6;
+    
+    // ---- 计算标签禁区逻辑开始 ----
+    // 首先收集所有数值标签的位置信息
+    const labelForbiddenZones = [];
+    
+    // 计算标签高度 (估算值，基于字体大小)
+    const labelHeight = valueFontSize * 1.2; // 比字体大小高20%
+    
+    // 收集所有柱子顶部标签的位置信息和柱子底部位置
+    let lowestBarBottom = 0; // 用于记录所有柱子中的最低点（底部）
+    
+    xValues.forEach(xValue => {
+        // 获取当前x类别的数据
+        const xData = useData.filter(d => d[xField] === xValue);
+        
+        // 收集左侧柱子标签信息
+        const leftBarData = xData.find(d => d[groupField] === leftBarGroup);
+        if (leftBarData) {
+            const leftValue = leftBarData[yField];
+            const leftBarY = yScale(leftValue);
+            const leftBarBottom = innerHeight; // 柱子底部固定在x轴上
+            
+            // 更新最低的柱子底部位置
+            lowestBarBottom = Math.max(lowestBarBottom, leftBarBottom);
+            
+            // 计算标签上下边界（顶部标签在柱子上方10px处）
+            const labelTop = leftBarY - 5 - labelHeight/2;
+            const labelBottom = leftBarY - 5 + labelHeight/2;
+            
+            // 添加到禁区列表
+            labelForbiddenZones.push({top: labelTop, bottom: labelBottom});
+        }
+        
+        // 收集右侧柱子标签信息
+        const rightBarData = xData.find(d => d[groupField] === rightBarGroup);
+        if (rightBarData) {
+            const rightValue = rightBarData[yField];
+            const rightBarY = yScale(rightValue);
+            const rightBarBottom = innerHeight; // 柱子底部固定在x轴上
+            
+            // 更新最低的柱子底部位置
+            lowestBarBottom = Math.max(lowestBarBottom, rightBarBottom);
+            
+            // 计算标签上下边界
+            const labelTop = rightBarY - 5 - labelHeight/2;
+            const labelBottom = rightBarY - 5 + labelHeight/2;
+            
+            // 添加到禁区列表
+            labelForbiddenZones.push({top: labelTop, bottom: labelBottom});
+        }
+    });
+    
+    // 计算初始图标位置（仍基于全局最高柱子的四分之一处）
+    const initialIconYPosition = yScale(globalMaxHeight * 0.25);
+    
+    // 图标需要的垂直空间（上下各留出圆形半径的距离）
+    const iconRadius = circleRadius; // 简化命名
+    
+    // 计算图标完整空间的上下边界
+    const iconTopInitial = initialIconYPosition - iconRadius;
+    const iconBottomInitial = initialIconYPosition + iconRadius;
+    
+    // 检查初始位置是否与任何标签禁区重叠或超出柱子底部
+    let hasOverlap = false;
+    for (const zone of labelForbiddenZones) {
+        // 检查圆形与标签是否有重叠
+        if (!(iconBottomInitial < zone.top || iconTopInitial > zone.bottom)) {
+            hasOverlap = true;
+            break;
+        }
+    }
+    
+    // 也检查是否超出柱子底部
+    if (iconBottomInitial > lowestBarBottom) {
+        hasOverlap = true;
+    }
+    
+    // 如果有重叠，搜索新位置
+    let globalIconYPosition = initialIconYPosition;
+    
+    if (hasOverlap) {
+        // 定义最小搜索步长（像素）
+        const stepSize = 5;
+        // 最大尝试次数，避免无限循环
+        const maxTries = 100;
+        
+        let foundUp = false;
+        let foundDown = false;
+        let upY = initialIconYPosition;
+        let downY = initialIconYPosition;
+        let bestUpPosition = null;
+        let bestDownPosition = null;
+        let upDistance = Infinity;
+        let downDistance = Infinity;
+        
+        // 同时向上和向下搜索，记录找到的最近有效位置
+        for (let i = 0; i < maxTries && (!foundUp || !foundDown); i++) {
+            // 向上搜索（如果还没找到向上的有效位置）
+            if (!foundUp) {
+                upY -= stepSize;
+                // 注意：不检查是否超出图表顶部，允许图标位于任意高度
+                
+                let overlapUp = false;
+                // 检查与标签的重叠
+                for (const zone of labelForbiddenZones) {
+                    if (!((upY + iconRadius) < zone.top || (upY - iconRadius) > zone.bottom)) {
+                        overlapUp = true;
+                        break;
+                    }
+                }
+                
+                // 检查是否超出柱子底部
+                if ((upY + iconRadius) > lowestBarBottom) {
+                    overlapUp = true;
+                }
+                
+                if (!overlapUp) {
+                    foundUp = true;
+                    bestUpPosition = upY;
+                    upDistance = Math.abs(upY - initialIconYPosition);
+                }
+            }
+            
+            // 向下搜索（如果还没找到向下的有效位置）
+            if (!foundDown) {
+                downY += stepSize;
+                
+                // 检查是否超出柱子底部，这是硬性限制
+                if ((downY + iconRadius) > lowestBarBottom) {
+                    // 向下搜索已经触及底部限制，不再继续
+                    foundDown = true; // 标记为已找到，但实际上是放弃
+                } else {
+                    let overlapDown = false;
+                    // 检查与标签的重叠
+                    for (const zone of labelForbiddenZones) {
+                        if (!((downY + iconRadius) < zone.top || (downY - iconRadius) > zone.bottom)) {
+                            overlapDown = true;
+                            break;
+                        }
+                    }
+                    
+                    if (!overlapDown) {
+                        foundDown = true;
+                        bestDownPosition = downY;
+                        downDistance = Math.abs(downY - initialIconYPosition);
+                    }
+                }
+            }
+        }
+        
+        // 判断哪个方向找到的位置更接近初始位置
+        if (foundUp && foundDown && bestUpPosition !== null && bestDownPosition !== null) {
+            // 两个方向都找到了有效位置，选择距离初始位置最近的
+            if (upDistance <= downDistance) {
+                globalIconYPosition = bestUpPosition;
+                console.log(`选择向上位置，距离初始位置 ${upDistance.toFixed(2)} 像素`);
+            } else {
+                globalIconYPosition = bestDownPosition;
+                console.log(`选择向下位置，距离初始位置 ${downDistance.toFixed(2)} 像素`);
+            }
+        } else if (foundUp && bestUpPosition !== null) {
+            // 只有向上找到有效位置
+            globalIconYPosition = bestUpPosition;
+            console.log(`只找到向上位置，距离初始位置 ${upDistance.toFixed(2)} 像素`);
+        } else if (foundDown && bestDownPosition !== null) {
+            // 只有向下找到有效位置
+            globalIconYPosition = bestDownPosition;
+            console.log(`只找到向下位置，距离初始位置 ${downDistance.toFixed(2)} 像素`);
+        } else {
+            // 如果实在找不到合适位置，放在柱子底部上方的安全位置
+            const safePosition = lowestBarBottom - iconRadius - 5;
+            globalIconYPosition = safePosition;
+            console.log("无法找到完全避开标签的位置，放置在安全位置");
+        }
+    }
+    // ---- 计算标签禁区逻辑结束 ----
     
     // 绘制条形图和标签
     xValues.forEach(xValue => {
@@ -483,17 +657,47 @@ function makeChart(containerSelector, data) {
                 .attr("stroke-width", variables.has_stroke ? 1 : 0)
                 .style("filter", variables.has_shadow ? "url(#shadow)" : "none");
             
-            // 绘制左侧柱子顶部的标签（简化为数值+单位，使用计算好的字体大小）
+            // 绘制左侧柱子顶部的标签
+            // 首先计算标签文本宽度并调整字体大小
+            const leftValueText = formatValue(leftValue);
+            let leftLabelFontSize = valueFontSize; // 默认使用之前计算的字体大小
+            
+            // 创建临时文本元素测量宽度
+            const tempLeftValueText = chart.append("text")
+                .style("visibility", "hidden")
+                .style("font-family", typography.label.font_family)
+                .style("font-size", `${leftLabelFontSize}px`)
+                .style("font-weight", "bold")
+                .text(leftValueText);
+            
+            // 计算文本宽度
+            let leftTextWidth = tempLeftValueText.node().getBBox().width;
+            // 最大允许宽度为柱子宽度的1.1倍
+            const maxLabelWidth = barWidth * 1.1;
+            
+            // 如果文本宽度超过允许值，动态缩小字体
+            if (leftTextWidth > maxLabelWidth) {
+                // 按比例计算新字体大小
+                leftLabelFontSize = Math.max(4, leftLabelFontSize * (maxLabelWidth / leftTextWidth));
+                // 更新临时文本以验证新尺寸
+                tempLeftValueText.style("font-size", `${leftLabelFontSize}px`);
+                leftTextWidth = tempLeftValueText.node().getBBox().width;
+            }
+            
+            // 移除临时文本
+            tempLeftValueText.remove();
+            
+            // 使用调整后的字体大小绘制标签
             chart.append("text")
                 .attr("class", "bar-label")
                 .attr("x", leftBarX + barWidth / 2)
-                .attr("y", leftBarY - 10)
+                .attr("y", leftBarY - 5)
                 .attr("text-anchor", "middle")
                 .style("font-family", typography.label.font_family)
-                .style("font-size", `${valueFontSize}px`)
+                .style("font-size", `${leftLabelFontSize}px`) // 使用动态调整的字体大小
                 .style("font-weight", "bold")
                 .style("fill", colors.text_color)
-                .text(formatValue(leftValue));
+                .text(leftValueText);
         }
         
         // 计算右侧柱子的位置和高度
@@ -520,17 +724,47 @@ function makeChart(containerSelector, data) {
                 .attr("stroke-width", variables.has_stroke ? 1 : 0)
                 .style("filter", variables.has_shadow ? "url(#shadow)" : "none");
             
-            // 绘制右侧柱子顶部的标签（简化为数值+单位，使用计算好的字体大小）
+            // 绘制右侧柱子顶部的标签
+            // 首先计算标签文本宽度并调整字体大小
+            const rightValueText = formatValue(rightValue);
+            let rightLabelFontSize = valueFontSize; // 默认使用之前计算的字体大小
+            
+            // 创建临时文本元素测量宽度
+            const tempRightValueText = chart.append("text")
+                .style("visibility", "hidden")
+                .style("font-family", typography.label.font_family)
+                .style("font-size", `${rightLabelFontSize}px`)
+                .style("font-weight", "bold")
+                .text(rightValueText);
+            
+            // 计算文本宽度
+            let rightTextWidth = tempRightValueText.node().getBBox().width;
+            // 最大允许宽度为柱子宽度的1.1倍
+            const rightMaxLabelWidth = barWidth * 1.1;
+            
+            // 如果文本宽度超过允许值，动态缩小字体
+            if (rightTextWidth > rightMaxLabelWidth) {
+                // 按比例计算新字体大小
+                rightLabelFontSize = Math.max(4, rightLabelFontSize * (rightMaxLabelWidth / rightTextWidth));
+                // 更新临时文本以验证新尺寸
+                tempRightValueText.style("font-size", `${rightLabelFontSize}px`);
+                rightTextWidth = tempRightValueText.node().getBBox().width;
+            }
+            
+            // 移除临时文本
+            tempRightValueText.remove();
+            
+            // 使用调整后的字体大小绘制标签
             chart.append("text")
                 .attr("class", "bar-label")
                 .attr("x", rightBarX + barWidth / 2)
-                .attr("y", rightBarY - 10)
+                .attr("y", rightBarY - 5)
                 .attr("text-anchor", "middle")
                 .style("font-family", typography.label.font_family)
-                .style("font-size", `${valueFontSize}px`)
+                .style("font-size", `${rightLabelFontSize}px`) // 使用动态调整的字体大小
                 .style("font-weight", "bold")
                 .style("fill", colors.text_color)
-                .text(formatValue(rightValue));
+                .text(rightValueText);
         }
         
         // 计算圆圈的位置 - 确保在两个柱子的中间
