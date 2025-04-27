@@ -76,8 +76,8 @@ function makeChart(containerSelector, data) {
     
     // 提取群组字段（默认取前两个group角色的列）
     const groupColumns = dataColumns.filter(col => col.role === "group");
-    const primaryGroupField = groupColumns[0].name;
-    const secondaryGroupField = groupColumns[1].name;
+    const primaryGroupField = dataColumns.filter(col => col.role === "group").name;
+    const secondaryGroupField = dataColumns.filter(col => col.role === "group2").name;
     
     // 获取字段单位（如果存在）
     let dimensionUnit = "";

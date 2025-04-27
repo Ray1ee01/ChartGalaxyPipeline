@@ -76,17 +76,13 @@ function makeChart(containerSelector, data) {
     // ---------- 3. 字段提取 ----------
     const xColumn = dataColumns.find(col => col.role === "x");        // 类别字段 (如：国家)
     const yColumn = dataColumns.find(col => col.role === "y");        // 数值字段
-    const groupColumns = dataColumns.filter(col => col.role === "group"); // 分组字段
+   
 
-    if (!xColumn || !yColumn || groupColumns.length < 2) {
-        console.error("数据列配置错误，需要x, y及两个group角色");
-        return;
-    }
 
     const categoryField = xColumn.name;
     const valueField = yColumn.name;
-    const conditionField = groupColumns[0].name; // 条件字段 (如：年份)，决定左右分组
-    const colorField = groupColumns[1].name;     // 颜色字段 (如：区域)
+    const conditionField = dataColumns.filter(col => col.role === "group").name;
+    const colorField = dataColumns.filter(col => col.role === "group2").name;
     let valueUnit = (yColumn.unit && yColumn.unit !== "none") ? yColumn.unit : "";
 
     // ---------- 4. 数据处理与排序 ----------

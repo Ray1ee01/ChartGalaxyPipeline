@@ -528,4 +528,3 @@ function makeChart(containerSelector, data) {
     // 返回 SVG 节点
     return svg.node();
 }
-

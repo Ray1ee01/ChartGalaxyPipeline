@@ -9,7 +9,7 @@ REQUIREMENTS_BEGIN
     "hierarchy":["group2"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"], ["categorical"]],
     "required_fields_range": [[2, 20], [0, 10000], [1, 5], [1, 3]],
-    "required_fields_icons": ["dimension"],
+    "required_fields_icons": ["x"],
     "required_other_icons": [],
     "required_fields_colors": ["group"],
     "required_other_colors": [],
@@ -69,10 +69,10 @@ function makeChart(containerSelector, data) {
     const groupColumns = dataColumns.filter(col => col.role === "group");
     
     // 使用第一个 group 作为 categoryField，如果不存在则使用默认值
-    const categoryField =groupColumns[0].name ;
+    const categoryField =dataColumns.filter(col => col.role === "group").name;
     
     // 使用第二个 group 作为 developmentStatusField，如果不存在则使用默认值
-    const developmentStatusField = groupColumns[1].name;
+    const developmentStatusField = dataColumns.filter(col => col.role === "group2").name;
     
     // 获取唯一维度和类别
     const allDimensions = [...new Set(chartData.map(d => d[xField]))];
