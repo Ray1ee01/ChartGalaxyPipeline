@@ -425,11 +425,12 @@ Please respond in JSON format:
             result["group_icons"][column_key] = {}
             
             # Try special categories first
-            if category in self.special_categories:
+            if category in self.special_categories and False:
                 icons = self.process_special_icons(category, unique_values)
                 if icons:
                     result["group_icons"][column_key] = icons
             else:
+                print(f"Processing normal icons for column {group_col}")
                 # 为该列创建专门的输入数据
                 column_input = {
                     "data": data_dict,
@@ -466,17 +467,120 @@ Please respond in JSON format:
         
         # Process group icons - 新结构支持多列的图标
         for column_name, column_icons in result["group_icons"].items():
+            key_icon_pairs = {}
             for group, icons in column_icons.items():
                 field_key = group
                 if isinstance(icons, list):
                     # For normal icons (list of candidates)
                     icon = random.choice(icons)
                     processed["field"][field_key] = self.post_process_image(icon["image_path"])
+                    key_icon_pairs[group] = icon
                 else:
                     # For special icons (single icon)
                     processed["field"][field_key] = self.post_process_image(icons["image_path"])
+                    key_icon_pairs[group] = icons
+            processed["field"] = self.process_stretch_icons(self.input_data, processed["field"], column_name, key_icon_pairs)
         
         return processed
+
+    def process_stretch_icons(self, input_data: Dict, icons: Dict, column_name: str, key_icon_pair: Dict) -> Dict:
+        """
+        Process stretch icons based on the input data.
+        """
+        data_rows = input_data.get("data", {}).get("data", [])
+        numerical_column = {}
+        for column in input_data.get("data", {}).get("columns", []):
+            if column["role"] == "y":
+                numerical_column = column
+                break
+        print(numerical_column)
+        if not numerical_column:
+            return icons
+        data_values = {}
+        for key, icon in key_icon_pair.items():
+            for row in data_rows:
+                if row[column_name] == key:
+                    data_values[key] = {
+                        "value": row[numerical_column["name"]],
+                        "icon": icon
+                    }
+        print(data_values)
+        # 检查data_values是否是数值
+        if not all(isinstance(value["value"], (int, float)) for value in data_values.values()):
+            return icons
+        
+        width = 30
+        min_height = 5
+        max_height = 300
+        min_value = 1e5
+        max_value = -1e5
+        for key, value in data_values.items():
+            if value["value"] < min_value:
+                min_value = value["value"]
+            if value["value"] > max_value:
+                max_value = value["value"]
+        height_range = max_value - min_value
+        for key, value in data_values.items():
+            value["height"] = min(max(min_height, width * value["value"] / height_range), max_height)
+            from PIL import Image
+            import numpy as np
+            import base64
+            import io
+            # Get absolute path
+            abs_path = os.path.join(self.normal_icons, value["icon"]["image_path"])
+            if not os.path.exists(abs_path):
+                logger.error(f"Image not found: {abs_path}")
+                return ""
+            
+            # Convert white background to transparent
+            img = Image.open(abs_path)
+            if img.mode != 'RGBA':
+                img = img.convert('RGBA')
+            
+            data = np.array(img)
+            # Convert white-ish pixels to transparent
+            # RGB all > 240 is considered white-ish
+            white_mask = (data[..., :3] > 240).all(axis=2)
+            data[white_mask, 3] = 0
+            
+            processed_img = Image.fromarray(data)
+            
+            # Convert to base64 string
+            buffered = io.BytesIO()
+            processed_img.save(buffered, format="PNG")
+            img_str = base64.b64encode(buffered.getvalue()).decode()
+            request_data = {
+                "image": f"data:image/png;base64,{img_str}",
+                "scale": value["height"] / 30,
+                'hrz': 'false'
+            }
+            response = requests.post(
+                "http://166.111.86.168:5000/scale",
+                json=request_data
+            )
+            response.raise_for_status()
+            result = response.content
+            # 解码base64数据并保存图片
+            img_data = base64.b64decode(result.split(b"data:image/png;base64,")[1])
+            with open(f"./tmp/stretch_icon_{key}.png", "wb") as f:
+                f.write(img_data)
+            # value["icon"]["image_path"] = result["image_path"]
+        return data_values
+
+def scale_icon(icon: Dict, height: float) -> Dict:
+    """
+    Scale the icon to the given height.
+    """
+    from PIL import Image
+    import numpy as np
+    import base64
+    import io
+    
+    # Get absolute path
+    abs_path = os.path.join(self.normal_icons, icon["image_path"])
+    if not os.path.exists(abs_path):
+        logger.error(f"Image not found: {abs_path}")
+        return ""
 
 def process(input: str, output: str, embed_model_path: str = None, resource_path: str = None, data_path: str = None, index_path: str = None, base_url: str = None, api_key: str = None) -> bool:
     """
@@ -489,14 +593,15 @@ def process(input: str, output: str, embed_model_path: str = None, resource_path
         data_path: 图像数据路径
         index_path: 索引文件路径
     """
+    print("process")
     try:
         # 读取输入文件
         with open(input, "r", encoding="utf-8") as f:
             data = json.load(f)
-            
+        print("input")
         # 预处理数据
         processed_data = preprocess_data(data)
-        
+        print("processed_data")
         # 生成图像推荐
         recommender = ImageRecommender(
             embed_model_path=embed_model_path,
@@ -506,7 +611,9 @@ def process(input: str, output: str, embed_model_path: str = None, resource_path
             base_url=base_url,
             api_key=api_key
         )
+        recommender.input_data = processed_data
         image_result = recommender.recommend_images(processed_data)
+        print("image_result")
         # 添加图像推荐到数据中
         processed_data["images"] = image_result
         
@@ -539,7 +646,6 @@ def preprocess_data(data: Dict) -> Dict:
         # 确保data_facts字段存在
         if "data_facts" not in processed["metadata"]:
             processed["metadata"]["data_facts"] = []
-            
         return processed
         
     except Exception as e:

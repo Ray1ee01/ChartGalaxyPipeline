@@ -4,7 +4,7 @@ from .mask_utils import calculate_mask, expand_mask
 import os
 from PIL import Image
 
-def find_best_size_and_position(main_mask: np.ndarray, image_content: str, padding: int, mode: str = "side", chart_bbox: dict = None) -> Tuple[int, int, int]:
+def find_best_size_and_position(main_mask: np.ndarray, image_content: str, padding: int, mode: str = "side", chart_bbox: dict = None, avoid_mask: np.ndarray = None) -> Tuple[int, int, int]:
     """
     通过降采样加速查找最佳图片尺寸和位置
     
@@ -14,6 +14,7 @@ def find_best_size_and_position(main_mask: np.ndarray, image_content: str, paddi
         padding: 边界padding
         mode: 放置模式，可选"side"、"background"或"overlay"
         chart_bbox: 图表边界框，格式为{"x": x, "y": y, "width": width, "height": height}
+        avoid_mask: 需要避免重叠的区域mask
     
     Returns:
         Tuple[int, int, int]: (image_size, best_x, best_y)
@@ -40,6 +41,19 @@ def find_best_size_and_position(main_mask: np.ndarray, image_content: str, paddi
             x_end = min((j + 2) * (grid_size), w)
             grid = main_mask[y_start:y_end, x_start:x_end]
             downsampled_main[i, j] = 1 if np.any(grid == 1) else 0
+    
+    # 如果有avoid_mask，也进行降采样
+    downsampled_avoid = None
+    if avoid_mask is not None:
+        downsampled_avoid = np.zeros((downsampled_h, downsampled_w), dtype=np.uint8)
+        for i in range(downsampled_h):
+            for j in range(downsampled_w):
+                y_start = max(0, (i - 1) * (grid_size))
+                x_start = max(0, (j - 1) * (grid_size))
+                y_end = min((i + 2) * (grid_size), h)
+                x_end = min((j + 2) * (grid_size), w)
+                grid = avoid_mask[y_start:y_end, x_start:x_end]
+                downsampled_avoid[i, j] = 1 if np.any(grid == 1) else 0
     
     # 调整padding到降采样尺度
     downsampled_padding = max(1, padding // grid_size)
@@ -146,6 +160,12 @@ def find_best_size_and_position(main_mask: np.ndarray, image_content: str, paddi
                 total = np.sum(downsampled_image == 1)
                 overlap_ratio = overlap / total if total > 0 else 1.0
                 
+                # 检查与avoid_mask的重叠
+                avoid_overlap = 0
+                if downsampled_avoid is not None:
+                    avoid_region = downsampled_avoid[y:y + mid_size, x:x + mid_size]
+                    avoid_overlap = np.sum((avoid_region == 1) & (downsampled_image == 1))
+                
                 if mode == "side" or mode == "background":
                     if mode == "background" and chart_bbox is not None:
                         distance_to_left = x - (chart_x + downsampled_padding)
@@ -165,6 +185,9 @@ def find_best_size_and_position(main_mask: np.ndarray, image_content: str, paddi
                         current_y = y
                         min_distance = distance_to_border
                 elif mode == "overlay":
+                    # 对于overlay模式，需要同时满足与main_mask的重叠足够大，且与avoid_mask没有重叠
+                    if avoid_overlap > 0:
+                        continue  # 跳过与avoid_mask有重叠的位置
                     distance_to_center = np.sqrt(((x + mid_size / 2 - mask_center_x) ** 2 + (y + mid_size / 2 - mask_center_y) ** 2))
                     if overlap_ratio > min_overlap or (overlap_ratio > overlap_threshold and distance_to_center < min_distance):
                         min_overlap = overlap_ratio
@@ -184,6 +207,11 @@ def find_best_size_and_position(main_mask: np.ndarray, image_content: str, paddi
             else:
                 max_size = mid_size - 1
         elif mode == "overlay":
+            print("min_overlap", min_overlap)
+            print("overlap_threshold", overlap_threshold)
+            print("current_x", current_x)
+            print("current_y", current_y)
+            print("mid_size", mid_size)
             if min_overlap > overlap_threshold:
                 best_size = mid_size
                 best_overlap_ratio = min_overlap

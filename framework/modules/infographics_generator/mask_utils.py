@@ -40,17 +40,17 @@ def calculate_mask_v3(svg_content: str, width: int, height: int, background_colo
         text.decompose()
     
     # 重新获取处理后的SVG内容
-    svg_content = str(soup)
+    svg_content_without_text = str(soup)
     
     # 创建临时文件
-    with tempfile.NamedTemporaryFile(suffix='.svg', delete=False) as mask_svg_file, \
-         tempfile.NamedTemporaryFile(suffix='.png', delete=False) as temp_mask_png_file:
-        mask_svg = mask_svg_file.name
-        temp_mask_png = temp_mask_png_file.name
+    with tempfile.NamedTemporaryFile(suffix='.svg', delete=False) as mask_svg_file_without_text, \
+         tempfile.NamedTemporaryFile(suffix='.png', delete=False) as temp_mask_png_file_without_text:
+        mask_svg_without_text = mask_svg_file_without_text.name
+        temp_mask_png_without_text = temp_mask_png_file_without_text.name
         
         # 修改SVG内容，移除渐变
         # 将渐变填充替换为可见的纯色填充，而不是none
-        mask_svg_content = svg_content
+        mask_svg_content = svg_content_without_text
         # mask_svg_content = re.sub(r'fill="url\(#[^"]*\)"', 'fill="#333333"', mask_svg_content)
         # mask_svg_content = re.sub(r'stroke="url\(#[^"]*\)"', 'stroke="#333333"', mask_svg_content)
         mask_svg_content = mask_svg_content.replace('&', '&amp;')
@@ -65,34 +65,73 @@ def calculate_mask_v3(svg_content: str, width: int, height: int, background_colo
             {inner_content} \
             </svg>'
         
-        mask_svg_file.write(mask_svg_content.encode('utf-8'))
+        mask_svg_file_without_text.write(mask_svg_content.encode('utf-8'))
         
-    subprocess.run([
-        'rsvg-convert',
-        '-f', 'png',
-        '-o', temp_mask_png,
-        '--dpi-x', '300',
-        '--dpi-y', '300',
+        subprocess.run([
+            'rsvg-convert',
+            '-f', 'png',
+            '-o', temp_mask_png_without_text,
+            '--dpi-x', '300',
+            '--dpi-y', '300',
         '--background-color', original_background_color,
-        mask_svg
-    ], check=True)
+            mask_svg_without_text
+        ], check=True)
     
     # 读取为numpy数组并处理
-    img = Image.open(temp_mask_png).convert('RGB')
-    img_array = np.array(img)
+    img_without_text = Image.open(temp_mask_png_without_text).convert('RGB')
+    img_array_without_text = np.array(img_without_text)
     
     # 确保图像尺寸匹配预期尺寸
-    actual_height, actual_width = img_array.shape[:2]
+    actual_height, actual_width = img_array_without_text.shape[:2]
     if actual_width != width or actual_height != height:
-        img = img.resize((width, height), Image.LANCZOS)
-        img_array = np.array(img)
+        img_without_text = img_without_text.resize((width, height), Image.LANCZOS)
+        img_array_without_text = np.array(img_without_text)
+    
+    
+    # 解析SVG内容
+    soup = BeautifulSoup(svg_content, 'xml')
+    
+    # 仅保留text和group元素
+    for element in soup.find_all():
+        if element.name not in ['text', 'g', 'svg']:
+            element.decompose()
+    
+    svg_content_only_text = str(soup)
+    
+    # 创建临时文件
+    with tempfile.NamedTemporaryFile(suffix='.svg', delete=False) as mask_svg_file_only_text, \
+         tempfile.NamedTemporaryFile(suffix='.png', delete=False) as temp_mask_png_file_only_text:
+        mask_svg_only_text = mask_svg_file_only_text.name
+        temp_mask_png_only_text = temp_mask_png_file_only_text.name
+        mask_svg_file_only_text.write(svg_content_only_text.encode('utf-8'))
+        mask_svg_file_only_text.flush()
+        
+        subprocess.run([
+            'rsvg-convert',
+            '-f', 'png',
+            '-o', temp_mask_png_only_text,
+            '--dpi-x', '300',
+            '--dpi-y', '300',
+            '--background-color', original_background_color,
+            mask_svg_only_text
+        ], check=True)
+        
+        
+    img_only_text = Image.open(temp_mask_png_only_text).convert('RGB')
+    img_array_only_text = np.array(img_only_text)
+    
+    # 确保图像尺寸匹配预期尺寸
+    actual_height, actual_width = img_array_only_text.shape[:2]
+    if actual_width != width or actual_height != height:
+        img_only_text = img_only_text.resize((width, height), Image.LANCZOS)
+        img_array_only_text = np.array(img_only_text)
     
     # 转换为二值mask
     mask = np.ones((height, width), dtype=np.uint8)
     # 随机采样300个点
     total_pixels = height * width
     sample_indices = np.random.choice(total_pixels, min(300, total_pixels), replace=False)
-    sample_pixels = img_array.reshape(-1, 3)[sample_indices]
+    sample_pixels = img_array_without_text.reshape(-1, 3)[sample_indices]
     
     # 排除接近背景色的像素
     non_bg_pixels = sample_pixels[~np.all(np.abs(sample_pixels - background_color) <= 10, axis=1)]
@@ -108,9 +147,13 @@ def calculate_mask_v3(svg_content: str, width: int, height: int, background_colo
     
     # 使用mode_color作为众数颜色创建mask
     mask = np.zeros((height, width), dtype=np.uint8)
-    color_diff = np.sqrt(np.sum((img_array - mode_color) ** 2, axis=2))
+    mask_only_text = np.zeros((height, width), dtype=np.uint8)
+    color_diff = np.sqrt(np.sum((img_array_without_text - mode_color) ** 2, axis=2))
     mask[color_diff <= 10] = 1
+    color_diff_only_text = np.sqrt(np.sum((img_array_only_text - background_color) ** 2, axis=2))
+    mask_only_text[color_diff_only_text >= 10] = 1
     fill_mask = np.zeros((height, width), dtype=np.uint8)
+    fill_mask_only_text = np.zeros((height, width), dtype=np.uint8)
     
     mask_padding = 8
     for i in range(height):
@@ -133,11 +176,34 @@ def calculate_mask_v3(svg_content: str, width: int, height: int, background_colo
                     fill_mask[i, j] = 1
                 last_i = i
 
+    for j in range(width):
+        last_i = -mask_padding
+        for i in range(height):
+            if mask_only_text[i, j] == 1:
+                if i - last_i < mask_padding:
+                    fill_mask_only_text[last_i:i+1, j] = 1
+                else:
+                    fill_mask_only_text[i, j] = 1
+                last_i = i
+
+    for i in range(height):
+        last_j = -mask_padding
+        for j in range(width):
+            if mask_only_text[i, j] == 1:
+                if j - last_j < mask_padding:
+                    fill_mask_only_text[i, last_j:j+1] = 1
+                else:
+                    fill_mask_only_text[i, j] = 1
+                last_j = j
+
     mask = fill_mask
-    os.remove(mask_svg)
-    os.remove(temp_mask_png)
+    mask_only_text = fill_mask_only_text
+    os.remove(mask_svg_without_text)
+    os.remove(temp_mask_png_without_text)
+    os.remove(mask_svg_only_text)
+    os.remove(temp_mask_png_only_text)
     
-    return mask
+    return mask, mask_only_text
 
 
 
