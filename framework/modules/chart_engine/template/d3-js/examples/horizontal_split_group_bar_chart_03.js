@@ -5,7 +5,8 @@ REQUIREMENTS_BEGIN
     "chart_name": "horizontal_split_group_bar_chart_03",
     "is_composite": false,
     "chart_for": "comparison",
-    "required_fields": ["x", "y", "group", "group"],
+    "required_fields": ["x", "y", "group", "group2"],
+    "hierarchy":["group2"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"], ["categorical"]],
     "required_fields_range": [
         [2, 30],

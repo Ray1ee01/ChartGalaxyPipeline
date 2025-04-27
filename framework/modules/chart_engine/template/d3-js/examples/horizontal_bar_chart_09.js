@@ -15,7 +15,7 @@ REQUIREMENTS_BEGIN
     "min_height": 400,
     "min_width": 400,
     "background": "no",
-    "icon_mark": "none",
+    "icon_mark": "overlay",
     "icon_label": "side",
     "has_x_axis": "no",
     "has_y_axis": "no"
