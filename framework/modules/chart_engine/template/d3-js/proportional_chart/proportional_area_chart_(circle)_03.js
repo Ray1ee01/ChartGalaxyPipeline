@@ -61,10 +61,10 @@ function makeChart(containerSelector, dataJSON) {
                 [uniqueGroups.indexOf(group) % 8]
         ));
 
-    // 初始半径比例尺
+    // 初始半径比例尺 - 增大最大半径值以增加多样性
     const radiusScale = d3.scaleSqrt()
         .domain([d3.min(raw, d => +d[yField]), d3.max(raw, d => +d[yField])])
-        .range([20, 120]);
+        .range([20, 150]); // 将最大半径从120增加到150
         
     // 计算初始半径和总面积
     let nodes = raw.map((d, i) => {
@@ -441,19 +441,62 @@ function makeChart(containerSelector, dataJSON) {
         .attr("font-family", "Arial")
         .text(legendTitle);
     
+    // 计算每个图例标签的实际宽度
+    const labelWidths = uniqueGroupsForLegend.map(group => {
+        return getTextWidth(group, "Arial", 12, "normal") + 30; // 文本宽度 + 图标和间距(30px)
+    });
+    
     // 计算水平图例布局
-    const itemWidth = 100; // 每个图例项的宽度
+    const minItemWidth = 80; // 每个图例项的最小宽度
+    const itemPadding = 15; // 图例项之间的间距
     const itemHeight = 30; // 图例项高度
-    const itemsPerRow = Math.min(uniqueGroupsForLegend.length, Math.floor((W) / itemWidth)); // 每行最多显示的项数
-    const legendWidth = itemsPerRow * itemWidth; // 图例总宽度
-    const startX = (W - legendWidth) / 2; // 居中对齐
+    
+    // 计算每行可以容纳的图例项数量及布局
+    let currentRowWidth = 0;
+    let currentRow = 0;
+    let legendPositions = [];
     
     uniqueGroupsForLegend.forEach((group, i) => {
-        // 计算当前图例项的位置
-        const row = Math.floor(i / itemsPerRow);
-        const col = i % itemsPerRow;
-        const x = startX + col * itemWidth;
-        const y = 30 + row * itemHeight; // 从标题下方开始
+        const itemWidth = Math.max(labelWidths[i], minItemWidth);
+        
+        // 检查当前行是否可以容纳此项
+        if (currentRowWidth + itemWidth > W && currentRowWidth > 0) {
+            // 需要换行
+            currentRowWidth = itemWidth;
+            currentRow++;
+        } else {
+            currentRowWidth += itemWidth + itemPadding;
+        }
+        
+        legendPositions.push({
+            row: currentRow,
+            x: currentRowWidth - itemWidth, // 当前位置减去项宽度
+            width: itemWidth
+        });
+    });
+    
+    // 计算每行的起始X位置（居中对齐）
+    const rowWidths = [];
+    legendPositions.forEach(pos => {
+        if (!rowWidths[pos.row]) rowWidths[pos.row] = 0;
+        rowWidths[pos.row] += pos.width + itemPadding;
+    });
+    
+    // 调整每一行的起始位置使其居中
+    rowWidths.forEach((width, row) => {
+        const startX = (W - width + itemPadding) / 2; // 居中对齐并修正多余的间距
+        legendPositions.forEach(pos => {
+            if (pos.row === row) {
+                pos.x += startX;
+            }
+        });
+    });
+    
+    uniqueGroupsForLegend.forEach((group, i) => {
+        // 使用计算好的位置信息
+        const pos = legendPositions[i];
+        const x = pos.x;
+        const y = 30 + pos.row * itemHeight; // 从标题下方开始
         
         // 获取颜色（与节点颜色一致）
         const color = colorScale(group);

@@ -1406,8 +1406,8 @@
         "min_height": 400,
         "min_width": 800,
         "background": "dark",
-        "icon_mark": "none",
-        "icon_label": "none",
+        "icon_mark": "side",
+        "icon_label": "side",
         "has_x_axis": "yes",
         "has_y_axis": "yes"
     },
@@ -1454,8 +1454,8 @@
         "min_height": 400,
         "min_width": 800,
         "background": "light",
-        "icon_mark": "circle",
-        "icon_label": "legend",
+        "icon_mark": "none",
+        "icon_label": "none",
         "has_x_axis": "yes",
         "has_y_axis": "yes",
         "chart_for": "comparison"
@@ -1649,8 +1649,8 @@
         "min_height": 400,
         "min_width": 600,
         "background": "dark",
-        "icon_mark": "none",
-        "icon_label": "none",
+        "icon_mark": "side",
+        "icon_label": "side",
         "has_x_axis": "yes",
         "has_y_axis": "yes"
     },
@@ -1747,8 +1747,8 @@
         "min_height": 400,
         "min_width": 800,
         "background": "light",
-        "icon_mark": "circle",
-        "icon_label": "legend",
+        "icon_mark": "overlay",
+        "icon_label": "side",
         "has_x_axis": "yes",
         "has_y_axis": "yes",
         "chart_for": "comparison"
@@ -1844,8 +1844,8 @@
         "min_height": 600,
         "min_width": 800,
         "background": "dark",
-        "icon_mark": "none",
-        "icon_label": "none",
+        "icon_mark": "side",
+        "icon_label": "side",
         "has_x_axis": "yes",
         "has_y_axis": "yes"
     },
@@ -2047,7 +2047,7 @@
         "icon_mark": "none",
         "icon_label": "none",
         "has_x_axis": "yes",
-        "has_y_axis": "yes"
+        "has_y_axis": "no"
     },
     "slope_chart_01": {
         "chart_type": "Slope Chart",
@@ -2133,11 +2133,7 @@
         "required_fields_icons": [],
         "required_other_icons": [],
         "required_fields_colors": [],
-        "required_other_colors": [
-            "primary",
-            "secondary",
-            "background"
-        ],
+        "required_other_colors": [],
         "supported_effects": [
             "gradient",
             "opacity"
@@ -2593,7 +2589,7 @@
             ],
             [
                 2,
-                5
+                2
             ],
             [
                 2,
@@ -2792,7 +2788,7 @@
             ]
         ],
         "required_fields_icons": [
-            "dimension"
+            "x"
         ],
         "required_other_icons": [],
         "required_fields_colors": [
@@ -3393,18 +3389,17 @@
                     30
                 ],
                 [
-                    -100,
-                    100
+                    0,
+                    "inf"
                 ]
             ]
         ],
         "required_fields_icons": [],
         "required_other_icons": [],
-        "required_fields_colors": [
-            "x"
-        ],
+        "required_fields_colors": [],
         "required_other_colors": [
-            "primary"
+            "primary",
+            "secondary"
         ],
         "supported_effects": [
             "radius_corner",
@@ -3417,8 +3412,8 @@
         "min_width": 400,
         "background": "no",
         "icon_mark": "none",
-        "icon_label": "bottom",
-        "has_x_axis": "yes",
+        "icon_label": "none",
+        "has_x_axis": "no",
         "has_y_axis": "no"
     },
     "circular_bar_chart_03": {
@@ -3732,7 +3727,7 @@
             "x",
             "y",
             "group",
-            "group"
+            "group2"
         ],
         "required_fields_type": [
             [
@@ -3897,7 +3892,7 @@
         "min_height": 400,
         "min_width": 400,
         "background": "no",
-        "icon_mark": "overlay",
+        "icon_mark": "none",
         "icon_label": "none",
         "has_x_axis": "yes",
         "has_y_axis": "no"
@@ -3910,7 +3905,7 @@
             "x",
             "y",
             "group",
-            "group"
+            "group2"
         ],
         "required_fields_type": [
             [
@@ -5712,10 +5707,10 @@
         "min_height": 600,
         "min_width": 800,
         "background": "dark",
-        "icon_mark": "none",
-        "icon_label": "none",
+        "icon_mark": "overlay",
+        "icon_label": "side",
         "has_x_axis": "yes",
-        "has_y_axis": "yes"
+        "has_y_axis": "no"
     },
     "stacked_area_chart_02": {
         "chart_type": "Stacked Area Chart",
@@ -6113,6 +6108,198 @@
         "has_x_axis": "no",
         "has_y_axis": "no"
     },
+    "grouped_scatterplot_05": {
+        "chart_type": "Grouped Scatterplot",
+        "chart_name": "grouped_scatterplot_05",
+        "required_fields": [
+            "x",
+            "y",
+            "y2",
+            "group"
+        ],
+        "required_fields_type": [
+            [
+                "categorical"
+            ],
+            [
+                "numerical"
+            ],
+            [
+                "numerical"
+            ],
+            [
+                "categorical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                8,
+                150
+            ],
+            [
+                0,
+                "inf"
+            ],
+            [
+                0,
+                "inf"
+            ],
+            [
+                2,
+                6
+            ]
+        ],
+        "required_fields_icons": [
+            "group"
+        ],
+        "required_other_icons": [],
+        "required_fields_colors": [],
+        "required_other_colors": [
+            "primary"
+        ],
+        "hierarchy": [
+            "group"
+        ],
+        "supported_effects": [
+            "shadow",
+            "radius_corner"
+        ],
+        "min_height": 750,
+        "min_width": 750,
+        "background": "no",
+        "icon_mark": "replace",
+        "icon_label": "none",
+        "has_x_axis": "yes",
+        "has_y_axis": "yes"
+    },
+    "grouped_scatterplot_04": {
+        "chart_type": "Grouped Scatterplot",
+        "chart_name": "grouped_scatterplot_04",
+        "required_fields": [
+            "x",
+            "y",
+            "y2",
+            "group"
+        ],
+        "required_fields_type": [
+            [
+                "categorical"
+            ],
+            [
+                "numerical"
+            ],
+            [
+                "numerical"
+            ],
+            [
+                "categorical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                8,
+                150
+            ],
+            [
+                0,
+                "inf"
+            ],
+            [
+                0,
+                "inf"
+            ],
+            [
+                2,
+                6
+            ]
+        ],
+        "required_fields_icons": [],
+        "required_other_icons": [],
+        "required_fields_colors": [
+            "group"
+        ],
+        "required_other_colors": [
+            "primary"
+        ],
+        "hierarchy": [
+            "group"
+        ],
+        "supported_effects": [
+            "shadow",
+            "radius_corner"
+        ],
+        "min_height": 750,
+        "min_width": 750,
+        "background": "no",
+        "icon_mark": "none",
+        "icon_label": "none",
+        "has_x_axis": "yes",
+        "has_y_axis": "yes"
+    },
+    "grouped_scatterplot_03": {
+        "chart_type": "Grouped Scatterplot",
+        "chart_name": "grouped_scatterplot_03",
+        "required_fields": [
+            "x",
+            "y",
+            "y2",
+            "group"
+        ],
+        "required_fields_type": [
+            [
+                "categorical"
+            ],
+            [
+                "numerical"
+            ],
+            [
+                "numerical"
+            ],
+            [
+                "categorical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                8,
+                150
+            ],
+            [
+                0,
+                "inf"
+            ],
+            [
+                0,
+                "inf"
+            ],
+            [
+                2,
+                6
+            ]
+        ],
+        "required_fields_icons": [],
+        "required_other_icons": [],
+        "required_fields_colors": [
+            "group"
+        ],
+        "required_other_colors": [
+            "primary"
+        ],
+        "hierarchy": [
+            "group"
+        ],
+        "supported_effects": [
+            "shadow",
+            "radius_corner"
+        ],
+        "min_height": 750,
+        "min_width": 750,
+        "background": "no",
+        "icon_mark": "none",
+        "icon_label": "none",
+        "has_x_axis": "yes",
+        "has_y_axis": "yes"
+    },
     "grouped_scatterplot_02": {
         "chart_type": "Grouped ScatterPlot",
         "chart_name": "grouped_scatterplot_02",
@@ -6155,6 +6342,9 @@
         "required_fields_colors": [
             "group"
         ],
+        "hierarchy": [
+            "group"
+        ],
         "required_other_colors": [
             "primary"
         ],
@@ -6170,8 +6360,8 @@
         "background": "no",
         "icon_mark": "none",
         "icon_label": "side",
-        "has_x_axis": "no",
-        "has_y_axis": "no"
+        "has_x_axis": "yes",
+        "has_y_axis": "yes"
     },
     "grouped_scatterplot_01": {
         "chart_type": "Grouped Scatterplot",
@@ -6226,126 +6416,9 @@
         "required_other_colors": [
             "primary"
         ],
-        "supported_effects": [
-            "shadow",
-            "radius_corner"
-        ],
-        "min_height": 750,
-        "min_width": 750,
-        "background": "no",
-        "icon_mark": "none",
-        "icon_label": "side",
-        "has_x_axis": "no",
-        "has_y_axis": "no"
-    },
-    "bubble_chart_01": {
-        "chart_type": "Bubble Chart",
-        "chart_name": "bubble_chart_01",
-        "required_fields": [
-            "x",
-            "y",
-            "y2"
-        ],
-        "required_fields_type": [
-            [
-                "categorical"
-            ],
-            [
-                "numerical"
-            ],
-            [
-                "numerical"
-            ]
-        ],
-        "required_fields_range": [
-            [
-                8,
-                150
-            ],
-            [
-                0,
-                "inf"
-            ],
-            [
-                0,
-                "inf"
-            ]
-        ],
-        "required_fields_icons": [
-            "x"
-        ],
-        "required_other_icons": [
-            "primary"
-        ],
-        "required_fields_colors": [],
-        "required_other_colors": [
-            "primary"
-        ],
-        "supported_effects": [
-            "shadow",
-            "radius_corner"
-        ],
-        "min_height": 750,
-        "min_width": 750,
-        "background": "no",
-        "icon_mark": "none",
-        "icon_label": "side",
-        "has_x_axis": "no",
-        "has_y_axis": "no"
-    },
-    "grouped_bubble_chart_01": {
-        "chart_type": "Grouped Bubble Chart",
-        "chart_name": "grouped_bubble_chart_01",
-        "required_fields": [
-            "x",
-            "y",
-            "y2",
+        "hierarchy": [
             "group"
         ],
-        "required_fields_type": [
-            [
-                "categorical"
-            ],
-            [
-                "numerical"
-            ],
-            [
-                "numerical"
-            ],
-            [
-                "categorical"
-            ]
-        ],
-        "required_fields_range": [
-            [
-                8,
-                150
-            ],
-            [
-                0,
-                "inf"
-            ],
-            [
-                0,
-                "inf"
-            ],
-            [
-                2,
-                6
-            ]
-        ],
-        "required_fields_icons": [
-            "x"
-        ],
-        "required_other_icons": [
-            "primary"
-        ],
-        "required_fields_colors": [
-            "group"
-        ],
-        "required_other_colors": [
-            "primary"
-        ],
         "supported_effects": [
             "shadow",
             "radius_corner"
@@ -6353,10 +6426,10 @@
         "min_height": 750,
         "min_width": 750,
         "background": "no",
-        "icon_mark": "none",
-        "icon_label": "side",
-        "has_x_axis": "no",
-        "has_y_axis": "no"
+        "icon_mark": "replace",
+        "icon_label": "none",
+        "has_x_axis": "yes",
+        "has_y_axis": "yes"
     },
     "multiple_radar_spline_chart_02": {
         "chart_type": "Multiple Radar Spline Chart",
@@ -6710,9 +6783,9 @@
         "has_x_axis": "no",
         "has_y_axis": "no"
     },
-    "proportional_area_chart_(circle)_02": {
+    "proportional_area_chart_circle_02": {
         "chart_type": "Proportional Area Chart(circle)",
-        "chart_name": "proportional_area_chart_(circle)_02",
+        "chart_name": "proportional_area_chart_circle_02",
         "is_composite": false,
         "required_fields": [
             "x",
@@ -6811,9 +6884,9 @@
         "has_x_axis": "no",
         "has_y_axis": "no"
     },
-    "proportional_area_chart_(circle)_01": {
+    "proportional_area_chart_circle_01": {
         "chart_type": "Proportional Area Chart(circle)",
-        "chart_name": "proportional_area_chart_(circle)_01",
+        "chart_name": "proportional_area_chart_circle_01",
         "is_composite": false,
         "required_fields": [
             "x",
@@ -6834,7 +6907,7 @@
             ],
             [
                 0,
-                "inf"
+                Infinity
             ]
         ],
         "required_fields_icons": [],
@@ -7451,11 +7524,7 @@
         "required_fields_icons": [],
         "required_other_icons": [],
         "required_fields_colors": [],
-        "required_other_colors": [
-            "primary",
-            "secondary",
-            "background"
-        ],
+        "required_other_colors": [],
         "supported_effects": [
             "gradient",
             "opacity"
@@ -7466,7 +7535,7 @@
         "icon_mark": "none",
         "icon_label": "none",
         "has_x_axis": "yes",
-        "has_y_axis": "yes"
+        "has_y_axis": "no"
     },
     "area_chart_03": {
         "chart_type": "Area Chart",
@@ -7600,7 +7669,7 @@
         "icon_mark": "none",
         "icon_label": "none",
         "has_x_axis": "yes",
-        "has_y_axis": "yes",
+        "has_y_axis": "no",
         "chart_for": "trend"
     },
     "small_multiple_area_chart_01": {
@@ -7641,9 +7710,7 @@
         "required_fields_colors": [
             "group"
         ],
-        "required_other_colors": [
-            "background"
-        ],
+        "required_other_colors": [],
         "supported_effects": [
             "gradient",
             "opacity"
@@ -7752,10 +7819,10 @@
         "min_height": 600,
         "min_width": 800,
         "background": "dark",
-        "icon_mark": "none",
-        "icon_label": "none",
+        "icon_mark": "overlay",
+        "icon_label": "side",
         "has_x_axis": "yes",
-        "has_y_axis": "yes"
+        "has_y_axis": "no"
     },
     "spline_area_chart_01": {
         "chart_type": "Spline Area Chart",
@@ -7800,7 +7867,7 @@
         "icon_mark": "none",
         "icon_label": "none",
         "has_x_axis": "yes",
-        "has_y_axis": "yes",
+        "has_y_axis": "no",
         "chart_for": "trend"
     },
     "spline_layered_area_chart_01": {
@@ -7841,11 +7908,7 @@
         "required_fields_colors": [
             "group"
         ],
-        "required_other_colors": [
-            "primary",
-            "secondary",
-            "background"
-        ],
+        "required_other_colors": [],
         "supported_effects": [
             "gradient",
             "opacity"
@@ -7903,8 +7966,8 @@
         "min_height": 600,
         "min_width": 800,
         "background": "light",
-        "icon_mark": "none",
-        "icon_label": "none",
+        "icon_mark": "overlay",
+        "icon_label": "side",
         "has_x_axis": "yes",
         "has_y_axis": "yes",
         "chart_for": "comparison"

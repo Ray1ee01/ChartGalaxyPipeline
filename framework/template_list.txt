@@ -112,10 +112,11 @@ multiple vertical bar chart / multiple_vertical_bar_chart_01
 scatterplot / scatterplot_03
 scatterplot / scatterplot_01
 scatterplot / scatterplot_02
+grouped scatterplot / grouped_scatterplot_05
+grouped scatterplot / grouped_scatterplot_04
+grouped scatterplot / grouped_scatterplot_03
 grouped scatterplot / grouped_scatterplot_02
 grouped scatterplot / grouped_scatterplot_01
-bubble chart / bubble_chart_01
-grouped bubble chart / grouped_bubble_chart_01
 multiple radar spline chart / multiple_radar_spline_chart_02
 multiple radar spline chart / multiple_radar_spline_chart_01
 multiple radar chart / multiple_radar_chart_03
@@ -124,9 +125,9 @@ radar line chart / radar_line_chart_01
 radar line chart / radar_line_chart_03
 radar spline chart / radar_spline_chart_03
 radar spline chart / radar_spline_chart_01
-proportional area chart(circle) / proportional_area_chart_(circle)_02
+proportional area chart(circle) / proportional_area_chart_circle_02
 proportional area chart(circle) / proportional_area_chart_circle_05
-proportional area chart(circle) / proportional_area_chart_(circle)_01
+proportional area chart(circle) / proportional_area_chart_circle_01
 proportional area chart(circle) / proportional_area_chart_circle_03
 proportional area chart(circle) / proportional_area_chart_circle_04
 proportional area chart (square) / proportional_area_chart_(square)_01

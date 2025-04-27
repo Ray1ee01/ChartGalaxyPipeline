@@ -615,7 +615,7 @@ function makeChart(containerSelector, dataJSON) {
     });
 
     /* ============ 8. 创建图例 ============ */
-    // 水平图例布局
+    // 创建图例组，放置在顶部
     const legend = svg.append("g")
         .attr("class", "legend")
         .attr("transform", `translate(${margin.left}, 20)`); // 放置在顶部
@@ -623,40 +623,52 @@ function makeChart(containerSelector, dataJSON) {
     // 获取唯一分组用于图例
     const uniqueGroupsForLegend = uniqueGroups;
 
-    // 重新设计图例布局，更好地处理重叠问题
     // 定义图例参数
-    const legendCircleRadius = 6; // 减小圆形半径
+    const legendCircleRadius = 6; // 圆形半径
     const legendTextPadding = 8; // 圆和文字之间的间距
-    const legendItemPadding = 20; // 图例项之间的间距
+    const legendItemPadding = 20; // 图例项之间的水平间距
     const legendWidth = W - 40; // 图例区域宽度
     const legendItemHeight = 24; // 图例项高度
+    const legendPadding = 10; // 图例内边距
+    const legendFontSize = 12; // 图例字体大小
 
-    // 测量每个文本的宽度
-    const legendItemWidths = uniqueGroupsForLegend.map(group => {
-        const textWidth = getTextWidth(group, 'Arial', 12, 'normal');
-        return (legendCircleRadius * 2) + legendTextPadding + textWidth;
+    // 计算每个图例项的宽度
+    const legendItemWidths = [];
+
+    // 创建临时文本元素来准确测量文本宽度
+    uniqueGroupsForLegend.forEach(group => {
+        const tempText = legend.append("text")
+            .style("font-family", "Arial")
+            .style("font-size", `${legendFontSize}px`)
+            .text(group);
+            
+        const textWidth = tempText.node().getComputedTextLength();
+        tempText.remove(); // 移除临时元素
+        
+        // 保存计算结果：圆形直径 + 文本与圆之间的间距 + 文本宽度
+        legendItemWidths.push((legendCircleRadius * 2) + legendTextPadding + textWidth);
     });
 
-    // 将图例项分配到行
+    // 将图例项分配到行，确保每行的总宽度不超过图例宽度
     const rows = [];
     let currentRow = [];
-    let legendCurrentRowWidth = 0; // 重命名变量避免冲突
+    let legendRowWidth = 0;
 
-    // 贪心算法：尽量填满每一行
+    // 贪心算法，但使用更大的间距避免重叠
     uniqueGroupsForLegend.forEach((group, i) => {
-        // 当前项宽度加上左右padding
-        const itemFullWidth = legendItemWidths[i] + legendItemPadding;
+        // 当前项宽度加上更宽的间距
+        const itemFullWidth = legendItemWidths[i] + legendItemPadding * 2.5; // 增加间距
         
         // 检查是否需要换行
-        if (legendCurrentRowWidth + itemFullWidth > legendWidth && currentRow.length > 0) {
+        if (legendRowWidth + itemFullWidth > legendWidth && currentRow.length > 0) {
             // 保存当前行并开始新行
             rows.push(currentRow);
             currentRow = [{group, width: legendItemWidths[i]}];
-            legendCurrentRowWidth = itemFullWidth;
+            legendRowWidth = itemFullWidth;
         } else {
             // 添加到当前行
             currentRow.push({group, width: legendItemWidths[i]});
-            legendCurrentRowWidth += itemFullWidth;
+            legendRowWidth += itemFullWidth;
         }
     });
 
@@ -665,23 +677,56 @@ function makeChart(containerSelector, dataJSON) {
         rows.push(currentRow);
     }
 
-    // 绘制图例
+    // 计算图例背景尺寸
+    const totalRowCount = rows.length;
+    const legendBgHeight = totalRowCount * legendItemHeight + (legendPadding * 2);
+    
+    // 计算每行需要的最大宽度
+    const rowWidths = rows.map(row => {
+        // 计算这一行所有项的宽度总和，包括间距，但排除最后一个间距
+        return row.reduce((sum, item, index) => {
+            // 对每一项使用更宽的间距
+            const padding = index < row.length - 1 ? legendItemPadding * 2.5 : 0;
+            return sum + item.width + padding;
+        }, 0);
+    });
+    
+    // 图例背景的总宽度
+    const legendBgWidth = Math.max(...rowWidths) + (legendPadding * 2);
+
+    // 绘制图例背景
+    legend.append("rect")
+        .attr("class", "legend-background")
+        .attr("x", (W - legendBgWidth) / 2) // 水平居中
+        .attr("y", 0)
+        .attr("width", legendBgWidth)
+        .attr("height", legendBgHeight)
+        .attr("rx", 8) // 圆角半径
+        .attr("ry", 8)
+        .style("fill", "rgba(255, 255, 255, 0.8)") // 半透明白色背景
+        .style("stroke", "#dddddd") // 轻微的边框
+        .style("stroke-width", 1.5);
+
+    // 绘制图例项，确保每行内的项间距更大
     rows.forEach((row, rowIndex) => {
         // 计算这一行的总宽度
-        const rowTotalWidth = row.reduce((sum, item) => sum + item.width + legendItemPadding, 0) - legendItemPadding;
+        const rowTotalWidth = row.reduce((sum, item, index) => {
+            const padding = index < row.length - 1 ? legendItemPadding * 2.5 : 0;
+            return sum + item.width + padding;
+        }, 0);
         
         // 计算起始x坐标（居中）
         let xStart = (W - rowTotalWidth) / 2;
         
         // 绘制该行的每个图例项
-        row.forEach((item) => {
+        row.forEach((item, itemIndex) => {
             const group = item.group;
             const color = colorScale(group);
             
             // 绘制图例圆形
             legend.append("circle")
                 .attr("cx", xStart + legendCircleRadius)
-                .attr("cy", 15 + rowIndex * legendItemHeight + legendCircleRadius)
+                .attr("cy", legendPadding + rowIndex * legendItemHeight + legendCircleRadius + 5)
                 .attr("r", legendCircleRadius)
                 .attr("fill", color)
                 .attr("filter", "drop-shadow(0px 1px 1px rgba(0,0,0,0.1))");
@@ -689,13 +734,15 @@ function makeChart(containerSelector, dataJSON) {
             // 绘制图例文本
             legend.append("text")
                 .attr("x", xStart + (legendCircleRadius * 2) + legendTextPadding)
-                .attr("y", 15 + rowIndex * legendItemHeight + legendCircleRadius + 4)
-                .attr("font-size", "12px")
+                .attr("y", legendPadding + rowIndex * legendItemHeight + legendCircleRadius + 9)
+                .attr("font-size", `${legendFontSize}px`)
                 .attr("font-family", "Arial")
+                .style("dominant-baseline", "middle")
                 .text(group);
             
-            // 更新下一个项的起始位置
-            xStart += item.width + legendItemPadding;
+            // 更新下一个项的起始位置，使用更大的间距
+            const padding = itemIndex < row.length - 1 ? legendItemPadding * 2.5 : 0;
+            xStart += item.width + padding;
         });
     });
 

@@ -80,7 +80,7 @@ def analyze_templates(templates: Dict) -> Tuple[int, Dict[str, str], int]:
                     if 'required_fields' in req and 'required_fields_type' in req:
                         template_requirements[f"{engine}/{chart_type}/{chart_name}"] = template_info['requirements']
                         requirement_dump[chart_name] = template_info['requirements']
-    '''       
+      
     print("template_count", template_count)
     f = open("template_list.txt", "w")
     f.write("\n".join(template_list))
@@ -88,7 +88,7 @@ def analyze_templates(templates: Dict) -> Tuple[int, Dict[str, str], int]:
     f = open("requirement_dump.json", "w")
     f.write(json.dumps(requirement_dump, indent=4))
     f.close()
-    '''
+    
     return template_count, template_requirements
 
 block_list = ["multiple_line_graph_06", "layered_area_chart_02", "multiple_area_chart_01", "stacked_area_chart_01", "stacked_area_chart_03"]
