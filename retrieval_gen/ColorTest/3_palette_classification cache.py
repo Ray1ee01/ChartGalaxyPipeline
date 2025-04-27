@@ -229,45 +229,50 @@ if __name__ == '__main__':
     
 
 
-    root = '/data1/jiashu/data/tabular_data_v2/image'
-    image_paths = [f for f in os.listdir(root) if f.endswith('.jpeg')]
+    root = '../data/realworld_test/'
+    file_type = ['png', 'jpg', 'jpeg', 'webp']
+    image_paths = [f for f in os.listdir(root) if f.endswith(tuple(file_type))]
     # image_paths = ['127.jpeg']
 
     palettes = {}
     total_start_time = time.time()
     for key in tqdm.tqdm(image_paths):
-        start_time = time.time()
-        image_path = root + '/' + key
-        name = key.split('.')[0]
+        try:
+            start_time = time.time()
+            image_path = root + '/' + key
+            name = key.split('.')[0]
 
-        r_palette = get_palette(10, True, image_path)
-        palette = filter_palette(r_palette)
-        if len(palette['color_list']) == 0:
-            palette = filter_palette(r_palette, grey_chroma_threshold=15.0)
-        if len(palette['color_list']) == 0:
-            palette = filter_palette(r_palette, grey_chroma_threshold=10.0)
-        if len(palette['color_list']) == 0:
-            print(f'Error: {name} {image_path} No color found!')
+            r_palette = get_palette(10, True, image_path)
+            palette = filter_palette(r_palette)
+            if len(palette['color_list']) == 0:
+                palette = filter_palette(r_palette, grey_chroma_threshold=15.0)
+            if len(palette['color_list']) == 0:
+                palette = filter_palette(r_palette, grey_chroma_threshold=10.0)
+            if len(palette['color_list']) == 0:
+                print(f'Error: {name} {image_path} No color found!')
+                continue
+            # display_colors(palette)
+            # print(palette)
+            # print(key)
+
+            proportions = []
+            for color in palette['color_list']:
+                res = calculate_color_proportion(image_path, color)
+                proportions.append(res)
+            classification = classify_and_get_palette(proportions)
+
+            pkg_color = package_color(classification, palette)
+            palettes[name] = pkg_color
+            print(f'{name} done! Time: {time.time() - start_time:.2f}s')
+        except Exception as e:
+            print(f'Error: {name} {image_path} {e}')
             continue
-        # display_colors(palette)
-        # print(palette)
-        # print(key)
-
-        proportions = []
-        for color in palette['color_list']:
-            res = calculate_color_proportion(image_path, color)
-            proportions.append(res)
-        classification = classify_and_get_palette(proportions)
-
-        pkg_color = package_color(classification, palette)
-        palettes[name] = pkg_color
-        print(f'{name} done! Time: {time.time() - start_time:.2f}s')
         # print(pkg_color)
         # print(image_path)
         # display_colors(pkg_color)
         # break
     
-    save_root = '/data1/jiashu/data/tabular_data_v2/palette'
+    save_root = './'
     with open(os.path.join(save_root, 'filter_palette_v3.json'), 'w') as f:
         json.dump(palettes, f, indent=4)
 
