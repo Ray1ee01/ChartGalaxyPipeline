@@ -26,7 +26,7 @@ REQUIREMENTS_END
 function makeChart(containerSelector, data) {
     // 提取数据
     const jsonData = data;
-    const chartData = jsonData.data.data;
+    let chartData = jsonData.data.data;
     const variables = jsonData.variables;
     const typography = jsonData.typography;
     const colors = jsonData.colors_dark || {};
@@ -39,7 +39,14 @@ function makeChart(containerSelector, data) {
     // 获取字段名
     const xField = dataColumns[0].name;
     const yField = dataColumns[1].name;
+
+    chartData = temporalFilter(chartData, xField);
+    if (chartData.length === 0) {
+        console.log("chartData is empty");
+        return;
+    }
     
+    const numericalFormatter = createNumericalFormatter(chartData, yField);
     // 设置尺寸和边距
     const width = variables.width;
     const height = variables.height;
@@ -72,7 +79,6 @@ function makeChart(containerSelector, data) {
     const yScale = d3.scaleLinear()
         .domain([0, yMax * 1.4]) // 顶部留出10%的空间
         .range([chartHeight, 0]);
-    
     // 获取主色调
     const primaryColor = colors.other && colors.other.primary ? colors.other.primary : "#a67eb7";
     
@@ -176,12 +182,35 @@ function makeChart(containerSelector, data) {
         };
     });
 
+    let validIndexes = [];
+    let prevX = -1000;
+    let numData = tickData.length;
     // 添加数据点和标签 - 优化标签位置，包括首尾点
     tickData.forEach((d, i) => {
 
         const x = xScale(parseDate(d.xField));
+        if (parseDate(d.xField) - parseDate(chartData[chartData.length - 1][xField]) > 0) {
+            return;
+        }
+        if (x - prevX > 60) {
+            validIndexes.push(i);
+            prevX = x;
+        }
+        else if (i === numData - 1) {
+            // 移除最后一个点
+            validIndexes.pop();
+            // 添加最后一个点
+            validIndexes.push(i);
+            prevX = x;
+        }
+
+    })
+    tickData.forEach((d, i) => {
+        const x = xScale(parseDate(d.xField));
         const y = yScale(d.yField);
-        
+        if (!validIndexes.includes(i)) {
+            return;
+        }
         // 计算更好的标签位置，避免遮挡线条
         let labelY = y - 10;
         
@@ -238,8 +267,10 @@ function makeChart(containerSelector, data) {
         // }
         
         // 添加标签背景
-        const labelValue = Math.round(d.yField);
-        const labelWidth = String(labelValue).length * 10 + 20;
+        const labelValue = numericalFormatter(d.yField);
+        let labelWidth = String(labelValue).length * 10 + 20;
+        let textWidth = getTextWidth(labelValue, 14);
+        labelWidth = textWidth * 1.3;
         const labelHeight = 25;
         
         g.append("rect")

@@ -117,6 +117,25 @@ const createXAxisScaleAndTicks = (data, xField, rangeStart = 0, rangeEnd = 100, 
     };
 };
 
+
+const createNumericalFormatter = (data, yField) => {
+    const yExtent = d3.extent(data, d => d[yField]);
+    const yRange = yExtent[1] - yExtent[0];
+    const yPadding = yRange * 0.05;
+
+    if (yRange > 1000000000) {
+        return d => d3.format(".2f")(d / 1000000000) + "B";
+    } else if (yRange > 1000000) {
+        return d => d3.format(".2f")(d / 1000000) + "M";
+    } else if (yRange > 1000) {
+        return d => d3.format(".2f")(d / 1000) + "K";
+    } else {
+        return d => d3.format(".2f")(d);
+    }
+}
+
+
+
 /**
  * 根据数据点数量计算需要显示标签的点的索引
  * @param {number} n - 数据点总数
@@ -144,6 +163,19 @@ const sampleLabels = (n) => {
     
     return result;
 };
+
+
+const temporalFilter = (data, field) => {
+    // 把data中不是temporal的点删除
+    return data.filter(d => {
+        try {
+            parseDate(d[field]);
+            return true;
+        } catch (e) {
+            return false;
+        }
+    });
+}
 
 
 /**
