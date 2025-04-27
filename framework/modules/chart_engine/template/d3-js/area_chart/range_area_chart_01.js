@@ -14,8 +14,8 @@ REQUIREMENTS_BEGIN
     "min_height": 600,
     "min_width": 800,
     "background": "light",
-    "icon_mark": "none",
-    "icon_label": "none",
+    "icon_mark": "overlay",
+    "icon_label": "side",
     "has_x_axis": "yes",
     "has_y_axis": "yes",
     "chart_for": "comparison"
