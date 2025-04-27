@@ -9,7 +9,7 @@ REQUIREMENTS_BEGIN
     "required_fields_icons": [],
     "required_other_icons": [],
     "required_fields_colors": ["group"],
-    "required_other_colors": ["primary", "secondary", "background"],
+    "required_other_colors": [],
     "supported_effects": ["gradient", "opacity"],
     "min_height": 600,
     "min_width": 800,

@@ -17,7 +17,7 @@ REQUIREMENTS_BEGIN
     "icon_mark": "none",
     "icon_label": "none",
     "has_x_axis": "yes",
-    "has_y_axis": "yes",
+    "has_y_axis": "no",
     "chart_for": "trend"
 }
 REQUIREMENTS_END
