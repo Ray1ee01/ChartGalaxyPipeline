@@ -207,11 +207,6 @@ def find_best_size_and_position(main_mask: np.ndarray, image_content: str, paddi
             else:
                 max_size = mid_size - 1
         elif mode == "overlay":
-            print("min_overlap", min_overlap)
-            print("overlap_threshold", overlap_threshold)
-            print("current_x", current_x)
-            print("current_y", current_y)
-            print("mid_size", mid_size)
             if min_overlap > overlap_threshold:
                 best_size = mid_size
                 best_overlap_ratio = min_overlap

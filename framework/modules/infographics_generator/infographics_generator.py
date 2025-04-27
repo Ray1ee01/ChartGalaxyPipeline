@@ -86,7 +86,6 @@ def make_infographic(
     else:
         background_color = data["colors_dark"].get("background_color", "#000000")
 
-
     chart_content, chart_width, chart_height, chart_offset_x, chart_offset_y = adjust_and_get_bbox(chart_svg_content, background_color)
     
     ## start: add for new template
@@ -558,43 +557,43 @@ def make_infographic(
         overlay_mask = expand_mask(overlay_mask, 5)
         overlay_image_size, overlay_best_x, overlay_best_y = find_best_size_and_position(overlay_mask, primary_image, padding, mode="overlay", avoid_mask=overlay_mask_only_text)
         measure_overlay_size = min(overlay_image_size, 256)
-        overlay_mask_img = PILImage.fromarray((overlay_mask * 255).astype(np.uint8))
-        overlay_mask_img.save('./tmp/overlay_mask.png')
-        overlay_mask_only_text_img = PILImage.fromarray((overlay_mask_only_text * 255).astype(np.uint8))
-        overlay_mask_only_text_img.save('./tmp/overlay_mask_only_text.png')
+        # overlay_mask_img = PILImage.fromarray((overlay_mask * 255).astype(np.uint8))
+        # overlay_mask_img.save('./tmp/overlay_mask.png')
+        # overlay_mask_only_text_img = PILImage.fromarray((overlay_mask_only_text * 255).astype(np.uint8))
+        # overlay_mask_only_text_img.save('./tmp/overlay_mask_only_text.png')
 
-        image_size = overlay_image_size
-        best_x = overlay_best_x
-        best_y = overlay_best_y
-        image_mode = "overlay"
-        print("overlay_image_size", overlay_image_size)
-        print("overlay_best_x", overlay_best_x)
-        print("overlay_best_y", overlay_best_y)
+        # image_size = overlay_image_size
+        # best_x = overlay_best_x
+        # best_y = overlay_best_y
+        # image_mode = "overlay"
+        # print("overlay_image_size", overlay_image_size)
+        # print("overlay_best_x", overlay_best_x)
+        # print("overlay_best_y", overlay_best_y)
         
-        # min_acceptable_size = 96
-        # if measure_side_size > min_acceptable_size or measure_overlay_size > min_acceptable_size:
-        #     if side_image_size >= overlay_image_size * 0.45:
-        #         image_size = side_image_size
-        #         best_x = side_best_x
-        #         best_y = side_best_y
-        #         image_mode = "side"
-        #     else:
-        #         image_size = overlay_image_size
-        #         best_x = overlay_best_x
-        #         best_y = overlay_best_y
-        #         image_mode = "overlay"
-        # else:
-        #     background_mask = original_mask
-        #     background_image_size, background_best_x, background_best_y = find_best_size_and_position(background_mask, primary_image, padding, mode="background", chart_bbox=chart_bbox)
-        #     measure_background_size = min(background_image_size, 512)
+        min_acceptable_size = 96
+        if measure_side_size > min_acceptable_size or measure_overlay_size > min_acceptable_size:
+            if side_image_size >= overlay_image_size * 0.45:
+                image_size = side_image_size
+                best_x = side_best_x
+                best_y = side_best_y
+                image_mode = "side"
+            else:
+                image_size = overlay_image_size
+                best_x = overlay_best_x
+                best_y = overlay_best_y
+                image_mode = "overlay"
+        else:
+            background_mask = original_mask
+            background_image_size, background_best_x, background_best_y = find_best_size_and_position(background_mask, primary_image, padding, mode="background", chart_bbox=chart_bbox)
+            measure_background_size = min(background_image_size, 512)
 
-        #     if measure_background_size > 128:
-        #         image_size = background_image_size
-        #         best_x = background_best_x
-        #         best_y = background_best_y
-        #         image_mode = "background"
-        #     else:
-        #         image_size = 0
+            if measure_background_size > 128:
+                image_size = background_image_size
+                best_x = background_best_x
+                best_y = background_best_y
+                image_mode = "background"
+            else:
+                image_size = 0
 
     text_color = data["colors"].get("text_color", "#000000")
     if dark:
@@ -941,7 +940,7 @@ def process(input: str, output: str, base_url: str, api_key: str, chart_name: st
         )
         render_chart_time = time.time() - render_chart_start
         logger.info(f"Rendering chart took: {render_chart_time:.4f} seconds")
-        
+        print(chart_svg_path)
         with open(chart_svg_path, "r", encoding="utf-8") as f:
             chart_svg_content = f.read()
             if "This is a fallback SVG using a PNG screenshot" in chart_svg_content:
@@ -1022,29 +1021,29 @@ def process(input: str, output: str, base_url: str, api_key: str, chart_name: st
                     raise Exception(f"重试{max_retries}次后仍然失败")
                 time.sleep(1)  # 等待1秒后重试
 
+        # except Exception as e:
+        #     logger.error(f"Error processing infographics: {e}")
+        #     return False
+        
+        # 获取当前时间戳
+        timestamp = int(time.time())
+        output_dir = os.path.dirname(output)
+        output_filename = os.path.basename(output)        
+        new_filename = f"{timestamp}_{chart_name}_{os.path.splitext(output_filename)[0]}.svg"        
+        output_path = os.path.join(output_dir, new_filename)
+        
+        # 保存最终的SVG
+        save_start = time.time()
+        with open(output_path, "w", encoding="utf-8") as f:
+            try:
+                fcntl.flock(f, fcntl.LOCK_EX)  # 获取独占锁
+                f.write(final_svg)
+            finally:
+                fcntl.flock(f, fcntl.LOCK_UN)  # 释放锁
+        save_time = time.time() - save_start
     except Exception as e:
         logger.error(f"Error processing infographics: {e}")
         return False
-    
-    # 获取当前时间戳
-    timestamp = int(time.time())
-    output_dir = os.path.dirname(output)
-    output_filename = os.path.basename(output)        
-    new_filename = f"{timestamp}_{chart_name}_{os.path.splitext(output_filename)[0]}.svg"        
-    output_path = os.path.join(output_dir, new_filename)
-    
-    # 保存最终的SVG
-    save_start = time.time()
-    with open(output_path, "w", encoding="utf-8") as f:
-        try:
-            fcntl.flock(f, fcntl.LOCK_EX)  # 获取独占锁
-            f.write(final_svg)
-        finally:
-            fcntl.flock(f, fcntl.LOCK_UN)  # 释放锁
-    save_time = time.time() - save_start
-    # except Exception as e:
-    #     logger.error(f"Error processing infographics: {e}")
-    #     return False
     # finally:
     #     try:
     #         os.remove(chart_svg_path)

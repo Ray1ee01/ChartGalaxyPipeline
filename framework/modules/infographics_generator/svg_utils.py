@@ -289,7 +289,7 @@ def adjust_and_get_bbox(svg_content, background_color = "#FFFFFF"):
         height='1000' \
         xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'> \
         {svg_content}</svg>"
-    
+    print(temp_svg_path)
     with open(temp_svg_path, 'w', encoding='utf-8') as f:
         f.write(svg_container)
 
