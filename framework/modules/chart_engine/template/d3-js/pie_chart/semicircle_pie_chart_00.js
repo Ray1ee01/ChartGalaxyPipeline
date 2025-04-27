@@ -10,7 +10,7 @@ REQUIREMENTS_BEGIN
     "required_fields_icons": [],
     "required_other_icons": [],
     "required_fields_colors": ["x"],
-    "required_other_colors": ["primary"],
+    "required_other_colors": [],
     "supported_effects": ["shadow", "radius_corner", "stroke"],
     "min_height": 400,
     "min_width": 400,
@@ -76,7 +76,7 @@ function makeChart(containerSelector, data) {
     
     // 绘制半圆饼图
     const arc = d3.arc()
-        .innerRadius(maxRadius * 0.5)
+        .innerRadius(0)
         .outerRadius(maxRadius)
         .padAngle(0.02)
         .cornerRadius(5);
