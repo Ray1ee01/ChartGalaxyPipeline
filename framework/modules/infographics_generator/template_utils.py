@@ -89,13 +89,14 @@ block_list = ["multiple_line_graph_06", "layered_area_chart_02", "multiple_area_
 
 def check_field_color_compatibility(requirements: Dict, data: Dict) -> bool:
     """Check if the field color is compatible with the template"""
-    if len(requirements.get('required_fields_colors', [])) > 0 and len(data.get("colors", {}).get("field", [])) == 0:
+    if len(requirements.get('required_fields_colors', [])) > 0 and len(data.get("colors", {}).get("field", {}).keys()) == 0:
         return False
-    for field in requirements.get('required_fields_colors', []):
+    data_fields = requirements.get('required_fields',[])
+    for color_field in requirements.get('required_fields_colors', []):
         field_column = None
-        for col in data.get("data", {}).get("columns", []):
-            if col["role"] == field:
-                field_column = col
+        for i, field in enumerate(data_fields):
+            if field == color_field:
+                field_column = data.get("data", {}).get("columns", {})[i]
                 break
         if field_column is None:
             return False
@@ -107,13 +108,13 @@ def check_field_color_compatibility(requirements: Dict, data: Dict) -> bool:
 
 def check_field_icon_compatibility(requirements: Dict, data: Dict) -> bool:
     """Check if the field icon is compatible with the template"""
-    if len(requirements.get('required_fields_icons', [])) > 0 and len(data.get("images", {}).get("field", [])) == 0:
+    if len(requirements.get('required_fields_icons', [])) > 0 and len(data.get("images", {}).get("field", {}).keys()) == 0:
         return False
-    for field in requirements.get('required_fields_icons', []):
-        field_column = None
-        for col in data.get("data", {}).get("columns", []):
-            if col["role"] == field:
-                field_column = col
+    data_fields = requirements.get('required_fields',[])
+    for icon_field in requirements.get('required_fields_icons', []):
+        for i, field in enumerate(data_fields):
+            if field == icon_field:
+                field_column = data.get("data", {}).get("columns", {})[i]
                 break
         if field_column is None:
             return False
@@ -150,6 +151,9 @@ def check_template_compatibility(data: Dict, templates: Dict, specific_chart_nam
                     
                 template_key = f"{engine}/{chart_type}/{chart_name}"
                 
+                if specific_chart_name and specific_chart_name != chart_name:
+                    continue
+                
                 try:
                     if 'requirements' in template_info:
                         req = template_info['requirements']
@@ -163,15 +167,19 @@ def check_template_compatibility(data: Dict, templates: Dict, specific_chart_nam
                             data_types = [field_types[field] for field in ordered_fields]
                             data_type_str = ' + '.join(data_types)
                             if len(req.get('required_fields_colors', [])) > 0 and len(data.get("colors", {}).get("field", [])) == 0:
+                                print(f"template {template_key} failed color compatibility check")
                                 continue
 
                             if len(req.get('required_fields_icons', [])) > 0 and len(data.get("images", {}).get("field", [])) == 0:
+                                print(f"template {template_key} failed icon compatibility check")
                                 continue
 
                             if not check_field_color_compatibility(req, data):
+                                print(f"template {template_key} failed color compatibility check")
                                 continue
                             
                             if not check_field_icon_compatibility(req, data):
+                                print(f"template {template_key} failed icon compatibility check")
                                 continue
 
                             if len(data_types) == len(combination_types):
