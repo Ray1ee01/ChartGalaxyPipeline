@@ -6,6 +6,7 @@ REQUIREMENTS_BEGIN
     "is_composite": false,
     "chart_for": "comparison",
     "required_fields": ["x", "y", "group", "group2"],
+    "hierarchy":["group2"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"], ["categorical"]],
     "required_fields_range": [
         [2, 30],
