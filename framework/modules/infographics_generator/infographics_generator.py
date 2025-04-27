@@ -558,43 +558,43 @@ def make_infographic(
         overlay_mask = expand_mask(overlay_mask, 5)
         overlay_image_size, overlay_best_x, overlay_best_y = find_best_size_and_position(overlay_mask, primary_image, padding, mode="overlay", avoid_mask=overlay_mask_only_text)
         measure_overlay_size = min(overlay_image_size, 256)
-        overlay_mask_img = PILImage.fromarray((overlay_mask * 255).astype(np.uint8))
-        overlay_mask_img.save('./tmp/overlay_mask.png')
-        overlay_mask_only_text_img = PILImage.fromarray((overlay_mask_only_text * 255).astype(np.uint8))
-        overlay_mask_only_text_img.save('./tmp/overlay_mask_only_text.png')
+        # overlay_mask_img = PILImage.fromarray((overlay_mask * 255).astype(np.uint8))
+        # overlay_mask_img.save('./tmp/overlay_mask.png')
+        # overlay_mask_only_text_img = PILImage.fromarray((overlay_mask_only_text * 255).astype(np.uint8))
+        # overlay_mask_only_text_img.save('./tmp/overlay_mask_only_text.png')
 
-        image_size = overlay_image_size
-        best_x = overlay_best_x
-        best_y = overlay_best_y
-        image_mode = "overlay"
-        print("overlay_image_size", overlay_image_size)
-        print("overlay_best_x", overlay_best_x)
-        print("overlay_best_y", overlay_best_y)
+        # image_size = overlay_image_size
+        # best_x = overlay_best_x
+        # best_y = overlay_best_y
+        # image_mode = "overlay"
+        # print("overlay_image_size", overlay_image_size)
+        # print("overlay_best_x", overlay_best_x)
+        # print("overlay_best_y", overlay_best_y)
         
-        # min_acceptable_size = 96
-        # if measure_side_size > min_acceptable_size or measure_overlay_size > min_acceptable_size:
-        #     if side_image_size >= overlay_image_size * 0.45:
-        #         image_size = side_image_size
-        #         best_x = side_best_x
-        #         best_y = side_best_y
-        #         image_mode = "side"
-        #     else:
-        #         image_size = overlay_image_size
-        #         best_x = overlay_best_x
-        #         best_y = overlay_best_y
-        #         image_mode = "overlay"
-        # else:
-        #     background_mask = original_mask
-        #     background_image_size, background_best_x, background_best_y = find_best_size_and_position(background_mask, primary_image, padding, mode="background", chart_bbox=chart_bbox)
-        #     measure_background_size = min(background_image_size, 512)
+        min_acceptable_size = 96
+        if measure_side_size > min_acceptable_size or measure_overlay_size > min_acceptable_size:
+            if side_image_size >= overlay_image_size * 0.45:
+                image_size = side_image_size
+                best_x = side_best_x
+                best_y = side_best_y
+                image_mode = "side"
+            else:
+                image_size = overlay_image_size
+                best_x = overlay_best_x
+                best_y = overlay_best_y
+                image_mode = "overlay"
+        else:
+            background_mask = original_mask
+            background_image_size, background_best_x, background_best_y = find_best_size_and_position(background_mask, primary_image, padding, mode="background", chart_bbox=chart_bbox)
+            measure_background_size = min(background_image_size, 512)
 
-        #     if measure_background_size > 128:
-        #         image_size = background_image_size
-        #         best_x = background_best_x
-        #         best_y = background_best_y
-        #         image_mode = "background"
-        #     else:
-        #         image_size = 0
+            if measure_background_size > 128:
+                image_size = background_image_size
+                best_x = background_best_x
+                best_y = background_best_y
+                image_mode = "background"
+            else:
+                image_size = 0
 
     text_color = data["colors"].get("text_color", "#000000")
     if dark:
