@@ -1,4 +1,4 @@
-`
+/*
 REQUIREMENTS_BEGIN
 {
     "chart_type": "Bubble Chart",
@@ -20,7 +20,7 @@ REQUIREMENTS_BEGIN
     "has_y_axis": "no"
 }
 REQUIREMENTS_END
-`
+*/
 
 function makeChart(containerSelector, data) {
     // Extract data

@@ -394,7 +394,7 @@ Please respond in JSON format:
         
         # Step 1: 识别所有应该使用图标的categorical列
         categorical_columns = self.identify_categorical_columns(columns, input_data)
-        print(categorical_columns)
+        # print(categorical_columns)
         
         # Step 2: Get topic-level clipart recommendations
         query_text = self.create_query_text(input_data)
@@ -425,7 +425,7 @@ Please respond in JSON format:
             result["group_icons"][column_key] = {}
             
             # Try special categories first
-            if category in self.special_categories and False:
+            if category in self.special_categories:
                 icons = self.process_special_icons(category, unique_values)
                 if icons:
                     result["group_icons"][column_key] = icons
@@ -479,7 +479,7 @@ Please respond in JSON format:
                     # For special icons (single icon)
                     processed["field"][field_key] = self.post_process_image(icons["image_path"])
                     key_icon_pairs[group] = icons
-            processed["field"] = self.process_stretch_icons(self.input_data, processed["field"], column_name, key_icon_pairs)
+            # processed["field"] = self.process_stretch_icons(self.input_data, processed["field"], column_name, key_icon_pairs)
         
         return processed
 
@@ -493,7 +493,7 @@ Please respond in JSON format:
             if column["role"] == "y":
                 numerical_column = column
                 break
-        print(numerical_column)
+        # print(numerical_column)
         if not numerical_column:
             return icons
         data_values = {}
@@ -504,7 +504,7 @@ Please respond in JSON format:
                         "value": row[numerical_column["name"]],
                         "icon": icon
                     }
-        print(data_values)
+        # print(data_values)
         # 检查data_values是否是数值
         if not all(isinstance(value["value"], (int, float)) for value in data_values.values()):
             return icons
@@ -593,15 +593,15 @@ def process(input: str, output: str, embed_model_path: str = None, resource_path
         data_path: 图像数据路径
         index_path: 索引文件路径
     """
-    print("process")
+    # print("process")
     try:
         # 读取输入文件
         with open(input, "r", encoding="utf-8") as f:
             data = json.load(f)
-        print("input")
+        # print("input")
         # 预处理数据
         processed_data = preprocess_data(data)
-        print("processed_data")
+        # print("processed_data")
         # 生成图像推荐
         recommender = ImageRecommender(
             embed_model_path=embed_model_path,
@@ -613,7 +613,7 @@ def process(input: str, output: str, embed_model_path: str = None, resource_path
         )
         recommender.input_data = processed_data
         image_result = recommender.recommend_images(processed_data)
-        print("image_result")
+        # print("image_result")
         # 添加图像推荐到数据中
         processed_data["images"] = image_result
         

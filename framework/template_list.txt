@@ -42,6 +42,7 @@ small multiple line graph / small_multiple_line_graph_01
 slope chart / slope_chart_01
 spline graph / spline_graph_01
 step line graph / step_line_graph_01
+bottle_bar_chart / bottle_bar_chart_02
 grouped circular bar chart / grouped_circular_bar_chart_01
 horizontal diverging bar chart / horizontal_diverging_bar_chart_01
 horizontal diverging bar chart / horizontal_diverging_bar_chart_04
@@ -93,9 +94,6 @@ horizontal bar chart / horizontal_bar_chart_13
 horizontal pictorial percentage bar chart / horizontal_pictorial_percentage_bar_chart_01
 vertical stacked bar chart / vertical_stacked_bar_chart_0
 vertical stacked bar chart / vertical_stacked_bar_chart_1
-radial bar chart / radial_bar_chart_01
-radial bar chart / radial_bar_chart_03
-radial bar chart / radial_bar_chart_02
 vertical pictorial percentage bar chart / vertical_pictorial_percentage_bar_chart_01
 horizontal lollipop chart / horizontal_lollipop_chart_01
 horizontal stacked bar chart / horizontal_stacked_bar_chart_2
@@ -103,6 +101,8 @@ horizontal stacked bar chart / horizontal_stacked_bar_chart_1
 horizontal stacked bar chart / horizontal_stacked_bar_chart_3
 horizontal stacked bar chart / horizontal_stacked_bar_chart_0
 vertical waffle chart / vertical_waffle_chart_01
+radial bar chart / radial_bar_chart_03
+radial bar chart / radial_bar_chart_02
 stacked area chart / stacked_area_chart_03
 stacked area chart / stacked_area_chart_01
 stacked area chart / stacked_area_chart_02
