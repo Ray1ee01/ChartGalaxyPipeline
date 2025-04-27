@@ -390,7 +390,9 @@ def run_single_file(input_path, output_path, temp_dir=None, modules_to_run=None,
                 current_input = output_path
         elif module_name == "image_recommender":
             module = import_module(f"modules.{module_name}.{module_name}")
+            print("image_recommender")
             if not should_skip_module(module_name, output_path):
+                print("process")
                 module.process(
                     input=str(current_input), 
                     output=str(output_path),
