@@ -44,6 +44,7 @@ spline graph / spline_graph_01
 step line graph / step_line_graph_01
 grouped circular bar chart / grouped_circular_bar_chart_01
 horizontal diverging bar chart / horizontal_diverging_bar_chart_01
+horizontal diverging bar chart / horizontal_diverging_bar_chart_04
 horizontal diverging bar chart / horizontal_diverging_bar_chart_02
 horizontal diverging bar chart / horizontal_diverging_bar_chart_08
 horizontal diverging bar chart / horizontal_diverging_bar_chart_03
@@ -57,7 +58,6 @@ horizontal group bar chart / horizontal_group_bar_chart_04
 horizontal group bar chart / horizontal_group_bar_chart_01
 horizontal group bar chart / horizontal_group_bar_chart_03
 horizontal group bar chart / horizontal_group_bar_chart_05
-horizontal split bar chart / horizontal_split_bar_chart_01
 vertical bar chart / vertical_bar_chart_0
 vertical bar chart / vertical_bar_chart_01
 vertical bar chart / vertical_bar_chart_03
@@ -65,6 +65,13 @@ vertical bar chart / vertical_bar_chart_02
 circular bar chart / circular_bar_chart_03
 circular bar chart / circular_bar_chart_01
 circular bar chart / circular_bar_chart_02
+vertical group bar chart / vertical_group_bar_chart_0
+vertical group bar chart / vertical_group_bar_chart_5
+vertical group bar chart / vertical_group_bar_chart_1
+vertical group bar chart / vertical_group_bar_chart_4
+vertical group bar chart / vertical_group_bar_chart_3
+vertical group bar chart / vertical_group_bar_chart_6
+vertical group bar chart / vertical_group_bar_chart_7
 horizontal bar chart / horizontal_bar_chart_0
 horizontal bar chart / horizontal_bar_chart_4
 horizontal bar chart / horizontal_bar_chart_6
@@ -83,11 +90,6 @@ horizontal bar chart / horizontal_bar_chart_17
 horizontal bar chart / horizontal_bar_chart_12
 horizontal bar chart / horizontal_bar_chart_10
 horizontal bar chart / horizontal_bar_chart_13
-vertical group bar chart / vertical_group_bar_chart_5
-vertical group bar chart / vertical_group_bar_chart_4
-vertical group bar chart / vertical_group_bar_chart_3
-vertical group bar chart / vertical_group_bar_chart_6
-vertical group bar chart / vertical_group_bar_chart_7
 horizontal pictorial percentage bar chart / horizontal_pictorial_percentage_bar_chart_01
 vertical stacked bar chart / vertical_stacked_bar_chart_0
 vertical stacked bar chart / vertical_stacked_bar_chart_1
@@ -107,7 +109,9 @@ stacked area chart / stacked_area_chart_02
 horizontal range chart / horizontal_range_bar_chart_01
 horizontal dot bar chart / horizontal_dot_bar_chart_01
 multiple vertical bar chart / multiple_vertical_bar_chart_01
+scatterplot / scatterplot_03
 scatterplot / scatterplot_01
+scatterplot / scatterplot_02
 grouped scatterplot / grouped_scatterplot_02
 grouped scatterplot / grouped_scatterplot_01
 bubble chart / bubble_chart_01
@@ -121,7 +125,10 @@ radar line chart / radar_line_chart_03
 radar spline chart / radar_spline_chart_03
 radar spline chart / radar_spline_chart_01
 proportional area chart(circle) / proportional_area_chart_(circle)_02
+proportional area chart(circle) / proportional_area_chart_circle_05
 proportional area chart(circle) / proportional_area_chart_(circle)_01
+proportional area chart(circle) / proportional_area_chart_circle_03
+proportional area chart(circle) / proportional_area_chart_circle_04
 proportional area chart (square) / proportional_area_chart_(square)_01
 proportional area chart (square) / proportional_area_chart_(square)_03
 proportional area chart (square) / proportional_area_chart_(square)_02

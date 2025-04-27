@@ -173,11 +173,11 @@ def check_template_compatibility(data: Dict, templates: Dict, specific_chart_nam
                             if len(req.get('required_fields_icons', [])) > 0 and len(data.get("images", {}).get("field", [])) == 0:
                                 continue
 
-                            if not check_field_color_compatibility(req, data):
-                                continue
+                            #if not check_field_color_compatibility(req, data):
+                            #    continue
                             
-                            if not check_field_icon_compatibility(req, data):
-                                continue
+                            #if not check_field_icon_compatibility(req, data):
+                            #    continue
 
                             if len(data_types) == len(combination_types):
                                 check_flag = True
@@ -220,6 +220,9 @@ def check_template_compatibility(data: Dict, templates: Dict, specific_chart_nam
                                     min_value = min(value[key] for value in data["data"]["data"])
                                     max_value = max(value[key] for value in data["data"]["data"])
                                     if min_value < range[0] or max_value > range[1]:
+                                        flag = False
+                                        break
+                                    elif "scatterplot" in chart_name and min_value >= 0 and range[0] < 0:
                                         flag = False
                                         break
                             for i, field in enumerate(ordered_fields):
