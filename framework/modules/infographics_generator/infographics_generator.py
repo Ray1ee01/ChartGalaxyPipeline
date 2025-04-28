@@ -897,160 +897,160 @@ def process(input: str, output: str, base_url: str, api_key: str, chart_name: st
     
     # 生成图表SVG，使用安全的文件名
     chart_svg_path = os.path.join(tmp_dir, f"{os.path.splitext(safe_output_name)[0]}.chart.tmp")
-    # try:
-    if '-' in engine:
-        framework, framework_type = engine.split('-')
-    elif '_' in engine:
-        framework, framework_type = engine.split('_')
-    else:
-        framework = engine
-        framework_type = None
+    try:
+        if '-' in engine:
+            framework, framework_type = engine.split('-')
+        elif '_' in engine:
+            framework, framework_type = engine.split('_')
+        else:
+            framework = engine
+            framework_type = None
 
-    # 渲染图表
-    render_chart_start = time.time()
-    timestamp = int(time.time())
-    output_dir = os.path.dirname(output)
-    output_filename = os.path.basename(output)
-    
-    # 创建子文件夹
-    subfolder_name = f"{timestamp}_{chart_name}_{os.path.splitext(output_filename)[0]}"
-    subfolder_path = os.path.join(output_dir, subfolder_name)
-    os.makedirs(subfolder_path, exist_ok=True)
-    
-    # 在子文件夹中创建文件路径
-    new_filename = "chart.svg"
-    output_path = os.path.join(subfolder_path, new_filename)
-    info_filename = "info.json"
-    info_path = os.path.join(subfolder_path, info_filename)
-    html_filename = "chart.html" 
-    html_path = os.path.join(subfolder_path, html_filename)
-    png_filename = "chart.png"
-    png_path = os.path.join(subfolder_path, png_filename)
-    mask_filename = "chart.mask.png"
-    mask_path = os.path.join(subfolder_path, mask_filename)
-    datatable_name = "data.json"
-    datatable_path = os.path.join(subfolder_path, datatable_name)
-    #try:
-    render_chart_to_svg(
-        json_data=data,
-        output_svg_path=chart_svg_path,
-        js_file=template,
-        framework=framework, # Extract framework name (echarts/d3)
-        framework_type=framework_type,
-        html_output_path=html_path
-    )
-    render_chart_time = time.time() - render_chart_start
-    logger.info(f"Rendering chart took: {render_chart_time:.4f} seconds")
-    print("chart_svg_path: ", chart_svg_path)
-    with open(chart_svg_path, "r", encoding="utf-8") as f:
-        chart_svg_content = f.read()
-        if "This is a fallback SVG using a PNG screenshot" in chart_svg_content:
+        # 渲染图表
+        render_chart_start = time.time()
+        timestamp = int(time.time())
+        output_dir = os.path.dirname(output)
+        output_filename = os.path.basename(output)
+        
+        # 创建子文件夹
+        subfolder_name = f"{timestamp}_{chart_name}_{os.path.splitext(output_filename)[0]}"
+        subfolder_path = os.path.join(output_dir, subfolder_name)
+        os.makedirs(subfolder_path, exist_ok=True)
+        
+        # 在子文件夹中创建文件路径
+        new_filename = "chart.svg"
+        output_path = os.path.join(subfolder_path, new_filename)
+        info_filename = "info.json"
+        info_path = os.path.join(subfolder_path, info_filename)
+        html_filename = "chart.html" 
+        html_path = os.path.join(subfolder_path, html_filename)
+        png_filename = "chart.png"
+        png_path = os.path.join(subfolder_path, png_filename)
+        mask_filename = "chart.mask.png"
+        mask_path = os.path.join(subfolder_path, mask_filename)
+        datatable_name = "data.json"
+        datatable_path = os.path.join(subfolder_path, datatable_name)
+        #try:
+        render_chart_to_svg(
+            json_data=data,
+            output_svg_path=chart_svg_path,
+            js_file=template,
+            framework=framework, # Extract framework name (echarts/d3)
+            framework_type=framework_type,
+            html_output_path=html_path
+        )
+        render_chart_time = time.time() - render_chart_start
+        logger.info(f"Rendering chart took: {render_chart_time:.4f} seconds")
+        print("chart_svg_path: ", chart_svg_path)
+        with open(chart_svg_path, "r", encoding="utf-8") as f:
+            chart_svg_content = f.read()
+            if "This is a fallback SVG using a PNG screenshot" in chart_svg_content:
+                return False
+            chart_inner_content = extract_svg_content(chart_svg_content)
+        print("chart_inner_content: ", chart_inner_content)
+        assemble_start = time.time()
+        final_svg, layout_info = make_infographic(
+            data=data,
+            chart_svg_content=chart_inner_content,
+            padding=padding,
+            between_padding=between_padding,
+            dark=requirements.get("background", "light") == "dark",
+            html_path=html_path,
+            mask_path=mask_path
+        )
+        print("final_svg: ", final_svg)
+        layout_info["chart_variation"] = chart_name
+        layout_info["chart_type"] = chart_type
+        layout_info["data_source"] = input
+
+        assemble_time = time.time() - assemble_start
+        logger.info(f"Assembling infographic took: {assemble_time:.4f} seconds")
+        # 读取生成的SVG内容
+        read_svg_start = time.time()
+        
+        if final_svg is None:
+            logger.error("Failed to assemble infographic: SVG content extraction failed")
             return False
-        chart_inner_content = extract_svg_content(chart_svg_content)
-    print("chart_inner_content: ", chart_inner_content)
-    assemble_start = time.time()
-    final_svg, layout_info = make_infographic(
-        data=data,
-        chart_svg_content=chart_inner_content,
-        padding=padding,
-        between_padding=between_padding,
-        dark=requirements.get("background", "light") == "dark",
-        html_path=html_path,
-        mask_path=mask_path
-    )
-    print("final_svg: ", final_svg)
-    layout_info["chart_variation"] = chart_name
-    layout_info["chart_type"] = chart_type
-    layout_info["data_source"] = input
+        # 使用文件锁保护写入操作,最多重试3次
+        max_retries = 3
+        retry_count = 0
+        
+        while retry_count < max_retries:
+            try:
+                # 写入SVG文件
+                with open(output_path, "w", encoding="utf-8") as f:
+                    try:
+                        fcntl.flock(f, fcntl.LOCK_EX)  # 获取独占锁
+                        f.write(final_svg)
+                    finally:
+                        fcntl.flock(f, fcntl.LOCK_UN)  # 释放锁
 
-    assemble_time = time.time() - assemble_start
-    logger.info(f"Assembling infographic took: {assemble_time:.4f} seconds")
-    # 读取生成的SVG内容
-    read_svg_start = time.time()
-    
-    if final_svg is None:
-        logger.error("Failed to assemble infographic: SVG content extraction failed")
+                # 写入info文件
+                with open(info_path, "w", encoding="utf-8") as f:
+                    try:
+                        fcntl.flock(f, fcntl.LOCK_EX)  # 获取独占锁
+                        layout_info_str = json.dumps(layout_info, indent=4)
+                        f.write(layout_info_str)
+                    finally:
+                        fcntl.flock(f, fcntl.LOCK_UN)  # 释放锁
+
+                # 写入datatable文件
+                with open(datatable_path, "w", encoding="utf-8") as f:
+                    try:
+                        fcntl.flock(f, fcntl.LOCK_EX)  # 获取独占锁
+                        datatable_str = json.dumps(data["data"], indent=4)
+                        f.write(datatable_str)
+                    finally:
+                        fcntl.flock(f, fcntl.LOCK_UN)  # 释放锁
+
+                # 转换为PNG
+                subprocess.run([
+                    'rsvg-convert',
+                    '-f', 'png',
+                    '-o', png_path,
+                    '--dpi-x', '300',
+                    '--dpi-y', '300',
+                    '--background-color', '#ffffff',
+                    output_path
+                ], check=True)
+                
+                # 如果所有操作都成功,跳出循环
+                break
+                
+            except Exception as e:
+                retry_count += 1
+                if retry_count >= max_retries:
+                    raise Exception(f"重试{max_retries}次后仍然失败")
+                time.sleep(1)  # 等待1秒后重试
+
+        # except Exception as e:
+        #     logger.error(f"Error processing infographics: {e}")
+        #     return False
+        
+        # 获取当前时间戳
+        timestamp = int(time.time())
+        output_dir = os.path.dirname(output)
+        output_filename = os.path.basename(output)        
+        new_filename = f"{timestamp}_{chart_name}_{os.path.splitext(output_filename)[0]}.svg"        
+        output_path = os.path.join(output_dir, new_filename)
+        
+        # 保存最终的SVG
+        save_start = time.time()
+        with open(output_path, "w", encoding="utf-8") as f:
+            try:
+                fcntl.flock(f, fcntl.LOCK_EX)  # 获取独占锁
+                f.write(final_svg)
+            finally:
+                fcntl.flock(f, fcntl.LOCK_UN)  # 释放锁
+        save_time = time.time() - save_start
+    except Exception as e:
+        logger.error(f"Error processing infographics: {e}")
         return False
-    # 使用文件锁保护写入操作,最多重试3次
-    max_retries = 3
-    retry_count = 0
-    
-    while retry_count < max_retries:
+    finally:
         try:
-            # 写入SVG文件
-            with open(output_path, "w", encoding="utf-8") as f:
-                try:
-                    fcntl.flock(f, fcntl.LOCK_EX)  # 获取独占锁
-                    f.write(final_svg)
-                finally:
-                    fcntl.flock(f, fcntl.LOCK_UN)  # 释放锁
-
-            # 写入info文件
-            with open(info_path, "w", encoding="utf-8") as f:
-                try:
-                    fcntl.flock(f, fcntl.LOCK_EX)  # 获取独占锁
-                    layout_info_str = json.dumps(layout_info, indent=4)
-                    f.write(layout_info_str)
-                finally:
-                    fcntl.flock(f, fcntl.LOCK_UN)  # 释放锁
-
-            # 写入datatable文件
-            with open(datatable_path, "w", encoding="utf-8") as f:
-                try:
-                    fcntl.flock(f, fcntl.LOCK_EX)  # 获取独占锁
-                    datatable_str = json.dumps(data["data"], indent=4)
-                    f.write(datatable_str)
-                finally:
-                    fcntl.flock(f, fcntl.LOCK_UN)  # 释放锁
-
-            # 转换为PNG
-            subprocess.run([
-                'rsvg-convert',
-                '-f', 'png',
-                '-o', png_path,
-                '--dpi-x', '300',
-                '--dpi-y', '300',
-                '--background-color', '#ffffff',
-                output_path
-            ], check=True)
-            
-            # 如果所有操作都成功,跳出循环
-            break
-            
+            os.remove(chart_svg_path)
         except Exception as e:
-            retry_count += 1
-            if retry_count >= max_retries:
-                raise Exception(f"重试{max_retries}次后仍然失败")
-            time.sleep(1)  # 等待1秒后重试
-
-    # except Exception as e:
-    #     logger.error(f"Error processing infographics: {e}")
-    #     return False
-    
-    # 获取当前时间戳
-    timestamp = int(time.time())
-    output_dir = os.path.dirname(output)
-    output_filename = os.path.basename(output)        
-    new_filename = f"{timestamp}_{chart_name}_{os.path.splitext(output_filename)[0]}.svg"        
-    output_path = os.path.join(output_dir, new_filename)
-    
-    # 保存最终的SVG
-    save_start = time.time()
-    with open(output_path, "w", encoding="utf-8") as f:
-        try:
-            fcntl.flock(f, fcntl.LOCK_EX)  # 获取独占锁
-            f.write(final_svg)
-        finally:
-            fcntl.flock(f, fcntl.LOCK_UN)  # 释放锁
-    save_time = time.time() - save_start
-    # except Exception as e:
-    #     logger.error(f"Error processing infographics: {e}")
-    #     return False
-    # finally:
-    #     try:
-    #         os.remove(chart_svg_path)
-    #     except Exception as e:
-    #         pass
+            pass
     
     '''
     total_time = time.time() - start_time
