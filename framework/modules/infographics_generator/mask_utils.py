@@ -66,7 +66,7 @@ def calculate_mask_v3(svg_content: str, width: int, height: int, background_colo
             </svg>'
         
         mask_svg_file_without_text.write(mask_svg_content.encode('utf-8'))
-        
+        mask_svg_file_without_text.flush()
         subprocess.run([
             'rsvg-convert',
             '-f', 'png',

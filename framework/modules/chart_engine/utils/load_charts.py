@@ -266,7 +266,6 @@ def load_d3js(json_data=None, output_file=None, js_file=None, width=None, height
     </body>
     </html>
     """
-    
     # 获取D3.js库文件的绝对路径
     d3_lib_path = os.path.abspath(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static', 'lib', 'd3.min.js'))
     d3_voronoi_lib_path = os.path.abspath(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static', 'lib', 'd3-voronoi-map.min.js'))
@@ -281,11 +280,8 @@ def load_d3js(json_data=None, output_file=None, js_file=None, width=None, height
     lib_urls_str = "\n".join([f"<script src='{url}'></script>" for url in lib_urls])
 
     utils_lib_path = os.path.abspath(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static', 'lib', 'utils.js'))
-
     utils_code = _load_js_code(utils_lib_path)
-    
     js_code = _load_js_code(js_file)
-    
     # Create HTML content    
     formatted_html = html_template % (lib_urls_str, width, height)
     formatted_html = formatted_html.replace('JSON_DATA_PLACEHOLDER', json.dumps(json_data))
@@ -293,7 +289,6 @@ def load_d3js(json_data=None, output_file=None, js_file=None, width=None, height
     formatted_html = formatted_html.replace('UTILS_LIB_PLACEHOLDER', utils_code)
     # Save the HTML to a file
     output_file = _save_to_file(formatted_html, output_file, prefix="_d3")
-    
     # 简化日志输出
     return output_file
 
@@ -445,7 +440,7 @@ def render_chart_to_svg(json_data, output_svg_path, \
             raise Exception(f"Failed to create SVG file from {framework.upper()} HTML")
     
     except Exception as e:
-        print(f"Error: {e}")
+        print(f"Error load charts: {e}")
         return None
     
     finally:
