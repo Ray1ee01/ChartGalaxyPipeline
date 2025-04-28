@@ -2,7 +2,7 @@
 REQUIREMENTS_BEGIN
 {
     "chart_type": "Proportional Area Chart (Triangle)",
-    "chart_name": "proportional_area_chart_triangle_02",
+    "chart_name": "proportional_area_chart_triangle_03",
     "is_composite": false,
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],
@@ -125,9 +125,220 @@ function makeChart(containerSelector, dataJSON) {
         .attr("xmlns", "http://www.w3.org/2000/svg")
         .attr("xmlns:xlink", "http://www.w3.org/1999/xlink");
 
+    // 创建渐变定义
+    const defs = svg.append("defs");
+
+    // 为每个节点创建唯一的渐变ID
+    nodes.forEach((node, i) => {
+        // 提取基础颜色
+        const baseColor = node.color;
+        
+        // 创建渐变
+        const gradientId = `triangle-gradient-${i}`;
+        node.gradientId = gradientId;
+        
+        // 创建线性渐变 - 从上到下
+        const gradient = defs.append("linearGradient")
+            .attr("id", gradientId)
+            .attr("x1", "0%")
+            .attr("y1", "0%")
+            .attr("x2", "100%")
+            .attr("y2", "100%")
+            .attr("spreadMethod", "pad");
+        
+        // 颜色处理
+        let color1, color2, color3, color4;
+        
+        // 如果是十六进制颜色
+        if (baseColor.startsWith("#")) {
+            // 将颜色转换为 RGB 格式
+            const r = parseInt(baseColor.slice(1, 3), 16);
+            const g = parseInt(baseColor.slice(3, 5), 16);
+            const b = parseInt(baseColor.slice(5, 7), 16);
+            
+            // 创建显著更亮的顶部颜色 (增加亮度约70%)
+            const lighterR = Math.min(255, Math.round(r * 1.7));
+            const lighterG = Math.min(255, Math.round(g * 1.7));
+            const lighterB = Math.min(255, Math.round(b * 1.7));
+            
+            // 创建中上部过渡颜色
+            const midLightR = Math.min(255, Math.round(r * 1.3));
+            const midLightG = Math.min(255, Math.round(g * 1.3));
+            const midLightB = Math.min(255, Math.round(b * 1.3));
+            
+            // 创建中下部过渡颜色
+            const midDarkR = Math.min(255, Math.round(r * 0.9));
+            const midDarkG = Math.min(255, Math.round(g * 0.9));
+            const midDarkB = Math.min(255, Math.round(b * 0.9));
+            
+            // 创建显著更暗的底部颜色 (减少亮度约40%)
+            const darkerR = Math.max(0, Math.round(r * 0.6));
+            const darkerG = Math.max(0, Math.round(g * 0.6));
+            const darkerB = Math.max(0, Math.round(b * 0.6));
+            
+            color1 = `rgb(${lighterR}, ${lighterG}, ${lighterB})`;
+            color2 = `rgb(${midLightR}, ${midLightG}, ${midLightB})`;
+            color3 = `rgb(${midDarkR}, ${midDarkG}, ${midDarkB})`;
+            color4 = `rgb(${darkerR}, ${darkerG}, ${darkerB})`;
+        } 
+        // 如果是RGB或RGBA颜色
+        else if (baseColor.startsWith("rgb")) {
+            // 提取RGB值
+            const rgbMatch = baseColor.match(/\d+/g);
+            if (rgbMatch && rgbMatch.length >= 3) {
+                const r = parseInt(rgbMatch[0]);
+                const g = parseInt(rgbMatch[1]);
+                const b = parseInt(rgbMatch[2]);
+                
+                // 创建显著更亮的顶部颜色
+                const lighterR = Math.min(255, Math.round(r * 1.7));
+                const lighterG = Math.min(255, Math.round(g * 1.7));
+                const lighterB = Math.min(255, Math.round(b * 1.7));
+                
+                // 创建中上部过渡颜色
+                const midLightR = Math.min(255, Math.round(r * 1.3));
+                const midLightG = Math.min(255, Math.round(g * 1.3));
+                const midLightB = Math.min(255, Math.round(b * 1.3));
+                
+                // 创建中下部过渡颜色
+                const midDarkR = Math.min(255, Math.round(r * 0.9));
+                const midDarkG = Math.min(255, Math.round(g * 0.9));
+                const midDarkB = Math.min(255, Math.round(b * 0.9));
+                
+                // 创建显著更暗的底部颜色
+                const darkerR = Math.max(0, Math.round(r * 0.6));
+                const darkerG = Math.max(0, Math.round(g * 0.6));
+                const darkerB = Math.max(0, Math.round(b * 0.6));
+                
+                // 处理透明度
+                const alpha = rgbMatch.length > 3 ? rgbMatch[3] : "1";
+                
+                color1 = `rgba(${lighterR}, ${lighterG}, ${lighterB}, ${alpha})`;
+                color2 = `rgba(${midLightR}, ${midLightG}, ${midLightB}, ${alpha})`;
+                color3 = `rgba(${midDarkR}, ${midDarkG}, ${midDarkB}, ${alpha})`;
+                color4 = `rgba(${darkerR}, ${darkerG}, ${darkerB}, ${alpha})`;
+            } else {
+                // 回退到原始颜色
+                color1 = baseColor;
+                color2 = baseColor;
+                color3 = baseColor;
+                color4 = baseColor;
+            }
+        } else {
+            // 对于其他颜色格式，使用原始颜色
+            color1 = baseColor;
+            color2 = baseColor;
+            color3 = baseColor;
+            color4 = baseColor;
+        }
+        
+        // 添加渐变停止点 - 更多的渐变点创造更平滑的效果
+        gradient.append("stop")
+            .attr("offset", "0%")
+            .attr("stop-color", color1)
+            .attr("stop-opacity", 1);
+            
+        gradient.append("stop")
+            .attr("offset", "35%")
+            .attr("stop-color", color2)
+            .attr("stop-opacity", 1);
+            
+        gradient.append("stop")
+            .attr("offset", "70%")
+            .attr("stop-color", color3)
+            .attr("stop-opacity", 1);
+            
+        gradient.append("stop")
+            .attr("offset", "100%")
+            .attr("stop-color", color4)
+            .attr("stop-opacity", 1);
+            
+        // 添加高光效果
+        const highlightId = `triangle-highlight-${i}`;
+        node.highlightId = highlightId;
+        
+        // 创建高光渐变 - 从顶部向下
+        const highlight = defs.append("linearGradient")
+            .attr("id", highlightId)
+            .attr("x1", "0%")
+            .attr("y1", "0%")
+            .attr("x2", "100%")
+            .attr("y2", "100%");
+            
+        highlight.append("stop")
+            .attr("offset", "0%")
+            .attr("stop-color", "white")
+            .attr("stop-opacity", 0.6);
+            
+        highlight.append("stop")
+            .attr("offset", "15%")
+            .attr("stop-color", "white")
+            .attr("stop-opacity", 0.2);
+            
+        highlight.append("stop")
+            .attr("offset", "30%")
+            .attr("stop-color", "white")
+            .attr("stop-opacity", 0.1);
+            
+        highlight.append("stop")
+            .attr("offset", "100%")
+            .attr("stop-color", "white")
+            .attr("stop-opacity", 0);
+            
+        // 添加阴影
+        const shadowId = `triangle-shadow-${i}`;
+        node.shadowId = shadowId;
+        
+        // 创建滤镜
+        const filter = defs.append("filter")
+            .attr("id", shadowId)
+            .attr("width", "150%")
+            .attr("height", "150%");
+            
+        // 添加阴影效果
+        filter.append("feDropShadow")
+            .attr("dx", "3") // 水平偏移
+            .attr("dy", "3") // 垂直偏移
+            .attr("stdDeviation", "2.5") // 模糊度
+            .attr("flood-color", "rgba(0,0,0,0.3)") // 阴影颜色
+            .attr("flood-opacity", "0.5"); // 阴影不透明度
+    });
+
+    // 可选：添加全局背景微光效果，使图表更有深度感
+    const backgroundGlowId = "background-glow";
+    const backgroundGlow = defs.append("radialGradient")
+        .attr("id", backgroundGlowId)
+        .attr("cx", "50%")
+        .attr("cy", "50%")
+        .attr("r", "70%")
+        .attr("fx", "50%")
+        .attr("fy", "50%");
+
+    backgroundGlow.append("stop")
+        .attr("offset", "0%")
+        .attr("stop-color", "#ffffff")
+        .attr("stop-opacity", 0.2);
+        
+    backgroundGlow.append("stop")
+        .attr("offset", "70%")
+        .attr("stop-color", "#f0f0f0")
+        .attr("stop-opacity", 0.1);
+        
+    backgroundGlow.append("stop")
+        .attr("offset", "100%")
+        .attr("stop-color", "#f5f5f5")
+        .attr("stop-opacity", 0);
+
     // 创建主绘图区域 <g> 元素，应用边距
     const g=svg.append("g")
         .attr("transform",`translate(${margin.left},${margin.top})`);
+
+    // 添加微光背景效果
+    g.append("rect")
+        .attr("width", W)
+        .attr("height", H)
+        .attr("fill", `url(#${backgroundGlowId})`)
+        .attr("opacity", 0.5); // 降低背景透明度，使其更微妙
 
     // 数据处理 - 添加绘图顺序索引（面积小的在上层，大的在底层）
     nodes.forEach((d, i) => {
@@ -175,48 +386,14 @@ function makeChart(containerSelector, dataJSON) {
         return baseWidth * widthRatio;
     }
 
-    // 计算颜色亮度的函数 (用于确定文本颜色)
-    function getColorBrightness(color) {
-        // 处理rgba格式
-        if (color.startsWith('rgba')) {
-            const rgba = color.match(/rgba\((\d+),\s*(\d+),\s*(\d+),\s*([0-9.]+)\)/);
-            if (rgba) {
-                return (parseInt(rgba[1]) * 0.299 + parseInt(rgba[2]) * 0.587 + parseInt(rgba[3]) * 0.114) / 255;
-            }
-        }
-        
-        // 处理rgb格式
-        if (color.startsWith('rgb')) {
-            const rgb = color.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
-            if (rgb) {
-                return (parseInt(rgb[1]) * 0.299 + parseInt(rgb[2]) * 0.587 + parseInt(rgb[3]) * 0.114) / 255;
-            }
-        }
-        
-        // 处理十六进制格式
-        if (color.startsWith('#')) {
-            let hex = color.substring(1);
-            // 处理简写形式 (#fff -> #ffffff)
-            if (hex.length === 3) {
-                hex = hex.split('').map(c => c + c).join('');
-            }
-            const r = parseInt(hex.substring(0, 2), 16);
-            const g = parseInt(hex.substring(2, 4), 16);
-            const b = parseInt(hex.substring(4, 6), 16);
-            return (r * 0.299 + g * 0.587 + b * 0.114) / 255;
-        }
-        
-        // 默认返回中等亮度 (0.5)
-        return 0.5;
+    // 外部标签固定使用黑色
+    const externalLabelColor = "#000000";
+
+    // 函数getTextColorForBackground不再需要使用动态颜色，直接返回黑色
+    function getTextColorForBackground(backgroundColor) {
+        return "#000000"; // 始终返回黑色文本
     }
     
-    // 根据背景色亮度选择合适的文本颜色
-    function getTextColorForBackground(backgroundColor) {
-        const brightness = getColorBrightness(backgroundColor);
-        // 亮度阈值0.6: 高于0.6用黑色文本，低于用白色
-        return brightness > 0.6 ? '#000000' : '#ffffff';
-    }
-
     // --- 新的文本和图标渲染逻辑 ---
     const minAcceptableFontSize = 8; // 可接受的最小字体大小
     const minSideForCategoryLabel = 20; // 显示维度标签的最小边长阈值
@@ -246,19 +423,29 @@ function makeChart(containerSelector, dataJSON) {
         // 根据三角形的背景色选择合适的文本颜色
         const backgroundColor = d.color;
         const adaptiveTextColor = getTextColorForBackground(backgroundColor);
-        // 外部标签固定使用黑色
-        const externalLabelColor = "#000000";
 
-        // 创建三角形路径
+        // 创建三角形路径 - 使用渐变填充
         d3.select(this).append("path")
             .attr("d", d3.line()([
-                [0, -triangleHeight * 2/3],           // 顶部顶点
+                [0, -triangleHeight * 2/3],          // 顶部顶点
                 [-side/2, triangleHeight * 1/3],      // 左下顶点
                 [side/2, triangleHeight * 1/3]        // 右下顶点
             ])) 
-            .attr("fill", d.color)
+            .attr("fill", `url(#${d.gradientId})`) // 使用渐变填充
             .attr("stroke", "#fff")
-            .attr("stroke-width", 1.0);
+            .attr("stroke-width", 1.0)
+            .attr("filter", `url(#${d.shadowId})`); // 应用阴影效果
+
+        // 添加高光效果
+        d3.select(this).append("path")
+            .attr("d", d3.line()([
+                [0, -triangleHeight * 2/3],          // 顶部顶点
+                [-side/2, triangleHeight * 1/3],      // 左下顶点
+                [side/2, triangleHeight * 1/3]        // 右下顶点
+            ]))
+            .attr("fill", `url(#${d.highlightId})`) // 使用高光渐变
+            .attr("stroke", "none")
+            .attr("pointer-events", "none"); // 确保高光不会影响交互
 
         // 判断是否使用外部标签
         const useExternalLabel = side < minSideForInnerLabel;

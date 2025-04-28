@@ -130,11 +130,20 @@ proportional area chart(circle) / proportional_area_chart_circle_05
 proportional area chart(circle) / proportional_area_chart_circle_01
 proportional area chart(circle) / proportional_area_chart_circle_03
 proportional area chart(circle) / proportional_area_chart_circle_04
-proportional area chart (square) / proportional_area_chart_(square)_01
-proportional area chart (square) / proportional_area_chart_(square)_03
-proportional area chart (square) / proportional_area_chart_(square)_02
-proportional area chart (triangle) / proportional_area_chart_(triangle)_02
-proportional area chart (triangle) / proportional_area_chart_(triangle)_01
+proportional area chart (square) / proportional_area_chart_square_04
+proportional area chart (square) / proportional_area_chart_square_05
+proportional area chart (square) / proportional_area_chart_square_01
+proportional area chart (square) / proportional_area_chart_square_03
+proportional area chart (square) / proportional_area_chart_square_02
+proportional area chart (square) / proportional_area_chart_square_06
+proportional area chart (triangle) / proportional_area_chart_triangle_06
+proportional area chart (triangle) / proportional_area_chart_triangle_03
+proportional area chart (triangle) / proportional_area_chart_triangle_02
+proportional area chart (triangle) / proportional_area_chart_triangle_01
+proportional area chart (triangle) / proportional_area_chart_triangle_05
+proportional area chart (triangle) / proportional_area_chart_triangle_07
+proportional area chart (triangle) / proportional_area_chart_triangle_04
+triangle bar chart / triangle_bar_chart_01
 pyramid chart / pyramid_chart_02
 pyramid chart / pyramid_chart_01
 pyramid diagram / pyramid_diagram_01

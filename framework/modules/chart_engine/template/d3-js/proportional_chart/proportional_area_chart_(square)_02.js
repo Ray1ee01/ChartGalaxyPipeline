@@ -2,7 +2,7 @@
 REQUIREMENTS_BEGIN
 {
     "chart_type": "Proportional Area Chart (Square)",
-    "chart_name": "proportional_area_chart_(square)_02",
+    "chart_name": "proportional_area_chart_square_02",
     "is_composite": false,
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],
@@ -12,8 +12,8 @@ REQUIREMENTS_BEGIN
     "required_fields_colors": ["x"],
     "required_other_colors": ["primary"],
     "supported_effects": [],
-    "min_height": 400,
-    "min_width": 400,
+    "min_height": 600,
+    "min_width": 600,
     "background": "no",
     "icon_mark": "none",
     "icon_label": "none",
@@ -43,8 +43,8 @@ function makeChart(containerSelector, dataJSON) {
     }
 
     /* ============ 2. 尺寸与比例尺 ============ */
-    // 1) 圆占画布比例，越大越拥挤、越难排
-    const fillRatio = 0.80;                 // 0.70 ~ 0.90
+    // 1) 方形占画布比例，控制总面积
+    const fillRatio = 0.50;                 // 设置为50%，与圆形图表保持一致
 
     // 2) 外切候选角度步长，值越小候选越密，单位 rad
     const angleStep = Math.PI / 24;         // Math.PI/8(粗) ~ Math.PI/24(细)
@@ -70,120 +70,301 @@ function makeChart(containerSelector, dataJSON) {
     const H = fullH  - margin.top  - margin.bottom; // 绘图区域高度
 
     // 8) 半径限制
-    const minRadius = 5; // 最小圆半径
-    const maxRadius = H / 3; // 最大圆半径（不超过绘图区域高度的三分之一）
+    const minRadius = 5; // 最小半径
+    const maxSide = 200; // 最大矩形边长限制为200
+    const maxRadius = Math.min(H / 3, maxSide/2); // 最大半径（取两个限制中较小的）
 
-    const totalArea   = W * H * fillRatio; // 圆允许占用的总面积
-    const totalValue  = d3.sum(raw,d=>+d[yField]); // Y字段总和
-    const areaPerUnit = totalArea / totalValue; // 每单位Y值对应的面积
+    // 设置顶部保护区域，防止与可能的标题或图例重叠
+    const TOP_PROTECTED_AREA = 30;
 
-    // 数据处理：计算每个节点的面积、半径、颜色等
-    const nodes = raw.map((d,i)=>({
+    // 计算可用面积的50%作为矩形最大总面积限制
+    const maxTotalArea = W * H * fillRatio;
+    const totalValue = d3.sum(raw, d => +d[yField]); // Y字段总和
+    const areaPerUnit = maxTotalArea / totalValue; // 每单位Y值对应的面积
+
+    // 创建颜色比例尺
+    const uniqueCategories = [...new Set(raw.map(d => d[xField]))];
+    const colorScale = d3.scaleOrdinal()
+        .domain(uniqueCategories)
+        .range(uniqueCategories.map((cat, i) => 
+            // 优先使用colors.field中的颜色
+            dataJSON.colors?.field?.[cat] || 
+            // 如果没有对应颜色，使用默认调色板
+            d3.schemeTableau10[i % 10]
+        ));
+
+    // 数据处理：计算每个节点的面积、边长、颜色等
+    const nodes = raw.map((d,i) => ({
         id   : d[xField]!=null?String(d[xField]):`__${i}__`, // 节点ID (X字段)，若为空则生成临时ID
         val  : +d[yField], // 节点值 (Y字段)
-        area : +d[yField]*areaPerUnit, // 节点面积
-        color: dataJSON.colors?.field?.[d[xField]] || d3.schemeTableau10[i%10], // 节点颜色
+        area : +d[yField] * areaPerUnit, // 节点面积
+        color: colorScale(d[xField]), // 节点颜色
         raw  : d // 原始数据
-    })).sort((a,b)=>b.area-a.area); // 按面积降序排序，方便布局
+    })).sort((a,b) => b.area - a.area); // 按面积降序排序，方便布局
 
-    // 计算每个节点的半径并应用限制
-    nodes.forEach(n=>{ 
-        // 从面积计算理论半径
-        let calculatedRadius = Math.sqrt(n.area/Math.PI);
-        // 应用半径限制（保证在[minRadius, maxRadius]范围内）
-        n.r = Math.max(minRadius, Math.min(calculatedRadius, maxRadius));
-        // 更新面积以匹配新半径（保持一致性）
-        n.area = Math.PI * n.r * n.r;
+    // 计算每个节点的边长并应用限制
+    nodes.forEach(n => { 
+        // 方形边长 = √面积 (而不是通过圆形半径计算)
+        let side = Math.sqrt(n.area);
+        
+        // 应用边长限制
+        const minSide = minRadius * 2;  // 最小边长
+        side = Math.max(minSide, Math.min(side, maxSide));
+        
+        // 更新节点属性
+        n.width = n.height = side;
+        n.area = side * side; // 更新面积以匹配新边长
     });
 
-    /* ============ 3. 数学工具函数 ============ */
-    // 计算两圆相交面积 (用于重叠检查)
-    function interArea(a,b){
-        const dx=a.x-b.x,dy=a.y-b.y,d=Math.hypot(dx,dy); // 圆心距
-        if(d>=a.r+b.r) return 0; // 外离或外切
-        if(d<=Math.abs(a.r-b.r)) return Math.PI*Math.min(a.r,b.r)**2; // 内含或内切
-        // 相交情况
-        const α=Math.acos((a.r*a.r+d*d-b.r*b.r)/(2*a.r*d)); // 圆a扇形角
-        const β=Math.acos((b.r*b.r+d*d-a.r*a.r)/(2*b.r*d)); // 圆b扇形角
-        return a.r*a.r*α + b.r*b.r*β - d*a.r*Math.sin(α); // 两扇形面积 - 三角形面积 * 2
+    // 检查总面积是否超过限制并按比例缩小
+    const initialTotalArea = d3.sum(nodes, d => d.area);
+    if (initialTotalArea > maxTotalArea) {
+        const scaleFactor = Math.sqrt(maxTotalArea / initialTotalArea);
+        nodes.forEach(n => {
+            n.width *= scaleFactor;
+            n.height *= scaleFactor;
+            n.area = n.width * n.height;
+        });
     }
-    // 检查两圆是否可接受重叠
-    const okPair=(a,b)=> {
-        const ia=interArea(a,b);
-        // 重叠面积占各自面积的比例不超过阈值
-        return ia/a.area<=overlapMax && ia/b.area<=overlapMax;
-    };
-    // 检查新圆与所有已放置圆是否可接受重叠
-    const okAll=(n,placed)=>placed.every(p=>okPair(n,p));
 
-    /* ============ 4. 生成候选位置 ============ */
-    function genCandidates(node, placed){
-        const list=[]; // 候选位置列表
-        // ---- 首个圆 ----
-        if(!placed.length){
-            if(firstPositions.includes("topleft"))
-                list.push({x:node.r, y:node.r}); // 左上角
-            if(firstPositions.includes("center"))
-                list.push({x:W/2, y:H/2}); // 中心
-            return list;
+    /* ============ 3. 力导向布局 ============ */
+    // 设置更好的初始位置 - 使用网格布局避免初始重叠
+    function assignInitialPositions() {
+        // 计算所有节点所需的近似网格大小
+        const totalArea = d3.sum(nodes, d => d.area);
+        const gridSide = Math.ceil(Math.sqrt(nodes.length));
+        const cellSize = Math.max(
+            d3.max(nodes, d => d.width),
+            Math.sqrt(W * H / (gridSide * gridSide))
+        );
+        
+        // 创建网格
+        const grid = new Array(gridSide).fill(0).map(() => new Array(gridSide).fill(false));
+        const centerX = W / 2;
+        const centerY = H / 2;
+        const startX = centerX - (cellSize * (gridSide - 1)) / 2;
+        const startY = centerY - (cellSize * (gridSide - 1)) / 2;
+        
+        // 按从大到小的顺序分配网格位置
+        // 大矩形优先在中心位置，小矩形在周围
+        let assignedCount = 0;
+        
+        // 计算距离网格中心的距离
+        function distanceToCenter(row, col) {
+            const centerRow = (gridSide - 1) / 2;
+            const centerCol = (gridSide - 1) / 2;
+            return Math.sqrt(Math.pow(row - centerRow, 2) + Math.pow(col - centerCol, 2));
         }
-        // ---- 与已放置圆外切 ----
-        placed.forEach(p=>{
-            const dist = p.r + node.r + distPadding; // 外切圆心距 + 额外间距
-            for(let θ=0; θ<2*Math.PI; θ+=angleStep){ // 遍历外切角度
-                const x=p.x+dist*Math.cos(θ), y=p.y+dist*Math.sin(θ);
-                // 检查是否超出边界
-                if(x-node.r<0||x+node.r>W||y-node.r<0||y+node.r>H) continue;
-                list.push({x,y});
+        
+        // 按照到中心的距离给网格单元排序
+        let cells = [];
+        for (let row = 0; row < gridSide; row++) {
+            for (let col = 0; col < gridSide; col++) {
+                cells.push({row, col, distance: distanceToCenter(row, col)});
+            }
+        }
+        cells.sort((a, b) => a.distance - b.distance);
+        
+        // 从中心开始，螺旋状向外分配位置
+        for (let i = 0; i < nodes.length; i++) {
+            const node = nodes[i];
+            const cell = cells[i % cells.length];
+            
+            // 分配位置并添加一些随机偏移以避免完全对齐
+            const jitter = cellSize * 0.1; // 添加10%的随机偏移
+            node.x = startX + cell.col * cellSize + cellSize/2 + (Math.random() - 0.5) * jitter;
+            node.y = startY + cell.row * cellSize + cellSize/2 + (Math.random() - 0.5) * jitter;
+            
+            // 确保在画布内
+            node.x = Math.max(node.width/2, Math.min(W - node.width/2, node.x));
+            node.y = Math.max(TOP_PROTECTED_AREA + node.height/2, Math.min(H - node.height/2, node.y));
+        }
+        
+        // 特殊处理最大节点（可选）- 固定在中心
+        if (nodes.length > 0) {
+            // 松散固定最大节点，让它有一定移动空间
+            nodes[0].x = W * 0.5 + (Math.random() - 0.5) * 10;
+            nodes[0].y = H * 0.5 + (Math.random() - 0.5) * 10;
+        }
+    }
+
+    // 分配初始位置
+    assignInitialPositions();
+
+    // 创建自定义碰撞检测函数 - 处理矩形之间的碰撞，考虑方形的特性
+    function rectCollide() {
+        let nodes = [];
+        let strength = 1;
+        
+        // 计算两个矩形之间的碰撞和间距
+        function distance(nodeA, nodeB) {
+            // 计算两个矩形中心点之间的距离
+            const dx = nodeB.x - nodeA.x;
+            const dy = nodeB.y - nodeA.y;
+            
+            // 计算两个矩形边缘之间的距离（负值表示重叠）
+            const overlapX = (nodeA.width + nodeB.width) / 2 - Math.abs(dx);
+            const overlapY = (nodeA.height + nodeB.height) / 2 - Math.abs(dy);
+            
+            // 如果没有重叠，返回正距离
+            if (overlapX <= 0 || overlapY <= 0) {
+                // 返回最近边缘之间的欧几里得距离
+                const edgeDistX = overlapX <= 0 ? -overlapX : 0;
+                const edgeDistY = overlapY <= 0 ? -overlapY : 0;
+                return Math.sqrt(edgeDistX * edgeDistX + edgeDistY * edgeDistY);
+            }
+            
+            // 如果重叠，返回负的重叠程度（更精确地描述重叠情况）
+            // 重叠值越大（负值绝对值越大），斥力越强
+            return -Math.sqrt(overlapX * overlapY); // 使用重叠面积的平方根增强斥力效果
+        }
+        
+        // 主要碰撞处理函数 - 防止矩形重叠，考虑方形的正交性质
+        function force(alpha) {
+            const quadtree = d3.quadtree()
+                .x(d => d.x)
+                .y(d => d.y)
+                .addAll(nodes);
+                
+            for (let i = 0; i < nodes.length; i++) {
+                const nodeA = nodes[i];
+                
+                // 查找可能与当前节点碰撞的其他节点
+                const padding = 5; // 额外的安全间距
+                const searchRadius = Math.max(nodeA.width, nodeA.height) * 1.5 + padding;
+                quadtree.visit((quad, x1, y1, x2, y2) => {
+                    if (!quad.length) {
+                        do {
+                            if (quad.data !== nodeA) {
+                                const nodeB = quad.data;
+                                const dist = distance(nodeA, nodeB);
+                                
+                                // 即使矩形没有重叠，只要它们很接近，也应用较弱斥力
+                                // 这样可以在布局阶段保持一定的间距
+                                const repulsionThreshold = padding; // 没有重叠时也保持这个距离
+                                
+                                if (dist < repulsionThreshold) {
+                                    const dx = nodeB.x - nodeA.x;
+                                    const dy = nodeB.y - nodeA.y;
+                                    const l = Math.sqrt(dx * dx + dy * dy) || 1;
+                                    
+                                    // 计算斥力
+                                    // 如果重叠（dist < 0），则力很强
+                                    // 如果接近但不重叠（0 <= dist < repulsionThreshold），则力较弱
+                                    const repulsionStrength = dist < 0 ? 1.0 : 1 - (dist / repulsionThreshold);
+                                    let force = Math.min(
+                                        Math.abs(dist < 0 ? dist : dist - repulsionThreshold) * strength * alpha * repulsionStrength,
+                                        15 // 最大斥力上限提高
+                                    );
+                                    
+                                    // 考虑节点大小差异，使大节点更稳定
+                                    const ratio = nodeA.area / (nodeA.area + nodeB.area);
+                                    
+                                    // 矩形特有：方向向量应考虑矩形特性
+                                    // 计算主要重叠方向（水平或垂直）
+                                    const overlapX = (nodeA.width + nodeB.width) / 2 - Math.abs(dx);
+                                    const overlapY = (nodeA.height + nodeB.height) / 2 - Math.abs(dy);
+                                    
+                                    // 根据重叠方向分配力度
+                                    let forceX = force * (dx / l);
+                                    let forceY = force * (dy / l);
+                                    
+                                    // 矩形正交性处理：对不同方向应用不同力度
+                                    // 如果矩形主要在水平方向重叠，增强垂直方向的力
+                                    if (overlapX > overlapY && Math.abs(dy) > 0.1) {
+                                        forceY *= 1.8; // 增强正交方向斥力
+                                    }
+                                    // 如果矩形主要在垂直方向重叠，增强水平方向的力
+                                    else if (overlapY > overlapX && Math.abs(dx) > 0.1) {
+                                        forceX *= 1.8; // 增强正交方向斥力
+                                    }
+                                    
+                                    // 应用力（根据面积比例）
+                                    if (!nodeA.fx) {
+                                        nodeA.x -= forceX * (1 - ratio) * 0.95;
+                                        nodeA.y -= forceY * (1 - ratio) * 0.95;
+                                    }
+                                    
+                                    if (!nodeB.fx) {
+                                        nodeB.x += forceX * ratio * 0.95;
+                                        nodeB.y += forceY * ratio * 0.95;
+                                    }
+                                }
+                            }
+                        } while (quad = quad.next);
+                    }
+                    
+                    // 如果当前四叉树区域与搜索区域不重叠，停止遍历该分支
+                    const nodeRadius = Math.max(nodeA.width, nodeA.height) / 2 + padding;
+                    return x1 > nodeA.x + nodeRadius || 
+                           x2 < nodeA.x - nodeRadius || 
+                           y1 > nodeA.y + nodeRadius || 
+                           y2 < nodeA.y - nodeRadius;
+                });
+            }
+        }
+        
+        // 设置API
+        force.initialize = function(_) {
+            nodes = _;
+        };
+        
+        force.strength = function(_) {
+            strength = _ ?? strength;
+            return force;
+        };
+        
+        return force;
+    }
+
+    // 创建防碰撞力模拟布局
+    const simulation = d3.forceSimulation(nodes)
+        .force("center", d3.forceCenter(W/2, H/2).strength(0.05)) // 中心引力，调整为适中强度
+        .force("charge", d3.forceManyBody().strength(-20)) // 节点间斥力，增强以避免过度拥挤
+        .force("collide", rectCollide().strength(1.0)) // 自定义矩形碰撞检测，增强强度
+        .force("x", d3.forceX(W / 2).strength(0.02)) // x方向引力
+        .force("y", d3.forceY(H / 2).strength(0.02)) // y方向引力
+        .stop();
+
+    // 使用模拟分阶段降温冷却，以获得更好的布局
+    const MIN_ITERATIONS = 350; // 增加迭代次数以获得更稳定的布局
+    for (let i = 0; i < MIN_ITERATIONS; ++i) {
+        // 在早期阶段应用更强的边界约束，确保矩形不会飞出边界
+        const boundaryStrength = 1 - Math.min(1, i / (MIN_ITERATIONS * 0.8));
+        
+        simulation.tick();
+        
+        // 每次迭代后应用边界约束
+        nodes.forEach(d => {
+            if (!d.fx) { // 如果节点没有被固定
+                // 添加额外的边界吸引力，随着迭代的进行逐渐减弱
+                const maxBoundaryForce = 2 * boundaryStrength;
+                
+                // 计算到边界的距离
+                const distToLeft = d.x - d.width/2;
+                const distToRight = W - d.x - d.width/2;
+                const distToTop = d.y - d.height/2 - TOP_PROTECTED_AREA;
+                const distToBottom = H - d.y - d.height/2;
+                
+                // 如果接近边界，施加一个向中心的力
+                if (distToLeft < 20) d.x += maxBoundaryForce * (1 - distToLeft/20);
+                if (distToRight < 20) d.x -= maxBoundaryForce * (1 - distToRight/20);
+                if (distToTop < 20) d.y += maxBoundaryForce * (1 - distToTop/20);
+                if (distToBottom < 20) d.y -= maxBoundaryForce * (1 - distToBottom/20);
+                
+                // 强制约束在边界内
+                d.x = Math.max(d.width/2 + 1, Math.min(W - d.width/2 - 1, d.x));
+                d.y = Math.max(TOP_PROTECTED_AREA + d.height/2 + 1, Math.min(H - d.height/2 - 1, d.y));
             }
         });
-
-        // ---- 去重 ---- (通过Map，键为保留两位小数的坐标字符串)
-        const uniq=new Map();
-        list.forEach(p=>uniq.set(p.x.toFixed(2)+","+p.y.toFixed(2),p));
-        const arr=[...uniq.values()];
-
-        // ---- 排序 ---- (影响放置顺序)
-        if(candidateSort==="center"){ // 优先靠近中心
-            arr.sort((a,b)=> (a.y-H/2)**2+(a.x-W/2)**2 - (b.y-H/2)**2-(b.x-W/2)**2 );
-        }else if(candidateSort==="random"){ // 随机
-            d3.shuffle(arr);
-        }else{ // 默认左上优先 (topleft)
-            arr.sort((a,b)=>a.y-b.y || a.x-b.x);
-        }
-        return arr;
     }
 
-    /* ============ 5. DFS + 回溯布局 ============ */
-    // 深度优先搜索尝试放置所有节点
-    function dfs(idx, placed){
-        if(idx===nodes.length) return true;           // 递归基：全部放置成功
-        const node = nodes[idx]; // 当前要放置的节点
-        // 遍历当前节点的所有候选位置
-        for(const c of genCandidates(node,placed)){
-            node.x=c.x; node.y=c.y; // 尝试放置
-            if(okAll(node,placed)){ // 检查是否与已放置节点重叠过多
-                placed.push(node); // 放置成功，加入已放置列表
-                if(dfs(idx+1,placed)) return true; // 递归放置下一个节点
-                placed.pop();                         // 回溯：取出当前节点，尝试下一个候选位置
-            }
-        }
-        return false;                                 // 该层全部候选位置失败
-    }
+    // 数据处理 - 添加绘图顺序索引（面积小的在上层，大的在底层）
+    nodes.forEach((d, i) => {
+        d.zIndex = nodes.length - i; // 由于数据已按面积降序排序，所以索引大的（面积小的）会有更高的zIndex
+    });
 
-    let placed=[]; // 已成功放置的节点
-    let success=dfs(0,placed); // 启动DFS
-
-    /* ============ 6. 若失败则删除最小圆重试 ============ */
-    let drop=0; // 已丢弃的节点数
-    // 如果布局失败，且允许丢弃节点，且还有节点可丢
-    while(!success && drop<maxDropTries && nodes.length){
-        nodes.pop(); drop++; // 丢弃面积最小的节点（因为已排序）
-        placed=[]; success=dfs(0,placed); // 重新尝试布局
-    }
-    if(!success) placed=[]; // 最终仍失败则返回空结果
-
-    /* ============ 7. 绘图 ============ */
+    /* ============ 4. 绘图 ============ */
     d3.select(containerSelector).html(""); // 清空容器
     // 创建 SVG 画布
     const svg=d3.select(containerSelector)
@@ -192,35 +373,95 @@ function makeChart(containerSelector, dataJSON) {
         .attr("height",fullH) // 高度固定
         .attr("viewBox",`0 0 ${fullW} ${fullH}`) // 设置视窗
         .attr("preserveAspectRatio","xMidYMid meet") // 保持宽高比
+        .attr("xmlns", "http://www.w3.org/2000/svg")
+        .attr("xmlns:xlink", "http://www.w3.org/1999/xlink")
         .style("max-width","100%") // 最大宽度
         .style("height","auto"); // 高度自适应
+
+    // 添加滤镜定义，用于阴影效果
+    const defs = svg.append("defs");
+
+    // 定义阴影滤镜
+    defs.append("filter")
+        .attr("id", "drop-shadow")
+        .attr("x", "-20%")
+        .attr("y", "-20%")
+        .attr("width", "140%")
+        .attr("height", "140%")
+        .html(`
+            <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
+            <feOffset dx="2" dy="2" result="offsetblur"/>
+            <feComponentTransfer>
+                <feFuncA type="linear" slope="0.4"/>
+            </feComponentTransfer>
+            <feMerge> 
+                <feMergeNode/>
+                <feMergeNode in="SourceGraphic"/> 
+            </feMerge>
+        `);
 
     // 创建主绘图区域 <g> 元素，应用边距
     const g=svg.append("g")
         .attr("transform",`translate(${margin.left},${margin.top})`);
 
-    // 数据处理 - 添加绘图顺序索引（面积小的在上层，大的在底层）
-    placed.forEach((d, i) => {
-        d.zIndex = placed.length - i; // 由于数据已按面积降序排序，所以索引大的（面积小的）会有更高的zIndex
+    // 为每个矩形创建唯一渐变ID
+    nodes.forEach((node, i) => {
+        // 提取基础颜色
+        const baseColor = node.color;
+        
+        // 创建线性渐变
+        const gradient = defs.append("linearGradient")
+            .attr("id", `metal-gradient-${i}`)
+            .attr("x1", "0%")
+            .attr("y1", "0%")
+            .attr("x2", "0%")
+            .attr("y2", "100%");
+        
+        // 为渐变添加色标
+        gradient.append("stop")
+            .attr("offset", "0%")
+            .attr("stop-color", d3.color(baseColor).brighter(1.2));
+        
+        gradient.append("stop")
+            .attr("offset", "20%")
+            .attr("stop-color", d3.color(baseColor).brighter(0.6));
+        
+        gradient.append("stop")
+            .attr("offset", "50%")
+            .attr("stop-color", baseColor);
+        
+        gradient.append("stop")
+            .attr("offset", "80%")
+            .attr("stop-color", d3.color(baseColor).darker(0.6));
+        
+        gradient.append("stop")
+            .attr("offset", "100%")
+            .attr("stop-color", d3.color(baseColor).darker(0.8));
+        
+        // 存储渐变引用
+        node.gradientFill = `url(#metal-gradient-${i})`;
     });
 
     // 创建节点分组 <g> 元素（按zIndex排序）
     const nodeG=g.selectAll("g.node")
-        .data(placed,d=>d.id) // 绑定已放置节点数据，使用 id 作为 key
+        .data(nodes, d => d.id) // 绑定节点数据，使用 id 作为 key
         .join("g")
-        .attr("class","node")
-        .attr("transform",d=>`translate(${d.x},${d.y})`) // 定位到计算好的位置
+        .attr("class", "node")
+        .attr("transform", d => `translate(${d.x},${d.y})`) // 定位到力模拟计算后的位置
         .sort((a, b) => a.zIndex - b.zIndex); // 确保面积小的在上层绘制
 
-    // 绘制正方形（替代圆形）
+    // 绘制正方形
     nodeG.append("rect")
-        .attr("x", d => -d.r) // x位置（居中）
-        .attr("y", d => -d.r) // y位置（居中）
-        .attr("width", d => 2*d.r) // 宽度=直径
-        .attr("height", d => 2*d.r) // 高度=直径
-        .attr("fill", d => d.color) // 填充色
+        .attr("x", d => -d.width/2) // x位置（居中）
+        .attr("y", d => -d.height/2) // y位置（居中）
+        .attr("width", d => d.width) // 宽度
+        .attr("height", d => d.height) // 高度
+        .attr("fill", d => d.gradientFill) // 使用渐变填充
         .attr("stroke", "#fff") // 白色描边
-        .attr("stroke-width", 1.0); // 描边宽度
+        .attr("stroke-width", 2.0) // 增加描边宽度到2px
+        .attr("rx", 2) // 添加轻微圆角
+        .attr("ry", 2) 
+        .style("filter", "url(#drop-shadow)"); // 应用阴影效果
 
     /* ---- 文本 ---- */
     // 提取字体排印设置，提供默认值
@@ -299,13 +540,13 @@ function makeChart(containerSelector, dataJSON) {
 
     // --- 新的文本渲染逻辑 ---
     const minAcceptableFontSize = 8; // 可接受的最小字体大小
-    const minSideForCategoryLabel = 10; // 显示维度标签的最小边长阈值（原来的minRadiusForCategoryLabel * 2）
+    const minSideForCategoryLabel = 10; // 显示维度标签的最小边长阈值
     const fontSizeScaleFactor = 0.38; // 字体大小与正方形边长的缩放比例
     const maxFontSize = 28; // 最大字体大小
 
     nodeG.each(function(d) {
         const gNode = d3.select(this);
-        const side = 2 * d.r; // 正方形边长 = 圆形直径
+        const side = d.width; // 正方形边长
         const valText = `${d.val}${yUnit}`;
         let catText = d.id.startsWith("__") ? "" : d.id;
         const maxTextWidth = side * 0.85; // 正方形内文本允许的最大宽度 (85%边长)
