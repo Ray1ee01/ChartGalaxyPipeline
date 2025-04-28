@@ -103,6 +103,8 @@ horizontal stacked bar chart / horizontal_stacked_bar_chart_0
 vertical waffle chart / vertical_waffle_chart_01
 radial bar chart / radial_bar_chart_03
 radial bar chart / radial_bar_chart_02
+grouped bar chart / vertical_group_bar_chart_8
+grouped bar chart / triangle_group_bar_chart_01
 stacked area chart / stacked_area_chart_03
 stacked area chart / stacked_area_chart_01
 stacked area chart / stacked_area_chart_02
@@ -144,6 +146,7 @@ proportional area chart (triangle) / proportional_area_chart_triangle_05
 proportional area chart (triangle) / proportional_area_chart_triangle_07
 proportional area chart (triangle) / proportional_area_chart_triangle_04
 triangle bar chart / triangle_bar_chart_01
+triangle bar chart / triangle_bar_chart_02
 pyramid chart / pyramid_chart_02
 pyramid chart / pyramid_chart_01
 pyramid diagram / pyramid_diagram_01

@@ -6,7 +6,7 @@ REQUIREMENTS_BEGIN
     "is_composite": false,
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],
-    "required_fields_range": [[3, 7], [0, "inf"]],
+    "required_fields_range": [[3, 8], [0, "inf"]],
     "required_fields_icons": [],
     "required_other_icons": [],
     "required_fields_colors": [],
@@ -59,7 +59,26 @@ function makeChart(containerSelector, dataJSON) {
     // 三角形参数
     const barWidth = 100; // 每个三角形的底边宽度
     const maxHeight = H * 0.9; // 最大高度
-    const padding = -30; // 三角形之间允许重叠，使用负值间距
+    
+    // 根据节点数量自适应确定间距，数量多允许重叠，数量少则不重叠
+    let padding;
+    if (raw.length <= 4) {
+        // 数量少时不重叠
+        padding = 20;
+    } else if (raw.length <= 6) {
+        // 中等数量时轻微重叠
+        padding = -10;
+    } else {
+        // 数量多时较大重叠
+        padding = -30; // 最大重叠值
+    }
+    
+    // 确保图表宽度不超过可用空间
+    const totalWidthEstimate = raw.length * (barWidth + padding) - padding;
+    if (totalWidthEstimate > W) {
+        // 如果宽度超出，增加重叠度，但不超过最大重叠值
+        padding = Math.max(-30, (W - raw.length * barWidth) / (raw.length - 1));
+    }
     
     // 高度比例尺 - 根据数值映射高度
     const heightScale = d3.scaleLinear()
@@ -129,7 +148,7 @@ function makeChart(containerSelector, dataJSON) {
     const valueFontSize = parseFloat(dataJSON.typography?.annotation?.font_size || '14'); // 数值标签字号
     const valueFontWeight = dataJSON.typography?.annotation?.font_weight || 'bold'; // 数值标签字重
     const categoryFontFamily = dataJSON.typography?.label?.font_family || 'Arial';
-    const categoryFontSize = parseFloat(dataJSON.typography?.label?.font_size || '11'); // 维度标签字号减小
+    const categoryFontSize = 11;
     const categoryFontWeight = dataJSON.typography?.label?.font_weight || 'normal'; // 维度标签字重
     
     // 辅助函数 - 使用canvas测量文本宽度

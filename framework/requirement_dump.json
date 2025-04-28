@@ -5612,6 +5612,108 @@
         "has_x_axis": "yes",
         "has_y_axis": "yes"
     },
+    "vertical_group_bar_chart_8": {
+        "chart_type": "Grouped Bar Chart",
+        "chart_name": "vertical_group_bar_chart_8",
+        "is_composite": false,
+        "required_fields": [
+            "x",
+            "y",
+            "group"
+        ],
+        "required_fields_type": [
+            [
+                "categorical"
+            ],
+            [
+                "numerical"
+            ],
+            [
+                "categorical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                2,
+                5
+            ],
+            [
+                0,
+                "inf"
+            ],
+            [
+                2,
+                3
+            ]
+        ],
+        "required_fields_icons": [],
+        "required_other_icons": [],
+        "required_fields_colors": [
+            "group"
+        ],
+        "required_other_colors": [
+            "primary"
+        ],
+        "supported_effects": [],
+        "min_height": 400,
+        "min_width": 600,
+        "background": "no",
+        "icon_mark": "none",
+        "icon_label": "none",
+        "has_x_axis": "no",
+        "has_y_axis": "no"
+    },
+    "triangle_group_bar_chart_01": {
+        "chart_type": "Grouped Bar Chart",
+        "chart_name": "triangle_group_bar_chart_01",
+        "is_composite": false,
+        "required_fields": [
+            "x",
+            "y",
+            "group"
+        ],
+        "required_fields_type": [
+            [
+                "categorical"
+            ],
+            [
+                "numerical"
+            ],
+            [
+                "categorical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                2,
+                5
+            ],
+            [
+                0,
+                Infinity
+            ],
+            [
+                2,
+                3
+            ]
+        ],
+        "required_fields_icons": [],
+        "required_other_icons": [],
+        "required_fields_colors": [
+            "group"
+        ],
+        "required_other_colors": [
+            "primary"
+        ],
+        "supported_effects": [],
+        "min_height": 400,
+        "min_width": 600,
+        "background": "no",
+        "icon_mark": "none",
+        "icon_label": "none",
+        "has_x_axis": "no",
+        "has_y_axis": "no"
+    },
     "stacked_area_chart_03": {
         "chart_type": "Stacked Area Chart",
         "chart_name": "stacked_area_chart_03",
@@ -7663,17 +7765,60 @@
         ],
         "required_fields_range": [
             [
-                4,
-                10
+                3,
+                8
             ],
             [
                 0,
-                Infinity
+                "inf"
             ]
         ],
         "required_fields_icons": [],
         "required_other_icons": [],
         "required_fields_colors": [],
+        "required_other_colors": [
+            "primary"
+        ],
+        "supported_effects": [],
+        "min_height": 400,
+        "min_width": 600,
+        "background": "no",
+        "icon_mark": "none",
+        "icon_label": "none",
+        "has_x_axis": "no",
+        "has_y_axis": "no"
+    },
+    "triangle_bar_chart_02": {
+        "chart_type": "Triangle Bar Chart",
+        "chart_name": "triangle_bar_chart_02",
+        "is_composite": false,
+        "required_fields": [
+            "x",
+            "y"
+        ],
+        "required_fields_type": [
+            [
+                "categorical"
+            ],
+            [
+                "numerical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                3,
+                8
+            ],
+            [
+                0,
+                "inf"
+            ]
+        ],
+        "required_fields_icons": [],
+        "required_other_icons": [],
+        "required_fields_colors": [
+            "x"
+        ],
         "required_other_colors": [
             "primary"
         ],
