@@ -78,6 +78,7 @@ def make_infographic(
     html_path: str,
     mask_path: str
 ) -> str:
+    print("start make_infographic")
     if not dark:
         background_color = data["colors"].get("background_color", "#FFFFFF")
         if is_dark_color(background_color):
@@ -85,9 +86,9 @@ def make_infographic(
             data["colors"]["background_color"] = background_color
     else:
         background_color = data["colors_dark"].get("background_color", "#000000")
-
+    print("background_color: ", background_color)
     chart_content, chart_width, chart_height, chart_offset_x, chart_offset_y = adjust_and_get_bbox(chart_svg_content, background_color)
-    
+    print("adjust_and_get_bbox done")
     ## start: add for new template
     chart_aspect_ratio = chart_width / chart_height
     thin_chart_flag = False
@@ -107,7 +108,7 @@ def make_infographic(
     else:
         max_title_width = chart_width
     steps = np.ceil((max_title_width - min_title_width) / 100).astype(int)
-
+    print("steps: ", steps)
     # Visualize the mask for debugging
     import matplotlib.pyplot as plt
     import io
@@ -927,13 +928,13 @@ def process(input: str, output: str, base_url: str, api_key: str, chart_name: st
         )
         render_chart_time = time.time() - render_chart_start
         logger.info(f"Rendering chart took: {render_chart_time:.4f} seconds")
-        print(chart_svg_path)
+        print("chart_svg_path: ", chart_svg_path)
         with open(chart_svg_path, "r", encoding="utf-8") as f:
             chart_svg_content = f.read()
             if "This is a fallback SVG using a PNG screenshot" in chart_svg_content:
                 return False
             chart_inner_content = extract_svg_content(chart_svg_content)
-
+        print("chart_inner_content: ", chart_inner_content)
         assemble_start = time.time()
         final_svg, layout_info = make_infographic(
             data=data,
@@ -944,6 +945,7 @@ def process(input: str, output: str, base_url: str, api_key: str, chart_name: st
             html_path=html_path,
             mask_path=mask_path
         )
+        print("final_svg: ", final_svg)
         layout_info["chart_variation"] = chart_name
         layout_info["chart_type"] = chart_type
         layout_info["data_source"] = input
@@ -1032,11 +1034,11 @@ def process(input: str, output: str, base_url: str, api_key: str, chart_name: st
     except Exception as e:
         logger.error(f"Error processing infographics: {e}")
         return False
-    # finally:
-    #     try:
-    #         os.remove(chart_svg_path)
-    #     except Exception as e:
-    #         pass
+    finally:
+        try:
+            os.remove(chart_svg_path)
+        except Exception as e:
+            pass
     
     '''
     total_time = time.time() - start_time

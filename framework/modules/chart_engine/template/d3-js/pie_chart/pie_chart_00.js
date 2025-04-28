@@ -86,12 +86,14 @@ function makeChart(containerSelector, data) {
         .padAngle(0.02)
         .cornerRadius(5);
 
+
     // 计算每个组的百分比
     const total = d3.sum(chartData, d => d[yField]);
     const dataWithPercentages = chartData.map(d => ({
         ...d,
         percentage: (d[yField] / total) * 100
     }));
+
 
     // 绘制甜甜圈图的各个部分
     const arcs = g.selectAll("path")

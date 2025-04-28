@@ -108,7 +108,7 @@ def check_field_color_compatibility(requirements: Dict, data: Dict) -> bool:
             return False
         field_name = field_column["name"]
         for value in data.get("data", {}).get("data", []):
-            if value[field_name] not in data.get("colors", {}).get("field", []):
+            if value[field_name] not in data.get("colors", {}).get("field", {}).keys():
                 return False
     return True
 
@@ -126,7 +126,7 @@ def check_field_icon_compatibility(requirements: Dict, data: Dict) -> bool:
             return False
         field_name = field_column["name"]
         for value in data.get("data", {}).get("data", []):
-            if value[field_name] not in data.get("images", {}).get("field", []):
+            if value[field_name] not in data.get("images", {}).get("field", {}).keys():
                 return False
     return True
 
@@ -134,7 +134,6 @@ def check_template_compatibility(data: Dict, templates: Dict, specific_chart_nam
     """Check which templates are compatible with the given data"""
     compatible_templates = []
     
-    print(f"specific_chart_name: {specific_chart_name}")
     
     # Get the combination type from the data
     combination_type = data.get("data", {}).get("type_combination", "")
@@ -187,8 +186,10 @@ def check_template_compatibility(data: Dict, templates: Dict, specific_chart_nam
                             if not check_field_icon_compatibility(req, data):
                                 print(f"template {template_key} failed icon compatibility check")
                                 continue
-
-                            if len(data_types) == len(combination_types):
+                            # print("data_types", data_types)
+                            # print("combination_types", combination_types)
+                            # 如果data_types和combination_types相同，或者data_types是combination_types的一个子序列
+                            if len(data_types) == len(combination_types) or all(data_type in combination_types for data_type in data_types):
                                 check_flag = True
                                 for data_type, combination_type in zip(data_types, combination_types[:len(data_types)]):
                                     if data_type == "categorical" and (combination_type == "temporal" or combination_type == "categorical"):
@@ -203,6 +204,7 @@ def check_template_compatibility(data: Dict, templates: Dict, specific_chart_nam
                                 if not check_flag:
                                     continue
                             else:
+                                print(f"template {template_key} failed data type compatibility check")
                                 continue
 
                             flag = True
