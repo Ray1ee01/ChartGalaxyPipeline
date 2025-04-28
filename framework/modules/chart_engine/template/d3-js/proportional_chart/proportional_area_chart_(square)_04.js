@@ -2,12 +2,12 @@
 REQUIREMENTS_BEGIN
 {
     "chart_type": "Proportional Area Chart (Square)",
-    "chart_name": "proportional_area_chart_square_03",
+    "chart_name": "proportional_area_chart_square_04",
     "is_composite": false,
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],
     "required_fields_range": [[2, 20], [0, "inf"]],
-    "required_fields_icons": [],
+    "required_fields_icons": ["x"],
     "required_other_icons": [],
     "required_fields_colors": ["x"],
     "required_other_colors": ["primary"],
@@ -15,7 +15,7 @@ REQUIREMENTS_BEGIN
     "min_height": 600,
     "min_width": 600,
     "background": "no",
-    "icon_mark": "none",
+    "icon_mark": "overlay",
     "icon_label": "none",
     "has_x_axis": "no",
     "has_y_axis": "no"
@@ -70,12 +70,31 @@ function makeChart(containerSelector, dataJSON) {
     const H = fullH  - margin.top  - margin.bottom; // 绘图区域高度
 
     // 8) 半径限制
-    const minRadius = 5; // 最小半径
+    const minRadius = 20; // 最小半径
     const maxSide = 200; // 最大矩形边长限制为200
     const maxRadius = Math.min(H / 3, maxSide/2); // 最大半径（取两个限制中较小的）
 
     // 设置顶部保护区域，防止与可能的标题或图例重叠
     const TOP_PROTECTED_AREA = 30;
+
+    // 9) 定义小矩形的阈值 - 小于此值的矩形将标签显示在外部
+    const SMALL_RECT_THRESHOLD = 30;
+
+    // 计算yValue的范围，用于线性比例尺
+    const minYValue = d3.min(raw, d => +d[yField]);
+    const maxYValue = d3.max(raw, d => +d[yField]);
+
+    // 创建线性比例尺，将yValue映射到矩形大小
+    const minSideValue = minRadius * 2; // 最小边长
+    const maxSideValue = maxSide; // 最大边长
+
+    // 创建线性比例尺
+    const sideScale = d3.scaleSqrt()
+        .domain([0, maxYValue])
+        .range([minSideValue, maxSideValue]);
+
+    // 如果最大值和最小值相差太小，应用某种缩放使差异更明显
+    const scalingFactor = (maxYValue - minYValue) < (maxYValue * 0.3) ? 0.7 : 1;
 
     // 计算可用面积的50%作为矩形最大总面积限制
     const maxTotalArea = W * H * fillRatio;
@@ -97,23 +116,25 @@ function makeChart(containerSelector, dataJSON) {
     const nodes = raw.map((d,i) => ({
         id   : d[xField]!=null?String(d[xField]):`__${i}__`, // 节点ID (X字段)，若为空则生成临时ID
         val  : +d[yField], // 节点值 (Y字段)
-        area : +d[yField] * areaPerUnit, // 节点面积
+        area : +d[yField] * areaPerUnit, // 节点面积（仍然保留，用于布局计算）
         color: colorScale(d[xField]), // 节点颜色
         raw  : d // 原始数据
-    })).sort((a,b) => b.area - a.area); // 按面积降序排序，方便布局
+    })).sort((a,b) => b.val - a.val); // 按值降序排序，方便布局
 
-    // 计算每个节点的边长并应用限制
+    // 计算每个节点的边长，使用线性比例尺
     nodes.forEach(n => { 
-        // 方形边长 = √面积 (而不是通过圆形半径计算)
-        let side = Math.sqrt(n.area);
+        // 使用线性比例尺计算方形边长
+        let side = sideScale(n.val) * scalingFactor;
         
-        // 应用边长限制
-        const minSide = minRadius * 2;  // 最小边长
-        side = Math.max(minSide, Math.min(side, maxSide));
+        // 确保边长在范围内
+        side = Math.max(minSideValue, Math.min(side, maxSideValue));
         
         // 更新节点属性
         n.width = n.height = side;
         n.area = side * side; // 更新面积以匹配新边长
+        
+        // 标记小矩形（用于后续标签位置处理）
+        n.isSmallRect = side < SMALL_RECT_THRESHOLD;
     });
 
     // 检查总面积是否超过限制并按比例缩小
@@ -627,6 +648,43 @@ function makeChart(containerSelector, dataJSON) {
         .attr("ry", d => Math.min(5, d.height * 0.05)) // 添加圆角，但不超过5像素
         .attr("pointer-events", "none"); // 确保高光不会影响交互
 
+    // 为大方块添加图标（当宽度 > 50 时）
+    nodeG.each(function(d) {
+        // 只为足够大的方块添加图标（width > 50）
+        if (d.width > 50) {
+            const gNode = d3.select(this);
+            const xValue = d.id;
+            // 从dataJSON.images.field[xValue]获取图标URL
+            const iconUrl = dataJSON.images?.field?.[xValue];
+            
+            if (iconUrl) {
+                // 创建图标容器 - 白色圆形背景
+                const iconSize = d.width / 2; // 图标大小为方块宽度的一半
+                const yOffset = -d.height / 4 + 5; // 将图标放在上方1/4处，向下移动5px
+                
+                // 添加白色圆形背景
+                gNode.append("circle")
+                    .attr("cx", 0)
+                    .attr("cy", yOffset)
+                    .attr("r", iconSize / 2)
+                    .attr("fill", "white")
+                    .attr("fill-opacity", 0.5) // 设置透明度为0.5
+                    .attr("stroke", "#eee")
+                    .attr("stroke-width", 1);
+                
+                // 添加图标图像 - 稍微缩小图标确保不超出背景圆形
+                const actualIconSize = iconSize * 0.8; // 将图标缩小到圆形背景的80%
+                gNode.append("image")
+                    .attr("xlink:href", iconUrl)
+                    .attr("x", -actualIconSize / 2)
+                    .attr("y", yOffset - actualIconSize / 2)
+                    .attr("width", actualIconSize)
+                    .attr("height", actualIconSize)
+                    .attr("preserveAspectRatio", "xMidYMid meet");
+            }
+        }
+    });
+
     /* ---- 文本 ---- */
     // 提取字体排印设置，提供默认值
     const valueFontFamily = dataJSON.typography?.annotation?.font_family || 'Arial';
@@ -649,6 +707,36 @@ function makeChart(containerSelector, dataJSON) {
     const minCatFontSize = 10; // 维度标签最小字号 (再小就换行或省略)
     const catLineHeight = 0.3; // 维度标签换行行高倍数（相对于字号）
     const needsWrapping = true; // 需要时是否允许换行
+    
+    // 外部标签的字体大小
+    const externalLabelSize = 12; // 外部标签固定大小
+    const externalLabelPadding = 3; // 外部标签与矩形之间的间距
+    const maxLabelWidth = W * 0.9; // 标签最大宽度不超过画布宽度的90%
+    const canvasPadding = 10; // 距离画布边缘的最小距离
+
+    // 文本截断辅助函数
+    function truncateText(text, maxWidth, fontFamily, fontSize, fontWeight) {
+        if (!text) return '';
+        
+        // 设置字体
+        ctx.font = `${fontWeight || 'normal'} ${fontSize}px ${fontFamily || 'Arial'}`;
+        
+        // 如果文本宽度小于最大宽度，直接返回
+        if (ctx.measureText(text).width <= maxWidth) {
+            return text;
+        }
+        
+        // 否则截断文本并添加省略号
+        let truncated = text;
+        const ellipsis = '...';
+        const ellipsisWidth = ctx.measureText(ellipsis).width;
+        
+        while (truncated.length > 0 && ctx.measureText(truncated + ellipsis).width > maxWidth) {
+            truncated = truncated.slice(0, -1);
+        }
+        
+        return truncated + ellipsis;
+    }
 
     // 正方形中可用宽度计算函数 - 对于正方形，直接使用边长作为最大宽度
     function getSquareWidth(side, distanceFromCenter) {
@@ -718,7 +806,99 @@ function makeChart(containerSelector, dataJSON) {
         // 根据正方形的背景色选择合适的文本颜色
         const backgroundColor = d.color;
         const adaptiveTextColor = getTextColorForBackground(backgroundColor);
+        
+        // 检查是否是小矩形（标签需要显示在外部）
+        if (d.isSmallRect) {
+            // 为小矩形创建外部标签
+            // 创建包含类别和值的组合标签
+            const combinedText = catText ? `${catText}: ${valText}` : valText;
+            
+            // 计算标签可能的宽度
+            const labelWidth = getTextWidthCanvas(combinedText, valueFontFamily, externalLabelSize, valueFontWeight);
+            
+            // 检查标签是否可能超出画布边界
+            const nodeX = d.x;
+            const nodeY = d.y;
+            const labelLeft = nodeX - labelWidth/2;
+            const labelRight = nodeX + labelWidth/2;
+            
+            let fontSize = externalLabelSize;
+            let finalText = combinedText;
+            let yPosition = -side/2 - externalLabelPadding;
+            let textBaseline = "text-after-edge"; // 默认从底部对齐文本（上方显示）
+            
+            // 如果标签太宽或可能超出画布边界
+            if (labelWidth > maxLabelWidth || labelLeft < canvasPadding || labelRight > W - canvasPadding) {
+                // 尝试缩小字体
+                fontSize = Math.max(8, externalLabelSize - 2);
+                
+                // 计算新字体大小下的宽度
+                const reducedWidth = getTextWidthCanvas(combinedText, valueFontFamily, fontSize, valueFontWeight);
+                
+                // 如果缩小字体后仍然太宽，截断文本
+                if (reducedWidth > maxLabelWidth || nodeX - reducedWidth/2 < canvasPadding || nodeX + reducedWidth/2 > W - canvasPadding) {
+                    // 计算可用宽度
+                    const availableWidth = Math.min(maxLabelWidth, W - 2 * canvasPadding);
+                    finalText = truncateText(combinedText, availableWidth, valueFontFamily, fontSize, valueFontWeight);
+                }
+            }
+            
+            // 检查垂直位置 - 优先考虑下边界
+            const bottomSpace = H - (nodeY + side/2); // 方块下方到画布底部的空间
+            const topSpace = nodeY - side/2 - TOP_PROTECTED_AREA; // 方块上方到顶部保护区的空间
+            
+            // 根据可用空间决定标签位置
+            if (bottomSpace < fontSize + externalLabelPadding * 2) {
+                // 下方空间不足，检查上方空间
+                if (topSpace >= fontSize + externalLabelPadding * 2) {
+                    // 上方空间足够，放在上方
+                    yPosition = -side/2 - externalLabelPadding;
+                    textBaseline = "text-after-edge"; // 从底部对齐文本（上方显示）
+                } else {
+                    // 上下空间都不足，尝试进一步缩小字体
+                    const smallerFontSize = Math.max(6, fontSize - 2);
+                    
+                    // 判断缩小后是否能放入
+                    if (bottomSpace >= smallerFontSize + externalLabelPadding * 2) {
+                        // 可以放在下方
+                        fontSize = smallerFontSize;
+                        yPosition = side/2 + externalLabelPadding;
+                        textBaseline = "hanging"; // 从顶部对齐文本（下方显示）
+                    } else if (topSpace >= smallerFontSize + externalLabelPadding * 2) {
+                        // 可以放在上方
+                        fontSize = smallerFontSize;
+                        yPosition = -side/2 - externalLabelPadding;
+                        textBaseline = "text-after-edge"; // 从底部对齐文本（上方显示）
+                    } else {
+                        // 实在放不下，尝试放到矩形内部
+                        fontSize = Math.min(smallerFontSize, side * 0.4);
+                        yPosition = 0; // 放在矩形中央
+                        textBaseline = "middle"; // 垂直居中
+                    }
+                }
+            } else {
+                // 下方空间足够，放在下方（优先使用下方空间）
+                yPosition = side/2 + externalLabelPadding;
+                textBaseline = "hanging"; // 从顶部对齐文本（下方显示）
+            }
+            
+            // 添加标签
+            gNode.append("text")
+                .attr("class", "external-label")
+                .attr("text-anchor", "middle")
+                .attr("dominant-baseline", textBaseline)
+                .attr("y", yPosition)
+                .style("font-size", `${fontSize}px`)
+                .style("font-weight", valueFontWeight)
+                .style("font-family", valueFontFamily)
+                .style("fill", textBaseline === "middle" ? "#fff" : "#333") // 内部标签用白色
+                .text(finalText);
+                
+            // 不显示内部标签
+            return;
+        }
 
+        // 对于非小矩形，显示内部标签，保持原有逻辑
         // 1. 计算初始字体大小候选值
         let currentFontSize = Math.max(
             minAcceptableFontSize,
@@ -736,9 +916,21 @@ function makeChart(containerSelector, dataJSON) {
         let categoryLabelHeight = currentFontSize; // 类别标签默认高度
         let shouldWrapCategory = false; // 默认不换行
 
-        // 估算文本放置的垂直位置（简化处理，假设类别在上，数值在下）
-        const estimatedCategoryY = catText ? -currentFontSize * 0.55 : 0;
-        const estimatedValueY = catText ? currentFontSize * 0.55 : 0;
+        // 检查是否足够大的方块（width > 50）需要调整文本位置
+        const isLargeSquare = d.width > 50;
+        
+        // 估算文本放置的垂直位置（根据方块大小调整位置）
+        let estimatedCategoryY, estimatedValueY;
+        
+        if (isLargeSquare) {
+            // 对于大方块，将文本往下移动
+            estimatedCategoryY = catText ? d.height / 4 : 0;  // 将类别标签放在下方1/4处
+            estimatedValueY = catText ? d.height / 4 + currentFontSize * 1.2 : d.height / 4; // 值标签在类别标签下方
+        } else {
+            // 对于小方块，保持原来的居中布局
+            estimatedCategoryY = catText ? -currentFontSize * 0.55 : 0;
+            estimatedValueY = catText ? currentFontSize * 0.55 : 0;
+        }
 
         // 循环减小字体，直到两个标签都能放下，或达到最小字号
         while (currentFontSize > minAcceptableFontSize) {
@@ -835,18 +1027,34 @@ function makeChart(containerSelector, dataJSON) {
         let finalValueY = 0;
         let finalCategoryY = 0;
         
-        if (showValue && showCategory) {
-            // 计算总高度
-            const totalHeight = categoryLabelHeight + finalFontSize + finalFontSize * catLineHeight; // 类别高度 + 数值高度 + 间距
-            // 垂直居中这个整体
-            const startY = -totalHeight / 2;
-            finalCategoryY = startY; // 类别标签从顶部开始
-            finalValueY = startY + categoryLabelHeight + finalFontSize * catLineHeight; // 数值标签在类别下方加间距
-        } else if (showValue) {
-            finalValueY = 0; // 只显示数值，垂直居中
-        } else if (showCategory) {
-            // 只显示类别，将其垂直居中（考虑可能的多行）
-            finalCategoryY = -categoryLabelHeight / 2;
+        if (isLargeSquare) {
+            // 大方块文本位置调整 - 将文本放在下方，但略微往上提高位置
+            if (showValue && showCategory) {
+                // 当同时显示值和类别标签时
+                finalCategoryY = d.height / 5 - 5; // 从1/5调整，再向上移动5px
+                finalValueY = finalCategoryY + categoryLabelHeight + finalFontSize * catLineHeight; // 数值在类别下方
+            } else if (showValue) {
+                // 只显示值时
+                finalValueY = d.height / 5 - 5; // 从1/5调整，再向上移动5px
+            } else if (showCategory) {
+                // 只显示类别时
+                finalCategoryY = d.height / 5 - 5; // 从1/5调整，再向上移动5px
+            }
+        } else {
+            // 小方块保持原来的居中布局
+            if (showValue && showCategory) {
+                // 计算总高度
+                const totalHeight = categoryLabelHeight + finalFontSize + finalFontSize * catLineHeight; // 类别高度 + 数值高度 + 间距
+                // 垂直居中这个整体
+                const startY = -totalHeight / 2;
+                finalCategoryY = startY; // 类别标签从顶部开始
+                finalValueY = startY + categoryLabelHeight + finalFontSize * catLineHeight; // 数值标签在类别下方加间距
+            } else if (showValue) {
+                finalValueY = 0; // 只显示数值，垂直居中
+            } else if (showCategory) {
+                // 只显示类别，将其垂直居中（考虑可能的多行）
+                finalCategoryY = -categoryLabelHeight / 2;
+            }
         }
 
         // 渲染数值标签（添加背景确保在重叠时可见）

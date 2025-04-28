@@ -9,6 +9,24 @@ import tempfile
 from bs4 import BeautifulSoup
 import scipy.ndimage as ndimage
 import time
+import logging
+
+# 设置日志
+logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
+def validate_svg_file(file_path):
+    """验证SVG文件是否存在且内容有效"""
+    if not os.path.exists(file_path):
+        logger.error(f"SVG文件不存在: {file_path}")
+        return False
+    
+    file_size = os.path.getsize(file_path)
+    if file_size == 0:
+        logger.error(f"SVG文件为空: {file_path}")
+        return False
+    
+    return True
 
 def calculate_mask_v3(svg_content: str, width: int, height: int, background_color: str, grid_size: int = 5, max_difference = 15) -> np.ndarray:
     """将SVG转换为基于背景色的二值化mask数组"""
@@ -67,6 +85,12 @@ def calculate_mask_v3(svg_content: str, width: int, height: int, background_colo
             </svg>'
         
         mask_svg_file_without_text.write(mask_svg_content.encode('utf-8'))
+        mask_svg_file_without_text.flush()
+        
+        # 验证SVG文件
+        if not validate_svg_file(mask_svg_without_text):
+            logger.error(f"无效的SVG文件: {mask_svg_without_text}")
+        
         retry_count = 0
         max_retries = 3
         while retry_count < max_retries:
@@ -83,6 +107,7 @@ def calculate_mask_v3(svg_content: str, width: int, height: int, background_colo
                 break
             except Exception as e:
                 retry_count += 1
+                logger.error(f"rsvg-convert执行失败 (尝试 {retry_count}/{max_retries}): {str(e)}")
                 if retry_count >= max_retries:
                     raise e
                 time.sleep(1)
@@ -114,6 +139,11 @@ def calculate_mask_v3(svg_content: str, width: int, height: int, background_colo
         temp_mask_png_only_text = temp_mask_png_file_only_text.name
         mask_svg_file_only_text.write(svg_content_only_text.encode('utf-8'))
         mask_svg_file_only_text.flush()
+        
+        # 验证SVG文件
+        if not validate_svg_file(mask_svg_only_text):
+            logger.error(f"无效的SVG文件: {mask_svg_only_text}")
+            
         retry_count = 0
         max_retries = 3
         while retry_count < max_retries:
@@ -130,6 +160,7 @@ def calculate_mask_v3(svg_content: str, width: int, height: int, background_colo
                 break
             except Exception as e:
                 retry_count += 1
+                logger.error(f"rsvg-convert执行失败 (尝试 {retry_count}/{max_retries}): {str(e)}")
                 if retry_count >= max_retries:
                     raise e
                 time.sleep(1)
@@ -277,8 +308,12 @@ def calculate_mask_v2(svg_content: str, width: int, height: int, background_colo
             </svg>'
         
         mask_svg_file.write(mask_svg_content.encode('utf-8'))
-        #rror reading SVG /tmp/tmpoqk59yua.svg: XML parse error: Input file is too short
-
+        mask_svg_file.flush()
+        
+        # 验证SVG文件
+        if not validate_svg_file(mask_svg):
+            logger.error(f"无效的SVG文件: {mask_svg}")
+        
     max_retries = 3
     retry_count = 0
     while retry_count < max_retries:
@@ -295,6 +330,7 @@ def calculate_mask_v2(svg_content: str, width: int, height: int, background_colo
             break
         except Exception as e:
             retry_count += 1
+            logger.error(f"rsvg-convert执行失败 (尝试 {retry_count}/{max_retries}): {str(e)}")
             if retry_count >= max_retries:
                 raise Exception(f"重试{max_retries}次后仍然失败: {str(e)}")
             time.sleep(1)  # 等待1秒后重试
@@ -371,6 +407,11 @@ def calculate_mask(svg_content: str, width: int, height: int, padding: int, grid
         
         with open(mask_svg, "w", encoding="utf-8") as f:
             f.write(mask_svg_content)
+            
+        # 验证SVG文件
+        if not validate_svg_file(mask_svg):
+            logger.error(f"无效的SVG文件: {mask_svg}")
+            
         retry_count = 0
         max_retries = 3
         while retry_count < max_retries:
@@ -387,6 +428,7 @@ def calculate_mask(svg_content: str, width: int, height: int, padding: int, grid
                 break
             except Exception as e:
                 retry_count += 1
+                logger.error(f"rsvg-convert执行失败 (尝试 {retry_count}/{max_retries}): {str(e)}")
                 if retry_count >= max_retries:
                     raise e
                 time.sleep(1)

@@ -119,38 +119,35 @@ grouped scatterplot / grouped_scatterplot_05
 grouped scatterplot / grouped_scatterplot_04
 grouped scatterplot / grouped_scatterplot_02
 grouped scatterplot / grouped_scatterplot_01
-grouped scatterplot / grouped_scatterplot_03
-multiple line graph / multiple_line_graph_07
-multiple line graph / multiple_line_graph_10
-multiple line graph / multiple_line_graph_08
-multiple line graph / multiple_line_graph_12
-multiple line graph / multiple_line_graph_01
-multiple line graph / multiple_line_graph_09
-multiple line graph / multiple_line_graph_03
-multiple line graph / multiple_line_graph_06
-multiple line graph / multiple_line_graph_11
-line graph / line_graph_01
-step line graph / step_line_graph_01
-multiple spline graph / multiple_spline_graph_01
-small multiple step line graph / small_multiple_step_line_graph_01
-slope chart / slope_chart_01
-bump chart / bump_chart_01
-small multiple line graph / small_multiple_line_graph_01
-spline graph / spline_graph_01
-multiple step line graph / multiple_step_line_graph_01
-alluvial diagram / alluvial_diagram_01
-range area chart / range_area_chart_01
-spline area chart / spline_area_chart_01
-spline multiple area chart / spline_multiple_area_chart_01
-layered area chart / layered_area_chart_03
-spline layered area chart / spline_layered_area_chart_01
-spline stacked area chart / spline_stacked_area_chart_01
-area chart / area_chart_03
-area chart / area_chart_04
-area chart / area_chart_01
-area chart / area_chart_02
-multiple area chart / multiple_area_chart_01
-small multiple area chart / small_multiple_area_chart_01
+multiple radar spline chart / multiple_radar_spline_chart_02
+multiple radar spline chart / multiple_radar_spline_chart_01
+multiple radar chart / multiple_radar_chart_03
+multiple radar chart / multiple_radar_chart_01
+radar line chart / radar_line_chart_01
+radar line chart / radar_line_chart_03
+radar spline chart / radar_spline_chart_03
+radar spline chart / radar_spline_chart_01
+proportional area chart(circle) / proportional_area_chart_circle_02
+proportional area chart(circle) / proportional_area_chart_circle_05
+proportional area chart(circle) / proportional_area_chart_circle_01
+proportional area chart(circle) / proportional_area_chart_circle_03
+proportional area chart(circle) / proportional_area_chart_circle_04
+proportional area chart (square) / proportional_area_chart_square_04
+proportional area chart (square) / proportional_area_chart_square_05
+proportional area chart (square) / proportional_area_chart_square_01
+proportional area chart (square) / proportional_area_chart_square_03
+proportional area chart (square) / proportional_area_chart_square_02
+proportional area chart (square) / proportional_area_chart_square_06
+proportional area chart (triangle) / proportional_area_chart_triangle_06
+proportional area chart (triangle) / proportional_area_chart_triangle_03
+proportional area chart (triangle) / proportional_area_chart_triangle_02
+proportional area chart (triangle) / proportional_area_chart_triangle_01
+proportional area chart (triangle) / proportional_area_chart_triangle_05
+proportional area chart (triangle) / proportional_area_chart_triangle_07
+proportional area chart (triangle) / proportional_area_chart_triangle_04
+triangle bar chart / triangle_bar_chart_01
+pyramid chart / pyramid_chart_02
+pyramid chart / pyramid_chart_01
 pyramid diagram / pyramid_diagram_01
 pyramid diagram / pyramid_diagram_02
 funnel chart / funnel_chart_01

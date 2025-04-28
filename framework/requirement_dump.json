@@ -7989,9 +7989,113 @@
         "has_x_axis": "yes",
         "has_y_axis": "no"
     },
-    "area_chart_02": {
-        "chart_type": "Area Chart",
-        "chart_name": "area_chart_02",
+    "proportional_area_chart_square_04": {
+        "chart_type": "Proportional Area Chart (Square)",
+        "chart_name": "proportional_area_chart_square_04",
+        "is_composite": false,
+        "required_fields": [
+            "x",
+            "y"
+        ],
+        "required_fields_type": [
+            [
+                "categorical"
+            ],
+            [
+                "numerical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                2,
+                20
+            ],
+            [
+                0,
+                "inf"
+            ]
+        ],
+        "required_fields_icons": [
+            "x"
+        ],
+        "required_other_icons": [],
+        "required_fields_colors": [
+            "x"
+        ],
+        "required_other_colors": [
+            "primary"
+        ],
+        "supported_effects": [],
+        "min_height": 600,
+        "min_width": 600,
+        "background": "no",
+        "icon_mark": "overlay",
+        "icon_label": "none",
+        "has_x_axis": "no",
+        "has_y_axis": "no"
+    },
+    "proportional_area_chart_square_05": {
+        "chart_type": "Proportional Area Chart (Square)",
+        "chart_name": "proportional_area_chart_square_05",
+        "is_composite": false,
+        "required_fields": [
+            "x",
+            "y",
+            "group"
+        ],
+        "required_fields_type": [
+            [
+                "categorical"
+            ],
+            [
+                "numerical"
+            ],
+            [
+                "categorical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                2,
+                20
+            ],
+            [
+                0,
+                "inf"
+            ],
+            [
+                2,
+                6
+            ]
+        ],
+        "required_fields_icons": [
+            "x"
+        ],
+        "required_other_icons": [],
+        "required_fields_colors": [
+            "group"
+        ],
+        "hierarchy": [
+            "group"
+        ],
+        "required_other_colors": [
+            "primary"
+        ],
+        "supported_effects": [
+            "flat",
+            "rounded"
+        ],
+        "min_height": 600,
+        "min_width": 600,
+        "background": "no",
+        "icon_mark": "overlay",
+        "icon_label": "none",
+        "has_x_axis": "no",
+        "has_y_axis": "no"
+    },
+    "proportional_area_chart_square_01": {
+        "chart_type": "Proportional Area Chart (Square)",
+        "chart_name": "proportional_area_chart_square_01",
         "required_fields": [
             "x",
             "y"
@@ -8034,9 +8138,10 @@
         "has_y_axis": "yes",
         "chart_for": "comparison"
     },
-    "multiple_area_chart_01": {
-        "chart_type": "Multiple Area Chart",
-        "chart_name": "multiple_area_chart_01",
+    "proportional_area_chart_square_03": {
+        "chart_type": "Proportional Area Chart (Square)",
+        "chart_name": "proportional_area_chart_square_03",
+        "is_composite": false,
         "required_fields": [
             "x",
             "y",
@@ -8055,8 +8160,8 @@
         ],
         "required_fields_range": [
             [
-                5,
-                50
+                2,
+                20
             ],
             [
                 0,
@@ -8070,21 +8175,65 @@
         "required_fields_icons": [],
         "required_other_icons": [],
         "required_fields_colors": [
+            "x"
+        ],
+        "required_other_colors": [
+            "primary"
+        ],
+        "supported_effects": [],
+        "min_height": 600,
+        "min_width": 600,
+        "background": "no",
+        "icon_mark": "none",
+        "icon_label": "none",
+        "has_x_axis": "no",
+        "has_y_axis": "no"
+    },
+    "proportional_area_chart_square_02": {
+        "chart_type": "Proportional Area Chart (Square)",
+        "chart_name": "proportional_area_chart_square_02",
+        "is_composite": false,
+        "required_fields": [
+            "x",
+            "y"
+        ],
+        "required_fields_type": [
+            [
+                "categorical"
+            ],
+            [
+                "numerical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                2,
+                20
+            ],
+            [
+                0,
+                "inf"
+            ]
+        ],
+        "required_fields_icons": [],
+        "required_other_icons": [],
+        "required_fields_colors": [
             "group"
         ],
         "required_other_colors": [],
         "supported_effects": [],
         "min_height": 600,
-        "min_width": 800,
-        "background": "dark",
+        "min_width": 600,
+        "background": "no",
         "icon_mark": "none",
         "icon_label": "none",
-        "has_x_axis": "yes",
-        "has_y_axis": "yes"
+        "has_x_axis": "no",
+        "has_y_axis": "no"
     },
-    "small_multiple_area_chart_01": {
-        "chart_type": "Small Multiple Area Chart",
-        "chart_name": "small_multiple_area_chart_01",
+    "proportional_area_chart_square_06": {
+        "chart_type": "Proportional Area Chart (Square)",
+        "chart_name": "proportional_area_chart_square_06",
+        "is_composite": false,
         "required_fields": [
             "x",
             "y",
@@ -8115,27 +8264,174 @@
                 20
             ]
         ],
+        "required_fields_icons": [
+            "x"
+        ],
+        "required_other_icons": [],
+        "required_fields_colors": [
+            "x"
+        ],
+        "required_other_colors": [
+            "primary"
+        ],
+        "supported_effects": [
+            "flat",
+            "rounded"
+        ],
+        "min_height": 600,
+        "min_width": 600,
+        "background": "no",
+        "icon_mark": "overlay",
+        "icon_label": "none",
+        "has_x_axis": "no",
+        "has_y_axis": "no"
+    },
+    "proportional_area_chart_triangle_06": {
+        "chart_type": "Proportional Area Chart (Triangle)",
+        "chart_name": "proportional_area_chart_triangle_06",
+        "is_composite": false,
+        "required_fields": [
+            "x",
+            "y",
+            "group"
+        ],
+        "required_fields_type": [
+            [
+                "categorical"
+            ],
+            [
+                "numerical"
+            ],
+            [
+                "categorical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                8,
+                20
+            ],
+            [
+                0,
+                "inf"
+            ],
+            [
+                2,
+                8
+            ]
+        ],
         "required_fields_icons": [],
         "required_other_icons": [],
         "required_fields_colors": [
             "group"
+        ],
+        "required_other_colors": [
+            "primary"
+        ],
+        "hierarchy": [
+            "group"
+        ],
+        "supported_effects": [],
+        "min_height": 400,
+        "min_width": 600,
+        "background": "no",
+        "icon_mark": "none",
+        "icon_label": "none",
+        "has_x_axis": "no",
+        "has_y_axis": "no"
+    },
+    "proportional_area_chart_triangle_03": {
+        "chart_type": "Proportional Area Chart (Triangle)",
+        "chart_name": "proportional_area_chart_triangle_03",
+        "is_composite": false,
+        "required_fields": [
+            "x",
+            "y"
+        ],
+        "required_fields_type": [
+            [
+                "categorical"
+            ],
+            [
+                "numerical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                2,
+                20
+            ],
+            [
+                0,
+                "inf"
+            ]
+        ],
+        "required_fields_icons": [
+            "x"
+        ],
+        "required_other_icons": [],
+        "required_fields_colors": [
+            "x"
         ],
         "required_other_colors": [],
         "supported_effects": [
             "gradient",
             "opacity"
         ],
-        "min_height": 600,
-        "min_width": 800,
-        "background": "dark",
-        "icon_mark": "none",
+        "supported_effects": [],
+        "min_height": 400,
+        "min_width": 400,
+        "background": "no",
+        "icon_mark": "overlay",
         "icon_label": "none",
         "has_x_axis": "yes",
         "has_y_axis": "no"
     },
-    "pyramid_diagram_01": {
-        "chart_type": "Pyramid Diagram",
-        "chart_name": "pyramid_diagram_01",
+    "proportional_area_chart_triangle_02": {
+        "chart_type": "Proportional Area Chart (Triangle)",
+        "chart_name": "proportional_area_chart_triangle_02",
+        "is_composite": false,
+        "required_fields": [
+            "x",
+            "y"
+        ],
+        "required_fields_type": [
+            [
+                "categorical"
+            ],
+            [
+                "numerical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                3,
+                10
+            ],
+            [
+                0,
+                100
+            ]
+        ],
+        "required_fields_icons": [],
+        "required_other_icons": [],
+        "required_fields_colors": [
+            "x"
+        ],
+        "required_other_colors": [],
+        "supported_effects": [],
+        "min_height": 400,
+        "min_width": 400,
+        "background": "no",
+        "icon_mark": "overlay",
+        "icon_label": "none",
+        "has_x_axis": "no",
+        "has_y_axis": "no"
+    },
+    "proportional_area_chart_triangle_01": {
+        "chart_type": "Proportional Area Chart (Triangle)",
+        "chart_name": "proportional_area_chart_triangle_01",
+        "is_composite": false,
         "required_fields": [
             "x",
             "y"
@@ -8173,9 +8469,10 @@
         "has_x_axis": "no",
         "has_y_axis": "no"
     },
-    "pyramid_diagram_02": {
-        "chart_type": "Pyramid Diagram",
-        "chart_name": "pyramid_diagram_02",
+    "proportional_area_chart_triangle_05": {
+        "chart_type": "Proportional Area Chart (Triangle)",
+        "chart_name": "proportional_area_chart_triangle_05",
+        "is_composite": false,
         "required_fields": [
             "x",
             "y"
@@ -8190,32 +8487,172 @@
         ],
         "required_fields_range": [
             [
-                3,
-                10
+                8,
+                20
             ],
             [
                 0,
-                100
+                "inf"
             ]
         ],
         "required_fields_icons": [],
         "required_other_icons": [],
-        "required_fields_colors": [
-            "x"
+        "required_fields_colors": [],
+        "required_other_colors": [
+            "primary"
         ],
-        "required_other_colors": [],
         "supported_effects": [],
         "min_height": 400,
-        "min_width": 400,
-        "background": "light",
+        "min_width": 600,
+        "background": "no",
         "icon_mark": "none",
         "icon_label": "none",
         "has_x_axis": "no",
         "has_y_axis": "no"
     },
-    "funnel_chart_01": {
-        "chart_type": "Funnel Chart",
-        "chart_name": "funnel_chart_01",
+    "proportional_area_chart_triangle_07": {
+        "chart_type": "Proportional Area Chart (Triangle)",
+        "chart_name": "proportional_area_chart_triangle_07",
+        "is_composite": false,
+        "required_fields": [
+            "x",
+            "y",
+            "group"
+        ],
+        "required_fields_type": [
+            [
+                "categorical"
+            ],
+            [
+                "numerical"
+            ],
+            [
+                "categorical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                8,
+                20
+            ],
+            [
+                0,
+                "inf"
+            ],
+            [
+                2,
+                8
+            ]
+        ],
+        "required_fields_icons": [
+            "x"
+        ],
+        "required_other_icons": [],
+        "required_fields_colors": [
+            "group"
+        ],
+        "required_other_colors": [
+            "primary"
+        ],
+        "hierarchy": [
+            "group"
+        ],
+        "supported_effects": [],
+        "min_height": 400,
+        "min_width": 600,
+        "background": "no",
+        "icon_mark": "none",
+        "icon_label": "left",
+        "has_x_axis": "no",
+        "has_y_axis": "no"
+    },
+    "proportional_area_chart_triangle_04": {
+        "chart_type": "Proportional Area Chart (Triangle)",
+        "chart_name": "proportional_area_chart_triangle_04",
+        "is_composite": false,
+        "required_fields": [
+            "x",
+            "y"
+        ],
+        "required_fields_type": [
+            [
+                "categorical"
+            ],
+            [
+                "numerical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                8,
+                20
+            ],
+            [
+                0,
+                "inf"
+            ]
+        ],
+        "required_fields_icons": [
+            "x"
+        ],
+        "required_other_icons": [],
+        "required_fields_colors": [],
+        "required_other_colors": [
+            "primary"
+        ],
+        "supported_effects": [],
+        "min_height": 400,
+        "min_width": 600,
+        "background": "no",
+        "icon_mark": "overlay",
+        "icon_label": "none",
+        "has_x_axis": "no",
+        "has_y_axis": "no"
+    },
+    "triangle_bar_chart_01": {
+        "chart_type": "Triangle Bar Chart",
+        "chart_name": "triangle_bar_chart_01",
+        "is_composite": false,
+        "required_fields": [
+            "x",
+            "y"
+        ],
+        "required_fields_type": [
+            [
+                "categorical"
+            ],
+            [
+                "numerical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                4,
+                10
+            ],
+            [
+                0,
+                Infinity
+            ]
+        ],
+        "required_fields_icons": [],
+        "required_other_icons": [],
+        "required_fields_colors": [],
+        "required_other_colors": [
+            "primary"
+        ],
+        "supported_effects": [],
+        "min_height": 400,
+        "min_width": 600,
+        "background": "no",
+        "icon_mark": "none",
+        "icon_label": "none",
+        "has_x_axis": "no",
+        "has_y_axis": "no"
+    },
+    "pyramid_chart_02": {
+        "chart_type": "Pyramid Chart",
+        "chart_name": "pyramid_chart_02",
         "required_fields": [
             "x",
             "y"
