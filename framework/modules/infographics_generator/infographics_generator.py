@@ -234,7 +234,6 @@ def make_infographic(
     
     # 初始化best_title默认值为None，用于后续检查
     best_title = None
-    
 
     """
     if mask_1_ratio > 0.25 and mask_1_ratio < 0.5:
@@ -558,19 +557,7 @@ def make_infographic(
         overlay_mask = expand_mask(overlay_mask, 5)
         overlay_image_size, overlay_best_x, overlay_best_y = find_best_size_and_position(overlay_mask, primary_image, padding, mode="overlay", avoid_mask=overlay_mask_only_text)
         measure_overlay_size = min(overlay_image_size, 256)
-        # overlay_mask_img = PILImage.fromarray((overlay_mask * 255).astype(np.uint8))
-        # overlay_mask_img.save('./tmp/overlay_mask.png')
-        # overlay_mask_only_text_img = PILImage.fromarray((overlay_mask_only_text * 255).astype(np.uint8))
-        # overlay_mask_only_text_img.save('./tmp/overlay_mask_only_text.png')
 
-        # image_size = overlay_image_size
-        # best_x = overlay_best_x
-        # best_y = overlay_best_y
-        # image_mode = "overlay"
-        # print("overlay_image_size", overlay_image_size)
-        # print("overlay_best_x", overlay_best_x)
-        # print("overlay_best_y", overlay_best_y)
-        
         min_acceptable_size = 96
         if measure_side_size > min_acceptable_size or measure_overlay_size > min_acceptable_size:
             if side_image_size >= overlay_image_size * 0.45:
@@ -1026,6 +1013,7 @@ def process(input: str, output: str, base_url: str, api_key: str, chart_name: st
         # except Exception as e:
         #     logger.error(f"Error processing infographics: {e}")
         #     return False
+        # rsvg-convert -f png -o /tmp/tmpt4t964we.png --dpi-x 300 --dpi-y 300 --background-color '#F2EDEE' /tmp/tmp4uztshh2.svg
         
         # 获取当前时间戳
         timestamp = int(time.time())

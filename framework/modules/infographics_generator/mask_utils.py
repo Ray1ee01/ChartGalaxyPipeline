@@ -8,6 +8,7 @@ from typing import Tuple
 import tempfile
 from bs4 import BeautifulSoup
 import scipy.ndimage as ndimage
+import time
 
 def calculate_mask_v3(svg_content: str, width: int, height: int, background_color: str, grid_size: int = 5, max_difference = 15) -> np.ndarray:
     """将SVG转换为基于背景色的二值化mask数组"""
@@ -66,17 +67,25 @@ def calculate_mask_v3(svg_content: str, width: int, height: int, background_colo
             </svg>'
         
         mask_svg_file_without_text.write(mask_svg_content.encode('utf-8'))
-        mask_svg_file_without_text.flush()
-        subprocess.run([
-            'rsvg-convert',
-            '-f', 'png',
-            '-o', temp_mask_png_without_text,
-            '--dpi-x', '300',
-            '--dpi-y', '300',
-        '--background-color', original_background_color,
-            mask_svg_without_text
-        ], check=True)
-    
+        retry_count = 0
+        max_retries = 3
+        while retry_count < max_retries:
+            try:
+                subprocess.run([
+                    'rsvg-convert',
+                    '-f', 'png',
+                    '-o', temp_mask_png_without_text,
+                    '--dpi-x', '300',
+                    '--dpi-y', '300',
+                    '--background-color', f"{original_background_color}",
+                    mask_svg_without_text
+                ], check=True)
+                break
+            except Exception as e:
+                retry_count += 1
+                if retry_count >= max_retries:
+                    raise e
+                time.sleep(1)
     # 读取为numpy数组并处理
     img_without_text = Image.open(temp_mask_png_without_text).convert('RGB')
     img_array_without_text = np.array(img_without_text)
@@ -105,16 +114,25 @@ def calculate_mask_v3(svg_content: str, width: int, height: int, background_colo
         temp_mask_png_only_text = temp_mask_png_file_only_text.name
         mask_svg_file_only_text.write(svg_content_only_text.encode('utf-8'))
         mask_svg_file_only_text.flush()
-        
-        subprocess.run([
-            'rsvg-convert',
-            '-f', 'png',
-            '-o', temp_mask_png_only_text,
-            '--dpi-x', '300',
-            '--dpi-y', '300',
-            '--background-color', original_background_color,
-            mask_svg_only_text
-        ], check=True)
+        retry_count = 0
+        max_retries = 3
+        while retry_count < max_retries:
+            try:
+                subprocess.run([
+                    'rsvg-convert',
+                    '-f', 'png', 
+                    '-o', temp_mask_png_only_text,
+                    '--dpi-x', '300',
+                    '--dpi-y', '300',
+                    '--background-color', f"{original_background_color}",
+                    mask_svg_only_text
+                ], check=True)
+                break
+            except Exception as e:
+                retry_count += 1
+                if retry_count >= max_retries:
+                    raise e
+                time.sleep(1)
         
         
     img_only_text = Image.open(temp_mask_png_only_text).convert('RGB')
@@ -130,7 +148,7 @@ def calculate_mask_v3(svg_content: str, width: int, height: int, background_colo
     mask = np.ones((height, width), dtype=np.uint8)
     # 随机采样300个点
     total_pixels = height * width
-    sample_indices = np.random.choice(total_pixels, min(300, total_pixels), replace=False)
+    sample_indices = np.random.choice(total_pixels, min(1000, total_pixels), replace=False)
     sample_pixels = img_array_without_text.reshape(-1, 3)[sample_indices]
     
     # 排除接近背景色的像素
@@ -259,16 +277,27 @@ def calculate_mask_v2(svg_content: str, width: int, height: int, background_colo
             </svg>'
         
         mask_svg_file.write(mask_svg_content.encode('utf-8'))
-        
-    subprocess.run([
-        'rsvg-convert',
-        '-f', 'png',
-        '-o', temp_mask_png,
-        '--dpi-x', '300',
-        '--dpi-y', '300',
-        '--background-color', original_background_color,
-        mask_svg
-    ], check=True)
+        #rror reading SVG /tmp/tmpoqk59yua.svg: XML parse error: Input file is too short
+
+    max_retries = 3
+    retry_count = 0
+    while retry_count < max_retries:
+        try:
+            subprocess.run([
+                'rsvg-convert',
+                '-f', 'png', 
+                '-o', temp_mask_png,
+                '--dpi-x', '300',
+                '--dpi-y', '300',
+                '--background-color', f"{original_background_color}",
+                mask_svg
+            ], check=True)
+            break
+        except Exception as e:
+            retry_count += 1
+            if retry_count >= max_retries:
+                raise Exception(f"重试{max_retries}次后仍然失败: {str(e)}")
+            time.sleep(1)  # 等待1秒后重试
     
     # 读取为numpy数组并处理
     img = Image.open(temp_mask_png).convert('RGB')
@@ -342,16 +371,25 @@ def calculate_mask(svg_content: str, width: int, height: int, padding: int, grid
         
         with open(mask_svg, "w", encoding="utf-8") as f:
             f.write(mask_svg_content)
-            
-        subprocess.run([
-            'rsvg-convert',
-            '-f', 'png',
-            '-o', temp_mask_png,
-            '--dpi-x', '300',
-            '--dpi-y', '300',
-            '--background-color', '#ffffff',
-            mask_svg
-        ], check=True)
+        retry_count = 0
+        max_retries = 3
+        while retry_count < max_retries:
+            try:
+                subprocess.run([
+                    'rsvg-convert',
+                    '-f', 'png',
+                    '-o', temp_mask_png,
+                    '--dpi-x', '300',
+                    '--dpi-y', '300',
+                    '--background-color', "#ffffff",
+                    mask_svg
+                ], check=True)
+                break
+            except Exception as e:
+                retry_count += 1
+                if retry_count >= max_retries:
+                    raise e
+                time.sleep(1)
         
         # 读取为numpy数组并处理
         img = Image.open(temp_mask_png).convert('RGB')

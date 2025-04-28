@@ -1,5 +1,6 @@
 from typing import Dict, List, Tuple, Optional, Union
 import random
+import json
 from modules.infographics_generator.color_utils import get_contrast_color
 
 # 添加全局字典来跟踪模板使用频率
@@ -53,6 +54,7 @@ def analyze_templates(templates: Dict) -> Tuple[int, Dict[str, str], int]:
     template_requirements = {}
     template_list = []
     unique_colors = set()
+    requirement_dump = {}
     
     for engine, templates_dict in templates.items():
         for chart_type, chart_names_dict in templates_dict.items():
@@ -77,12 +79,16 @@ def analyze_templates(templates: Dict) -> Tuple[int, Dict[str, str], int]:
                         
                     if 'required_fields' in req and 'required_fields_type' in req:
                         template_requirements[f"{engine}/{chart_type}/{chart_name}"] = template_info['requirements']
-                    
+                        requirement_dump[chart_name] = template_info['requirements']
+      
     print("template_count", template_count)
-    #f = open("template_list.txt", "w")
-    #f.write("\n".join(template_list))
-    #f.close()
-
+    f = open("template_list.txt", "w")
+    f.write("\n".join(template_list))
+    f.close()
+    f = open("requirement_dump.json", "w")
+    f.write(json.dumps(requirement_dump, indent=4))
+    f.close()
+    
     return template_count, template_requirements
 
 block_list = ["multiple_line_graph_06", "layered_area_chart_02", "multiple_area_chart_01", "stacked_area_chart_01", "stacked_area_chart_03"]
@@ -225,6 +231,9 @@ def check_template_compatibility(data: Dict, templates: Dict, specific_chart_nam
                                     min_value = min(value[key] for value in data["data"]["data"])
                                     max_value = max(value[key] for value in data["data"]["data"])
                                     if min_value < range[0] or max_value > range[1]:
+                                        flag = False
+                                        break
+                                    elif "scatterplot" in chart_name and min_value >= 0 and range[0] < 0:
                                         flag = False
                                         break
                             for i, field in enumerate(ordered_fields):

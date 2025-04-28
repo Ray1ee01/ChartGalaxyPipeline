@@ -2,12 +2,12 @@
 REQUIREMENTS_BEGIN
 {
     "chart_type": "Grouped Scatterplot",
-    "chart_name": "grouped_scatterplot_01",
+    "chart_name": "grouped_scatterplot_04",
     "required_fields": ["x", "y", "y2", "group"],
     "required_fields_type": [["categorical"], ["numerical"], ["numerical"], ["categorical"]],
     "required_fields_range": [[8, 150], [0, "inf"], [0, "inf"], [2, 6]],
-    "required_fields_icons": ["x"],
-    "required_other_icons": ["primary"],
+    "required_fields_icons": [],
+    "required_other_icons": [],
     "required_fields_colors": ["group"],
     "required_other_colors": ["primary"],
     "hierarchy": ["group"],
@@ -15,7 +15,7 @@ REQUIREMENTS_BEGIN
     "min_height": 750,
     "min_width": 750,
     "background": "no",
-    "icon_mark": "replace",
+    "icon_mark": "none",
     "icon_label": "none",
     "has_x_axis": "yes",
     "has_y_axis": "yes"
@@ -32,6 +32,11 @@ function makeChart(containerSelector, data) {
     const dataColumns = jsonData.data.columns || [];
     const images = jsonData.images || {};
     const colors = jsonData.colors;
+    const effects = variables.effects || {};
+    
+    // 强制启用阴影效果和网格线，确保它们始终显示
+    const hasShadow = true; // 将其设置为true，不再依赖effects.shadow
+    const hasGridlines = true;
     
     // Clear container
     d3.select(containerSelector).html("");
@@ -50,7 +55,7 @@ function makeChart(containerSelector, data) {
     // Set dimensions and margins
     const width = variables.width;
     const height = variables.height;
-    const margin = { top: 25, right: 25, bottom: 50, left: 50 };
+    const margin = { top: 50, right: 25, bottom: 50, left: 50 };
     
     // Create SVG
     const svg = d3.select(containerSelector)
@@ -114,14 +119,135 @@ function makeChart(containerSelector, data) {
             .domain([yExtent[0] - (yExtent[1] - yExtent[0]) * 0.1, yExtent[1] + (yExtent[1] - yExtent[0]) * 0.1])
             .range([chartHeight, 0]);
     
-    // Create axes
+    // 格式化数值的函数，处理对数刻度和小数值的情况
+    function formatAxisValue(value) {
+        // 检查是否为小数值（小于1但大于0）
+        if (value > 0 && value < 1) {
+            // 对于小数值，选择合适的精度
+            if (value < 0.01) {
+                return value.toFixed(3);
+            } else if (value < 0.1) {
+                return value.toFixed(2);
+            } else {
+                return value.toFixed(1);
+            }
+        }
+        
+        // 对于大数使用 SI 前缀 (k, M, G 等)
+        if (value >= 1000) {
+            // 1000 -> 1k, 1500 -> 1.5k, etc.
+            const lookup = [
+                { value: 1, symbol: "" },
+                { value: 1e3, symbol: "k" },
+                { value: 1e6, symbol: "M" },
+                { value: 1e9, symbol: "G" }
+            ];
+            const rx = /\.0+$|(\.[0-9]*[1-9])0+$/;
+            const item = lookup.slice().reverse().find(function(item) {
+                return value >= item.value;
+            });
+            return item ? (value / item.value).toFixed(1).replace(rx, "$1") + item.symbol : "0";
+        }
+        
+        // 对于其他值，自动确定小数位数
+        const absValue = Math.abs(value);
+        if (absValue >= 100) {
+            return value.toFixed(0);
+        } else if (absValue >= 10) {
+            return value.toFixed(1);
+        } else {
+            return value.toFixed(2);
+        }
+    }
+    
+    // 添加网格线 - 白色半透明网格线，直接控制网格线数量
+    if (hasGridlines) {
+        // 定义固定的网格线数量，无论是线性还是对数刻度
+        const xGridCount = 8; // X轴固定8条网格线
+        const yGridCount = 6; // Y轴固定6条网格线
+        
+        // 手动计算网格线位置，确保在对数刻度下也有固定数量
+        function generateGridPositions(scale, count, domain) {
+            const min = domain[0];
+            const max = domain[1];
+            const isLog = scale.constructor.name.includes('Log');
+            
+            if (isLog) {
+                // 对数刻度下创建均匀分布的网格线
+                const logMin = Math.log10(Math.max(min, 0.1)); // 保护性处理，避免负数或0
+                const logMax = Math.log10(max);
+                const step = (logMax - logMin) / (count - 1);
+                
+                return Array.from({length: count}, (_, i) => {
+                    return Math.pow(10, logMin + step * i);
+                });
+            } else {
+                // 线性刻度下创建均匀分布的网格线
+                const step = (max - min) / (count - 1);
+                return Array.from({length: count}, (_, i) => min + step * i);
+            }
+        }
+        
+        // 生成网格线位置
+        const xGridPositions = generateGridPositions(
+            xScale, 
+            xGridCount, 
+            [xExtent[0] - (xExtent[1] - xExtent[0]) * 0.1, xExtent[1] + (xExtent[1] - xExtent[0]) * 0.1]
+        );
+        
+        const yGridPositions = generateGridPositions(
+            yScale, 
+            yGridCount, 
+            [yExtent[0] - (yExtent[1] - yExtent[0]) * 0.1, yExtent[1] + (yExtent[1] - yExtent[0]) * 0.1]
+        );
+        
+        // 添加垂直网格线，使用固定数量的位置
+        g.append("g")
+            .attr("class", "grid x-grid")
+            .attr("transform", `translate(0, ${chartHeight})`)
+            .call(d3.axisBottom(xScale)
+                .tickSize(-chartHeight)
+                .tickFormat("")
+                .tickValues(xGridPositions) // 使用固定数量的位置
+            )
+            .selectAll("line")
+            .style("stroke", "white")
+            .style("stroke-width", 1.0)
+            .style("stroke-opacity", 0.5)
+            .style("stroke-dasharray", "none");
+
+        // 添加水平网格线，使用固定数量的位置
+        g.append("g")
+            .attr("class", "grid y-grid")
+            .call(d3.axisLeft(yScale)
+                .tickSize(-chartWidth)
+                .tickFormat("")
+                .tickValues(yGridPositions) // 使用固定数量的位置
+            )
+            .selectAll("line")
+            .style("stroke", "white")
+            .style("stroke-width", 1.0)
+            .style("stroke-opacity", 0.5)
+            .style("stroke-dasharray", "none");
+
+        // 隐藏网格线轴的路径
+        g.selectAll(".grid path")
+            .style("stroke", "none");
+            
+        // 确保网格线显示在数据点下方
+        g.selectAll(".grid").lower();
+    }
+    
+    // Create axes with自定义格式化
     const xAxis = d3.axisBottom(xScale)
         .tickSize(0)
-        .tickPadding(10);
+        .tickPadding(10)
+        .tickFormat(d => formatAxisValue(d));
         
     const yAxis = d3.axisLeft(yScale)
         .tickSize(0)
-        .tickPadding(10);
+        .tickPadding(10)
+        .tickFormat(d => formatAxisValue(d));
     
     // Add X axis
     const xAxisGroup = g.append("g")
@@ -178,17 +304,18 @@ function makeChart(containerSelector, data) {
     const tooltip = d3.select("body").append("div")
         .attr("class", "tooltip")
         .style("opacity", 0);
+        
     // Helper function to find optimal label position
     function findOptimalPosition(d, allPoints, currentPositions = {}) {
         const positions = [
-            { x: 20, y: 4, anchor: "start", priority: 1 },         // right
-            { x: 0, y: -20, anchor: "middle", priority: 2 },       // top
-            { x: -20, y: 4, anchor: "end", priority: 3 },          // left
-            { x: 0, y: 28, anchor: "middle", priority: 4 },        // bottom
-            { x: 20, y: -20, anchor: "start", priority: 5 },       // top-right
-            { x: -20, y: -20, anchor: "end", priority: 6 },        // top-left
-            { x: -20, y: 28, anchor: "end", priority: 7 },         // bottom-left
-            { x: 20, y: 28, anchor: "start", priority: 8 }         // bottom-right
+            { x: 15, y: 4, anchor: "start", priority: 1 },         // right
+            { x: 0, y: -15, anchor: "middle", priority: 2 },       // top
+            { x: -15, y: 4, anchor: "end", priority: 3 },          // left
+            { x: 0, y: 20, anchor: "middle", priority: 4 },        // bottom
+            { x: 15, y: -15, anchor: "start", priority: 5 },       // top-right
+            { x: -15, y: -15, anchor: "end", priority: 6 },        // top-left
+            { x: -15, y: 20, anchor: "end", priority: 7 },         // bottom-left
+            { x: 15, y: 20, anchor: "start", priority: 8 }         // bottom-right
         ];
         
         const pointX = xScale(d[yField]);
@@ -229,10 +356,10 @@ function makeChart(containerSelector, data) {
                 labelY1 = pointY - 15 - labelHeight;
             } else if (pos.priority === 7) { // bottom-left
                 labelX1 = pointX - 15 - labelWidth;
-                labelY1 = pointY + 15;
+                labelY1 = pointY + 20;
             } else { // bottom-right
                 labelX1 = pointX + 15;
-                labelY1 = pointY + 15;
+                labelY1 = pointY + 20;
             }
             
             labelX2 = labelX1 + labelWidth;
@@ -314,11 +441,12 @@ function makeChart(containerSelector, data) {
         // 如果所有位置都有重叠，返回优先级最高的位置
         return positions[0];
     }
-    // Determine circle size based on number of data points
-    const numPoints = chartData.length;
-    const circleRadius = numPoints <= 15 ? 15 : Math.max(10, 15 - (numPoints - 15) / 20);
     
-    // Add data points
+    // 设置标记大小和圆角效果
+    const squareSize = 16; // 正方形的尺寸
+    const cornerRadius = effects.radius_corner ? 3 : 0; // 圆角半径，根据效果设置
+    
+    // 添加数据点
     const points = g.selectAll(".data-point")
         .data(chartData)
         .enter()
@@ -326,20 +454,72 @@ function makeChart(containerSelector, data) {
         .attr("class", "data-point")
         .attr("transform", d => `translate(${xScale(d[yField])}, ${yScale(d[y2Field])})`);
     
-    // Add white circular background
-    points.append("circle")
-        .attr("r", circleRadius)
-        .attr("fill", d => colors.field[d[groupField]])
-        .attr("stroke", d => colors.field[d[groupField]])
-        .attr("stroke-width", 8);
+    // 创建阴影滤镜效果 - 增强阴影效果
+    if (hasShadow) {
+        const groups = [...new Set(chartData.map(d => d[groupField]))];
+        const defs = svg.append("defs");
+        
+        // 添加通用阴影滤镜
+        const filter = defs.append("filter")
+            .attr("id", "shadow-effect")
+            .attr("x", "-50%")
+            .attr("y", "-50%")
+            .attr("width", "200%")
+            .attr("height", "200%");
+            
+        filter.append("feGaussianBlur")
+            .attr("in", "SourceAlpha")
+            .attr("stdDeviation", "3")
+            .attr("result", "blur");
+            
+        filter.append("feOffset")
+            .attr("in", "blur")
+            .attr("dx", "2")
+            .attr("dy", "2")
+            .attr("result", "offsetBlur");
+            
+        const feMerge = filter.append("feMerge");
+        feMerge.append("feMergeNode")
+            .attr("in", "offsetBlur");
+        feMerge.append("feMergeNode")
+            .attr("in", "SourceGraphic");
+        
+        // 为每个分组创建单独的颜色滤镜
+        groups.forEach((group, i) => {
+            const colorFilter = defs.append("filter")
+                .attr("id", `shadow-${i}`)
+                .attr("x", "-50%")
+                .attr("y", "-50%")
+                .attr("width", "200%")
+                .attr("height", "200%");
+                
+            colorFilter.append("feDropShadow")
+                .attr("dx", "3")
+                .attr("dy", "3")
+                .attr("stdDeviation", "4")
+                .attr("flood-opacity", "0.3")
+                .attr("flood-color", colors.field[group]);
+        });
+    }
     
-    // Add icon images
-    points.append("image")
-        .attr("xlink:href", d => images.field[d[xField]])
-        .attr("width", circleRadius * 2)
-        .attr("height", circleRadius * 2)
-        .attr("x", -circleRadius)
-        .attr("y", -circleRadius);
+    // 添加正方形标记
+    points.append("rect")
+        .attr("width", squareSize)
+        .attr("height", squareSize)
+        .attr("x", -squareSize/2)
+        .attr("y", -squareSize/2)
+        .attr("rx", cornerRadius)
+        .attr("ry", cornerRadius)
+        .attr("fill", d => colors.field[d[groupField]])
+        .style("opacity", 0.8) // 增加透明度使阴影更明显
+        .each(function(d) {
+            // 应用阴影效果
+            if (hasShadow) {
+                const groups = [...new Set(chartData.map(item => item[groupField]))];
+                const groupIndex = groups.indexOf(d[groupField]);
+                d3.select(this).attr("filter", `url(#shadow-${groupIndex})`);
+            }
+        });
     
     // Iteratively optimize label positions to minimize overlaps
     let currentPositions = {};
@@ -384,28 +564,28 @@ function makeChart(containerSelector, data) {
         let labelX1, labelY1, labelX2, labelY2;
         
         if (bestPosition.priority === 1) { // right
-            labelX1 = pointX + 26;
+            labelX1 = pointX + 15;
             labelY1 = pointY - 8;
         } else if (bestPosition.priority === 2) { // top
             labelX1 = pointX - labelWidth / 2;
-            labelY1 = pointY - 26 - labelHeight;
+            labelY1 = pointY - 15 - labelHeight;
         } else if (bestPosition.priority === 3) { // left
-            labelX1 = pointX - 26 - labelWidth;
+            labelX1 = pointX - 15 - labelWidth;
             labelY1 = pointY - 8;
         } else if (bestPosition.priority === 4) { // bottom
             labelX1 = pointX - labelWidth / 2;
-            labelY1 = pointY + 26;
+            labelY1 = pointY + 20;
         } else if (bestPosition.priority === 5) { // top-right
-            labelX1 = pointX + 20;
-            labelY1 = pointY - 20 - labelHeight;
+            labelX1 = pointX + 15;
+            labelY1 = pointY - 15 - labelHeight;
         } else if (bestPosition.priority === 6) { // top-left
-            labelX1 = pointX - 20 - labelWidth;
-            labelY1 = pointY - 20 - labelHeight;
+            labelX1 = pointX - 15 - labelWidth;
+            labelY1 = pointY - 15 - labelHeight;
         } else if (bestPosition.priority === 7) { // bottom-left
-            labelX1 = pointX - 20 - labelWidth;
+            labelX1 = pointX - 15 - labelWidth;
             labelY1 = pointY + 20;
         } else { // bottom-right
-            labelX1 = pointX + 20;
+            labelX1 = pointX + 15;
             labelY1 = pointY + 20;
         }
         
@@ -447,28 +627,36 @@ function makeChart(containerSelector, data) {
     // Add interactivity
     points
         .on("mouseover", function(event, d) {
-            d3.select(this).select("image")
-                .attr("width", circleRadius * 2 + 3)
-                .attr("height", circleRadius * 2 + 3)
-                .attr("x", -(circleRadius + 1.5))
-                .attr("y", -(circleRadius + 1.5));
+            d3.select(this).select("rect")
+                .transition()
+                .duration(200)
+                .attr("width", squareSize * 1.2)
+                .attr("height", squareSize * 1.2)
+                .attr("x", -squareSize * 1.2 / 2)
+                .attr("y", -squareSize * 1.2 / 2);
                 
             d3.select(this).select(".data-label")
                 .style("font-weight", "bold");
                 
+            // 格式化工具提示中的数值
+            const yValueFormatted = formatAxisValue(d[yField]);
+            const y2ValueFormatted = formatAxisValue(d[y2Field]);
+                
             tooltip.transition()
                 .duration(200)
                 .style("opacity", 0.9);
-            tooltip.html(`<strong>${d[xField]}</strong><br/>${yField}: ${d[yField]}<br/>${y2Field}: ${d[y2Field]}`)
+            tooltip.html(`<strong>${d[xField]}</strong><br/>${yField}: ${yValueFormatted}<br/>${y2Field}: ${y2ValueFormatted}`)
                 .style("left", (event.pageX + 10) + "px")
                 .style("top", (event.pageY - 20) + "px");
         })
         .on("mouseout", function() {
-            d3.select(this).select("image")
-                .attr("width", circleRadius * 2)
-                .attr("height", circleRadius * 2)
-                .attr("x", -circleRadius)
-                .attr("y", -circleRadius);
+            d3.select(this).select("rect")
+                .transition()
+                .duration(200)
+                .attr("width", squareSize)
+                .attr("height", squareSize)
+                .attr("x", -squareSize/2)
+                .attr("y", -squareSize/2);
                 
             d3.select(this).select(".data-label")
                 .style("font-weight", "normal");
@@ -478,218 +666,137 @@ function makeChart(containerSelector, data) {
                 .style("opacity", 0);
         });
     
-    // 添加图例
     // 获取分组列表
     const groups = [...new Set(chartData.map(d => d[groupField]))];
     
     // 图例配置参数
-    const initialLegendFontSize = parseFloat(typography.label?.font_size || 12);
+    const legendFontSize = parseFloat(typography.label?.font_size || 12);
     const legendFontWeight = typography.label?.font_weight || "normal";
     const legendFontFamily = typography.label?.font_family || "Arial";
     const legendColor = colors.text_color || "#333333";
-    const legendItemPadding = 5; // 标记与文本间距
+    const legendSquareSize = 10; // 图例方块尺寸
+    const legendItemPadding = 5; // 方块与文本间距
     const legendColumnPadding = 20; // 图例项间距
-    const legendMinimumFontSize = 9; // 最小图例字体大小
-    const legendRowPadding = 15; // 图例行间距
     
+    // 创建图例组，标题放在左侧
     if (groups.length > 0) {
-        // 测量文本宽度的函数
-        function getTextWidth(text, fontFamily, fontSize, fontWeight) {
-            const canvas = document.createElement("canvas");
-            const context = canvas.getContext("2d");
-            context.font = `${fontWeight} ${fontSize} ${fontFamily}`;
-            return context.measureText(text).width;
-        }
-        
-        // 图例项的初始布局估算 (单行)
-        let totalLegendWidth = 0;
-        const legendItems = [];
-        
-        groups.forEach((group) => {
-            const textWidth = getTextWidth(group, legendFontFamily, `${initialLegendFontSize}px`, legendFontWeight);
-            // 图例项宽度 = 圆点直径 + 间距 + 文本宽度 + 额外间距
-            const itemWidth = (circleRadius * 2) + legendItemPadding + textWidth + 5;
-            legendItems.push({
-                group: group,
-                textWidth: textWidth,
-                itemWidth: itemWidth
-            });
-            totalLegendWidth += itemWidth + legendColumnPadding;
-        });
-        totalLegendWidth -= legendColumnPadding; // 减去最后一项多余的间距
-        
-        // 计算布局方案
-        let legendLayout = {
-            rows: 1,
-            rowItems: [],
-            rowWidths: [],
-            fontSize: initialLegendFontSize,
-            markRadius: circleRadius
-        };
-        
-        const maxAllowedLegendWidth = chartWidth * 0.9; // 允许图例占用的最大宽度
-        
-        // 如果单行图例超过允许宽度，尝试多行布局
-        if (totalLegendWidth > maxAllowedLegendWidth) {
-            // 尝试分成多行，每行不超过最大宽度
-            let currentRowWidth = 0;
-            let currentRowItems = [];
-            legendLayout.rowItems = [currentRowItems];
-            
-            // 尝试在不缩小字体的情况下分行
-            legendItems.forEach(item => {
-                if (currentRowWidth + item.itemWidth + legendColumnPadding > maxAllowedLegendWidth && currentRowItems.length > 0) {
-                    // 开始新行
-                    legendLayout.rowWidths.push(currentRowWidth);
-                    currentRowItems = [];
-                    legendLayout.rowItems.push(currentRowItems);
-                    currentRowWidth = 0;
-                }
-                
-                currentRowItems.push(item);
-                currentRowWidth += item.itemWidth + legendColumnPadding;
-            });
-            
-            // 添加最后一行宽度
-            if (currentRowWidth > 0) {
-                legendLayout.rowWidths.push(currentRowWidth - legendColumnPadding);
-            }
-            
-            legendLayout.rows = legendLayout.rowItems.length;
-            
-            // 如果行数过多(超过2行)或者最后一行项目太少(只有1-2项)，尝试缩小字体但不超过两行
-            const maxAllowedRows = 2;
-            
-            if (legendLayout.rows > maxAllowedRows || 
-                (legendLayout.rows > 1 && legendLayout.rowItems[legendLayout.rows-1].length <= 2)) {
-                
-                // 清除前面的布局计算
-                legendLayout.rowItems = [];
-                legendLayout.rowWidths = [];
-                
-                // 尝试缩小字体，计算新的缩放比例
-                let scaleFactor = maxAllowedLegendWidth / totalLegendWidth * 0.95; // 95%以留出一些余量
-                let newFontSize = Math.max(legendMinimumFontSize, initialLegendFontSize * scaleFactor);
-                let newMarkRadius = Math.max(circleRadius * 0.6, circleRadius * scaleFactor);
-                
-                // 如果字体缩放后仍然太小，则使用较大字体，但使用两行布局
-                if (newFontSize < initialLegendFontSize * 0.8) {
-                    newFontSize = Math.max(legendMinimumFontSize, initialLegendFontSize * 0.8);
-                    legendLayout.rows = 2;
-                } else {
-                    legendLayout.rows = 1;
-                }
-                
-                legendLayout.fontSize = newFontSize;
-                legendLayout.markRadius = newMarkRadius;
-                
-                // 重新计算调整后的项目宽度
-                const adjustedItems = legendItems.map(item => {
-                    const newTextWidth = getTextWidth(item.group, legendFontFamily, `${newFontSize}px`, legendFontWeight);
-                    return {
-                        group: item.group,
-                        textWidth: newTextWidth,
-                        itemWidth: (newMarkRadius * 2) + legendItemPadding + newTextWidth + 5
-                    };
-                });
-                
-                // 如果调整后仍需多行，计算每行的元素
-                if (legendLayout.rows > 1) {
-                    const totalItems = adjustedItems.length;
-                    const itemsPerRow = Math.ceil(totalItems / legendLayout.rows);
-                    
-                    for (let row = 0; row < legendLayout.rows; row++) {
-                        const startIdx = row * itemsPerRow;
-                        const endIdx = Math.min(startIdx + itemsPerRow, totalItems);
-                        const rowItems = adjustedItems.slice(startIdx, endIdx);
-                        
-                        legendLayout.rowItems.push(rowItems);
-                        
-                        // 计算行宽度
-                        let rowWidth = 0;
-                        rowItems.forEach(item => {
-                            rowWidth += item.itemWidth + legendColumnPadding;
-                        });
-                        
-                        legendLayout.rowWidths.push(rowWidth - legendColumnPadding);
-                    }
-                } else {
-                    // 单行布局
-                    legendLayout.rowItems.push(adjustedItems);
-                    
-                    let totalWidth = 0;
-                    adjustedItems.forEach(item => {
-                        totalWidth += item.itemWidth + legendColumnPadding;
-                    });
-                    
-                    legendLayout.rowWidths.push(totalWidth - legendColumnPadding);
-                }
-            }
-        } else {
-            // 单行布局足够
-            legendLayout.rowItems.push(legendItems);
-            legendLayout.rowWidths.push(totalLegendWidth);
-        }
-        
-        // 计算图例总高度和垂直定位
-        const rowHeight = legendLayout.fontSize * 1.5; // 每行的基本高度
-        const legendTotalHeight = (legendLayout.rows - 1) * legendRowPadding + legendLayout.rows * rowHeight;
-        const legendStartY = margin.top / 2 - legendTotalHeight / 2 + legendLayout.fontSize / 2;
-        
-        // 绘制图例
+        // 创建图例容器
         const legendGroup = svg.append("g").attr("class", "chart-legend");
+        
+        // 设置图例位置
+        let legendStartX = margin.left;
+        const legendY = 20; // 图例垂直位置在顶部
         
         // 添加图例标题
         const legendTitle = legendGroup.append("text")
             .attr("class", "legend-title")
-            .attr("x", margin.left + chartWidth / 2)
-            .attr("y", legendStartY - 20)
-            .attr("text-anchor", "middle")
+            .attr("x", legendStartX)
+            .attr("y", legendY)
+            .attr("dominant-baseline", "middle")
             .style("font-family", legendFontFamily)
-            .style("font-size", `${legendLayout.fontSize + 1}px`)
+            .style("font-size", `${legendFontSize + 1}px`)
             .style("font-weight", "bold")
             .style("fill", legendColor)
-            .text(groupField);
+            .text(groupField + ":");
+            
+        // 计算标题宽度并调整后续图例项的起始位置
+        const titleWidth = legendTitle.node().getComputedTextLength();
+        legendStartX += titleWidth + 15; // 标题后添加一些间距
         
-        legendLayout.rowItems.forEach((rowItems, rowIndex) => {
-            // 计算行的水平居中位置
-            const rowWidth = legendLayout.rowWidths[rowIndex];
-            const rowStartX = margin.left + (chartWidth - rowWidth) / 2;
-            const rowY = legendStartY + rowIndex * (rowHeight + legendRowPadding);
+        // 在同一行添加图例项
+        const legendItems = legendGroup.append("g")
+            .attr("transform", `translate(${legendStartX}, 0)`);
             
-            const rowGroup = legendGroup.append("g")
-                .attr("class", `legend-row-${rowIndex}`)
-                .attr("transform", `translate(${rowStartX}, ${rowY})`);
+        let currentX = 0;
+        let totalLegendWidth = 0;
+        
+        // 预先计算所有图例项的总宽度
+        groups.forEach(group => {
+            // 创建临时文本元素来计算宽度
+            const tempText = legendItems.append("text")
+                .style("font-family", legendFontFamily)
+                .style("font-size", `${legendFontSize}px`)
+                .text(group);
+                
+            const textWidth = tempText.node().getComputedTextLength();
+            tempText.remove(); // 移除临时元素
             
-            let currentX = 0;
+            totalLegendWidth += legendSquareSize + legendItemPadding + textWidth + legendColumnPadding;
+        });
+        
+        totalLegendWidth -= legendColumnPadding; // 减去最后一个多余的间距
+        
+        // 添加图例背景和边框 (在添加图例项之前)
+        const legendPadding = 10; // 图例内边距
+        const legendBgWidth = totalLegendWidth + (legendPadding * 2);
+        const legendBgHeight = legendSquareSize + (legendPadding * 2);
+        const legendBgX = legendStartX - legendPadding;
+        const legendBgY = legendY - legendBgHeight/2;
+        
+        // 添加带圆角的背景矩形
+        legendGroup.insert("rect", ":first-child")
+            .attr("class", "legend-background")
+            .attr("x", legendBgX)
+            .attr("y", legendBgY)
+            .attr("width", legendBgWidth)
+            .attr("height", legendBgHeight)
+            .attr("rx", 8) // 圆角半径
+            .attr("ry", 8)
+            .style("fill", "rgba(255, 255, 255, 0.8)") // 半透明白色背景
+            .style("stroke", "#dddddd") // 轻微的边框
+            .style("stroke-width", 1.5);
             
-            rowItems.forEach(item => {
-                const legendItem = rowGroup.append("g")
-                    .attr("transform", `translate(${currentX}, 0)`);
+        // 添加图例项
+        groups.forEach(group => {
+            const legendItem = legendItems.append("g")
+                .attr("transform", `translate(${currentX}, 0)`);
                 
-                // 图例标记 (圆)
-                legendItem.append("circle")
-                    .attr("cx", legendLayout.markRadius)
-                    .attr("cy", 0)
-                    .attr("r", legendLayout.markRadius)
-                    .attr("fill", colors.field[item.group]);
+            // 图例标记（方块）
+            legendItem.append("rect")
+                .attr("x", 0)
+                .attr("y", legendY - legendSquareSize/2)
+                .attr("width", legendSquareSize)
+                .attr("height", legendSquareSize)
+                .attr("rx", cornerRadius > 0 ? 2 : 0) // 保持与数据点相同的圆角效果
+                .attr("ry", cornerRadius > 0 ? 2 : 0)
+                .attr("fill", colors.field[group])
+                .style("opacity", 0.8);
                 
-                // 图例文本
-                legendItem.append("text")
-                    .attr("x", (legendLayout.markRadius * 2) + legendItemPadding)
-                    .attr("y", 0)
-                    .attr("dominant-baseline", "middle") // 垂直居中
-                    .attr("text-anchor", "start")
-                    .style("font-family", legendFontFamily)
-                    .style("font-size", `${legendLayout.fontSize}px`)
-                    .style("font-weight", legendFontWeight)
-                    .style("fill", legendColor)
-                    .text(item.group);
+            // 如果有阴影效果，为图例添加阴影
+            if (hasShadow) {
+                const groupIndex = groups.indexOf(group);
+                legendItem.select("rect").attr("filter", `url(#shadow-${groupIndex})`);
+            }
+            
+            // 图例文本
+            const legendText = legendItem.append("text")
+                .attr("x", legendSquareSize + legendItemPadding)
+                .attr("y", legendY)
+                .attr("dominant-baseline", "middle")
+                .style("font-family", legendFontFamily)
+                .style("font-size", `${legendFontSize}px`)
+                .style("font-weight", legendFontWeight)
+                .style("fill", legendColor)
+                .text(group);
                 
-                currentX += item.itemWidth + legendColumnPadding;
-            });
+            // 计算这一项的宽度，为下一项定位
+            const textWidth = legendText.node().getComputedTextLength();
+            currentX += legendSquareSize + legendItemPadding + textWidth + legendColumnPadding;
         });
     }
+    
+    // 修改轴标签格式
+    xAxisGroup.selectAll(".tick text")
+        .each(function(d) {
+            const formattedValue = formatAxisValue(d);
+            d3.select(this).text(formattedValue);
+        });
+        
+    yAxisGroup.selectAll(".tick text")
+        .each(function(d) {
+            const formattedValue = formatAxisValue(d);
+            d3.select(this).text(formattedValue);
+        });
     
     return svg.node();
 }

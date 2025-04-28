@@ -2,10 +2,10 @@
 REQUIREMENTS_BEGIN
 {
     "chart_type": "Scatterplot",
-    "chart_name": "scatterplot_01",
+    "chart_name": "scatterplot_02",
     "required_fields": ["x", "y", "y2"],
     "required_fields_type": [["categorical"], ["numerical"], ["numerical"]],
-    "required_fields_range": [[8, 150], [0, "inf"], [0, "inf"]],
+    "required_fields_range": [[8, 150], ["-inf", "inf"], ["-inf", "inf"]],
     "required_fields_icons": ["x"],
     "required_other_icons": ["primary"],
     "required_fields_colors": [],
@@ -43,7 +43,40 @@ function makeChart(containerSelector, data) {
     // Set dimensions and margins
     const width = variables.width;
     const height = variables.height;
-    const margin = { top: 25, right: 25, bottom: 50, left: 50 };
+    
+    // 创建临时SVG计算文本宽度
+    const tempSvg = d3.select(containerSelector)
+        .append("svg")
+        .attr("width", 0)
+        .attr("height", 0)
+        .style("visibility", "hidden");
+        
+    // 创建临时axis获取标签
+    const yExtent = d3.extent(chartData, d => d[y2Field]);
+    const tempYScale = d3.scaleLinear()
+        .domain([yExtent[0] - (yExtent[1] - yExtent[0]) * 0.1, yExtent[1] + (yExtent[1] - yExtent[0]) * 0.1])
+        .range([height, 0]);
+    
+    const tempYAxis = d3.axisLeft(tempYScale);
+    const tempG = tempSvg.append("g").call(tempYAxis);
+    
+    // 计算最长标签的宽度
+    let maxLabelWidth = 0;
+    tempG.selectAll(".tick text")
+        .each(function() {
+            const textWidth = this.getBBox().width;
+            if (textWidth > maxLabelWidth) {
+                maxLabelWidth = textWidth;
+            }
+        });
+    
+    // 移除临时SVG
+    tempSvg.remove();
+    
+    // 根据最长标签计算左边距，加上一些额外空间和y轴标题空间
+    const leftMargin = Math.max(50, maxLabelWidth + 20 + 25); // 标签宽度 + tick线 + 标题空间
+    
+    const margin = { top: 25, right: 25, bottom: 50, left: leftMargin };
     
     // Create SVG
     const svg = d3.select(containerSelector)
@@ -62,115 +95,88 @@ function makeChart(containerSelector, data) {
     
     // Create scales
     const xExtent = d3.extent(chartData, d => d[yField]);
-    const yExtent = d3.extent(chartData, d => d[y2Field]);
     
-    // 检查数据是否包含负值或0值
-    function hasNegativeOrZeroValues(data, field) {
-        return data.some(d => d[field] < 1);
-    }
-    
-    // 判断数据分布是否不均匀
-    function isDistributionUneven(data, field) {
-        const values = data.map(d => d[field]);
-        const extent = d3.extent(values);
-        const range = extent[1] - extent[0];
-        const median = d3.median(values);
-        const q1 = d3.quantile(values.sort(d3.ascending), 0.25);
-        const q3 = d3.quantile(values.sort(d3.ascending), 0.75);
-        const iqr = q3 - q1;
-        
-        // 不均匀分布的判断标准
-        return range > iqr * 3 || Math.abs(median - (extent[0] + extent[1])/2) > range * 0.2;
-    }
-    
-    // 为X轴创建合适的比例尺
-    const xHasNegativeOrZero = hasNegativeOrZeroValues(chartData, yField);
-    const xIsUneven = isDistributionUneven(chartData, yField);
-    
-    const xScale = (!xHasNegativeOrZero && xIsUneven) 
-        ? d3.scaleLog()
-            .domain([Math.max(xExtent[0] * 0.9, 0.1), xExtent[1] * 1.1])
-            .range([0, chartWidth])
-        : d3.scaleLinear()
-            .domain([xExtent[0] - (xExtent[1] - xExtent[0]) * 0.1, xExtent[1] + (xExtent[1] - xExtent[0]) * 0.1])
-            .range([0, chartWidth]);
+    // 使用线性比例尺，确保支持负值
+    const xScale = d3.scaleLinear()
+        .domain([xExtent[0] - (xExtent[1] - xExtent[0]) * 0.1, xExtent[1] + (xExtent[1] - xExtent[0]) * 0.1])
+        .range([0, chartWidth]);
             
-    // 为Y轴创建合适的比例尺
-    const yHasNegativeOrZero = hasNegativeOrZeroValues(chartData, y2Field);
-    const yIsUneven = isDistributionUneven(chartData, y2Field);
+    const yScale = d3.scaleLinear()
+        .domain([yExtent[0] - (yExtent[1] - yExtent[0]) * 0.1, yExtent[1] + (yExtent[1] - yExtent[0]) * 0.1])
+        .range([chartHeight, 0]);
     
-    const yScale = (!yHasNegativeOrZero && yIsUneven)
-        ? d3.scaleLog()
-            .domain([Math.max(yExtent[0] * 0.9, 0.1), yExtent[1] * 1.1])
-            .range([chartHeight, 0])
-        : d3.scaleLinear()
-            .domain([yExtent[0] - (yExtent[1] - yExtent[0]) * 0.1, yExtent[1] + (yExtent[1] - yExtent[0]) * 0.1])
-            .range([chartHeight, 0]);
-    
-    // Create axes
+    // Create axes with grid lines
     const xAxis = d3.axisBottom(xScale)
-        .tickSize(0)
+        .tickSize(-chartHeight)
         .tickPadding(10);
         
     const yAxis = d3.axisLeft(yScale)
-        .tickSize(0)
+        .tickSize(-chartWidth)
         .tickPadding(10);
     
     // Add X axis
     const xAxisGroup = g.append("g")
         .attr("class", "axis x-axis")
         .attr("transform", `translate(0, ${chartHeight})`)
-        .call(xAxis)
+        .call(xAxis);
 
-    xAxisGroup
-        .selectAll("path")
-        .style("stroke", colors.text_color)
-        .style("stroke-width", 1)
-        .style("opacity", 0.5)
-
-    xAxisGroup
-        .selectAll("text")
-        .style("color", colors.text_color)
-        
     // Add Y axis
     const yAxisGroup = g.append("g")
         .attr("class", "axis y-axis")
-        .call(yAxis)
+        .call(yAxis);
+        
+    // 修改网格线样式 - 必须先选择tick线条
+    g.selectAll(".tick line")
+        .style("stroke", "#ddd")
+        .style("stroke-width", 0.5)
+        .style("opacity", 0.5);
+    
+    // 移除轴线域路径
+    g.selectAll(".domain").remove();
+    
+    // 设置轴刻度文本样式
+    g.selectAll(".tick text")
         .style("color", colors.text_color)
-        .style("fill", "black");
-
-    yAxisGroup
-        .selectAll("path")
-        .style("stroke", colors.text_color)
+        .style("font-size", "10px");
+    
+    // 添加参考线 - 零轴 (放在网格线之后，保证在上层)
+    g.append("line")
+        .attr("x1", 0)
+        .attr("y1", yScale(0))
+        .attr("x2", chartWidth)
+        .attr("y2", yScale(0))
+        .style("stroke", "#000")
         .style("stroke-width", 1)
-        .style("opacity", 0.5)
-
-    yAxisGroup
-        .selectAll("text")
-        .style("color", colors.text_color)
+        .style("opacity", 0.5);
+        
+    g.append("line")
+        .attr("x1", xScale(0))
+        .attr("y1", 0)
+        .attr("x2", xScale(0))
+        .attr("y2", chartHeight)
+        .style("stroke", "#000")
+        .style("stroke-width", 1)
+        .style("opacity", 0.5);
     
     // Add axis titles
     g.append("text")
         .attr("class", "axis-title")
-        .attr("x", chartWidth)
-        .attr("y", chartHeight + margin.bottom / 2 + 15)
-        .attr("text-anchor", "end")
+        .attr("x", chartWidth / 2)
+        .attr("y", chartHeight + margin.bottom - 10)
+        .attr("text-anchor", "middle")
         .attr("font-size", 13)
-        .text(yField);
+        .text("Difference in yards per attempt");
         
+    // 修改Y轴标题的位置，根据左边距自适应
     g.append("text")
         .attr("class", "axis-title")
         .attr("transform", "rotate(-90)")
-        .attr("x", -margin.top)
-        .attr("y", -margin.left / 2 - 10)
-        .attr("text-anchor", "end")
+        .attr("x", -chartHeight / 2)
+        .attr("y", -margin.left + Math.min(30, leftMargin / 3)) // 根据边距自适应调整
+        .attr("text-anchor", "middle")
         .attr("font-size", 13)
-        .text(y2Field);
+        .text("Difference in points above replacement");
     
-    // Create tooltip
-    const tooltip = d3.select("body").append("div")
-        .attr("class", "tooltip")
-        .style("opacity", 0);
     // Helper function to find optimal label position
     function findOptimalPosition(d, allPoints, currentPositions = {}) {
         const positions = [
@@ -311,6 +317,115 @@ function makeChart(containerSelector, data) {
     const numPoints = chartData.length;
     const circleRadius = numPoints <= 15 ? 15 : Math.max(10, 15 - (numPoints - 15) / 20);
     
+    // 检查label是否应该显示 - 根据数据点数量限制标签显示
+    function shouldShowLabel(d, allPoints, index) {
+        // 如果数据点数量少于等于8个，全部显示标签
+        if (allPoints.length <= 8) {
+            return true;
+        }
+        
+        // 如果数据点数量在9-15之间，只显示重要的点（例如四个象限的边缘点和中心附近的点）
+        if (allPoints.length <= 15) {
+            // 对点进行排序，找出四个象限边缘的点
+            const sortedByX = [...allPoints].sort((a, b) => a[yField] - b[yField]);
+            const sortedByY = [...allPoints].sort((a, b) => a[y2Field] - b[y2Field]);
+            
+            // 最左、最右、最上、最下的点
+            const extremePoints = [
+                sortedByX[0], // 最左
+                sortedByX[sortedByX.length - 1], // 最右
+                sortedByY[0], // 最下
+                sortedByY[sortedByY.length - 1], // 最上
+            ];
+            
+            // 添加四象限的极值点
+            const quadrants = [
+                {x: 1, y: 1}, {x: -1, y: 1}, {x: -1, y: -1}, {x: 1, y: -1}
+            ];
+            
+            quadrants.forEach(q => {
+                let bestPoint = null;
+                let maxDistance = -Infinity;
+                
+                allPoints.forEach(p => {
+                    const xValue = p[yField];
+                    const yValue = p[y2Field];
+                    
+                    // 检查点是否在正确的象限
+                    if ((xValue > 0 && q.x > 0 || xValue < 0 && q.x < 0) && 
+                        (yValue > 0 && q.y > 0 || yValue < 0 && q.y < 0)) {
+                        // 计算距离原点的距离
+                        const distance = Math.sqrt(xValue * xValue + yValue * yValue);
+                        if (distance > maxDistance) {
+                            maxDistance = distance;
+                            bestPoint = p;
+                        }
+                    }
+                });
+                
+                if (bestPoint && !extremePoints.includes(bestPoint)) {
+                    extremePoints.push(bestPoint);
+                }
+            });
+            
+            return extremePoints.includes(d);
+        }
+        
+        // 如果数据点数量大于15，更严格地限制标签显示
+        // 1. 显示极值点
+        // 2. 每个象限最多显示一个点
+        // 3. 确保标签有足够的间距
+        
+        // 极值点检查（最左，最右，最上，最下）
+        const sortedByX = [...allPoints].sort((a, b) => a[yField] - b[yField]);
+        const sortedByY = [...allPoints].sort((a, b) => a[y2Field] - b[y2Field]);
+        
+        const extremePoints = [
+            sortedByX[0], // 最左
+            sortedByX[sortedByX.length - 1], // 最右
+            sortedByY[0], // 最下
+            sortedByY[sortedByY.length - 1], // 最上
+        ];
+        
+        if (extremePoints.includes(d)) {
+            return true;
+        }
+        
+        // 计算象限
+        const quadrant = 
+            d[yField] >= 0 && d[y2Field] >= 0 ? 1 :
+            d[yField] < 0 && d[y2Field] >= 0 ? 2 :
+            d[yField] < 0 && d[y2Field] < 0 ? 3 : 4;
+        
+        // 对每个象限选择一个代表点（离中心最远的点）
+        const pointsInSameQuadrant = allPoints.filter(p => {
+            const q = 
+                p[yField] >= 0 && p[y2Field] >= 0 ? 1 :
+                p[yField] < 0 && p[y2Field] >= 0 ? 2 :
+                p[yField] < 0 && p[y2Field] < 0 ? 3 : 4;
+            return q === quadrant;
+        });
+        
+        // 如果这个象限只有一个点，显示它
+        if (pointsInSameQuadrant.length === 1) {
+            return true;
+        }
+        
+        // 否则，选择离原点最远的点
+        let maxDistance = -Infinity;
+        let farthestPoint = null;
+        
+        pointsInSameQuadrant.forEach(p => {
+            const distance = Math.sqrt(p[yField] * p[yField] + p[y2Field] * p[y2Field]);
+            if (distance > maxDistance) {
+                maxDistance = distance;
+                farthestPoint = p;
+            }
+        });
+        
+        return d === farthestPoint;
+    }
+    
     // Add data points
     const points = g.selectAll(".data-point")
         .data(chartData)
@@ -345,10 +460,13 @@ function makeChart(containerSelector, data) {
         let newTotalOverlaps = 0;
         
         // Assign positions for all points
-        chartData.forEach(d => {
-            const bestPosition = findOptimalPosition(d, chartData, currentPositions);
-            newPositions[d[xField]] = bestPosition;
-            newTotalOverlaps += bestPosition.overlaps;
+        chartData.forEach((d, i) => {
+            // 仅为需要显示标签的点分配位置
+            if (shouldShowLabel(d, chartData, i)) {
+                const bestPosition = findOptimalPosition(d, chartData, currentPositions);
+                newPositions[d[xField]] = bestPosition;
+                newTotalOverlaps += bestPosition.overlaps;
+            }
         });
         
         // If no improvement or no overlaps, stop iterating
@@ -366,7 +484,12 @@ function makeChart(containerSelector, data) {
     const labelPositions = [];
     
     // Add labels with optimized positions
-    points.each(function(d) {
+    points.each(function(d, i) {
+        // 检查是否应该显示此标签
+        if (!shouldShowLabel(d, chartData, i)) {
+            return;
+        }
+        
         const bestPosition = currentPositions[d[xField]] || findOptimalPosition(d, chartData);
         const pointX = xScale(d[yField]);
         const pointY = yScale(d[y2Field]);
@@ -436,40 +559,6 @@ function makeChart(containerSelector, data) {
             });
         }
     });
-    
-    // Add interactivity
-    points
-        .on("mouseover", function(event, d) {
-            d3.select(this).select("image")
-                .attr("width", circleRadius * 2 + 3)
-                .attr("height", circleRadius * 2 + 3)
-                .attr("x", -(circleRadius + 1.5))
-                .attr("y", -(circleRadius + 1.5));
-                
-            d3.select(this).select(".data-label")
-                .style("font-weight", "bold");
-                
-            tooltip.transition()
-                .duration(200)
-                .style("opacity", 0.9);
-            tooltip.html(`<strong>${d[xField]}</strong><br/>${yField}: ${d[yField]}<br/>${y2Field}: ${d[y2Field]}`)
-                .style("left", (event.pageX + 10) + "px")
-                .style("top", (event.pageY - 20) + "px");
-        })
-        .on("mouseout", function() {
-            d3.select(this).select("image")
-                .attr("width", circleRadius * 2)
-                .attr("height", circleRadius * 2)
-                .attr("x", -circleRadius)
-                .attr("y", -circleRadius);
-                
-            d3.select(this).select(".data-label")
-                .style("font-weight", "normal");
-                
-            tooltip.transition()
-                .duration(500)
-                .style("opacity", 0);
-        });
     
     return svg.node();
 }

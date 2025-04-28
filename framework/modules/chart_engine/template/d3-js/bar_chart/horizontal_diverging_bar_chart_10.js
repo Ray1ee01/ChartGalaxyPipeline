@@ -5,9 +5,9 @@ REQUIREMENTS_BEGIN
     "chart_name": "horizontal_diverging_bar_chart_10",
     "is_composite": false,
     "chart_for": "comparison",
-    "required_fields": ["x", "y", "group","group"],
+    "required_fields": ["x", "y", "group","group2"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"],["categorical"]],
-    "required_fields_range": [[2, 20], [0, "inf"], [2, 2],[2, 5]],
+    "required_fields_range": [[2, 20], [0, 100], [2, 2],[2, 5]],
     "required_fields_icons": [],
     "required_other_icons": [],
     "required_fields_colors": ["group"],
@@ -81,14 +81,9 @@ function makeChart(containerSelector, data) {
     // 安全地提取字段名，并提供默认值
     if (xColumn) topicField = xColumn.name; 
     if (yColumn) valueField = yColumn.name; 
-    
-    // 处理分组字段 - 第一个是意见类型，第二个是支持者类型
-    if (groupColumns.length > 0) {
-        opinionGroupField = groupColumns[0].name; // 第一个分组字段（意见类型）
-        if (groupColumns.length > 1) {
-            supporterGroupField = groupColumns[1].name; // 第二个分组字段（支持者类型）
-        } 
-    }
+    opinionGroupField = dataColumns.filter(col => col.role === "group").name;
+    supporterGroupField = dataColumns.filter(col => col.role === "group2").name;
+   
     
     // 获取y轴字段单位（如果存在）
     if (yColumn && yColumn.unit && yColumn.unit !== "none") {

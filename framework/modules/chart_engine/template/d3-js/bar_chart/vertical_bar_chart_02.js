@@ -11,19 +11,19 @@ REQUIREMENTS_BEGIN
     ],
     "required_fields_range": [
         [[2, 30], [0, "inf"]],
-        [[2, 30], [-100, 100]]
+        [[2, 30], [0, "inf"]]
     ],
     "required_fields_icons": [],
     "required_other_icons": [],
-    "required_fields_colors": ["x"],
-    "required_other_colors": ["primary"],
+    "required_fields_colors": [],
+    "required_other_colors": ["primary","secondary"],
     "supported_effects": ["radius_corner", "spacing", "shadow", "gradient", "stroke"],
     "min_height": 400,
     "min_width": 400,
     "background": "no",
     "icon_mark": "none",
-    "icon_label": "bottom",
-    "has_x_axis": "yes",
+    "icon_label": "none",
+    "has_x_axis": "no",
     "has_y_axis": "no"
 }
 REQUIREMENTS_END
@@ -48,11 +48,11 @@ function makeChart(containerSelector, data) {
         field: {},
         other: { 
             primary: "#FF9F55",  // 默认柱状图颜色
-            indicator: "#8BDB24"  // 默认指示器颜色
+            secondary: "#8BDB24"  // 默认指示器颜色
         } 
     };
     const images = jsonData.images || { field: {}, other: {} };
-    const dataColumns = jsonData.data.data_columns || [];
+    const dataColumns = jsonData.data.columns || [];
     const titles = jsonData.titles || {};
     
     // 设置视觉效果变量
@@ -203,18 +203,13 @@ function makeChart(containerSelector, data) {
     
     // 获取柱状图颜色
     function getBarColor(category) {
-        if (colors.field && colors.field[category]) {
-            return colors.field[category];
-        }
-        
-        
-        
+ 
         return colors.other.primary || "#FF9F55";
     }
     
     // 获取指示器颜色
     function getIndicatorColor() {
-        return colors.other.primary || "#8BDB24";  // 亮绿色
+        return colors.other.secondary || "#8BDB24";  // 亮绿色
     }
     
     // ---------- 10. 添加图例 ----------
@@ -255,57 +250,160 @@ function makeChart(containerSelector, data) {
     
     // ---------- 11. 计算动态文本大小的函数 ----------
     
+    // 计算字体大小的函数，确保文本在指定宽度内
     const calculateFontSize = (text, maxWidth, baseSize = 14) => {
+        // 检查参数是否有效
+        if (!text || typeof text !== 'string' || !maxWidth || maxWidth <= 0 || !baseSize || baseSize <= 0) {
+            return Math.max(10, baseSize || 14); // 返回一个合理的默认值或最小尺寸
+        }
+        
         // 估算每个字符的平均宽度 (假设为baseSize的60%)
         const avgCharWidth = baseSize * 0.6;
         // 计算文本的估计宽度
         const textWidth = text.length * avgCharWidth;
+        
         // 如果文本宽度小于最大宽度，返回基础大小
         if (textWidth < maxWidth) {
             return baseSize;
         }
-        // 否则，按比例缩小字体大小
+        
+        // 否则，按比例缩小字体大小，确保不小于10
         return Math.max(10, Math.floor(baseSize * (maxWidth / textWidth)));
     };
     
-    // 检查是否应该显示x轴标签
-    const shouldShowLabels = () => {
-        // 检查图表
-        const labelsTooLong = useData.some(d => {
-            const text = d[categoryField].toString();
-            const avgCharWidth = 12 * 0.6; // 使用基础字体大小12
-            const textWidth = text.length * avgCharWidth;
-            return textWidth > xScale.bandwidth() * 2;
+    // ---------- 12. 创建底部x轴 (修改后) ----------
+
+    // 获取 x 轴的值 (即分类)
+    const xValues = categories; // 使用之前定义的 categories
+
+    // 创建 x 轴的容器
+    const xAxisGroup = chart.append("g")
+        .attr("class", "x-axis")
+        .attr("transform", `translate(0, ${innerHeight})`);
+
+    // 找出最长的标签文本
+    const longestLabel = xValues.reduce((a, b) => a.toString().length > b.toString().length ? a : b, "").toString();
+
+    // 定义每个标签的最大允许宽度 (稍微给一点余量，例如90%的带宽)
+    const labelMaxWidth = xScale.bandwidth() * 0.9; 
+
+    // 使用最长标签计算统一的字体大小
+    const baseFontSize = parseInt(typography.label.font_size) || 16; // 获取基础字体大小
+    const uniformFontSize = calculateFontSize(longestLabel, labelMaxWidth, baseFontSize);
+
+    // 文本换行辅助函数 (添加 alignment 参数)
+    function wrapText(text, str, width, lineHeight = 1.1, alignment = 'middle') {
+        const words = str.split(/\s+/).reverse(); // 按空格分割单词
+        let word;
+        let line = [];
+        let lineNumber = 0;
+        const initialY = parseFloat(text.attr("y")); // 获取原始y坐标
+        const initialX = parseFloat(text.attr("x")); // 获取原始x坐标
+        const actualFontSize = parseFloat(text.style("font-size")); // 获取实际应用的字体大小
+
+        text.text(null); // 清空现有文本
+
+        let tspans = []; // 存储最终要渲染的行
+
+        // 优先按单词换行
+        if (words.length > 1) {
+            let currentLine = [];
+            while (word = words.pop()) {
+                currentLine.push(word);
+                const tempTspan = text.append("tspan").text(currentLine.join(" ")); // 创建临时tspan测试宽度
+                const isOverflow = tempTspan.node().getComputedTextLength() > width;
+                tempTspan.remove(); // 移除临时tspan
+
+                if (isOverflow && currentLine.length > 1) {
+                    currentLine.pop(); // 回退一个词
+                    tspans.push(currentLine.join(" ")); // 添加完成的行
+                    currentLine = [word]; // 新行以当前词开始
+                    lineNumber++;
+                }
+            }
+            // 添加最后一行
+            if (currentLine.length > 0) {
+                tspans.push(currentLine.join(" "));
+            }
+        } else { // 如果没有空格或只有一个词，则按字符换行
+            const chars = str.split('');
+            let currentLine = '';
+            for (let i = 0; i < chars.length; i++) {
+                const nextLine = currentLine + chars[i];
+                const tempTspan = text.append("tspan").text(nextLine); // 测试宽度
+                const isOverflow = tempTspan.node().getComputedTextLength() > width;
+                tempTspan.remove();
+
+                if (isOverflow && currentLine.length > 0) { // 如果加了新字符就超长了，并且当前行不为空
+                    tspans.push(currentLine); // 添加当前行
+                    currentLine = chars[i]; // 新行从这个字符开始
+                    lineNumber++;
+                } else {
+                    currentLine = nextLine; // 没超长就继续加字符
+                }
+            }
+            // 添加最后一行
+            if (currentLine.length > 0) {
+                tspans.push(currentLine);
+            }
+        }
+
+        // 计算总行数
+        const totalLines = tspans.length;
+        let startDy = 0;
+        
+        // 根据对齐方式计算起始偏移
+        if (alignment === 'middle') {
+             // 垂直居中：向上移动半行*(总行数-1)
+            startDy = -( (totalLines - 1) * lineHeight / 2);
+        } else if (alignment === 'bottom') {
+            // 底部对齐：计算总高度，向上移动 总高度 - 单行高度(近似)
+            // 注意：em单位是相对于字体大小的，这里用 lineHeight * actualFontSize 近似计算像素高度
+            const totalHeightEm = totalLines * lineHeight;
+            startDy = -(totalHeightEm - lineHeight); // 将底部对齐到原始y
+        }
+        // 如果是 'top' 对齐，startDy 保持为 0，即第一行基线在原始y位置
+        // 其他对齐方式（如 'top'）可以保持 startDy 为 0
+
+        // 创建所有行的tspan元素
+        tspans.forEach((lineText, i) => {
+            text.append("tspan")
+                .attr("x", initialX) // x坐标与父<text>相同
+                .attr("dy", (i === 0 ? startDy : lineHeight) + "em") // 第一行应用起始偏移，后续行应用行高
+                .text(lineText);
         });
         
-        // 如果任意标签太长，返回false
-        return !labelsTooLong;
-    };
-    
-    // ---------- 12. 创建底部x轴 ----------
-    
-    const showLabels = shouldShowLabels();
-    
-    chart.append("g")
-        .attr("class", "x-axis")
-        .attr("transform", `translate(0, ${innerHeight})`)
-        .call(d3.axisBottom(xScale).tickSize(0))
-        .call(g => {
-            g.select(".domain").remove();
-            g.selectAll(".tick text")
-                .style("font-family", typography.label.font_family)
-                .style("font-size", typography.label.font_size)
-                .style("font-weight", typography.label.font_weight)
-                .style("fill", colors.text_color)
-                .attr("dy", "1em")
-                .style("visibility", showLabels ? "visible" : "hidden")
-                .each(function(d) {
-                    if (showLabels) {
-                        const text = d.toString();
-                        const fontSize = calculateFontSize(text, xScale.bandwidth(), 14);
-                        d3.select(this).style("font-size", `${fontSize}px`);
-                    }
-                });
+        // 如果是底部对齐，可能需要重新设置 y 确保精确对齐 (可选优化)
+        // if (alignment === 'bottom') {
+        //    const bbox = text.node().getBBox();
+        //    const currentBottom = bbox.y + bbox.height;
+        //    const adjustment = initialY - currentBottom;
+        //    text.attr("transform", `translate(0, ${adjustment})`);
+        // }
+    }
+
+    // 绘制x轴标签
+    xAxisGroup.selectAll(".x-label")
+        .data(xValues)
+        .enter()
+        .append("text")
+        .attr("class", "x-label")
+        .attr("x", d => xScale(d) + xScale.bandwidth() / 2) // 定位到每个bar的中心下方
+        .attr("y", 5) 
+        .attr("text-anchor", "middle") // 文本居中对齐
+        .style("font-family", typography.label.font_family)
+        .style("font-size", `${uniformFontSize}px`) // 应用统一计算的字体大小
+        .style("font-weight", typography.label.font_weight)
+        .style("fill", colors.text_color)
+        .text(d => d.toString()) // 设置初始文本
+        .each(function(d) { // 对每个标签进行检查
+            const textElement = d3.select(this);
+            // 检查使用统一字体大小后，文本实际渲染宽度是否仍然超过最大允许宽度
+            if (this.getComputedTextLength() > labelMaxWidth) {
+                // 如果仍然太长，则调用 wrapText 函数进行换行处理
+                // 使用 'top' 对齐，确保第一行基线位置不变
+                wrapText(textElement, d.toString(), labelMaxWidth, 1.1, 'top'); 
+            }
         });
     
     // ---------- 13. 绘制柱状图和指示器 ----------
@@ -313,8 +411,6 @@ function makeChart(containerSelector, data) {
     useData.forEach((d, i) => {
         const category = d[categoryField];
         const value = +d[valueField];
-        
-        // 正确获取百分比值
         const percentage = +d[percentageField];
         
         const barWidth = xScale.bandwidth();
@@ -335,29 +431,38 @@ function makeChart(containerSelector, data) {
             .attr("stroke", variables.has_stroke ? d3.rgb(getBarColor(category)).darker(0.5) : "none")
             .attr("stroke-width", variables.has_stroke ? 1.5 : 0)
             .style("filter", "none");
-        
-        // 添加数值标签在柱状图底部
-        chart.append("text")
+            
+        // --- 数值标签 (底部) ---
+        const valueTextContent = value + (valueUnit ? " " + valueUnit : "");
+        const valueLabelMaxWidth = barWidth * 1.1; // 最大宽度设置为柱宽的1.1倍
+        const valueBaseFontSize = parseInt(typography.label.font_size) || 14; // 基础字体大小
+        const valueFontSize = calculateFontSize(valueTextContent, valueLabelMaxWidth, valueBaseFontSize);
+
+        const valueLabel = chart.append("text")
             .attr("class", "value-label")
             .attr("x", barX + barWidth / 2)
-            .attr("y", innerHeight)  // 放在底部
-            .attr("dy", "-0.5em")   // 向上微调
+            .attr("y", innerHeight - 5) // 定位到靠近底部的位置
             .attr("text-anchor", "middle")
             .style("font-family", typography.label.font_family)
-            .style("font-size", Math.max(12,barWidth/5)+"px")
+            .style("font-size", `${valueFontSize}px`) // 应用计算出的字体大小
             .style("font-weight", "bold")
-            .style("fill", "#ffffff")  // 使用文本颜色
-            .text(value + (valueUnit ? " " + valueUnit : ""));
+            .style("fill", "#ffffff")  // 保持白色
+            .text(valueTextContent);
+            
+        // 检查数值标签是否需要换行
+        valueLabel.each(function() {
+            if (this.getComputedTextLength() > valueLabelMaxWidth) {
+                wrapText(d3.select(this), valueTextContent, valueLabelMaxWidth, 1.1, 'bottom');
+            }
+        });
 
-        // 修改: 根据面积比例计算圆半径
-        // 1. 获取与百分比对应的面积
-        const area = areaScale(percentage);
-        // 2. 从面积计算半径: r = sqrt(area / π)
-        const circleRadius = Math.min(Math.sqrt(area / Math.PI), barWidth / 2);
+        // --- 百分比圆圈和标签 ---
         
+        // 计算圆半径
+        const area = areaScale(percentage);
+        const circleRadius = Math.min(Math.sqrt(area / Math.PI), barWidth / 2);
         const circleX = barX + barWidth / 2;
-        // 放置在柱子顶部
-        const circleY = barY;
+        const circleY = barY; // 圆心在柱子顶部
         
         // 绘制百分比圆圈背景
         chart.append("circle")
@@ -370,20 +475,33 @@ function makeChart(containerSelector, data) {
             .attr("stroke-width", variables.has_stroke ? 1 : 0)
             .style("filter", variables.has_shadow ? "url(#shadow)" : "none");
         
-        // FIX: 添加带+号的百分比文本
-        const percentageText = percentage >= 0 ? `+${percentage}${percentageUnit}` : `${percentage}${percentageUnit}`;
+        // FIX: 添加带+号的百分比文本 (假设都需要+) - 如果不需要可以去掉
+        // const percentageTextContent = (percentage > 0 ? '+' : '') + percentage + percentageUnit;
+        const percentageTextContent = `${percentage}${percentageUnit}` ;
+
+        const percentageLabelMaxWidth = barWidth * 1.1; // 最大宽度设置为柱宽的1.1倍
+        const percentageBaseFontSize = parseInt(typography.label.font_size) || 12; // 基础字体大小
+        const percentageFontSize = calculateFontSize(percentageTextContent, percentageLabelMaxWidth, percentageBaseFontSize);
         
-        chart.append("text")
+        const percentageLabel = chart.append("text")
             .attr("class", "percentage-label")
             .attr("x", circleX)
-            .attr("y", circleY)
+            .attr("y", circleY - circleRadius ) // 移动到圆圈上方
+            .attr("dy", "-0.3em") // 向上微调，使其刚好在圆上方
             .attr("text-anchor", "middle")
-            .attr("dominant-baseline", "middle")
+            // .attr("dominant-baseline", "auto") // 移除middle基线
             .style("font-family", typography.label.font_family)
-            .style("font-size", typography.label.font_size)  // 动态调整字体大小
+            .style("font-size", `${percentageFontSize}px`)  // 应用计算出的字体大小
             .style("font-weight", typography.label.font_weight)
-            .style("fill", "#000000")
-            .text(percentageText);
+            .style("fill", colors.text_color) // 使用默认文本颜色
+            .text(percentageTextContent);
+            
+        // 检查百分比标签是否需要换行
+        percentageLabel.each(function() {
+            if (this.getComputedTextLength() > percentageLabelMaxWidth) {
+                 wrapText(d3.select(this), percentageTextContent, percentageLabelMaxWidth, 1.1, 'middle'); // 换行使用middle对齐
+            }
+        });
         
         // 如果需要，添加阴影效果
         if (variables.has_shadow) {

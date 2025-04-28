@@ -14,6 +14,7 @@ REQUIREMENTS_BEGIN
         [[2, 30], [0, 1000]], [2, 30]
     ],
     "required_fields_icons": ["group"],
+    "hierarchy":["group"],
     "required_other_icons": [],
     "required_fields_colors": [],
     "required_other_colors": ["primary"],

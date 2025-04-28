@@ -1,11 +1,11 @@
-`
+/*
 REQUIREMENTS_BEGIN
 {
-    "chart_type": "Bubble Chart",
-    "chart_name": "bubble_chart_01",
+    "chart_type": "Scatterplot",
+    "chart_name": "scatterplot_03",
     "required_fields": ["x", "y", "y2"],
     "required_fields_type": [["categorical"], ["numerical"], ["numerical"]],
-    "required_fields_range": [[8, 150], [0, "inf"], [0, "inf"]],
+    "required_fields_range": [[8, 50], [0, "inf"], [0, "inf"]],
     "required_fields_icons": ["x"],
     "required_other_icons": ["primary"],
     "required_fields_colors": [],
@@ -20,7 +20,7 @@ REQUIREMENTS_BEGIN
     "has_y_axis": "no"
 }
 REQUIREMENTS_END
-`
+*/
 
 function makeChart(containerSelector, data) {
     // Extract data
@@ -66,7 +66,7 @@ function makeChart(containerSelector, data) {
     
     // 检查数据是否包含负值或0值
     function hasNegativeOrZeroValues(data, field) {
-        return data.some(d => d[field] <= 0);
+        return data.some(d => d[field] < 1);
     }
     
     // 判断数据分布是否不均匀
@@ -109,45 +109,69 @@ function makeChart(containerSelector, data) {
     
     // Create axes
     const xAxis = d3.axisBottom(xScale)
-        .tickSize(0)
+        .tickSize(0)  // 不绘制刻度线
         .tickPadding(10);
         
     const yAxis = d3.axisLeft(yScale)
-        .tickSize(0)
+        .tickSize(0)  // 不绘制刻度线
         .tickPadding(10);
     
     // Add X axis
     const xAxisGroup = g.append("g")
         .attr("class", "axis x-axis")
         .attr("transform", `translate(0, ${chartHeight})`)
-        .call(xAxis)
+        .call(xAxis);
 
     xAxisGroup
-        .selectAll("path")
-        .style("stroke", colors.text_color)
-        .style("stroke-width", 1)
-        .style("opacity", 0.5)
+        .select(".domain")  // 选择轴线并删除
+        .remove();
 
     xAxisGroup
         .selectAll("text")
-        .style("color", colors.text_color)
+        .style("color", colors.text_color);
         
     // Add Y axis
     const yAxisGroup = g.append("g")
         .attr("class", "axis y-axis")
         .call(yAxis)
-        .style("color", colors.text_color)
-        .style("fill", "black");
+        .style("color", colors.text_color);
 
     yAxisGroup
-        .selectAll("path")
-        .style("stroke", colors.text_color)
-        .style("stroke-width", 1)
-        .style("opacity", 0.5)
+        .select(".domain")  // 选择轴线并删除
+        .remove();
 
     yAxisGroup
         .selectAll("text")
-        .style("color", colors.text_color)
+        .style("color", colors.text_color);
+    
+    // 添加少量自定义网格线
+    // 水平网格线
+    g.selectAll(".h-grid-line")
+        .data(d3.ticks(yScale.domain()[0], yScale.domain()[1], 4))
+        .enter()
+        .append("line")
+        .attr("class", "h-grid-line")
+        .attr("x1", 0)
+        .attr("x2", chartWidth)
+        .attr("y1", d => yScale(d))
+        .attr("y2", d => yScale(d))
+        .style("stroke", colors.text_color)
+        .style("stroke-width", 0.5)
+        .style("opacity", 0.2);
+    
+    // 垂直网格线
+    g.selectAll(".v-grid-line")
+        .data(d3.ticks(xScale.domain()[0], xScale.domain()[1], 4))
+        .enter()
+        .append("line")
+        .attr("class", "v-grid-line")
+        .attr("x1", d => xScale(d))
+        .attr("x2", d => xScale(d))
+        .attr("y1", 0)
+        .attr("y2", chartHeight)
+        .style("stroke", colors.text_color)
+        .style("stroke-width", 0.5)
+        .style("opacity", 0.2);
     
     // Add axis titles
     g.append("text")
@@ -158,14 +182,62 @@ function makeChart(containerSelector, data) {
         .attr("font-size", 13)
         .text(yField);
         
-    g.append("text")
+    // 修改Y轴标题为横置，放在顶端
+    function wrapTextAtDelimiters(text) {
+        text.each(function() {
+            const text = d3.select(this);
+            const originalText = text.text();
+            
+            // 检查是否包含逗号或左括号
+            const hasDelimiter = originalText.includes(',') || originalText.includes('(');
+            
+            if (hasDelimiter) {
+                // 在第一个逗号或左括号处换行，最多分为两行
+                let firstLine = "";
+                let secondLine = "";
+                let delimiterFound = false;
+                
+                for (let i = 0; i < originalText.length; i++) {
+                    const char = originalText[i];
+                    
+                    if (!delimiterFound && (char === ',' || char === '(')) {
+                        firstLine += char;
+                        delimiterFound = true;
+                    } else if (delimiterFound) {
+                        secondLine += char;
+                    } else {
+                        firstLine += char;
+                    }
+                }
+                
+                // 清除原文本并添加新的分行文本
+                text.text(null);
+                
+                text.append("tspan")
+                    .attr("x", 0)
+                    .attr("dy", 0)
+                    .text(firstLine.trim());
+                
+                if (secondLine) {
+                    text.append("tspan")
+                        .attr("x", 0)
+                        .attr("dy", "1.2em")
+                        .text(secondLine.trim());
+                }
+            }
+        });
+    }
+    
+    const yAxisTitle = g.append("text")
         .attr("class", "axis-title")
-        .attr("transform", "rotate(-90)")
-        .attr("x", -margin.top)
-        .attr("y", -margin.left / 2 - 10)
-        .attr("text-anchor", "end")
+        .attr("x", 0)  // 设置为0以左对齐
+        .attr("y", -margin.top / 2)
+        .attr("text-anchor", "start")  // 改为左对齐
         .attr("font-size", 13)
         .text(y2Field);
+    
+    // 使用新的换行逻辑
+    yAxisTitle.call(wrapTextAtDelimiters);
     
     // Create tooltip
     const tooltip = d3.select("body").append("div")
@@ -190,42 +262,77 @@ function makeChart(containerSelector, data) {
         const labelWidth = d[xField].length * fontSize * 0.6;
         const labelHeight = fontSize * 1.2;
         
+        // 获取当前点的图标尺寸
+        const iconSize = getIconSize(d) / 2;
+        
+        // 调整位置，使其与图标尺寸相关
+        const adjustedPositions = positions.map(pos => {
+            // 创建新对象，避免修改原始对象
+            const newPos = {...pos};
+            
+            // 根据图标尺寸调整偏移量
+            if (pos.priority === 1) { // right
+                newPos.x = iconSize + 10; // 调整距离为图标半径+10
+            } else if (pos.priority === 2) { // top
+                newPos.y = -iconSize - 10; // 调整为图标半径+10
+            } else if (pos.priority === 3) { // left
+                newPos.x = -iconSize - 10; // 图标半径+10
+            } else if (pos.priority === 4) { // bottom
+                newPos.y = iconSize + 14; // 图标半径+14
+            } else if (pos.priority === 5) { // top-right
+                newPos.x = iconSize * 0.7 + 5;
+                newPos.y = -iconSize * 0.7 - 10;
+            } else if (pos.priority === 6) { // top-left
+                newPos.x = -iconSize * 0.7 - 5;
+                newPos.y = -iconSize * 0.7 - 10;
+            } else if (pos.priority === 7) { // bottom-left
+                newPos.x = -iconSize * 0.7 - 5;
+                newPos.y = iconSize * 0.7 + 10;
+            } else { // bottom-right
+                newPos.x = iconSize * 0.7 + 5;
+                newPos.y = iconSize * 0.7 + 10;
+            }
+            
+            return newPos;
+        });
+        
         // 如果已经有位置分配，直接返回
         if (currentPositions[d[xField]]) {
             return currentPositions[d[xField]];
         }
         
+        // 使用调整后的位置
         // 贪心算法：按优先级顺序尝试每个位置，选择第一个没有重叠的位置
-        for (const pos of positions) {
+        for (const pos of adjustedPositions) {
             let hasOverlap = false;
             
             // 计算标签边界
             let labelX1, labelY1, labelX2, labelY2;
             
             if (pos.priority === 1) { // right
-                labelX1 = pointX + 20;
+                labelX1 = pointX + pos.x;
                 labelY1 = pointY - labelHeight/2;
             } else if (pos.priority === 2) { // top
                 labelX1 = pointX - labelWidth / 2;
-                labelY1 = pointY - 20 - labelHeight;
+                labelY1 = pointY + pos.y - labelHeight;
             } else if (pos.priority === 3) { // left
-                labelX1 = pointX - 20 - labelWidth;
+                labelX1 = pointX + pos.x - labelWidth;
                 labelY1 = pointY - labelHeight/2;
             } else if (pos.priority === 4) { // bottom
                 labelX1 = pointX - labelWidth / 2;
-                labelY1 = pointY + 20;
+                labelY1 = pointY + pos.y;
             } else if (pos.priority === 5) { // top-right
-                labelX1 = pointX + 15;
-                labelY1 = pointY - 15 - labelHeight;
+                labelX1 = pointX + pos.x;
+                labelY1 = pointY + pos.y - labelHeight;
             } else if (pos.priority === 6) { // top-left
-                labelX1 = pointX - 15 - labelWidth;
-                labelY1 = pointY - 15 - labelHeight;
+                labelX1 = pointX + pos.x - labelWidth;
+                labelY1 = pointY + pos.y - labelHeight;
             } else if (pos.priority === 7) { // bottom-left
-                labelX1 = pointX - 15 - labelWidth;
-                labelY1 = pointY + 15;
+                labelX1 = pointX + pos.x - labelWidth;
+                labelY1 = pointY + pos.y;
             } else { // bottom-right
-                labelX1 = pointX + 15;
-                labelY1 = pointY + 15;
+                labelX1 = pointX + pos.x;
+                labelY1 = pointY + pos.y;
             }
             
             labelX2 = labelX1 + labelWidth;
@@ -252,34 +359,15 @@ function makeChart(containerSelector, data) {
                     const otherLabelWidth = p[xField].length * fontSize * 0.6;
                     const otherLabelHeight = fontSize * 1.2;
                     
-                    if (pPos.priority === 1) {
-                        otherLabelX1 = pX + 20;
-                        otherLabelY1 = pY - otherLabelHeight/2;
-                    } else if (pPos.priority === 2) {
-                        otherLabelX1 = pX - otherLabelWidth / 2;
-                        otherLabelY1 = pY - 20 - otherLabelHeight;
-                    } else if (pPos.priority === 3) {
-                        otherLabelX1 = pX - 20 - otherLabelWidth;
-                        otherLabelY1 = pY - otherLabelHeight/2;
-                    } else if (pPos.priority === 4) {
-                        otherLabelX1 = pX - otherLabelWidth / 2;
-                        otherLabelY1 = pY + 20;
-                    } else if (pPos.priority === 5) {
-                        otherLabelX1 = pX + 15;
-                        otherLabelY1 = pY - 15 - otherLabelHeight;
-                    } else if (pPos.priority === 6) {
-                        otherLabelX1 = pX - 15 - otherLabelWidth;
-                        otherLabelY1 = pY - 15 - otherLabelHeight;
-                    } else if (pPos.priority === 7) {
-                        otherLabelX1 = pX - 15 - otherLabelWidth;
-                        otherLabelY1 = pY + 15;
-                    } else {
-                        otherLabelX1 = pX + 15;
-                        otherLabelY1 = pY + 15;
-                    }
+                    // 使用与上面相同的逻辑计算标签位置
+                    // 但这里使用其他点的位置信息
+                    // ... (省略重复逻辑)
                     
-                    otherLabelX2 = otherLabelX1 + otherLabelWidth;
-                    otherLabelY2 = otherLabelY1 + otherLabelHeight;
+                    // 简化起见，采用保守估计
+                    otherLabelX1 = pX - otherLabelWidth;
+                    otherLabelY1 = pY - otherLabelHeight;
+                    otherLabelX2 = pX + otherLabelWidth;
+                    otherLabelY2 = pY + otherLabelHeight;
                     
                     // 检查标签是否重叠
                     if (labelX1 < otherLabelX2 && labelX2 > otherLabelX1 && 
@@ -289,9 +377,10 @@ function makeChart(containerSelector, data) {
                     }
                 } else {
                     // 如果尚未分配位置，使用点重叠检测
-                    const pointRadius = 20;
-                    if (pX + pointRadius > labelX1 && pX - pointRadius < labelX2 && 
-                        pY + pointRadius > labelY1 && pY - pointRadius < labelY2) {
+                    // 使用其他点的图标大小
+                    const otherIconSize = getIconSize(p) / 2;
+                    if (pX + otherIconSize > labelX1 && pX - otherIconSize < labelX2 && 
+                        pY + otherIconSize > labelY1 && pY - otherIconSize < labelY2) {
                         hasOverlap = true;
                         break;
                     }
@@ -305,11 +394,34 @@ function makeChart(containerSelector, data) {
         }
         
         // 如果所有位置都有重叠，返回优先级最高的位置
-        return positions[0];
+        return adjustedPositions[0];
     }
-    // Determine circle size based on number of data points
+    // Determine circle size based on number of data points and y values
     const numPoints = chartData.length;
-    const circleRadius = numPoints <= 15 ? 15 : Math.max(10, 15 - (numPoints - 15) / 20);
+    const y2Min = d3.min(chartData, d => d[y2Field]);
+    const y2Max = d3.max(chartData, d => d[y2Field]);
+    const y2Range = y2Max - y2Min;
+    
+    // 创建rankScale来计算图标大小
+    // 首先对数据进行排序
+    const sortedData = [...chartData].sort((a, b) => d3.ascending(a[y2Field], b[y2Field]));
+    // 创建rank映射
+    const rankMap = new Map();
+    sortedData.forEach((d, i) => {
+        // 为相同值分配相同的rank
+        if (i > 0 && d[y2Field] === sortedData[i-1][y2Field]) {
+            rankMap.set(d, rankMap.get(sortedData[i-1]));
+        } else {
+            rankMap.set(d, i);
+        }
+    });
+    
+    // Function to calculate icon size based on rank
+    const getIconSize = (d) => {
+        const rank = rankMap.get(d);
+        // 将rank映射到10-40的范围
+        return 10 + (rank / (sortedData.length - 1 || 1)) * 30;
+    };
     
     // Add data points
     const points = g.selectAll(".data-point")
@@ -319,13 +431,9 @@ function makeChart(containerSelector, data) {
         .attr("class", "data-point")
         .attr("transform", d => `translate(${xScale(d[yField])}, ${yScale(d[y2Field])})`);
     
-    // random radius factor between 1 and 1.5
-    const radiusFactor = Math.random() * 0.5 + 1;
-
-    
     // Add white circular background
     points.append("circle")
-        .attr("r", circleRadius * radiusFactor)
+        .attr("r", d => getIconSize(d) / 2)
         .attr("fill", "white")
         .attr("stroke", "white")
         .attr("stroke-width", 4);
@@ -333,10 +441,10 @@ function makeChart(containerSelector, data) {
     // Add icon images
     points.append("image")
         .attr("xlink:href", d => images.field[d[xField]])
-        .attr("width", circleRadius * 2 * radiusFactor)
-        .attr("height", circleRadius * 2 * radiusFactor)
-        .attr("x", -circleRadius * radiusFactor)
-        .attr("y", -circleRadius * radiusFactor);
+        .attr("width", d => getIconSize(d))
+        .attr("height", d => getIconSize(d))
+        .attr("x", d => -getIconSize(d) / 2)
+        .attr("y", d => -getIconSize(d) / 2);
     
     // Iteratively optimize label positions to minimize overlaps
     let currentPositions = {};
@@ -441,14 +549,15 @@ function makeChart(containerSelector, data) {
         }
     });
     
-    // Add interactivity
+    // Update mouseover and mouseout logic
     points
         .on("mouseover", function(event, d) {
+            const iconSize = getIconSize(d);
             d3.select(this).select("image")
-                .attr("width", circleRadius * 2 + 3)
-                .attr("height", circleRadius * 2 + 3)
-                .attr("x", -(circleRadius + 1.5))
-                .attr("y", -(circleRadius + 1.5));
+                .attr("width", iconSize + 3)
+                .attr("height", iconSize + 3)
+                .attr("x", -(iconSize + 3) / 2)
+                .attr("y", -(iconSize + 3) / 2);
                 
             d3.select(this).select(".data-label")
                 .style("font-weight", "bold");
@@ -460,12 +569,13 @@ function makeChart(containerSelector, data) {
                 .style("left", (event.pageX + 10) + "px")
                 .style("top", (event.pageY - 20) + "px");
         })
-        .on("mouseout", function() {
+        .on("mouseout", function(event, d) {
+            const iconSize = getIconSize(d);
             d3.select(this).select("image")
-                .attr("width", circleRadius * 2)
-                .attr("height", circleRadius * 2)
-                .attr("x", -circleRadius)
-                .attr("y", -circleRadius);
+                .attr("width", iconSize)
+                .attr("height", iconSize)
+                .attr("x", -iconSize / 2)
+                .attr("y", -iconSize / 2);
                 
             d3.select(this).select(".data-label")
                 .style("font-weight", "normal");

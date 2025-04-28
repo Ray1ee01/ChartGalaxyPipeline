@@ -2,7 +2,7 @@
 REQUIREMENTS_BEGIN
 {
     "chart_type": "Proportional Area Chart(circle)",
-    "chart_name": "proportional_area_chart_(circle)_01",
+    "chart_name": "proportional_area_chart_circle_01",
     "is_composite": false,
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],

@@ -14,8 +14,8 @@ REQUIREMENTS_BEGIN
     "min_height": 400,
     "min_width": 800,
     "background": "light",
-    "icon_mark": "circle",
-    "icon_label": "legend",
+    "icon_mark": "none",
+    "icon_label": "none",
     "has_x_axis": "yes",
     "has_y_axis": "yes",
     "chart_for": "comparison"

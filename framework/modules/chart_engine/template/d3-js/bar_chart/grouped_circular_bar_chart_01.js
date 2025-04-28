@@ -5,6 +5,7 @@ REQUIREMENTS_BEGIN
     "chart_name": "grouped_circular_bar_chart_01",
     "is_composite": false,
     "required_fields": ["x", "y", "group"],
+    "hierarchy":["group"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
     "required_fields_range": [[2, 20], [0, "inf"], [2, 5]],
     "required_fields_icons": ["group"],
@@ -527,4 +528,3 @@ function makeChart(containerSelector, data) {
     // 返回 SVG 节点
     return svg.node();
 }
-

@@ -1,14 +1,14 @@
-`
+/*
 REQUIREMENTS_BEGIN
 {
-    "chart_type": "Grouped Bubble Chart",
-    "chart_name": "grouped_bubble_chart_01",
-    "required_fields": ["x", "y", "y2", "group"],
-    "required_fields_type": [["categorical"], ["numerical"], ["numerical"], ["categorical"]],
-    "required_fields_range": [[8, 150], [0, "inf"], [0, "inf"], [2, 6]],
+    "chart_type": "Bubble Chart",
+    "chart_name": "bubble_chart_01",
+    "required_fields": ["x", "y", "y2"],
+    "required_fields_type": [["categorical"], ["numerical"], ["numerical"]],
+    "required_fields_range": [[8, 150], [0, "inf"], [0, "inf"]],
     "required_fields_icons": ["x"],
     "required_other_icons": ["primary"],
-    "required_fields_colors": ["group"],
+    "required_fields_colors": [],
     "required_other_colors": ["primary"],
     "supported_effects": ["shadow", "radius_corner"],
     "min_height": 750,
@@ -20,7 +20,7 @@ REQUIREMENTS_BEGIN
     "has_y_axis": "no"
 }
 REQUIREMENTS_END
-`
+*/
 
 function makeChart(containerSelector, data) {
     // Extract data
@@ -39,8 +39,7 @@ function makeChart(containerSelector, data) {
     const xField = dataColumns[0].name;
     const yField = dataColumns[1].name;
     const y2Field = dataColumns[2].name;
-    const groupColumn = dataColumns.find(column => column.role === "group");
-    const groupField = groupColumn.name;
+    
     // Set dimensions and margins
     const width = variables.width;
     const height = variables.height;
@@ -327,8 +326,8 @@ function makeChart(containerSelector, data) {
     // Add white circular background
     points.append("circle")
         .attr("r", circleRadius * radiusFactor)
-        .attr("fill", d => colors.field[d[groupField]])
-        .attr("stroke", d => colors.field[d[groupField]])
+        .attr("fill", "white")
+        .attr("stroke", "white")
         .attr("stroke-width", 4);
     
     // Add icon images
