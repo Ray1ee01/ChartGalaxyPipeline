@@ -649,8 +649,6 @@ function makeChart(containerSelector, data) {
         firstSvg.remove();
     }
     
-
-
     // 返回SVG节点
     return svg.node();
 }
