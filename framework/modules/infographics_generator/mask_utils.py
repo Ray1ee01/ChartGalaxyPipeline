@@ -193,17 +193,21 @@ def calculate_mask_v3(svg_content: str, width: int, height: int, background_colo
         # 直接用Counter找出最常见的颜色
         from collections import Counter
         mode_color = np.array(Counter(pixels_tuple).most_common(1)[0][0])
-    
     # 使用mode_color作为众数颜色创建mask
     mask = np.zeros((height, width), dtype=np.uint8)
     mask_only_text = np.zeros((height, width), dtype=np.uint8)
+    
+    # 计算颜色差异,使用更严格的阈值
     color_diff = np.sqrt(np.sum((img_array_without_text - mode_color) ** 2, axis=2))
-    mask[color_diff <= 10] = 1
+    mask[color_diff <= 2] = 1  # 降低阈值从10到5,要求更接近mode_color
+    
+    # 计算与背景色的差异,使用更严格的阈值
     color_diff_only_text = np.sqrt(np.sum((img_array_only_text - background_color) ** 2, axis=2))
-    mask_only_text[color_diff_only_text >= 10] = 1
+    mask_only_text[color_diff_only_text >= 15] = 1  # 提高阈值从10到15,要求与背景色差异更大
+    
+    # 初始化填充mask
     fill_mask = np.zeros((height, width), dtype=np.uint8)
     fill_mask_only_text = np.zeros((height, width), dtype=np.uint8)
-    
     mask_padding = 8
     for i in range(height):
         last_j = -mask_padding

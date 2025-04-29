@@ -2,7 +2,7 @@
 REQUIREMENTS_BEGIN
 {
     "chart_type": "Voronoi Treemap(Circle)",
-    "chart_name": "voronoi_treemap_circle_01",
+    "chart_name": "voronoi_treemap_circle_03",
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],
     "required_fields_range": [[5, 40], [0, "inf"]],
@@ -182,73 +182,54 @@ function makeChart(containerSelector, data) {
                 
                 // 检查文本是否适合单元格
                 const textWidth = this.getComputedTextLength();
+                const text = d3.select(this);
                 
-                if (textWidth > boxWidth * 0.8 || boxHeight < 30) {
-                    // 如果文本太长或单元格太小，缩小字体而不是隐藏
-                    d3.select(this)
-                        .attr("font-size", "10px")
-                        .text(function() {
-                            const origText = this.textContent;
-                            // 如果文本超过10个字符且单元格很小，尝试换行
-                            if (origText.length > 10 && boxHeight < 40) {
-                                const midPoint = Math.floor(origText.length / 2);
-                                // 找到最近的空格或标点符号
-                                let breakPoint = midPoint;
-                                const punctuation = [' ', '，', '。', '、', ',', '.'];
-                                let minDistance = origText.length;
-                                
-                                for (let i = 0; i < origText.length; i++) {
-                                    if (punctuation.includes(origText[i])) {
-                                        const distance = Math.abs(i - midPoint);
-                                        if (distance < minDistance) {
-                                            minDistance = distance;
-                                            breakPoint = i;
-                                        }
-                                    }
-                                }
-                                
-                                // 如果找到合适的断点就换行，否则直接在中间换行
-                                if (punctuation.includes(origText[breakPoint])) {
-                                    return origText.substring(0, breakPoint + 1) + '\n' + origText.substring(breakPoint + 1);
-                                } else {
-                                    return origText.substring(0, midPoint) + '\n' + origText.substring(midPoint);
-                                }
-                            }
-                            return origText;
-                        })
-                        .attr("dy", function() {
-                            // 如果文本包含换行符，调整垂直位置
-                            return this.textContent.includes('\n') ? "-0.5em" : "0";
-                        });
+                // 不再隐藏文本，而是调整大小
+                if (textWidth > boxWidth * 0.8) {
+                    // 如果文本太长，逐步缩小字体
+                    let fontSize = 14;
+                    text.attr("font-size", `${fontSize}px`);
                     
-                    // 如果文本包含换行符，创建第二行
-                    if (d3.select(this).text().includes('\n')) {
-                        const lines = d3.select(this).text().split('\n');
-                        d3.select(this).text(lines[0]);
-                        
-                        // 添加第二行
-                        g.append("text")
-                            .attr("x", d3.polygonCentroid(d)[0])
-                            .attr("y", d3.polygonCentroid(d)[1])
-                            .attr("text-anchor", "middle")
-                            .attr("dominant-baseline", "middle")
-                            .attr("fill", "#fff")
-                            .attr("font-size", "10px")
-                            .attr("font-weight", "bold")
-                            .attr("dy", "1em")
-                            .text(lines[1]);
+                    while (this.getComputedTextLength() > boxWidth * 0.9 && fontSize > 8) {
+                        fontSize -= 1;
+                        text.attr("font-size", `${fontSize}px`);
+                    }
+                    
+                    // 如果字体已经很小但仍然太宽，尝试换行显示
+                    if (this.getComputedTextLength() > boxWidth * 0.9) {
+                        const originalText = text.text();
+                        if (originalText.length > 3) {
+                            // 分成两行
+                            const midPoint = Math.ceil(originalText.length / 2);
+                            const firstLine = originalText.substring(0, midPoint);
+                            const secondLine = originalText.substring(midPoint);
+                            
+                            // 清除原始文本
+                            text.text("");
+                            
+                            // 添加第一行
+                            text.append("tspan")
+                                .attr("x", d3.polygonCentroid(d)[0])
+                                .attr("dy", "-0.3em")
+                                .text(firstLine);
+                            
+                            // 添加第二行
+                            text.append("tspan")
+                                .attr("x", d3.polygonCentroid(d)[0])
+                                .attr("dy", "1.2em")
+                                .text(secondLine);
+                        }
                     }
                 }
             } catch (e) {
                 console.error("Error in text sizing:", e);
-                // 即使出错也不隐藏文本，而是显示小号字体
-                d3.select(this).attr("font-size", "8px");
             }
         });
     
     // 添加值标签
     const format = d3.format(",d");
     cells.append("text")
+        .attr("class", "value-label")
         .attr("x", d => {
             try {
                 return d3.polygonCentroid(d)[0];
@@ -258,10 +239,7 @@ function makeChart(containerSelector, data) {
         })
         .attr("y", d => {
             try {
-                // 根据分类标签是否换行来调整位置
-                const name = d.site.originalObject.data.originalData.name;
-                const offset = name.length > 10 ? 25 : 15;
-                return d3.polygonCentroid(d)[1] + offset;
+                return d3.polygonCentroid(d)[1] + 15;
             } catch (e) {
                 return 0;
             }
@@ -295,19 +273,60 @@ function makeChart(containerSelector, data) {
                 
                 // 检查文本是否适合单元格
                 const textWidth = this.getComputedTextLength();
+                const text = d3.select(this);
                 
-                if (textWidth > boxWidth * 0.8 || boxHeight < 40) {
-                    // 如果单元格很小，缩小字体而不是隐藏文本
-                    d3.select(this)
-                        .attr("font-size", "8px")
-                        .attr("fill-opacity", 0.9);
+                // 确保值标签显示
+                if (textWidth > boxWidth * 0.8) {
+                    // 如果值标签太长，调整字体大小
+                    let fontSize = 12;
+                    text.attr("font-size", `${fontSize}px`);
+                    
+                    // 降低字体大小
+                    while (this.getComputedTextLength() > boxWidth * 0.85 && fontSize > 7) {
+                        fontSize -= 1;
+                        text.attr("font-size", `${fontSize}px`);
+                    }
+                    
+                    // 如果单元格很小，调整y位置，避免与名称标签重叠
+                    const nameLabel = d3.select(this.parentNode).select("text:not(.value-label)");
+                    
+                    // 如果单元名称使用了两行显示（有tspan元素），则需要下移值标签
+                    if (nameLabel.selectAll("tspan").size() > 0) {
+                        text.attr("y", d => {
+                            try {
+                                return d3.polygonCentroid(d)[1] + 25;
+                            } catch (e) {
+                                return 0;
+                            }
+                        });
+                    }
                 }
             } catch (e) {
                 console.error("Error in value sizing:", e);
-                // 即使出错也不隐藏文本，而是显示小号字体
-                d3.select(this).attr("font-size", "8px");
             }
         });
+
+    const roughness = 2;
+    const bowing = 2;
+    const fillStyle = "solid";
+    const randomize = true;
+    const pencilFilter = false;
+        
+    const svgConverter = new svg2roughjs.Svg2Roughjs(containerSelector);
+    svgConverter.pencilFilter = pencilFilter;
+    svgConverter.randomize = randomize;
+    svgConverter.svg = svg.node();
+    svgConverter.roughConfig = {
+        bowing,
+        roughness,
+        fillStyle
+    };
+    svgConverter.sketch();
+    // Remove the first SVG element if it exists
+    const firstSvg = document.querySelector(`${containerSelector} svg`);
+    if (firstSvg) {
+        firstSvg.remove();
+    }
     
     return svg.node();
 } 

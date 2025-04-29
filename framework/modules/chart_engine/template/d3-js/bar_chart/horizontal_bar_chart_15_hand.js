@@ -2,7 +2,7 @@
 REQUIREMENTS_BEGIN
 {
     "chart_type": "Horizontal Bar Chart",
-    "chart_name": "horizontal_bar_chart_15",
+    "chart_name": "horizontal_bar_chart_15_hand",
     "is_composite": true,
     "required_fields": [["x", "y"], ["x", "y2"]],
     "required_fields_type": [
@@ -10,8 +10,8 @@ REQUIREMENTS_BEGIN
         [["categorical"], ["numerical"]]
     ],
     "required_fields_range": [
-        [[2, 30], [0, "inf"]],
-        [[2, 30], [0, "inf"]]
+        [[2, 15], [0, "inf"]],
+        [[2, 15], [0, "inf"]]
     ],
     "required_fields_icons": ["x"],
     "required_other_icons": [],
@@ -140,7 +140,7 @@ function makeChart(containerSelector, data) {
     
     // 设置边距
     const margin = {
-        top: 100,      // 顶部留出标题空间
+        top: 120,      // 顶部留出标题空间
         right: 20,     // 右侧边距
         bottom: 60,    // 底部边距
         left: 20       // 初始左侧边距
@@ -250,7 +250,7 @@ function makeChart(containerSelector, data) {
     const titleWidth = width / 2;
     
     // 设置图例大小和间距
-    const legendSize = 16;  // 图例方块/圆形大小
+    const legendSize = 28.8;  // 图例方块/圆形大小，原来16的1.8倍
     const legendMargin = 8; // 图例与文本间距
     const legendTextOffset = legendSize + legendMargin; // 文本起始位置偏移
     
@@ -467,6 +467,28 @@ function makeChart(containerSelector, data) {
             console.error(`Error rendering chart element for ${dimension}:`, error);
         }
     });
+    
+    const roughness = 2;
+    const bowing = 2;
+    const fillStyle = "solid";
+    const randomize = true;
+    const pencilFilter = false;
+        
+    const svgConverter = new svg2roughjs.Svg2Roughjs(containerSelector);
+    svgConverter.pencilFilter = pencilFilter;
+    svgConverter.randomize = randomize;
+    svgConverter.svg = svg.node();
+    svgConverter.roughConfig = {
+        bowing,
+        roughness,
+        fillStyle
+    };
+    svgConverter.sketch();
+    // Remove the first SVG element if it exists
+    const firstSvg = document.querySelector(`${containerSelector} svg`);
+    if (firstSvg) {
+        firstSvg.remove();
+    }
     
     // 返回SVG节点
     return svg.node();

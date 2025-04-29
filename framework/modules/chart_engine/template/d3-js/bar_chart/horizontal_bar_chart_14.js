@@ -427,33 +427,17 @@ function makeChart(containerSelector, data) {
             let textFitsInCircle = (circleRadius * 2 > value2TextWidth + 10);           
             
             
-            
-            if (textFitsInCircle) {
-                // 文本放在圆内，白色
-                g.append("text")
-                    .attr("x", circleX)
-                    .attr("y", centerY)
-                    .attr("dy", "0.35em")
-                    .attr("text-anchor", "middle")
-                    .style("font-family", typography.label.font_family)
-                    .style("font-size", typography.label.font_size)
-                    .style("font-weight", typography.label.font_weight)
-                    .style("fill", "#FFFFFF")
-                    .text(formattedValue2);
-            } else {
-                // 文本放在圆上方，与圆相同颜色
-                g.append("text")
-                    .attr("x", circleX)
-                    .attr("y", centerY - circleRadius - 5)
-                    .attr("dy", "0em")
-                    .attr("text-anchor", "middle")
-                    .style("font-family", typography.label.font_family)
-                    .style("font-size", typography.label.font_size)
-                    .style("font-weight", typography.label.font_weight)
-                    .style("fill", getBarColor(dimension))
-                    .text(formattedValue2);
-            }
-            
+            // 文本放在圆内，白色
+            g.append("text")
+                .attr("x", circleX)
+                .attr("y", centerY)
+                .attr("dy", "0.35em")
+                .attr("text-anchor", "middle")
+                .style("font-family", typography.label.font_family)
+                .style("font-size", typography.label.font_size)
+                .style("font-weight", typography.label.font_weight)
+                .style("fill", "#FFFFFF")
+                .text(formattedValue2);
             // 5. 添加连接线 - 从条形图（或标签）到圆形
             // 获取线的颜色，使用对应维度的颜色
             const lineColor = getBarColor(dimension);

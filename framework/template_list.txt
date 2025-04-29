@@ -13,10 +13,16 @@ multiple donut chart / multiple_donut_chart_02
 bubble chart / bubble_chart_02
 rose chart / rose_chart_01
 stacked bar chart / echarts_stacked_bar_chart_01
+treemap / treemap_05
 treemap / treemap_01
-voronoi treemap(rectangle) / voronoi_treemap_rectangle_01
+treemap / treemap_04
+treemap / treemap_02
+treemap / treemap_03
+treemap / treemap_06
+voronoi treemap(circle) / voronoi_treemap_circle_03
 voronoi treemap(circle) / voronoi_treemap_circle_02
 voronoi treemap(circle) / voronoi_treemap_circle_01
+voronoi treemap(rectangle) / voronoi_treemap_rectangle_01
 donut chart / donut_chart_02
 donut_chart / donut_chart_00
 donut_chart / donut_chart_05_d3
@@ -58,15 +64,19 @@ grouped circular bar chart / grouped_circular_bar_chart_01
 horizontal diverging bar chart / horizontal_diverging_bar_chart_01
 horizontal diverging bar chart / horizontal_diverging_bar_chart_04
 horizontal diverging bar chart / horizontal_diverging_bar_chart_02
+horizontal diverging bar chart / horizontal_diverging_bar_chart_04_hand
 horizontal diverging bar chart / horizontal_diverging_bar_chart_08
 horizontal diverging bar chart / horizontal_diverging_bar_chart_03
 horizontal diverging bar chart / horizontal_diverging_bar_chart_09
 horizontal diverging bar chart / horizontal_diverging_bar_chart_10
+horizontal diverging bar chart / horizontal_diverging_bar_chart_01_hand
 horizontal diverging bar chart / horizontal_diverging_bar_chart_07
 horizontal diverging bar chart / horizontal_diverging_bar_chart_06
 horizontal diverging bar chart / horizontal_diverging_bar_chart_05
 horizontal group bar chart / horizontal_group_bar_chart_02
 horizontal group bar chart / horizontal_group_bar_chart_04
+horizontal group bar chart / horizontal_group_bar_chart_01_hand
+horizontal group bar chart / horizontal_group_bar_chart_03_hand
 horizontal group bar chart / horizontal_group_bar_chart_01
 horizontal group bar chart / horizontal_group_bar_chart_03
 horizontal group bar chart / horizontal_group_bar_chart_05
@@ -87,7 +97,7 @@ vertical group bar chart / vertical_group_bar_chart_4
 vertical group bar chart / vertical_group_bar_chart_3
 vertical group bar chart / vertical_group_bar_chart_6
 vertical group bar chart / vertical_group_bar_chart_7
-horizontal bar chart / horizontal_bar_chart_0
+vertical dot bar chart / vertical_dot_bar_chart_01
 horizontal bar chart / horizontal_bar_chart_4
 horizontal bar chart / horizontal_bar_chart_6
 horizontal bar chart / horizontal_bar_chart_7
@@ -97,16 +107,18 @@ horizontal bar chart / horizontal_bar_chart_16
 horizontal bar chart / horizontal_bar_chart_14
 horizontal bar chart / horizontal_bar_chart_11
 horizontal bar chart / horizontal_bar_chart_2
+horizontal bar chart / horizontal_bar_chart_5_hand
 horizontal bar chart / horizontal_bar_chart_3
 horizontal bar chart / horizontal_bar_chart_5
+horizontal bar chart / horizontal_bar_chart_15_hand
 horizontal bar chart / horizontal_bar_chart_15
 horizontal bar chart / horizontal_bar_chart_1
 horizontal bar chart / horizontal_bar_chart_17
+horizontal bar chart / horizontal_bar_chart_4_hand
 horizontal bar chart / horizontal_bar_chart_12
 horizontal bar chart / horizontal_bar_chart_10
 horizontal bar chart / horizontal_bar_chart_13
-vertical dot bar chart / vertical_dot_bar_chart_01
-horizontal pictorial percentage bar chart / horizontal_pictorial_percentage_bar_chart_01
+horizontal bar chart / horizontal_bar_chart_2_hand
 vertical group dot bar chart / vertical_group_dot_bar_chart_0
 vertical stacked bar chart / vertical_stacked_bar_chart_0
 vertical stacked bar chart / vertical_stacked_bar_chart_1
@@ -119,6 +131,7 @@ horizontal lollipop chart / horizontal_lollipop_chart_01
 horizontal stacked bar chart / horizontal_stacked_bar_chart_2
 horizontal stacked bar chart / horizontal_stacked_bar_chart_1
 horizontal stacked bar chart / horizontal_stacked_bar_chart_3
+horizontal stacked bar chart / horizontal_stacked_bar_chart_2_hand
 horizontal stacked bar chart / horizontal_stacked_bar_chart_0
 vertical waffle chart / vertical_waffle_chart_01
 radial bar chart / radial_bar_chart_03
