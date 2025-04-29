@@ -889,73 +889,73 @@ def process(input: str, output: str, base_url: str, api_key: str, chart_name: st
         framework = engine
         framework_type = None
 
-        # 渲染图表
-        render_chart_start = time.time()
-        timestamp = int(time.time())
-        output_dir = os.path.dirname(output)
-        output_filename = os.path.basename(output)
-        
-        # 创建子文件夹
-        subfolder_name = f"{timestamp}_{chart_name}_{os.path.splitext(output_filename)[0]}"
-        subfolder_path = os.path.join(output_dir, subfolder_name)
-        os.makedirs(subfolder_path, exist_ok=True)
-        
-        # 在子文件夹中创建文件路径
-        new_filename = "chart.svg"
-        output_path = os.path.join(subfolder_path, new_filename)
-        info_filename = "info.json"
-        info_path = os.path.join(subfolder_path, info_filename)
-        html_filename = "chart.html" 
-        html_path = os.path.join(subfolder_path, html_filename)
-        png_filename = "chart.png"
-        png_path = os.path.join(subfolder_path, png_filename)
-        mask_filename = "chart.mask.png"
-        mask_path = os.path.join(subfolder_path, mask_filename)
-        datatable_name = "data.json"
-        datatable_path = os.path.join(subfolder_path, datatable_name)
-        #try:
-        render_chart_to_svg(
-            json_data=data,
-            output_svg_path=chart_svg_path,
-            js_file=template,
-            framework=framework, # Extract framework name (echarts/d3)
-            framework_type=framework_type,
-            html_output_path=html_path
-        )
-        render_chart_time = time.time() - render_chart_start
-        logger.info(f"Rendering chart took: {render_chart_time:.4f} seconds")
-        # print("chart_svg_path: ", chart_svg_path)
-        with open(chart_svg_path, "r", encoding="utf-8") as f:
-            chart_svg_content = f.read()
-            if "This is a fallback SVG using a PNG screenshot" in chart_svg_content:
-                return False
-            chart_inner_content = extract_svg_content(chart_svg_content)
-        # print("chart_inner_content: ", chart_inner_content)
-        assemble_start = time.time()
-        final_svg, layout_info = make_infographic(
-            data=data,
-            chart_svg_content=chart_inner_content,
-            padding=padding,
-            between_padding=between_padding,
-            dark=requirements.get("background", "light") == "dark",
-            html_path=html_path,
-            mask_path=mask_path
-        )
-        # print("final_svg: ", final_svg)
-        layout_info["chart_variation"] = chart_name
-        layout_info["chart_type"] = chart_type
-        layout_info["data_source"] = input
-
-        assemble_time = time.time() - assemble_start
-        logger.info(f"Assembling infographic took: {assemble_time:.4f} seconds")
-        # 读取生成的SVG内容
-        read_svg_start = time.time()
-        
-        if final_svg is None:
-            logger.error("Failed to assemble infographic: SVG content extraction failed")
+    # 渲染图表
+    render_chart_start = time.time()
+    timestamp = int(time.time())
+    output_dir = os.path.dirname(output)
+    output_filename = os.path.basename(output)
+    
+    # 创建子文件夹
+    subfolder_name = f"{timestamp}_{chart_name}_{os.path.splitext(output_filename)[0]}"
+    subfolder_path = os.path.join(output_dir, subfolder_name)
+    os.makedirs(subfolder_path, exist_ok=True)
+    
+    # 在子文件夹中创建文件路径
+    new_filename = "chart.svg"
+    output_path = os.path.join(subfolder_path, new_filename)
+    info_filename = "info.json"
+    info_path = os.path.join(subfolder_path, info_filename)
+    html_filename = "chart.html" 
+    html_path = os.path.join(subfolder_path, html_filename)
+    png_filename = "chart.png"
+    png_path = os.path.join(subfolder_path, png_filename)
+    mask_filename = "chart.mask.png"
+    mask_path = os.path.join(subfolder_path, mask_filename)
+    datatable_name = "data.json"
+    datatable_path = os.path.join(subfolder_path, datatable_name)
+    #try:
+    render_chart_to_svg(
+        json_data=data,
+        output_svg_path=chart_svg_path,
+        js_file=template,
+        framework=framework, # Extract framework name (echarts/d3)
+        framework_type=framework_type,
+        html_output_path=html_path
+    )
+    render_chart_time = time.time() - render_chart_start
+    logger.info(f"Rendering chart took: {render_chart_time:.4f} seconds")
+    # print("chart_svg_path: ", chart_svg_path)
+    with open(chart_svg_path, "r", encoding="utf-8") as f:
+        chart_svg_content = f.read()
+        if "This is a fallback SVG using a PNG screenshot" in chart_svg_content:
             return False
         chart_inner_content = extract_svg_content(chart_svg_content)
-    print("chart_inner_content: ", chart_inner_content)
+    # print("chart_inner_content: ", chart_inner_content)
+    assemble_start = time.time()
+    final_svg, layout_info = make_infographic(
+        data=data,
+        chart_svg_content=chart_inner_content,
+        padding=padding,
+        between_padding=between_padding,
+        dark=requirements.get("background", "light") == "dark",
+        html_path=html_path,
+        mask_path=mask_path
+    )
+    # print("final_svg: ", final_svg)
+    layout_info["chart_variation"] = chart_name
+    layout_info["chart_type"] = chart_type
+    layout_info["data_source"] = input
+
+    assemble_time = time.time() - assemble_start
+    logger.info(f"Assembling infographic took: {assemble_time:.4f} seconds")
+    # 读取生成的SVG内容
+    read_svg_start = time.time()
+    
+    if final_svg is None:
+        logger.error("Failed to assemble infographic: SVG content extraction failed")
+        return False
+    chart_inner_content = extract_svg_content(chart_svg_content)
+    
     assemble_start = time.time()
     final_svg, layout_info = make_infographic(
         data=data,
