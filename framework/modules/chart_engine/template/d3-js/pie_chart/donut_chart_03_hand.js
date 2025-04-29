@@ -2,7 +2,7 @@
 REQUIREMENTS_BEGIN
 {
     "chart_type": "donut_chart",
-    "chart_name": "donut_chart_03_d3",
+    "chart_name": "donut_chart_03_d3_hand",
     "is_composite": false,
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],
@@ -364,7 +364,8 @@ function makeChart(containerSelector, data) {
         if (iconWidth > 20) {
             const iconArc = d3.arc()
                 .innerRadius(maxRadius)
-                .outerRadius(maxRadius);
+                .outerRadius(maxRadius)
+                .padAngle(0.01)
 
             // 创建剪切路径
             const clipId = `clip-${i}`;
@@ -600,11 +601,14 @@ function makeChart(containerSelector, data) {
     const legendSize = layoutLegend(legendGroup, xs, colors, {
         x: titleWidth + titleMargin,
         y: 0,
-        fontSize: 14,
+        fontSize: 14 * 1.25, // 增大字体大小1.25倍
         fontWeight: "bold",
         align: "left",
         maxWidth: chartWidth - titleWidth - titleMargin,
         shape: "rect",
+        symbolSize: 10 * 1.8, // 增大矩形大小1.8倍
+        itemSpacing: 23, // 默认20px，增加3px
+        rowSpacing: 13  // 默认10px，增加3px
     });
 
     // 添加字段名称
@@ -618,7 +622,29 @@ function makeChart(containerSelector, data) {
         .text(xField);
     
     // 将图例组向上移动 height/2, 并居中
-    legendGroup.attr("transform", `translate(${(chartWidth - legendSize.width - titleWidth - titleMargin) / 2}, ${-legendSize.height / 2 - 20})`);
+    legendGroup.attr("transform", `translate(${(chartWidth - legendSize.width - titleWidth - titleMargin) / 2}, ${-legendSize.height / 2 - 23})`); // 增加向上移动的距离
     
+    const roughness = 1;
+    const bowing = 1;
+    const fillStyle = "solid";
+    const randomize = true;
+    const pencilFilter = false;
+        
+    const svgConverter = new svg2roughjs.Svg2Roughjs(containerSelector);
+    svgConverter.pencilFilter = pencilFilter;
+    svgConverter.randomize = randomize;
+    svgConverter.svg = svg.node();
+    svgConverter.roughConfig = {
+        bowing,
+        roughness,
+        fillStyle
+    };
+    svgConverter.sketch();
+    // Remove the first SVG element if it exists
+    const firstSvg = document.querySelector(`${containerSelector} svg`);
+    if (firstSvg) {
+        firstSvg.remove();
+    }
+
     return svg.node();
 }
