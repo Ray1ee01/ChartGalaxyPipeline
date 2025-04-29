@@ -5,6 +5,23 @@ from modules.infographics_generator.color_utils import get_contrast_color
 
 # 添加全局字典来跟踪模板使用频率
 template_usage_counter = {}
+field_order = ['x', 'y', 'y2', 'y3', 'size', 'group', 'group2', 'group3']
+
+def flatten(lst):
+    """Flattens a nested list into a single list."""
+    result = []
+    for item in lst:
+        if isinstance(item, list):  # Check if the item is a list
+            result.extend(flatten(item))  # Recursively flatten the sublist
+        else:
+            result.append(item)  # Add the non-list item to the result
+    return result
+
+def get_flatten_fields(required_fields) -> List[str]:
+    """Flatten a nested list of fields into a single list"""
+    lst = flatten(required_fields)
+    lst = [field for field in field_order if field in lst]
+    return lst
 
 def get_unique_fields_and_types(
         required_fields: Union[List[str], List[List[str]]],
@@ -12,7 +29,6 @@ def get_unique_fields_and_types(
         required_fields_range: Optional[Union[List[List[int]], List[List[List[int]]]]] = None
     ) -> Tuple[List[str], Dict[str, str], List[List[int]]]:
     """Extract unique fields and their corresponding types from nested structure"""
-    field_order = ['x', 'y', 'y2', 'group', 'group2']  # Define the order of fields
     field_types = {}
     field_ranges = {}
     
@@ -97,7 +113,7 @@ def check_field_color_compatibility(requirements: Dict, data: Dict) -> bool:
     """Check if the field color is compatible with the template"""
     if len(requirements.get('required_fields_colors', [])) > 0 and len(data.get("colors", {}).get("field", {}).keys()) == 0:
         return False
-    data_fields = requirements.get('required_fields',[])
+    data_fields = get_flatten_fields(requirements.get('required_fields',[]))
     for color_field in requirements.get('required_fields_colors', []):
         field_column = None
         for i, field in enumerate(data_fields):
@@ -116,7 +132,7 @@ def check_field_icon_compatibility(requirements: Dict, data: Dict) -> bool:
     """Check if the field icon is compatible with the template"""
     if len(requirements.get('required_fields_icons', [])) > 0 and len(data.get("images", {}).get("field", {}).keys()) == 0:
         return False
-    data_fields = requirements.get('required_fields',[])
+    data_fields = get_flatten_fields(requirements.get('required_fields',[]))
     for icon_field in requirements.get('required_fields_icons', []):
         for i, field in enumerate(data_fields):
             if field == icon_field:
@@ -189,7 +205,7 @@ def check_template_compatibility(data: Dict, templates: Dict, specific_chart_nam
                             # print("data_types", data_types)
                             # print("combination_types", combination_types)
                             # 如果data_types和combination_types相同，或者data_types是combination_types的一个子序列
-                            if len(data_types) == len(combination_types):
+                            if len(data_types) == len(combination_types):# or all(data_type in combination_types for data_type in data_types):
                                 check_flag = True
                                 for data_type, combination_type in zip(data_types, combination_types[:len(data_types)]):
                                     if data_type == "categorical" and (combination_type == "temporal" or combination_type == "categorical"):
@@ -219,9 +235,6 @@ def check_template_compatibility(data: Dict, templates: Dict, specific_chart_nam
                                     if len(unique_values) > range[1] or len(unique_values) < range[0]:
                                         flag = False
                                         break
-                                    elif "dual_direction" in chart_name and min_value >= 0:
-                                        flag = False
-                                        break
                                     else:
                                         pass
                                         #if specific_chart_name and specific_chart_name == chart_name:
@@ -231,6 +244,9 @@ def check_template_compatibility(data: Dict, templates: Dict, specific_chart_nam
                                     min_value = min(value[key] for value in data["data"]["data"])
                                     max_value = max(value[key] for value in data["data"]["data"])
                                     if min_value < range[0] or max_value > range[1]:
+                                        flag = False
+                                        break
+                                    elif "diverging" in chart_name and min_value >= 0 and range[0] < 0:
                                         flag = False
                                         break
                                     elif "scatterplot" in chart_name and min_value >= 0 and range[0] < 0:

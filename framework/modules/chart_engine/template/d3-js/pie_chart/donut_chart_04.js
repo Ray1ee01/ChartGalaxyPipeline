@@ -322,16 +322,8 @@ function makeChart(containerSelector, data) {
             );
             
             const fillColor = colors.field[d.data[xField]] || colors.other.primary;
-            // 如果这里颜色深，则使用白色文字，否则使用黑色文字
-            // 将颜色转换为RGB值
-            const rgb = fillColor.match(/\d+/g).map(Number);
-            // 计算亮度 (使用相对亮度公式)
-            const brightness = (rgb[0] * 299 + rgb[1] * 587 + rgb[2] * 114) / 1000;
-            if (brightness < 150) {
-                colors.text_color = '#FFFFFF';
-            } else {
-                colors.text_color = '#000000';
-            }
+            // 直接使用黑色文字，不再根据背景色调整
+            colors.text_color = '#000000';
 
             const textCategory = g.append("text")
                 .attr("transform", `translate(${labelPosition})`)
@@ -433,6 +425,9 @@ function makeChart(containerSelector, data) {
             
             const fillColor = colors.field[d.data[xField]] || colors.other.primary;
 
+            // 直接使用黑色文字
+            colors.text_color = '#000000';
+
             const textCategory = g.append("text")
                 .attr("transform", `translate(${labelPosition})`)
                 .attr("text-anchor", "middle")
@@ -473,11 +468,15 @@ function makeChart(containerSelector, data) {
     const legendSize = layoutLegend(legendGroup, xs, colors, {
         x: titleWidth + titleMargin,
         y: 0,
-        fontSize: 14,
+        fontSize: 18,  // 增大图例字体
         fontWeight: "bold",
         align: "left",
         maxWidth: chartWidth - titleWidth - titleMargin,
         shape: "rect",
+        symbolSize: 16,  // 增大图例符号尺寸
+        itemHeight: 28,  // 增大图例项高度
+        itemSpacing: 28,  // 增大图例项间距
+        rowSpacing: 15    // 增大行间距
     });
 
     // 添加字段名称
@@ -486,7 +485,7 @@ function makeChart(containerSelector, data) {
         .attr("y", legendSize.height / 2)
         .attr("dominant-baseline", "middle")
         .attr("fill", "#333")
-        .style("font-size", "16px")
+        .style("font-size", "18px") // 增大字段名称字体
         .style("font-weight", "bold")
         .text(xField);
     

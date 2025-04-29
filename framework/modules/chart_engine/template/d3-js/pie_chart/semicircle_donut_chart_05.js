@@ -76,18 +76,18 @@ function makeChart(containerSelector, data) {
         .attr("xmlns", "http://www.w3.org/2000/svg")
         .attr("xmlns:xlink", "http://www.w3.org/1999/xlink");
     
-    // 创建饼图生成器
+    // 创建饼图生成器 - 设置起始角度和结束角度
     const pie = d3.pie()
         .value(d => d[yField])
-        .sort(null);
-
-    // 创建弧形生成器
+        .sort(null)
+        .startAngle(-Math.PI / 2)  // 起始角度为-90度
+        .endAngle(Math.PI / 2);    // 结束角度为90度
+        
+    // 创建弧形生成器 - 移除固定的角度设置
     const arc = d3.arc()
         .innerRadius(maxRadius*0.5)
         .outerRadius(maxRadius)
-        .startAngle(-Math.PI / 2)  // 设置起始角度为-90度
-        .endAngle(Math.PI / 2)     // 设置结束角度为90度
-        .padAngle(0)
+        .padAngle(0.02)  // 添加一点间隔
         .cornerRadius(5);
 
     // 计算每个组的百分比
@@ -96,6 +96,8 @@ function makeChart(containerSelector, data) {
         ...d,
         percentage: (d[yField] / total) * 100
     }));
+    
+    // 生成扇区数据
     const sectors = pie(dataWithPercentages);
     console.log("sectors: ", sectors);
 
@@ -243,7 +245,7 @@ function makeChart(containerSelector, data) {
         let iconWidth = Math.min(innerLength / 3, 150);
         let iconHeight = iconWidth;
         if (iconWidth > 20) {
-            // 获取扇区中心点
+            // 获取扇区中心点和弧形
             const iconArc = d3.arc()
                 .innerRadius(maxRadius*0.5)
                 .outerRadius(maxRadius);

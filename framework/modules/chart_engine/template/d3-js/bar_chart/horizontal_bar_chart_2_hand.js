@@ -2,17 +2,17 @@
 REQUIREMENTS_BEGIN
 {
     "chart_type": "Horizontal Bar Chart",
-    "chart_name": "horizontal_bar_chart_18",
+    "chart_name": "horizontal_bar_chart_2_hand",
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],
-    "required_fields_range": [[3, 20], [0, 100000]],
-    "required_fields_icons": ["x"],
+    "required_fields_range": [[3, 20], [0, 100]],
+    "required_fields_icons": [],
     "required_other_icons": [],
     "required_fields_colors": [],
-    "required_other_colors": [],
+    "required_other_colors": ["primary", "secondary", "background"],
     "supported_effects": ["gradient", "opacity"],
-    "min_height": 300,
-    "min_width": 300,
+    "min_height": 600,
+    "min_width": 800,
     "background": "light",
     "icon_mark": "none",
     "icon_label": "none",
@@ -21,6 +21,7 @@ REQUIREMENTS_BEGIN
 }
 REQUIREMENTS_END
 */
+
 
 function makeChart(containerSelector, data) {
     // ---------- 1. 数据准备阶段 ----------
@@ -55,7 +56,7 @@ function makeChart(containerSelector, data) {
     // ---------- 2. 尺寸和布局设置 ----------
     
     // 设置图表总尺寸
-    const width = variables.width || 300;
+    const width = variables.width || 600;
     const height = variables.height || 400;
     
     // 设置边距
@@ -96,8 +97,7 @@ function makeChart(containerSelector, data) {
     const processedData = chartData.map(d => ({
         category: d[xField],
         value: +d[yField] // 确保转换为数字
-    })).sort((a, b) => b.value - a.value); // 按值降序排序
-    
+    }));
     // ---------- 5. 创建比例尺 ----------
     
     // Y轴比例尺 - 使用分类数据
@@ -112,10 +112,26 @@ function makeChart(containerSelector, data) {
         .range([0, chartWidth])
         .nice();
 
+    const n_data = processedData.length
     // 颜色比例尺
-    const colorScale = d3.scaleOrdinal()
-        .domain(processedData.map(d => d.category))
-        .range([colors.other.primary, colors.other.primary]);
+    const colorScale = (d, i) => {
+        if (i === n_data - 1) {
+            return d3.rgb(colors.other.primary).brighter(0.8);
+        }
+        return colors.other.primary;
+    };
+
+    // 确定标签的最大长度：
+    let minYLabelRatio = 1.0
+    const maxYLabelWidth = yScale.bandwidth() * 1.03
+
+    chartData.forEach(d => {
+        const yLabelText = String(d[xField])
+        let currentWidth = getTextWidth(yLabelText)
+        if (currentWidth > maxYLabelWidth) {
+            minYLabelRatio = Math.min(minYLabelRatio, maxYLabelWidth / currentWidth)
+        }
+    })
 
     // ---------- 6. 创建SVG容器 ----------
     
@@ -134,13 +150,12 @@ function makeChart(containerSelector, data) {
     
     // ---------- 7. 绘制图表元素 ----------
     
-    // 添加X轴（隐藏）
+    // 添加X轴
     const xAxis = d3.axisBottom(xScale)
         .ticks(5)
         .tickFormat(d => d + (yUnit ? ` ${yUnit}` : ''))
         .tickSize(0)          // 移除刻度线
         .tickPadding(10);     // 增加文字和轴的间距
-        
     
     chartGroup.append("g")
         .attr("class", "x-axis")
@@ -148,22 +163,21 @@ function makeChart(containerSelector, data) {
         .call(xAxis)
         .call(g => g.select(".domain").remove())  // 移除轴线
         .selectAll("text")
-        .style("font-family", typography.label.font_family)
-        .style("font-size", typography.label.font_size)
-        .style("fill", colors.text_color)
-        .style("opacity", 0); // 隐藏X轴文本
+        .remove();
     
-    // 添加Y轴（不显示刻度线）
+    // 添加Y轴
     const yAxis = d3.axisLeft(yScale)
         .tickSize(0); // 移除刻度线
     
     chartGroup.append("g")
         .attr("class", "y-axis")
         .call(yAxis)
-        .call(g => g.select(".domain").remove())  // 移除轴线
         .selectAll("text")
         .style("font-family", typography.label.font_family)
         .style("font-size", typography.label.font_size)
+        .style("text-anchor", "end")
+        .attr("dy", "0.32em")
+        .attr("x", -10)
         .style("fill", colors.text_color);
     
     // 添加条形
@@ -174,22 +188,9 @@ function makeChart(containerSelector, data) {
         .attr("class", "bar")
         .attr("y", d => yScale(d.category))
         .attr("x", 0)
+        .attr("width", d => xScale(d.value))
         .attr("height", yScale.bandwidth())
-        .attr("width", d => xScale(d.value)) // 直接设置最终宽度
-        .attr("fill", d => colorScale(d.category));
-    
-    // 添加图标
-    const icons = chartGroup.selectAll(".bar-icon")
-        .data(processedData)
-        .enter()
-        .append("image")
-        .attr("class", "bar-icon")
-        .attr("xlink:href", (d, i) => jsonData.images.field[d.category])
-        .attr("height", yScale.bandwidth())
-        .attr("width", yScale.bandwidth())
-        .attr("x", (d, i) => xScale(d.value) + 10)
-        .attr("y", (d, i) => yScale(d.category));
-
+        .attr("fill", (d, i) => colorScale(d, i));
     
     // 添加数值标签
     const labels = chartGroup.selectAll(".label")
@@ -197,15 +198,36 @@ function makeChart(containerSelector, data) {
         .enter()
         .append("text")
         .attr("class", "label")
+        .attr("x", d => xScale(d.value) + 5)
         .attr("y", d => yScale(d.category) + yScale.bandwidth() / 2)
-        .attr("x", d => xScale(d.value) + yScale.bandwidth() + 20)
-        .attr("dy", ".35em")
+        .attr("dy", "0.32em")
         .style("font-family", typography.label.font_family)
         .style("font-size", typography.label.font_size)
         .style("fill", colors.text_color)
         .text(d => d.value + (yUnit ? ` ${yUnit}` : ''))
         .style("opacity", 1); // 直接设置为可见
-    
 
+    const roughness = 2;
+    const bowing = 2;
+    const fillStyle = "hachure";
+    const randomize = true;
+    const pencilFilter = false;
+        
+    const svgConverter = new svg2roughjs.Svg2Roughjs(containerSelector);
+    svgConverter.pencilFilter = pencilFilter;
+    svgConverter.randomize = randomize;
+    svgConverter.svg = svg.node();
+    svgConverter.roughConfig = {
+        bowing,
+        roughness,
+        fillStyle
+    };
+    svgConverter.sketch();
+    // Remove the first SVG element if it exists
+    const firstSvg = document.querySelector(`${containerSelector} svg`);
+    if (firstSvg) {
+        firstSvg.remove();
+    }
+    
     return svg.node();
 }

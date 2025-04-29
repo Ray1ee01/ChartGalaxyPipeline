@@ -114,8 +114,7 @@ function makeChart(containerSelector, data) {
         })
         .attr("fill", d => colorScale(d.site.originalObject.data.originalData.name))
         .attr("fill-opacity", 0.8)
-        .attr("stroke", "#fff")
-        .attr("stroke-width", 1);
+        .attr("stroke", "none")
     
     // 为每个单元格添加工具提示
     const format = d3.format(",d");

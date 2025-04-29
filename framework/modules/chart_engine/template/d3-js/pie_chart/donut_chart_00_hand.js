@@ -1,8 +1,8 @@
 /*
 REQUIREMENTS_BEGIN
 {
-    "chart_type": "pie_chart",
-    "chart_name": "pie_chart_00",
+    "chart_type": "donut_chart",
+    "chart_name": "donut_chart_00_hand",
     "is_composite": false,
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],
@@ -81,11 +81,10 @@ function makeChart(containerSelector, data) {
 
     // 创建弧形生成器
     const arc = d3.arc()
-        .innerRadius(0)
+        .innerRadius(maxRadius * 0.6) // 内半径，形成甜甜圈效果
         .outerRadius(maxRadius)
-        .padAngle(0.01)
+        .padAngle(0.02)
         .cornerRadius(5);
-
 
     // 计算每个组的百分比
     const total = d3.sum(chartData, d => d[yField]);
@@ -93,7 +92,6 @@ function makeChart(containerSelector, data) {
         ...d,
         percentage: (d[yField] / total) * 100
     }));
-
 
     // 绘制甜甜圈图的各个部分
     const arcs = g.selectAll("path")
@@ -115,10 +113,16 @@ function makeChart(containerSelector, data) {
         .attr("transform", d => `translate(${labelArc.centroid(d)})`)
         .attr("text-anchor", "middle")
         .attr("dy", ".35em")
-        .style("fill", colors.text_color)
+        .style("fill", "#FFFFFF")
         .style("font-family", typography.label.font_family)
-        .style("font-size", typography.label.font_size)
-        .text(d => d.data.percentage >= 2 ? `${d.data.percentage.toFixed(1)}%` : '');
+        .style("font-size", "14px")
+        .style("font-weight", "bold")
+        .text(d => {
+            if(d.data.percentage >= 3) {
+                return `${d.data.percentage.toFixed(1)}%`;
+            }
+            return '';
+        });
 
     // 加入label
     const label = g.append("text")
@@ -161,6 +165,29 @@ function makeChart(containerSelector, data) {
     
     // 将图例组向上移动 height/2, 并居中
     legendGroup.attr("transform", `translate(${(chartWidth - legendSize.width - titleWidth - titleMargin) / 2}, ${-legendSize.height / 2 - 20})`);
+    
+    
+    const roughness = 1;
+    const bowing = 1;
+    const fillStyle = "hachure";
+    const randomize = true;
+    const pencilFilter = false;
+        
+    const svgConverter = new svg2roughjs.Svg2Roughjs(containerSelector);
+    svgConverter.pencilFilter = pencilFilter;
+    svgConverter.randomize = randomize;
+    svgConverter.svg = svg.node();
+    svgConverter.roughConfig = {
+        bowing,
+        roughness,
+        fillStyle
+    };
+    svgConverter.sketch();
+    // Remove the first SVG element if it exists
+    const firstSvg = document.querySelector(`${containerSelector} svg`);
+    if (firstSvg) {
+        firstSvg.remove();
+    }
     
     return svg.node();
 }

@@ -2,14 +2,14 @@
 REQUIREMENTS_BEGIN
 {
     "chart_type": "Triangle Bar Chart",
-    "chart_name": "triangle_bar_chart_01",
+    "chart_name": "triangle_bar_chart_02",
     "is_composite": false,
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],
     "required_fields_range": [[3, 8], [0, "inf"]],
     "required_fields_icons": [],
     "required_other_icons": [],
-    "required_fields_colors": [],
+    "required_fields_colors": ["x"],
     "required_other_colors": ["primary"],
     "supported_effects": [],
     "min_height": 400,
@@ -86,14 +86,20 @@ function makeChart(containerSelector, dataJSON) {
         .range([0, maxHeight]);
     
     // 创建节点数据
-    const nodes = raw.map((d,i)=>({
-        id   : d[xField]!=null?String(d[xField]):`__${i}__`, // 节点ID (X字段)，若为空则生成临时ID
-        val  : +d[yField], // 节点值 (Y字段)
-        height: heightScale(+d[yField]), // 使用比例尺计算高度
-        width: barWidth, // 固定底边宽度
-        color: primaryColor, // 所有节点使用相同的主颜色
-        raw  : d, // 原始数据
-    }));
+    const nodes = raw.map((d,i)=>{
+        const id = d[xField]!=null?String(d[xField]):`__${i}__`; // 节点ID (X字段)，若为空则生成临时ID
+        // 获取对应于x值的颜色，如果没有则使用主颜色
+        const color = dataJSON.colors?.field?.[d[xField]] || primaryColor;
+        
+        return {
+            id: id,
+            val: +d[yField], // 节点值 (Y字段)
+            height: heightScale(+d[yField]), // 使用比例尺计算高度
+            width: barWidth, // 固定底边宽度
+            color: color, // 使用x字段对应的颜色
+            raw: d, // 原始数据
+        };
+    });
 
     /* ============ 3. 水平布局计算 ============ */
     // 计算总宽度
@@ -207,6 +213,29 @@ function makeChart(containerSelector, dataJSON) {
         
         return lines;
     }
+    
+    // 检测标签是否会重叠 - 移动到字体变量初始化之后
+    const checkLabelOverlap = () => {
+        // 估算每个标签的最大宽度
+        const estimatedLabelWidths = nodes.map(node => {
+            const catText = node.id.startsWith("__") ? "" : node.id;
+            if (!catText) return 0;
+            return getTextWidth(catText, categoryFontFamily, categoryFontSize, categoryFontWeight);
+        });
+        
+        // 计算每个柱子之间的间距
+        const barSpacing = barWidth + padding;
+        
+        // 检查是否有重叠（如果标签宽度大于柱子间距的70%，认为可能有重叠）
+        const hasOverlap = estimatedLabelWidths.some((width, i) => {
+            return width > barSpacing * 0.7;
+        });
+        
+        return hasOverlap;
+    };
+    
+    // 确定是否需要换行显示标签
+    const shouldWrapLabels = checkLabelOverlap();
 
     // 创建轴线（基准线）
     g.append("line")
@@ -236,17 +265,27 @@ function makeChart(containerSelector, dataJSON) {
             cornerRadius
         );
         
-        // 绘制三角形
+        // 绘制三角形 - 移除边框，修改透明度为0.6
         triangleGroup.append("path")
             .attr("d", trianglePath)
             .attr("fill", node.color)
-            .attr("fill-opacity", 0.75) // 添加75%的透明度
-            .attr("stroke", "#fff")
-            .attr("stroke-width", 2)
+            .attr("fill-opacity", 0.6) // 修改透明度为0.6
             .attr("filter", "url(#triangle-shadow)");
             
-        // 显示值标签（顶部）
+        // 显示值标签（顶部）- 添加白色背景和与柱子相同的颜色
         const valText = `${node.val}${yUnit}`;
+        const textWidth = getTextWidth(valText, valueFontFamily, valueFontSize, valueFontWeight);
+        
+        // 添加标签背景
+        triangleGroup.append("rect")
+            .attr("x", -textWidth/2 - 4) // 左边缘位置加4px内边距
+            .attr("y", -node.height - 10 - valueFontSize) // 顶部上方位置
+            .attr("width", textWidth + 8) // 文本宽度加8px内边距
+            .attr("height", valueFontSize + 4) // 文本高度加4px内边距
+            .attr("rx", 3) // 圆角半径
+            .attr("ry", 3) // 圆角半径
+            .attr("fill", "#fff") // 白色背景
+            .attr("stroke", "none");
         
         triangleGroup.append("text")
             .attr("class", "value-label")
@@ -257,19 +296,23 @@ function makeChart(containerSelector, dataJSON) {
             .style("font-family", valueFontFamily)
             .style("font-weight", valueFontWeight)
             .style("font-size", `${valueFontSize}px`)
-            .style("fill", "#333")
+            .style("fill", node.color) // 使用与柱子相同的颜色
             .text(valText);
         
         // 显示类别标签（底部）
         const catText = node.id.startsWith("__") ? "" : node.id;
         if (catText) {
             const catWidth = getTextWidth(catText, categoryFontFamily, categoryFontSize, categoryFontWeight);
-            const maxWidth = Math.max(node.width * 1.2, 80);
+            const maxWidth = Math.max(barWidth * 1.2, 80);
             
             // 检查是否需要分行显示标签
-            if (catWidth > maxWidth) {
+            if (catWidth > maxWidth || shouldWrapLabels) {
                 // 分行显示标签
-                const lines = splitTextIntoLines(catText, categoryFontFamily, categoryFontSize, maxWidth, categoryFontWeight);
+                // 当检测到可能重叠时，使用更窄的最大宽度限制
+                const effectiveMaxWidth = shouldWrapLabels ? 
+                    Math.min(maxWidth, barWidth * 0.9) : maxWidth;
+                    
+                const lines = splitTextIntoLines(catText, categoryFontFamily, categoryFontSize, effectiveMaxWidth, categoryFontWeight);
                 const lineHeight = categoryFontSize * 1.2;
                 
                 lines.forEach((line, i) => {

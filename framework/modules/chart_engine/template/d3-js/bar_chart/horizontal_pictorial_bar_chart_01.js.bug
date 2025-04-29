@@ -2,10 +2,10 @@
 REQUIREMENTS_BEGIN
 {
     "chart_type": "Horizontal Bar Chart",
-    "chart_name": "horizontal_bar_chart_0",
+    "chart_name": "horizontal_pictorial_bar_chart_01",
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],
-    "required_fields_range": [[3, 20], [0, 100000]],
+    "required_fields_range": [[3, 20], [0, "inf"]],
     "required_fields_icons": ["x"],
     "required_other_icons": [],
     "required_fields_colors": [],

@@ -521,10 +521,7 @@ def make_infographic(
         "width": chart_width,
         "height": chart_height
     }
-    if image_mode == "overlay":
-        pass
-        # print("remove_image_element")
-        # final_svg = remove_image_element(final_svg)
+
     original_mask = calculate_mask_v2(final_svg + "\n</svg>", total_width, total_height, background_color)
     original_mask = fill_columns_between_bounds(original_mask, padding + best_title['title'][0], padding + best_title['title'][0] + best_title['width'], \
                                 padding + best_title['title'][1], padding + best_title['title'][1] + best_title['height'])
@@ -549,6 +546,11 @@ def make_infographic(
 
         overlay_mask, overlay_mask_only_text = calculate_mask_v3(final_svg + "\n</svg>", total_width, total_height, background_color)
         overlay_mask = expand_mask(overlay_mask, 5)
+        # 将overlay_mask保存为PNG文件
+        #plt.figure(figsize=(10, 8))
+        #plt.imshow(overlay_mask, cmap='viridis')
+        #plt.savefig('./tmp/overlay.png')
+        #plt.close()
         overlay_image_size, overlay_best_x, overlay_best_y = find_best_size_and_position(overlay_mask, primary_image, padding, mode="overlay", avoid_mask=overlay_mask_only_text)
         measure_overlay_size = min(overlay_image_size, 256)
 
@@ -922,12 +924,38 @@ def process(input: str, output: str, base_url: str, api_key: str, chart_name: st
     )
     render_chart_time = time.time() - render_chart_start
     logger.info(f"Rendering chart took: {render_chart_time:.4f} seconds")
+    # print("chart_svg_path: ", chart_svg_path)
     with open(chart_svg_path, "r", encoding="utf-8") as f:
         chart_svg_content = f.read()
         if "This is a fallback SVG using a PNG screenshot" in chart_svg_content:
             return False
         chart_inner_content = extract_svg_content(chart_svg_content)
-    print("chart_inner_content: ", chart_inner_content)
+    # print("chart_inner_content: ", chart_inner_content)
+    assemble_start = time.time()
+    final_svg, layout_info = make_infographic(
+        data=data,
+        chart_svg_content=chart_inner_content,
+        padding=padding,
+        between_padding=between_padding,
+        dark=requirements.get("background", "light") == "dark",
+        html_path=html_path,
+        mask_path=mask_path
+    )
+    # print("final_svg: ", final_svg)
+    layout_info["chart_variation"] = chart_name
+    layout_info["chart_type"] = chart_type
+    layout_info["data_source"] = input
+
+    assemble_time = time.time() - assemble_start
+    logger.info(f"Assembling infographic took: {assemble_time:.4f} seconds")
+    # 读取生成的SVG内容
+    read_svg_start = time.time()
+    
+    if final_svg is None:
+        logger.error("Failed to assemble infographic: SVG content extraction failed")
+        return False
+    chart_inner_content = extract_svg_content(chart_svg_content)
+    
     assemble_start = time.time()
     final_svg, layout_info = make_infographic(
         data=data,
