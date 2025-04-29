@@ -78,10 +78,6 @@ def make_infographic(
     html_path: str,
     mask_path: str
 ) -> str:
-<<<<<<< HEAD
-    # print("start make_infographic")
-=======
->>>>>>> origin/develop
     if not dark:
         background_color = data["colors"].get("background_color", "#FFFFFF")
         if is_dark_color(background_color):
@@ -89,14 +85,7 @@ def make_infographic(
             data["colors"]["background_color"] = background_color
     else:
         background_color = data["colors_dark"].get("background_color", "#000000")
-<<<<<<< HEAD
-    # print("background_color: ", background_color)
     chart_content, chart_width, chart_height, chart_offset_x, chart_offset_y = adjust_and_get_bbox(chart_svg_content, background_color)
-    # print("adjust_and_get_bbox done")
-    ## start: add for new template
-=======
-    chart_content, chart_width, chart_height, chart_offset_x, chart_offset_y = adjust_and_get_bbox(chart_svg_content, background_color)
->>>>>>> origin/develop
     chart_aspect_ratio = chart_width / chart_height
     thin_chart_flag = False
     if chart_aspect_ratio < 0.9:
@@ -115,10 +104,6 @@ def make_infographic(
     else:
         max_title_width = chart_width
     steps = np.ceil((max_title_width - min_title_width) / 100).astype(int)
-<<<<<<< HEAD
-    # print("steps: ", steps)
-=======
->>>>>>> origin/develop
     # Visualize the mask for debugging
     import matplotlib.pyplot as plt
     import io
@@ -904,7 +889,6 @@ def process(input: str, output: str, base_url: str, api_key: str, chart_name: st
         framework = engine
         framework_type = None
 
-<<<<<<< HEAD
         # 渲染图表
         render_chart_start = time.time()
         timestamp = int(time.time())
@@ -969,46 +953,6 @@ def process(input: str, output: str, base_url: str, api_key: str, chart_name: st
         
         if final_svg is None:
             logger.error("Failed to assemble infographic: SVG content extraction failed")
-=======
-    # 渲染图表
-    render_chart_start = time.time()
-    timestamp = int(time.time())
-    output_dir = os.path.dirname(output)
-    output_filename = os.path.basename(output)
-    
-    # 创建子文件夹
-    subfolder_name = f"{timestamp}_{chart_name}_{os.path.splitext(output_filename)[0]}"
-    subfolder_path = os.path.join(output_dir, subfolder_name)
-    os.makedirs(subfolder_path, exist_ok=True)
-    
-    # 在子文件夹中创建文件路径
-    new_filename = "chart.svg"
-    output_path = os.path.join(subfolder_path, new_filename)
-    info_filename = "info.json"
-    info_path = os.path.join(subfolder_path, info_filename)
-    html_filename = "chart.html" 
-    html_path = os.path.join(subfolder_path, html_filename)
-    png_filename = "chart.png"
-    png_path = os.path.join(subfolder_path, png_filename)
-    mask_filename = "chart.mask.png"
-    mask_path = os.path.join(subfolder_path, mask_filename)
-    datatable_name = "data.json"
-    datatable_path = os.path.join(subfolder_path, datatable_name)
-    #try:
-    render_chart_to_svg(
-        json_data=data,
-        output_svg_path=chart_svg_path,
-        js_file=template,
-        framework=framework, # Extract framework name (echarts/d3)
-        framework_type=framework_type,
-        html_output_path=html_path
-    )
-    render_chart_time = time.time() - render_chart_start
-    logger.info(f"Rendering chart took: {render_chart_time:.4f} seconds")
-    with open(chart_svg_path, "r", encoding="utf-8") as f:
-        chart_svg_content = f.read()
-        if "This is a fallback SVG using a PNG screenshot" in chart_svg_content:
->>>>>>> origin/develop
             return False
         chart_inner_content = extract_svg_content(chart_svg_content)
     print("chart_inner_content: ", chart_inner_content)
