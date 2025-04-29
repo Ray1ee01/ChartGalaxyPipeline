@@ -79,15 +79,15 @@ function makeChart(containerSelector, data) {
     // 创建饼图生成器
     const pie = d3.pie()
         .value(d => d[yField])
-        .sort(null);
+        .sort(null)
+        .startAngle(-Math.PI / 2)  // 设置整个饼图的起始角度为-90度
+        .endAngle(Math.PI / 2);    // 设置整个饼图的结束角度为90度
 
     // 创建弧形生成器
     const arc = d3.arc()
         .innerRadius(maxRadius*0.5)
         .outerRadius(maxRadius)
-        .startAngle(-Math.PI / 2)  // 设置起始角度为-90度
-        .endAngle(Math.PI / 2)     // 设置结束角度为90度
-        .padAngle(0)
+        .padAngle(0.02)  // 添加扇区之间的间隔
         .cornerRadius(5);
 
     // 计算每个组的百分比
@@ -304,7 +304,7 @@ function makeChart(containerSelector, data) {
             });
 
             let displayTextCategory = d.data[xField];
-            let displayTextNumerical = d.data.percentage >= 2 ? `${d.data.percentage.toFixed(1)}%` : '';
+            let displayTextNumerical = d.data[yField].toString();  // 显示原始值而非百分比
             let categoryFontSize = 20;
             let numericalFontSize = 20;
             
@@ -413,7 +413,7 @@ function makeChart(containerSelector, data) {
             });
             
             let displayTextCategory = d.data[xField];
-            let displayTextNumerical = `${d.data.percentage.toFixed(1)}%`;
+            let displayTextNumerical = d.data[yField].toString();  // 显示原始值而非百分比
             let categoryFontSize = 20;
             let numericalFontSize = 20;
             

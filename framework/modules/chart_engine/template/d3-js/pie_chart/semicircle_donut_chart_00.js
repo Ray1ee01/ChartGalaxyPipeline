@@ -76,7 +76,7 @@ function makeChart(containerSelector, data) {
     
     // 绘制半圆饼图
     const arc = d3.arc()
-        .innerRadius(maxRadius * 0.5)
+        .innerRadius(maxRadius * 0.75)
         .outerRadius(maxRadius)
         .padAngle(0.02)
         .cornerRadius(5);
@@ -93,9 +93,7 @@ function makeChart(containerSelector, data) {
         .value(d => d.percentage)
         .sort(null)
         .startAngle(-Math.PI / 2)  // 设置起始角度为-90度
-        .endAngle(Math.PI / 2)     // 设置结束角度为90度
-        .innerRadius(maxRadius * 0.6)  // 设置内径为外径的60%
-        .outerRadius(maxRadius);       // 设置外径
+        .endAngle(Math.PI / 2);    // 设置结束角度为90度
 
     // 绘制每个组的弧线
     const arcs = g.selectAll("path")
@@ -104,14 +102,52 @@ function makeChart(containerSelector, data) {
         .attr("fill", d => colors.field[d.data[xField]] || colors.other.primary)
         .attr("d", arc);
 
-    // 绘制标签
-    const labels = g.selectAll("text")
-        .data(dataWithPercentages)
-        .enter().append("text")
-        .attr("text-anchor", "middle")
-        .attr("dy", ".35em")
-        .text(d => d.data.percentage >= 2 ? `${d.data.percentage.toFixed(1)}%` : '');
+    // 创建用于外部标签的弧形路径
+    const outerArc = d3.arc()
+        .innerRadius(maxRadius * 1.1)  // 比主弧半径大10%
+        .outerRadius(maxRadius * 1.1);
 
+    // 添加外部标签和连接线
+    const labelGroup = g.selectAll(".label-group")
+        .data(arcData(dataWithPercentages))
+        .enter()
+        .append("g")
+        .attr("class", "label-group");
+
+    // 添加连接线
+    labelGroup.append("polyline")
+        .attr("points", function(d) {
+            const pos = outerArc.centroid(d);
+            const posText = outerArc.centroid(d);
+            posText[0] = maxRadius * (midAngle(d) < Math.PI ? 1.2 : -1.2); // 向外推
+            return [arc.centroid(d), outerArc.centroid(d), posText];
+        })
+        .attr("stroke", "#888")
+        .attr("fill", "none")
+        .attr("stroke-width", 1);
+
+    // 添加文本标签
+    labelGroup.append("text")
+        .attr("transform", function(d) {
+            const pos = outerArc.centroid(d);
+            pos[0] = maxRadius * (midAngle(d) < Math.PI ? 1.3 : -1.3); // 向外推
+            return `translate(${pos})`;
+        })
+        .attr("text-anchor", d => midAngle(d) < Math.PI ? "start" : "end")
+        .attr("dominant-baseline", "middle")
+        .style("font-size", `${typography.label.font_size}`)
+        .style("font-family", typography.label.font_family)
+        .style("font-weight", typography.label.font_weight)
+        .attr("fill", colors.text_color)
+        .text(d => {
+            const percentage = (d.data.percentage * 100).toFixed(1) + '%';
+            return `${d.data[xField]}: ${percentage}`;
+        });
+
+    // 辅助函数：计算中间角度
+    function midAngle(d) {
+        return d.startAngle + (d.endAngle - d.startAngle) / 2;
+    }
 
     // 添加图例 - 放在图表上方
     const legendGroup = svg.append("g")

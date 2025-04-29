@@ -83,7 +83,7 @@ function makeChart(containerSelector, data) {
     const arc = d3.arc()
         .innerRadius(0)
         .outerRadius(maxRadius)
-        .padAngle(0.02)
+        .padAngle(0.01)
         .cornerRadius(5);
 
 
