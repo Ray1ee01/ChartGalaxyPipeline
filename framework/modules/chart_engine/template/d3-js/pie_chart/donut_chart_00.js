@@ -106,17 +106,30 @@ function makeChart(containerSelector, data) {
         .innerRadius(maxRadius * 0.8)
         .outerRadius(maxRadius * 0.8);
 
-    const labels = g.selectAll("text")
+    const labels = g.selectAll("g.label-group")
         .data(pie(dataWithPercentages))
         .enter()
-        .append("text")
-        .attr("transform", d => `translate(${labelArc.centroid(d)})`)
+        .append("g")
+        .attr("class", "label-group")
+        .attr("transform", d => `translate(${labelArc.centroid(d)})`);
+
+    // 添加百分比文本
+    labels.append("text")
         .attr("text-anchor", "middle")
-        .attr("dy", ".35em")
+        .attr("dy", "-0.5em")
         .style("fill", colors.text_color)
         .style("font-family", typography.label.font_family)
         .style("font-size", typography.label.font_size)
         .text(d => d.data.percentage >= 2 ? `${d.data.percentage.toFixed(1)}%` : '');
+
+    // 添加原始数值文本
+    labels.append("text")
+        .attr("text-anchor", "middle")
+        .attr("dy", "1.2em")
+        .style("fill", colors.text_color)
+        .style("font-family", typography.label.font_family)
+        .style("font-size", typography.label.font_size)
+        .text(d => d.data.percentage >= 2 ? d.data[yField] : '');
 
     // 加入label
     const label = g.append("text")

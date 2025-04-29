@@ -405,7 +405,7 @@ function makeChart(containerSelector, data) {
             });
 
             let displayTextCategory = d.data[xField];
-            let displayTextNumerical = d.data.percentage >= 2 ? `${d.data.percentage.toFixed(1)}%` : '';
+            let displayTextNumerical = d.data.percentage >= 2 ? `${d.data.percentage.toFixed(1)}% (${d.data[yField]})` : '';
             let categoryFontSize = 20;
             let numericalFontSize = 20;
             
@@ -518,7 +518,7 @@ function makeChart(containerSelector, data) {
             });
             
             let displayTextCategory = d.data[xField];
-            let displayTextNumerical = `${d.data.percentage.toFixed(1)}%`;
+            let displayTextNumerical = `${d.data.percentage.toFixed(1)}% (${d.data[yField]})`;
             let categoryFontSize = 20;
             let numericalFontSize = 20;
             
@@ -589,7 +589,7 @@ function makeChart(containerSelector, data) {
 
     // 添加图例 - 放在图表上方
     const legendGroup = svg.append("g")
-        .attr("transform", `translate(0, -50)`);
+        .attr("transform", `translate(0, -85)`);
     
     // 计算字段名宽度并添加间距
     const titleWidth = xField.length * 10;

@@ -119,7 +119,9 @@ function makeChart(containerSelector, data) {
         .attr("points", function(d) {
             const pos = outerArc.centroid(d);
             const posText = outerArc.centroid(d);
-            posText[0] = maxRadius * (midAngle(d) < Math.PI ? 1.2 : -1.2); // 向外推
+            const angle = midAngle(d);
+            // 根据实际角度决定连接线终点位置，与标签位置保持一致
+            posText[0] = maxRadius * (angle < 0 ? -0.8 : 0.8); // 减小距离系数
             return [arc.centroid(d), outerArc.centroid(d), posText];
         })
         .attr("stroke", "#888")
@@ -130,12 +132,14 @@ function makeChart(containerSelector, data) {
     labelGroup.append("text")
         .attr("transform", function(d) {
             const pos = outerArc.centroid(d);
-            pos[0] = maxRadius * (midAngle(d) < Math.PI ? 1.3 : -1.3); // 向外推
+            const angle = midAngle(d);
+            // 根据实际角度决定标签位置，让标签更靠近扇形
+            pos[0] = maxRadius * (angle < 0 ? -0.8 : 0.8); // 减小距离系数
             return `translate(${pos})`;
         })
-        .attr("text-anchor", d => midAngle(d) < Math.PI ? "start" : "end")
+        .attr("text-anchor", d => midAngle(d) < 0 ? "end" : "start")
         .attr("dominant-baseline", "middle")
-        .style("font-size", `${typography.label.font_size}`)
+        .style("font-size", "16px") // 进一步增大字体大小
         .style("font-family", typography.label.font_family)
         .style("font-weight", typography.label.font_weight)
         .attr("fill", colors.text_color)
