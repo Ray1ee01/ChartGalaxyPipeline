@@ -109,30 +109,10 @@ function makeChart(containerSelector, data) {
         const iconRadius = iconWidth / 2 + 5;
         
         // 增加安全距离，确保标签和图标不重叠
-        const safetyDistance = isLargeIcon ? 
-            iconRadius + Math.max(textWidth, textHeight) / 1.5 :
-            iconRadius * 2;
+        const safetyDistance = 20;
         
-        // 根据扇区角度调整标签位置
-        let labelRadius;
-
-        // 根据扇区的角度位置采用不同的放置策略
-        if (angle >= 0 && angle <= Math.PI / 4) {
-            // 右上角，标签放在外圈右侧
-            labelRadius = outerRadius + safetyDistance / 2.5;
-        } else if (angle > Math.PI / 4 && angle <= 3 * Math.PI / 4) {
-            // 上半部，标签放在较远的位置
-            labelRadius = outerRadius + safetyDistance / 2;
-        } else if (angle > 3 * Math.PI / 4 && angle <= 5 * Math.PI / 4) {
-            // 左半部，标签靠近内圈
-            labelRadius = Math.max(innerRadius - safetyDistance / 1.8, innerRadius * 0.4);
-        } else if (angle > 5 * Math.PI / 4 && angle <= 7 * Math.PI / 4) {
-            // 下半部，标签放在较远的位置
-            labelRadius = outerRadius + safetyDistance / 2;
-        } else {
-            // 右下角，标签放在外圈右侧
-            labelRadius = outerRadius + safetyDistance / 2.5;
-        }
+        // 所有标签都放在外圈，统一使用较大的半径
+        const labelRadius = outerRadius + safetyDistance;
         
         // 基于角度和半径计算最终位置
         const x = Math.sin(angle) * labelRadius;
@@ -146,27 +126,9 @@ function makeChart(containerSelector, data) {
         
         // 如果距离太近，再增加一些距离
         if (distance < safetyDistance) {
-            const extraFactor = 2.0; // 增加额外的安全系数
+            const extraFactor = 1.5; // 增加额外的安全系数
             const extraDistance = (safetyDistance - distance) * extraFactor;
-            
-            // 根据角度决定向哪个方向移动更多
-            if ((angle >= 0 && angle <= Math.PI / 4) || (angle > 7 * Math.PI / 4 && angle <= 2 * Math.PI)) {
-                // 右侧区域，向外移动
-                labelRadius += extraDistance;
-            } else if (angle > Math.PI / 4 && angle <= 3 * Math.PI / 4) {
-                // 上方区域，向上移动
-                labelRadius += extraDistance;
-            } else if (angle > 3 * Math.PI / 4 && angle <= 5 * Math.PI / 4) {
-                // 左侧区域，优先向内移动
-                if (innerRadius > textWidth * 1.2) {
-                    labelRadius = Math.max(innerRadius * 0.35, labelRadius - extraDistance);
-                } else {
-                    labelRadius += extraDistance;
-                }
-            } else {
-                // 下方区域，向下移动
-                labelRadius += extraDistance;
-            }
+            labelRadius += extraDistance;
             
             // 重新计算位置
             return [
@@ -178,7 +140,7 @@ function makeChart(containerSelector, data) {
         return [x, y];
     }
 
-    // 估算文本宽度和高度的函数
+    // 移除文本宽度限制相关的函数
     function estimateTextDimensions(text, fontSize) {
         // 一个简单的估算方法，可根据实际情况调整
         const avgCharWidth = fontSize * 0.6;
@@ -276,10 +238,10 @@ function makeChart(containerSelector, data) {
             const icon = g.append("image")
                 .attr("xlink:href", jsonData.images.field[d.data[xField]])
                 .attr("clip-path", `url(#${clipId})`)
-                .attr("x", -outerRadius)
-                .attr("y", -outerRadius)
-                .attr("width", outerRadius * 2)
-                .attr("height", outerRadius * 2);
+                .attr("x", cx - outerRadius/2)
+                .attr("y", cy - outerRadius/2)
+                .attr("width", outerRadius)
+                .attr("height", outerRadius);
 
             // 存储图像位置信息
             imagePositions.push({
@@ -293,26 +255,13 @@ function makeChart(containerSelector, data) {
             let categoryFontSize = 20;
             let numericalFontSize = 20;
             
-            // 计算扇区的最大可用宽度
-            const maxAvailableWidth = calculateSectorMaxWidth(d, (maxRadius + maxRadius*0.5) / 2);
-            
-            // 调整类别文本和字体大小以适应扇区
-            const fittedCategory = fitTextToWidth(displayTextCategory, categoryFontSize, maxAvailableWidth);
-            displayTextCategory = fittedCategory.text;
-            categoryFontSize = fittedCategory.fontSize;
-            
-            // 调整数值文本和字体大小
-            const fittedNumerical = fitTextToWidth(displayTextNumerical, numericalFontSize, maxAvailableWidth);
-            displayTextNumerical = fittedNumerical.text;
-            numericalFontSize = fittedNumerical.fontSize;
-            
-            // 估算文本尺寸
+            // 移除文本宽度限制相关的计算
             const categoryDimensions = estimateTextDimensions(displayTextCategory, categoryFontSize);
             const numericalDimensions = estimateTextDimensions(displayTextNumerical, numericalFontSize);
             // 计算标签总高度（包括两行文本和间距）
             const labelHeight = categoryDimensions.height + numericalDimensions.height + 5;
-            // 取两行文本中较宽的一个作为标签宽度，并添加硬限制
-            const labelWidth = Math.min(Math.max(categoryDimensions.width, numericalDimensions.width), 60);
+            // 取两行文本中较宽的一个作为标签宽度
+            const labelWidth = Math.max(categoryDimensions.width, numericalDimensions.width);
             
             // 计算避免与图像重叠的标签位置
             const labelPosition = calculateLabelPosition(
@@ -338,9 +287,23 @@ function makeChart(containerSelector, data) {
                 colors.text_color = '#000000';
             }
 
+            // 根据角度决定文本对齐方式
+            let textAnchor;
+            if (angle < Math.PI/8 || angle > 15*Math.PI/8) {
+                textAnchor = "middle";  // 正上方和正下方，居中对齐
+            } else if (angle >= Math.PI/8 && angle < 7*Math.PI/8) {
+                textAnchor = "start";   // 右侧区域，左对齐
+            } else if (angle >= 7*Math.PI/8 && angle < 9*Math.PI/8) {
+                textAnchor = "middle";  // 正左方，居中对齐
+            } else if (angle >= 9*Math.PI/8 && angle < 15*Math.PI/8) {
+                textAnchor = "end";     // 左侧区域，右对齐
+            } else {
+                textAnchor = "middle";  // 默认值
+            }
+
             const textCategory = g.append("text")
                 .attr("transform", `translate(${labelPosition})`)
-                .attr("text-anchor", "middle")
+                .attr("text-anchor", textAnchor)
                 .style("fill", colors.text_color)
                 .style("font-family", typography.label.font_family)
                 .style("font-size", categoryFontSize)
@@ -348,7 +311,7 @@ function makeChart(containerSelector, data) {
 
             const textNumerical = g.append("text")
                 .attr("transform", `translate(0,20) translate(${labelPosition})`)
-                .attr("text-anchor", "middle")
+                .attr("text-anchor", textAnchor)
                 .style("fill", colors.text_color)
                 .style("font-family", typography.label.font_family)
                 .style("font-size", numericalFontSize)
@@ -427,10 +390,10 @@ function makeChart(containerSelector, data) {
             const numericalDimensions = estimateTextDimensions(displayTextNumerical, numericalFontSize);
             // 计算标签总高度（包括两行文本和间距）
             const labelHeight = categoryDimensions.height + numericalDimensions.height + 5;
-            // 取两行文本中较宽的一个作为标签宽度，并添加硬限制
-            const labelWidth = Math.min(Math.max(categoryDimensions.width, numericalDimensions.width), 60);
+            // 取两行文本中较宽的一个作为标签宽度
+            const labelWidth = Math.max(categoryDimensions.width, numericalDimensions.width);
             
-            // 计算不重叠的标签位置
+            // 计算避免与图像重叠的标签位置
             const labelPosition = calculateLabelPosition(
                 d, 
                 [cx, cy], 
@@ -444,9 +407,23 @@ function makeChart(containerSelector, data) {
             
             const fillColor = colors.field[d.data[xField]] || colors.other.primary;
 
+            // 根据角度决定文本对齐方式
+            let textAnchor;
+            if (angle < Math.PI/8 || angle > 15*Math.PI/8) {
+                textAnchor = "middle";  // 正上方和正下方，居中对齐
+            } else if (angle >= Math.PI/8 && angle < 7*Math.PI/8) {
+                textAnchor = "start";   // 右侧区域，左对齐
+            } else if (angle >= 7*Math.PI/8 && angle < 9*Math.PI/8) {
+                textAnchor = "middle";  // 正左方，居中对齐
+            } else if (angle >= 9*Math.PI/8 && angle < 15*Math.PI/8) {
+                textAnchor = "end";     // 左侧区域，右对齐
+            } else {
+                textAnchor = "middle";  // 默认值
+            }
+
             const textCategory = g.append("text")
                 .attr("transform", `translate(${labelPosition})`)
-                .attr("text-anchor", "middle")
+                .attr("text-anchor", textAnchor)
                 .style("fill", colors.text_color)
                 .style("font-family", typography.label.font_family)
                 .style("font-size", categoryFontSize)
@@ -454,7 +431,7 @@ function makeChart(containerSelector, data) {
 
             const textNumerical = g.append("text")
                 .attr("transform", `translate(0,20) translate(${labelPosition})`)
-                .attr("text-anchor", "middle")
+                .attr("text-anchor", textAnchor)
                 .style("fill", colors.text_color)
                 .style("font-family", typography.label.font_family)
                 .style("font-size", numericalFontSize)

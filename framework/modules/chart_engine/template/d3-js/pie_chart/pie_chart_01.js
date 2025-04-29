@@ -97,9 +97,29 @@ function makeChart(containerSelector, data) {
     const sectors = pie(dataWithPercentages);
     console.log("sectors: ", sectors);
 
+    // 添加文本分割函数
+    function splitText(text, maxLength) {
+        if (text.length <= maxLength) return [text];
+        
+        const words = text.split(' ');
+        let lines = [];
+        let currentLine = '';
+        
+        for (let word of words) {
+            if ((currentLine + ' ' + word).length <= maxLength) {
+                currentLine += (currentLine ? ' ' : '') + word;
+            } else {
+                if (currentLine) lines.push(currentLine);
+                currentLine = word;
+            }
+        }
+        if (currentLine) lines.push(currentLine);
+        
+        return lines;
+    }
+
     for (let i = 0; i < sectors.length; i++) {
         const d = sectors[i];
-        console.log("d", d);
         // 绘制甜甜圈图的各个部分
         const path = g.append("path")
             .attr("fill", colors.field[d.data[xField]] || colors.other.primary)
@@ -151,40 +171,60 @@ function makeChart(containerSelector, data) {
 
             let displayTextCategory = d.data[xField];
             let displayTextNumerical = d.data.percentage >= 2 ? `${d.data.percentage.toFixed(1)}%` : '';
+            let displayTextValue = d.data[yField].toLocaleString();
             let categoryFontSize = 20;
             let numericalFontSize = 20;
-            let categoryTextWidth = getTextWidth(displayTextCategory, categoryFontSize);
-            let numericalTextWidth = getTextWidth(displayTextNumerical, numericalFontSize);
-            const textArc = d3.arc()
-                .innerRadius(maxRadius*0.5)
-                .outerRadius(maxRadius*0.5);
-            const fillColor = colors.field[d.data[xField]] || colors.other.primary;
-            // 如果这里颜色深，则使用白色文字，否则使用黑色文字
-            // 将颜色转换为RGB值
-            const rgb = fillColor.match(/\d+/g).map(Number);
-            // 计算亮度 (使用相对亮度公式)
-            const brightness = (rgb[0] * 299 + rgb[1] * 587 + rgb[2] * 114) / 1000;
-            if (brightness < 128) {
-                colors.text_color = '#FFFFFF';
-            } else {
-                colors.text_color = '#000000';
-            }
+            let valueFontSize = 16;
 
-            const textCategory = g.append("text")
-                .attr("transform", `translate(${textArc.centroid(d)})`)
-                .attr("text-anchor", "middle")
-                .style("fill", colors.text_color)
-                .style("font-family", typography.label.font_family)
-                .style("font-size", categoryFontSize)
-                .text(displayTextCategory);
+            // 分割过长的分类名称
+            const maxTextLength = 10; // 每行最大字符数
+            const categoryLines = splitText(displayTextCategory, maxTextLength);
+            
+            // 计算标签位置
+            const sectorAngle = (d.endAngle - d.startAngle) * 180 / Math.PI;
+            let labelRadius = maxRadius * 0.5;
+            
+            // 如果扇形区域较小，将标签移到更外侧
+            if (sectorAngle < 30) {
+                labelRadius = maxRadius * 0.7;
+            }
+            
+            const labelArc = d3.arc()
+                .innerRadius(labelRadius)
+                .outerRadius(labelRadius);
+            
+            const [labelX, labelY] = labelArc.centroid(d);
+
+            // 显示分类名称（可能多行）
+            categoryLines.forEach((line, index) => {
+                g.append("text")
+                    .attr("transform", `translate(${labelX}, ${labelY + index * 25})`)
+                    .attr("text-anchor", "middle")
+                    .style("fill", colors.text_color)
+                    .style("font-family", typography.label.font_family)
+                    .style("font-size", categoryFontSize)
+                    .text(line);
+            });
+
+            // 计算数值标签的起始Y位置（考虑多行分类名称）
+            const valueStartY = labelY + categoryLines.length * 25;
 
             const textNumerical = g.append("text")
-                .attr("transform", `translate(0,20) translate(${textArc.centroid(d)})`)
+                .attr("transform", `translate(${labelX}, ${valueStartY})`)
                 .attr("text-anchor", "middle")
                 .style("fill", colors.text_color)
                 .style("font-family", typography.label.font_family)
                 .style("font-size", numericalFontSize)
                 .text(displayTextNumerical);
+
+            // 添加实际数值显示
+            const textValue = g.append("text")
+                .attr("transform", `translate(${labelX}, ${valueStartY + 20})`)
+                .attr("text-anchor", "middle")
+                .style("fill", colors.text_color)
+                .style("font-family", typography.label.font_family)
+                .style("font-size", valueFontSize)
+                .text(displayTextValue);
         } else {
             iconWidth = 20;
             iconHeight = 20;
@@ -225,28 +265,60 @@ function makeChart(containerSelector, data) {
             
             let displayTextCategory = d.data[xField];
             let displayTextNumerical = `${d.data.percentage.toFixed(1)}%`;
+            let displayTextValue = d.data[yField].toLocaleString();
             let categoryFontSize = 20;
             let numericalFontSize = 20;
-            const textArc = d3.arc()
-                .innerRadius(maxRadius+70)
-                .outerRadius(maxRadius+70);
-            const fillColor = colors.field[d.data[xField]] || colors.other.primary;
+            let valueFontSize = 16;
 
-            const textCategory = g.append("text")
-                .attr("transform", `translate(${textArc.centroid(d)})`)
-                .attr("text-anchor", "middle")
-                .style("fill", colors.text_color)
-                .style("font-family", typography.label.font_family)
-                .style("font-size", categoryFontSize)
-                .text(displayTextCategory);
+            // 分割过长的分类名称
+            const maxTextLength = 10; // 每行最大字符数
+            const categoryLines = splitText(displayTextCategory, maxTextLength);
+            
+            // 计算标签位置
+            const sectorAngle = (d.endAngle - d.startAngle) * 180 / Math.PI;
+            let labelRadius = maxRadius + 70;
+            
+            // 如果扇形区域较小，将标签移到更外侧
+            if (sectorAngle < 30) {
+                labelRadius = maxRadius + 90;
+            }
+            
+            const labelArc = d3.arc()
+                .innerRadius(labelRadius)
+                .outerRadius(labelRadius);
+            
+            const [labelX, labelY] = labelArc.centroid(d);
+
+            // 显示分类名称（可能多行）
+            categoryLines.forEach((line, index) => {
+                g.append("text")
+                    .attr("transform", `translate(${labelX}, ${labelY + index * 25})`)
+                    .attr("text-anchor", "middle")
+                    .style("fill", colors.text_color)
+                    .style("font-family", typography.label.font_family)
+                    .style("font-size", categoryFontSize)
+                    .text(line);
+            });
+
+            // 计算数值标签的起始Y位置（考虑多行分类名称）
+            const valueStartY = labelY + (categoryLines.length - 1) * 25;
 
             const textNumerical = g.append("text")
-                .attr("transform", `translate(0,20) translate(${textArc.centroid(d)})`)
+                .attr("transform", `translate(${labelX}, ${valueStartY})`)
                 .attr("text-anchor", "middle")
                 .style("fill", colors.text_color)
                 .style("font-family", typography.label.font_family)
                 .style("font-size", numericalFontSize)
                 .text(displayTextNumerical);
+
+            // 添加实际数值显示
+            const textValue = g.append("text")
+                .attr("transform", `translate(${labelX}, ${valueStartY + 20})`)
+                .attr("text-anchor", "middle")
+                .style("fill", colors.text_color)
+                .style("font-family", typography.label.font_family)
+                .style("font-size", valueFontSize)
+                .text(displayTextValue);
         }
     }
 
@@ -292,7 +364,7 @@ function makeChart(containerSelector, data) {
         .text(xField);
     
     // 将图例组向上移动 height/2, 并居中
-    legendGroup.attr("transform", `translate(${(chartWidth - legendSize.width - titleWidth - titleMargin) / 2}, ${-legendSize.height / 2 - 20})`);
+    legendGroup.attr("transform", `translate(${(chartWidth - legendSize.width - titleWidth - titleMargin) / 2}, ${-legendSize.height / 2 - 50})`);
     
     return svg.node();
 }

@@ -79,7 +79,9 @@ function makeChart(containerSelector, data) {
     // 创建饼图生成器
     const pie = d3.pie()
         .value(d => d[yField])
-        .sort(null);
+        .sort(null)
+        .startAngle(0)  // 设置起始角度为-90度
+        .endAngle(2*Math.PI)     // 设置结束角度为90度
 
     // 创建弧形生成器
     const arc = d3.arc()
@@ -95,7 +97,6 @@ function makeChart(containerSelector, data) {
         percentage: (d[yField] / total) * 100
     }));
     const sectors = pie(dataWithPercentages);
-    console.log("sectors: ", sectors);
 
     // 存储图像位置信息，用于后续避免标签重叠
     const imagePositions = [];
@@ -193,39 +194,55 @@ function makeChart(containerSelector, data) {
         const sectorAngle = d.endAngle - d.startAngle;
         // 在弧的中间位置计算最大宽度
         // 弧长 = 角度 * 半径，取80%作为安全尺寸
-        return Math.min(sectorAngle * radius * 0.8, 60); // 添加硬限制60
+        return sectorAngle * radius * 0.8;
     }
     
-    // 截断或调整文本以适应最大宽度
+    // 调整文本以适应最大宽度 - 只缩小字体，不截断文本
     function fitTextToWidth(text, fontSize, maxWidth) {
         const dimensions = estimateTextDimensions(text, fontSize);
         if (dimensions.width <= maxWidth) {
             return { text, fontSize };
         }
         
-        // 如果文本太长，先尝试缩小字体
-        const minFontSize = 10; // 最小可接受的字体大小
+        // 如果文本太长，尝试缩小字体
+        const minFontSize = 8; // 最小可接受的字体大小
         if (fontSize > minFontSize) {
             const newFontSize = Math.max(minFontSize, fontSize * (maxWidth / dimensions.width));
-            const newDimensions = estimateTextDimensions(text, newFontSize);
-            if (newDimensions.width <= maxWidth) {
-                return { text, fontSize: newFontSize };
-            }
+            return { text, fontSize: newFontSize };
         }
         
-        // 如果缩小字体后仍然超出，则截断文本
-        const charWidth = fontSize * 0.6;
-        const maxChars = Math.floor(maxWidth / charWidth) - 2; // 减2留出省略号空间
-        if (maxChars < 3) { // 如果连3个字符都放不下
-            return { text: "...", fontSize };
-        }
+        return { text, fontSize: minFontSize };
+    }
+    
+    // 计算标签位置 - 确保标签始终在外部，不会出现在饼图内部
+    function calculateOuterLabelPosition(d, outerRadius) {
+        // 计算扇区中心角度
+        const angle = (d.startAngle + d.endAngle) / 2;
         
-        return { text: text.substring(0, maxChars) + "...", fontSize };
+        // 确保标签始终在外圈，添加更大的边距确保不会出现在内部
+        // 增加倍数从1.2到1.5，确保标签彻底在外部
+        const labelRadius = outerRadius * 1.5;
+        
+        // 基于角度和半径计算最终位置
+        return [
+            Math.sin(angle) * labelRadius,
+            -Math.cos(angle) * labelRadius
+        ];
+    }
+    
+    // 检查扇区是否有足够空间放置图标
+    function hasEnoughSpaceForIcon(d, innerRadius) {
+        // 计算扇区的内圆弧长度
+        const sectorAngle = d.endAngle - d.startAngle;
+        const arcLength = sectorAngle * innerRadius;
+        
+        // 严格判断：扇区必须足够大才显示图标
+        // 最小要求提高到30像素，确保图标有足够空间
+        return arcLength >= 30;
     }
     
     for (let i = 0; i < sectors.length; i++) {
         const d = sectors[i];
-        console.log("d", d);
         // 绘制甜甜圈图的各个部分
         const path = g.append("path")
             .attr("fill", colors.field[d.data[xField]] || colors.other.primary)
@@ -233,33 +250,44 @@ function makeChart(containerSelector, data) {
             .attr("stroke-width", 2)
             .attr("d", arc(d));
 
+        // 检查扇区是否有足够空间放置图标
+        const innerRadius = maxRadius * 0.75;
+        const hasSpace = hasEnoughSpaceForIcon(d, innerRadius);
         
-        const innerLength = (d.endAngle - d.startAngle) * maxRadius*0.5;
-        const outerLength = (d.endAngle - d.startAngle) * maxRadius;
-
-
-        let iconWidth = Math.min(innerLength / 3, 150);
-        let iconHeight = iconWidth;
-        if (iconWidth > 20) {
-            const iconArc = d3.arc()
-                .innerRadius(maxRadius*0.5)
-                .outerRadius(maxRadius*0.5);
-
+        // 只有当扇区空间足够大时才显示图标
+        if (hasSpace) {
+            // 计算扇区的内圆弧长度
+            const sectorAngle = d.endAngle - d.startAngle;
+            const arcLength = sectorAngle * innerRadius;
+            
+            // 根据弧长计算图标大小，保持最小和最大限制
+            const minIconSize = 16;  // 最小图标尺寸
+            const maxIconSize = 50;  // 最大图标尺寸
+            const baseIconSize = Math.min(maxIconSize, Math.max(minIconSize, arcLength * 0.5));
+            
+            // 设置图标尺寸
+            const iconWidth = baseIconSize;
+            const iconHeight = baseIconSize;
+            
+            // 计算图标位置 - 确保图标在内圆弧上居中
+            const angle = (d.startAngle + d.endAngle) / 2;
+            const iconRadius = innerRadius; // 确保图标位于内圆弧之上
+            const cx = Math.sin(angle) * iconRadius;
+            const cy = -Math.cos(angle) * iconRadius;
+            
             // 创建剪切路径
             const clipId = `clip-${i}`;
             const defs = g.append("defs");
             const clipPath = defs.append("clipPath")
                 .attr("id", clipId);
                 
-            // 确保剪切路径有正确的位置和尺寸
-            const [cx, cy] = iconArc.centroid(d);
             clipPath.append("circle")
                 .attr("cx", cx)
                 .attr("cy", cy) 
                 .attr("r", iconWidth / 2);
 
             // 添加白色背景圆
-            const circle = g.append("circle")
+            g.append("circle")
                 .attr("cx", cx)
                 .attr("cy", cy)
                 .attr("r", iconWidth / 2 + 3)
@@ -268,182 +296,77 @@ function makeChart(containerSelector, data) {
                 .attr("stroke-width", 2);
 
             // 使用剪切路径裁剪图片
-            const icon = g.append("image")
+            g.append("image")
                 .attr("xlink:href", jsonData.images.field[d.data[xField]])
                 .attr("clip-path", `url(#${clipId})`)
                 .attr("x", cx - iconWidth / 2)
                 .attr("y", cy - iconHeight / 2)
                 .attr("width", iconWidth)
                 .attr("height", iconHeight);
-
-            // 存储图像位置信息
-            imagePositions.push({
-                centroid: [cx, cy],
-                width: iconWidth,
-                height: iconHeight
-            });
-
-            let displayTextCategory = d.data[xField];
-            let displayTextNumerical = d.data.percentage >= 2 ? `${d.data.percentage.toFixed(1)}%` : '';
-            let categoryFontSize = 20;
-            let numericalFontSize = 20;
-            
-            // 计算扇区的最大可用宽度
-            const maxAvailableWidth = calculateSectorMaxWidth(d, (maxRadius + maxRadius*0.5) / 2);
-            
-            // 调整类别文本和字体大小以适应扇区
-            const fittedCategory = fitTextToWidth(displayTextCategory, categoryFontSize, maxAvailableWidth);
-            displayTextCategory = fittedCategory.text;
-            categoryFontSize = fittedCategory.fontSize;
-            
-            // 调整数值文本和字体大小
-            const fittedNumerical = fitTextToWidth(displayTextNumerical, numericalFontSize, maxAvailableWidth);
-            displayTextNumerical = fittedNumerical.text;
-            numericalFontSize = fittedNumerical.fontSize;
-            
-            // 估算文本尺寸
-            const categoryDimensions = estimateTextDimensions(displayTextCategory, categoryFontSize);
-            const numericalDimensions = estimateTextDimensions(displayTextNumerical, numericalFontSize);
-            // 计算标签总高度（包括两行文本和间距）
-            const labelHeight = categoryDimensions.height + numericalDimensions.height + 5;
-            // 取两行文本中较宽的一个作为标签宽度，并添加硬限制
-            const labelWidth = Math.min(Math.max(categoryDimensions.width, numericalDimensions.width), 60);
-            
-            // 计算避免与图像重叠的标签位置
-            const labelPosition = calculateLabelPosition(
-                d, 
-                [cx, cy], 
-                iconWidth, 
-                maxRadius*0.5, 
-                maxRadius,
-                labelWidth,
-                labelHeight,
-                true  // 传递标志表示这是大图标情况
-            );
-            
-            const fillColor = colors.field[d.data[xField]] || colors.other.primary;
-            // 直接使用黑色文字，不再根据背景色调整
-            colors.text_color = '#000000';
-
-            const textCategory = g.append("text")
-                .attr("transform", `translate(${labelPosition})`)
-                .attr("text-anchor", "middle")
-                .style("fill", colors.text_color)
-                .style("font-family", typography.label.font_family)
-                .style("font-size", categoryFontSize)
-                .text(displayTextCategory);
-
-            const textNumerical = g.append("text")
-                .attr("transform", `translate(0,20) translate(${labelPosition})`)
-                .attr("text-anchor", "middle")
-                .style("fill", colors.text_color)
-                .style("font-family", typography.label.font_family)
-                .style("font-size", numericalFontSize)
-                .text(displayTextNumerical);
-        } else {
-            iconWidth = 20;
-            iconHeight = 20;
-            const iconArc = d3.arc()
-                .innerRadius(maxRadius*0.5-30)
-                .outerRadius(maxRadius*0.5-30);
-
-            // 创建剪切路径
-            const clipId = `clip-${i}`;
-            const defs = g.append("defs");
-            const clipPath = defs.append("clipPath")
-                .attr("id", clipId);
-                
-            // 确保剪切路径有正确的位置和尺寸
-            const [cx, cy] = iconArc.centroid(d);
-            clipPath.append("circle")
-                .attr("cx", cx)
-                .attr("cy", cy)
-                .attr("r", iconWidth / 2);
-
-            // 添加白色背景圆
-            const circle = g.append("circle")
-                .attr("cx", cx)
-                .attr("cy", cy)
-                .attr("r", iconWidth / 2 + 3)
-                .attr("fill", "white")
-                .attr("stroke", colors.field[d.data[xField]] || colors.other.primary)
-                .attr("stroke-width", 2);
-
-            // 使用剪切路径裁剪图片
-            const icon = g.append("image")
-                .attr("xlink:href", jsonData.images.field[d.data[xField]])
-                .attr("clip-path", `url(#${clipId})`)
-                .attr("x", cx - iconWidth / 2)
-                .attr("y", cy - iconHeight / 2)
-                .attr("width", iconWidth)
-                .attr("height", iconHeight);
-            
-            // 存储图像位置信息
-            imagePositions.push({
-                centroid: [cx, cy],
-                width: iconWidth,
-                height: iconHeight
-            });
-            
-            let displayTextCategory = d.data[xField];
-            let displayTextNumerical = `${d.data.percentage.toFixed(1)}%`;
-            let categoryFontSize = 20;
-            let numericalFontSize = 20;
-            
-            // 计算扇区的最大可用宽度
-            const maxAvailableWidth = calculateSectorMaxWidth(d, maxRadius*0.5-30);
-            
-            // 调整类别文本和字体大小以适应扇区
-            const fittedCategory = fitTextToWidth(displayTextCategory, categoryFontSize, maxAvailableWidth);
-            displayTextCategory = fittedCategory.text;
-            categoryFontSize = fittedCategory.fontSize;
-            
-            // 调整数值文本和字体大小
-            const fittedNumerical = fitTextToWidth(displayTextNumerical, numericalFontSize, maxAvailableWidth);
-            displayTextNumerical = fittedNumerical.text;
-            numericalFontSize = fittedNumerical.fontSize;
-            
-            // 估算文本尺寸
-            const categoryDimensions = estimateTextDimensions(displayTextCategory, categoryFontSize);
-            const numericalDimensions = estimateTextDimensions(displayTextNumerical, numericalFontSize);
-            // 计算标签总高度（包括两行文本和间距）
-            const labelHeight = categoryDimensions.height + numericalDimensions.height + 5;
-            // 取两行文本中较宽的一个作为标签宽度，并添加硬限制
-            const labelWidth = Math.min(Math.max(categoryDimensions.width, numericalDimensions.width), 60);
-            
-            // 计算不重叠的标签位置
-            const labelPosition = calculateLabelPosition(
-                d, 
-                [cx, cy], 
-                iconWidth, 
-                maxRadius*0.5-60,
-                maxRadius*0.5,
-                labelWidth,
-                labelHeight,
-                false  // 传递标志表示这是小图标情况
-            );
-            
-            const fillColor = colors.field[d.data[xField]] || colors.other.primary;
-
-            // 直接使用黑色文字
-            colors.text_color = '#000000';
-
-            const textCategory = g.append("text")
-                .attr("transform", `translate(${labelPosition})`)
-                .attr("text-anchor", "middle")
-                .style("fill", colors.text_color)
-                .style("font-family", typography.label.font_family)
-                .style("font-size", categoryFontSize)
-                .text(displayTextCategory);
-
-            const textNumerical = g.append("text")
-                .attr("transform", `translate(0,20) translate(${labelPosition})`)
-                .attr("text-anchor", "middle")
-                .style("fill", colors.text_color)
-                .style("font-family", typography.label.font_family)
-                .style("font-size", numericalFontSize)
-                .text(displayTextNumerical);
         }
+        
+        // 标签处理 - 所有标签都放在外部
+        // 准备显示的文本
+        let displayTextCategory = d.data[xField];
+        let displayTextValue = `${d.data.percentage.toFixed(1)}% (${d.data[yField]})`;
+        
+        // 设置初始字体大小
+        let categoryFontSize = 14;
+        let valueFontSize = 12;
+        
+        // 计算标签位置 - 确保标签在外部
+        const labelPosition = calculateOuterLabelPosition(d, maxRadius);
+        
+        // 计算最大可用宽度 - 外部标签可以有更多空间
+        const outerSpaceWidth = width * 0.4; // 增加到宽度的40%
+        
+        // 调整文本字体大小以确保文本完整显示
+        const fittedCategory = fitTextToWidth(displayTextCategory, categoryFontSize, outerSpaceWidth);
+        const fittedValue = fitTextToWidth(displayTextValue, valueFontSize, outerSpaceWidth);
+        
+        // 设置文本颜色
+        const fillColor = colors.field[d.data[xField]] || colors.other.primary;
+        // 计算文本颜色 - 使用黑色作为默认颜色，确保可读性
+        const textColor = "#000000";
+        
+        // 添加标签 - 类别名称
+        g.append("text")
+            .attr("transform", `translate(${labelPosition})`)
+            .attr("text-anchor", "middle")
+            .style("fill", textColor)
+            .style("font-family", typography.label.font_family)
+            .style("font-size", `${fittedCategory.fontSize}px`)
+            .style("font-weight", "bold")
+            .text(fittedCategory.text);
+
+        // 添加标签 - 百分比和原始值
+        g.append("text")
+            .attr("transform", `translate(${labelPosition[0]}, ${labelPosition[1] + fittedCategory.fontSize + 4})`)
+            .attr("text-anchor", "middle")
+            .style("fill", textColor)
+            .style("font-family", typography.label.font_family)
+            .style("font-size", `${fittedValue.fontSize}px`)
+            .text(fittedValue.text);
+        
+        // 添加辅助线连接扇区和标签
+        const arcCentroid = arc.centroid(d);
+        
+        // 连接线起点位于扇区中心位置
+        const lineStartX = arcCentroid[0];
+        const lineStartY = arcCentroid[1];
+        
+        // 连接线终点位于标签起始位置的90%处，避免直接连到文字
+        const lineEndX = labelPosition[0] * 0.9;
+        const lineEndY = labelPosition[1] * 0.9;
+        
+        g.append("line")
+            .attr("x1", lineStartX)
+            .attr("y1", lineStartY)
+            .attr("x2", lineEndX)
+            .attr("y2", lineEndY)
+            .attr("stroke", "#888888")
+            .attr("stroke-width", 1)
+            .attr("stroke-dasharray", "3,3");
     }
 
     // 加入label
@@ -456,8 +379,7 @@ function makeChart(containerSelector, data) {
         .text(jsonData.title);
 
     // 添加图例 - 放在图表上方
-    const legendGroup = svg.append("g")
-        .attr("transform", `translate(0, -50)`);
+    const legendGroup = svg.append("g");
     
     // 计算字段名宽度并添加间距
     const titleWidth = xField.length * 10;
@@ -468,15 +390,11 @@ function makeChart(containerSelector, data) {
     const legendSize = layoutLegend(legendGroup, xs, colors, {
         x: titleWidth + titleMargin,
         y: 0,
-        fontSize: 18,  // 增大图例字体
+        fontSize: 14,
         fontWeight: "bold",
         align: "left",
         maxWidth: chartWidth - titleWidth - titleMargin,
         shape: "rect",
-        symbolSize: 16,  // 增大图例符号尺寸
-        itemHeight: 28,  // 增大图例项高度
-        itemSpacing: 28,  // 增大图例项间距
-        rowSpacing: 15    // 增大行间距
     });
 
     // 添加字段名称
@@ -485,12 +403,12 @@ function makeChart(containerSelector, data) {
         .attr("y", legendSize.height / 2)
         .attr("dominant-baseline", "middle")
         .attr("fill", "#333")
-        .style("font-size", "18px") // 增大字段名称字体
+        .style("font-size", "16px")
         .style("font-weight", "bold")
         .text(xField);
     
     // 将图例组向上移动 height/2, 并居中
-    legendGroup.attr("transform", `translate(${(chartWidth - legendSize.width - titleWidth - titleMargin) / 2}, ${-legendSize.height / 2 - 20})`);
+    legendGroup.attr("transform", `translate(${(chartWidth - legendSize.width - titleWidth - titleMargin) / 2}, ${-legendSize.height / 2 - 50})`);
     
     return svg.node();
 }

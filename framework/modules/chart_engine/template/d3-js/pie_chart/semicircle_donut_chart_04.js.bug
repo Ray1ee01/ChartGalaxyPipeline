@@ -1,8 +1,8 @@
 /*
 REQUIREMENTS_BEGIN
 {
-    "chart_type": "donut_chart",
-    "chart_name": "donut_chart_04_d3",
+    "chart_type": "semicircle_donut_chart",
+    "chart_name": "semicircle_donut_chart_04_d3",
     "is_composite": false,
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],

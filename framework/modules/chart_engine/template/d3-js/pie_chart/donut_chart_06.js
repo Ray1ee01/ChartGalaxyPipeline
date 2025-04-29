@@ -98,16 +98,41 @@ function makeChart(containerSelector, data) {
     console.log("sectors: ", sectors);
 
     // 计算标签位置的函数
-    function calculateLabelPosition(d, outerRadius) {
+    function calculateLabelPosition(d, iconCentroid, iconWidth, innerRadius, outerRadius, textWidth, textHeight, isLargeIcon) {
         // 计算扇区中心角度
         const angle = (d.startAngle + d.endAngle) / 2;
         
-        // 计算外部标签位置，添加一些边距
-        const labelRadius = outerRadius * 1.2;
+        // 计算图标半径，添加额外边距
+        const iconRadius = iconWidth / 2 + 5;
+        
+        // 增加安全距离，确保标签和图标不重叠
+        const safetyDistance = 20;
+        
+        // 所有标签都放在外圈，统一使用较大的半径
+        const labelRadius = outerRadius + safetyDistance;
         
         // 基于角度和半径计算最终位置
         const x = Math.sin(angle) * labelRadius;
         const y = -Math.cos(angle) * labelRadius;
+        
+        // 额外检查：检测是否与图标有重叠
+        const distance = Math.sqrt(
+            Math.pow(x - iconCentroid[0], 2) + 
+            Math.pow(y - iconCentroid[1], 2)
+        );
+        
+        // 如果距离太近，再增加一些距离
+        if (distance < safetyDistance) {
+            const extraFactor = 1.5; // 增加额外的安全系数
+            const extraDistance = (safetyDistance - distance) * extraFactor;
+            labelRadius += extraDistance;
+            
+            // 重新计算位置
+            return [
+                Math.sin(angle) * labelRadius,
+                -Math.cos(angle) * labelRadius
+            ];
+        }
         
         return [x, y];
     }
@@ -213,36 +238,56 @@ function makeChart(containerSelector, data) {
             .attr("height", iconHeight);
 
         // 计算标签位置（在外部）
-        const labelPosition = calculateLabelPosition(d, maxRadius);
+        const labelPosition = calculateLabelPosition(
+            d, 
+            [cx, cy], 
+            iconWidth, 
+            maxRadius*0.5, 
+            maxRadius,
+            iconWidth,
+            iconHeight,
+            true
+        );
         
         // 准备显示文本
         let displayTextCategory = d.data[xField];
         let displayTextNumerical = `${d.data.percentage.toFixed(1)}%`;
         
         // 设置字体大小
-        let categoryFontSize = 14;
-        let numericalFontSize = 16;
+        let categoryFontSize = 20;
+        let numericalFontSize = 20;
         
-        // 计算最大可用宽度
-        const maxAvailableWidth = 80; // 外部标签可以稍微宽一些
+        // 估算文本尺寸
+        const categoryDimensions = estimateTextDimensions(displayTextCategory, categoryFontSize);
+        const numericalDimensions = estimateTextDimensions(displayTextNumerical, numericalFontSize);
+        // 计算标签总高度（包括两行文本和间距）
+        const labelHeight = categoryDimensions.height + numericalDimensions.height + 5;
+        // 取两行文本中较宽的一个作为标签宽度
+        const labelWidth = Math.max(categoryDimensions.width, numericalDimensions.width);
         
-        // 调整文本以适应可用宽度
-        const fittedCategory = fitTextToWidth(displayTextCategory, categoryFontSize, maxAvailableWidth);
-        displayTextCategory = fittedCategory.text;
-        categoryFontSize = fittedCategory.fontSize;
+        // 根据角度决定文本对齐方式
+        const angle = (d.startAngle + d.endAngle) / 2;
+        let textAnchor;
+        if (angle < Math.PI/8 || angle > 15*Math.PI/8) {
+            textAnchor = "middle";  // 正上方和正下方，居中对齐
+        } else if (angle >= Math.PI/8 && angle < 7*Math.PI/8) {
+            textAnchor = "start";   // 右侧区域，左对齐
+        } else if (angle >= 7*Math.PI/8 && angle < 9*Math.PI/8) {
+            textAnchor = "middle";  // 正左方，居中对齐
+        } else if (angle >= 9*Math.PI/8 && angle < 15*Math.PI/8) {
+            textAnchor = "end";     // 左侧区域，右对齐
+        } else {
+            textAnchor = "middle";  // 默认值
+        }
         
-        const fittedNumerical = fitTextToWidth(displayTextNumerical, numericalFontSize, maxAvailableWidth);
-        displayTextNumerical = fittedNumerical.text;
-        numericalFontSize = fittedNumerical.fontSize;
-        
-        // 确定文本颜色（这里使用黑色，因为标签在外部）
+        // 确定文本颜色
         const textColor = "#000000";
         
         // 添加文本标签
         // 添加类别文本
         const textCategory = g.append("text")
             .attr("transform", `translate(${labelPosition})`)
-            .attr("text-anchor", "middle")
+            .attr("text-anchor", textAnchor)
             .style("fill", textColor)
             .style("font-family", typography.label.font_family)
             .style("font-size", `${categoryFontSize}px`)
@@ -250,28 +295,14 @@ function makeChart(containerSelector, data) {
 
         // 添加数值文本（在类别下方）
         const textNumerical = g.append("text")
-            .attr("transform", `translate(${labelPosition[0]}, ${labelPosition[1] + categoryFontSize + 2})`)
-            .attr("text-anchor", "middle")
+            .attr("transform", `translate(0,20) translate(${labelPosition})`)
+            .attr("text-anchor", textAnchor)
             .style("fill", textColor)
             .style("font-family", typography.label.font_family)
             .style("font-size", `${numericalFontSize}px`)
             .style("font-weight", "bold")
             .text(displayTextNumerical);
-            
-        // 添加一条连接线，从扇区边缘到标签
-        const midRadius = (maxRadius*0.5 + maxRadius) / 2;
-        const angle = (d.startAngle + d.endAngle) / 2;
-        const startX = Math.sin(angle) * maxRadius * 1.05;
-        const startY = -Math.cos(angle) * maxRadius * 1.05;
-        
-        g.append("line")
-            .attr("x1", startX)
-            .attr("y1", startY)
-            .attr("x2", labelPosition[0])
-            .attr("y2", labelPosition[1] - categoryFontSize/2) // 稍微偏上一点，指向文字的中上部
-            .attr("stroke", "#999")
-            .attr("stroke-width", 1)
-            .attr("stroke-dasharray", "3,3"); // 虚线效果
+
     }
 
     // 加入label
