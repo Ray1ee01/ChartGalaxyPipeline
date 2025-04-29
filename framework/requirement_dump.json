@@ -944,7 +944,7 @@
             ],
             [
                 0,
-                "inf"
+                Infinity
             ]
         ],
         "required_fields_icons": [
@@ -3493,6 +3493,51 @@
         "has_x_axis": "no",
         "has_y_axis": "no"
     },
+    "vertical_bar_chart_07": {
+        "chart_type": "Vertical Bar Chart",
+        "chart_name": "vertical_bar_chart_07",
+        "required_fields": [
+            "x",
+            "y"
+        ],
+        "required_fields_type": [
+            [
+                "categorical"
+            ],
+            [
+                "numerical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                3,
+                20
+            ],
+            [
+                0,
+                100
+            ]
+        ],
+        "required_fields_icons": [],
+        "required_other_icons": [],
+        "required_fields_colors": [],
+        "required_other_colors": [
+            "primary",
+            "secondary",
+            "background"
+        ],
+        "supported_effects": [
+            "gradient",
+            "opacity"
+        ],
+        "min_height": 600,
+        "min_width": 800,
+        "background": "light",
+        "icon_mark": "none",
+        "icon_label": "none",
+        "has_x_axis": "yes",
+        "has_y_axis": "yes"
+    },
     "vertical_bar_chart_01": {
         "chart_type": "Vertical Bar Chart",
         "chart_name": "vertical_bar_chart_01",
@@ -3541,6 +3586,51 @@
         "icon_label": "side",
         "has_x_axis": "no",
         "has_y_axis": "no"
+    },
+    "vertical_bar_chart_09": {
+        "chart_type": "Vertical Bar Chart",
+        "chart_name": "vertical_bar_chart_09",
+        "required_fields": [
+            "x",
+            "y"
+        ],
+        "required_fields_type": [
+            [
+                "categorical"
+            ],
+            [
+                "numerical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                3,
+                10
+            ],
+            [
+                0,
+                100
+            ]
+        ],
+        "required_fields_icons": [],
+        "required_other_icons": [],
+        "required_fields_colors": [],
+        "required_other_colors": [
+            "primary",
+            "secondary",
+            "background"
+        ],
+        "supported_effects": [
+            "gradient",
+            "opacity"
+        ],
+        "min_height": 600,
+        "min_width": 800,
+        "background": "light",
+        "icon_mark": "none",
+        "icon_label": "none",
+        "has_x_axis": "yes",
+        "has_y_axis": "yes"
     },
     "vertical_bar_chart_04": {
         "chart_type": "Vertical Bar Chart",
@@ -3613,6 +3703,53 @@
             ]
         ],
         "required_fields_icons": [],
+        "required_other_icons": [],
+        "required_fields_colors": [],
+        "required_other_colors": [
+            "primary",
+            "secondary",
+            "background"
+        ],
+        "supported_effects": [
+            "gradient",
+            "opacity"
+        ],
+        "min_height": 600,
+        "min_width": 800,
+        "background": "light",
+        "icon_mark": "none",
+        "icon_label": "none",
+        "has_x_axis": "yes",
+        "has_y_axis": "yes"
+    },
+    "vertical_bar_chart_08": {
+        "chart_type": "Vertical Bar Chart",
+        "chart_name": "vertical_bar_chart_08",
+        "required_fields": [
+            "x",
+            "y"
+        ],
+        "required_fields_type": [
+            [
+                "categorical"
+            ],
+            [
+                "numerical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                3,
+                20
+            ],
+            [
+                0,
+                100
+            ]
+        ],
+        "required_fields_icons": [
+            "x"
+        ],
         "required_other_icons": [],
         "required_fields_colors": [],
         "required_other_colors": [

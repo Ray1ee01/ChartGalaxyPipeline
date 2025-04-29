@@ -65,9 +65,12 @@ horizontal stacked pictorial bar chart / horizontal_stacked_pictorial_bar_chart_
 vertical bar chart / vertical_bar_chart_0
 vertical bar chart / vertical_bar_chart_02
 vertical bar chart / vertical_bar_chart_03
+vertical bar chart / vertical_bar_chart_07
 vertical bar chart / vertical_bar_chart_01
+vertical bar chart / vertical_bar_chart_09
 vertical bar chart / vertical_bar_chart_04
 vertical bar chart / vertical_bar_chart_06
+vertical bar chart / vertical_bar_chart_08
 vertical bar chart / vertical_bar_chart_05
 horizontal range chart / horizontal_range_bar_chart_01
 vertical group bar chart / vertical_group_bar_chart_5
