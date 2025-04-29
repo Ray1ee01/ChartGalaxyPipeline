@@ -476,7 +476,7 @@ def should_skip_module(module_name: str, output_path: Path) -> bool:
             "title_generator": lambda d: False,#"titles" in d,
             "layout_recommender": lambda d: "variation" in d,
             "color_recommender": lambda d: "colors" in d,
-            "image_recommender": lambda d: "images" in d
+            "image_recommender": lambda d: False#"images" in d
         }
         
         if module_name in skip_conditions:

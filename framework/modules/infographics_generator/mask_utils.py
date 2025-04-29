@@ -183,7 +183,7 @@ def calculate_mask_v3(svg_content: str, width: int, height: int, background_colo
     sample_pixels = img_array_without_text.reshape(-1, 3)[sample_indices]
     
     # 排除接近背景色的像素
-    non_bg_pixels = sample_pixels[~np.all(np.abs(sample_pixels - background_color) <= 10, axis=1)]
+    non_bg_pixels = sample_pixels[~np.all(np.abs(sample_pixels - background_color) <= 40, axis=1)]
     
     if len(non_bg_pixels) == 0:
         mode_color = np.array([0, 0, 0])  # 如果没有非背景色像素，返回黑色
@@ -197,9 +197,8 @@ def calculate_mask_v3(svg_content: str, width: int, height: int, background_colo
     mask = np.zeros((height, width), dtype=np.uint8)
     mask_only_text = np.zeros((height, width), dtype=np.uint8)
     
-    # 计算颜色差异,使用更严格的阈值
     color_diff = np.sqrt(np.sum((img_array_without_text - mode_color) ** 2, axis=2))
-    mask[color_diff <= 2] = 1  # 降低阈值从10到5,要求更接近mode_color
+    mask[color_diff <= 2] = 1
     
     # 计算与背景色的差异,使用更严格的阈值
     color_diff_only_text = np.sqrt(np.sum((img_array_only_text - background_color) ** 2, axis=2))
@@ -208,7 +207,7 @@ def calculate_mask_v3(svg_content: str, width: int, height: int, background_colo
     # 初始化填充mask
     fill_mask = np.zeros((height, width), dtype=np.uint8)
     fill_mask_only_text = np.zeros((height, width), dtype=np.uint8)
-    mask_padding = 8
+    mask_padding = 3
     for i in range(height):
         last_j = -mask_padding
         for j in range(width):

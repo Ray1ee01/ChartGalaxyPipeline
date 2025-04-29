@@ -3,6 +3,7 @@ import os
 import requests
 from typing import Dict, List, Optional
 import pandas as pd
+import faiss
 from logging import getLogger
 from utils.model_loader import ModelLoader
 logger = getLogger(__name__)
@@ -22,7 +23,12 @@ class ImageRecommender:
         self.normal_icons = os.path.join(resource_path, 'images')
         self.special_icons = os.path.join(resource_path, 'special_icons')
         self.special_icon_index = os.path.join(self.special_icons, 'data.json')
-        self.special_categories = ["country"]
+        self.newicon_path = os.path.join(resource_path, 'attribute_icons')
+        self.newicon_data_path = os.path.join(self.newicon_path, 'index.json')
+        self.newicon_data = json.load(open(self.newicon_data_path))
+        self.newicon_faiss = os.path.join(self.newicon_path, 'faiss.index')
+        self.newicon_index = faiss.read_index(self.newicon_faiss)
+        self.special_categories = ["country", "emotion"]
         
     def create_query_text_for_value(self, input_data: Dict, group_value: str, group_col: str) -> str:
         """Create a text query from input data for finding similar images."""
@@ -30,13 +36,14 @@ class ImageRecommender:
         text_parts = []
 
         text_parts.append(group_value)
-        columns = [col["name"] + " (" + col["description"] + ")" for col in input_data.get("data", {}).get("columns", []) if col["name"] == group_col]
-        text_parts.append("Columns: " + ", ".join(columns))
+        columns = [col["name"] + " (" + col["description"] + ")" for col in input_data.get("data", {}).get("columns", []) if col["name"] == group_col][0]
+        text_parts.append(" in " + columns)
 
         # if "main_title" in titles:
         #    text_parts.append(titles["main_title"])
 
         return "; ".join(text_parts)
+    
 
     def create_query_text(self, input_data: Dict) -> str:
         """Create a text query from input data for finding similar images."""
@@ -50,10 +57,10 @@ class ImageRecommender:
             text_parts.append(titles["main_title"])
         if "sub_title" in titles:
             text_parts.append(titles["sub_title"])
-        columns = [col["name"] + " (" + col["description"] + ")" for col in input_data.get("data", {}).get("columns", [])]
-        text_parts.append("Columns: " + ", ".join(columns))
+        # columns = [col["name"] + " (" + col["description"] + ")" for col in input_data.get("data", {}).get("columns", [])]
+        # text_parts.append("Columns: " + ", ".join(columns))
 
-        for fact in data_facts[:3]:
+        for fact in data_facts[:1]:
             text_parts.append(f'{fact["subtype"]} {fact["type"]}, {fact["annotation"]}')
             
         return "; ".join(text_parts)
@@ -125,6 +132,7 @@ class ImageRecommender:
         image_content = image_data.get('image_content', '')
         topic = image_data.get('topic', '')
         color_style = image_data.get('color_style', '')
+        name = image_data.get('name', '')
 
         if image_content:
             semantic_text += f"{image_content}"
@@ -132,7 +140,9 @@ class ImageRecommender:
             semantic_text += f". {topic}"
         if color_style:
             semantic_text += f". {color_style}"
-
+        if name:
+            semantic_text += f". {name}"
+            
         return semantic_text
 
     def process_special_icons(self, category: str, unique_values: List) -> Optional[Dict]:
@@ -157,7 +167,10 @@ class ImageRecommender:
             # Randomly select a type
             import random
             available_types = list(special_icons[category].keys())
-            selected_type = "circle"#random.choice(available_types)
+            if category == "country":
+                selected_type = "circle"
+            else:
+                selected_type = random.choice(available_types)
             icons = special_icons[category][selected_type]
             
             model = self.model
@@ -201,8 +214,8 @@ class ImageRecommender:
         all_group_icons = {}
         for value in unique_values:
             group_query = self.create_query_text_for_value(input_data, str(value), group_col)
-            group_icons = self.index_builder.search(group_query, top_k=20, image_type='icon')
-            
+            group_icons = self.index_builder.search(group_query, top_k=20, new_index=self.newicon_index, new_data=self.newicon_data, image_type='icon')
+
             all_group_icons[str(value)] = [
                 {
                     "image_path": img["image_path"],
@@ -222,16 +235,19 @@ class ImageRecommender:
         
         # Select optimal icons
         return self.select_optimal_icons(all_group_icons, all_images)
-    def post_process_image(self, image_path: str) -> str:
+    
+    def post_process_image(self, image_path: str, max_size: int = 768) -> str:
         """
         Post-process the recommended image:
         1. Convert relative path to absolute path
-        2. Convert white background to transparent
-        3. Convert to base64 string
+        2. Intelligently remove background (outer connected areas) without affecting inner fill
+        3. Resize to specified resolution
+        4. Convert to base64 string
         
         Args:
             image_path: Relative path to the image
-            
+            max_size: Maximum dimension for resizing (default: 768)
+                
         Returns:
             Base64 encoded string of the processed image
         """
@@ -240,24 +256,87 @@ class ImageRecommender:
             import numpy as np
             import base64
             import io
+            from scipy.ndimage import label
             
             # Get absolute path
             abs_path = os.path.join(self.normal_icons, image_path)
             if not os.path.exists(abs_path):
-                logger.error(f"Image not found: {abs_path}")
-                return ""
-            
-            # Convert white background to transparent
+                abs_path = os.path.join(self.newicon_path, image_path)
+                if not os.path.exists(abs_path):
+                    logger.error(f"Image not found: {abs_path}")
+                    return ""
+        
+            # Open and convert image
             img = Image.open(abs_path)
+            
+            # Resize image while maintaining aspect ratio
+            if img.width > max_size or img.height > max_size:
+                ratio = min(max_size / img.width, max_size / img.height)
+                new_width = int(img.width * ratio)
+                new_height = int(img.height * ratio)
+                img = img.resize((new_width, new_height), Image.LANCZOS)
+            
             if img.mode != 'RGBA':
                 img = img.convert('RGBA')
             
+            # Convert to numpy array for processing
             data = np.array(img)
-            # Convert white-ish pixels to transparent
-            # RGB all > 240 is considered white-ish
-            white_mask = (data[..., :3] > 240).all(axis=2)
-            data[white_mask, 3] = 0
             
+            # Efficient background color detection using edge sampling
+            h, w = data.shape[:2]
+            
+            # Sample pixels from the edges (more likely to be background)
+            edge_pixels = []
+            # Top and bottom edges
+            edge_pixels.extend(data[0, ::5, :3].tolist())
+            edge_pixels.extend(data[h-1, ::5, :3].tolist())
+            # Left and right edges (excluding corners already sampled)
+            edge_pixels.extend(data[1:h-1:5, 0, :3].tolist())
+            edge_pixels.extend(data[1:h-1:5, w-1, :3].tolist())
+            
+            edge_pixels = np.array(edge_pixels)
+            
+            # Use histogram to find most common color in the edge samples
+            # Simplify colors to improve clustering (reduce to 5 bits per channel)
+            simplified_pixels = (edge_pixels >> 3) << 3
+            
+            # Create a unique identifier for each simplified RGB color
+            color_ids = (simplified_pixels[:, 0] << 16) | (simplified_pixels[:, 1] << 8) | simplified_pixels[:, 2]
+            unique_colors, counts = np.unique(color_ids, return_counts=True)
+            
+            # Get the most common color
+            bg_color_id = unique_colors[np.argmax(counts)]
+            bg_color = np.array([
+                (bg_color_id >> 16) & 0xFF,
+                (bg_color_id >> 8) & 0xFF,
+                bg_color_id & 0xFF
+            ])
+            
+            # Create mask for background-like colors (with tolerance)
+            tolerance = 30
+            color_dists = np.sqrt(np.sum((data[..., :3] - bg_color)**2, axis=2))
+            bg_mask = color_dists < tolerance
+            
+            # Find connected components (backgrounds usually touch the edges)
+            labeled, num_components = label(bg_mask)
+            
+            # Create a border mask (true for pixels on the border)
+            border_mask = np.zeros_like(bg_mask, dtype=bool)
+            border_mask[0, :] = border_mask[-1, :] = True
+            border_mask[:, 0] = border_mask[:, -1] = True
+            
+            # Identify components that touch the border
+            border_components = set(labeled[border_mask & (labeled > 0)])
+            
+            # Create mask for components that touch the border
+            outer_mask = np.zeros_like(bg_mask, dtype=bool)
+            for component in border_components:
+                outer_mask = outer_mask | (labeled == component)
+            
+            # Apply the mask to alpha channel
+            data[outer_mask, 3] = 0
+            
+            # Convert back to PIL Image
             processed_img = Image.fromarray(data)
             
             # Convert to base64 string
@@ -321,10 +400,10 @@ Column Name: {column_name}
 Unique Values: {', '.join(map(str, unique_values[:10]))}{"..." if len(unique_values) > 10 else ""}
 
 Categorize these values into one of the following types:
-1. country (use country flags)
+1. country (use country flags, including historical countries and regions)
 2. industry (e.g., tech, finance, healthcare, manufacturing)
 3. weather (e.g., sunny, rainy, cloudy, stormy)
-4. emotion (e.g., happy, sad, neutral, excited, like, dislike)
+4. emotion (e.g., happy, sad, neutral, excited, like, dislike, support, oppose, agree, disagree)
 5. transport (e.g., car, plane, train, ship)
 6. nature (e.g., animals, plants, landscapes)
 7. sports (e.g., football, basketball, tennis)
@@ -430,7 +509,7 @@ Please respond in JSON format:
                 if icons:
                     result["group_icons"][column_key] = icons
             else:
-                print(f"Processing normal icons for column {group_col}")
+                # print(f"Processing normal icons for column {group_col}")
                 # 为该列创建专门的输入数据
                 column_input = {
                     "data": data_dict,
@@ -463,7 +542,7 @@ Please respond in JSON format:
         if result["topic_clipart"]:
             # Randomly select one clipart
             clipart = random.choice(result["topic_clipart"])
-            processed["other"]["primary"] = self.post_process_image(clipart["image_path"])
+            processed["other"]["primary"] = self.post_process_image(clipart["image_path"], max_size=768)
         
         # Process group icons - 新结构支持多列的图标
         for column_name, column_icons in result["group_icons"].items():
@@ -473,11 +552,11 @@ Please respond in JSON format:
                 if isinstance(icons, list):
                     # For normal icons (list of candidates)
                     icon = random.choice(icons)
-                    processed["field"][field_key] = self.post_process_image(icon["image_path"])
+                    processed["field"][field_key] = self.post_process_image(icon["image_path"], max_size=256)
                     key_icon_pairs[group] = icon
                 else:
                     # For special icons (single icon)
-                    processed["field"][field_key] = self.post_process_image(icons["image_path"])
+                    processed["field"][field_key] = self.post_process_image(icons["image_path"], max_size=256)
                     key_icon_pairs[group] = icons
             # processed["field"] = self.process_stretch_icons(self.input_data, processed["field"], column_name, key_icon_pairs)
         

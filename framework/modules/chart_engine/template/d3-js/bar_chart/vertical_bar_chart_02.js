@@ -389,7 +389,7 @@ function makeChart(containerSelector, data) {
         .append("text")
         .attr("class", "x-label")
         .attr("x", d => xScale(d) + xScale.bandwidth() / 2) // 定位到每个bar的中心下方
-        .attr("y", 5) 
+        .attr("y", 20) 
         .attr("text-anchor", "middle") // 文本居中对齐
         .style("font-family", typography.label.font_family)
         .style("font-size", `${uniformFontSize}px`) // 应用统一计算的字体大小
