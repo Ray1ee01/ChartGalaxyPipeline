@@ -15,14 +15,19 @@ rose chart / rose_chart_01
 stacked bar chart / echarts_stacked_bar_chart_01
 pie chart / pie_chart_03_d3
 donut chart / donut_chart_02
+donut_chart / donut_chart_05_d3
+donut_chart / donut_chart_06_d3
+donut_chart / donut_chart_00
+donut_chart / donut_chart_04_d3
+donut_chart / donut_chart_03_d3
 pie_chart / pie_chart_00
 pie_chart / pie_chart_01_d3
 multiple gauge chart / multiple_gauge_chart_03
-donut_chart / donut_chart_00
-donut_chart / donut_chart_05_d3
-donut_chart / donut_chart_04_d3
-donut_chart / donut_chart_03_d3
 semicircle_pie_chart / semicircle_pie_chart_00
+semicircle donut chart / semi_circle_donut_chart_06_d3
+semicircle donut chart / semi_circle_donut_chart_03_d3
+semicircle pie chart / semi_circle_pie_chart_01_d3
+semicircle pie chart / semi_circle_pie_chart_03_d3
 semicircle_donut_chart / semicircle_donut_chart_00
 multiple radar chart / multiple_radar_chart_03
 multiple radar chart / multiple_radar_chart_01
@@ -42,6 +47,8 @@ horizontal bar chart / horizontal_bar_chart_3
 horizontal bar chart / horizontal_bar_chart_14
 horizontal bar chart / horizontal_bar_chart_16
 horizontal bar chart / horizontal_bar_chart_17
+horizontal bar chart / horizontal_bar_chart_18
+horizontal bar chart / horizontal_bar_chart_20
 horizontal bar chart / horizontal_bar_chart_0
 horizontal bar chart / horizontal_bar_chart_6
 horizontal bar chart / horizontal_bar_chart_13
@@ -50,6 +57,7 @@ horizontal bar chart / horizontal_bar_chart_8
 horizontal bar chart / horizontal_bar_chart_10
 horizontal bar chart / horizontal_bar_chart_4
 horizontal bar chart / horizontal_bar_chart_7
+horizontal bar chart / horizontal_bar_chart_19
 vertical stacked pictorial bar chart / vertical_stacked_pictorial_bar_chart_1
 vertical stacked pictorial bar chart / vertical_stacked_pictorial_bar_chart_0
 horizontal stacked pictorial bar chart / horizontal_stacked_pictorial_bar_chart_1
@@ -58,6 +66,9 @@ vertical bar chart / vertical_bar_chart_0
 vertical bar chart / vertical_bar_chart_02
 vertical bar chart / vertical_bar_chart_03
 vertical bar chart / vertical_bar_chart_01
+vertical bar chart / vertical_bar_chart_04
+vertical bar chart / vertical_bar_chart_06
+vertical bar chart / vertical_bar_chart_05
 horizontal range chart / horizontal_range_bar_chart_01
 vertical group bar chart / vertical_group_bar_chart_5
 vertical group bar chart / vertical_group_bar_chart_0
@@ -96,13 +107,10 @@ vertical group dot bar chart / vertical_group_dot_bar_chart_0
 radial bar chart / radial_bar_chart_03
 radial bar chart / radial_bar_chart_02
 horizontal lollipop chart / horizontal_lollipop_chart_01
-bottle_bar_chart / bottle_bar_chart_02
 vertical waffle chart / vertical_waffle_chart_01
 horizontal dot bar chart / horizontal_dot_bar_chart_02
 horizontal dot bar chart / horizontal_dot_bar_chart_01
-vertical pictorial percentage bar chart / vertical_pictorial_percentage_bar_chart_01
 horizontal group dot bar chart / horizontal_group_dot_bar_chart_0
-horizontal pictorial percentage bar chart / horizontal_pictorial_percentage_bar_chart_01
 vertical group pictorial bar chart / vertical_group_pictorial_bar_chart_1
 vertical group pictorial bar chart / vertical_group_pictorial_bar_chart_0
 stacked area chart / stacked_area_chart_03

@@ -3,9 +3,9 @@ REQUIREMENTS_BEGIN
 {
     "chart_type": "Circular Bar Chart",
     "chart_name": "circular_bar_chart_01",
-    "required_fields": ["x", "y"],
+    "required_fields": ["x", "y", "group"],
     "required_fields_type": [["categorical"], ["numerical"]],
-    "required_fields_range": [[3, 20], [0, 100]],
+    "required_fields_range": [[3, 10], [0, 100]],
     "required_fields_icons": [],
     "required_other_icons": [],
     "required_fields_colors": [],
@@ -56,7 +56,9 @@ function makeChart(containerSelector, data) {
 
     // 为SVG添加一个根组，使所有内容居中
     const g = svg.append("g")
-        .attr("transform", `translate(${width / 2}, ${height / 2})`);
+        .attr("transform", `translate(${width / 2}, ${height / 2})`)
+        .attr("xmlns:xlink", "http://www.w3.org/1999/xlink")
+        .attr("xmlns:svg", "http://www.w3.org/2000/svg");
     // 定义渐变
     const defs = g.append("defs");
 
@@ -205,22 +207,68 @@ function makeChart(containerSelector, data) {
             .text(`${d[yField]}%`);
 
         // 添加xField标签
+        const xLabelContent = d[xField];
+        const xLabelWidth = getTextWidth(xLabelContent, "16px", "Arial, sans-serif");
+        const xLabelHeight = 16;
         const xLabelAngle = startAngleBar + (endAngleBar - startAngleBar) / 2;
         const xLabelRadius = outerRadiusBar + 30; // 在扇形外部30px处
         const xLabelX = Math.sin(xLabelAngle) * xLabelRadius;
         const xLabelY = -Math.cos(xLabelAngle) * xLabelRadius;
 
-        g.append("text")
-            .attr("x", xLabelX)
-            .attr("y", xLabelY)
-            .attr("text-anchor", "middle")
-            .attr("dominant-baseline", "middle")
-            .attr("fill", "#c75526")
-            .attr("font-size", "16px")
-            .attr("font-family", "Arial, sans-serif")
-            // 调整字体粗细
-            .attr("font-weight", "bold")
-            .text(d[xField]);
+        // 检查文本长度，如果超过50个字符则拆分成两行
+        let textLines = [];
+        if (xLabelContent.length > 16) {
+            // 找到合适的分割点，尽量在中间位置分割
+            const midPoint = Math.floor(xLabelContent.length / 2);
+            // 从中间位置向前查找空格或标点符号
+            let splitPoint = midPoint;
+            for (let i = midPoint; i > 0; i--) {
+                if (xLabelContent[i] === ' ' || xLabelContent[i] === ',' || 
+                    xLabelContent[i] === '.' || xLabelContent[i] === ';') {
+                    splitPoint = i;
+                    break;
+                }
+            }
+            textLines = [
+                xLabelContent.substring(0, splitPoint),
+                xLabelContent.substring(splitPoint).trim()
+            ];
+        } else {
+            textLines = [xLabelContent];
+        }
+
+        // 确定文本锚点
+        const getTextAnchor = function() {
+            // 根据角度确定text-anchor
+            if (xLabelAngle < Math.PI/8 || xLabelAngle > 15*Math.PI/8) {
+                return "middle";
+            } else if (xLabelAngle >= Math.PI/8 && xLabelAngle < 7*Math.PI/8) {
+                return "start";
+            } else if (xLabelAngle >= 7*Math.PI/8 && xLabelAngle < 9*Math.PI/8) {
+                return "middle";
+            } else if (xLabelAngle >= 9*Math.PI/8 && xLabelAngle < 15*Math.PI/8) {
+                return "end";
+            }
+            return "middle"; // 默认值
+        };
+
+        const textAnchor = getTextAnchor();
+        
+        // 添加文本，根据行数调整位置
+        textLines.forEach((line, i) => {
+            const lineOffset = textLines.length > 1 ? (i - 0.5) * 20 : 0; // 多行时的垂直偏移
+            
+            g.append("text")
+                .attr("x", xLabelX)
+                .attr("y", xLabelY + lineOffset)
+                .attr("text-anchor", textAnchor)
+                .attr("dominant-baseline", "middle")
+                .attr("fill", "#c75526")
+                .attr("font-size", "16px")
+                .attr("font-family", "Arial, sans-serif")
+                .attr("font-weight", "bold")
+                .text(line);
+        });
         });
     // 带有缺口的内圈 - 使用弧形路径
     const innerCircleArc = d3.arc()
@@ -235,16 +283,16 @@ function makeChart(containerSelector, data) {
         .attr("stroke", "#000")
         .attr("stroke-width", 1.5);
     
-    // 中心白色背景
-    const innerWhiteArc = d3.arc()
-        .innerRadius(0)
-        .outerRadius(innerRadius - 2)
-        .startAngle(startAngle)
-        .endAngle(endAngle);
+    // // 中心白色背景
+    // const innerWhiteArc = d3.arc()
+    //     .innerRadius(0)
+    //     .outerRadius(innerRadius - 2)
+    //     .startAngle(startAngle)
+    //     .endAngle(endAngle);
     
-    g.append("path")
-        .attr("d", innerWhiteArc)
-        .attr("fill", "white");
+    // g.append("path")
+    //     .attr("d", innerWhiteArc)
+    //     .attr("fill", "white");
     
     // 添加图像
     const imageGroup = g.append("g")
@@ -264,10 +312,9 @@ function makeChart(containerSelector, data) {
         }
         return line;
     }).flat() || [];
-    console.log(titleLines);
     // 计算标题总高度
     const totalHeight = titleLines.length * 25;
-    const startY = 0;
+    const startY = -totalHeight/4
     
     titleLines.forEach((line, i) => {
         g.append("text")
