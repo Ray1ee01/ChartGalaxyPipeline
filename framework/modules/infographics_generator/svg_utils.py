@@ -73,20 +73,20 @@ def add_gradient_to_rect(rect_svg):
 
 def extract_svg_content(svg_content: str) -> Optional[str]:
     """从SVG内容中提取内部元素"""
-    try:
-        svg_tree = etree.fromstring(svg_content.encode())
-        # 获取所有子元素
-        children = svg_tree.getchildren()
-        if not children:
-            return None
-        
-        # 将子元素转换为字符串
-        content = ""
-        for child in children:
-            content += etree.tostring(child, encoding='unicode')
-        return content
-    except Exception as e:
+    # try:
+    svg_tree = etree.fromstring(svg_content.encode())
+    # 获取所有子元素
+    children = svg_tree.getchildren()
+    if not children:
         return None
+    
+    # 将子元素转换为字符串
+    content = ""
+    for child in children:
+        content += etree.tostring(child, encoding='unicode')
+    return content
+    # except Exception as e:
+    #     return None
 
 def remove_large_rects(svg_content: str) -> str:
     """移除SVG中的大型矩形元素"""
@@ -292,6 +292,7 @@ def adjust_and_get_bbox(svg_content, background_color = "#FFFFFF"):
         with open(temp_svg_path, 'w', encoding='utf-8') as f:
             f.write(svg_container)
             f.flush()
+        print("temp_svg_path: ", temp_svg_path)
         bbox = get_svg_actual_bbox(temp_svg_path)
         # print("bbox: ", bbox)
         padding = 150

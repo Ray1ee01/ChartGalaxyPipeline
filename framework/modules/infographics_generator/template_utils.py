@@ -205,7 +205,11 @@ def check_template_compatibility(data: Dict, templates: Dict, specific_chart_nam
                             # print("data_types", data_types)
                             # print("combination_types", combination_types)
                             # 如果data_types和combination_types相同，或者data_types是combination_types的一个子序列
+<<<<<<< HEAD
                             if len(data_types) == len(combination_types):# or all(data_type in combination_types for data_type in data_types):
+=======
+                            if len(data_types) == len(combination_types):
+>>>>>>> origin/develop
                                 check_flag = True
                                 for data_type, combination_type in zip(data_types, combination_types[:len(data_types)]):
                                     if data_type == "categorical" and (combination_type == "temporal" or combination_type == "categorical"):
