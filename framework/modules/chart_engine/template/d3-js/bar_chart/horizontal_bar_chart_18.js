@@ -22,7 +22,6 @@ REQUIREMENTS_BEGIN
 REQUIREMENTS_END
 */
 
-
 function makeChart(containerSelector, data) {
     // ---------- 1. 数据准备阶段 ----------
     

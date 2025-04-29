@@ -2,7 +2,7 @@
 REQUIREMENTS_BEGIN
 {
     "chart_type": "Horizontal Bar Chart",
-    "chart_name": "horizontal_bar_chart_20",
+    "chart_name": "horizontal_bar_chart_21",
     "is_composite": true,
     "required_fields": [["x", "y" ], ["x", "y2"]],
     "required_fields_type": [
@@ -16,7 +16,7 @@ REQUIREMENTS_BEGIN
     "required_fields_icons": ["x"],
     "required_other_icons": [],
     "required_fields_colors": [],
-    "required_other_colors": ["x"],
+    "required_other_colors": ["primary","secondary"],
     "supported_effects": ["radius_corner", "gradient", "stroke"],
     "min_height": 400,
     "min_width": 400,
@@ -29,7 +29,7 @@ REQUIREMENTS_BEGIN
 REQUIREMENTS_END
 */
 
-// 水平条形图实现 - 使用D3.js   horizontal_bar_chart_composite_02
+// 水平条形图实现 - 使用D3.js  horizontal_bar_chart_composite_03
 function makeChart(containerSelector, data) {
     // ---------- 1. 数据准备阶段 ----------
     
@@ -88,6 +88,8 @@ function makeChart(containerSelector, data) {
 
     // 获取y2字段的显示名称用于标题
     const valueField2Name = dataColumns.find(col => col.role === "y2")?.display_name || valueField2;
+    // 获取y1字段的显示名称用于标题
+    const valueFieldName = dataColumns.find(col => col.role === "y")?.display_name || valueField;
 
     // ---------- 4. 数据处理 ----------
     
@@ -190,10 +192,8 @@ function makeChart(containerSelector, data) {
     // 删除临时SVG
     tempSvg.remove();
     
-    // 计算左边距，考虑 标签 + 图标之间的间距
-    // 序号在最左边，然后是标签（右对齐），然后是图标
-    const totalLeftPadding = maxLabelWidth + flagWidth + flagPadding;
-    margin.left = Math.max(margin.left, totalLeftPadding);
+    // 计算左边距，仅考虑标签宽度和一些间距
+    margin.left = Math.max(margin.left, maxLabelWidth + flagPadding * 2);
     
     // 设置右边距，考虑第二个数值标签 + 固定距离 20px
     margin.right = Math.max(margin.right, maxValueWidth2 + 10);
@@ -221,22 +221,7 @@ function makeChart(containerSelector, data) {
     
     // 获取主题色
     const primaryColor = colors.other && colors.other.primary ? colors.other.primary : "#1d6b64";
-    
-    // 添加水平渐变（从左到右）
-    const gradient = defs.append("linearGradient")
-        .attr("id", "bar-gradient")
-        .attr("x1", "0%")
-        .attr("y1", "0%")
-        .attr("x2", "100%")
-        .attr("y2", "0%");
-    
-    gradient.append("stop")
-        .attr("offset", "0%")
-        .attr("stop-color", d3.rgb(primaryColor).darker(0.3));
-    
-    gradient.append("stop")
-        .attr("offset", "100%")
-        .attr("stop-color", d3.rgb(primaryColor).brighter(0.5));
+    const secondaryColor = colors.other && colors.other.secondary ? colors.other.secondary : "#ff7f0e"; // 获取次要颜色，设置默认值
     
     // ---------- 7. 创建比例尺 ----------
     
@@ -254,6 +239,16 @@ function makeChart(containerSelector, data) {
         .domain([0, d3.max(chartData, d => +d[valueField]) * 1.05]) // 添加5%边距
         .range([0, innerWidth]);
     
+    // 为右侧正方形创建面积比例尺
+    const barH = yScale.bandwidth(); // 获取单个bar的高度
+    const maxY2 = d3.max(chartData, d => +d[valueField2]);
+    const minSideLength = 10; // 最小边长
+    const maxSideLength = barH * 2; // 最大边长
+    const squareSideScale = d3.scaleSqrt() // 使用sqrt比例尺映射面积到边长
+        .domain([0, maxY2]) // Y2值范围
+        .range([minSideLength, maxSideLength]) // 映射到边长范围
+        .clamp(true); // 防止超出范围
+    
     // ---------- 9. 创建主图表组 ----------
     
     const g = svg.append("g")
@@ -261,14 +256,6 @@ function makeChart(containerSelector, data) {
     
     // ---------- 10. 绘制条形和标签 ----------
     
-    // 获取描边颜色的辅助函数
-    const getStrokeColor = (dimension) => {
-        // 获取条形的基础颜色
-        const baseColor = getBarColor(dimension); 
-        // 返回该颜色的更亮版本
-        return d3.rgb(baseColor).brighter(3); 
-    };
-
     // 获取条形颜色的辅助函数
     const getBarColor = (dimension) => {
         // 获取维度对应的颜色
@@ -282,10 +269,21 @@ function makeChart(containerSelector, data) {
     const iconContainerWidth = iconWidth + 2*flagPadding; // 图标宽度加上一些额外的空间，用于覆盖条形图的一部分
     const iconContainerHeight = innerHeight;
     
+    // 添加y1字段标题（在第一行上方，左对齐）
+    g.append("text")
+        .attr("x", 0) // 左对齐到条形图起点
+        .attr("y", -10) // 与y2标题垂直对齐
+        .attr("text-anchor", "start") // 左对齐
+        .style("font-family", typography.label.font_family)
+        .style("font-size", typography.label.font_size)
+        .style("font-weight", typography.label.font_weight)
+        .style("fill", colors.text_color)
+        .text(valueFieldName);
+    
     // 添加y2字段标题（在第一行上方）
     g.append("text")
         .attr("x", innerWidth + margin.right - 10) // 右对齐，距离图表右边缘10px
-        .attr("y", - 5) 
+        .attr("y", - 10) 
         .attr("text-anchor", "end") // 右对齐
         .style("font-family", typography.label.font_family)
         .style("font-size", typography.label.font_size)
@@ -307,11 +305,9 @@ function makeChart(containerSelector, data) {
                 .attr("y", yScale(dimension))
                 .attr("width", barWidth)
                 .attr("height", barHeight)
-                .attr("fill", "url(#bar-gradient)") // 强制使用渐变填充
-                .attr("rx", 4) // 强制使用圆角半径4
-                .attr("ry", 4) // 强制使用圆角半径4
-                .style("stroke", getStrokeColor(dimension)) // 强制应用描边
-                .style("stroke-width", 1) // 强制设置描边宽度为1
+                .attr("fill", primaryColor) // 强制使用主颜色填充
+                .attr("rx", barHeight / 2) // 强制使用圆角半径 barHeight / 2
+                .attr("ry", barHeight / 2) // 强制使用圆角半径 barHeight / 2
                 .on("mouseover", function() {
                     d3.select(this).attr("opacity", 0.8);
                 })
@@ -319,87 +315,25 @@ function makeChart(containerSelector, data) {
                     d3.select(this).attr("opacity", 1);
                 });
                 
-            // 设置图标尺寸与条形高度一致
-            const adjustedFlagWidth = barHeight*1.1; // 图标宽度与条形高度相同
-            const adjustedFlagHeight = barHeight*1.1; // 图标高度与条形高度相同
-            
-            // 计算每个标签的位置
-            // 图标位置：紧贴条形左边
-            const iconX = -adjustedFlagWidth - flagPadding;
-            
-            // 获取当前维度标签的宽度
-            const tempSvg = d3.select(containerSelector)
-                .append("svg")
-                .attr("width", 0)
-                .attr("height", 0)
-                .style("visibility", "hidden");
-                
-            const formattedDimension = dimensionUnit ? 
-                `${dimension}${dimensionUnit}` : 
-                `${dimension}`;
-                
-            const tempText = tempSvg.append("text")
-                .style("font-family", typography.label.font_family)
-                .style("font-size", typography.label.font_size)
-                .style("font-weight", typography.label.font_weight)
-                .text(formattedDimension);
-            
-            const labelWidth = tempText.node().getBBox().width;
-            tempSvg.remove();
-            
-            // 标签位置：在图标左侧，右对齐（相对于最长标签）
-            const labelX = iconX - flagPadding;
-            
-            // 添加维度图标
-            if (images.field && images.field[dimension]) {
-                // 设置图标尺寸为条形高度的90%
-                const iconHeight = barHeight * 0.9;
-                const iconWidth = iconHeight; // 保持正方形
-                const centerY = yScale(dimension) + barHeight / 2;
-                const clipPathId = `clip-${dimension.replace(/\W/g, '')}-${index}`;
-                
-                // 创建裁剪路径
-                defs.append("clipPath")
-                    .attr("id", clipPathId)
-                    .append("circle")
-                    .attr("cx", iconX + iconWidth/2)
-                    .attr("cy", centerY)
-                    .attr("r", iconWidth * 0.5);
-                
-                // 绘制细边框圆圈
-                g.append("circle")
-                    .attr("cx", iconX + iconWidth/2)
-                    .attr("cy", centerY)
-                    .attr("r", iconWidth * 0.5)
-                    .attr("fill", "none")
-                    .attr("stroke", "#000")
-                    .attr("stroke-width", 0.5);
-                
-                // 添加裁剪后的图像
-                g.append("image")
-                    .attr("x", iconX)
-                    .attr("y", centerY - iconHeight/2)
-                    .attr("width", iconWidth)
-                    .attr("height", iconHeight)
-                    .attr("clip-path", `url(#${clipPathId})`)
-                    .attr("preserveAspectRatio", "xMidYMid meet")
-                    .attr("xlink:href", images.field[dimension]);
-            }
+            // 标签位置：条形左侧，左对齐
+            const labelX = -flagPadding; // 距离条形左侧一点间距
             
             // 添加维度标签
             g.append("text")
                 .attr("x", labelX)
                 .attr("y", yScale(dimension) + barHeight / 2)
                 .attr("dy", "0.35em")
-                .attr("text-anchor", "end")
+                .attr("text-anchor", "end") // 修正：应该还是end对齐到labelX
                 .style("font-family", typography.label.font_family)
-                .style("font-size", `${Math.max(barHeight * 0.5, 8)}px`)
+                .style("font-size", `${Math.max(barHeight * 0.4, 8)}px`)
                 .style("font-weight", typography.label.font_weight)
                 .style("fill", colors.text_color)
-                .text(formattedDimension);
+                .text(dimensionUnit ? 
+                    `${dimension}${dimensionUnit}` : 
+                    `${dimension}`);
             
             // 计算动态字体大小（条形高度的60%）
-            const dynamicFontSize = `${Math.max(barHeight * 0.5, 8)}px`;
+            const dynamicFontSize = `${Math.max(barHeight * 0.4, 8)}px`;
             // 格式化数值
             const formattedValue = valueUnit ? 
                 `${dataPoint[valueField]}${valueUnit}` : 
@@ -421,37 +355,65 @@ function makeChart(containerSelector, data) {
             const valueTextWidth = tempValueText.node().getBBox().width;
             tempTextSvg.remove();
             
-            // 判断是否能在条形内部放置文本（需要多留一些边距）
-            const textFitsInside = barWidth > valueTextWidth + 5;
+            // -- 计算 Y2 和正方形属性 -- （移到此处）
+            const y2Value = +dataPoint[valueField2];
+            const sideLength = squareSideScale(y2Value);
+            const squareX = innerWidth + margin.right / 2 - sideLength / 2; // 水平居中于右侧边距
+            const squareY = yScale(dimension) + barHeight / 2 - sideLength / 2; // 垂直居中于条形
+            const formattedValue2 = valueUnit2 ? `${y2Value}${valueUnit2}` : `${y2Value}`;
+
+            // -- 添加 Y 数值标签 (考虑重叠) --
+            const textFitsInside = barWidth > valueTextWidth + 10; // 内部判断加宽边距
+            const outsideX = barWidth + 5;
+            const wouldOverlap = !textFitsInside && (outsideX + valueTextWidth > squareX);
             
-            // 添加数值标签（在条形内部或外部）
+            let labelXPos, labelAnchor, labelFill;
+            if (textFitsInside) {
+                labelXPos = barWidth / 2;
+                labelAnchor = "middle";
+                labelFill = "#ffffff";
+            } else if (wouldOverlap) {
+                labelXPos = barWidth / 2; // 强制放内部
+                labelAnchor = "middle";
+                labelFill = "#ffffff"; // 内部用白色
+            } else {
+                labelXPos = outsideX; // 放外部
+                labelAnchor = "start";
+                labelFill = colors.text_color;
+            }
+            
             g.append("text")
-                .attr("x", textFitsInside ? barWidth / 2 : barWidth + 5) // 内部居中，外部在右侧
+                .attr("x", labelXPos)
                 .attr("y", yScale(dimension) + barHeight / 2)
                 .attr("dy", "0.35em")
-                .attr("text-anchor", textFitsInside ? "middle" : "start") // 内部居中对齐，外部左对齐
+                .attr("text-anchor", labelAnchor)
                 .style("font-family", typography.annotation.font_family)
                 .style("font-size", dynamicFontSize)
                 .style("font-weight", typography.annotation.font_weight)
-                .style("fill", textFitsInside ? "#ffffff" : colors.text_color) // 在内部时使用白色，在外部时使用文本颜色
+                .style("fill", labelFill)
                 .text(formattedValue);
                 
-            // 格式化第二数值
-            const formattedValue2 = valueUnit2 ? 
-                `${dataPoint[valueField2]}${valueUnit2}` : 
-                `${dataPoint[valueField2]}`;
-                
-            // 添加第二数值标签（在右边缘，右对齐，距离右边缘20px）
+            // -- 绘制右侧正方形 -- 
+            g.append("rect")
+                .attr("x", squareX)
+                .attr("y", squareY)
+                .attr("width", sideLength)
+                .attr("height", sideLength)
+                .attr("fill", secondaryColor)
+                .attr("opacity", 0.6);
+
+            // -- 添加 Y2 数值标签 (居中于正方形) --
             g.append("text")
-                .attr("x", innerWidth + margin.right - 20) // 右对齐，距离图表右边缘20px
-                .attr("y", yScale(dimension) + barHeight / 2)
+                .attr("x", squareX + sideLength / 2) // 水平居中
+                .attr("y", squareY + sideLength / 2) // 垂直居中
                 .attr("dy", "0.35em")
-                .attr("text-anchor", "end") // 右对齐
+                .attr("text-anchor", "middle") // 居中对齐
                 .style("font-family", typography.annotation.font_family)
-                .style("font-size", dynamicFontSize)
+                .style("font-size", dynamicFontSize) // Use same dynamic font size
                 .style("font-weight", typography.annotation.font_weight)
                 .style("fill", colors.text_color)
                 .text(formattedValue2);
+
         }
     });
     
