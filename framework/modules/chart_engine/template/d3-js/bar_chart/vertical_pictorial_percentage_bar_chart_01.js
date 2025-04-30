@@ -164,8 +164,8 @@ function makeChart(containerSelector, data) {
                 .attr("class", "bottle-mask")
                 .attr("width", bottleWidth)
                 .attr("height", bottleHeight * (1 - bottlePercentage))
-                .attr("fill", "white") 
-                .attr("opacity", 0.6);
+                .attr("fill", colors.background_color) 
+                .attr("opacity", 0.4);
             
             // 计算标签方块的大小和位置
             const squareSize = bottleWidth * 0.6; // 正方形边长为瓶子宽度的60%
@@ -211,80 +211,169 @@ function makeChart(containerSelector, data) {
             });
         });
     
-    // ---------- 8. 添加国旗和国家名称 ----------
-    const baseLabelFontSize = 14; // 基础字体大小
-    const countryLabels = []; // 存储所有国家标签文本元素的引用
-    
-    // 创建临时文本元素来测量文本宽度
-    const tempText = svg.append("text")
-        .attr("visibility", "hidden")
-        .style("font-family", typography.label.font_family)
-        .style("font-size", `${baseLabelFontSize}px`);
-        
-    // 计算所有维度标签的最大宽度
-    const dimensionWidths = sortedData.map(d => {
-        tempText.text(d[xField]);
-        return tempText.node().getComputedTextLength();
-    });
-    
-    // 最大可用宽度为bandWidth的90%
-    const maxAvailableWidth = xScale.bandwidth() * 1.2;
-    
-    // 计算需要的缩放比例 (如果有标签超出可用宽度)
-    const labelScaleFactor = Math.min(1, maxAvailableWidth / Math.max(...dimensionWidths));
-    
-    // 确定最终的统一字体大小
-    const finalLabelFontSize = baseLabelFontSize * labelScaleFactor;
-    
-    // 移除临时元素
-    tempText.remove();
-    
-    chart.selectAll(".flag-label-group")
-        .data(sortedData)
-        .enter()
-        .append("g")
-        .attr("class", "flag-label-group")
-        .attr("transform", d => `translate(${xScale(d[xField]) + xScale.bandwidth() / 2}, ${innerHeight + 10})`)
-        .each(function(d, i) {
-            const group = d3.select(this);
-            
-            // 添加国旗（如果有）
-            if (images.field && images.field[d[xField]]) {
-                group.append("image")
-                    .attr("xlink:href", images.field[d[xField]])
-                    .attr("x", -12)
-                    .attr("y", 0)
-                    .attr("width", xScale.bandwidth()*0.3)
-                    .attr("height", xScale.bandwidth()*0.25)
-                    .attr("preserveAspectRatio","xMidYMid meet");
-                
-                // 添加国家名称 - 使用统一的字体大小
-                const label = group.append("text")
-                    .attr("class", "country-label")
-                    .attr("x", 0)
-                    .attr("y", xScale.bandwidth()*0.45)
-                    .attr("text-anchor", "middle")
-                    .style("font-family", typography.label.font_family)
-                    .style("font-size", `${finalLabelFontSize}px`)
-                    .style("fill", colors.text_color)
-                    .text(d[xField]);
-                    
-                countryLabels.push(label);
-            } else {
-                // 如果没有国旗，添加没有国旗版本的标签 - 使用相同的字体大小
-                const label = group.append("text")
-                    .attr("class", "country-label")
-                    .attr("x", 0)
-                    .attr("y", 15)
-                    .attr("text-anchor", "middle")
-                    .style("font-family", typography.label.font_family)
-                    .style("font-size", `${finalLabelFontSize}px`)
-                    .style("fill", colors.text_color)
-                    .text(d[xField]);
-                    
-                countryLabels.push(label);
+        // ---------- 8. 添加国旗和国家名称 (修改后) ----------
+        const baseLabelFontSize = 14; // 基础字体大小
+        // 文本换行辅助函数 (添加 alignment 参数)
+        function wrapText(text, str, width, lineHeight = 1.1, alignment = 'middle') {
+            const words = str.split(/\s+/).reverse(); // 按空格分割单词
+            let word;
+            let line = [];
+            let lineNumber = 0;
+            const initialY = parseFloat(text.attr("y")); // 获取原始y坐标
+            const initialX = parseFloat(text.attr("x")); // 获取原始x坐标
+            const actualFontSize = parseFloat(text.style("font-size")); // 获取实际应用的字体大小
+
+            text.text(null); // 清空现有文本
+
+            let tspans = []; // 存储最终要渲染的行
+
+            // 优先按单词换行
+            if (words.length > 1) {
+                let currentLine = [];
+                while (word = words.pop()) {
+                    currentLine.push(word);
+                    const tempTspan = text.append("tspan").text(currentLine.join(" ")); // 创建临时tspan测试宽度
+                    const isOverflow = tempTspan.node().getComputedTextLength() > width;
+                    tempTspan.remove(); // 移除临时tspan
+
+                    if (isOverflow && currentLine.length > 1) {
+                        currentLine.pop(); // 回退一个词
+                        tspans.push(currentLine.join(" ")); // 添加完成的行
+                        currentLine = [word]; // 新行以当前词开始
+                        lineNumber++;
+                    }
+                }
+                // 添加最后一行
+                if (currentLine.length > 0) {
+                    tspans.push(currentLine.join(" "));
+                }
+            } else { // 如果没有空格或只有一个词，则按字符换行
+                const chars = str.split('');
+                let currentLine = '';
+                for (let i = 0; i < chars.length; i++) {
+                    const nextLine = currentLine + chars[i];
+                    const tempTspan = text.append("tspan").text(nextLine); // 测试宽度
+                    const isOverflow = tempTspan.node().getComputedTextLength() > width;
+                    tempTspan.remove();
+
+                    if (isOverflow && currentLine.length > 0) { // 如果加了新字符就超长了，并且当前行不为空
+                        tspans.push(currentLine); // 添加当前行
+                        currentLine = chars[i]; // 新行从这个字符开始
+                        lineNumber++;
+                    } else {
+                        currentLine = nextLine; // 没超长就继续加字符
+                    }
+                }
+                // 添加最后一行
+                if (currentLine.length > 0) {
+                    tspans.push(currentLine);
+                }
             }
+
+            // 计算总行数
+            const totalLines = tspans.length;
+            let startDy = 0;
+            
+            // 根据对齐方式计算起始偏移
+            if (alignment === 'middle') {
+                // 垂直居中：向上移动半行*(总行数-1)
+                startDy = -( (totalLines - 1) * lineHeight / 2);
+            } else if (alignment === 'bottom') {
+                // 底部对齐：计算总高度，向上移动 总高度 - 单行高度(近似)
+                // 注意：em单位是相对于字体大小的，这里用 lineHeight * actualFontSize 近似计算像素高度
+                const totalHeightEm = totalLines * lineHeight;
+                startDy = -(totalHeightEm - lineHeight); // 将底部对齐到原始y
+            }
+            // 如果是 'top' 对齐，startDy 保持为 0，即第一行基线在原始y位置
+            // 其他对齐方式（如 'top'）可以保持 startDy 为 0
+
+            // 创建所有行的tspan元素
+            tspans.forEach((lineText, i) => {
+                text.append("tspan")
+                    .attr("x", initialX) // x坐标与父<text>相同
+                    .attr("dy", (i === 0 ? startDy : lineHeight) + "em") // 第一行应用起始偏移，后续行应用行高
+                    .text(lineText);
+            });
+            
+            // 如果是底部对齐，可能需要重新设置 y 确保精确对齐 (可选优化)
+            // if (alignment === 'bottom') {
+            //    const bbox = text.node().getBBox();
+            //    const currentBottom = bbox.y + bbox.height;
+            //    const adjustment = initialY - currentBottom;
+            //    text.attr("transform", `translate(0, ${adjustment})`);
+            // }
+        }
+        // 创建临时文本元素来测量文本宽度 (用于计算统一缩放字体)
+        const tempText = svg.append("text")
+            .attr("visibility", "hidden")
+            .style("font-family", typography.label.font_family)
+            .style("font-size", `${baseLabelFontSize}px`);
+    
+        // 计算所有维度标签在基础字体大小下的宽度
+        const dimensionWidths = sortedData.map(d => {
+            tempText.text(d[xField]);
+            return tempText.node().getComputedTextLength();
         });
+    
+        const maxAvailableWidth = xScale.bandwidth() * 1.2;
+    
+        // 计算是否需要缩小字体以及缩放比例
+        const maxDimensionWidth = Math.max(...dimensionWidths);
+        const labelScaleFactor = maxDimensionWidth > maxAvailableWidth ? maxAvailableWidth / maxDimensionWidth : 1;
+    
+        // 确定最终的统一字体大小
+        const finalLabelFontSize = baseLabelFontSize * labelScaleFactor;
+    
+        // 移除临时元素
+        tempText.remove();
+    
+        // 开始添加国旗和标签组
+        chart.selectAll(".flag-label-group")
+            .data(sortedData)
+            .enter()
+            .append("g")
+            .attr("class", "flag-label-group")
+            // 定位组到每个柱子中心下方，并留出一定间距 (innerHeight + 10)
+            .attr("transform", d => `translate(${xScale(d[xField]) + xScale.bandwidth() / 2}, ${innerHeight + 10})`)
+            .each(function(d, i) {
+                const group = d3.select(this);
+    
+                // 添加国旗（如果数据中提供了图片字段和对应的值）
+                if (images.field && images.field[d[xField]]) {
+                    group.append("image")
+                        .attr("xlink:href", images.field[d[xField]])
+                        .attr("x", -12) // 根据视觉效果调整 x 偏移
+                        .attr("y", 0)   // 垂直位置
+                        .attr("width", xScale.bandwidth() * 0.3) // 旗帜宽度，基于柱子带宽
+                        .attr("height", xScale.bandwidth() * 0.25) // 旗帜高度，基于柱子带宽
+                        .attr("preserveAspectRatio", "xMidYMid meet"); // 图片缩放和对齐方式
+                }
+    
+                // 添加国家名称文本
+                const label = group.append("text")
+                    .attr("class", "country-label") // 添加类名方便选择
+                    .attr("x", 0) // 水平居中于组内
+                    .attr("y", xScale.bandwidth() * 0.45) // 垂直位置，根据旗帜大小调整
+                    .attr("text-anchor", "middle") // 文本水平居中对齐
+                    .style("font-family", typography.label.font_family)
+                    .style("font-size", `${finalLabelFontSize}px`) // 应用计算出的统一字体大小
+                    .style("fill", colors.text_color) // 使用配置的文本颜色
+                    .text(d[xField]); // 设置文本内容
+    
+                // --- 开始文本换行处理 ---
+                // 定义此标签允许的最大宽度 (例如，柱子的带宽，可以根据需要调整，留一点边距)
+                const labelMaxWidth = xScale.bandwidth() * 0.95; // 稍微小于柱子宽度
+    
+                // 获取当前文本元素的引用 (就是上面刚创建的 label)
+                const textElement = label; // 或者 d3.select(this).select('.country-label');
+    
+                // 检查使用计算出的字体大小后，文本实际渲染宽度是否仍然超过最大允许宽度
+                if (textElement.node().getComputedTextLength() > labelMaxWidth) {
+                    
+                    wrapText(textElement, d[xField].toString(), labelMaxWidth, 1.1, 'top');
+                }
+                // --- 结束文本换行处理 ---
+            });
     
     // ---------- 9. 统一调整所有值标签的字体大小 ----------
     // 创建临时文本元素来测量值标签文本宽度
