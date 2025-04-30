@@ -257,21 +257,15 @@ function makeChart(containerSelector, data) {
     
   
     
-    // 限制条形高度不超过80px
-    const maxBarHeight = 80;
-    const barHeight = Math.min(yScale.bandwidth(), maxBarHeight);
-    
     // 为每个维度绘制条形和标签
     sortedDimensions.forEach(dimension => {
         const dataPoint = chartData.find(d => d[dimensionField] === dimension);
         
         if (dataPoint) {
-            const y = yScale(dimension);
-            // 使用限制后的条形高度，并居中显示在带区域内
-            const adjustedY = y + (yScale.bandwidth() - barHeight) / 2;
-            const centerY = adjustedY + barHeight / 2;
-            
+            const barHeight = yScale.bandwidth();
             const barWidth = xScale(+dataPoint[valueField]);
+            const y = yScale(dimension);
+            const centerY = y + barHeight / 2;
             
             // 设置半圆的半径（等于条形高度的一半）
             const radius = barHeight / 2;
@@ -285,19 +279,19 @@ function makeChart(containerSelector, data) {
                     // 如果条形宽度小于两个半径，则绘制一个完整的圆
                     if (barWidth <= radius * 2) {
                         return `
-                            M ${radius},${adjustedY}
-                            A ${radius},${radius} 0 0,1 ${radius},${adjustedY + barHeight}
-                            A ${radius},${radius} 0 0,1 ${radius},${adjustedY}
+                            M ${radius},${y}
+                            A ${radius},${radius} 0 0,1 ${radius},${y + barHeight}
+                            A ${radius},${radius} 0 0,1 ${radius},${y}
                         `;
                     }
                     
                     // 否则绘制带有两端半圆的条形
                     return `
-                        M ${radius},${adjustedY}
-                        L ${barWidth - radius},${adjustedY}
-                        A ${radius},${radius} 0 0,1 ${barWidth - radius},${adjustedY + barHeight}
-                        L ${radius},${adjustedY + barHeight}
-                        A ${radius},${radius} 0 0,1 ${radius},${adjustedY}
+                        M ${radius},${y}
+                        L ${barWidth - radius},${y}
+                        A ${radius},${radius} 0 0,1 ${barWidth - radius},${y + barHeight}
+                        L ${radius},${y + barHeight}
+                        A ${radius},${radius} 0 0,1 ${radius},${y}
                         Z
                     `;
                 })
@@ -318,7 +312,7 @@ function makeChart(containerSelector, data) {
             
             // 添加带图标的维度标签
             const flagX = -flagWidth - flagPadding - 5;
-            const labelY = centerY;
+            const labelY = y + barHeight / 2;
             
             // 添加图标（如果有）
             if (images.field && images.field[dimension]) {
@@ -370,7 +364,7 @@ function makeChart(containerSelector, data) {
                 // 标签放在条形内部
                 barGroup.append("text")
                     .attr("x", barWidth - 5) // 考虑右侧半圆
-                    .attr("y", centerY)
+                    .attr("y", y + barHeight / 2)
                     .attr("dy", "0.35em") // 垂直居中
                     .attr("text-anchor", "end")
                     .style("font-family", typography.annotation.font_family)
@@ -382,7 +376,7 @@ function makeChart(containerSelector, data) {
                 // 标签放在条形外部
                 barGroup.append("text")
                     .attr("x", barWidth + 5)
-                    .attr("y", centerY)
+                    .attr("y", y + barHeight / 2)
                     .attr("dy", "0.35em") // 垂直居中
                     .attr("text-anchor", "start")
                     .style("font-family", typography.annotation.font_family)

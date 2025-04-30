@@ -105,13 +105,15 @@ function makeChart(containerSelector, data) {
             .style("font-weight", fontWeight)
             .text(text);
         const width = tempText.node().getBBox().width;
+        tempText.remove(); // 移除临时文本
         return width;
     };
 
-    // 5. 布局计算 (包含预计算)
-    const dimLabelPadding = 5; // 维度标签与左边缘的间距
-    const valueLabelExternalPadding = 3; // 数值标签与条形图/圆形图区域的间距
+    // 5. 布局计算
+    const dimLabelPadding = 10; // 维度标签与左边缘的间距
+    const valueLabelExternalPadding = 3; // 数值标签与其对应条形图左侧的间距
     const minFontSize = 10; // 最小字体大小
+    const gapBetweenCircleAndBar = 15; // 圆形区域和条形图区域之间的固定间隙
 
     // 5.1 计算维度标签所需最大宽度和最终字体大小
     let maxDimLabelWidth = 0;
@@ -133,40 +135,24 @@ function makeChart(containerSelector, data) {
             maxDimLabelWidth = Math.max(maxDimLabelWidth, estimateLabelWidth(labelText, typography.label, finalDimLabelFontSize));
         });
     }
-
-    // 5.2 计算条形图数值标签所需的最大宽度
-    let maxValueLabelWidth = 0;
-    sortedData.forEach(d => {
-        const value1 = +d[valueField1];
-        if (!isNaN(value1)) {
-            const valueLabelText = `${value1}${valueUnit1}`;
-            // 估算字体大小 (与后面绘制时保持一致)
-            const tempBarHeight = 20; // 假设一个平均bar height来估算字体，后面实际绘制会重新算
-            const estimatedFontSize = Math.min(16, Math.max(tempBarHeight * 0.5, 12));
-            maxValueLabelWidth = Math.max(maxValueLabelWidth, estimateLabelWidth(valueLabelText, typography.annotation, estimatedFontSize));
-        }
-    });
-
     tempSvgForEstimation.remove(); // 移除临时SVG
 
-    // 5.3 设置最终边距和内部尺寸
+    // 5.2 设置最终边距和内部尺寸
     const requiredLeftSpace = maxDimLabelWidth + dimLabelPadding; // 仅需要标签宽度和内边距
     margin.left = requiredLeftSpace + 10; // 增加10px缓冲
     const innerWidth = width - margin.left - margin.right;
     const innerHeight = height - margin.top - margin.bottom;
 
-    // 5.4 划分内部绘图区域宽度
+    // 5.3 划分内部绘图区域宽度 (圆形区 + 间隙 + 条形区)
     const circleAreaRatio = 0.25; // 圆形区域占内部宽度的比例 (相对于总innerWidth)
     const circleAreaWidth = innerWidth * circleAreaRatio; // 圆形区域宽度
-    const valueLabelAreaWidth = maxValueLabelWidth + valueLabelExternalPadding; // 为数值标签和边距保留的固定宽度
-    let barAreaWidth = innerWidth - circleAreaWidth - valueLabelAreaWidth; // 剩余给条形图的宽度
+    let barAreaWidth = innerWidth - circleAreaWidth - gapBetweenCircleAndBar; // 剩余给条形图的宽度
 
     // 确保条形图区域有最小宽度
     const minBarWidth = 10;
     if (barAreaWidth < minBarWidth) {
-        console.warn(`计算出的条形图区域宽度 (${barAreaWidth}px) 过小，已调整为最小值 ${minBarWidth}px。可能导致元素重叠。`);
+        console.warn(`计算出的条形图区域宽度 (${barAreaWidth}px) 过小，已调整为最小值 ${minBarWidth}px。可能导致元素重叠或显示不佳。`);
         barAreaWidth = minBarWidth;
-        // 如果需要，可以考虑在这里调整 circleAreaRatio 或 valueLabelAreaWidth 来补偿
     }
 
     // 6. 创建比例尺
@@ -178,15 +164,15 @@ function makeChart(containerSelector, data) {
         .range([0, innerHeight])
         .padding(barPadding);
 
-    // X轴比例尺（第一个数值）- 范围现在是调整后的 barAreaWidth
+    // X轴比例尺（第一个数值）- 范围是调整后的 barAreaWidth
     const xScale = d3.scaleLinear()
         .domain([0, d3.max(chartData, d => +d[valueField1]) * 1.05]) // 添加5%边距
         .range([0, barAreaWidth]); // 使用调整后的 barAreaWidth
 
     // 圆形面积比例尺（第二个数值）
     const maxValue2 = d3.max(chartData, d => +d[valueField2]);
-    const minRadius = yScale.bandwidth() * 0.1;  // 最小半径
-    const maxRadius = Math.min(yScale.bandwidth() , circleAreaWidth / 2 - 5); // 稍微减小最大半径，避免贴边
+    const minRadius = yScale.bandwidth() * 0.3;  // 最小半径
+    const maxRadius = Math.min(yScale.bandwidth() * 0.45, circleAreaWidth / 2 - 5); // 避免贴边
     const radiusScale = d3.scaleSqrt()
         .domain([0, maxValue2])
         .range([minRadius, maxRadius]);
@@ -202,9 +188,9 @@ function makeChart(containerSelector, data) {
         .attr("xmlns:xlink", "http://www.w3.org/1999/xlink");
 
     // 8. 绘制标题和坐标轴标签 (如果有)
-    // 条形图列标题 - 注意其 X 位置现在基于新的布局
+    // 条形图列标题 - 定位到内部区域最右边缘
     svg.append("text")
-        .attr("x", margin.left + circleAreaWidth + valueLabelAreaWidth + barAreaWidth) // 定位到内部区域最右边缘
+        .attr("x", margin.left + innerWidth) // 定位到内部区域右边缘
         .attr("y", margin.top - 10)
         .attr("text-anchor", "end") // 右对齐
         .style("font-family", typography.description.font_family)
@@ -263,13 +249,13 @@ function makeChart(containerSelector, data) {
 
             const centerY = y + barHeight / 2;
 
-            // --- 定义元素 X 坐标 (基于预计算的布局) ---
+            // --- 定义元素 X 坐标 (基于动态计算) ---
             const dimensionLabelX = -dimLabelPadding;           // 维度标签 X (右边缘)
             const circleX = circleAreaWidth / 2;                // 圆心 X
-            const valueLabelXPos = circleAreaWidth + valueLabelAreaWidth - valueLabelExternalPadding; // 数值标签 X (右边缘)
-            const barAreaStartX = circleAreaWidth + valueLabelAreaWidth; // 条形图区域起始 X
-            const barWidthValue = Math.max(0, xScale(value1));  // 条形图宽度 (基于缩小的 barAreaWidth)
+            const barAreaStartX = circleAreaWidth + gapBetweenCircleAndBar; // 条形图区域起始 X
+            const barWidthValue = Math.max(0, xScale(value1));  // 条形图宽度
             const barX = barAreaStartX + barAreaWidth - barWidthValue; // 条形图左上角 X (在 barArea 内右对齐)
+            const valueLabelXPos = barX - valueLabelExternalPadding; // 数值标签 X (右边缘), 紧邻条形左侧
 
             // 1. 添加维度标签
             g.append("text")
@@ -324,11 +310,11 @@ function makeChart(containerSelector, data) {
                 .style("stroke", getStrokeColor(dimension)) // 描边
                 .style("stroke-width", 1);
 
-            // 5. 添加条形数值标签 (位置固定)
+            // 5. 添加条形数值标签 (位置相对条形)
             const valueLabelText = `${value1}${valueUnit1}`;
             const valueLabelFontSize = Math.min(16, Math.max(barHeight * 0.5, 12));
             g.append("text")
-                .attr("x", valueLabelXPos) // 使用预计算的固定X坐标
+                .attr("x", valueLabelXPos) // 使用相对条形的X坐标
                 .attr("y", centerY)
                 .attr("dy", "0.35em")
                 .attr("text-anchor", "end") // 文本右对齐

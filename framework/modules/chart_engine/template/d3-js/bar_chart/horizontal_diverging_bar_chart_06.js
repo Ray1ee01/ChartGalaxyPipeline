@@ -11,7 +11,6 @@ REQUIREMENTS_BEGIN
     "required_fields_range": [[2, 20], [0, 10000], [1, 5], [1, 3]],
     "required_fields_icons": ["x"],
     "required_other_icons": [],
-    "hierarchy":["group2"],
     "required_fields_colors": ["group"],
     "required_other_colors": [],
     "supported_effects": ["shadow", "radius_corner", "gradient", "stroke", "spacing"],

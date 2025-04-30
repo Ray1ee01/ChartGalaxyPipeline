@@ -92,13 +92,6 @@ function makeChart(containerSelector, data) {
     const sortedData = [...chartData].sort((a, b) => b[valueField] - a[valueField]);
     const sortedDimensions = sortedData.map(d => d[dimensionField]);
     
-    // 计算内部绘图区域尺寸
-    const innerWidth = width - margin.left - margin.right;
-    const innerHeight = height - margin.top - margin.bottom;
-    
-    // 计算条形的额外间距（如果启用）
-    const barPadding = variables.has_spacing ? 0.3 : 0.2;
-    
     // ---------- 5. 计算标签宽度 ----------
     
     // 创建临时SVG来测量文本宽度
@@ -108,12 +101,10 @@ function makeChart(containerSelector, data) {
         .attr("height", 0)
         .style("visibility", "hidden");
     
-    // 计算图标尺寸（基于条形高度）
-    const barHeight = innerHeight / sortedDimensions.length * (1 - barPadding);
-    const iconSize = Math.min(Math.max(barHeight - 5, 24), 96);  // 增大图标尺寸范围，最小24，最大96
-    const flagWidth = iconSize;
-    const flagHeight = iconSize;
-    const flagPadding = 5;
+    // 图标尺寸
+    const flagWidth = 20;
+    const flagHeight = 15;
+    const flagPadding = 0;
     
     // 计算最大维度标签宽度
     let maxLabelWidth = 0;
@@ -163,6 +154,10 @@ function makeChart(containerSelector, data) {
     // 根据标签宽度调整左边距（添加一些边距）
     margin.left = Math.max(margin.left, maxLabelWidth + 20);
     margin.right = Math.max(margin.right, maxValueWidth + 20);
+    
+    // 计算内部绘图区域尺寸
+    const innerWidth = width - margin.left - margin.right;
+    const innerHeight = height - margin.top - margin.bottom;
     
     // ---------- 6. 创建SVG容器 ----------
     
@@ -222,6 +217,9 @@ function makeChart(containerSelector, data) {
     
     // ---------- 7. 创建比例尺 ----------
     
+    // 计算条形的额外间距（如果启用）
+    const barPadding = variables.has_spacing ? 0.3 : 0.2;
+    
     // Y轴比例尺（用于维度）
     const yScale = d3.scaleBand()
         .domain(sortedDimensions)
@@ -240,6 +238,7 @@ function makeChart(containerSelector, data) {
     
     // ---------- 10. 绘制条形和标签 ----------
     
+    // 获取条形颜色的辅助函数
     // 获取条形颜色的辅助函数
     const getBarColor = () => {
         return colors.other.primary || "#882e2e"; // 默认暗红色
@@ -296,20 +295,17 @@ function makeChart(containerSelector, data) {
                     d3.select(this).attr("opacity", 1);
                 });
             
-            // 调整图标尺寸（基于实际条形高度）
-            const iconSize = Math.min(Math.max(barHeight - 5, 24), 96);  // 更新实际图标尺寸，最小24，最大96
-            
             // 添加带图标的维度标签
-            const flagX = -iconSize - flagPadding - 5;
+            const flagX = -flagWidth - flagPadding - 5;
             const labelY = yScale(dimension) + barHeight / 2;
             
             // 添加图标（如果有）
             if (images.field && images.field[dimension]) {
                 g.append("image")
                     .attr("x", flagX)
-                    .attr("y", labelY - iconSize / 2)
-                    .attr("width", iconSize)
-                    .attr("height", iconSize)
+                    .attr("y", labelY - flagHeight / 2)
+                    .attr("width", flagWidth)
+                    .attr("height", flagHeight)
                     .attr("preserveAspectRatio","xMidYMid meet")
                     .attr("xlink:href", images.field[dimension]);
             }

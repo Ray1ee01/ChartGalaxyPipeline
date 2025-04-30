@@ -134,20 +134,27 @@ function makeChart(containerSelector, data) {
     
     // ---------- 5. 尺寸和布局设置 ----------
     
-    // 图表尺寸
+    // 图标尺寸
+    const flagWidth = 24;
+    const flagHeight = 24;
+    const flagMargin = 10;
+    const textIconGap = 10;  // 标签文本和图标之间的间距
+    const valueLabelGap = 5; // 条形和值标签之间的间距
+    
+    // 基于内容计算合适的图表总宽度
+    const leftSectionWidth = maxLabelWidth + flagWidth + flagMargin + textIconGap;
+    
+    // 设置图表总尺寸
     const minWidth = variables.width || 800;
     const height = variables.height || 600;
     
     // 设置边距
     const margin = {
         top: 100,      // 顶部留出标题空间
-        right: 20,     // 右侧边距
-        bottom: 60,    // 底部边距
-        left: 20       // 初始左侧边距
+        right: 20,   // 大幅增加右侧边距，确保圆形完全显示
+        bottom: 60,   // 底部边距
+        left: Math.max(20, leftSectionWidth + 20) // 确保左侧边距足够容纳标签和图标
     };
-    
-    // 计算条形高度相关参数
-    const MAX_BAR_HEIGHT = 100; // 新增：限制条形最大高度为100px
     
     // 计算内部绘图区域尺寸
     const innerWidth = minWidth - margin.left - margin.right;
@@ -158,55 +165,30 @@ function makeChart(containerSelector, data) {
     const circleChartRatio = 0.2;
     
     // 计算条形图的最大宽度，保证值标签显示
-    const barChartWidth = innerWidth * barChartRatio - maxValueWidth - 5;
+    const barChartWidth = innerWidth * barChartRatio - maxValueWidth - valueLabelGap;
     
     // 计算圆形图部分的宽度
     const circleChartWidth = innerWidth * circleChartRatio;
-    
-    // ---------- 6. 创建比例尺 ----------
-    
-    // 计算条形的额外间距
-    const barPadding = variables.has_spacing ? 0.3 : 0.2;
-    
-    // 根据数据项数量和最大条形高度计算实际条形高度
-    const itemCount = sortedDimensions.length;
-    const totalBarSpace = innerHeight * (1 - barPadding); // 考虑间距后可用的总空间
-    let barHeight = totalBarSpace / itemCount; // 初始计算的每个条形高度
-    
-    // 限制条形最大高度
-    barHeight = Math.min(barHeight, MAX_BAR_HEIGHT);
-    
-    // 重新计算总图表高度（如果条形高度被限制）
-    const adjustedInnerHeight = barHeight * itemCount / (1 - barPadding);
-    const adjustedHeight = adjustedInnerHeight + margin.top + margin.bottom;
-    
-    // Y轴比例尺（用于维度）- 使用固定条形高度
-    const yScale = d3.scaleBand()
-        .domain(sortedDimensions)
-        .range([0, adjustedInnerHeight])
-        .padding(barPadding);
-    
-    // 获取实际的条形高度
-    const actualBarHeight = yScale.bandwidth();
-    
-    // 计算图标尺寸 - 新增：根据条形高度动态调整图标大小
-    const flagHeight = Math.min(64, actualBarHeight - 8);
-    const flagWidth = flagHeight; // 保持图标宽高相等
-    const flagMargin = 10;
-    const textIconGap = 10;  // 标签文本和图标之间的间距
-    const valueLabelGap = 5; // 条形和值标签之间的间距
-    
-    // 基于内容计算合适的图表总宽度
-    const leftSectionWidth = maxLabelWidth + flagWidth + flagMargin + textIconGap;
-    
-    // 更新左侧边距
-    margin.left = Math.max(20, leftSectionWidth + 20);
     
     // 计算圆形的最大直径，确保不溢出右侧边距
     const maxCircleDiameter = Math.min(circleChartWidth * 0.8, 80);
     
     // 计算实际总宽度
     const width = margin.left + barChartWidth + maxValueWidth + valueLabelGap + circleChartWidth + margin.right;
+    
+    // ---------- 6. 创建比例尺 ----------
+    
+    // 计算条形的额外间距
+    const barPadding = variables.has_spacing ? 0.3 : 0.2;
+    
+    // Y轴比例尺（用于维度）
+    const yScale = d3.scaleBand()
+        .domain(sortedDimensions)
+        .range([0, innerHeight])
+        .padding(barPadding);
+    
+    // 条形高度
+    const barHeight = yScale.bandwidth();
     
     // X轴比例尺（用于第一个数值）- 条形图
     const xScale = d3.scaleLinear()
@@ -217,8 +199,8 @@ function makeChart(containerSelector, data) {
     const maxValue2 = d3.max(chartData, d => +d[valueField2]);
     
     // 计算最小和最大半径
-    const minRadius = Math.min(actualBarHeight * 0.4, maxCircleDiameter * 0.2);
-    const maxRadius = Math.min(actualBarHeight * (1 + barPadding/2), maxCircleDiameter/2);
+    const minRadius = Math.min(barHeight * 0.4, maxCircleDiameter * 0.2);
+    const maxRadius = Math.min(barHeight * (1 + barPadding/2), maxCircleDiameter/2);
     
     const radiusScale = d3.scaleSqrt() 
         .domain([0, maxValue2])
@@ -229,8 +211,8 @@ function makeChart(containerSelector, data) {
     const svg = d3.select(containerSelector)
         .append("svg")
         .attr("width", "100%")
-        .attr("height", adjustedHeight) // 使用调整后的高度
-        .attr("viewBox", `0 0 ${width} ${adjustedHeight}`) // 使用调整后的视图框
+        .attr("height", height)
+        .attr("viewBox", `0 0 ${width} ${height}`)
         .attr("style", "max-width: 100%; height: auto;")
         .attr("xmlns", "http://www.w3.org/2000/svg")
         .attr("xmlns:xlink", "http://www.w3.org/1999/xlink");
@@ -380,7 +362,8 @@ function makeChart(containerSelector, data) {
                 return;
             }
             
-            const centerY = y + actualBarHeight / 2;
+            const barHeight = yScale.bandwidth();
+            const centerY = y + barHeight / 2;
             const barWidthValue = xScale(+dataPoint[valueField1]);
             
             // 1. 添加国家/地区名称 - 右对齐
@@ -398,13 +381,13 @@ function makeChart(containerSelector, data) {
                 .style("fill", colors.text_color)
                 .text(dimension.toUpperCase());
                 
-            // 2. 添加国家/地区图标 - 修改：使用动态大小的图标
+            // 2. 添加国家/地区图标 - 修改：直接使用矩形图标
             if (images.field && images.field[dimension]) {
                 // 创建一个组来包含图像
                 const iconGroup = g.append("g")
                     .attr("transform", `translate(${-flagWidth - flagMargin}, ${centerY - flagHeight/2})`);
                 
-                // 添加国家/地区图标
+                // 直接添加国家/地区图标，不使用圆形裁剪
                 iconGroup.append("image")
                     .attr("x", 0)
                     .attr("y", 0)
@@ -419,7 +402,7 @@ function makeChart(containerSelector, data) {
                 .attr("x", 0)
                 .attr("y", y)
                 .attr("width", barWidthValue)
-                .attr("height", actualBarHeight)
+                .attr("height", barHeight)
                 .attr("fill", getBarColor())
                 .attr("opacity", 0.9);
             
