@@ -41,18 +41,24 @@ def calculate_mask_v3(svg_content: str, width: int, height: int, background_colo
     
     # 解析SVG内容
     soup = BeautifulSoup(svg_content, 'xml')
-    
     # 删除class="background"的所有元素
     background_elements = soup.select('[class="background"]')
     for element in background_elements:
         element.decompose()
     
-    # 删除stroke-width<=1的所有line元素
+    # 删除stroke-width<=1或没有stroke-width的所有line元素
     thin_lines = soup.find_all('line')
     for line in thin_lines:
         stroke_width = line.get('stroke-width')
-        if stroke_width and float(stroke_width) <= 1:
+        if not stroke_width or float(stroke_width) <= 1:
             line.decompose()
+            
+    # 删除opacity<=0.1的所有元素
+    all_elements = soup.find_all()
+    for element in all_elements:
+        opacity = element.get('opacity')
+        if opacity and float(opacity) <= 0.1:
+            element.decompose()
     # 删除所有text元素
     text_elements = soup.find_all('text')
     for text in text_elements:
@@ -111,7 +117,7 @@ def calculate_mask_v3(svg_content: str, width: int, height: int, background_colo
                 if retry_count >= max_retries:
                     raise e
                 time.sleep(1)
-    # 读取为numpy数组并处理
+                
     img_without_text = Image.open(temp_mask_png_without_text).convert('RGB')
     img_array_without_text = np.array(img_without_text)
     
@@ -124,10 +130,9 @@ def calculate_mask_v3(svg_content: str, width: int, height: int, background_colo
     
     # 解析SVG内容
     soup = BeautifulSoup(svg_content, 'xml')
-    
-    # 仅保留text和group元素
+    # 仅保留text、group和image元素
     for element in soup.find_all():
-        if element.name not in ['text', 'g', 'svg']:
+        if element.name not in ['text', 'g', 'svg', 'image']:
             element.decompose()
     
     svg_content_only_text = str(soup)
@@ -273,18 +278,24 @@ def calculate_mask_v2(svg_content: str, width: int, height: int, background_colo
     # 解析SVG内容
     soup = BeautifulSoup(svg_content, 'xml')
     
-    # 删除class="background"的所有元素
     background_elements = soup.select('[class="background"]')
     for element in background_elements:
         element.decompose()
     
-    # 删除stroke-width<=1的所有line元素
+    # 删除stroke-width<=1或没有stroke-width的所有line元素
     thin_lines = soup.find_all('line')
     for line in thin_lines:
         stroke_width = line.get('stroke-width')
-        if stroke_width and float(stroke_width) <= 1:
+        if not stroke_width or float(stroke_width) <= 1:
             line.decompose()
-    
+            
+    # 删除opacity<=0.1的所有元素
+    all_elements = soup.find_all()
+    for element in all_elements:
+        opacity = element.get('opacity')
+        if opacity and float(opacity) <= 0.1:
+            element.decompose()
+            
     # 重新获取处理后的SVG内容
     svg_content = str(soup)
     

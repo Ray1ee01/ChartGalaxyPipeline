@@ -42,19 +42,21 @@ class SingleData:
             dir_path = chart_image
             self.chart_image = os.path.join(dir_path, "chart.png")
             self.svg_path = os.path.join(dir_path, "chart.svg")
+            data_file = os.path.join(dir_path, "data.json")
+            if os.path.exists(data_file):
+                with open(data_file, "r", encoding="utf-8") as f:
+                    self.tabular_data = json.load(f)
             
-            # 如果没有提供tabular_data和meta_data，尝试从目录中加载
-            if tabular_data is None:
-                data_file = os.path.join(dir_path, "data.json")
-                if os.path.exists(data_file):
-                    with open(data_file, "r", encoding="utf-8") as f:
-                        self.tabular_data = json.load(f)
-            
-            if meta_data is None:
-                info_file = os.path.join(dir_path, "info.json")
-                if os.path.exists(info_file):
-                    with open(info_file, "r", encoding="utf-8") as f:
-                        self.meta_data = json.load(f)
+            info_file = os.path.join(dir_path, "info.json")
+            if os.path.exists(info_file):
+                with open(info_file, "r", encoding="utf-8") as f:
+                    self.generation_info = json.load(f)
+
+            original_data_file = self.generation_info["data_source"]
+            if os.path.exists(original_data_file):
+                with open(original_data_file, "r", encoding="utf-8") as f:
+                    original_data = json.load(f)
+                    self.meta_data = original_data["metadata"]
         
         if isinstance(chart_type, list):
             self.chart_type = ", ".join(chart_type) + "\n" if chart_type else ""

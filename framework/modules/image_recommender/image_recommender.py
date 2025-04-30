@@ -235,12 +235,11 @@ class ImageRecommender:
         
         # Select optimal icons
         return self.select_optimal_icons(all_group_icons, all_images)
-    
     def post_process_image(self, image_path: str, max_size: int = 768) -> str:
         """
         Post-process the recommended image:
         1. Convert relative path to absolute path
-        2. Intelligently remove background (outer connected areas) without affecting inner fill
+        2. Remove white background that connects to edges while preserving inner fills
         3. Resize to specified resolution
         4. Convert to base64 string
         
@@ -282,58 +281,29 @@ class ImageRecommender:
             # Convert to numpy array for processing
             data = np.array(img)
             
-            # Efficient background color detection using edge sampling
-            h, w = data.shape[:2]
-            
-            # Sample pixels from the edges (more likely to be background)
-            edge_pixels = []
-            # Top and bottom edges
-            edge_pixels.extend(data[0, ::5, :3].tolist())
-            edge_pixels.extend(data[h-1, ::5, :3].tolist())
-            # Left and right edges (excluding corners already sampled)
-            edge_pixels.extend(data[1:h-1:5, 0, :3].tolist())
-            edge_pixels.extend(data[1:h-1:5, w-1, :3].tolist())
-            
-            edge_pixels = np.array(edge_pixels)
-            
-            # Use histogram to find most common color in the edge samples
-            # Simplify colors to improve clustering (reduce to 5 bits per channel)
-            simplified_pixels = (edge_pixels >> 3) << 3
-            
-            # Create a unique identifier for each simplified RGB color
-            color_ids = (simplified_pixels[:, 0] << 16) | (simplified_pixels[:, 1] << 8) | simplified_pixels[:, 2]
-            unique_colors, counts = np.unique(color_ids, return_counts=True)
-            
-            # Get the most common color
-            bg_color_id = unique_colors[np.argmax(counts)]
-            bg_color = np.array([
-                (bg_color_id >> 16) & 0xFF,
-                (bg_color_id >> 8) & 0xFF,
-                bg_color_id & 0xFF
-            ])
-            
-            # Create mask for background-like colors (with tolerance)
+            # Create mask for white background (with tolerance)
+            white_color = np.array([255, 255, 255])
             tolerance = 30
-            color_dists = np.sqrt(np.sum((data[..., :3] - bg_color)**2, axis=2))
+            color_dists = np.sqrt(np.sum((data[..., :3] - white_color)**2, axis=2))
             bg_mask = color_dists < tolerance
             
-            # Find connected components (backgrounds usually touch the edges)
+            # Find connected components
             labeled, num_components = label(bg_mask)
             
-            # Create a border mask (true for pixels on the border)
+            # Create border mask
             border_mask = np.zeros_like(bg_mask, dtype=bool)
             border_mask[0, :] = border_mask[-1, :] = True
             border_mask[:, 0] = border_mask[:, -1] = True
             
-            # Identify components that touch the border
+            # Find components that touch the border
             border_components = set(labeled[border_mask & (labeled > 0)])
             
-            # Create mask for components that touch the border
+            # Create mask for border-connected white areas
             outer_mask = np.zeros_like(bg_mask, dtype=bool)
             for component in border_components:
                 outer_mask = outer_mask | (labeled == component)
             
-            # Apply the mask to alpha channel
+            # Set alpha to 0 for border-connected white areas
             data[outer_mask, 3] = 0
             
             # Convert back to PIL Image
