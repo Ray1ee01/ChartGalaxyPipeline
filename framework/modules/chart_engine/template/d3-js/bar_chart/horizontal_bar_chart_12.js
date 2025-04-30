@@ -44,8 +44,8 @@ function makeChart(containerSelector, data) {
     // 设置视觉效果变量的默认值
     variables.has_rounded_corners = variables.has_rounded_corners || false;
     variables.has_shadow = variables.has_shadow || false;
-    variables.has_gradient = true;//variables.has_gradient || false;
-    variables.has_stroke = true;//variables.has_stroke || false;
+    variables.has_gradient = variables.has_gradient || false;
+    variables.has_stroke = variables.has_stroke || false;
     variables.has_spacing = variables.has_spacing || false;
     
     // 清空容器
@@ -341,30 +341,6 @@ function makeChart(containerSelector, data) {
                     .attr("xlink:href", images.field[dimension]);
             }
             
-            // 创建临时文本元素来计算维度标签宽度
-            const tempDimensionText = g.append("text")
-                .style("font-family", typography.label.font_family)
-                .style("font-size", typography.label.font_size)
-                .style("font-weight", typography.label.font_weight)
-                .text(dimension)
-                .attr("visibility", "hidden");
-            
-            const dimensionTextWidth = tempDimensionText.node().getBBox().width;
-            const dimensionTextHeight = tempDimensionText.node().getBBox().height;
-            tempDimensionText.remove();
-            
-            // 为维度标签添加白色圆角矩形背景
-            g.append("rect")
-                .attr("x", flagX - dimensionTextWidth - 15) // 调整位置以适应文本宽度
-                .attr("y", labelY - dimensionTextHeight/2 - 5) // 背景高度略大于文本
-                .attr("width", dimensionTextWidth + 10)
-                .attr("height", dimensionTextHeight + 5)
-                .attr("rx", 5)
-                .attr("ry", 5)
-                .attr("fill", "white")
-                .attr("stroke", "#eeeeee")
-                .attr("stroke-width", 1);
-            
             // 添加维度标签
             g.append("text")
                 .attr("x", flagX - 5)
@@ -381,32 +357,7 @@ function makeChart(containerSelector, data) {
             const formattedValue = valueUnit ? 
                 `${dataPoint[valueField]}${valueUnit}` : 
                 `${dataPoint[valueField]}`;
-                
-            // 创建临时文本元素来计算数值标签宽度
-            const tempValueText = g.append("text")
-                .style("font-family", typography.annotation.font_family)
-                .style("font-size", `${Math.min(20,Math.max(barHeight * 0.6, parseFloat(typography.annotation.font_size)))}px`)
-                .style("font-weight", typography.annotation.font_weight)
-                .text(formattedValue)
-                .attr("visibility", "hidden");
-                
-            const valueTextWidth = tempValueText.node().getBBox().width;
-            const valueTextHeight = tempValueText.node().getBBox().height;
-            tempValueText.remove();
             
-            // 为数值标签添加白色圆角矩形背景
-            g.append("rect")
-                .attr("x", barWidth + 3)
-                .attr("y", yScale(dimension) + barHeight / 2 - valueTextHeight/2 - 3)
-                .attr("width", valueTextWidth + 8)
-                .attr("height", valueTextHeight + 5)
-                .attr("rx", 5)
-                .attr("ry", 5)
-                .attr("fill", "white")
-                .attr("stroke", "#eeeeee")
-                .attr("stroke-width", 1);
-            
-            // 添加数值标签
             g.append("text")
                 .attr("x", barWidth + 5)
                 .attr("y", yScale(dimension) + barHeight / 2)

@@ -2,13 +2,13 @@
 REQUIREMENTS_BEGIN
 {
     "chart_type": "Horizontal Group Bar Chart",
-    "chart_name": "horizontal_group_bar_chart_05",
+    "chart_name": "horizontal_group_bar_chart_06",
     "chart_for": "comparison",
     "is_composite": false,
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
     "required_fields_range": [[2, 20], [0, "inf"], [2, 5]],
-    "required_fields_icons": ["x"],
+    "required_fields_icons": [],
     "required_other_icons": [],
     "required_fields_colors": ["group"],
     "required_other_colors": ["primary"],
@@ -44,10 +44,6 @@ function makeChart(containerSelector, data) {
     
     // 设置视觉效果变量的默认值
     variables.has_rounded_corners = variables.has_rounded_corners || false;
-    variables.has_shadow = variables.has_shadow || false;
-    variables.has_gradient = variables.has_gradient || false;
-    variables.has_stroke = variables.has_stroke || false;
-    variables.has_spacing = variables.has_spacing || false;
     
     // 清空容器
     d3.select(containerSelector).html("");
@@ -107,7 +103,7 @@ function makeChart(containerSelector, data) {
         .style("visibility", "hidden");
     
     // 初始填充值（会根据barHeight动态调整）
-    const flagPadding = 5;
+    // const flagPadding = 5; // 不再需要图标填充
     
     // 计算最大维度标签宽度
     let maxLabelWidth = 0;
@@ -124,9 +120,7 @@ function makeChart(containerSelector, data) {
             .text(formattedDimension);
         
         const textWidth = tempText.node().getBBox().width;
-        // 图标宽度会在后面动态计算，这里先用保守估计值
-        const estimatedIconWidth = 25;
-        const totalWidth = estimatedIconWidth + flagPadding + textWidth;
+        const totalWidth = textWidth; // 只考虑文本宽度
         
         maxLabelWidth = Math.max(maxLabelWidth, totalWidth);
         
@@ -199,57 +193,46 @@ function makeChart(containerSelector, data) {
     // 添加defs用于视觉效果
     const defs = svg.append("defs");
     
-    // 添加阴影滤镜（如果启用）
-    if (variables.has_shadow) {
-        const filter = defs.append("filter")
-            .attr("id", "shadow")
-            .attr("filterUnits", "userSpaceOnUse")
-            .attr("width", "200%")
-            .attr("height", "200%");
+    // 创建斜线纹理模式
+    const patternDensity = 6; // 固定斜线密度
+    const patternStrokeWidth = 1.5; // 固定斜线宽度
+    groups.forEach((group, i) => {
+        // 为每个组获取颜色
+        const groupColor = colors.field && colors.field[group] ? 
+                         colors.field[group] : 
+                         d3.schemeCategory10[i % 10];
         
-        filter.append("feGaussianBlur")
-            .attr("in", "SourceAlpha")
-            .attr("stdDeviation", 3);
+        // 创建斜线纹理模式
+        const patternId = `pattern-${group.replace(/\\s+/g, '-')}-${i}`; // 确保 ID 唯一
+        const pattern = defs.append("pattern")
+            .attr("id", patternId)
+            .attr("patternUnits", "userSpaceOnUse")
+            .attr("width", patternDensity) // 使用固定值
+            .attr("height", patternDensity) // 使用固定值
+            .attr("patternTransform", "rotate(45)");
         
-        filter.append("feOffset")
-            .attr("dx", 2)
-            .attr("dy", 2)
-            .attr("result", "offsetblur");
+        // 添加背景矩形
+        pattern.append("rect")
+            .attr("width", patternDensity) // 使用固定值
+            .attr("height", patternDensity) // 使用固定值
+            .attr("fill", groupColor)
+            .attr("opacity", 0.8);
         
-        const feMerge = filter.append("feMerge");
-        feMerge.append("feMergeNode");
-        feMerge.append("feMergeNode").attr("in", "SourceGraphic");
-    }
-    
-    // 添加渐变（如果启用）
-    if (variables.has_gradient) {
-        groups.forEach((group, i) => {
-            // 为每个组创建一个渐变
-            const groupColor = colors.field && colors.field[group] ? 
-                             colors.field[group] : 
-                             d3.schemeCategory10[i % 10];
-            
-            const gradient = defs.append("linearGradient")
-                .attr("id", `bar-gradient-${i}`)
-                .attr("x1", "0%")
-                .attr("y1", "0%")
-                .attr("x2", "100%")
-                .attr("y2", "0%");
-            
-            gradient.append("stop")
-                .attr("offset", "0%")
-                .attr("stop-color", d3.rgb(groupColor).brighter(0.5));
-            
-            gradient.append("stop")
-                .attr("offset", "100%")
-                .attr("stop-color", d3.rgb(groupColor).darker(0.3));
-        });
-    }
+        // 添加斜线
+        pattern.append("line")
+            .attr("x1", 0)
+            .attr("y1", 0)
+            .attr("x2", 0)
+            .attr("y2", patternDensity) // 使用固定值
+            .attr("stroke", "white")
+            .attr("stroke-width", patternStrokeWidth) // 使用固定值
+            .attr("opacity", 0.6);
+    });
     
     // ---------- 7. 创建比例尺 ----------
     
-    // 计算条形的额外间距（如果启用）
-    const barPadding = variables.has_spacing ? 0.3 : 0.1;
+    // 计算条形的额外间距 - 使用固定值
+    const barPadding = 0.1; // 设置固定边距
     
     // Y轴比例尺（用于维度）- 使用原始顺序
     const yScale = d3.scaleBand()
@@ -285,14 +268,15 @@ function makeChart(containerSelector, data) {
         const legendItem = legend.append("g")
             .attr("transform", `translate(${legendOffset}, 0)`);
         
-        // 图例颜色方块
-        legendItem.append("rect")
+        // 图例颜色方块 - 修改为应用纹理
+        const legendRect = legendItem.append("rect")
             .attr("width", 15)
-            .attr("height", 15)
-            .attr("fill", colorScale(group))
-            .attr("rx", variables.has_rounded_corners ? 2 : 0)
-            .attr("ry", variables.has_rounded_corners ? 2 : 0);
-        
+            .attr("height", 15);
+
+        // 应用填充：始终使用纹理
+        const patternId = `pattern-${group.replace(/\\s+/g, '-')}-${i}`;
+        legendRect.attr("fill", `url(#${patternId})`);
+
         // 图例文本
         legendItem.append("text")
             .attr("x", 20)
@@ -316,13 +300,6 @@ function makeChart(containerSelector, data) {
     const g = svg.append("g")
         .attr("transform", `translate(${margin.left}, ${margin.top})`);
     
-    // ---------- 10. 获取描边颜色的辅助函数 ----------
-    
-    const getStrokeColor = (color) => {
-        if (colors.stroke_color) return colors.stroke_color;
-        return d3.rgb(color).darker(0.5);
-    };
-    
     // ---------- 12. 为每个维度绘制分组条形 ----------
     
     dimensions.forEach(dimension => {
@@ -332,26 +309,13 @@ function makeChart(containerSelector, data) {
         if (dimensionData.length > 0) {
             const barHeight = yScale.bandwidth();
             
-            // 动态计算图标尺寸为条形高度的0.8倍
-            const flagHeight = barHeight * 0.8;
-            const flagWidth = flagHeight * 1.33; // 保持宽高比
-            const flagX = -flagWidth - flagPadding - 5;
-            const labelY = yScale(dimension) + barHeight / 2;
             
-            // 添加图标（如果有）
-            if (images.field && images.field[dimension]) {
-                g.append("image")
-                    .attr("x", flagX)
-                    .attr("y", labelY - flagHeight / 2)
-                    .attr("width", flagWidth)
-                    .attr("height", flagHeight)
-                    .attr("preserveAspectRatio","xMidYMid meet")
-                    .attr("xlink:href", images.field[dimension]);
-            }
+            const labelY = yScale(dimension) + barHeight / 2;
             
             // 添加维度标签
             g.append("text")
-                .attr("x", flagX - 5)
+                // .attr("x", flagX - 5) // 旧的基于图标位置的 X 坐标
+                .attr("x", -10) // 设置新的 X 坐标，例如在 Y 轴左侧 10px 处
                 .attr("y", labelY)
                 .attr("dy", "0.35em")
                 .attr("text-anchor", "end")
@@ -364,6 +328,9 @@ function makeChart(containerSelector, data) {
             // 计算每个组的条形高度
             const groupBarHeight = barHeight / groups.length;
             
+            // 固定圆角半径
+            const cornerRadius = 3; 
+
             // 绘制每个组的条形
             groups.forEach((group, groupIndex) => {
                 // 找到此维度和此组的数据点
@@ -376,27 +343,44 @@ function makeChart(containerSelector, data) {
                     // 计算垂直位置 - 这里是关键修改，确保条形不重叠
                     const groupY = yScale(dimension) + (groupIndex * groupBarHeight);
                     
-                    // 绘制条形
-                    g.append("rect")
-                        .attr("x", 0)
-                        .attr("y", groupY)
-                        .attr("width", barWidth)
-                        .attr("height", groupBarHeight)
-                        .attr("fill", variables.has_gradient ? 
-                              `url(#bar-gradient-${groupIndex})` : 
-                              colorScale(group))
-                        .attr("rx", variables.has_rounded_corners ? 3 : 0)
-                        .attr("ry", variables.has_rounded_corners ? 3 : 0)
-                        .style("stroke", variables.has_stroke ? 
-                               getStrokeColor(colorScale(group)) : "none")
-                        .style("stroke-width", variables.has_stroke ? 1 : 0)
-                        .style("filter", variables.has_shadow ? "url(#shadow)" : "none")
+                    // 绘制条形 - 使用 path 实现右侧圆角
+                    let pathData;
+                    // 仅在条形足够宽和高时应用圆角
+                    if (barWidth >= cornerRadius && groupBarHeight >= 2 * cornerRadius) {
+                        pathData = `
+                            M 0,${groupY} 
+                            L ${barWidth - cornerRadius},${groupY} 
+                            A ${cornerRadius},${cornerRadius} 0 0 1 ${barWidth},${groupY + cornerRadius} 
+                            L ${barWidth},${groupY + groupBarHeight - cornerRadius} 
+                            A ${cornerRadius},${cornerRadius} 0 0 1 ${barWidth - cornerRadius},${groupY + groupBarHeight} 
+                            L 0,${groupY + groupBarHeight} 
+                            Z
+                        `;
+                    } else {
+                        // 对于太窄或太矮的条形，绘制普通矩形
+                        pathData = `
+                            M 0,${groupY} 
+                            L ${barWidth},${groupY} 
+                            L ${barWidth},${groupY + groupBarHeight} 
+                            L 0,${groupY + groupBarHeight} 
+                            Z
+                        `;
+                    }
+
+                    const bar = g.append("path") // 使用 path 替代 rect
+                        .attr("d", pathData)
                         .on("mouseover", function() {
                             d3.select(this).attr("opacity", 0.8);
                         })
                         .on("mouseout", function() {
                             d3.select(this).attr("opacity", 1);
                         });
+                    
+                   
+
+                    // 应用填充：始终使用纹理
+                    const patternIdBar = `pattern-${group.replace(/\\s+/g, '-')}-${groupIndex}`;
+                    bar.attr("fill", `url(#${patternIdBar})`);
                     
                     // 添加数值标签
                     const formattedValue = valueUnit ? 
@@ -409,7 +393,7 @@ function makeChart(containerSelector, data) {
                         .attr("dy", "0.35em")
                         .attr("text-anchor", "start")
                         .style("font-family", typography.annotation.font_family)
-                        .style("font-size", `${Math.max(groupBarHeight * 0.6, parseFloat(typography.annotation.font_size))}px`)
+                        .style("font-size", `${Math.max(groupBarHeight * 0.5, parseFloat(typography.annotation.font_size))}px`)
                         .style("font-weight", typography.annotation.font_weight)
                         .style("fill", colors.text_color)
                         .text(formattedValue);

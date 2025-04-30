@@ -11,6 +11,7 @@ from pathlib import Path
 import concurrent.futures
 import threading
 import re
+from generate_choice import generate_numerical_distractors
 
 from model.factory import QAGeneratorFactory
 from template.question_answer_generator import QuestionAnswerGenerator
@@ -42,7 +43,7 @@ def process(data_path, output_path="./output.jsonl", template_path=None,
     if num > 20:
         logger.warning("可能数量超过了最大可提供数量")
 
-    use_model = True
+    use_model = False
     if use_model:
         model_generating_num = 3
     else:
@@ -211,6 +212,37 @@ def process(data_path, output_path="./output.jsonl", template_path=None,
             
             qa_pair["question"] = "\n\n".join(cleaned_lines)
 
+    # 清理重复的 "Provide a direct answer" 指令
+    direct_answer_instructions = [
+        "Please provide a direct answer.",
+        "Provide a direct answer.",
+        "Provide the answer directly."
+    ]
+    for qa_pair in all_results:
+        question = qa_pair["question"]
+        # 使用双反斜杠来匹配字面上的 \\n\\n
+        lines = question.split('\\n\\n') 
+        
+        found_instruction = False
+        final_lines = []
+        # 反向迭代，保留从末尾遇到的第一个指令，删除其他重复项
+        for line in reversed(lines):
+            line_strip = line.strip()
+            is_instruction = line_strip in direct_answer_instructions
+            
+            if is_instruction:
+                if not found_instruction:
+                    # 保留第一个找到的指令
+                    final_lines.append(line)
+                    found_instruction = True
+                # 跳过后续重复的指令
+            else:
+                # 保留非指令行
+                final_lines.append(line)
+        
+        # 恢复原始顺序并重新组合
+        qa_pair["question"] = '\\n\\n'.join(reversed(final_lines))
+
     # 生成一个简短的随机ID用于图像
     base_id = prefix_id if prefix_id else "c"
     image_id = f"{base_id}{generate_random_id(4)}"
@@ -267,14 +299,17 @@ def process(data_path, output_path="./output.jsonl", template_path=None,
                         # 仅替换选项之外的部分
                         for i, part in enumerate(question_parts):
                             if part != options_section:
-                                question_parts[i] = part.replace(value, "<image>")
-                        question_content = "\n\n".join(question_parts)
+                                # 将 replace 修改为 replace(..., 1)
+                                question_parts[i] = part.replace(value, "<image>", 1)
+                        question_content = "\\n\\n".join(question_parts)
                     else:
-                        # 选项部分不包含该值，可以全局替换
-                        question_content = question_content.replace(value, "<image>")
+                        # 选项部分不包含该值，可以全局替换（仅一次）
+                        # 将 replace 修改为 replace(..., 1)
+                        question_content = question_content.replace(value, "<image>", 1)
                 else:
-                    # 没有选项，可以直接替换
-                    question_content = question_content.replace(value, "<image>")
+                    # 没有选项，可以直接替换（仅一次）
+                    # 将 replace 修改为 replace(..., 1)
+                    question_content = question_content.replace(value, "<image>", 1)
                 
                 # 检查是否实际替换了<image>标签
                 if question_content != original_content:
@@ -412,7 +447,7 @@ def process_single_dir(subdir, output_path, template_path, image_output_dir,
             include_multiple_choice=include_multiple_choice,
             prefix_id=prefix_id,
             append_mode=True,
-            num=12
+            num=8
         )
         
         # 更新进度
@@ -851,365 +886,112 @@ def clarify_style_question(question):
     
     return question
 
+# Helper function to add instruction only if not present
+def add_direct_answer_instruction(text):
+    instruction = "Please provide a direct answer."
+    # Normalize whitespace and check if instruction (or similar variants) exist at the end
+    normalized_text = ' '.join(text.strip().split())
+    normalized_instruction = ' '.join(instruction.split())
+    similar_instructions = [
+        normalized_instruction,
+        ' '.join("Provide a direct answer.".split()),
+        ' '.join("Provide the answer directly.".split())
+    ]
+    
+    if any(normalized_text.endswith(instr) for instr in similar_instructions):
+        return text.strip() # Already has instruction, return cleaned text
+    else:
+        # Ensure there's appropriate spacing before adding
+        return text.strip() + "\\n\\n" + instruction
+
 def generate_multiple_choice_options(questions, image_path):
     """
-    使用大模型为选择题生成候选项
+    为数值类选择题生成候选项，使用 generate_numerical_distractors
     
     Args:
         questions: 需要生成选项的问题列表
-        image_path: 图像路径
+        image_path: 图像路径 (当前未使用，但保留接口一致性)
         
     Returns:
-        更新后的问题列表，包含生成的选项
+        更新后的问题列表，包含生成的选项 (仅限数值类问题)
     """
     if not questions:
         return questions
     
-    # 准备单个数据对象用于模型调用
-    from model.base import SingleData, client
-    
-    logger.info(f"正在为{len(questions)}个问题生成选择题选项...")
-    
-    # 将问题分为chart type问题和普通问题
-    chart_type_questions = []
-    count_questions = []
-    normal_questions = []
-    
-    # 检查是否为chart type相关问题的关键词
-    chart_type_keywords = [
-        "chart type", "图表类型", "visualization type", "chart kind", "graph type",
-        "type of chart", "type of graph", "type of visualization", "类型的图表", "图表的类型"
-    ]
-    
-    # 检查是否为计数类问题的关键词
-    count_keywords = ["how many", "number of", "count", "quantity"]
-    
-    for q in questions:
-        question_text = q["question"].lower()
-        is_chart_type = any(keyword in question_text for keyword in chart_type_keywords)
-        is_count_question = any(keyword in question_text for keyword in count_keywords)
-        
-        if is_chart_type:
-            chart_type_questions.append(q)
-        elif is_count_question:
-            count_questions.append(q)
-        else:
-            normal_questions.append(q)
+    logger.info(f"正在尝试为{len(questions)}个符合条件的问题生成数值选择题选项...")
     
     updated_questions = []
-    
-    # 处理计数类问题
-    if count_questions:
-        batch_size = 5
-        
-        for i in range(0, len(count_questions), batch_size):
-            batch = count_questions[i:i+batch_size]
-            batch_questions = [q["question"] for q in batch]
-            batch_answers = [q["answer"] for q in batch]
-            
-            # 准备提示
-            system_message = "You are a professional question generation assistant, specialized in creating appropriate multiple-choice questions for chart understanding tasks."
-            
-            # 构建用户提示
-            user_message = f"""Please generate multiple choice options for the following counting questions. Requirements:
-1. Each question should have 4 options (A, B, C, D)
-2. Include the correct answer in the options
-3. Distractors should be reasonable and plausible
-4. All options must be non-negative integers (since these are counting questions)
-5. The numerical difference between options should be reasonable
-6. Return options for each question in order
+    processed_count = 0
 
-Questions and correct answers:
-"""
-            
-            for idx, (q, a) in enumerate(zip(batch_questions, batch_answers)):
-                # 删除原有的生成选项的请求提示
-                q = q.split("\n\nFor this question, we need multiple choice options")[0]
-                user_message += f"\nQuestion {idx+1}: {q}\nCorrect answer: {a}\n"
-                
-            user_message += "\nPlease return the results in this JSON format:\n```json\n{\n  \"results\": [\n    {\n      \"question_idx\": 0,\n      \"options\": [\"A) Option1\", \"B) Option2\", \"C) Option3\", \"D) Option4\"],\n      \"correct_option\": \"A\"\n    },\n    ...\n  ]\n}\n```"
-            
-            # 准备消息
-            messages = [
-                {"role": "system", "content": system_message},
-                {"role": "user", "content": user_message}
-            ]
-            
-            # 如果有图像，添加图像到请求中
-            if image_path and os.path.exists(os.path.join(image_path, "chart.png")):
-                from model.base import encode_image_to_base64
-                chart_path = os.path.join(image_path, "chart.png")
-                base64_image = encode_image_to_base64(chart_path)
-                
-                if base64_image:
-                    messages[1]["content"] = [
-                        {"type": "text", "text": user_message},
-                        {
-                            "type": "image_url", 
-                            "image_url": {
-                                "url": f"data:image/png;base64,{base64_image}"
-                            }
-                        }
-                    ]
-            
-            try:
-                # 调用模型
-                response = client.chat.completions.create(
-                    model="gpt-4o-mini",
-                    messages=messages,
-                    response_format={"type": "json_object"}
-                )
-                
-                content = response.choices[0].message.content
-                
-                # 解析结果
-                try:
-                    result_data = json.loads(content)
-                    options_data = result_data.get("results", [])
-                    
-                    # 更新问题，添加选项
-                    for opt_data in options_data:
-                        idx = opt_data.get("question_idx", 0)
-                        if idx < len(batch):
-                            options = opt_data.get("options", [])
-                            correct_option = opt_data.get("correct_option", "")
-                            
-                            # 检查选项是否合理（确保计数类问题的选项是非负整数）
-                            valid_options = []
-                            for option in options:
-                                # 提取选项数值
-                                option_value = option.split(") ")[1].strip() if ") " in option else option
-                                try:
-                                    num_value = int(option_value)
-                                    if num_value >= 0:  # 确保是非负整数
-                                        valid_options.append(option)
-                                    else:
-                                        # 替换为合理的选项
-                                        letter = option.split(")")[0] + ")"
-                                        valid_options.append(f"{letter} {abs(num_value)}")
-                                except ValueError:
-                                    valid_options.append(option)  # 如果不是数字，保留原选项
-                            
-                            # 构建选项字符串
-                            options_text = "\n".join(valid_options if valid_options else options)
-                            
-                            # 更新问题文本，添加选项和回答指导
-                            original_question = batch[idx]["question"].split("\n\nFor this question")[0]
-                            batch[idx]["question"] = f"{original_question}\n\n{options_text}\n\nAnswer with the letter of the correct option only."
-                            
-                            # 标记答案格式为选择题
-                            batch[idx]["answer_type"] = "multiple_choice"
-                            
-                            # 更新答案为选项字母
-                            batch[idx]["answer"] = correct_option
-                    
-                    updated_questions.extend(batch)
-                    
-                except json.JSONDecodeError:
-                    logger.error(f"解析JSON失败: {content[:200]}...")
-                    # 如果解析失败，保留原问题
-                    updated_questions.extend(batch)
-                    
-            except Exception as e:
-                logger.error(f"生成选项时出错: {e}")
-                # 出错时保留原问题
-                updated_questions.extend(batch)
-    
-    # 处理普通选择题问题 (ABCD格式)
-    if normal_questions:
-        batch_size = 5
+    for q in questions:
+        # Extract text before potential option generation request
+        question_parts = q["question"].split("\\n\\nFor this question, we need multiple choice options")
+        original_question_text = question_parts[0]
+        answer = q["answer"]
         
-        for i in range(0, len(normal_questions), batch_size):
-            batch = normal_questions[i:i+batch_size]
-            batch_questions = [q["question"] for q in batch]
-            batch_answers = [q["answer"] for q in batch]
-            
-            # 准备提示
-            system_message = "You are a professional question generation assistant, specialized in creating appropriate multiple-choice questions for chart understanding tasks."
-            
-            # 构建用户提示
-            user_message = f"""Please generate multiple choice options for the following questions. Requirements:
-1. Each question should have 4 options (A, B, C, D)
-2. Include the correct answer in the options
-3. Distractors should be reasonable and plausible
-4. For numerical questions, maintain consistent precision in all options
-5. Keep option text concise
-6. Return options for each question in order
-
-Questions and correct answers:
-"""
-            
-            for idx, (q, a) in enumerate(zip(batch_questions, batch_answers)):
-                # 删除原有的生成选项的请求提示
-                q = q.split("\n\nFor this question, we need multiple choice options")[0]
-                user_message += f"\nQuestion {idx+1}: {q}\nCorrect answer: {a}\n"
-                
-            user_message += "\nPlease return the results in this JSON format:\n```json\n{\n  \"results\": [\n    {\n      \"question_idx\": 0,\n      \"options\": [\"A) Option1\", \"B) Option2\", \"C) Option3\", \"D) Option4\"],\n      \"correct_option\": \"A\"\n    },\n    ...\n  ]\n}\n```"
-            
-            # 准备消息
-            messages = [
-                {"role": "system", "content": system_message},
-                {"role": "user", "content": user_message}
-            ]
-            
-            # 如果有图像，添加图像到请求中
-            if image_path and os.path.exists(os.path.join(image_path, "chart.png")):
-                from model.base import encode_image_to_base64
-                chart_path = os.path.join(image_path, "chart.png")
-                base64_image = encode_image_to_base64(chart_path)
-                
-                if base64_image:
-                    messages[1]["content"] = [
-                        {"type": "text", "text": user_message},
-                        {
-                            "type": "image_url", 
-                            "image_url": {
-                                "url": f"data:image/png;base64,{base64_image}"
-                            }
-                        }
-                    ]
-            
+        # 检查答案是否为数值类型
+        if is_numeric(answer):
             try:
-                # 调用模型
-                response = client.chat.completions.create(
-                    model="gpt-4o-mini",
-                    messages=messages,
-                    response_format={"type": "json_object"}
-                )
+                correct_answer_num = float(answer)
+                # 调用函数生成干扰项
+                distractors = generate_numerical_distractors(correct_answer_num, num_distractors=3)
                 
-                content = response.choices[0].message.content
-                
-                # 解析结果
-                try:
-                    result_data = json.loads(content)
-                    options_data = result_data.get("results", [])
-                    
-                    # 更新问题，添加选项
-                    for opt_data in options_data:
-                        idx = opt_data.get("question_idx", 0)
-                        if idx < len(batch):
-                            options = opt_data.get("options", [])
-                            correct_option = opt_data.get("correct_option", "")
-                            
-                            # 构建选项字符串
-                            options_text = "\n".join(options)
-                            
-                            # 更新问题文本，添加选项和回答指导
-                            original_question = batch[idx]["question"].split("\n\nFor this question")[0]
-                            batch[idx]["question"] = f"{original_question}\n\n{options_text}\n\nAnswer with the letter of the correct option only."
-                            
-                            # 标记答案格式为选择题
-                            batch[idx]["answer_type"] = "multiple_choice"
-                            
-                            # 更新答案为选项字母
-                            batch[idx]["answer"] = correct_option
-                    
-                    updated_questions.extend(batch)
-                    
-                except json.JSONDecodeError:
-                    logger.error(f"解析JSON失败: {content[:200]}...")
-                    # 如果解析失败，保留原问题
-                    updated_questions.extend(batch)
-                    
-            except Exception as e:
-                logger.error(f"生成选项时出错: {e}")
-                # 出错时保留原问题
-                updated_questions.extend(batch)
-    
-    # 处理chart type问题（7-8个候选项，不使用ABCD格式）
-    if chart_type_questions:
-        batch_size = 3  # chart type问题每批处理3个
-        
-        for i in range(0, len(chart_type_questions), batch_size):
-            batch = chart_type_questions[i:i+batch_size]
-            batch_questions = [q["question"] for q in batch]
-            batch_answers = [q["answer"] for q in batch]
-            
-            # 准备提示
-            system_message = "You are a professional chart analysis assistant, specialized in identifying chart types and providing accurate classification."
-            
-            # 构建用户提示
-            user_message = f"""Please provide candidate options for the following chart type questions. Requirements:
-1. For each question, provide 7-8 reasonable chart type options (no numbering needed)
-2. Include the correct answer in the options
-3. Options should be common chart type names
-4. Return options for each question in order
+                if distractors is None or len(distractors) < 3:
+                     logger.warning(f"无法为问题 '{original_question_text[:50]}...' 生成足够的干扰项，跳过。")
+                     # 保留原始问题，添加直接回答指令（如果需要）
+                     q["question"] = add_direct_answer_instruction(original_question_text)
+                     updated_questions.append(q)
+                     continue
 
-Questions and correct answers:
-"""
-            
-            for idx, (q, a) in enumerate(zip(batch_questions, batch_answers)):
-                # 删除原有的生成选项的请求提示
-                q = q.split("\n\nFor this question, we need multiple choice options")[0]
-                user_message += f"\nQuestion {idx+1}: {q}\nCorrect answer: {a}\n"
+                # 将正确答案和干扰项合并并随机排序
+                options_values = distractors + [correct_answer_num]
+                random.shuffle(options_values)
                 
-            user_message += "\nPlease return the results in this JSON format:\n```json\n{\n  \"results\": [\n    {\n      \"question_idx\": 0,\n      \"options\": [\"Bar chart\", \"Line chart\", \"Pie chart\", \"Scatter plot\", \"Heatmap\", \"Radar chart\", \"Bubble chart\", \"Box plot\"],\n      \"correct_option\": \"Line chart\"\n    },\n    ...\n  ]\n}\n```"
-            
-            # 准备消息
-            messages = [
-                {"role": "system", "content": system_message},
-                {"role": "user", "content": user_message}
-            ]
-            
-            # 如果有图像，添加图像到请求中
-            if image_path and os.path.exists(os.path.join(image_path, "chart.png")):
-                from model.base import encode_image_to_base64
-                chart_path = os.path.join(image_path, "chart.png")
-                base64_image = encode_image_to_base64(chart_path)
+                # 格式化选项 A) B) C) D)
+                options_formatted = []
+                correct_option_letter = ""
+                for i, val in enumerate(options_values):
+                    letter = chr(65 + i)
+                    # 保持与原答案相似的格式 (整数或浮点数)
+                    if isinstance(correct_answer_num, int):
+                        formatted_val = int(val)
+                    else:
+                        # 可以根据需要调整小数位数
+                        formatted_val = round(val, 2) 
+                    
+                    options_formatted.append(f"{letter}) {formatted_val}")
+                    if val == correct_answer_num:
+                        correct_option_letter = letter
                 
-                if base64_image:
-                    messages[1]["content"] = [
-                        {"type": "text", "text": user_message},
-                        {
-                            "type": "image_url", 
-                            "image_url": {
-                                "url": f"data:image/png;base64,{base64_image}"
-                            }
-                        }
-                    ]
-            
-            try:
-                # 调用模型
-                response = client.chat.completions.create(
-                    model="gpt-4o-mini",
-                    messages=messages,
-                    response_format={"type": "json_object"}
-                )
+                options_text = "\\n".join(options_formatted)
                 
-                content = response.choices[0].message.content
-                
-                # 解析结果
-                try:
-                    result_data = json.loads(content)
-                    options_data = result_data.get("results", [])
-                    
-                    # 更新问题，添加选项
-                    for opt_data in options_data:
-                        idx = opt_data.get("question_idx", 0)
-                        if idx < len(batch):
-                            options = opt_data.get("options", [])
-                            
-                            options_text = "Chart type options:\n" + "\n".join([f"- {opt}" for opt in options])
-                            options_text += f"\n\nPlease select the correct chart type from the options above."
-                            
-                            original_question = batch[idx]["question"].split("\n\nFor this question")[0]
-                            batch[idx]["question"] = f"{original_question}\n\n{options_text}"
-                            
-                            # 标记答案格式为自由文本
-                            batch[idx]["answer_type"] = "open"
-                    
-                    updated_questions.extend(batch)
-                    
-                except json.JSONDecodeError:
-                    logger.error(f"解析JSON失败: {content[:200]}...")
-                    # 如果解析失败，保留原问题
-                    updated_questions.extend(batch)
-                    
+                # 更新问题文本
+                # Ensure original text doesn't have trailing instruction before adding options
+                clean_original_text = original_question_text.strip()
+                if any(clean_original_text.endswith(instr.replace(' ','\\s*')) for instr in ["Please provide a direct answer.", "Provide a direct answer.", "Provide the answer directly."]):
+                     # Find the last instruction and remove it
+                     lines = clean_original_text.split("\\n\\n")
+                     if lines[-1].strip() in ["Please provide a direct answer.", "Provide a direct answer.", "Provide the answer directly."]:
+                         clean_original_text = "\\n\\n".join(lines[:-1])
+
+                q["question"] = f"{clean_original_text}\\n\\n{options_text}\\n\\nAnswer with the letter of the correct option only."
+                q["answer"] = correct_option_letter
+                q["answer_type"] = "multiple_choice" # 标记答案格式
+                updated_questions.append(q)
+                processed_count += 1
+
             except Exception as e:
-                logger.error(f"生成选项时出错: {e}")
-                # 出错时保留原问题
-                updated_questions.extend(batch)
-    
+                logger.error(f"为问题 '{original_question_text[:50]}...' 生成数值选项时出错: {e}")
+                # 出错时保留原问题，添加直接回答指令（如果需要）
+                q["question"] = add_direct_answer_instruction(original_question_text)
+                updated_questions.append(q)
+        else:
+            # 非数值类问题，保留原问题和答案, 添加直接回答指令（如果需要）
+            logger.info(f"问题 '{original_question_text[:50]}...' 的答案非数值，跳过选项生成。")
+            q["question"] = add_direct_answer_instruction(original_question_text)
+            updated_questions.append(q)
+
+    logger.info(f"已为 {processed_count} 个数值类问题生成选项。")
     return updated_questions
 
 def has_options_pattern(text):
@@ -1276,15 +1058,33 @@ def is_in_options_section(text, value, options_text):
             return True
     
     return False
-
 if __name__ == "__main__":
-    process_folder(
-        folder_path="/data/lizhen/resources/generated/0428",  # 包含多个数据目录的父文件夹
-        output_path="./train.jsonl",
-        template_path="./example.json",
-        image_output_dir="./train_images",
-        custom_instruction_suffix="", # 移除默认的冗余指令
-        include_multiple_choice=True,
-        style_percentage=50,
-        num_threads=10
-    )
+    import argparse
+    
+    parser = argparse.ArgumentParser(description='处理数据生成问答对')
+    parser.add_argument('--mode', type=str, default='train', choices=['train', 'test'],
+                      help='运行模式:train或test')
+    args = parser.parse_args()
+    
+    if args.mode == 'train':
+        process_folder(
+            folder_path="/data/lizhen/resources/generated/0428",  # 包含多个数据目录的父文件夹
+            output_path="./train.jsonl",
+            template_path="./example.json", 
+            image_output_dir="./train_images",
+            custom_instruction_suffix="", # 移除默认的冗余指令
+            include_multiple_choice=True,
+            style_percentage=50,
+            num_threads=5
+        )
+    else:
+        process_folder(
+            folder_path="/data/lizhen/resources/generated/0428_test",  # 测试数据目录
+            output_path="./test.jsonl",
+            template_path="./example.json",
+            image_output_dir="./test_images", 
+            custom_instruction_suffix="",
+            include_multiple_choice=True,
+            style_percentage=50,
+            num_threads=1
+        )

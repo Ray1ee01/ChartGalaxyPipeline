@@ -292,7 +292,7 @@ function makeChart(containerSelector, data) {
     // *******************************************************************
     // ** 开始修改：计算图标的统一Y位置 **
     // *******************************************************************
-    const labelStartY = innerHeight + 35; // 标签开始的 Y 位置 (保持和原来一致)
+    const labelStartY = innerHeight + 10; // 标签开始的 Y 位置 (保持和原来一致)
     const lineHeight = finalLabelFontSize * lineHeightFactor; // 行高
     const labelBottomApprox = labelStartY + (maxLinesNeeded - 1) * lineHeight + finalLabelFontSize * 0.71; // 估算最下方标签基线位置
     const iconRadius = 15; // 图标半径
@@ -369,14 +369,6 @@ function makeChart(containerSelector, data) {
                 .text(valueText);
         });
     
-    // 在维度标签上方添加水平线
-    chart.append("line")
-        .attr("x1", 0)
-        .attr("y1", innerHeight + 20) // 直接位于维度标签上方的位置
-        .attr("x2", innerWidth)
-        .attr("y2", innerHeight + 20)
-        .attr("stroke", "#e0e0e0")
-        .attr("stroke-width", 1);
     
     // *******************************************************************
     // ** 开始修改：添加维度标签 (统一字体大小，自动换行) **

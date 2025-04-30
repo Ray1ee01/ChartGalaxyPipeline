@@ -748,7 +748,7 @@ class TemplateHandlers:
         return question, "Yes" if strictly_less else "No"
     
     def handle_template_31(self, template: str) -> Tuple[Optional[str], Optional[str]]:
-        """ Does the <Y label> of/in <legend label> monotonically increase over the
+        """ Does the <Y label> of <legend label> monotonically increase over the
         <plural form of X label> ? """
         y_label = self.generator.get_column_by_role('y')
         x_label = self.generator.get_column_by_role('x')
@@ -782,7 +782,7 @@ class TemplateHandlers:
                     
                     return question, "Yes" if is_monotonic else "No"
             else:
-                modified_template = template.replace(" of/in <legend label>", "")
+                modified_template = template.replace(" of <legend label>", "")
                 
                 placeholders, _, _ = self.generator.get_common_placeholders()
                 question = self.generator.replace_placeholders(modified_template, placeholders)
