@@ -116,12 +116,14 @@ class ImageRecommender:
             self.icon_indices = data['icon_indices']
             self.clipart_indices = data['clipart_indices']
             
-    def search(self, query_text: str, top_k: int = 5, image_type: Optional[str] = None) -> List[Dict]:
+    def search(self, query_text: str, new_index = None, new_data = None, top_k: int = 5, image_type: Optional[str] = None) -> List[Dict]:
         """
         Search for similar images based on query text
         
         Args:
             query_text: The text query to search for
+            new_index: Optional new FAISS index to search in addition
+            new_data: Optional new data associated with new_index
             top_k: Number of results to return
             image_type: Optional filter for image type ('icon' or 'clipart')
             
@@ -135,6 +137,9 @@ class ImageRecommender:
         query_embedding = self.model.encode(query_text)
         query_embedding = np.array([query_embedding]).astype('float32')
         
+        results = []
+        
+        # 搜索旧索引
         # Determine which indices to search in
         if image_type == 'icon':
             search_indices = self.icon_indices
@@ -159,8 +164,7 @@ class ImageRecommender:
             indices = indices[0]
             distances = distances[0]
         
-        # Prepare results
-        results = []
+        # 添加旧索引结果
         for idx, distance in zip(indices, distances):
             if idx < len(self.image_paths):  # Ensure index is valid
                 results.append({
@@ -169,7 +173,26 @@ class ImageRecommender:
                     'distance': float(distance)
                 })
                 
-        return results
+        # 如果是icon类型且有新索引,搜索新索引
+        if image_type == 'icon' and new_index is not None and new_data is not None:
+            new_distances, new_indices = new_index.search(query_embedding, top_k)
+            new_indices = new_indices[0]
+            new_distances = new_distances[0]
+            
+            # 添加新索引结果
+            for idx, distance in zip(new_indices, new_distances):
+                if idx < len(new_data['index']):
+                    data = new_data['index'][str(idx)]
+                    # print("data: ", data)
+                    results.append({
+                        'image_path': data["path"],
+                        'image_data': data["data"],
+                        'distance': float(distance) + 0.1
+                    })
+                    
+        # 按距离排序并返回前top_k个结果
+        results.sort(key=lambda x: x['distance'])
+        return results[:top_k]
 
 def main(image_list_path: str = None, 
          image_resource_path: str = None,

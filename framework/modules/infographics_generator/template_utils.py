@@ -188,19 +188,19 @@ def check_template_compatibility(data: Dict, templates: Dict, specific_chart_nam
                             data_types = [field_types[field] for field in ordered_fields]
                             data_type_str = ' + '.join(data_types)
                             if len(req.get('required_fields_colors', [])) > 0 and len(data.get("colors", {}).get("field", [])) == 0:
-                                print(f"template {template_key} failed color compatibility check")
+                                # print(f"template {template_key} failed color compatibility check")
                                 continue
 
                             if len(req.get('required_fields_icons', [])) > 0 and len(data.get("images", {}).get("field", [])) == 0:
-                                print(f"template {template_key} failed icon compatibility check")
+                                # print(f"template {template_key} failed icon compatibility check")
                                 continue
 
                             if not check_field_color_compatibility(req, data):
-                                print(f"template {template_key} failed color compatibility check")
+                                # print(f"template {template_key} failed color compatibility check")
                                 continue
                             
                             if not check_field_icon_compatibility(req, data):
-                                print(f"template {template_key} failed icon compatibility check")
+                                # print(f"template {template_key} failed icon compatibility check")
                                 continue
                             # print("data_types", data_types)
                             # print("combination_types", combination_types)
@@ -220,7 +220,7 @@ def check_template_compatibility(data: Dict, templates: Dict, specific_chart_nam
                                 if not check_flag:
                                     continue
                             else:
-                                print(f"template {template_key} failed data type compatibility check")
+                                # print(f"template {template_key} failed data type compatibility check")
                                 continue
 
                             flag = True
@@ -291,45 +291,100 @@ def check_template_compatibility(data: Dict, templates: Dict, specific_chart_nam
     #print("compatible_templates", compatible_templates)
     return compatible_templates
 
+    
+import fcntl  # 用于文件锁
 def select_template(compatible_templates: List[str]) -> Tuple[str, str, str]:
     """
-    根据模板使用频率选择一个兼容的模板
-    使用次数较少的模板有更高的被选择概率
-    权重范围为1-5，使用平滑的反比例函数
+    根据variation.json中的使用统计选择模板
+    按照使用频率分为4个level，优先选择使用较少的level
+    同level内按照具体使用次数加权随机选择
+    使用文件锁确保多线程安全
     """
-    global template_usage_counter
-    
-    # 初始化模板使用次数
-    for template_info in compatible_templates:
-        template_key = template_info[0]
-        if template_key not in template_usage_counter:
-            template_usage_counter[template_key] = 0
-    
-    # 计算每个模板的权重：使用平滑的反比例函数
-    template_weights = []
-    for template_info in compatible_templates:
-        template_key = template_info[0]
-        usage_count = template_usage_counter[template_key]
+    # 读取variation.json，使用文件锁
+    try:
+        with open('variation.json', 'r') as f:
+            # 获取文件锁
+            fcntl.flock(f, fcntl.LOCK_EX)
+            try:
+                variation_stats = json.load(f)
+            finally:
+                # 释放文件锁
+                fcntl.flock(f, fcntl.LOCK_UN)
+    except:
+        variation_stats = {}
         
-        # 使用平滑的反比例函数: 1 + 4/(1 + usage_count/3)
-        # 当usage_count为0时，权重为5
-        # 随着usage_count增加，权重会平滑地下降并逐渐接近1
-        weight = 1.0 + 4.0 / (1.0 + usage_count / 3.0)
-        template_weights.append(weight)
+    # 获取所有模板的使用次数
+    template_counts = []
+    for template_info in compatible_templates:
+        template_key = template_info[0]
+        _, chart_type, chart_name = template_key.split('/')
+        
+        # 如果variation_stats为空,所有模板使用次数都为0
+        if not variation_stats:
+            count = 0
+        else:
+            if chart_type not in variation_stats:
+                variation_stats[chart_type] = {"total_count": 0}
+                
+            if chart_name not in variation_stats[chart_type]:
+                variation_stats[chart_type][chart_name] = 0
+                
+            count = variation_stats[chart_type][chart_name]
+            
+        template_counts.append((template_info, count))
     
-    # 根据权重随机选择模板
-    selected_index = random.choices(
-        range(len(compatible_templates)), 
-        weights=template_weights, 
-        k=1
-    )[0]
+    # 按使用次数排序并分level
+    template_counts.sort(key=lambda x: x[1])
+    n = len(template_counts)
+    level_size = max(1, n // 4)
+    # 找出使用次数最少的模板
+    min_count = min(c for _, c in template_counts)
+    min_level_templates = [(t, c) for t, c in template_counts if c == min_count]
     
-    [selected_template, ordered_fields] = compatible_templates[selected_index]
+    # 固定选择第一个最少使用的模板
+    selected_index = 0
     
-    # 更新使用计数
-    template_usage_counter[selected_template] += 1
+    selected_template, _ = min_level_templates[selected_index]
+    [template_key, ordered_fields] = selected_template
+    print("selected_template", selected_template)
     
-    engine, chart_type, chart_name = selected_template.split('/')
+    # 更新variation.json，使用文件锁
+    engine, chart_type, chart_name = template_key.split('/')
+    try:
+        with open('variation.json', 'r+') as f:
+            # 获取文件锁
+            fcntl.flock(f, fcntl.LOCK_EX)
+            try:
+                # 重新读取以确保获取最新数据
+                variation_stats = json.load(f)
+                
+                # 初始化如果不存在
+                if chart_type not in variation_stats:
+                    variation_stats[chart_type] = {"total_count": 0}
+                if chart_name not in variation_stats[chart_type]:
+                    variation_stats[chart_type][chart_name] = 0
+                    
+                # 更新计数
+                variation_stats[chart_type][chart_name] += 1
+                variation_stats[chart_type]["total_count"] += 1
+                
+                # 写入更新后的数据
+                f.seek(0)
+                json.dump(variation_stats, f, indent=2)
+                f.truncate()
+            finally:
+                # 释放文件锁
+                fcntl.flock(f, fcntl.LOCK_UN)
+    except FileNotFoundError:
+        # 如果文件不存在,创建新的variation_stats
+        variation_stats = {
+            chart_type: {
+                "total_count": 1,
+                chart_name: 1
+            }
+        }
+        with open('variation.json', 'w') as f:
+            json.dump(variation_stats, f, indent=2)
     return engine, chart_type, chart_name, ordered_fields
 
 def process_template_requirements(requirements: Dict, data: Dict, engine: str, chart_name: str) -> None:

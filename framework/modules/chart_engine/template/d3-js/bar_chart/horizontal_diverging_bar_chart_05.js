@@ -24,7 +24,7 @@ REQUIREMENTS_BEGIN
 REQUIREMENTS_END
 */
 
-// 水平对比型条形图实现 - 使用D3.js
+// 水平对比型条形图实现 - 使用D3.js  split_bar_chart02
 function makeChart(containerSelector, data) {
     // ---------- 1. 数据准备阶段 ----------
     
@@ -317,10 +317,6 @@ function makeChart(containerSelector, data) {
         .range([0, innerHeight])
         .padding(variables.has_spacing ? 0.4 : 0.3);
     
-    // 限制条形高度不超过100像素
-    const barHeight = Math.min(yScale.bandwidth(), 100);
-    const barPaddingAdjustment = (yScale.bandwidth() - barHeight) / 2;
-    
     const maxLeftValue = d3.max(chartData.filter(d => d[groupField] === leftGroup), d => d[valueField]);
     const maxRightValue = d3.max(chartData.filter(d => d[groupField] === rightGroup), d => d[valueField]);
     
@@ -405,14 +401,14 @@ function makeChart(containerSelector, data) {
             const barWidth = innerWidth/2 - dimensionLabelWidth/2 - leftXScale(dataPoint[valueField]);
             
             // Y位置
-            const yPos = yScale(dimension) + barPaddingAdjustment;
+            const yPos = yScale(dimension);
             
             // 绘制条形
             g.append("rect")
                 .attr("x", leftXScale(dataPoint[valueField]))  // 左侧起点
                 .attr("y", yPos)                     // 条形顶部
                 .attr("width", barWidth)             // 条形宽度
-                .attr("height", barHeight)  // 条形高度
+                .attr("height", yScale.bandwidth())  // 条形高度
                 .attr("fill", variables.has_gradient ?
                     `url(#gradient-${leftGroup.replace(/\s+/g, '-').toLowerCase()})` :
                     getColor(leftGroup)
@@ -522,7 +518,7 @@ function makeChart(containerSelector, data) {
             const barWidth = rightXScale(dataPoint[valueField]);
             
             // Y位置
-            const yPos = yScale(dimension) + barPaddingAdjustment;
+            const yPos = yScale(dimension);
             
             // 条形的左边界位置
             const barLeft = innerWidth/2 + dimensionLabelWidth/2;
@@ -532,7 +528,7 @@ function makeChart(containerSelector, data) {
                 .attr("x", barLeft) // 从中间右侧开始
                 .attr("y", yPos)                    // 条形顶部
                 .attr("width", barWidth)            // 条形宽度
-                .attr("height", barHeight) // 条形高度
+                .attr("height", yScale.bandwidth()) // 条形高度
                 .attr("fill", variables.has_gradient ?
                     `url(#gradient-${rightGroup.replace(/\s+/g, '-').toLowerCase()})` :
                     getColor(rightGroup)

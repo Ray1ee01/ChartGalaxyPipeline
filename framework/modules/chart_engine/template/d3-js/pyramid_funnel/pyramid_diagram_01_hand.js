@@ -2,7 +2,7 @@
 REQUIREMENTS_BEGIN
 {
     "chart_type": "Pyramid Diagram",
-    "chart_name": "pyramid_diagram_02",
+    "chart_name": "pyramid_diagram_01_hand",
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],
     "required_fields_range": [[3, 10], [0, 100]],
@@ -76,9 +76,6 @@ function makeChart(containerSelector, data) {
     const g = svg.append("g")
         .attr("transform", `translate(${margin.left}, ${margin.top})`);
     
-    // 创建金属光泽的渐变定义
-    const defs = svg.append("defs");
-    
     // 计算金字塔的最大宽度（底部）和高度
     const maxPyramidWidth = chartWidth * 0.6;
     const pyramidHeight = chartHeight * 0.6; // 使用90%的高度，留出上下空间
@@ -145,77 +142,24 @@ function makeChart(containerSelector, data) {
         const color = colors.field && colors.field[d[categoryField]] 
             ? colors.field[d[categoryField]] 
             : d3.schemeCategory10[i % 10];
-            
-        // 为每个部分创建金属光泽渐变
-        const gradientId = `metallic-gradient-${i}`;
-        const gradient = defs.append("linearGradient")
-            .attr("id", gradientId)
-            .attr("x1", "0%")
-            .attr("y1", "0%")
-            .attr("x2", "100%")
-            .attr("y2", "100%");
-            
-        // 解析颜色以创建金属效果
-        const baseColor = d3.rgb(color);
-        const lighterColor = d3.rgb(
-            Math.min(255, baseColor.r + 60),
-            Math.min(255, baseColor.g + 60),
-            Math.min(255, baseColor.b + 60)
-        );
-        const darkerColor = d3.rgb(
-            Math.max(0, baseColor.r - 30),
-            Math.max(0, baseColor.g - 30),
-            Math.max(0, baseColor.b - 30)
-        );
-        
-        // 添加渐变停止点来创建金属效果
-        gradient.append("stop")
-            .attr("offset", "0%")
-            .attr("stop-color", lighterColor.toString());
-        gradient.append("stop")
-            .attr("offset", "30%")
-            .attr("stop-color", color);
-        gradient.append("stop")
-            .attr("offset", "70%")
-            .attr("stop-color", color);
-        gradient.append("stop")
-            .attr("offset", "100%")
-            .attr("stop-color", darkerColor.toString());
-
-        const y_padding = 5;
         
         // 绘制梯形 - 添加垂直偏移
         const points = [
-            [chartWidth / 2 - section.topWidth / 2, section.topY + verticalOffset + y_padding * i],
-            [chartWidth / 2 + section.topWidth / 2, section.topY + verticalOffset + y_padding * i],
-            [chartWidth / 2 + section.bottomWidth / 2, section.bottomY + verticalOffset + y_padding * i],
-            [chartWidth / 2 - section.bottomWidth / 2, section.bottomY + verticalOffset + y_padding * i]
+            [chartWidth / 2 - section.topWidth / 2, section.topY + verticalOffset],
+            [chartWidth / 2 + section.topWidth / 2, section.topY + verticalOffset],
+            [chartWidth / 2 + section.bottomWidth / 2, section.bottomY + verticalOffset],
+            [chartWidth / 2 - section.bottomWidth / 2, section.bottomY + verticalOffset]
         ];
         
         g.append("polygon")
             .attr("points", points.map(p => p.join(",")).join(" "))
-            .attr("fill", `url(#${gradientId})`)
-            .attr("stroke", darkerColor.toString())
-            .attr("stroke-width", 0.5);
+            .attr("fill", color);
         
         // 计算标签位置，避免重叠 - 添加垂直偏移
-        const labelY = (section.topY + section.bottomY) / 2 + verticalOffset + y_padding * i;
+        const labelY = (section.topY + section.bottomY) / 2 + verticalOffset;
         const labelX = chartWidth / 2;
-
-        const textWidth = getTextWidth(d[categoryField], 14) + 20;
-        if (textWidth > (section.topWidth + section.bottomWidth) / 2) {
-            // 添加一个暗色透明背景
-            g.append("rect")
-                .attr("x", labelX - textWidth / 2)
-                .attr("y", labelY - 15)
-                .attr("width", textWidth)
-                .attr("height", 30)
-                .attr("fill", "rgba(0, 0, 0, 0.3)")
-                .attr("rx", 5)
-                .attr("ry", 5);
-        }
         
-        // 添加标签
+        // 数据标签位置（在金字塔中心）
         g.append("text")
             .attr("x", labelX)
             .attr("y", labelY)
@@ -224,18 +168,43 @@ function makeChart(containerSelector, data) {
             .attr("font-size", "14px")
             .attr("font-weight", "bold")
             .attr("fill", "white")
-            .text(`${d[categoryField]}`);
+            .text(`${d[valueField]}`);
             
-        // 添加数值标签
+        // 类别标签（在左侧）
         g.append("text")
-            .attr("x", chartWidth / 2 + Math.max(section.topWidth, section.bottomWidth) / 2 + 10)
+            .attr("x", chartWidth / 2 - Math.max(section.topWidth, section.bottomWidth) / 2 - 10)
             .attr("y", labelY)
-            .attr("text-anchor", "start")
+            .attr("text-anchor", "end")
             .attr("dominant-baseline", "middle")
-            .attr("font-size", "12px")
+            .attr("font-size", "14px")
             .attr("font-weight", "bold")
-            .text(`${d[valueField]} (${d.percent.toFixed(1)}%)`);
+            .attr("fill", colors.field && colors.field[d[categoryField]] 
+                ? colors.field[d[categoryField]] 
+                : d3.schemeCategory10[i % 10])
+            .text(`${d[categoryField]}`);
     });
+    
+    const roughness = 2;
+    const bowing = 2;
+    const fillStyle = "hachure";
+    const randomize = true;
+    const pencilFilter = false;
+        
+    const svgConverter = new svg2roughjs.Svg2Roughjs(containerSelector);
+    svgConverter.pencilFilter = pencilFilter;
+    svgConverter.randomize = randomize;
+    svgConverter.svg = svg.node();
+    svgConverter.roughConfig = {
+        bowing,
+        roughness,
+        fillStyle
+    };
+    svgConverter.sketch();
+    // Remove the first SVG element if it exists
+    const firstSvg = document.querySelector(`${containerSelector} svg`);
+    if (firstSvg) {
+        firstSvg.remove();
+    }
     
     return svg.node();
 } 

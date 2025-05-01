@@ -5,8 +5,8 @@ REQUIREMENTS_BEGIN
     "chart_name": "circular_bar_chart_02",
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],
-    "required_fields_range": [[15, 30], [0, 100]],
-    "required_fields_icons": ["x"],
+    "required_fields_range": [[3, 20], [0, 100]],
+    "required_fields_icons": [],
     "required_other_icons": [],
     "required_fields_colors": [],
     "required_other_colors": ["primary", "secondary", "background"],
@@ -59,9 +59,7 @@ function makeChart(containerSelector, data) {
 
     // Create a root group to center everything
     const g = svg.append("g")
-        .attr("transform", `translate(${margin.left}, ${margin.top})`)
-        .attr("xmlns:xlink", "http://www.w3.org/1999/xlink")
-        .attr("xmlns:svg", "http://www.w3.org/2000/svg");
+        .attr("transform", `translate(${margin.left}, ${margin.top})`);
     
     // 为每个柱子创建渐变
     const defs = svg.append("defs");
@@ -74,6 +72,19 @@ function makeChart(containerSelector, data) {
             .attr("width", 30)
             .attr("height", 30)
             .attr("patternUnits", "userSpaceOnUse");
+            
+        if (jsonData.images && jsonData.images[d[xField]]) {
+            pattern.append("image")
+                .attr("href", jsonData.images[d[xField]])
+                .attr("width", 30)
+                .attr("height", 30);
+        } else {
+            pattern.append("circle")
+                .attr("cx", 15)
+                .attr("cy", 15)
+                .attr("r", 12)
+                .attr("fill", "#008866");
+        }
     });
 
     // Define center point of the entire visualization
@@ -82,7 +93,7 @@ function makeChart(containerSelector, data) {
     
     // Define panel dimensions with adjusted left edge
     const panelLeft = centerX + 100;  // Left edge moved to the right of center
-    const panelRight = centerX + 400;    // Right edge of panel
+    const panelRight = width - 50;    // Right edge of panel
     const panelTop = centerY - 200;   // Top edge of panel
     const panelBottom = centerY + 200; // Bottom edge of panel
     const radius = 200;               // Radius of semicircle
@@ -99,7 +110,7 @@ function makeChart(containerSelector, data) {
     const startAngle = Math.PI/2;  // Start from top (90 degrees)
     const endAngle = -Math.PI/2;   // End at bottom (-90 degrees)
     const angleStep = (startAngle - endAngle) / (chartData.length - 1);
-    const barWidth = 25;
+    const barWidth = 20;
     
     chartData.forEach((d, i) => {
         const angle = startAngle - i * angleStep;
@@ -257,17 +268,8 @@ function makeChart(containerSelector, data) {
         .attr("stroke-linecap", "round")
         .attr("stroke", (d, i) => `url(#barGradient${i})`);
         
-    // 为每个图标创建裁剪路径
-    chartData.forEach((d, i) => {
-        const clipId = `clip-circle-${i}`;
-        defs.append("clipPath")
-            .attr("id", clipId)
-            .append("circle")
-            .attr("r", 14);
-    });
-    
     // 添加柱子顶端的图标
-    g.selectAll(".bar-circle")
+    g.selectAll(".bar-icon")
         .data(chartData)
         .enter()
         .append("circle")
@@ -283,25 +285,7 @@ function makeChart(containerSelector, data) {
         })
         .attr("r", 14)
         .attr("fill", "#ffffff");
-    g.selectAll(".bar-icon")
-        .data(chartData)
-        .enter()
-        .append("image")
-        .attr("xlink:href", (d, i) => jsonData.images.field[d[xField]])
-        .attr("x", (d, i) => {
-            const angle = startAngle - i * angleStep;
-            const barLength = barScale(d[yField]);
-            // 调整x坐标，使图标中心与圆形中心重叠
-            return semicircleX - (radius + barPadding + barLength) * Math.cos(angle) - 14;
-        })
-        .attr("y", (d, i) => {
-            const angle = startAngle - i * angleStep;
-            const barLength = barScale(d[yField]);
-            // 调整y坐标，使图标中心与圆形中心重叠
-            return semicircleY - (radius + barPadding + barLength) * Math.sin(angle) - 14;
-        })
-        .attr("width", 28)
-        .attr("height", 28);
+        
     // Add value labels
     chartData.forEach((d, i) => {
         const angle = startAngle - i * angleStep;
@@ -363,49 +347,26 @@ function makeChart(containerSelector, data) {
     let titleLine2 = titleWords.slice(ntitleWords, ntitleWords * 2).join(" ");
     let titleLine3 = titleWords.slice(ntitleWords * 2).join(" ");
 
-    // 将副标题按照字符数/18分行
-    let subtitleChars = subtitleText.length;
-    let subtitleLineCount = Math.ceil(subtitleChars / 25);
+    // 将副标题分成6行
+    let subtitleWords = subtitleText.split(" ");
+    let nsubtitleWords = Math.ceil(subtitleWords.length / 6);
     let subtitleLines = [];
-    
-    for(let i = 0; i < subtitleLineCount; i++) {
-        let startIndex = i * 18;
-        let endIndex = Math.min((i + 1) * 18, subtitleChars);
-        subtitleLines.push(subtitleText.substring(startIndex, endIndex));
+    for(let i = 0; i < 6; i++) {
+        subtitleLines[i] = subtitleWords.slice(i * nsubtitleWords, (i + 1) * nsubtitleWords).join(" ");
     }
 
     // 计算总高度以实现垂直居中
     const titleLineHeight = 40; // 标题行高
     const subtitleLineHeight = 30; // 副标题行高
-    const totalHeight = (3 * titleLineHeight) + (subtitleLines.length * subtitleLineHeight);
+    const totalHeight = (3 * titleLineHeight) + (6 * subtitleLineHeight);
     const startY = centerY - (totalHeight / 2) + 50;
-
-
-    // 根据文本宽度调整字体大小
-    const maxWidth = 350;
-    let fontSize1 = 27;
-    let fontSize2 = 42;
-    let fontSize3 = 30;
-
-    // 检查并调整每行标题的字体大小
-    while (getTextWidth(titleLine1, fontSize1) > maxWidth && fontSize1 > 16) {
-        fontSize1--;
-    }
-    
-    while (getTextWidth(titleLine2, fontSize2) > maxWidth && fontSize2 > 16) {
-        fontSize2--;
-    }
-    
-    while (getTextWidth(titleLine3, fontSize3) > maxWidth && fontSize3 > 16) {
-        fontSize3--;
-    }
 
     // 绘制标题
     g.append("text")
         .attr("x", panelLeft - 50)
         .attr("y", startY)
         .attr("font-family", "Arial, sans-serif")
-        .attr("font-size", `${fontSize1}px`)
+        .attr("font-size", "27px")
         .attr("font-weight", "bold")
         .attr("fill", "white")
         .attr("text-anchor", "start")
@@ -415,7 +376,7 @@ function makeChart(containerSelector, data) {
         .attr("x", panelLeft - 50)
         .attr("y", startY + titleLineHeight)
         .attr("font-family", "Arial, sans-serif")
-        .attr("font-size", `${fontSize2}px`)
+        .attr("font-size", "42px")
         .attr("font-weight", "bold")
         .attr("fill", "white")
         .attr("text-anchor", "start")
@@ -425,7 +386,7 @@ function makeChart(containerSelector, data) {
         .attr("x", panelLeft - 50)
         .attr("y", startY + (2 * titleLineHeight))
         .attr("font-family", "Arial, sans-serif")
-        .attr("font-size", `${fontSize3}px`)
+        .attr("font-size", "30px")
         .attr("font-weight", "bold")
         .attr("fill", "white")
         .attr("text-anchor", "start")

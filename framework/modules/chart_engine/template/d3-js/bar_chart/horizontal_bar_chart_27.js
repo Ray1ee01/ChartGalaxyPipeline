@@ -2,7 +2,7 @@
 REQUIREMENTS_BEGIN
 {
     "chart_type": "Horizontal Bar Chart",
-    "chart_name": "horizontal_bar_chart_24",
+    "chart_name": "horizontal_bar_chart_27",
     "is_composite": true,
     "required_fields": [["x", "y"], ["x", "y2"]],
     "required_fields_type": [
@@ -13,9 +13,9 @@ REQUIREMENTS_BEGIN
         [[2, 30], [0, "inf"]],
         [[2, 30], [0, "inf"]]
     ],
-    "required_fields_icons": ["x"],
+    "required_fields_icons": [],
     "required_other_icons": [],
-    "required_fields_colors": [],
+    "required_fields_colors": ["x"],
     "required_other_colors": ["primary","secondary"],
     "supported_effects": ["gradient",  "radius_corner"],
     "min_height": 400,
@@ -29,7 +29,7 @@ REQUIREMENTS_BEGIN
 REQUIREMENTS_END
 */
 
-// 水平条形图与比例圆复合图表实现 - 使用D3.jshorizontal_bar_proportional_circle_area_chart_05
+// 水平条形图与比例正方形复合图表实现 - 使用D3.js horizontal_bar_proportional_square_area_chart (基于 26 修改)
 function makeChart(containerSelector, data) {
     // 1. 数据准备
     const jsonData = data;                           // 完整JSON数据对象
@@ -132,9 +132,9 @@ function makeChart(containerSelector, data) {
     }
     tempMeasureSvg.remove(); // 移除临时SVG
 
-    // 设置各区域宽度 - 更新为 _04.js 的逻辑
-    const requiredLeftSpace = maxDimLabelWidth + textPadding + flagWidth + textPadding;
-    margin.left = requiredLeftSpace + 10; // 增加10px缓冲
+    // 设置各区域宽度 - 移除图标空间
+    const requiredLeftSpace = maxDimLabelWidth + textPadding; // 只需标签和边距
+    margin.left = requiredLeftSpace ; // 增加10px缓冲
 
     // 计算内部绘图区域尺寸
     const innerWidth = width - margin.left - margin.right;
@@ -149,26 +149,52 @@ function makeChart(containerSelector, data) {
     // 6. 创建比例尺
     const barPadding = 0.2;
     
-    // Y轴比例尺（维度）
+    // Y轴比例尺（维度） - 先定义 yScale 以计算 barHeight
     const yScale = d3.scaleBand()
         .domain(sortedDimensions)
         .range([0, innerHeight])
         .padding(barPadding);
+        
+    // 计算 barHeight 和 valueLabelFontSize 以便估算宽度
+    const barHeight = yScale.bandwidth();
+    const valueLabelFontSize = Math.min(20, Math.max(barHeight * 0.5, 12));
     
-    // X轴比例尺（第一个数值）- 范围调整为条形图区域宽度
+    // 估算最大数值标签宽度 (使用独立的临时 SVG)
+    let maxValueLabelWidth = 0;
+    const externalPadding = 8; // 标签与 bar 之间的间距
+    sortedData.forEach(dataPoint => {
+        const valueLabelText = `${dataPoint[valueField1]}${valueUnit1}`;
+        // 创建独立的临时 SVG 进行测量
+        const localTempSvg = d3.select(containerSelector).append("svg")
+             .attr("width", 0).attr("height", 0).style("visibility", "hidden");
+        const tempText = localTempSvg.append("text") // 附加到独立的 SVG
+             .style("font-family", typography.annotation.font_family)
+             .style("font-size", `${valueLabelFontSize}px`)
+             .style("font-weight", typography.annotation.font_weight)
+             .text(valueLabelText);
+        maxValueLabelWidth = Math.max(maxValueLabelWidth, tempText.node().getBBox().width);
+        // tempText.remove(); // 移除 text 不是必须的，因为父 SVG 会被移除
+        localTempSvg.remove(); // 移除独立的临时 SVG
+    });
+    // tempTextSvg.remove(); // 不再需要，因为没有全局 tempTextSvg
+    
+    // 计算条形图可用的实际宽度
+    const availableBarWidth = Math.max(0, barAreaWidth - maxValueLabelWidth - externalPadding);
+    
+    // X轴比例尺（第一个数值）- 范围调整为 availableBarWidth
     const xScale = d3.scaleLinear()
         .domain([0, d3.max(chartData, d => +d[valueField1]) * 1.05]) // 添加5%边距
-        .range([0, barAreaWidth]); // 使用 barAreaWidth
+        .range([0, availableBarWidth]); // 使用调整后的可用宽度
     
-    // 圆形面积比例尺（第二个数值）
+    // 正方形面积比例尺（第二个数值）
     const maxValue2 = d3.max(chartData, d => +d[valueField2]);
-    const minRadius = yScale.bandwidth() * 0.3;  // 最小半径
-    // 调整最大半径以适应 circleAreaWidth
-    const maxRadius = Math.min(yScale.bandwidth(), circleAreaWidth / 2); // 使用新的 circleAreaWidth
+    const minSide = yScale.bandwidth() * 0.05;  // 最小边长
+    // 调整最大边长以适应 squareAreaWidth 和条目高度
+    const maxSide = Math.min(yScale.bandwidth() * 1.8, circleAreaWidth); // 使用新的 circleAreaWidth (现在代表正方形区域宽度)
     
-    const radiusScale = d3.scaleSqrt()  // 使用平方根比例尺确保面积比例正确
+    const sideScale = d3.scaleSqrt()  // 使用平方根比例尺确保面积比例正确
         .domain([0, maxValue2])
-        .range([minRadius, maxRadius]);
+        .range([minSide, maxSide]);
     
     // 7. 创建SVG容器
     const svg = d3.select(containerSelector)
@@ -180,28 +206,49 @@ function makeChart(containerSelector, data) {
         .attr("xmlns", "http://www.w3.org/2000/svg")
         .attr("xmlns:xlink", "http://www.w3.org/1999/xlink");
 
+    // ---------- Helper: 定义用于绘图循环中 estimateLabelWidth 的临时 SVG ----------
+    const tempTextSvg = svg.append("g").attr("visibility", "hidden");
+
     // 获取主题色
     const primaryColor = colors.other.primary || "#83C341";
+    const secondaryColor = colors.other.secondary || "#57A0D3";
     // 添加defs用于视觉效果
     const defs = svg.append("defs");
 
-    // 添加水平渐变（从左到右）
-    const gradient = defs.append("linearGradient")
-        .attr("id", "bar-gradient")
-        .attr("x1", "0%")
-        .attr("y1", "0%")
-        .attr("x2", "100%")
-        .attr("y2", "0%");
+    
 
-    gradient.append("stop")
-        .attr("offset", "0%")
-        .attr("stop-color", d3.rgb(primaryColor).darker(0.3));
+    // --- 移除渐变定义代码 ---
+    /*
+    // --- 为每个唯一条形图颜色定义渐变 (基于维度颜色或 secondaryColor) ---
+    const uniqueBarColors = [...new Set(chartData.map(d => {
+        const dimension = d[dimensionField];
+        // 后备颜色使用 secondaryColor
+        return (colors.field && colors.field[dimension]) ? colors.field[dimension] : secondaryColor;
+    }))];
 
-    gradient.append("stop")
-        .attr("offset", "100%")
-        .attr("stop-color", d3.rgb(primaryColor).brighter(0.5));
+    uniqueBarColors.forEach(barColor => {
+        // 清理颜色值以用作ID (移除#和任何非字母数字字符)
+        const gradientId = `bar-gradient-${barColor.replace(/[^a-zA-Z0-9]/g, '')}`;
+        const gradient = defs.append("linearGradient")
+            .attr("id", gradientId)
+            .attr("x1", "0%")
+            .attr("y1", "0%")
+            .attr("x2", "100%") // 水平渐变
+            .attr("y2", "0%");
 
-
+        // 定义渐变，中间最亮，两边较暗
+        gradient.append("stop")
+            .attr("offset", "0%")
+            .attr("stop-color", d3.rgb(barColor).darker(0.5)); // 可以调整暗度
+        gradient.append("stop")
+            .attr("offset", "50%")
+            .attr("stop-color", d3.rgb(barColor).brighter(1.5)); // 可以调整亮度
+        gradient.append("stop")
+            .attr("offset", "100%")
+            .attr("stop-color", d3.rgb(barColor).darker(0.5)); // 与起始点相同暗度
+    });
+    // --- 渐变定义结束 ---
+    */
     
     // 条形图列标题 - 定位到条形图区域右侧
     svg.append("text")
@@ -214,9 +261,9 @@ function makeChart(containerSelector, data) {
         .style("fill", colors.text_color)
         .text(columnTitle1);
     
-    // 圆形图列标题 - 定位到圆形图区域中心
+    // 正方形图列标题 - 定位到正方形图区域中心
     svg.append("text")
-        .attr("x", margin.left + circleAreaWidth / 2) // 定位到圆形区域中心
+        .attr("x", margin.left + circleAreaWidth / 2) // 定位到正方形区域中心
         .attr("y", margin.top - 10)
         .attr("text-anchor", "middle") // 居中对齐
         .style("font-family", typography.description.font_family)
@@ -225,8 +272,8 @@ function makeChart(containerSelector, data) {
         .style("fill", colors.text_color)
         .text(columnTitle2);
     
-    // ---------- Helper: Estimate Text Width ----------
-    const tempTextSvg = svg.append("g").attr("visibility", "hidden");
+    // ---------- Helper: Estimate Text Width (使用附加到主 SVG 的 tempTextSvg) ----------
+    // const tempTextSvg = svg.append("g").attr("visibility", "hidden"); // 定义移到主 SVG 创建之后
     const estimateLabelWidth = (text, fontConfig, barHeight) => {
         // Calculate dynamic font size for value labels if applicable
         const isValueLabel = fontConfig === typography.annotation;
@@ -248,17 +295,19 @@ function makeChart(containerSelector, data) {
     
     // ---------- 10. 绘制元素 ----------
     
-    // 获取条形描边颜色
-    const getStrokeColor = (dimension) => {
-        const baseColor = colors.other.primary || "#83C341";
-        return d3.rgb(baseColor).brighter(3);
+    // 获取条形图颜色的辅助函数
+    const getBarColor = (dimension) => {
+        return (colors.field && colors.field[dimension]) ? colors.field[dimension] : secondaryColor;
     };
     
-    // 获取圆形图颜色
-    const getCircleColor = (dimension) => {
-        return colors.other.secondary || "#83C341"; // 亮绿色
+    // 获取描边颜色的辅助函数 (来自用户)
+    const getStrokeColor = (dimension) => {
+        // 获取条形的基础颜色
+        const baseColor = getBarColor(dimension); 
+        // 返回该颜色的更亮版本
+        return d3.rgb(baseColor).brighter(3); 
     };
-
+    
     // 为每个维度绘制元素
     sortedDimensions.forEach((dimension, index) => {
         try {
@@ -285,14 +334,12 @@ function makeChart(containerSelector, data) {
             const centerY = y + barHeight / 2;
             const barWidthValue = Math.max(0, xScale(+dataPoint[valueField1])); // 确保不为负
 
-            // --- 重新定义元素位置 (借鉴 _04.js 标签/图标逻辑) ---
+            // --- 重新定义元素位置 (无图标) ---
             // 1. 标签位于 G 元素的左侧
-            const labelX = -(flagWidth + textPadding + 5); // 相对 G 的 x 坐标
-            // 2. 图标位于 G 元素的左侧，标签右侧
-            const iconX = -(flagWidth + 5); // 相对 G 的 x 坐标
-            // 3. 圆形图位于内部绘图区域的左侧部分 (circleAreaWidth)
-            const circleX = circleAreaWidth / 2; // 圆心位于圆形区域中间
-            // 4. 条形图位于内部绘图区域的右侧部分 (barAreaWidth)，右对齐
+            const labelX = -(textPadding); // 相对 G 的 x 坐标 (无图标宽度)
+            // 2. 正方形图位于内部绘图区域的左侧部分 (circleAreaWidth)
+            const squareAreaCenterX = circleAreaWidth / 2; // 正方形区域中心 X 坐标
+            // 3. 条形图位于内部绘图区域的右侧部分 (barAreaWidth)，右对齐
             const barAreaStartX = circleAreaWidth; // 条形区域开始的 X 坐标 (相对 G)
             const barX = barAreaStartX + barAreaWidth - barWidthValue; // 条形左上角 X (右对齐)
 
@@ -308,83 +355,88 @@ function makeChart(containerSelector, data) {
                 .style("fill", colors.text_color)
                 .text(dimension.toUpperCase());
 
-            // 2. 添加图标 (移到左侧)
-            const iconGroup = g.append("g")
-                .attr("transform", `translate(${iconX}, ${centerY - flagHeight/2})`); // 使用新的 x 坐标
+            // 3. 绘制正方形 - 位置调整到 circleAreaWidth (正方形区域) 内
+            const squareSide = sideScale(+dataPoint[valueField2]);
+            const squareX = squareAreaCenterX - squareSide / 2; // 正方形左上角 x
+            const squareY = centerY - squareSide / 2; // 正方形左上角 y
 
-            if (images.field && images.field[dimension]) {
-                // 绘制图片（移除边框圆圈）
-                iconGroup.append("image")
-                    .attr("x", 0)
-                    .attr("y", 0)
-                    .attr("width", flagWidth)
-                    .attr("height", flagHeight)
-                    .attr("preserveAspectRatio","xMidYMid meet")
-                    .attr("xlink:href", images.field[dimension]);
-            }
+            // --- 确定颜色 (正方形固定 primary, 条形图基于维度或 secondary) ---
+            // const barColor = getBarColor(dimension); // 在绘制时获取
+            // const squareColor = primaryColor; // 正方形颜色直接使用 primaryColor
+            // --- 颜色确定结束 ---
 
-            // 3. 绘制圆形 - 位置调整到 circleAreaWidth 内
-            const circleRadius = radiusScale(+dataPoint[valueField2]);
-            g.append("circle")
-                .attr("cx", circleX) // 使用新的 cx
-                .attr("cy", centerY)
-                .attr("r", circleRadius)
-                .attr("fill", getCircleColor(dimension))
-                .attr("opacity", 0.6)
+            g.append("rect") // 绘制矩形代表正方形
+                .attr("x", squareX)
+                .attr("y", squareY)
+                .attr("width", squareSide)
+                .attr("height", squareSide)
+                .attr("fill", primaryColor) // 使用 primary 颜色
+                .attr("opacity", 0.7) // 轻微调整不透明度以便区分
                 .attr("stroke", "#FFFFFF")
                 .attr("stroke-width", 1)
                 .attr("stroke-opacity", 0.5);
 
-            // 4. 添加圆形数值标签
+            // 4. 添加正方形数值标签 - 根据大小决定位置和颜色
             const formattedValue2 = `${dataPoint[valueField2]}${valueUnit2}`;
-            // 动态调整字体大小，确保适合圆圈
-            const circleLabelFontSize = Math.min(
-                14, 
-                Math.max(10, Math.min(barHeight * 0.5, circleRadius * 0.8))
+            // 动态调整字体大小，确保适合正方形
+            const squareLabelFontSize = Math.min(
+                16, 
+                Math.max(12, Math.min(barHeight * 0.5, squareSide * 0.7)) // 基于 squareSide 调整
             );
+            
+            // 定义标签位置和颜色的阈值
+            const labelPositionThreshold = barHeight * 0.4; // 当边长大于此值时，标签在内部
+            let squareLabelFill, squareLabelX, squareLabelY, squareLabelAnchor, squareLabelDy;
+
+            if (squareSide >= labelPositionThreshold) {
+                // 大正方形：标签在内部，白色
+                squareLabelFill = "#FFFFFF";
+                squareLabelX = squareAreaCenterX;
+                squareLabelY = centerY;
+                squareLabelAnchor = "middle";
+                squareLabelDy = "0.35em";
+            } else {
+                // 小正方形：标签在上方，与正方形同色
+                squareLabelFill = primaryColor; // 使用 primary 颜色
+                squareLabelX = squareAreaCenterX;
+                squareLabelY = squareY - 5; // 放置在正方形顶部上方一点
+                squareLabelAnchor = "middle";
+                squareLabelDy = "0em"; // 基线对齐
+            }
+
             g.append("text")
-                .attr("x", circleX)
-                .attr("y", centerY)
-                .attr("dy", "0.35em")
-                .attr("text-anchor", "middle")
+                .attr("x", squareLabelX) // 使用计算出的 X
+                .attr("y", squareLabelY) // 使用计算出的 Y
+                .attr("dy", squareLabelDy) // 使用计算出的 dy
+                .attr("text-anchor", squareLabelAnchor) // 使用计算出的 text-anchor
                 .style("font-family", typography.annotation.font_family)
-                .style("font-size", `${circleLabelFontSize}px`)
+                .style("font-size", `${squareLabelFontSize}px`) // 使用新的字体大小
                 .style("font-weight", typography.annotation.font_weight)
-                .style("fill", colors.text_color)
+                .style("fill", squareLabelFill) // 使用计算出的 fill
                 .text(formattedValue2);
 
             // 5. 绘制条形 - 位置和宽度调整到 barAreaWidth 内，右对齐
+            const barColor = getBarColor(dimension); // 获取当前 bar 颜色
+            const strokeColor = getStrokeColor(dimension); // 获取当前 stroke 颜色
+            
             g.append("rect")
                 .attr("x", barX) // 使用新的 x 坐标
                 .attr("y", y)
                 .attr("width", barWidthValue) // 宽度基于 xScale
                 .attr("height", barHeight)
-                .attr("fill", "url(#bar-gradient)")
-                .attr("rx", barHeight/4)
-                .attr("ry", barHeight/4)
+                .attr("fill", barColor) // 直接使用 barColor 填充
+                .attr("stroke", strokeColor) // 添加描边颜色
+                .attr("stroke-width", 1.5) // 设置描边宽度
+                .attr("rx", barHeight/8)
+                .attr("ry", barHeight/8)
                 .attr("opacity", 0.9);
 
-            // 6. 添加条形数值标签 - 根据条形宽度智能放置 (坐标基于新的 barX)
+            // 6. 添加条形数值标签 - 固定放在条形左侧外部
             const valueLabelText = `${dataPoint[valueField1]}${valueUnit1}`;
-            const currentValueLabelWidth = estimateLabelWidth(valueLabelText, typography.annotation, barHeight);
-            const valueLabelFontSize = Math.min(16, Math.max(barHeight * 0.5, 12));
-            
-            // 确定标签位置：有足够空间时放在条形内部左侧，否则放在左侧外部
-            let valueLabelXPos, valueLabelAnchor, valueLabelFill;
-            const internalPadding = 10; // 内部所需间距
-            const externalPadding = 8; // 外部所需间距
-
-            if (barWidthValue >= currentValueLabelWidth + internalPadding * 2) {
-                // 空间足够放内部，靠左显示
-                valueLabelXPos = barX + internalPadding; // 基于新的 barX
-                valueLabelAnchor = "start";
-                valueLabelFill = "#FFFFFF"; // 条形内部使用白色文本
-            } else {
-                // 放外部
-                valueLabelXPos = barX - externalPadding; // 基于新的 barX
-                valueLabelAnchor = "end";
-                valueLabelFill = colors.text_color;
-            }
+            // const currentValueLabelWidth = estimateLabelWidth(valueLabelText, typography.annotation, barHeight);
+            const valueLabelXPos = barX - externalPadding; // 固定在条形左侧
+            const valueLabelAnchor = "end"; // 右对齐
+            const valueLabelFill = colors.text_color; // 固定文本颜色
 
             g.append("text")
                 .attr("x", valueLabelXPos)
@@ -402,7 +454,7 @@ function makeChart(containerSelector, data) {
         }
     });
 
-    // 移除临时SVG元素
+    // 移除用于 estimateLabelWidth 的临时 SVG 组
     tempTextSvg.remove();
 
     // 返回SVG节点

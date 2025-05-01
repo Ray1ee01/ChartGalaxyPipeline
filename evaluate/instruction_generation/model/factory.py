@@ -1,6 +1,5 @@
 from model.closeQA import *
 from model.openQA import *
-from model.infographicsQA import *
 from model.base import SingleData, BaseQAGenerator
 
 class QAGeneratorFactory:

@@ -1,4 +1,4 @@
-/*
+/* 
 REQUIREMENTS_BEGIN
 {
     "chart_type": "Horizontal Bar Chart",

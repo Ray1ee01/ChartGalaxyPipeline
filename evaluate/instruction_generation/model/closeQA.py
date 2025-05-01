@@ -210,16 +210,17 @@ class VisualQAGenerator(BaseQAGenerator):
     def add_question_answer_types(self, qa_dicts: list) -> None:
         for qa_dict in qa_dicts:
             qa_dict["question_type"] = self.question_type
-            qa_dict["answer_type"] = "close"
+            qa_dict["answer_type"] = "multiple_choice"
+            qa_dict["category"] = "Visual Understanding"
+            qa_dict["subcategory"] = "Visual Elements Retrieval"
 
     def generate_prompt(self) -> str:
         tabular_data = self.single_data.tabular_data
         meta_data = self.single_data.meta_data
-
         chart_type = self.single_data.chart_type
-                
+
         return textwrap.dedent(f"""
-            Task: Create 3-5 question-answer pairs that require VISUAL REFERENCE to specific elements in the chart.
+            Task: Create 3-5 MULTIPLE CHOICE question-answer pairs that require VISUAL REFERENCE to specific elements in the chart.
 
             # CHART INFORMATION
             Title: {meta_data.get('title', 'N/A')}
@@ -248,17 +249,16 @@ class VisualQAGenerator(BaseQAGenerator):
             - "Which category is positioned at the [specific location] of the chart?"
             - "What is the label of the element marked with [specific pattern]?"
             
-            # VERY IMPORTANT FOR ANSWERS:
-            - Answers MUST be EXTREMELY CONCISE
-            - Answers should be ONLY the specific value or label identified by the visual reference
-            - DO NOT include explanations, units, or additional context in answers
-            - Give ONLY the exact value or category label as the complete answer
-
-            Good answer formats:
-            - "4.3" (just the number)
-            - "AT&T" (just the category name)
-            - "iPhone" (just the label)
-
+            # MULTIPLE CHOICE FORMAT REQUIREMENTS
+            
+            - For each question, provide exactly FOUR answer choices (A, B, C, D).
+            - One choice must be the CORRECT answer, directly derivable from the chart data using visual reference.
+            - The other three choices must be PLAUSIBLE DISTRACTORS. Distractors should be:
+                - Numerically close to the correct answer (if applicable).
+                - Related to other values or labels present in the chart.
+                - Designed to catch common misinterpretations of the visual elements.
+                - DO NOT use options like "None of the above" or "All of the above".
+            
             # RESPONSE FORMAT
             Provide your answer in JSON format as follows:
             ```json
@@ -266,7 +266,13 @@ class VisualQAGenerator(BaseQAGenerator):
               "results": [
                 {{
                   "question": "Your question here",
-                  "answer": "4.3"  // ONLY the value or label, nothing else
+                  "options": {{
+                    "A": "Plausible Distractor 1",
+                    "B": "Correct Answer",
+                    "C": "Plausible Distractor 2",
+                    "D": "Plausible Distractor 3"
+                  }},
+                  "answer": "B" // Letter of the correct option
                 }},
                 ...more question-answer pairs...
               ]
@@ -300,15 +306,17 @@ class VisualCompositionalQAGenerator(BaseQAGenerator):
     def add_question_answer_types(self, qa_dicts: list) -> None:
         for qa_dict in qa_dicts:
             qa_dict["question_type"] = self.question_type
-            qa_dict["answer_type"] = "close"
+            qa_dict["answer_type"] = "multiple_choice"
+            qa_dict["category"] = "Visual Understanding"
+            qa_dict["subcategory"] = "Visual Elements Retrieval"
 
     def generate_prompt(self) -> str:
         tabular_data = self.single_data.tabular_data
         meta_data = self.single_data.meta_data
         chart_type = self.single_data.chart_type
-        
+
         return textwrap.dedent(f"""
-            Task: Create 3-5 question-answer pairs that require BOTH VISUAL REFERENCE AND MATHEMATICAL/LOGICAL OPERATIONS.
+            Task: Create 3-5 MULTIPLE CHOICE question-answer pairs that require BOTH VISUAL REFERENCE AND MATHEMATICAL/LOGICAL OPERATIONS.
 
             # CHART INFORMATION
             Title: {meta_data.get('title', 'N/A')}
@@ -342,24 +350,20 @@ class VisualCompositionalQAGenerator(BaseQAGenerator):
             
             Examples of good visual-compositional questions:
             - "By what percentage is the [color A] element higher than the [color B] element?"
-            - "What is the average growth rate of the trend line between [specific time period]?"
-            - "What proportion of the whole does the [visually distinct part] represent?"
-            - "What is the difference between the [visually identified element] and the average of all elements?"
+            - "What is the average growth rate of the trend line between [specific time period]? (Visually identify start/end points)"
+            - "What proportion of the whole does the [visually distinct part, e.g., largest slice] represent?"
+            - "What is the difference between the [visually identified element, e.g., red bar] and the average of all elements?"
             
-            # VERY IMPORTANT FOR ANSWERS:
-            - Answers MUST be EXTREMELY CONCISE
-            - Answers should be ONLY the final value, category, or label after both visual identification and calculation
-            - DO NOT include explanations, units, or additional context in answers
-            - Give ONLY the exact final result as the complete answer
-            - Numbers should be rounded to 1 decimal place when appropriate
-            - Percentages should be given as whole numbers without the % symbol
-
-            Good answer formats:
-            - "2.1" (just the calculated number)
-            - "AT&T" (just the category name)
-            - "78" (just the percentage value, no % symbol)
-            - "iPhone" (just the label)
-
+            # MULTIPLE CHOICE FORMAT REQUIREMENTS
+            
+            - For each question, provide exactly FOUR answer choices (A, B, C, D).
+            - One choice must be the CORRECT answer, resulting from the visual identification and subsequent calculation/logic.
+            - The other three choices must be PLAUSIBLE DISTRACTORS. Distractors should be:
+                - Numerically close to the correct answer.
+                - Potentially derived from incorrect visual identification or calculation errors (e.g., forgetting a step, misreading a value).
+                - Related to other values or labels present in the chart.
+                - DO NOT use options like "None of the above" or "All of the above".
+            
             # RESPONSE FORMAT
             Provide your answer in JSON format as follows:
             ```json
@@ -367,7 +371,13 @@ class VisualCompositionalQAGenerator(BaseQAGenerator):
               "results": [
                 {{
                   "question": "Your question here",
-                  "answer": "2.1"  // ONLY the final answer, nothing else
+                  "options": {{
+                    "A": "Plausible Distractor 1",
+                    "B": "Correct Answer",
+                    "C": "Plausible Distractor 2",
+                    "D": "Plausible Distractor 3"
+                  }},
+                  "answer": "B" // Letter of the correct option
                 }},
                 ...more question-answer pairs...
               ]

@@ -51,9 +51,15 @@ class TemplateFactory:
         """ 处理模板 """
         handler = self.get_handler(template_id)
         if handler:
-            question, answer = handler(template_text)
-            processed_answer = self.post_process_answer(answer)
-            return question, processed_answer
+            ret = handler(template_text)
+            if len(ret) == 2:
+                question, answer = ret
+                processed_answer = self.post_process_answer(answer)
+                return question, processed_answer
+            else:
+                question, answer, image = ret
+                processed_answer = self.post_process_answer(answer)
+                return question, processed_answer, image
         else:
             logger.error(f"未找到模板 '{template_id}' 的处理函数")
             return None, None

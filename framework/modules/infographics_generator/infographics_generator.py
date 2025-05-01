@@ -96,7 +96,7 @@ def make_infographic(
     
     chart_svg_content = f"<svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='{chart_width}' height='{chart_height}'>{chart_content}</svg>"
     mask = calculate_mask_v2(chart_svg_content, chart_width, chart_height, background_color)
-    mask = expand_mask(mask, 15)
+    mask = expand_mask(mask, 10)
     title_candidates = []
     min_title_width = max(250, chart_width / 2)
     if thin_chart_flag:
@@ -546,11 +546,19 @@ def make_infographic(
 
         overlay_mask, overlay_mask_only_text = calculate_mask_v3(final_svg + "\n</svg>", total_width, total_height, background_color)
         overlay_mask = expand_mask(overlay_mask, 5)
+        overlay_mask_only_text = expand_mask(overlay_mask_only_text, 5)
         # 将overlay_mask保存为PNG文件
-        #plt.figure(figsize=(10, 8))
-        #plt.imshow(overlay_mask, cmap='viridis')
-        #plt.savefig('./tmp/overlay.png')
-        #plt.close()
+        plt.figure(figsize=(10, 8))
+        plt.imshow(overlay_mask, cmap='viridis')
+        plt.savefig('./tmp/overlay.png')
+        plt.close()
+
+        plt.figure(figsize=(10, 8))
+        plt.imshow(overlay_mask_only_text, cmap='viridis')
+        plt.savefig('./tmp/overlay_mask_only_text.png')
+        plt.close()
+
+
         overlay_image_size, overlay_best_x, overlay_best_y = find_best_size_and_position(overlay_mask, primary_image, padding, mode="overlay", avoid_mask=overlay_mask_only_text)
         measure_overlay_size = min(overlay_image_size, 256)
 
