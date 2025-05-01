@@ -6460,7 +6460,7 @@
             ],
             [
                 0,
-                Infinity
+                "inf"
             ]
         ],
         "required_fields_icons": [
