@@ -164,7 +164,7 @@ function makeChart(containerSelector, data) {
                 .attr("class", "bottle-mask")
                 .attr("width", bottleWidth)
                 .attr("height", bottleHeight * (1 - bottlePercentage))
-                .attr("fill", "white") 
+                .attr("fill", colors.background_color) 
                 .attr("opacity", 0.6);
             
             // 计算标签方块的大小和位置

@@ -344,8 +344,8 @@ function makeChart(containerSelector, data) {
                         .attr("xlink:href", images.field[d[xField]])
                         .attr("x", -12) // 根据视觉效果调整 x 偏移
                         .attr("y", 0)   // 垂直位置
-                        .attr("width", xScale.bandwidth() * 0.3) // 旗帜宽度，基于柱子带宽
-                        .attr("height", xScale.bandwidth() * 0.25) // 旗帜高度，基于柱子带宽
+                        .attr("width", xScale.bandwidth() * 0.5) // 旗帜宽度，基于柱子带宽
+                        .attr("height", xScale.bandwidth() * 0.38) // 旗帜高度，基于柱子带宽
                         .attr("preserveAspectRatio", "xMidYMid meet"); // 图片缩放和对齐方式
                 }
     
@@ -362,7 +362,7 @@ function makeChart(containerSelector, data) {
     
                 // --- 开始文本换行处理 ---
                 // 定义此标签允许的最大宽度 (例如，柱子的带宽，可以根据需要调整，留一点边距)
-                const labelMaxWidth = xScale.bandwidth() * 0.95; // 稍微小于柱子宽度
+                const labelMaxWidth = xScale.bandwidth() * 1.05; // 稍微小于柱子宽度
     
                 // 获取当前文本元素的引用 (就是上面刚创建的 label)
                 const textElement = label; // 或者 d3.select(this).select('.country-label');
@@ -377,6 +377,7 @@ function makeChart(containerSelector, data) {
     
     // ---------- 9. 统一调整所有值标签的字体大小 ----------
     // 创建临时文本元素来测量值标签文本宽度
+   
     const tempValueText = svg.append("text")
         .attr("visibility", "hidden")
         .style("font-family", typography.label.font_family)

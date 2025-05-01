@@ -2,7 +2,7 @@
 REQUIREMENTS_BEGIN
 {
     "chart_type": "Vertical Bar Chart",
-    "chart_name": "vertical_bar_chart_03",
+    "chart_name": "vertical_bar_chart_13",
     "is_composite": true,
     "required_fields": [["x", "y"], ["x", "y2"]],
     "required_fields_type": [
@@ -10,10 +10,10 @@ REQUIREMENTS_BEGIN
         [["categorical"], ["numerical"]]
     ],
     "required_fields_range": [
-        [[2, 30], ["-inf", "inf"]],
+        [[2, 30], [0, "inf"]],
         [[2, 30], [0, "inf"]]
     ],
-    "required_fields_icons": ["x"],
+    "required_fields_icons": [],
     "required_other_icons": [],
     "required_fields_colors": [],
     "required_other_colors": ["primary","secondary"],
@@ -29,7 +29,7 @@ REQUIREMENTS_BEGIN
 REQUIREMENTS_END
 */
 
-// 垂直条形图与比例圆复合图表实现 - 使用D3.js   vertical_bar_proportional_circle_area_chart_01
+// 垂直条形图与比例方形复合图表实现 - 使用D3.js  
 function makeChart(containerSelector, data) {
     // ---------- 1. 数据准备阶段 ----------
 
@@ -78,16 +78,18 @@ function makeChart(containerSelector, data) {
     const width = variables.width || 800;
     const height = variables.height || 600;
 
-    // 边距 - 需要足够空间给标签和条形图
-    const margin = { top: 90, right: 50, bottom: 60, left: 50 }; // 增加底部边距给X轴标签和图标
+    // 边距 - 减少底部边距，因为标签上移
+    const margin = { top: 90, right: 50, bottom: 30, left: 50 }; // *** 修改: 减少 bottom ***
     const innerWidth = width - margin.left - margin.right;
-    const innerHeight = height - margin.top - margin.bottom;
+    const innerHeight = height - margin.top - margin.bottom; // *** 修改: 重新计算 innerHeight ***
 
-    // 定义中间灰色区域和标签区域的高度
+    // 定义中间区域的高度 (保持不变或按需调整)
     const centralBandHeight = innerHeight * 0.20; // 中间区域占20%高度
     
-    const barAreaHeight = innerHeight - centralBandHeight ; // 上下条形图的总可用高度
-    // *** 修改: 按正负最大值比例分配高度 ***
+    // 上下条形图的总可用高度
+    const barAreaHeight = innerHeight - centralBandHeight; 
+    
+    // 按正负最大值比例分配高度
     const maxPositiveY = d3.max(chartData, d => Math.max(0, d[valueField])) || 0;
     const maxNegativeY = Math.abs(d3.min(chartData, d => Math.min(0, d[valueField])) || 0);
     const totalMagnitudeRange = maxPositiveY + maxNegativeY;
@@ -99,40 +101,28 @@ function makeChart(containerSelector, data) {
         topBarAreaHeight = barAreaHeight * (maxPositiveY / totalMagnitudeRange);
         bottomBarAreaHeight = barAreaHeight * (maxNegativeY / totalMagnitudeRange);
     } else {
-        // 如果所有值都为0，则平分高度
         topBarAreaHeight = barAreaHeight / 2;
         bottomBarAreaHeight = barAreaHeight / 2;
     }
 
-    // 计算中间灰色区域的Y坐标 (现在依赖于 topBarAreaHeight)
+    // *** 修改: 重新计算中间区域的 Y 坐标 ***
     const centralBandTopY = margin.top + topBarAreaHeight;
     const centralBandBottomY = centralBandTopY + centralBandHeight;
 
-    // 定义图标和标签尺寸
-    const iconSize = 20;
-    const iconMargin = 3; // 图标和标签之间的距离 (减小)
-    const labelMargin = 3; // 圆圈和下方标签的距离 (减小)
-    const circlePadding = 5; // 圆圈与其标签之间的内边距
+    // *** 修改: 移除图标尺寸定义 ***
+    // const iconSize = 20;
+    // const iconMargin = 3; 
+    const labelMargin = 3; 
+    const circlePadding = 5; // 重命名为 shapePadding?
 
-    // *** 修改: 预定义基础字体大小 ***
     const baseFontSizeLabel = parseFloat(typography.label.font_size) || 14;
     const baseFontSizeAnnotation = parseFloat(typography.annotation.font_size) || 12;
     const minFontSize = 8;
 
-    // *** 修改: 为中央区域内的元素计算Y坐标 ***
-    const bandTopPadding = 5;
-    const iconY = centralBandTopY + bandTopPadding + iconSize / 2;
-    const dimensionLabelY = iconY + iconSize / 2 + iconMargin + baseFontSizeLabel / 2; // 在图标下方
-    // 剩余空间给圆圈
-    const circleAreaTopY = dimensionLabelY + baseFontSizeLabel / 2 + labelMargin;
-    const circleAreaHeight = centralBandBottomY - circleAreaTopY - bandTopPadding;
-    const circleY = circleAreaTopY + circleAreaHeight / 2;
-    // 最大半径是可用高度的90%的一半
-    const maxCircleRadiusAvailableBasedOnHeight = Math.max(0, (circleAreaHeight * 0.9) / 2);
-    // *** 添加: 限制最大半径不超过bar宽度的一半 ***
-    const maxRadiusFromBarWidth = innerWidth / 2;
-    const maxCircleRadiusAvailable = Math.min(maxCircleRadiusAvailableBasedOnHeight, maxRadiusFromBarWidth);
-
+    // *** 修改: 仅在此处预估中间区域元素 Y 坐标 ***
+    const estDimensionLabelY = centralBandTopY + centralBandHeight * 0.30; 
+    const estShapeY = centralBandTopY + centralBandHeight * 0.70; // *** 重命名: estCircleY -> estShapeY ***
+    
     // ---------- 4. 数据处理 ----------
 
     // 转换数值类型
@@ -155,26 +145,35 @@ function makeChart(containerSelector, data) {
         .range([0, innerWidth])
         .padding(0.2); // 柱子之间的间距
 
-    // *** 恢复: 使用独立的比例尺，但范围基于比例计算的高度 ***
-    // 正值比例尺
+    // *** 修改: 更新 Y 轴比例尺范围以适应中间区域 ***
     const yScalePositive = d3.scaleLinear()
-        .domain([0, maxPositiveY === 0 ? 1 : maxPositiveY]) // 处理max为0的情况
-        .range([centralBandTopY, centralBandTopY - topBarAreaHeight]);
+        .domain([0, maxPositiveY === 0 ? 1 : maxPositiveY]) 
+        .range([centralBandTopY, margin.top]); // 从中间区域顶部到图表顶部边距
 
-    // 负值比例尺
     const yScaleNegative = d3.scaleLinear()
-        .domain([0, maxNegativeY === 0 ? 1 : maxNegativeY]) // 处理max为0的情况
-        .range([centralBandBottomY, centralBandBottomY + bottomBarAreaHeight]);
+        .domain([0, maxNegativeY === 0 ? 1 : maxNegativeY]) 
+        .range([centralBandBottomY, height - margin.bottom]); // 从中间区域底部到图表底部边距
 
-    // 圆形面积比例尺 (销售额 - y2)
+    // *** 修改: 方形面积比例尺 (y2值) ***
     const maxValue2 = d3.max(chartData, d => d[valueField2]) || 0;
-    const minRadius = 2; // 最小半径，防止圆点太小看不见
-    // *** 修改: 最大半径基于圆圈可用空间 ***
-    const maxRadius = Math.max(minRadius, maxCircleRadiusAvailable);
+    const minSideLength = 3; // *** 重命名: minRadius -> minSideLength (方形最小边长) ***
 
-    const radiusScale = d3.scaleSqrt() // 平方根比例尺保证面积正比
+    // *** 修改: 计算精确的中间区域 Y 坐标和最大方形边长 ***
+    const dimensionLabelY = centralBandTopY + centralBandHeight * 0.35; 
+    const shapeY = centralBandTopY + centralBandHeight * 0.75;       // *** 重命名: circleY -> shapeY ***
+    
+    const maxSideLengthFromBarWidth = xScale.bandwidth() * 0.9; // *** 重命名并调整: 方形边长不能超过 bar 宽度的 90% ***
+    const actualShapeAreaTopY = dimensionLabelY + baseFontSizeLabel + labelMargin; // *** 重命名: actualCircleAreaTopY -> actualShapeAreaTopY ***
+    const shapeAreaHeight = centralBandBottomY - actualShapeAreaTopY; // *** 重命名: circleAreaHeight -> shapeAreaHeight ***
+    // *** 修改: 最大边长受可用高度限制 ***
+    const maxSideLengthAvailableBasedOnHeight = Math.max(0, shapeAreaHeight * 0.9); 
+    const maxSideLengthAvailable = Math.min(maxSideLengthAvailableBasedOnHeight, maxSideLengthFromBarWidth);
+    const maxSideLength = Math.max(minSideLength, maxSideLengthAvailable); // *** 重命名: maxRadius -> maxSideLength ***
+
+    // *** 重命名: radiusScale -> sideLengthScale ***
+    const sideLengthScale = d3.scaleSqrt() 
         .domain([0, maxValue2])
-        .range([minRadius, maxRadius]); // 半径范围
+        .range([minSideLength, maxSideLength]); // 输出边长范围
 
     // *** 添加: 文本换行辅助函数 ***
     function wrapText(textElement, text, width, x, y, fontSize, fontWeight, fontFamily) {
@@ -239,9 +238,13 @@ function makeChart(containerSelector, data) {
     let minCircleLabelRatio = 1.0;
     let minBarLabelRatio = 1.0;
 
-    const maxDimensionLabelWidth = xScale.bandwidth() * 1.03;
-    const maxCircleLabelWidth = xScale.bandwidth() * 1.03; // 圆圈标签也用这个宽度限制
-    const maxBarLabelWidth = xScale.bandwidth(); // 条形图标签限制在条形宽度内
+    const maxDimensionLabelWidth = xScale.bandwidth() * 0.90;
+    const maxCircleLabelWidth = xScale.bandwidth() * 1.03; 
+    const maxBarLabelWidth = xScale.bandwidth();
+
+    // *** 注意: 这里的 finalDimensionFontSize, finalCircleFontSize, finalBarFontSize 
+    //          是在循环之后计算的，但在循环内部以及半径计算中可能需要提前估算或使用基础值。
+    //          当前代码在半径计算中使用了 finalDimensionFontSize || baseFontSizeLabel 
 
     chartData.forEach(d => {
         // 维度标签
@@ -292,48 +295,92 @@ function makeChart(containerSelector, data) {
 
     // ---------- 7. 创建主图表组 ----------
 
-    const g = svg.append("g")
-        .attr("transform", `translate(${margin.left}, 0)`); // Y方向不移动，因为Y坐标已包含margin.top
+    // *** 添加: 定义渐变 ***
+    const defs = svg.append("defs");
 
-    // ---------- 7.5 添加图例 ----------
-    const legendY = margin.top - 30; // 在顶部边距上方留出空间放置图例
-    const legendSquareSize = 12;
-    const legendCircleRadius = 6;
-    const legendPadding = 15; // 各项之间的主间距
-    const legendItemPadding = 5; // 图形和文本之间的间距
-
-    // 获取图例文本和颜色
-    const yName = valueField; // 使用提取的字段名
-    const y2Name = valueField2;
+    // 获取基础颜色 (已在图例部分定义)
     const positiveColor = colors.other.primary || "#008080";
     const negativeColor = colors.other.secondary || "#FF0000";
-    const circleColor = colors.available_colors[0] ;
+
+    // --- 正值条形图渐变 ---
+    const gradientPositive = defs.append("linearGradient")
+        .attr("id", "gradient-positive")
+        .attr("x1", "0%")
+        .attr("y1", "0%") // 从顶部开始
+        .attr("x2", "0%")
+        .attr("y2", "100%"); // 到顶部结束 (垂直)
+
+    gradientPositive.append("stop")
+        .attr("offset", "0%")
+        .attr("stop-color", d3.rgb(positiveColor).darker(0.5)); // 顶部稍暗
+
+    gradientPositive.append("stop")
+        .attr("offset", "50%")
+        .attr("stop-color", d3.rgb(positiveColor).brighter(1.5)); // 中间最亮
+
+    gradientPositive.append("stop")
+        .attr("offset", "100%")
+        .attr("stop-color", d3.rgb(positiveColor).darker(0.5)); // 底部稍暗
+
+    // --- 负值条形图渐变 ---
+    const gradientNegative = defs.append("linearGradient")
+        .attr("id", "gradient-negative")
+        .attr("x1", "0%")
+        .attr("y1", "0%") // 从顶部开始
+        .attr("x2", "0%")
+        .attr("y2", "100%"); // 到底部结束 (垂直)
+
+    gradientNegative.append("stop")
+        .attr("offset", "0%")
+        .attr("stop-color", d3.rgb(negativeColor).darker(0.5)); // 顶部稍暗
+
+    gradientNegative.append("stop")
+        .attr("offset", "50%")
+        .attr("stop-color", d3.rgb(negativeColor).brighter(1.5)); // 中间最亮
+
+    gradientNegative.append("stop")
+        .attr("offset", "100%")
+        .attr("stop-color", d3.rgb(negativeColor).darker(0.5)); // 底部稍暗
+
+    // --- 创建主绘图区域 --- 
+    const g = svg.append("g")
+        .attr("transform", `translate(${margin.left}, 0)`); 
+
+    // ---------- 7.5 添加图例 (恢复原始逻辑) ----------
+    const legendY = margin.top / 2; // 保持较高的位置
+    const legendSquareSize = 12;
+    // const legendCircleRadius = 6; // 使用方形，移除半径
+    const legendPadding = 15; 
+    const legendItemPadding = 5; 
+
+    // *** 恢复: 获取图例文本和颜色 (positive, negative, shape) ***
+    const yName = valueField; 
+    const y2Name = valueField2;
+    const shapeLegendColor = colors.available_colors[0] || "#FFBF00";
+    
     const legendFontFamily = typography.annotation.font_family;
     const legendFontSize = parseFloat(typography.annotation.font_size);
     const legendFontWeight = typography.annotation.font_weight;
 
-    // 计算文本宽度
     const yNameWidth = getTextWidth(yName, legendFontSize, legendFontWeight, legendFontFamily);
     const y2NameWidth = getTextWidth(y2Name, legendFontSize, legendFontWeight, legendFontFamily);
 
-    // 计算总宽度
-    const totalLegendWidth = legendSquareSize + legendItemPadding + // Positive square + padding
-                           legendSquareSize + legendItemPadding + // Negative square + padding
-                           yNameWidth + legendPadding +            // Y name text + main padding
-                           (legendCircleRadius * 2) + legendItemPadding + // Circle diameter + padding
-                           y2NameWidth;                           // Y2 name text
+    // *** 恢复: 计算图例总宽度 (两个条形方块 + 一个形状方块) ***
+    const totalLegendWidth = legendSquareSize + legendItemPadding + // Positive square
+                           legendSquareSize + legendItemPadding + // Negative square
+                           yNameWidth + legendPadding +            
+                           legendSquareSize + legendItemPadding + // Shape square
+                           y2NameWidth;                           
 
-    // 计算起始X坐标以居中
     const legendStartX = margin.left + (innerWidth - totalLegendWidth) / 2;
 
-    // 创建图例组
     const legendGroup = svg.append("g")
         .attr("class", "chart-legend")
         .attr("transform", `translate(${legendStartX}, ${legendY})`);
 
     let currentX = 0;
 
-    // 1. 正值方块
+    // *** 恢复: 绘制正值方块 ***
     legendGroup.append("rect")
         .attr("x", currentX)
         .attr("y", -legendSquareSize / 2)
@@ -341,8 +388,8 @@ function makeChart(containerSelector, data) {
         .attr("height", legendSquareSize)
         .attr("fill", positiveColor);
     currentX += legendSquareSize + legendItemPadding;
-
-    // 2. 负值方块
+    
+    // *** 恢复: 绘制负值方块 ***
     legendGroup.append("rect")
         .attr("x", currentX)
         .attr("y", -legendSquareSize / 2)
@@ -351,7 +398,7 @@ function makeChart(containerSelector, data) {
         .attr("fill", negativeColor);
     currentX += legendSquareSize + legendItemPadding;
 
-    // 3. Y 名称文本
+    // Y 名称文本 (不变)
     legendGroup.append("text")
         .attr("x", currentX)
         .attr("y", 0)
@@ -361,17 +408,18 @@ function makeChart(containerSelector, data) {
         .style("font-weight", legendFontWeight)
         .style("fill", colors.text_color || "#000000")
         .text(yName);
-    currentX += yNameWidth + legendPadding; // 使用主间距
+    currentX += yNameWidth + legendPadding; 
 
-    // 4. 圆圈图例
-    legendGroup.append("circle")
-        .attr("cx", currentX + legendCircleRadius)
-        .attr("cy", 0)
-        .attr("r", legendCircleRadius)
-        .attr("fill", circleColor);
-    currentX += (legendCircleRadius * 2) + legendItemPadding;
+    // *** 恢复: 绘制形状方块图例 ***
+    legendGroup.append("rect") 
+        .attr("x", currentX) 
+        .attr("y", -legendSquareSize / 2) 
+        .attr("width", legendSquareSize) 
+        .attr("height", legendSquareSize) 
+        .attr("fill", shapeLegendColor); 
+    currentX += legendSquareSize + legendItemPadding; 
 
-    // 5. Y2 名称文本
+    // Y2 名称文本 (不变)
     legendGroup.append("text")
         .attr("x", currentX)
         .attr("y", 0)
@@ -382,23 +430,6 @@ function makeChart(containerSelector, data) {
         .style("fill", colors.text_color || "#000000")
         .text(y2Name);
 
-    // ---------- 8. 绘制中间灰色矩形区域 ----------
-
-    // *** 修改: 使用 path 绘制带半圆结束的灰色区域 ***
-    const bandRadius = centralBandHeight / 2;
-    g.append("path")
-        // *** 修改: 调整 d 属性使半圆在 0 和 innerWidth 外侧绘制 ***
-        .attr("d", `
-            M ${0},${centralBandTopY} 
-            L ${innerWidth},${centralBandTopY}
-            A ${bandRadius},${bandRadius} 0 0 1 ${innerWidth},${centralBandBottomY}
-            L ${0},${centralBandBottomY}
-            A ${bandRadius},${bandRadius} 0 0 1 ${0},${centralBandTopY}
-            Z
-        `)
-        .attr("class","background")
-        .attr("fill", "#f0f0f0"); // 浅灰色背景
-
     // ---------- 9. 绘制图表元素 (循环处理每个数据点) ----------
 
     chartData.forEach((d, i) => {
@@ -408,41 +439,61 @@ function makeChart(containerSelector, data) {
 
         // 9.1 绘制垂直条形图 (y值)
         const yValue = d[valueField];
-        let barHeight, barY, barColor;
+        let barHeight, barY, barColor; // *** 恢复: barColor 变量 ***
 
-        // *** 修改: 使用 yScalePositive/yScaleNegative 计算高度和位置 ***
+        // *** 修改: 使用更新后的 yScale 和边界计算高度/位置, 并恢复原始颜色逻辑 ***
         if (yValue > 0) {
             barY = yScalePositive(yValue);
-            barHeight = centralBandTopY - barY; // 高度是 band 顶部 和 scale 输出的差值
-            barColor = colors.other.primary || "#008080"; // 正值颜色
+            barHeight = centralBandTopY - barY; 
+            barColor = colors.other.primary || "#008080"; // *** 恢复: 正值颜色 ***
         } else if (yValue < 0) {
-            barY = centralBandBottomY; // 负值条从 band 底部开始
+            barY = centralBandBottomY; 
             const scaledY = yScaleNegative(Math.abs(yValue));
-            barHeight = scaledY - barY; // 高度是 scale 输出 和 band 底部的差值
-            barColor = colors.other.secondary || "#FF0000"; // 负值颜色
+            barHeight = scaledY - barY; 
+            barColor = colors.other.secondary || "#FF0000"; // *** 恢复: 负值颜色 ***
         } else {
-            barHeight = 0; // 如果值为0，则不绘制条形
-            barY = centralBandTopY;
-            barColor = "none";
+            barHeight = 0; 
+            barY = centralBandTopY; 
+            barColor = "none"; // *** 恢复: 零值颜色 ***
         }
 
-        // Ensure minimum height for tiny bars if needed, e.g., barHeight = Math.max(barHeight, 0.5);
-        if (barHeight < 0) barHeight = 0; // Prevent negative height due to floating point issues
+        if (barHeight < 0) barHeight = 0; 
 
         if (barHeight > 0) { // 只有高度大于0才绘制
-            g.append("rect")
-                .attr("x", x)
-                // .attr("y", barY) // y and height set below
-                .attr("width", barWidth)
-                // .attr("height", barHeight)
-                .attr("fill", barColor)
-                // *** 修改: Apply y and height correctly ***
-                .attr("y", barY)
-                .attr("height", barHeight);
+            // *** 修改: 使用 path 绘制带半圆顶底的条形 ***
+            const r = barWidth / 2; // 半圆半径
+            let pathData;
+
+            if (yValue > 0) {
+                // 正值条形路径
+                pathData = `
+                    M ${x},${centralBandTopY} 
+                    A ${r},${r} 0 0 0 ${x + barWidth},${centralBandTopY} 
+                    L ${x + barWidth},${barY} 
+                    A ${r},${r} 0 0 0 ${x},${barY} 
+                    Z
+                `;
+            } else { // yValue < 0
+                // 负值条形路径
+                const scaledY = yScaleNegative(Math.abs(yValue)); // 底部Y坐标
+                pathData = `
+                    M ${x},${barY} 
+                    A ${r},${r} 0 0 1 ${x + barWidth},${barY} 
+                    L ${x + barWidth},${scaledY} 
+                    A ${r},${r} 0 0 1 ${x},${scaledY} 
+                    Z
+                `;
+            }
+
+            g.append("path") 
+                .attr("d", pathData) 
+                // *** 修改: 根据正负值应用不同的渐变填充 ***
+                .attr("fill", yValue >= 0 ? "url(#gradient-positive)" : "url(#gradient-negative)"); 
+                // .attr("fill", barColor); // 旧的纯色填充
 
             // 9.2 添加条形图数值标签 (y值)
             const labelText = (yValue > 0 ? "+" : "") + yValue.toFixed(1) + valueUnit;
-            const labelY = (yValue >= 0) ? barY - 5 : barY + barHeight + (finalBarFontSize * 0.8); // 调整下方标签距离
+            const labelY = (yValue >= 0) ? barY + 3 : barY + barHeight + (finalBarFontSize * 0.8); 
             const textAnchor = "middle";
 
             g.append("text")
@@ -450,78 +501,67 @@ function makeChart(containerSelector, data) {
                 .attr("y", labelY)
                 .attr("text-anchor", textAnchor)
                 .style("font-family", typography.annotation.font_family)
-                // *** 修改: 应用计算后的字体大小 ***
                 .style("font-size", `${finalBarFontSize}px`)
                 .style("font-weight", typography.annotation.font_weight)
-                .style("fill", colors.text_color || "#000000")
+                .style("fill", "#ffffff")
                 .text(labelText);
+                
+            // 9.3 绘制形状 (y2值) - 方形
+            const squareSideLength = sideLengthScale(d[valueField2]);
+            // *** 恢复: 使用 available_colors[0] 作为形状颜色 ***
+            const shapeColor = colors.available_colors[0] || "#FFBF00"; 
+
+            g.append("rect") 
+                .attr("x", centerX - squareSideLength / 2) 
+                .attr("y", shapeY - squareSideLength / 2) 
+                .attr("width", squareSideLength) 
+                .attr("height", squareSideLength) 
+                .attr("fill", shapeColor) // *** 恢复: 使用 shapeColor ***
+                .attr("opacity", 0.8);
+
+            // 9.4 添加形状数值标签 (y2值) - 基于方形调整
+            const shapeLabelText = d[valueField2].toLocaleString() + valueUnit2; // *** 重命名 ***
+            const textWidth = getTextWidth(shapeLabelText, finalCircleFontSize, typography.label.font_weight, typography.label.font_family);
+            // *** 修改: 判断条件基于方形边长 ***
+            const isShapeBigEnough = textWidth < (squareSideLength * 0.9); // 例如，宽度小于边长的90%
+            let labelColor, labelActualY, labelDy;
+            
+            // *** 修改: 判断条件使用 squareSideLength ***
+            if (isShapeBigEnough && squareSideLength > minFontSize * 1.2) { // 边长至少比最小字体大一点
+                labelColor = "#ffffff"; 
+                labelActualY = shapeY; // *** 内部标签使用 shapeY ***
+                labelDy = "0.35em"; // 垂直居中
+            } else {
+                labelColor = colors.text_color || "#000000";
+                // *** 修改: 外部标签基于 shapeY 和方形边长定位 ***
+                labelActualY = shapeY + squareSideLength / 2 + (finalCircleFontSize * 0.6) + 6; // 方形底部再往下一点
+                labelDy = "0em"; 
+            }
+
+            g.append("text")
+                .attr("x", centerX)
+                .attr("y", labelActualY) 
+                .attr("dy", labelDy) 
+                .attr("text-anchor", "middle")
+                .style("font-family", typography.label.font_family)
+                // *** 注意: 这里仍然使用 finalCircleFontSize，如果需要可以区分 ***
+                .style("font-size", `${finalCircleFontSize}px`) 
+                .style("font-weight", typography.label.font_weight)
+                .style("fill", labelColor)
+                .text(shapeLabelText); // *** 使用重命名后的变量 ***
+
+            // 9.5 添加维度标签 (x值)
+            g.append("text")
+                .attr("x", centerX)
+                .attr("y", dimensionLabelY)
+                .attr("text-anchor", "middle")
+                .style("font-family", typography.label.font_family)
+                .style("font-size", `${finalDimensionFontSize}px`) 
+                .style("font-weight", typography.label.font_weight)
+                .style("fill", colors.text_color || "#000000")
+                .call(wrapText, d[dimensionField], maxDimensionLabelWidth, centerX, dimensionLabelY, finalDimensionFontSize, typography.label.font_weight, typography.label.font_family);
+            
         }
-
-
-        // *** 修改: 将圆圈和标签移到灰色区域下半部分 ***
-        // 9.3 绘制圆圈 (y2值)
-        const circleRadius = radiusScale(d[valueField2]);
-        // *** 修改: 使用计算好的 circleY ***
-        // const circleY = centralBandTopY + centralBandHeight * 0.70; // 旧方式
-        // *** 修改: 圆圈颜色统一使用 available_colors[0] ***
-        const circleColor = colors.available_colors[0] || "#FFBF00"; // Use first color consistently
-
-        g.append("circle")
-            .attr("cx", centerX)
-            .attr("cy", circleY)
-            .attr("r", circleRadius)
-            .attr("fill", circleColor)
-            .attr("opacity", 0.8);
-
-        // 9.4 添加圆圈数值标签 (y2值) - 放置在圆心
-        const circleLabelText = d[valueField2].toLocaleString() + valueUnit2; // *** 修改: 单位放在后面 ***
-        // *** 修改: Y坐标就是 circleY ***
-        // const circleLabelY = circleY + labelMargin + 15; // 旧方式
-
-        g.append("text")
-            .attr("x", centerX)
-            .attr("y", circleY) // 文本垂直居中于圆心
-            .attr("dy", "0.35em") // 微调使文本基线居中
-            .attr("text-anchor", "middle")
-            .style("font-family", typography.label.font_family)
-            // *** 修改: 应用计算后的字体大小 ***
-            .style("font-size", `${finalCircleFontSize}px`)
-            .style("font-weight", typography.label.font_weight)
-            .style("fill", colors.text_color || "#000000")
-            .text(circleLabelText);
-
-
-        // *** 修改: 将维度图标和标签移到灰色区域上半部分 ***
-        // 9.5 添加维度图标和标签 (x值)
-        // *** 修改: 使用计算好的 iconY 和 dimensionLabelY ***
-        // const labelBaseY = centralBandTopY + centralBandHeight * 0.25; // 旧方式
-
-        // 添加图标 (如果存在)
-        if (images.field && images.field[d[dimensionField]]) {
-            g.append("image")
-                .attr("x", centerX - iconSize / 2)
-                .attr("y", iconY - iconSize / 2) // 图标中心对准 iconY
-                .attr("width", iconSize)
-                .attr("height", iconSize)
-                .attr("xlink:href", images.field[d[dimensionField]])
-                .attr("preserveAspectRatio","xMidYMid meet");
-        }
-
-        // 添加维度标签文字
-        // const dimensionLabelY = labelBaseY + iconSize + iconMargin; // 旧方式
-        g.append("text")
-            .attr("x", centerX)
-            .attr("y", dimensionLabelY)
-            .attr("text-anchor", "middle")
-            .style("font-family", typography.label.font_family)
-            .style("font-size", `${finalDimensionFontSize}px`) // Apply final size first
-            .style("font-weight", typography.label.font_weight)
-            .style("fill", colors.text_color || "#000000")
-             // *** 修改: 调用 wrapText 处理文本内容和换行 ***
-            .call(wrapText, d[dimensionField], maxDimensionLabelWidth, centerX, dimensionLabelY, finalDimensionFontSize, typography.label.font_weight, typography.label.font_family); // Pass font props
-            // .text(d[dimensionField]); // Text set by wrapText
-
-
     }); 
 
     // ---------- 10. 返回SVG节点 ----------
