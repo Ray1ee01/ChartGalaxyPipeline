@@ -1,8 +1,8 @@
 /*
 REQUIREMENTS_BEGIN
 {
-    "chart_type": "Bullet Chart",
-    "chart_name": "bullet_chart_01",
+    "chart_type": "Horizontal Bullet Chart",
+    "chart_name": "horizontal_bullet_chart_01",
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],
     "required_fields_range": [[3, 20], [0, 100]],
@@ -98,7 +98,8 @@ function makeChart(containerSelector, data) {
         .call(xAxis)
         .selectAll("text")
         .style("font-family", typography?.fontFamily || "Arial")
-        .style("font-size", typography?.fontSize || "12px");
+        .style("font-size", typography?.fontSize || "12px")
+        .style("fill", colors.text_color || "#000000");
     
     // 绘制y轴
     const yAxis = d3.axisLeft(y);
@@ -107,7 +108,8 @@ function makeChart(containerSelector, data) {
         .call(yAxis)
         .selectAll("text")
         .style("font-family", typography?.fontFamily || "Arial")
-        .style("font-size", typography?.fontSize || "12px");
+        .style("font-size", typography?.fontSize || "12px")
+        .style("fill", colors.text_color || "#000000");
     
     // 为每个类别创建一个组
     const bulletGroups = g.selectAll(".bullet")
@@ -123,14 +125,12 @@ function makeChart(containerSelector, data) {
         .enter()
         .append("rect")
         .attr("class", "range")
-        .attr("width", d => x(d.range))
+        .attr("width", innerWidth)
         .attr("height", bulletHeight)
         .attr("x", 0)
-        .attr("fill", (d, i) => {
-            // 使用提供的颜色或默认灰度渐变
-            const rangeColors = colors.ranges || ["#e0e0e0", "#bdbdbd", "#9e9e9e"];
-            return rangeColors[i % rangeColors.length];
-        });
+        .attr("fill", "none")
+        .attr("stroke", "#aaaaaa")
+        .attr("stroke-width", 0.5);
     
     // 绘制实际值条
     bulletGroups.append("rect")
@@ -139,7 +139,7 @@ function makeChart(containerSelector, data) {
         .attr("height", bulletHeight / 3)
         .attr("x", 0)
         .attr("y", bulletHeight / 3)
-        .attr("fill", colors.actual || "#2196F3");
+        .attr("fill", colors.other.primary || "#2196F3");
     
     // 绘制目标线
     bulletGroups.append("line")
@@ -148,63 +148,9 @@ function makeChart(containerSelector, data) {
         .attr("x2", d => x(d.target))
         .attr("y1", 0)
         .attr("y2", bulletHeight)
-        .attr("stroke", colors.target || "#F44336")
+        .attr("stroke", "#F44336")
         .attr("stroke-width", 2);
-    
-    // 添加标题
-    svg.append("text")
-        .attr("class", "chart-title")
-        .attr("x", width / 2)
-        .attr("y", margin.top / 2)
-        .attr("text-anchor", "middle")
-        .style("font-family", typography?.fontFamily || "Arial")
-        .style("font-size", typography?.titleSize || "18px")
-        .style("font-weight", "bold")
-        .text(chartName || "Bullet Chart");
-    
-    // 添加x轴标题
-    g.append("text")
-        .attr("class", "x-axis-title")
-        .attr("x", innerWidth / 2)
-        .attr("y", innerHeight + margin.bottom / 2)
-        .attr("text-anchor", "middle")
-        .style("font-family", typography?.fontFamily || "Arial")
-        .style("font-size", typography?.axisLabelSize || "14px")
-        .text(dataColumns[1]?.label || yField);
-    
-    // 添加图例
-    const legend = svg.append("g")
-        .attr("class", "legend")
-        .attr("transform", `translate(${width - margin.right - 150}, ${margin.top / 2 - 15})`);
-    
-    // 实际值图例
-    legend.append("rect")
-        .attr("width", 15)
-        .attr("height", 15)
-        .attr("fill", colors.actual || "#2196F3");
-    
-    legend.append("text")
-        .attr("x", 20)
-        .attr("y", 12.5)
-        .style("font-family", typography?.fontFamily || "Arial")
-        .style("font-size", typography?.legendSize || "12px")
-        .text("Actual");
-    
-    // 目标值图例
-    legend.append("line")
-        .attr("x1", 70)
-        .attr("x2", 85)
-        .attr("y1", 7.5)
-        .attr("y2", 7.5)
-        .attr("stroke", colors.target || "#F44336")
-        .attr("stroke-width", 2);
-    
-    legend.append("text")
-        .attr("x", 90)
-        .attr("y", 12.5)
-        .style("font-family", typography?.fontFamily || "Arial")
-        .style("font-size", typography?.legendSize || "12px")
-        .text("Target");
+
     
     return svg.node();
 }

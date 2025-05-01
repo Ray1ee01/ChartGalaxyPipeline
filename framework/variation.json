@@ -138,9 +138,9 @@
     "pie_chart_01_d3": 71
   },
   "radial bar chart": {
-    "total_count": 2072,
+    "total_count": 2150,
     "radial_bar_chart_02": 1179,
-    "radial_bar_chart_03": 893
+    "radial_bar_chart_03": 971
   },
   "line graph": {
     "total_count": 893,
@@ -405,5 +405,29 @@
   "vertical pictorial percentage bar chart": {
     "total_count": 97,
     "vertical_pictorial_percentage_bar_chart_01": 97
+  },
+  "bullet chart": {
+    "total_count": 52,
+    "bullet_chart_01": 52
+  },
+  "stacked circular bar chart": {
+    "total_count": 28,
+    "stacked_circular_bar_chart_01": 28
+  },
+  "stacked radial bar chart": {
+    "total_count": 6,
+    "stacked_radial_bar_chart_01": 6
+  },
+  "vertical bullet chart": {
+    "total_count": 12,
+    "vertical_bullet_chart_01": 12
+  },
+  "vertical lollipop chart": {
+    "total_count": 4,
+    "vertical_lollipop_chart_01": 4
+  },
+  "vertical range chart": {
+    "total_count": 14,
+    "vertical_range_chart_01": 14
   }
 }
