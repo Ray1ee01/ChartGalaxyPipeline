@@ -157,11 +157,11 @@ class QuestionAnswerGenerator:
             template_text = template_obj[template_id]
             
             ret = self.template_factory.process_template(template_id, template_text)
-            if len(ret) == 2:
-                question, answer = ret
-                image = None
-            else:
-                question, answer, image = ret
+            if ret[0] is None:
+                continue
+                
+            # 处理返回的4元组(问题, 答案, 混淆选项, 图像)
+            question, answer, confusion, image = ret
 
             if question and answer is not None:
                 str_answer = str(answer).strip()
@@ -195,6 +195,10 @@ class QuestionAnswerGenerator:
                     "category": template_obj.get("category", "unknown"),
                     "subcategory": template_obj.get("subcategory", "unknown")
                 }
+                
+                # 添加混淆选项到pair_data
+                if confusion:
+                    pair_data["confusion"] = confusion
 
                 if is_numeric:
                     try:

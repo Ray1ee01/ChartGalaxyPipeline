@@ -100,6 +100,9 @@ def process(data_path, output_path="./output.jsonl", template_path=None,
             category = pair.get("category", "data understanding")
             pair["question_type"] = pair.get("type", "unknown")
             pair.pop("template", None)
+            # 移除混淆项（confusion）相关的处理
+            if "confusion" in pair:
+                pair.pop("confusion", None)
 
             if category == "visual understanding":
                  visual_understanding_pairs.append(pair)
@@ -479,7 +482,11 @@ def process_folder(folder_path, output_path="./train.jsonl", template_path=None,
         num_threads: 并行处理的线程数量
     """
     
-    # 确保输出目录存在
+    if os.path.exists(output_path):
+        os.remove(output_path)
+    if os.path.exists(image_output_dir):
+        shutil.rmtree(image_output_dir)
+        
     os.makedirs(image_output_dir, exist_ok=True)
     
     # 获取folder_path下的所有子目录
@@ -1058,6 +1065,7 @@ def is_in_options_section(text, value, options_text):
             return True
     
     return False
+
 if __name__ == "__main__":
     import argparse
     
@@ -1079,7 +1087,8 @@ if __name__ == "__main__":
         )
     else:
         process_folder(
-            folder_path="/data/lizhen/resources/generated/0428_test",  # 测试数据目录
+            #folder_path="/data/lizhen/resources/generated/0428_test",  # 测试数据目录
+            folder_path="./small_test",
             output_path="./test.jsonl",
             template_path="./example.json",
             image_output_dir="./test_images", 

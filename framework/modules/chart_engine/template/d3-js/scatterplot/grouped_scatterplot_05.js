@@ -441,86 +441,136 @@ function makeChart(containerSelector, data) {
     // Helper function to find optimal label position
     function findOptimalPosition(d, allPoints, currentPositions = {}) {
         const positions = [
-            { x: 15, y: 4, anchor: "start", priority: 1 },         // right
-            { x: 0, y: -15, anchor: "middle", priority: 2 },       // top
-            { x: -15, y: 4, anchor: "end", priority: 3 },          // left
-            { x: 0, y: 20, anchor: "middle", priority: 4 },        // bottom
-            { x: 15, y: -15, anchor: "start", priority: 5 },       // top-right
-            { x: -15, y: -15, anchor: "end", priority: 6 },        // top-left
-            { x: -15, y: 20, anchor: "end", priority: 7 },         // bottom-left
-            { x: 15, y: 20, anchor: "start", priority: 8 }         // bottom-right
+            { x: 20, y: 4, anchor: "start", priority: 1 },         // right
+            { x: 0, y: -20, anchor: "middle", priority: 2 },       // top
+            { x: -20, y: 4, anchor: "end", priority: 3 },          // left
+            { x: 0, y: 28, anchor: "middle", priority: 4 },        // bottom
+            { x: 20, y: -20, anchor: "start", priority: 5 },       // top-right
+            { x: -20, y: -20, anchor: "end", priority: 6 },        // top-left
+            { x: -20, y: 28, anchor: "end", priority: 7 },         // bottom-left
+            { x: 20, y: 28, anchor: "start", priority: 8 }         // bottom-right
         ];
-        
+
         const pointX = xScale(d[yField]);
         const pointY = yScale(d[y2Field]);
-        const fontSize = 10;
-        const labelWidth = d[xField].length * fontSize * 0.6;
-        const labelHeight = fontSize * 1.2;
-        
+
         // 如果已经有位置分配，直接返回
         if (currentPositions[d[xField]]) {
             return currentPositions[d[xField]];
         }
-        
+
+        // 创建临时文本元素来测量实际文本大小
+        const tempText = g.append("text")
+            .style("font-family", typography.label.font_family)
+            .style("font-size", "10px")
+            .text(d[xField]);
+        const textBBox = tempText.node().getBBox();
+        tempText.remove();
+
+        const labelWidth = textBBox.width;
+        const labelHeight = textBBox.height;
+
         // 贪心算法：按优先级顺序尝试每个位置，选择第一个没有重叠的位置
         for (const pos of positions) {
             let hasOverlap = false;
-            
+
             // 计算标签边界
-            const labelBounds = calculateLabelBounds(pointX, pointY, pos, labelWidth, labelHeight);
-            const labelX1 = labelBounds.x1;
-            const labelY1 = labelBounds.y1;
-            const labelX2 = labelBounds.x2;
-            const labelY2 = labelBounds.y2;
-            
+            let labelX1, labelY1, labelX2, labelY2;
+
+            if (pos.priority === 1) { // right
+                labelX1 = pointX + 20;
+                labelY1 = pointY - labelHeight / 2;
+            } else if (pos.priority === 2) { // top
+                labelX1 = pointX - labelWidth / 2;
+                labelY1 = pointY - 20 - labelHeight;
+            } else if (pos.priority === 3) { // left
+                labelX1 = pointX - 20 - labelWidth;
+                labelY1 = pointY - labelHeight / 2;
+            } else if (pos.priority === 4) { // bottom
+                labelX1 = pointX - labelWidth / 2;
+                labelY1 = pointY + 20;
+            } else if (pos.priority === 5) { // top-right
+                labelX1 = pointX + 15;
+                labelY1 = pointY - 15 - labelHeight;
+            } else if (pos.priority === 6) { // top-left
+                labelX1 = pointX - 15 - labelWidth;
+                labelY1 = pointY - 15 - labelHeight;
+            } else if (pos.priority === 7) { // bottom-left
+                labelX1 = pointX - 15 - labelWidth;
+                labelY1 = pointY + 15;
+            } else { // bottom-right
+                labelX1 = pointX + 15;
+                labelY1 = pointY + 15;
+            }
+
+            labelX2 = labelX1 + labelWidth;
+            labelY2 = labelY1 + labelHeight;
+
             // 检查边界约束
             if (labelX1 < 0 || labelX2 > chartWidth || labelY1 < 0 || labelY2 > chartHeight) {
-                hasOverlap = true;
                 continue;
             }
-            
+
             // 检查与其他点及其标签的重叠
             for (const p of allPoints) {
-                if (p === d) continue; // 跳过自身
-                
+                if (p === d) continue;
+
                 const pX = xScale(p[yField]);
                 const pY = yScale(p[y2Field]);
-                
-                // 检查这个点是否已经分配了位置
+
+                // 检查与点的重叠
+                const pointRadius = circleRadius;
+                const dx = labelX1 + labelWidth/2 - pX;
+                const dy = labelY1 + labelHeight/2 - pY;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                    
+                if (distance < pointRadius + Math.sqrt(labelWidth * labelWidth + labelHeight * labelHeight) / 2) {
+                    hasOverlap = true;
+                    break;
+                }
+
+                // 检查与其他标签的重叠
                 const pPos = currentPositions[p[xField]];
                 if (pPos) {
-                    // 根据分配的位置计算其他标签的边界
-                    const otherLabelWidth = p[xField].length * fontSize * 0.6;
-                    const otherLabelHeight = fontSize * 1.2;
-                    
-                    const otherBounds = calculateLabelBounds(pX, pY, pPos, otherLabelWidth, otherLabelHeight);
-                    
-                    // 检查标签是否重叠
-                    if (labelX1 < otherBounds.x2 && labelX2 > otherBounds.x1 && 
-                        labelY1 < otherBounds.y2 && labelY2 > otherBounds.y1) {
-                        hasOverlap = true;
-                        break;
+                    const tempText = g.append("text")
+                        .style("font-family", typography.label.font_family)
+                        .style("font-size", "10px")
+                        .text(p[xField]);
+                    const otherBBox = tempText.node().getBBox();
+                    tempText.remove();
+
+                    let otherX1, otherY1;
+                    if (pPos.anchor === "start") {
+                        otherX1 = pX + pPos.x;
+                        otherY1 = pY + pPos.y - otherBBox.height/2;
+                    } else if (pPos.anchor === "middle") {
+                        otherX1 = pX + pPos.x - otherBBox.width/2;
+                        otherY1 = pY + pPos.y;
+                    } else {
+                        otherX1 = pX + pPos.x - otherBBox.width;
+                        otherY1 = pY + pPos.y - otherBBox.height/2;
                     }
-                } else {
-                    // 如果尚未分配位置，使用点重叠检测
-                    const pointRadius = 20;
-                    if (pX + pointRadius > labelX1 && pX - pointRadius < labelX2 && 
-                        pY + pointRadius > labelY1 && pY - pointRadius < labelY2) {
+
+                    if (labelX1 < otherX1 + otherBBox.width && labelX2 > otherX1 &&
+                        labelY1 < otherY1 + otherBBox.height && labelY2 > otherY1) {
                         hasOverlap = true;
                         break;
                     }
                 }
             }
-            
-            // 如果没有重叠，返回这个位置
+
             if (!hasOverlap) {
-                return pos;
+                return { ...pos, canShow: true };
             }
         }
-        
-        // 如果所有位置都有重叠，返回优先级最高的位置
-        return positions[0];
+
+        // 如果所有位置都有重叠，返回优先级最高的位置，但标记为不显示
+        return { ...positions[0], canShow: false };
     }
+    
+    // Determine circle size based on number of data points
+    const numPoints = chartData.length;
+    const circleRadius = numPoints <= 15 ? 15 : Math.max(10, 15 - (numPoints - 15) / 20);
     
     // 添加数据点
     const points = g.selectAll(".data-point")
@@ -530,167 +580,38 @@ function makeChart(containerSelector, data) {
         .attr("class", "data-point")
         .attr("transform", d => `translate(${xScale(d[yField])}, ${yScale(d[y2Field])})`);
     
-    // 创建阴影滤镜效果 - 增强阴影效果
-    if (hasShadow) {
-        // 添加通用阴影滤镜
-        const filter = defs.append("filter")
-            .attr("id", "shadow-effect")
-            .attr("x", "-50%")
-            .attr("y", "-50%")
-            .attr("width", "200%")
-            .attr("height", "200%");
-            
-        filter.append("feGaussianBlur")
-            .attr("in", "SourceAlpha")
-            .attr("stdDeviation", "3")
-            .attr("result", "blur");
-            
-        filter.append("feOffset")
-            .attr("in", "blur")
-            .attr("dx", "2")
-            .attr("dy", "2")
-            .attr("result", "offsetBlur");
-            
-        const feMerge = filter.append("feMerge");
-        feMerge.append("feMergeNode")
-            .attr("in", "offsetBlur");
-        feMerge.append("feMergeNode")
-            .attr("in", "SourceGraphic");
+    // Add white circular background
+    points.append("circle")
+        .attr("r", circleRadius)
+        .attr("fill", d => colors.field[d[groupField]])
+        .attr("stroke", d => colors.field[d[groupField]])
+        .attr("stroke-width", 8);
         
-        // 为每个分组创建单独的颜色滤镜
-        groups.forEach((group, i) => {
-            const colorFilter = defs.append("filter")
-                .attr("id", `shadow-${i}`)
-                .attr("x", "-50%")
-                .attr("y", "-50%")
-                .attr("width", "200%")
-                .attr("height", "200%");
-                
-            colorFilter.append("feDropShadow")
-                .attr("dx", "3")
-                .attr("dy", "3")
-                .attr("stdDeviation", "4")
-                .attr("flood-opacity", "0.3")
-                .attr("flood-color", colors.field[group]);
-        });
-    }
-    
-    // 添加图标标记，当图标不存在时回退到彩色圆形
-    points.append("g")
-        .attr("class", "mark-group")
-        .each(function(d) {
-            const group = d3.select(this);
-            const groupValue = d[groupField];
-            const groupIndex = groups.indexOf(groupValue);
-            
-            // 检查是否有该分组的图标
-            if (images.field && images.field[groupValue]) {
-                // 使用use元素引用已定义的图标，避免重复
-                const iconExists = defs.select(`#icon-${groupIndex}`).size() > 0;
-                
-                if (iconExists) {
-                    // 使用use引用已定义的图标
-                    group.append("use")
-                        .attr("xlink:href", `#icon-${groupIndex}`)
-                        .attr("opacity", 0.9)
-                        .on("error", function() {
-                            // 图标加载失败时替换为彩色圆形
-                            d3.select(this).remove();
-                            group.append("circle")
-                                .attr("r", squareSize/2)
-                                .attr("fill", colors.field[groupValue])
-                                .style("opacity", 0.8);
-                        });
-                } else {
-                    // 回退到圆形
-                    group.append("circle")
-                        .attr("r", squareSize/2)
-                        .attr("fill", colors.field[groupValue])
-                        .style("opacity", 0.8);
-                }
-            } else {
-                // 没有图标时使用彩色圆形
-                group.append("circle")
-                    .attr("r", squareSize/2)
-                    .attr("fill", colors.field[groupValue])
-                    .style("opacity", 0.8);
-            }
-            
-            // 应用阴影效果
-            if (hasShadow) {
-                group.attr("filter", `url(#shadow-${groupIndex})`);
-            }
-        });
-    
-    // Iteratively optimize label positions to minimize overlaps
-    let currentPositions = {};
-    let totalOverlaps = Infinity;
-    let iterations = 0;
-    const MAX_ITERATIONS = 3;  // Limit iterations to prevent infinite loops
-    
-    while (iterations < MAX_ITERATIONS) {
-        let newPositions = {};
-        let newTotalOverlaps = 0;
+    // Add icon images
+    points.append("image")
+        .attr("xlink:href", d => images.field[d[groupField]])
+        .attr("width", circleRadius * 2)
+        .attr("height", circleRadius * 2)
+        .attr("x", -circleRadius)
+        .attr("y", -circleRadius);
         
-        // Assign positions for all points
-        chartData.forEach(d => {
-            const bestPosition = findOptimalPosition(d, chartData, currentPositions);
-            newPositions[d[xField]] = bestPosition;
-            newTotalOverlaps += bestPosition.overlaps;
-        });
-        
-        // If no improvement or no overlaps, stop iterating
-        if (newTotalOverlaps >= totalOverlaps || newTotalOverlaps === 0) {
-            break;
-        }
-        
-        // Update positions for next iteration
-        currentPositions = newPositions;
-        totalOverlaps = newTotalOverlaps;
-        iterations++;
-    }
-    
-    // Check for label overlaps and only display non-overlapping labels
-    const labelPositions = [];
-    
-    // Add labels with optimized positions
-    points.each(function(d) {
-        const bestPosition = currentPositions[d[xField]] || findOptimalPosition(d, chartData);
-        const pointX = xScale(d[yField]);
-        const pointY = yScale(d[y2Field]);
-        
-        const labelWidth = d[xField].length * 8;
-        const labelHeight = 16;
-        const fontSize = 10;
-        
-        const labelBounds = calculateLabelBounds(pointX, pointY, bestPosition, labelWidth, labelHeight);
-        
-        // Check if this label overlaps with any previously placed label
-        let hasOverlap = false;
-        for (const pos of labelPositions) {
-            if (labelBounds.x1 < pos.x2 && labelBounds.x2 > pos.x1 && 
-                labelBounds.y1 < pos.y2 && labelBounds.y2 > pos.y1) {
-                hasOverlap = true;
-                break;
-            }
-        }
-        
-        // Only add the label if it doesn't overlap
-        if (!hasOverlap) {
-            d3.select(this).append("text")
-                .attr("class", "data-label")
-                .attr("x", bestPosition.x)
-                .attr("y", bestPosition.y)
-                .attr("text-anchor", bestPosition.anchor)
-                .style("font-family", typography.label.font_family)
-                .style("font-size", fontSize)
-                .style("font-weight", typography.label.font_weight)
-                .text(d[xField]);
-            
-            // Add this label's position to the array
-            labelPositions.push(labelBounds);
-        }
+    // Calculate optimal positions for all labels
+    let labelPositions = {};
+    chartData.forEach(d => {
+        labelPositions[d[xField]] = findOptimalPosition(d, chartData, labelPositions);
     });
+    
+    // Add labels with optimized positions, only showing non-overlapping ones
+    points.append("text")
+        .attr("class", "data-label")
+        .attr("x", d => labelPositions[d[xField]].x)
+        .attr("y", d => labelPositions[d[xField]].y)
+        .attr("text-anchor", d => labelPositions[d[xField]].anchor)
+        .style("font-family", typography.label.font_family)
+        .style("font-size", 10)
+        .style("font-weight", typography.label.font_weight)
+        .style("opacity", d => labelPositions[d[xField]].canShow ? 1 : 0)
+        .text(d => d[xField]);
     
     // Add interactivity
     points

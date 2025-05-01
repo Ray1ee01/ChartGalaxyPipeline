@@ -337,23 +337,12 @@ def select_template(compatible_templates: List[str]) -> Tuple[str, str, str]:
     template_counts.sort(key=lambda x: x[1])
     n = len(template_counts)
     level_size = max(1, n // 4)
+    # 找出使用次数最少的模板
+    min_count = min(c for _, c in template_counts)
+    min_level_templates = [(t, c) for t, c in template_counts if c == min_count]
     
-    # 找出最低level的模板
-    min_level_templates = template_counts[:level_size]
-    min_count = min(c for _, c in min_level_templates)
-    min_level_templates = [(t, c) for t, c in min_level_templates if c == min_count]
-    
-    # 计算权重并选择
-    weights = []
-    for _, count in min_level_templates:
-        weight = 1.0 / (count + 1)
-        weights.append(weight)
-        
-    selected_index = random.choices(
-        range(len(min_level_templates)),
-        weights=weights,
-        k=1
-    )[0]
+    # 固定选择第一个最少使用的模板
+    selected_index = 0
     
     selected_template, _ = min_level_templates[selected_index]
     [template_key, ordered_fields] = selected_template

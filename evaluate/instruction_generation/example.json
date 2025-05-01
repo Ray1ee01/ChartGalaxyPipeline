@@ -258,7 +258,7 @@
         "subcategory": "style detection"
     },
     {
-        "template_44": "How many icons or decorative images are present in this chart?",
+        "template_44": "How many icons or images are present in this chart?",
         "type": "counting",
         "category": "visual understanding",
         "subcategory": "visual elements retrieval"
@@ -288,33 +288,9 @@
         "subcategory": "visual elements retrieval"
     },
     {
-        "template_49": "Does this chart have a visible x-axis structure with labels or title? Select one: [yes, no]\n\nOptions explained:\n- yes: The chart has a visible horizontal axis with lines, ticks, labels, or axis title (even if simplified)\n- no: The chart has no visible horizontal axis structure (no axis lines, ticks, or labels)",
-        "type": "visual analysis",
-        "category": "visual understanding",
-        "subcategory": "visual elements retrieval"
-    },
-    {
-        "template_50": "Does this chart have a visible y-axis structure with labels or title? Select one: [yes, no]\n\nOptions explained:\n- yes: The chart has a visible vertical axis with lines, ticks, labels, or axis title (even if simplified)\n- no: The chart has no visible vertical axis structure (no axis lines, ticks, or labels)",
-        "type": "visual analysis",
-        "category": "visual understanding",
-        "subcategory": "visual elements retrieval"
-    },
-    {
-        "template_51": "How are small icons used with data marks in the visualization? Select one: [overlay, replace, side, none]\n\nOptions explained:\n- overlay: Icons are placed directly on top of or inside data marks (e.g., icons at the top of bars or inside bubbles in scatter plots)\n- replace: Icons completely replace traditional data marks (e.g., using person icons instead of bars in a bar chart)\n- side: Icons are placed next to data marks as supplements or annotations (e.g., small icons beside bars)\n- none: No icons are used with data marks",
-        "type": "visual analysis",
-        "category": "visual understanding",
-        "subcategory": "visual elements retrieval"
-    },
-    {
-        "template_52": "How are icons integrated with axis labels? Select one: [side, replace, none]\n\nOptions explained:\n- side: Icons are placed next to axis label text (e.g., country flags next to country names)\n- replace: Icons completely replace text labels (e.g., using product icons instead of product names)\n- none: Axis labels do not contain any icons, using only text or no labels at all",
-        "type": "visual analysis",
-        "category": "visual understanding",
-        "subcategory": "visual elements retrieval"
-    },
-    {
         "template_53": "What is the <Y label> for <ithx tick>?",
         "type": "identification",
-        "category": "visual understanding",
+        "category": "composite understanding",
         "subcategory": "data identification"
     },
     {
