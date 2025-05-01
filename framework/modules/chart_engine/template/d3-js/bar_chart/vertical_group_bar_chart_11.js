@@ -2,7 +2,7 @@
 REQUIREMENTS_BEGIN
 {
     "chart_type": "Vertical Group Bar Chart",
-    "chart_name": "vertical_group_bar_chart_9",
+    "chart_name": "vertical_group_bar_chart_11",
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
     "required_fields_range": [[3, 6], [0, 100], [3, 4]],
@@ -126,7 +126,7 @@ function makeChart(containerSelector, data) {
     const xScale = d3.scaleBand()
         .domain(processedData.map(d => d.category))
         .range([0, chartWidth])
-        .padding(0.4);
+        .padding(0.2);
 
     // 分组比例尺
     const groupScale = d3.scaleBand()
@@ -186,6 +186,7 @@ function makeChart(containerSelector, data) {
         .selectAll("text")
         .style("font-family", typography.label.font_family)
         .style("font-size", typography.label.font_size)
+        .attr("dy", 30)
         .style("text-anchor", minXLabelRatio < 1.0 ? "end" : "middle")
         .attr("transform", minXLabelRatio < 1.0 ? "rotate(-45)" : "rotate(0)")
         .style("fill", colors.text_color);
@@ -218,9 +219,48 @@ function makeChart(containerSelector, data) {
             .attr("class", "bar")
             .attr("x", d => groupScale(group))
             .attr("y", d => yScale(d.groups[group] || 0))
-            .attr("width", groupScale.bandwidth()*1.5)
+            .attr("width", groupScale.bandwidth()*0.9)
             .attr("height", d => chartHeight - yScale(d.groups[group] || 0))
             .attr("fill", colors.field[group]);
+
+        // 为每个柱子添加椭圆形装饰
+        barGroups.append("ellipse")
+            .attr("class", "bar-top-ellipse")
+            .attr("cx", d => groupScale(group) + groupScale.bandwidth()*0.9/2)
+            .attr("cy", d => yScale(d.groups[group] || 0))
+            .attr("rx", groupScale.bandwidth()*0.9/2)  // 与柱子同宽
+            .attr("ry", 4)
+            .attr("fill", "#d28686")
+            .attr("stroke", "none");
+
+        // 添加底部的两个小三角形
+        const triangleSize = groupScale.bandwidth() * 0.9; // 三角形大小
+        
+        // 大三角形
+        barGroups.append("path")
+            .attr("class", "bar-bottom-triangle-left")
+            .attr("d", d => {
+                const x = groupScale(group);
+                const y = chartHeight;
+                return `M ${x} ${y} 
+                        L ${x + triangleSize} ${y} 
+                        L ${x + triangleSize/2} ${y + triangleSize} Z`;
+            })
+            .attr("fill", "#d28686");
+
+        const ratio = 0.4
+        // 小三角形
+        barGroups.append("path")
+            .attr("class", "bar-bottom-triangle-right")
+            .attr("d", d => {
+                const x = groupScale(group) + groupScale.bandwidth()*0.9*(1-ratio)/2;
+                const y = chartHeight+(1-ratio)*triangleSize;
+                return `M ${x} ${y} 
+                        L ${x + triangleSize*ratio} ${y} 
+                        L ${x + triangleSize*ratio/2} ${y + triangleSize*ratio} Z`;
+            })
+            .attr("fill", "#000000");
+        
     });
     // 添加图例 - 放在图表上方
     const legendGroup = svg.append("g")

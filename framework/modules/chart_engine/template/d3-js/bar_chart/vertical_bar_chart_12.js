@@ -1,14 +1,14 @@
 /*
 REQUIREMENTS_BEGIN
 {
-    "chart_type": "Vertical Group Bar Chart",
-    "chart_name": "vertical_group_bar_chart_9",
-    "required_fields": ["x", "y", "group"],
-    "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
-    "required_fields_range": [[3, 6], [0, 100], [3, 4]],
+    "chart_type": "Vertical Bar Chart",
+    "chart_name": "vertical_bar_chart_12",
+    "required_fields": ["x", "y"],
+    "required_fields_type": [["categorical"], ["numerical"]],
+    "required_fields_range": [[3, 20], [0, 100]],
     "required_fields_icons": [],
     "required_other_icons": [],
-    "required_fields_colors": ["group"],
+    "required_fields_colors": [],
     "required_other_colors": ["primary", "secondary", "background"],
     "supported_effects": ["gradient", "opacity"],
     "min_height": 600,
@@ -76,7 +76,6 @@ function makeChart(containerSelector, data) {
     // 根据数据列获取字段名
     const xField = dataColumns.find(col => col.role === "x")?.name || "period";
     const yField = dataColumns.find(col => col.role === "y")?.name || "value";
-    const groupField = dataColumns.find(col => col.role === "group")?.name || "group";
     
     // 获取字段单位（如果存在）
     let xUnit = "";
@@ -91,72 +90,52 @@ function makeChart(containerSelector, data) {
         yUnit = dataColumns.find(col => col.role === "y").unit;
     }
 
-    if (dataColumns.find(col => col.role === "group")?.unit !== "none") {
-        groupUnit = dataColumns.find(col => col.role === "group").unit;
-    }
     
     // ---------- 4. 数据处理 ----------
     
-    // 获取所有唯一的分组值
-    const groups = Array.from(new Set(chartData.map(d => d[groupField])));
-    
-    // 处理数据，按照分组组织
-    const processedData = chartData.reduce((acc, d) => {
-        const category = d[xField];
-        const group = d[groupField];
-        const value = +d[yField];
-        
-        const existingCategory = acc.find(item => item.category === category);
-        if (existingCategory) {
-            existingCategory.groups[group] = value;
-        } else {
-            const newCategory = {
-                category: category,
-                groups: {}
-            };
-            newCategory.groups[group] = value;
-            acc.push(newCategory);
-        }
-        return acc;
-    }, []);
-
+    // 处理数据，确保数据格式正确
+    const processedData = chartData.map(d => ({
+        category: d[xField],
+        value: +d[yField] // 确保转换为数字
+    }));
     // ---------- 5. 创建比例尺 ----------
     
     // X轴比例尺 - 使用分类数据
     const xScale = d3.scaleBand()
         .domain(processedData.map(d => d.category))
         .range([0, chartWidth])
-        .padding(0.4);
-
-    // 分组比例尺
-    const groupScale = d3.scaleBand()
-        .domain(groups)
-        .range([0, xScale.bandwidth()])
-        .padding(0);
-
+        .padding(0.3);
+    
     // Y轴比例尺 - 使用数值
     const yScale = d3.scaleLinear()
-        .domain([0, d3.max(chartData, d => +d[yField])])
+        .domain([0, d3.max(processedData, d => d.value)])
         .range([chartHeight, 0])
         .nice();
 
-    // // 颜色比例尺
-    // const colorScale = d3.scaleOrdinal()
-    //     .domain(groups)
-    //     .range(d3.schemeCategory10);
+    // 颜色比例尺
+    const colorScale = (d, i) => {
+        console.log(i)
+        if (i === 0) {
+            // 第一个柱子使用更深的颜色
+            return d3.rgb(colors.other.primary).darker(0.7);
+        }
+        // 其他柱子使用primary颜色
+        return colors.other.primary;
+    };
+
 
     // 确定标签的最大长度：
-    let minXLabelRatio = 1.0;
-    const maxXLabelWidth = xScale.bandwidth() * 1.03;
+    let minXLabelRatio = 1.0
+    const maxXLabelWidth = xScale.bandwidth() * 1.03
 
     chartData.forEach(d => {
         // x label
-        const xLabelText = String(d[xField]);
-        let currentWidth = getTextWidth(xLabelText);
+        const xLabelText = String(d[xField])
+        let currentWidth = getTextWidth(xLabelText)
         if (currentWidth > maxXLabelWidth) {
-            minXLabelRatio = Math.min(minXLabelRatio, maxXLabelWidth / currentWidth);
+            minXLabelRatio = Math.min(minXLabelRatio, maxXLabelWidth / currentWidth)
         }
-    });
+    })
 
     // ---------- 6. 创建SVG容器 ----------
     
@@ -187,7 +166,7 @@ function makeChart(containerSelector, data) {
         .style("font-family", typography.label.font_family)
         .style("font-size", typography.label.font_size)
         .style("text-anchor", minXLabelRatio < 1.0 ? "end" : "middle")
-        .attr("transform", minXLabelRatio < 1.0 ? "rotate(-45)" : "rotate(0)")
+        .attr("transform", minXLabelRatio < 1.0 ? "rotate(-45)" : "rotate(0)") 
         .style("fill", colors.text_color);
     
     // 添加Y轴
@@ -200,46 +179,52 @@ function makeChart(containerSelector, data) {
     chartGroup.append("g")
         .attr("class", "y-axis")
         .call(yAxis)
+        .call(g => g.select(".domain").remove())  // 移除轴线
         .selectAll("text")
         .style("font-family", typography.label.font_family)
         .style("font-size", typography.label.font_size)
         .style("fill", colors.text_color);
     
-    // 修改条形图绘制部分
-    const barGroups = chartGroup.selectAll(".bar-group")
+    // 添加条形
+    const bars = chartGroup.selectAll(".bar")
         .data(processedData)
         .enter()
-        .append("g")
-        .attr("class", "bar-group")
-        .attr("transform", d => `translate(${xScale(d.category)},0)`);
-
-    groups.forEach(group => {
-        barGroups.append("rect")
-            .attr("class", "bar")
-            .attr("x", d => groupScale(group))
-            .attr("y", d => yScale(d.groups[group] || 0))
-            .attr("width", groupScale.bandwidth()*1.5)
-            .attr("height", d => chartHeight - yScale(d.groups[group] || 0))
-            .attr("fill", colors.field[group]);
-    });
-    // 添加图例 - 放在图表上方
-    const legendGroup = svg.append("g")
-        .attr("transform", `translate(0, -50)`);
+        .append("rect")
+        .attr("class", "bar")
+        .attr("x", d => xScale(d.category))
+        .attr("y", d => yScale(d.value))
+        .attr("width", xScale.bandwidth())
+        .attr("height", d => chartHeight - yScale(d.value))
+        .attr("fill", (d, i) => colorScale(d, i));
     
-    // 计算字段名宽度并添加间距
-    const titleWidth = groupField.length * 10;
-    const titleMargin = 15;
-
-
-    const legendSize = layoutLegend(legendGroup, groups, colors, {
-        x: titleWidth + titleMargin,
-        y: 0,
-        fontSize: 14,
-        fontWeight: "bold",
-        align: "left",
-        maxWidth: chartWidth - titleWidth - titleMargin,
-        shape: "rect",
-    });
+    // 添加椭圆形装饰
+    const ellipses = chartGroup.selectAll(".bar-top-ellipse")
+        .data(processedData)
+        .enter()
+        .append("ellipse")
+        .attr("class", "bar-top-ellipse")
+        .attr("cx", d => xScale(d.category) + xScale.bandwidth() / 2)
+        .attr("cy", d => yScale(d.value))
+        .attr("rx", xScale.bandwidth() / 2)  // 修改为柱子宽度的一半（因为rx是半径）
+        .attr("ry", 4)
+        .attr("fill", (d, i) => d3.rgb(colors.other.secondary).brighter(0.5))  // 使用secondary颜色并调亮
+        .attr("stroke", "none");
+    
+    // 添加数值标签
+    const labels = chartGroup.selectAll(".label")
+        .data(processedData)
+        .enter()
+        .append("text")
+        .attr("class", "label")
+        .attr("x", d => xScale(d.category) + xScale.bandwidth() / 2)
+        .attr("y", d => yScale(d.value) - 5)
+        .attr("text-anchor", "middle")
+        .style("font-family", typography.label.font_family)
+        .style("font-size", typography.label.font_size)
+        .style("fill", colors.text_color)
+        .text(d => d.value + (yUnit ? ` ${yUnit}` : ''))
+        .style("opacity", 1); // 直接设置为可见
+    
 
     return svg.node();
 }

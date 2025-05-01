@@ -2,7 +2,7 @@
 REQUIREMENTS_BEGIN
 {
     "chart_type": "Vertical Group Bar Chart",
-    "chart_name": "vertical_group_bar_chart_9",
+    "chart_name": "vertical_group_bar_chart_10",
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
     "required_fields_range": [[3, 6], [0, 100], [3, 4]],
@@ -221,6 +221,16 @@ function makeChart(containerSelector, data) {
             .attr("width", groupScale.bandwidth()*1.5)
             .attr("height", d => chartHeight - yScale(d.groups[group] || 0))
             .attr("fill", colors.field[group]);
+
+        // 为每个柱子添加椭圆形装饰
+        barGroups.append("ellipse")
+            .attr("class", "bar-top-ellipse")
+            .attr("cx", d => groupScale(group) + groupScale.bandwidth()*1.5/2)
+            .attr("cy", d => yScale(d.groups[group] || 0))
+            .attr("rx", groupScale.bandwidth()*1.5/2)  // 与柱子同宽
+            .attr("ry", 4)
+            .attr("fill", d3.rgb(colors.other.secondary).brighter(0.5))
+            .attr("stroke", "none");
     });
     // 添加图例 - 放在图表上方
     const legendGroup = svg.append("g")
