@@ -2,7 +2,7 @@
 REQUIREMENTS_BEGIN
 {
     "chart_type": "SemiCircle Donut Chart",
-    "chart_name": "semi_circle_donut_chart_03_d3",
+    "chart_name": "semicircle_donut_chart_03_d3",
     "is_composite": false,
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],
@@ -480,7 +480,7 @@ function makeChart(containerSelector, data) {
 
     // 添加图例 - 放在图表上方
     const legendGroup = svg.append("g")
-        .attr("transform", `translate(0, -50)`);
+        .attr("transform", `translate(0, 0)`);
     
     // 计算字段名宽度并添加间距
     const titleWidth = xField.length * 10;
@@ -494,7 +494,7 @@ function makeChart(containerSelector, data) {
         fontSize: 14,
         fontWeight: "bold",
         align: "left",
-        maxWidth: chartWidth - titleWidth - titleMargin,
+        maxWidth: chartWidth,
         shape: "rect",
     });
 
@@ -509,7 +509,7 @@ function makeChart(containerSelector, data) {
         .text(xField);
     
     // 将图例组向上移动 height/2, 并居中
-    legendGroup.attr("transform", `translate(${(chartWidth - legendSize.width - titleWidth - titleMargin) / 2}, ${-legendSize.height / 2 - 20})`);
+    legendGroup.attr("transform", `translate(${(chartWidth - legendSize.width - titleWidth - titleMargin) / 2}, ${-legendSize.height-20})`);
     
     return svg.node();
 }

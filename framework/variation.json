@@ -1,6 +1,6 @@
 {
   "vertical bar chart": {
-    "total_count": 13092,
+    "total_count": 13104,
     "vertical_bar_chart_07": 496,
     "vertical_bar_chart_05": 386,
     "vertical_bar_chart_03": 3073,
@@ -12,7 +12,8 @@
     "vertical_bar_chart_04": 893,
     "vertical_bar_chart_08": 320,
     "vertical_bar_chart_10": 893,
-    "vertical_bar_chart_11": 893
+    "vertical_bar_chart_11": 893,
+    "vertical_bar_chart_13": 12
   },
   "horizontal diverging bar chart": {
     "total_count": 3093,
@@ -437,5 +438,27 @@
   "group radial bar chart": {
     "total_count": 12,
     "group_radial_bar_chart_01": 12
+  },
+  "semicircle_donut_chart": {
+    "total_count": 162,
+    "semicircle_donut_chart_00": 58,
+    "semicircle_donut_chart_04_d3": 4,
+    "semicircle_donut_chart_05_d3": 62,
+    "semicircle_donut_chart_06_d3": 38
+  },
+  "semicircle donut chart": {
+    "total_count": 52,
+    "semicircle_donut_chart_03_d3": 22,
+    "semicircle_donut_chart_04_d3": 14,
+    "semicircle_donut_chart_06_d3": 16
+  },
+  "semicircle_pie_chart": {
+    "total_count": 4,
+    "semicircle_pie_chart_00": 4
+  },
+  "semicircle pie chart": {
+    "total_count": 22,
+    "semicircle_pie_chart_01_d3": 10,
+    "semicircle_pie_chart_03_d3": 12
   }
 }
