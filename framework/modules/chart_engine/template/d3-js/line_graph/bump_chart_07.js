@@ -10,7 +10,7 @@ REQUIREMENTS_BEGIN
     "required_fields_range": [
         [2, 30],
         [0, "inf"],
-        [3, 10],
+        [3, 10]
     ],
     "required_fields_icons": [],
     "required_other_icons": [],

@@ -224,6 +224,7 @@ def check_template_compatibility(data: Dict, templates: Dict, specific_chart_nam
                                 continue
 
                             flag = True
+                            print("check compatibility")
                             for i, range in enumerate(ordered_ranges):
                                 if i >= len(data["data"]["columns"]):
                                     flag = False

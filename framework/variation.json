@@ -481,8 +481,11 @@
     "horizontal_bullet_chart_01": 145
   },
   "bump chart": {
-    "total_count": 22,
+    "total_count": 36,
     "bump_chart_02": 18,
-    "bump_chart_03": 4
+    "bump_chart_03": 4,
+    "bump_chart_06": 10,
+    "bump_chart_05": 2,
+    "bump_chart_04": 2
   }
 }
