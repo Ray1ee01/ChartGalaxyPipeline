@@ -4,15 +4,13 @@ REQUIREMENTS_BEGIN
     "chart_type": "Vertical Bar Chart",
     "chart_name": "vertical_bar_chart_02",
     "is_composite": true,
-    "required_fields": [["x", "y"], ["x", "y2"]],
+    "required_fields": ["x", "y", "y2"],
     "required_fields_type": [
-        [["categorical"], ["numerical"]],
-        [["categorical"], ["numerical"]]
+        ["categorical"],
+        ["numerical"],
+        ["numerical"]
     ],
-    "required_fields_range": [
-        [[2, 30], [0, "inf"]],
-        [[2, 30], [0, "inf"]]
-    ],
+    "required_fields_range": [[2, 12], [0, "inf"], [0, "inf"]],
     "required_fields_icons": [],
     "required_other_icons": [],
     "required_fields_colors": [],

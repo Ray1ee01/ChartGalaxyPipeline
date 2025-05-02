@@ -74,7 +74,9 @@ function makeChart(containerSelector, data) {
         .append("svg")
         .attr("width", 0)
         .attr("height", 0)
-        .style("visibility", "hidden");
+        .style("visibility", "hidden")
+        .attr("xmlns", "http://www.w3.org/2000/svg")
+        .attr("xmlns:xlink", "http://www.w3.org/1999/xlink");
         
     // 计算每个图例项所需的最小宽度 - 精确测量
     const legendItemMinWidths = chartData.map(d => {

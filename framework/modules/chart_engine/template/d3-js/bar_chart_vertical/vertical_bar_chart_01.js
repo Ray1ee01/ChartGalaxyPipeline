@@ -1,12 +1,12 @@
 /*
 REQUIREMENTS_BEGIN
 {
-    "chart_type": "Vertical Pictorial Bar Chart",
-    "chart_name": "vertical_pictorial_bar_chart_01",
+    "chart_type": "Vertical Bar Chart",
+    "chart_name": "vertical_bar_chart_01",
     "is_composite": false,
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],
-    "required_fields_range": [[2, 20], [0, "inf"]],
+    "required_fields_range": [[2, 12], [0, "inf"]],
     "required_fields_icons": ["x"],
     "required_other_icons": [],
     "required_fields_colors": [],
@@ -15,7 +15,7 @@ REQUIREMENTS_BEGIN
     "min_height": 400,
     "min_width": 400,
     "background": "no",
-    "icon_mark": "none",
+    "icon_mark": "overlay",
     "icon_label": "side",
     "has_x_axis": "no",
     "has_y_axis": "no"
@@ -99,8 +99,7 @@ function makeChart(containerSelector, data) {
     // 创建按y值降序排序的数据
     const sortedData = chartData.map(d => ({
         x: d[xField],
-        y: +d[yField], // 确保y是数值类型
-        icon: jsonData.images.field[d[xField]]
+        y: +d[yField] // 确保y是数值类型
     })).sort((a, b) => b.y - a.y);
     
     // ---------- 5. 创建SVG容器 ----------
@@ -293,7 +292,7 @@ function makeChart(containerSelector, data) {
     // *******************************************************************
     // ** 开始修改：计算图标的统一Y位置 **
     // *******************************************************************
-    const labelStartY = innerHeight + 35; // 标签开始的 Y 位置 (保持和原来一致)
+    const labelStartY = innerHeight + 10; // 标签开始的 Y 位置 (保持和原来一致)
     const lineHeight = finalLabelFontSize * lineHeightFactor; // 行高
     const labelBottomApprox = labelStartY + (maxLinesNeeded - 1) * lineHeight + finalLabelFontSize * 0.71; // 估算最下方标签基线位置
     const iconRadius = 15; // 图标半径
@@ -309,14 +308,32 @@ function makeChart(containerSelector, data) {
     chart.selectAll(".bar")
         .data(sortedData)
         .enter()
-        .append("image")
+        .append("rect")
         .attr("class", "bar")
         .attr("x", d => xScale(d.x))
         .attr("y", d => yScale(d.y))
         .attr("width", xScale.bandwidth())
         .attr("height", d => Math.max(0, barBottomY - yScale(d.y)))
-        .attr("xlink:href", d => d.icon)
-        .attr("preserveAspectRatio", "none")
+        .attr("fill", d => {
+            if (variables.has_gradient) {
+                const safeCategory = typeof d.x === 'string' ? 
+                    d.x.toString().replace(/[^a-zA-Z0-9]/g, '-').toLowerCase() : 
+                    `category-${sortedData.findIndex(item => item.x === d.x)}`; // 修正: 使用 findIndex 确保唯一性
+                return `url(#gradient-${safeCategory})`;
+            } 
+            return getColor();
+        })
+        .attr("rx", variables.has_rounded_corners ? 4 : 0)
+        .attr("ry", variables.has_rounded_corners ? 4 : 0)
+        .style("stroke", variables.has_stroke ? "#333" : "none")
+        .style("stroke-width", variables.has_stroke ? 1 : 0)
+        .style("filter", variables.has_shadow ? "url(#shadow)" : "none")
+        .on("mouseover", function() {
+            d3.select(this).attr("opacity", 0.8);
+        })
+        .on("mouseout", function() {
+            d3.select(this).attr("opacity", 1);
+        });
     
     // 在柱子上方添加数值标签
     const defaultAnnotationFontSize = parseFloat(typography.annotation.font_size || 12);
@@ -352,14 +369,6 @@ function makeChart(containerSelector, data) {
                 .text(valueText);
         });
     
-    // 在维度标签上方添加水平线
-    chart.append("line")
-        .attr("x1", 0)
-        .attr("y1", innerHeight + 20) // 直接位于维度标签上方的位置
-        .attr("x2", innerWidth)
-        .attr("y2", innerHeight + 20)
-        .attr("stroke", "#e0e0e0")
-        .attr("stroke-width", 1);
     
     // *******************************************************************
     // ** 开始修改：添加维度标签 (统一字体大小，自动换行) **

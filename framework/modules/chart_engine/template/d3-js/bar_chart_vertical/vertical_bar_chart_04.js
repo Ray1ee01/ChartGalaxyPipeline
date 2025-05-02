@@ -2,11 +2,11 @@
 REQUIREMENTS_BEGIN
 {
     "chart_type": "Vertical Bar Chart",
-    "chart_name": "vertical_bar_chart_05",
+    "chart_name": "vertical_bar_chart_04",
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],
-    "required_fields_range": [[3, 20], [0, 100]],
-    "required_fields_icons": ["x"],
+    "required_fields_range": [[3, 12], [0, 100]],
+    "required_fields_icons": [],
     "required_other_icons": [],
     "required_fields_colors": [],
     "required_other_colors": ["primary", "secondary", "background"],
@@ -206,34 +206,6 @@ function makeChart(containerSelector, data) {
         .attr("fill", (d, i) => colorScale(d, i))
         .attr("rx", 2)
         .attr("ry", 2);
-    // 为每个柱子创建一个裁剪路径
-    bars.each(function(d, i) {
-        const clipId = `clip-circle-${i}`;
-        d3.select(this).append("clipPath")
-            .attr("id", clipId)
-            .append("circle")
-            .attr("cx", xScale.bandwidth() / 2)
-            .attr("cy", d => yScale(d.value) + 10 + xScale.bandwidth() / 2)
-            .attr("r", xScale.bandwidth() / 2 * 0.9);
-            
-        // 添加圆形背景
-        d3.select(this).append("circle")
-            .attr("cx", xScale.bandwidth() / 2)
-            .attr("cy", d => yScale(d.value) + 10 + xScale.bandwidth() / 2)
-            .attr("r", xScale.bandwidth() / 2 * 0.9)
-            .attr("fill", "#ffffff")
-            .attr("stroke", "#dddddd")
-            .attr("stroke-width", 1);
-            
-        // 添加图片并应用裁剪路径
-        d3.select(this).append("image")
-            .attr("x", 0)
-            .attr("y", d => yScale(d.value) + 10)
-            .attr("width", xScale.bandwidth() * 0.9)
-            .attr("height", xScale.bandwidth() * 0.9)
-            .attr("clip-path", `url(#${clipId})`)
-            .attr("xlink:href", d => jsonData.images.field[d.category]);
-    });
 
     // 绘制柱子顶部 (3D效果)
     bars.append("path")
@@ -283,5 +255,6 @@ function makeChart(containerSelector, data) {
         .text(d => d.value + (yUnit ? ` ${yUnit}` : ''))
         .style("opacity", 1);
     
+
     return svg.node();
 }

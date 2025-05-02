@@ -2,10 +2,10 @@
 REQUIREMENTS_BEGIN
 {
     "chart_type": "Vertical Bar Chart",
-    "chart_name": "vertical_bar_chart_11",
+    "chart_name": "vertical_bar_chart_10",
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],
-    "required_fields_range": [[20,40], [0, 100]],
+    "required_fields_range": [[3, 12], [0, 100]],
     "required_fields_icons": [],
     "required_other_icons": [],
     "required_fields_colors": [],
@@ -114,7 +114,6 @@ function makeChart(containerSelector, data) {
 
     // 颜色比例尺
     const colorScale = (d, i) => {
-        console.log(i)
         if (i === 0) {
             // 第一个柱子使用更深的颜色
             return d3.rgb(colors.other.primary).darker(0.7);
@@ -156,8 +155,7 @@ function makeChart(containerSelector, data) {
     
     // 添加X轴
     const xAxis = d3.axisBottom(xScale)
-        .tickSize(0) // 移除刻度线
-        .tickValues(xScale.domain().filter((d, i) => i % 4 === 0)); // 每隔4个显示一个标签
+        .tickSize(0); // 移除刻度线
     
     chartGroup.append("g")
         .attr("class", "x-axis")
@@ -187,7 +185,7 @@ function makeChart(containerSelector, data) {
         .style("fill", colors.text_color);
     
     // 添加条形
-    const circleRadius = xScale.bandwidth() / 2; // 每个圆形的半径
+    const circleRadius = 5; // 每个圆形的半径
     const circleSpacing = 2; // 圆形之间的间距
     
     // 为每个数据点创建圆形组
@@ -196,7 +194,7 @@ function makeChart(containerSelector, data) {
         .enter()
         .append("g")
         .attr("class", "bar-group")
-        .attr("transform", d => `translate(${xScale(d.category) + xScale.bandwidth()/2}, -10)`);
+        .attr("transform", d => `translate(${xScale(d.category) + xScale.bandwidth()/2}, ${yScale(d.value)})`);
     
     // 计算每个柱子需要多少个圆形
     barGroups.each(function(d) {
@@ -208,11 +206,27 @@ function makeChart(containerSelector, data) {
             d3.select(this)
                 .append("circle")
                 .attr("r", circleRadius)
-                .attr("cy", chartHeight - i * (circleRadius * 2 + circleSpacing))
+                .attr("cy", i * (circleRadius * 2 + circleSpacing))
                 .attr("fill", colorScale(d, i))
                 .attr("opacity", 1 - (i/numCircles/2)); // 添加透明度渐变效果
         }
     });
+    
+    // 添加数值标签
+    const labels = chartGroup.selectAll(".label")
+        .data(processedData)
+        .enter()
+        .append("text")
+        .attr("class", "label")
+        .attr("x", d => xScale(d.category) + xScale.bandwidth() / 2)
+        .attr("y", d => yScale(d.value) - 5)
+        .attr("text-anchor", "middle")
+        .style("font-family", typography.label.font_family)
+        .style("font-size", typography.label.font_size)
+        .style("fill", colors.text_color)
+        .text(d => d.value + (yUnit ? ` ${yUnit}` : ''))
+        .style("opacity", 1); // 直接设置为可见
+    
 
     return svg.node();
 }

@@ -5,7 +5,7 @@ REQUIREMENTS_BEGIN
     "chart_name": "vertical_bar_chart_16",
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],
-    "required_fields_range": [[3, 20], [0, 100]],
+    "required_fields_range": [[3, 12], [0, 100]],
     "required_fields_icons": [],
     "required_other_icons": [],
     "required_fields_colors": [],

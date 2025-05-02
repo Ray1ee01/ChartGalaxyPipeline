@@ -213,9 +213,7 @@ function makeChart(containerSelector, data) {
         const value = +d[valueField];
         const grp = d[groupField];
         
-        const barColor = variables.has_gradient
-            ? `url(#gradient-${grp.replace(/\s+/g, '-').toLowerCase()})`
-            : getGroupColor(grp);
+        const barColor = getGroupColor(grp);
         
         const barY = yScale(dimension);
         const centerY = barY + yScale.bandwidth()/2;

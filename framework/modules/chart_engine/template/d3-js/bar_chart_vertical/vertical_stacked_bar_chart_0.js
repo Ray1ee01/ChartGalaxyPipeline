@@ -2,10 +2,10 @@
 REQUIREMENTS_BEGIN
 {
     "chart_type": "Vertical Stacked Bar Chart",
-    "chart_name": "vertical_stacked_bar_chart_1",
+    "chart_name": "vertical_stacked_bar_chart_0",
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
-    "required_fields_range": [[3, 20], [0, 100], [3, 20]],
+    "required_fields_range": [[3, 12], [0, 100], [3, 20]],
     "required_fields_icons": [],
     "required_other_icons": [],
     "required_fields_colors": ["group"],
@@ -191,20 +191,6 @@ function makeChart(containerSelector, data) {
         .attr("width", xScale.bandwidth())
         .style("stroke", variables.has_stroke ? "#ffffff" : "none")
         .style("stroke-width", variables.has_stroke ? 1 : 0);
-
-    // 添加总和数值标注
-    chartGroup.selectAll(".total-label")
-        .data(processedData)
-        .enter()
-        .append("text")
-        .attr("class", "total-label")
-        .attr("x", d => xScale(d.period) + xScale.bandwidth() / 2)
-        .attr("y", d => yScale(d.total) - 5)  // 在柱子顶端上方5个像素
-        .attr("text-anchor", "middle")
-        .style("fill", colors.text_color)
-        .style("font-family", typography.annotation.font_family)
-        .style("font-size", typography.annotation.font_size)
-        .text(d => d.total.toFixed(1));
 
     // 添加数值标注
     layers.selectAll("text")

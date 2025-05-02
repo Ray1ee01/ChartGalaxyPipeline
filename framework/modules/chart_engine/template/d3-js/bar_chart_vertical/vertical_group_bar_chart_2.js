@@ -5,7 +5,7 @@ REQUIREMENTS_BEGIN
     "chart_name": "vertical_group_bar_chart_2",
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
-    "required_fields_range": [[3, 20], [0, 100], [3, 20]],
+    "required_fields_range": [[3, 7], [0, 100], [3, 5]],
     "required_fields_icons": ["x"],
     "required_other_icons": [],
     "required_fields_colors": [],
@@ -69,7 +69,7 @@ function makeChart(containerSelector, data) {
     
     // 计算实际绘图区域大小
     const chartWidth = width - margin.left - margin.right;
-    const chartHeight = height - margin.top - margin.bottom;
+    let chartHeight = height - margin.top - margin.bottom;
     
     // ---------- 3. 提取字段名和单位 ----------
     
@@ -140,24 +140,37 @@ function makeChart(containerSelector, data) {
         .range([chartHeight, 0])
         .nice();
 
-    // // 颜色比例尺
-    // const colorScale = d3.scaleOrdinal()
-    //     .domain(groups)
-    //     .range(d3.schemeCategory10);
+    // 用于测量文本宽度的辅助函数
+    function getTextWidth(text, fontSize = typography.label.font_size) {
+        // 简单估算文本宽度 - 减小系数以避免过度缩放
+        let fontSizeValue = 14; // 默认字体大小
+        if (typeof fontSize === 'string') {
+            fontSizeValue = parseInt(fontSize.replace('px', ''));
+        } else if (typeof fontSize === 'number') {
+            fontSizeValue = fontSize;
+        }
+        
+        // 使用更保守的系数估算每个字符的宽度
+        return text.length * (fontSizeValue * 0.45);
+    }
 
-    // 确定标签的最大长度：
+    // 确定标签的最大长度和缩放比例
     let minXLabelRatio = 1.0;
-    const maxXLabelWidth = xScale.bandwidth() * 1.03;
+    // 增加允许的宽度比例，使标签有更多空间
+    const maxXLabelWidth = xScale.bandwidth() * 1.1; 
 
-    chartData.forEach(d => {
-        // x label
-        const xLabelText = String(d[xField]);
-        let currentWidth = getTextWidth(xLabelText);
-        if (currentWidth > maxXLabelWidth) {
-            minXLabelRatio = Math.min(minXLabelRatio, maxXLabelWidth / currentWidth);
+    // 获取最长标签的宽度
+    processedData.forEach(d => {
+        const xLabelText = String(d.category);
+        let fontSize = parseInt(typography.label.font_size);
+        let estimatedWidth = getTextWidth(xLabelText, fontSize);
+        
+        if (estimatedWidth > maxXLabelWidth) {
+            const newRatio = maxXLabelWidth / estimatedWidth;
+            minXLabelRatio = Math.min(minXLabelRatio, newRatio);
         }
     });
-
+    
     // ---------- 6. 创建SVG容器 ----------
     
     const svg = d3.select(containerSelector)
@@ -184,11 +197,18 @@ function makeChart(containerSelector, data) {
         .attr("transform", `translate(0, ${chartHeight})`)
         .call(xAxis)
     
+    // 处理X轴标签重叠问题
     xAxisGroup.selectAll("text")
         .style("font-family", typography.label.font_family)
-        .style("font-size", typography.label.font_size)
-        .style("text-anchor", minXLabelRatio < 1.0 ? "end" : "middle")
-        .attr("transform", minXLabelRatio < 1.0 ? "rotate(-45)" : "rotate(0)") 
+        .style("font-size", function() {
+            if (minXLabelRatio < 0.9) { // 只有当缩放比例小于0.9时才缩小字体
+                // 计算比例时增加限制，避免过度缩小
+                const scaleFactor = Math.max(minXLabelRatio, 0.7);
+                return `${parseInt(typography.label.font_size) * scaleFactor}px`;
+            }
+            return typography.label.font_size;
+        })
+        .style("text-anchor", "middle")
         .style("fill", colors.text_color);
     
     // 添加图标
@@ -237,16 +257,33 @@ function makeChart(containerSelector, data) {
             .attr("height", d => chartHeight - yScale(d.groups[group] || 0))
             .attr("fill", colors.field[group]);
 
-        // 添加数值标签
+        // 修改数值标签为竖向、白色，放在柱形图内部顶端
         barGroups.append("text")
             .attr("class", "label")
             .attr("x", d => groupScale(group) + groupScale.bandwidth() / 2)
-            .attr("y", d => yScale(d.groups[group] || 0) - 5)
+            .attr("y", d => {
+                const barHeight = chartHeight - yScale(d.groups[group] || 0);
+                // 如果柱形高度足够，放在内部，否则放在外部
+                return barHeight > 25 ? 
+                    yScale(d.groups[group] || 0) + 15 : // 内部
+                    yScale(d.groups[group] || 0) - 5;   // 外部
+            })
             .attr("text-anchor", "middle")
+            .attr("transform", d => {
+                const barHeight = chartHeight - yScale(d.groups[group] || 0);
+                const x = groupScale(group) + groupScale.bandwidth() / 2 + 2; // 向右移动2px
+                const y = barHeight > 25 ? 
+                    yScale(d.groups[group] || 0) + 15 : // 内部 
+                    yScale(d.groups[group] || 0) - 5;   // 外部
+                return `rotate(-90, ${x}, ${y})`;
+            })
             .style("font-family", typography.label.font_family)
             .style("font-size", typography.label.font_size)
-            .style("fill", colors.text_color)
-            .text(d => (d.groups[group] || 0) + (yUnit ? ` ${yUnit}` : ''))
+            .style("fill", d => {
+                const barHeight = chartHeight - yScale(d.groups[group] || 0);
+                return barHeight > 25 ? "#FFFFFF" : colors.text_color; // 内部白色，外部黑色
+            })
+            .text(d => (d.groups[group] || 0)) // 移除单位
             .style("opacity", 1);
     });
     // 添加图例 - 放在图表上方

@@ -2,10 +2,10 @@
 REQUIREMENTS_BEGIN
 {
     "chart_type": "Vertical Bar Chart",
-    "chart_name": "vertical_bar_chart_04",
+    "chart_name": "vertical_bar_chart_11",
     "required_fields": ["x", "y"],
-    "required_fields_type": [["categorical"], ["numerical"]],
-    "required_fields_range": [[3, 20], [0, 100]],
+    "required_fields_type": [["temporal"], ["numerical"]],
+    "required_fields_range": [[20,40], [0, 100]],
     "required_fields_icons": [],
     "required_other_icons": [],
     "required_fields_colors": [],
@@ -104,7 +104,7 @@ function makeChart(containerSelector, data) {
     const xScale = d3.scaleBand()
         .domain(processedData.map(d => d.category))
         .range([0, chartWidth])
-        .padding(0.3);
+        .padding(0.05);
     
     // Y轴比例尺 - 使用数值
     const yScale = d3.scaleLinear()
@@ -156,7 +156,8 @@ function makeChart(containerSelector, data) {
     
     // 添加X轴
     const xAxis = d3.axisBottom(xScale)
-        .tickSize(0); // 移除刻度线
+        .tickSize(0) // 移除刻度线
+        .tickValues(xScale.domain().filter((d, i) => i % 4 === 0)); // 每隔4个显示一个标签
     
     chartGroup.append("g")
         .attr("class", "x-axis")
@@ -185,76 +186,33 @@ function makeChart(containerSelector, data) {
         .style("font-size", typography.label.font_size)
         .style("fill", colors.text_color);
     
-    // 3D效果的偏移量
-    const depth = 15;  // 3D效果的深度
-
     // 添加条形
-    const bars = chartGroup.selectAll(".bar-group")
+    const circleRadius = xScale.bandwidth() / 2; // 每个圆形的半径
+    const circleSpacing = 2; // 圆形之间的间距
+    
+    // 为每个数据点创建圆形组
+    const barGroups = chartGroup.selectAll(".bar-group")
         .data(processedData)
         .enter()
         .append("g")
         .attr("class", "bar-group")
-        .attr("transform", d => `translate(${xScale(d.category)}, 0)`);
-
-    // 绘制柱子前面
-    bars.append("rect")
-        .attr("class", "bar-front")
-        .attr("x", 0)
-        .attr("y", d => yScale(d.value))
-        .attr("width", xScale.bandwidth())
-        .attr("height", d => chartHeight - yScale(d.value))
-        .attr("fill", (d, i) => colorScale(d, i))
-        .attr("rx", 2)
-        .attr("ry", 2);
-
-    // 绘制柱子顶部 (3D效果)
-    bars.append("path")
-        .attr("class", "bar-top")
-        .attr("d", d => {
-            const topY = yScale(d.value);
-            const barWidth = xScale.bandwidth();
-            return `
-                M0,${topY}
-                L${depth},${topY - depth}
-                L${barWidth + depth},${topY - depth}
-                L${barWidth},${topY}
-                Z
-            `;
-        })
-        .attr("fill", (d, i) => d3.rgb(colorScale(d, i)).brighter(0.2));
-
-    // 绘制柱子右侧 (3D效果)
-    bars.append("path")
-        .attr("class", "bar-right")
-        .attr("d", d => {
-            const topY = yScale(d.value);
-            const bottomY = chartHeight;
-            const barWidth = xScale.bandwidth();
-            return `
-                M${barWidth},${topY}
-                L${barWidth + depth},${topY - depth}
-                L${barWidth + depth},${bottomY - depth}
-                L${barWidth},${bottomY}
-                Z
-            `;
-        })
-        .attr("fill", (d, i) => d3.rgb(colorScale(d, i)).darker(0.2));
-
-    // 添加数值标签
-    const labels = chartGroup.selectAll(".label")
-        .data(processedData)
-        .enter()
-        .append("text")
-        .attr("class", "label")
-        .attr("x", d => xScale(d.category) + xScale.bandwidth() / 2)
-        .attr("y", d => yScale(d.value) - 10 - depth)  // 调整标签位置以适应3D效果
-        .attr("text-anchor", "middle")
-        .style("font-family", typography.label.font_family)
-        .style("font-size", typography.label.font_size)
-        .style("fill", colors.text_color)
-        .text(d => d.value + (yUnit ? ` ${yUnit}` : ''))
-        .style("opacity", 1);
+        .attr("transform", d => `translate(${xScale(d.category) + xScale.bandwidth()/2}, -10)`);
     
+    // 计算每个柱子需要多少个圆形
+    barGroups.each(function(d) {
+        const totalHeight = chartHeight - yScale(d.value);
+        const numCircles = Math.floor(totalHeight / (circleRadius * 2 + circleSpacing));
+        
+        // 为每个柱子创建多个圆形
+        for (let i = 0; i < numCircles; i++) {
+            d3.select(this)
+                .append("circle")
+                .attr("r", circleRadius)
+                .attr("cy", chartHeight - i * (circleRadius * 2 + circleSpacing))
+                .attr("fill", colorScale(d, i))
+                .attr("opacity", 1 - (i/numCircles/2)); // 添加透明度渐变效果
+        }
+    });
 
     return svg.node();
 }
