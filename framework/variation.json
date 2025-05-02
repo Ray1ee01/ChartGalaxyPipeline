@@ -479,5 +479,10 @@
   "horizontal bullet chart": {
     "total_count": 145,
     "horizontal_bullet_chart_01": 145
+  },
+  "bump chart": {
+    "total_count": 22,
+    "bump_chart_02": 18,
+    "bump_chart_03": 4
   }
 }
