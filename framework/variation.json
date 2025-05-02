@@ -350,8 +350,8 @@
     "vertical_dot_bar_chart_01": 385
   },
   "vertical waffle chart": {
-    "total_count": 71,
-    "vertical_waffle_chart_01": 71
+    "total_count": 77,
+    "vertical_waffle_chart_01": 77
   },
   "pyramid diagram": {
     "total_count": 204,
@@ -429,5 +429,13 @@
   "vertical range chart": {
     "total_count": 14,
     "vertical_range_chart_01": 14
+  },
+  "horizontal waffle chart": {
+    "total_count": 8,
+    "horizontal_waffle_chart_01": 8
+  },
+  "group radial bar chart": {
+    "total_count": 12,
+    "group_radial_bar_chart_01": 12
   }
 }
