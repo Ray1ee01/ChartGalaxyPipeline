@@ -17,7 +17,7 @@ REQUIREMENTS_BEGIN
     "min_width": 400,
     "background": "no",
     "icon_mark": "none",
-    "icon_label": "side",
+    "icon_label": "none",
     "has_x_axis": "no",
     "has_y_axis": "no"
 }

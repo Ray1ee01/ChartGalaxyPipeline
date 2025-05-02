@@ -29,7 +29,7 @@ REQUIREMENTS_BEGIN
 REQUIREMENTS_END
 */
 
-// 垂直条形图与百分比圆圈复合图表实现 - 使用D3.js
+// 垂直条形图与百分比圆圈复合图表实现 - 使用D3.js vertical_bar_proportional_circle_area_chart_02
 function makeChart(containerSelector, data) {
     // ---------- 1. 数据准备阶段 ----------
     
@@ -389,7 +389,7 @@ function makeChart(containerSelector, data) {
         .append("text")
         .attr("class", "x-label")
         .attr("x", d => xScale(d) + xScale.bandwidth() / 2) // 定位到每个bar的中心下方
-        .attr("y", 20) 
+        .attr("y", 10) 
         .attr("text-anchor", "middle") // 文本居中对齐
         .style("font-family", typography.label.font_family)
         .style("font-size", `${uniformFontSize}px`) // 应用统一计算的字体大小

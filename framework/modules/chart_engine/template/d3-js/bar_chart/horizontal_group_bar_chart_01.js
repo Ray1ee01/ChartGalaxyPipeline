@@ -23,7 +23,7 @@ REQUIREMENTS_BEGIN
 REQUIREMENTS_END
 */
 
-// 水平分组条形图实现 - 使用D3.js
+// 水平分组条形图实现 - 使用D3.js  horizontal_grouped_bar_chart_01
 function makeChart(containerSelector, data) {
     // ---------- 1. 数据准备阶段 ----------
     
