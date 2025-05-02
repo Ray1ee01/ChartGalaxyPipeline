@@ -6,7 +6,7 @@ REQUIREMENTS_BEGIN
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
     "required_fields_range": [[3, 20], [0, 100], [3, 20]],
-    "required_fields_icons": [],
+    "required_fields_icons": ["group"],
     "required_other_icons": [],
     "required_fields_colors": ["group"],
     "required_other_colors": ["primary", "secondary", "background"],
@@ -190,7 +190,15 @@ function makeChart(containerSelector, data) {
         .attr("y", d => yScale(d[1]))
         .attr("height", d => yScale(d[0]) - yScale(d[1]))
         .attr("width", xScale.bandwidth())
-        .attr("xlink:href", d => d.icon)
+        .attr("xlink:href", d => {
+            let gap = d[1]-d[0]
+            // 从d.data中找到gap对应的key
+            for (let key in d.data) {
+                if (Math.abs(d.data[key] - gap) < 0.0001) {
+                    return jsonData.images.field[key]
+                }
+            }
+        })
         .attr("preserveAspectRatio", "none");
 
     // 添加数值标注

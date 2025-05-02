@@ -932,7 +932,7 @@ def process(input: str, output: str, base_url: str, api_key: str, chart_name: st
     )
     render_chart_time = time.time() - render_chart_start
     logger.info(f"Rendering chart took: {render_chart_time:.4f} seconds")
-    # print("chart_svg_path: ", chart_svg_path)
+    print("chart_svg_path: ", chart_svg_path)
     with open(chart_svg_path, "r", encoding="utf-8") as f:
         chart_svg_content = f.read()
         if "This is a fallback SVG using a PNG screenshot" in chart_svg_content:

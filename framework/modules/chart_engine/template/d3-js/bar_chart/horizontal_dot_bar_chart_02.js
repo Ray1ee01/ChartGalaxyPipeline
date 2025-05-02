@@ -6,7 +6,7 @@ REQUIREMENTS_BEGIN
     "is_composite": false,
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],
-    "required_fields_range": [[2, 30], [0, 20]],
+    "required_fields_range": [[5, 30], [0, 20]],
     "required_fields_icons": ["x"],
     "required_other_icons": [],
     "required_fields_colors": [],
@@ -293,15 +293,16 @@ function makeChart(containerSelector, data) {
         
         if (dataPoint) {
             const rowHeight = yScale.bandwidth();
-            const barHeight = rowHeight * 0.8;  // 竖条高度为行高的60%
+            const barHeight = rowHeight;  // 竖条高度为行高的60%
             const barY = yScale(dimension) + (rowHeight - barHeight) / 2;  // 竖条垂直居中
-            const barCount = Math.round(dataPoint[`${valueField}_`]);  // 四舍五入到整数
+            const barCount = Math.floor(dataPoint[`${valueField}_`]);  // 向下取整到整数
+            const partialBar = dataPoint[`${valueField}_`] - barCount;  // 计算小数部分
             
             // 绘制竖条组
             for (let i = 0; i < barCount; i++) {
-                // 计算当前棒子所在的组（每10个一组）
+                // 计算当前棒子所在的组（每5个一组）
                 const groupIndex = Math.floor(i / groupSize);
-                // 计算在当前组内的索引（0-9）
+                // 计算在当前组内的索引（0-4）
                 const inGroupIndex = i % groupSize;
                 
                 // 计算x位置（考虑组间的额外间距）
@@ -320,6 +321,41 @@ function makeChart(containerSelector, data) {
                     .attr("xlink:href", jsonData.images.field[dataPoint[dimensionField]]);
             }
             
+            // 如果有小数部分，绘制部分宽度的最后一个竖条
+            if (partialBar > 0) {
+                const groupIndex = Math.floor(barCount / groupSize);
+                const inGroupIndex = barCount % groupSize;
+                
+                const barX = (groupIndex * (groupSize * (barWidth + barSpacing) + groupSpacing)) + 
+                            (inGroupIndex * (barWidth + barSpacing));
+                
+                // 使用SVG裁剪方式实现部分图像显示
+                const imageWidth = barWidth * partialBar;
+                
+                // 方法一：使用裁剪路径实现部分图像显示
+                // 创建唯一的裁剪路径ID
+                const clipPathId = `clip-path-${dimension.replace(/\s+/g, '-')}-${barCount}`;
+                
+                // 在defs中定义裁剪路径 - 注意：clipPath采用用户坐标系统
+                defs.append("clipPath")
+                    .attr("id", clipPathId)
+                    .attr("clipPathUnits", "userSpaceOnUse")  // 使用用户坐标系而非对象坐标系
+                    .append("rect")
+                    .attr("x", barX)  // 使用与图像相同的x坐标
+                    .attr("y", barY)  // 使用与图像相同的y坐标
+                    .attr("width", imageWidth)
+                    .attr("height", barHeight);
+                
+                // 使用裁剪路径显示部分图像
+                g.append("image")
+                    .attr("x", barX)
+                    .attr("y", barY)
+                    .attr("width", barWidth)  // 保持原始宽度
+                    .attr("height", barHeight)
+                    .attr("clip-path", `url(#${clipPathId})`)
+                    .attr("xlink:href", jsonData.images.field[dataPoint[dimensionField]]);
+            }
+            
             // 添加维度标签
             g.append("text")
                 .attr("x", -10)
@@ -335,19 +371,21 @@ function makeChart(containerSelector, data) {
             // 计算动态字体大小（条形高度的60%）
             const dynamicFontSize = `${barHeight * 0.8}px`;
             
-            // 添加数值标签
-            const formattedValue = valueUnit ? 
-                `${dataPoint[valueField]}${valueUnit}` : 
-                `${dataPoint[valueField]}`;
-            
             // 计算最后一个棒子的位置，用于放置数值标签
-            const lastGroupIndex = Math.floor(barCount  / groupSize);
-            const lastInGroupIndex = barCount  % groupSize;
-            const lastBarX = (lastGroupIndex * (groupSize * (barWidth + barSpacing) + groupSpacing)) + 
+            const lastGroupIndex = Math.floor(barCount / groupSize);
+            const lastInGroupIndex = barCount % groupSize;
+            let lastBarX = (lastGroupIndex * (groupSize * (barWidth + barSpacing) + groupSpacing)) + 
                            (lastInGroupIndex * (barWidth + barSpacing));
             
+            // 如果有小数部分，调整标签位置
+            if (partialBar > 0) {
+                lastBarX += barWidth * partialBar;
+            } else {
+                lastBarX += barWidth;
+            }
+            
             g.append("text")
-                .attr("x", lastBarX + barWidth + 5)
+                .attr("x", lastBarX + 5)
                 .attr("y", yScale(dimension) + rowHeight / 2)
                 .attr("dy", "0.35em")
                 .attr("text-anchor", "start")
@@ -355,7 +393,9 @@ function makeChart(containerSelector, data) {
                 .style("font-size", dynamicFontSize)
                 .style("font-weight", typography.annotation.font_weight)
                 .style("fill", colors.text_color || "#333333")
-                .text(formattedValue);
+                .text(valueUnit ? 
+                    `${dataPoint[valueField]}${valueUnit}` : 
+                    `${dataPoint[valueField]}`);
         }
     });
     

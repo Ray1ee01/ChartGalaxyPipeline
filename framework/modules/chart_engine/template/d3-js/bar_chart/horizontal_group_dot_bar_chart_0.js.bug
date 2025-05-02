@@ -22,7 +22,6 @@ REQUIREMENTS_BEGIN
 REQUIREMENTS_END
 */
 
-
 function makeChart(containerSelector, data) {
     // ---------- 1. 数据准备阶段 ----------
     
@@ -168,6 +167,9 @@ function makeChart(containerSelector, data) {
     const chartGroup = svg.append("g")
         .attr("transform", `translate(${margin.left}, ${margin.top})`);
     
+    // 添加defs用于定义裁剪路径
+    const defs = svg.append("defs");
+    
     // ---------- 7. 绘制图表元素 ----------
     
     // 添加Y轴
@@ -178,10 +180,7 @@ function makeChart(containerSelector, data) {
         .attr("class", "y-axis")
         .call(yAxis)
         .selectAll("text")
-        .style("font-family", typography.label.font_family)
-        .style("font-size", typography.label.font_size)
-        .style("text-anchor", "end")
-        .style("fill", colors.text_color);
+        .remove();
     
     // 添加X轴
     const xAxis = d3.axisBottom(xScale)
@@ -200,7 +199,7 @@ function makeChart(containerSelector, data) {
         .style("font-size", typography.label.font_size)
         .style("fill", colors.text_color);
 
-    // 修改条形图绘制部分
+    // 为每个分类创建条形组
     const barGroups = chartGroup.selectAll(".bar-group")
         .data(processedData)
         .enter()
@@ -208,80 +207,131 @@ function makeChart(containerSelector, data) {
         .attr("class", "bar-group")
         .attr("transform", d => `translate(0,${yScale(d.category)})`);
 
-    // 计算每个柱子的最大宽度
+    // 计算每个柱子的配置参数
     const maxValue = d3.max(chartData, d => +d[yField]);
-    const iconSize = groupScale.bandwidth() * 0.8; // icon大小为分组宽度的80%
-    const iconSpacing = iconSize * 0.1; // icon之间的间距为icon大小的10%
-    const maxIconsPerRow = Math.floor(chartWidth / (iconSize + iconSpacing)); // 计算每行最多可以放多少个icon
+    
+    // 设置点状图标的默认参数
+    const defaultBarWidth = 30;  // 默认图标宽度
+    const defaultBarSpacing = 5; // 默认图标间距
+    const largerGroupSpacing = 10; // 每组图标间的额外间距
+    
+    // 每组的图标数量
+    const groupSize = 5;
+    
+    // 添加维度标签（分类名称）
+    barGroups.append("text")
+        .attr("x", -10)
+        .attr("y", yScale.bandwidth() / 2)
+        .attr("dy", "0.35em")
+        .attr("text-anchor", "end")
+        .style("font-family", typography.label.font_family)
+        .style("font-size", typography.label.font_size)
+        .style("font-weight", typography.label.font_weight)
+        .style("fill", colors.text_color)
+        .text(d => d.category);
 
+    // 为每个分组依次绘制点图
     groups.forEach(group => {
         barGroups.each(function(d) {
-            const value = d.groups[group] || 0;
-            const iconCount = Math.ceil(value / maxValue * 10); // 将值映射到0-10个icon
-            const groupY = groupScale(group);
+            const rowY = groupScale(group); // 当前分组在Y轴的位置
+            const rowHeight = groupScale.bandwidth(); // 分组高度
+            const value = d.groups[group] || 0; // 获取值，如果不存在则为0
             
-            // 计算需要多少行
-            const rows = Math.ceil(iconCount / maxIconsPerRow);
+            // 计算要显示多少个完整图标
+            const barCount = Math.floor(value / maxValue * 20); // 将值映射到 0-20 个图标（根据需要调整）
+            const partialBar = (value / maxValue * 20) - barCount; // 计算小数部分
             
-            // 计算每行的高度
-            const rowHeight = iconSize + iconSpacing;
+            // 计算图标大小（根据分组宽度调整）
+            const barHeight = rowHeight * 0.8; // 图标高度为行高的80%
+            const barWidth = barHeight; // 图标宽度等于高度，保持比例
+            const barY = rowY + (rowHeight - barHeight) / 2; // 垂直居中
             
-            // 绘制icon
-            for (let i = 0; i < iconCount; i++) {
-                const row = Math.floor(i / maxIconsPerRow);
-                const col = i % maxIconsPerRow;
+            // 计算图标间距
+            const barSpacing = Math.min(defaultBarSpacing, barWidth * 0.2);
+            
+            // 绘制完整图标
+            for (let i = 0; i < barCount; i++) {
+                // 计算当前图标所在的组
+                const groupIndex = Math.floor(i / groupSize);
+                // 计算在当前组内的索引
+                const inGroupIndex = i % groupSize;
                 
+                // 计算X位置（考虑组间的额外间距）
+                const barX = (groupIndex * (groupSize * (barWidth + barSpacing) + largerGroupSpacing)) + 
+                           (inGroupIndex * (barWidth + barSpacing));
+                
+                // 绘制单个图标
                 d3.select(this)
                     .append("image")
-                    .attr("x", col * (iconSize + iconSpacing))
-                    .attr("y", groupY + row * rowHeight)
-                    .attr("width", iconSize)
-                    .attr("height", iconSize)
+                    .attr("x", barX)
+                    .attr("y", barY)
+                    .attr("width", barWidth)
+                    .attr("height", barHeight)
                     .attr("xlink:href", jsonData.images.field[group]);
             }
+            
+            // 如果有小数部分，绘制部分宽度的最后一个图标
+            if (partialBar > 0) {
+                const groupIndex = Math.floor(barCount / groupSize);
+                const inGroupIndex = barCount % groupSize;
+                
+                const barX = (groupIndex * (groupSize * (barWidth + barSpacing) + largerGroupSpacing)) + 
+                           (inGroupIndex * (barWidth + barSpacing));
+                
+                // 使用SVG裁剪路径实现部分图标显示
+                const imageWidth = barWidth * partialBar;
+                
+                // 创建唯一的裁剪路径ID（使用分类名称和分组名称确保唯一性）
+                const clipPathId = `clip-path-${d.category.replace(/\s+/g, '-')}-${group.replace(/\s+/g, '-')}-${barCount}`;
+                
+                // 在defs中定义裁剪路径
+                defs.append("clipPath")
+                    .attr("id", clipPathId)
+                    .attr("clipPathUnits", "userSpaceOnUse")  // 使用用户坐标系而非对象坐标系
+                    .append("rect")
+                    .attr("x", barX)  // 使用与图像相同的x坐标
+                    .attr("y", barY)  // 使用与图像相同的y坐标
+                    .attr("width", imageWidth)
+                    .attr("height", barHeight);
+                
+                // 使用裁剪路径显示部分图标
+                d3.select(this)
+                    .append("image")
+                    .attr("x", barX)
+                    .attr("y", barY)
+                    .attr("width", barWidth)  // 使用完整宽度
+                    .attr("height", barHeight)
+                    .attr("clip-path", `url(#${clipPathId})`)
+                    .attr("xlink:href", jsonData.images.field[group]);
+            }
+            
+            // 计算最后一个图标的位置，用于放置数值标签
+            const lastGroupIndex = Math.floor(barCount / groupSize);
+            const lastInGroupIndex = barCount % groupSize;
+            let lastBarX = (lastGroupIndex * (groupSize * (barWidth + barSpacing) + largerGroupSpacing)) + 
+                           (lastInGroupIndex * (barWidth + barSpacing));
+            
+            // 如果有小数部分，调整标签位置
+            if (partialBar > 0) {
+                lastBarX += barWidth * partialBar;
+            } else if (barCount > 0) {
+                lastBarX += barWidth;
+            }
+            
+            // 添加数值标签
+            d3.select(this)
+                .append("text")
+                .attr("x", lastBarX + 5)
+                .attr("y", barY + barHeight / 2)
+                .attr("dy", "0.35em")
+                .attr("text-anchor", "start")
+                .style("font-family", typography.annotation.font_family)
+                .style("font-size", typography.annotation.font_size)
+                .style("font-weight", typography.annotation.font_weight)
+                .style("fill", colors.text_color)
+                .text(value + (yUnit ? ` ${yUnit}` : ''));
         });
-
-        // 添加数值标签
-        barGroups.append("text")
-            .attr("class", "label")
-            .attr("x", d => {
-                const value = d.groups[group] || 0;
-                const iconCount = Math.ceil(value / maxValue * 10);
-                const cols = Math.min(iconCount, maxIconsPerRow);
-                return cols * (iconSize + iconSpacing) + 5;
-            })
-            .attr("y", d => {
-                const value = d.groups[group] || 0;
-                const iconCount = Math.ceil(value / maxValue * 10);
-                const rows = Math.ceil(iconCount / maxIconsPerRow);
-                return groupScale(group) + (rows * (iconSize + iconSpacing)) / 2;
-            })
-            .attr("text-anchor", "start")
-            .style("font-family", typography.label.font_family)
-            .style("font-size", typography.label.font_size)
-            .style("fill", colors.text_color)
-            .text(d => (d.groups[group] || 0) + (xUnit ? ` ${xUnit}` : ''))
-            .style("opacity", 1);
     });
-    // // 添加图例 - 放在图表上方
-    // const legendGroup = svg.append("g")
-    //     .attr("transform", `translate(0, -50)`);
-    
-    // // 计算字段名宽度并添加间距
-    // const titleWidth = groupField.length * 10;
-    // const titleMargin = 15;
-
-
-    // const legendSize = layoutLegend(legendGroup, groups, colors, {
-    //     x: titleWidth + titleMargin,
-    //     y: 0,
-    //     fontSize: 14,
-    //     fontWeight: "bold",
-    //     align: "left",
-    //     maxWidth: chartWidth - titleWidth - titleMargin,
-    //     shape: "rect",
-    // });
-
 
     return svg.node();
 }

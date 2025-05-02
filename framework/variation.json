@@ -112,12 +112,13 @@
     "horizontal_bar_chart_27": 136
   },
   "vertical group bar chart": {
-    "total_count": 2449,
+    "total_count": 2459,
     "vertical_group_bar_chart_6": 1385,
     "vertical_group_bar_chart_1": 266,
     "vertical_group_bar_chart_5": 267,
     "vertical_group_bar_chart_3": 266,
-    "vertical_group_bar_chart_0": 265
+    "vertical_group_bar_chart_0": 265,
+    "vertical_group_bar_chart_2": 10
   },
   "multiple semi donut chart": {
     "total_count": 267,
@@ -198,8 +199,9 @@
     "stacked_area_chart_02": 266
   },
   "horizontal dot bar chart": {
-    "total_count": 893,
-    "horizontal_dot_bar_chart_01": 893
+    "total_count": 963,
+    "horizontal_dot_bar_chart_01": 893,
+    "horizontal_dot_bar_chart_02": 70
   },
   "grouped bar chart": {
     "total_count": 533,
@@ -400,8 +402,9 @@
     "bottle_bar_chart_02": 71
   },
   "horizontal pictorial percentage bar chart": {
-    "total_count": 97,
-    "horizontal_pictorial_percentage_bar_chart_01": 97
+    "total_count": 105,
+    "horizontal_pictorial_percentage_bar_chart_01": 101,
+    "horizontal_pictorial_percentage_bar_chart_02": 4
   },
   "vertical pictorial percentage bar chart": {
     "total_count": 97,
@@ -460,5 +463,30 @@
     "total_count": 22,
     "semicircle_pie_chart_01_d3": 10,
     "semicircle_pie_chart_03_d3": 12
+  },
+  "horizontal group dot bar chart": {
+    "total_count": 38,
+    "horizontal_group_dot_bar_chart_0": 38
+  },
+  "horizontal pictorial bar chart": {
+    "total_count": 8,
+    "horizontal_pictorial_bar_chart_01": 8
+  },
+  "horizontal group pictorial bar chart": {
+    "total_count": 112,
+    "horizontal_group_pictorial_bar_chart_01": 68,
+    "horizontal_group_pictorial_bar_chart_02": 44
+  },
+  "horizontal stacked pictorial bar chart": {
+    "total_count": 32,
+    "horizontal_stacked_pictorial_bar_chart_0": 32
+  },
+  "vertical group pictorial bar chart": {
+    "total_count": 4,
+    "vertical_group_pictorial_bar_chart_0": 4
+  },
+  "vertical stacked pictorial bar chart": {
+    "total_count": 26,
+    "vertical_stacked_pictorial_bar_chart_0": 26
   }
 }
