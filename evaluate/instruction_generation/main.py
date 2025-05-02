@@ -649,9 +649,6 @@ def standardize_multiple_choice_format(question, answer):
         if option_mapping and answer in option_mapping:
             updated_answer = option_mapping[answer]
     
-    if options_part and re.search(r"[A-D]\s*[.)]", options_part):
-        options_part = fix_duplicate_options(options_part)
-    
     # Build clean question
     clean_parts = [question_text.strip(), options_part]
     
@@ -711,61 +708,6 @@ def convert_text_to_option_letter(options_text, text_answer):
                 return letter
     
     return None
-
-def fix_duplicate_options(options_text):
-    """
-    检测和修复重复的选项值
-    
-    Args:
-        options_text: 选项文本
-        
-    Returns:
-        str: 修复后的选项文本
-    """
-    # 提取所有选项
-    options = []
-    option_pattern = r"([A-D][.)])([^A-D]+)"
-    for match in re.finditer(option_pattern, options_text):
-        option_label = match.group(1)
-        option_value = match.group(2).strip()
-        options.append((option_label, option_value))
-    
-    # 检查重复值
-    values = [value for _, value in options]
-    value_counts = {}
-    for value in values:
-        value_counts[value] = value_counts.get(value, 0) + 1
-    
-    # 修复重复值
-    fixed_options = []
-    used_increments = set()
-    
-    for label, value in options:
-        if value_counts[value] > 1:
-            # 尝试数值调整
-            try:
-                num_value = int(value)
-                for increment in range(1, 10):
-                    if increment not in used_increments:
-                        new_value = str(num_value + increment)
-                        used_increments.add(increment)
-                        fixed_options.append((label, new_value))
-                        break
-                else:
-                    # 如果无法找到合适的增量，添加后缀
-                    fixed_options.append((label, f"{value} (alt)"))
-            except ValueError:
-                # 非数值，添加区分后缀
-                fixed_options.append((label, f"{value} (alt)"))
-        else:
-            fixed_options.append((label, value))
-    
-    # 重建选项文本
-    new_options_text = ""
-    for label, value in fixed_options:
-        new_options_text += f"{label} {value}\n"
-    
-    return new_options_text.strip()
 
 def fix_illogical_options(options_text, question_text):
     """

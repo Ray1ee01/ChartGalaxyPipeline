@@ -203,7 +203,7 @@ function makeChart(containerSelector, data) {
                          d3.schemeCategory10[i % 10];
         
         // 创建斜线纹理模式
-        const patternId = `pattern-${group.replace(/\\s+/g, '-')}-${i}`; // 确保 ID 唯一
+        const patternId = `pattern-${group.replace(/\s+/g, '-')}-${i}`; // 确保 ID 唯一
         const pattern = defs.append("pattern")
             .attr("id", patternId)
             .attr("patternUnits", "userSpaceOnUse")
@@ -274,7 +274,7 @@ function makeChart(containerSelector, data) {
             .attr("height", 15);
 
         // 应用填充：始终使用纹理
-        const patternId = `pattern-${group.replace(/\\s+/g, '-')}-${i}`;
+        const patternId = `pattern-${group.replace(/\s+/g, '-')}-${i}`;
         legendRect.attr("fill", `url(#${patternId})`);
 
         // 图例文本
@@ -379,7 +379,7 @@ function makeChart(containerSelector, data) {
                    
 
                     // 应用填充：始终使用纹理
-                    const patternIdBar = `pattern-${group.replace(/\\s+/g, '-')}-${groupIndex}`;
+                    const patternIdBar = `pattern-${group.replace(/\s+/g, '-')}-${groupIndex}`;
                     bar.attr("fill", `url(#${patternIdBar})`);
                     
                     // 添加数值标签

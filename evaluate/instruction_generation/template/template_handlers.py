@@ -4,8 +4,173 @@ import os
 import logging
 import math # Add math import for closest value calculation
 import random # Add random import for numerical distractor handling
+from generate_choice import generate_numerical_distractors # Import moved to top
 
 logger = logging.getLogger("InstructionGeneration.Template.TemplateHandlers")
+
+# 添加格式化数值的辅助函数
+def format_numeric_value(value):
+    """根据数值类型格式化数值：整数保持不变，浮点数保留2位小数"""
+    if value is None:
+        return None
+    
+    try:
+        # 检查是否是整数
+        if isinstance(value, int) or (isinstance(value, float) and value.is_integer()):
+            return int(value)
+        else:
+            # 浮点数保留2位小数
+            return round(float(value), 2)
+    except (ValueError, TypeError):
+        # 如果无法转换为数值，返回原值
+        return value
+
+# 添加生成数值混淆项的辅助函数
+def generate_formatted_distractors(value, count=4):
+    """生成格式化的数值混淆项，整数不保留小数，浮点数保留2位小数"""
+    if value is None:
+        return None
+    
+    # 先格式化正确答案
+    formatted_value = format_numeric_value(value)
+    
+    # 检查是否是整数
+    is_integer = isinstance(formatted_value, int) or (isinstance(formatted_value, float) and formatted_value.is_integer())
+    
+    # 生成混淆项
+    try:
+        # 生成比原始数量更多的混淆项，以便有足够的不重复选项
+        extra_count = count * 2
+        distractors = generate_numerical_distractors(value, extra_count)
+        
+        # 格式化所有混淆项
+        formatted_distractors = []
+        for d in distractors:
+            try:
+                if is_integer:
+                    # 如果答案是整数，确保混淆项也是整数
+                    # 先转换为浮点数，然后四舍五入取整
+                    d_float = float(d)
+                    d_int = int(round(d_float))
+                    formatted_distractors.append(d_int)
+                else:
+                    # 浮点数保留2位小数
+                    formatted_distractors.append(format_numeric_value(d))
+            except (ValueError, TypeError) as e:
+                logger.debug(f"混淆项格式化错误: {d}, {e}")
+                continue
+        
+        # 移除重复项
+        unique_distractors = []
+        for d in formatted_distractors:
+            if d not in unique_distractors and d != formatted_value:
+                unique_distractors.append(d)
+        
+        # 如果不重复的混淆项不足，再生成一些不同的值
+        if len(unique_distractors) < count:
+            # 基于原值生成更分散的值
+            try:
+                base = float(value)
+                multipliers = [0.5, 1.5, 2.0, 2.5, 0.25, 0.75, 1.25, 1.75]
+                for m in multipliers:
+                    new_val = base * m
+                    if is_integer:
+                        new_val = int(round(new_val))
+                    else:
+                        new_val = format_numeric_value(new_val)
+                    
+                    if new_val not in unique_distractors and new_val != formatted_value:
+                        unique_distractors.append(new_val)
+                        if len(unique_distractors) >= count:
+                            break
+            except (ValueError, TypeError) as e:
+                logger.debug(f"生成额外混淆项错误: {e}")
+        
+        # 如果仍然不足，随机生成一些整数值
+        while len(unique_distractors) < count:
+            if is_integer:
+                # 对于整数，生成一些随机整数
+                random_int = int(formatted_value) + random.randint(-10, 10)
+                if random_int not in unique_distractors and random_int != formatted_value:
+                    unique_distractors.append(random_int)
+            else:
+                # 对于浮点数，生成一些随机浮点数
+                random_float = round(float(formatted_value) + random.uniform(-10, 10), 2)
+                if random_float not in unique_distractors and random_float != formatted_value:
+                    unique_distractors.append(random_float)
+        
+        # 取前count个不重复的混淆项
+        return unique_distractors[:count]
+    except Exception as e:
+        logger.error(f"生成混淆项错误: {e}")
+        # 发生错误时，回退到简单的随机数生成
+        try:
+            base_value = float(value)
+            fallback_distractors = []
+            for i in range(count):
+                if is_integer:
+                    fallback = int(base_value) + (i + 1) * 5
+                else:
+                    fallback = round(base_value + (i + 1) * 2.5, 2)
+                fallback_distractors.append(fallback)
+            return fallback_distractors
+        except:
+            # 如果连回退方案都失败，返回None
+            return None
+
+# 添加处理布尔值混淆项的辅助函数
+def generate_boolean_choice_options(answer, count=4):
+    """
+    生成布尔值问题的多选项，将Yes/No扩展为count个选项
+    
+    Args:
+        answer: 正确答案字符串，"Yes"或"No"
+        count: 目标选项数量
+        
+    Returns:
+        List[str]: 包含正确答案在内的混淆选项列表
+    """
+    # 确保答案是字符串格式
+    answer = str(answer)
+    
+    # 直接使用Yes/No
+    base_options = ["Yes", "No"]
+    
+    # 添加更多相关的选项
+    extended_options = [
+        "Cannot determine", 
+        "They are equal", 
+        "Data insufficient", 
+        "Depends on context",
+        "Not applicable",
+        "Both are valid",
+        "Neither is correct",
+        "More information needed"
+    ]
+    
+    # 构建最终选项列表：确保答案在内，再从其他选项中选择，凑够count个
+    options = [answer]  # 先加入正确答案
+    
+    # 添加另一个 Yes/No 选项
+    other_base = "No" if answer.lower() == "yes" else "Yes"
+    options.append(other_base)
+    
+    # 从扩展选项中随机选择，组成共count个选项
+    needed_count = count - len(options)
+    if needed_count > 0:
+        remaining_options = random.sample(extended_options, min(needed_count, len(extended_options)))
+        options.extend(remaining_options)
+    
+    # 确保选项数量等于count（可能没有那么多扩展选项）
+    while len(options) < count and extended_options:
+        extra_option = f"{random.choice(['Alternative', 'Option', 'Choice'])} {len(options) + 1}"
+        if extra_option not in options:
+            options.append(extra_option)
+    
+    # 混淆选项是除答案外的所有选项
+    confusion = [opt for opt in options if opt != answer]
+    
+    return confusion
 
 class TemplateHandlers:
     def __init__(self, base_generator: BaseGenerator):
@@ -114,12 +279,23 @@ class TemplateHandlers:
             if self.generator.df is not None and y_label in self.generator.df.columns:
                 y_values = sorted(self.generator.df[y_label].unique(), reverse=True)
                 if len(y_values) >= 2:
-                    result = y_values[0] - y_values[1]
+                    # Ensure values are numeric before subtraction
+                    try:
+                        val1 = float(y_values[0])
+                        val2 = float(y_values[1])
+                        result = val1 - val2
+                    except (ValueError, TypeError):
+                        result = None # Handle non-numeric cases
+
+        # 格式化结果
+        formatted_result = format_numeric_value(result)
         
         # 生成混淆选项
-        confusion = self._generate_confusion_options(result)
-        
-        return question, result, confusion, None
+        confusion = None
+        if result is not None:
+            confusion = generate_formatted_distractors(result)
+                
+        return question, formatted_result, confusion, None
     
     def _handle_difference(self, template: str, with_legend: bool = False) -> Tuple[Optional[str], Optional[float], Optional[list], Optional[str]]:
         """
@@ -141,9 +317,9 @@ class TemplateHandlers:
                 return None, None, None, None
             legend_value = legend_values[0]
         else:
-            placeholders, _, x_ticks = self.generator.get_common_placeholders(tick_num=2)
-            if not x_ticks:
-                return None, None, None, None
+            placeholders, _, x_ticks = self.generator.get_common_placeholders(legend_num=1, tick_num=2)
+        if not x_ticks:
+            return None, None, None, None
             
         filter_dict1 = self.generator.get_filter_dict(x_ticks[0], legend_value)
         filter_dict2 = self.generator.get_filter_dict(x_ticks[1], legend_value)
@@ -152,10 +328,15 @@ class TemplateHandlers:
         
         difference = self.generator.get_difference(y_label, filter_dict1, filter_dict2)
         
-        # 生成混淆选项
-        confusion = self._generate_confusion_options(difference)
+        # 格式化结果
+        formatted_difference = format_numeric_value(difference)
         
-        return question, difference, confusion, None
+        # 生成混淆选项
+        confusion = None
+        if difference is not None:
+            confusion = generate_formatted_distractors(difference)
+
+        return question, formatted_difference, confusion, None
     
     def _handle_legend_calculation(self, template: str, calc_type: str) -> Tuple[Optional[str], Optional[float], Optional[list], Optional[str]]:
         """
@@ -189,11 +370,16 @@ class TemplateHandlers:
             result = self.generator.get_min(y_label, filter_dict)
         elif calc_type == 'median':
             result = self.generator.get_median(y_label, filter_dict)
-            
+
+        # 格式化结果
+        formatted_result = format_numeric_value(result)
+
         # 生成混淆选项
-        confusion = self._generate_confusion_options(result)
-        
-        return question, result, confusion, None
+        confusion = None
+        if result is not None:
+            confusion = generate_formatted_distractors(result)
+
+        return question, formatted_result, confusion, None
     
     def _handle_threshold_count(self, template: str, with_legend: bool = False) -> Tuple[Optional[str], Optional[int], Optional[list], Optional[str]]:
         """
@@ -238,8 +424,8 @@ class TemplateHandlers:
             if y_val is not None and y_val > threshold:
                 count += 1
         
-        # 生成混淆选项
-        confusion = self._generate_confusion_options(count)
+        # 生成混淆选项 (count是整数，不需要额外格式化)
+        confusion = generate_formatted_distractors(count)
                 
         return question, count, confusion, None
     
@@ -276,15 +462,19 @@ class TemplateHandlers:
         val2 = self.generator.get_value(y_label, filter_dict2)
         
         if val1 is not None and val2 is not None:
-            is_less = float(val1) < float(val2)
-            answer = "Yes" if is_less else "No"
-            
-            # 为布尔答案创建混淆项
-            confusion = ["Yes", "No"]
-            confusion.remove(answer)  # 移除正确答案
-            
-            return question, answer, confusion, None
-            
+            try: # Ensure values are comparable
+                is_less = float(val1) < float(val2)
+                answer = "Yes" if is_less else "No"
+
+                # 为布尔答案创建混淆项，Yes/No只有两个选项
+                confusion = ["Yes", "No"]
+                confusion.remove(answer)  # 移除正确答案
+
+                return question, answer, confusion, None
+            except (ValueError, TypeError):
+                 logger.debug(f"无法比较非数值: {val1}, {val2}")
+                 return None, None, None, None
+
         return None, None, None, None
     
     def _handle_ratio(self, template: str, with_legend: bool = False) -> Tuple[Optional[str], Optional[float], Optional[list], Optional[str]]:
@@ -319,14 +509,28 @@ class TemplateHandlers:
         val1 = self.generator.get_value(y_label, filter_dict1)
         val2 = self.generator.get_value(y_label, filter_dict2)
         
-        if val1 is not None and val2 is not None and val2 != 0:
-            ratio = float(val1) / float(val2)
-            
-            # 生成混淆选项
-            confusion = self._generate_confusion_options(ratio)
-            
-            return question, ratio, confusion, None
-            
+        if val1 is not None and val2 is not None:
+            try:
+                float_val1 = float(val1)
+                float_val2 = float(val2)
+                if float_val2 != 0:
+                    ratio = float_val1 / float_val2
+                    
+                    # 格式化结果
+                    formatted_ratio = format_numeric_value(ratio)
+
+                    # 生成混淆选项
+                    confusion = generate_formatted_distractors(ratio)
+
+                    return question, formatted_ratio, confusion, None
+                else:
+                    # Handle division by zero
+                    logger.debug("Division by zero in ratio calculation.")
+                    return None, None, None, None
+            except (ValueError, TypeError):
+                 logger.debug(f"无法计算非数值的比率: {val1}, {val2}")
+                 return None, None, None, None
+
         return None, None, None, None
     
     def _handle_extreme_value_x(self, template: str, extreme_type: str, with_legend: bool = False) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[str]]:
@@ -356,16 +560,30 @@ class TemplateHandlers:
         
         # 为文本答案创建混淆项，获取所有可能的x值，然后排除正确答案
         x_label = self.generator.get_column_by_role('x')
+        confusion = None
         if x_label and extreme_x:
             all_x_values = self.generator.get_column_values(x_label)
             if all_x_values:
-                confusion = [x for x in all_x_values if x != extreme_x]
-                # 最多选择3个混淆项
-                if len(confusion) > 3:
-                    confusion = random.sample(confusion, 3)
-                return question, extreme_x, confusion, None
+                # 确保类型一致性
+                try:
+                    str_extreme_x = str(extreme_x)
+                    confusion = [str(x) for x in all_x_values if str(x) != str_extreme_x]
+                except Exception:
+                    confusion = [x for x in all_x_values if x != extreme_x]
+
+                # 最多选择4个混淆项
+                if len(confusion) > 4:
+                    confusion = random.sample(confusion, 4)
+                # 如果混淆项不足4个，可以添加一些随机的变体
+                elif len(confusion) < 4:
+                    # 尝试添加一些变体
+                    original_len = len(confusion)
+                    for i in range(4 - original_len):
+                        if confusion:  # 确保有至少一个元素可以变形
+                            variant = str(confusion[i % original_len]) + " (var)"
+                            confusion.append(variant)
         
-        return question, extreme_x, None, None
+        return question, extreme_x, confusion, None
     
     def _handle_extremes_difference(self, template: str, first_rank: int, second_rank: int) -> Tuple[Optional[str], Optional[float], Optional[list], Optional[str]]:
         """
@@ -393,13 +611,20 @@ class TemplateHandlers:
         val2 = self.generator.get_nth_highest_value(y_label, second_rank, filter_dict)
         
         if val1 is not None and val2 is not None:
-            difference = val1 - val2
-            
-            # 生成混淆选项
-            confusion = self._generate_confusion_options(difference)
-            
-            return question, difference, confusion, None
-            
+            try:
+                difference = float(val1) - float(val2)
+                
+                # 格式化结果
+                formatted_difference = format_numeric_value(difference)
+
+                # 生成混淆选项
+                confusion = generate_formatted_distractors(difference)
+
+                return question, formatted_difference, confusion, None
+            except (ValueError, TypeError):
+                 logger.debug(f"无法计算极值差值 (非数值): {val1}, {val2}")
+                 return None, None, None, None
+
         return None, None, None, None
         
     def handle_template_1(self, template: str) -> Tuple[Optional[str], Optional[float], Optional[list], Optional[str]]:
@@ -447,8 +672,14 @@ class TemplateHandlers:
         difference = self.generator.get_difference(y_label, filter_dict1, filter_dict2)
         
         # 生成混淆选项
-        confusion = self._generate_confusion_options(difference)
-        
+        confusion = None
+        if difference is not None:
+            try:
+                float_difference = float(difference)
+                confusion = generate_numerical_distractors(float_difference, 3)
+            except (ValueError, TypeError):
+                logger.debug(f"无法为 template 7 差值结果生成混淆选项: {difference}")
+
         return question, difference, confusion, None
     
     def handle_template_8(self, template: str) -> Tuple[Optional[str], Optional[float], Optional[list], Optional[str]]:
@@ -480,8 +711,14 @@ class TemplateHandlers:
         difference = self.generator.get_difference(y_label, filter_dict1, filter_dict2)
         
         # 生成混淆选项
-        confusion = self._generate_confusion_options(difference)
-        
+        confusion = None
+        if difference is not None:
+            try:
+                float_difference = float(difference)
+                confusion = generate_numerical_distractors(float_difference, 3)
+            except (ValueError, TypeError):
+                logger.debug(f"无法为 template 10 差值结果生成混淆选项: {difference}")
+
         return question, difference, confusion, None
     
     def handle_template_11(self, template: str) -> Tuple[Optional[str], Optional[int], Optional[list], Optional[str]]:
@@ -581,16 +818,20 @@ class TemplateHandlers:
                                         self.generator.get_filter_dict(legend_value=legend_values[1]))
         
         if val1 is not None and val2 is not None and max_val is not None:
-            sum_vals = float(val1) + float(val2)
-            is_greater = sum_vals > max_val
-            answer = "Yes" if is_greater else "No"
-            
-            # 为布尔答案创建混淆项
-            confusion = ["Yes", "No"]
-            confusion.remove(answer)
-            
-            return question, answer, confusion, None
-            
+            try:
+                sum_vals = float(val1) + float(val2)
+                is_greater = sum_vals > float(max_val) # Ensure max_val is float too
+                answer = "Yes" if is_greater else "No"
+
+                # 为布尔答案创建混淆项
+                confusion = ["Yes", "No"]
+                confusion.remove(answer)
+
+                return question, answer, confusion, None
+            except (ValueError, TypeError):
+                 logger.debug(f"无法比较 template 19 (非数值): {val1}, {val2}, {max_val}")
+                 return None, None, None, None
+
         return None, None, None, None
     
     def handle_template_20(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[str]]:
@@ -616,9 +857,12 @@ class TemplateHandlers:
             val4 = self.generator.get_value(y_label, filter_dict4)
             
             if all(v is not None for v in [val1, val2, val3, val4]):
-                sum1 = float(val1) + float(val2)
-                sum2 = float(val3) + float(val4)
-                return sum1 > sum2
+                try:
+                    sum1 = float(val1) + float(val2)
+                    sum2 = float(val3) + float(val4)
+                    return sum1 > sum2
+                except (ValueError, TypeError):
+                    return False # Treat non-numeric comparison as false
             return False
         
         condition_met = self.generator.check_condition_for_all_x(check_condition)
@@ -650,16 +894,20 @@ class TemplateHandlers:
         max_y = self.generator.get_max(y_label)
         
         if val1 is not None and val2 is not None and max_y is not None:
-            sum_vals = float(val1) + float(val2)
-            is_greater = sum_vals > max_y
-            answer = "Yes" if is_greater else "No"
-            
-            # 为布尔答案创建混淆项
-            confusion = ["Yes", "No"]
-            confusion.remove(answer)
-            
-            return question, answer, confusion, None
-            
+            try:
+                sum_vals = float(val1) + float(val2)
+                is_greater = sum_vals > float(max_y) # Ensure max_y is float
+                answer = "Yes" if is_greater else "No"
+
+                # 为布尔答案创建混淆项
+                confusion = ["Yes", "No"]
+                confusion.remove(answer)
+
+                return question, answer, confusion, None
+            except (ValueError, TypeError):
+                logger.debug(f"无法比较 template 21 (非数值): {val1}, {val2}, {max_y}")
+                return None, None, None, None
+
         return None, None, None, None
     
     def handle_template_22(self, template: str) -> Tuple[Optional[str], Optional[float], Optional[list], Optional[str]]:
@@ -688,19 +936,93 @@ class TemplateHandlers:
         if avg_y is None:
             return None, None, None, None
             
+        try:
+             float_avg_y = float(avg_y)
+        except (ValueError, TypeError):
+             logger.warning(f"Template 23: Average Y value {avg_y} is not numeric.")
+             return None, None, None, None
+            
         count = 0
         x_values = self.generator.get_column_values(x_label)
         
         for x_val in x_values:
             val_filter = self.generator.get_filter_dict(x_val, legend_values[0])
             y_val = self.generator.get_value(y_label, val_filter)
-            if y_val is not None and y_val > avg_y:
-                count += 1
+            if y_val is not None:
+                try:
+                    if float(y_val) > float_avg_y:
+                        count += 1
+                except (ValueError, TypeError):
+                    continue # Skip non-numeric y_val
         
         # 生成混淆选项
-        confusion = self._generate_confusion_options(count)
+        confusion = generate_numerical_distractors(count, 3)
                 
         return question, count, confusion, None
+    
+    def handle_template_24(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[str]]:
+        """ Is the difference between the <Y label> of <legend label1> in <ithx tick> and <jthx tick> greater than
+        the difference between the <Y label> of <legend label2> in <ithx tick> and <jthx tick>? """
+        y_label = self.generator.get_column_by_role('y')
+        group_label = self.generator.get_column_by_role('group')
+        
+        if not group_label:
+            return None, None, None, None
+            
+        placeholders, legend_values, x_ticks = self.generator.get_common_placeholders(legend_num=2, tick_num=2)
+        if len(legend_values) < 2 or len(x_ticks) < 2:
+            return None, None, None, None
+            
+        question = self.generator.replace_placeholders(template, placeholders)
+        
+        # 第一个图例在两个刻度上的差值
+        filter_dict1_ith = self.generator.get_filter_dict(x_ticks[0], legend_values[0])
+        filter_dict1_jth = self.generator.get_filter_dict(x_ticks[1], legend_values[0])
+        
+        val1_ith = self.generator.get_value(y_label, filter_dict1_ith)
+        val1_jth = self.generator.get_value(y_label, filter_dict1_jth)
+        
+        # 第二个图例在两个刻度上的差值
+        filter_dict2_ith = self.generator.get_filter_dict(x_ticks[0], legend_values[1])
+        filter_dict2_jth = self.generator.get_filter_dict(x_ticks[1], legend_values[1])
+        
+        val2_ith = self.generator.get_value(y_label, filter_dict2_ith)
+        val2_jth = self.generator.get_value(y_label, filter_dict2_jth)
+        
+        if all(v is not None for v in [val1_ith, val1_jth, val2_ith, val2_jth]):
+            try:
+                diff1 = abs(float(val1_ith) - float(val1_jth))
+                diff2 = abs(float(val2_ith) - float(val2_jth))
+
+                is_greater = diff1 > diff2
+                answer = "Yes" if is_greater else "No"
+
+                # 为布尔答案创建混淆项
+                confusion = ["Yes", "No"]
+                confusion.remove(answer)
+
+                return question, answer, confusion, None
+            except (ValueError, TypeError):
+                 logger.debug(f"无法比较 template 24 差值 (非数值)")
+                 return None, None, None, None
+
+        return None, None, None, None
+    
+    def handle_template_25(self, template: str) -> Tuple[Optional[str], Optional[float], Optional[list], Optional[str]]:
+        """ What is the difference between the highest and second highest <Y label> of <legend label>? """
+        # 使用通用方法处理极值差值：0为最高，1为次高
+        return self._handle_extremes_difference(template, 0, 1)
+    
+    def handle_template_26(self, template: str) -> Tuple[Optional[str], Optional[float], Optional[list], Optional[str]]:
+        """ What is the difference between the highest and lowest <Y label> of <legend label>? """
+        # 使用通用方法处理极值差值：0为最高，-1为最低
+        return self._handle_extremes_difference(template, 0, -1)
+    
+    def handle_template_27(self, template: str) -> Tuple[Optional[str], Optional[int], Optional[list], Optional[str]]:
+        """ In how many <plural form of X label> is the <Y label> of <legend label> greater than 
+        the average <Y label> of <legend label> across all <plural form of X label>? """
+        # 这个与template_23基本相同，可以复用代码
+        return self.handle_template_23(template)
     
     def handle_template_28(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[str]]:
         """ Is it the case that in every <singular form of X label>, the sum of the <Y label> of/in
@@ -723,8 +1045,11 @@ class TemplateHandlers:
             val3 = self.generator.get_value(y_label, filter_dict3)
             
             if all(v is not None for v in [val1, val2, val3]):
-                sum12 = float(val1) + float(val2)
-                return sum12 > float(val3)
+                try:
+                    sum12 = float(val1) + float(val2)
+                    return sum12 > float(val3)
+                except (ValueError, TypeError):
+                    return False # Treat non-numeric comparison as false
             return False
             
         condition_met = self.generator.check_condition_for_all_x(check_condition)
@@ -755,7 +1080,10 @@ class TemplateHandlers:
             val2 = self.generator.get_value(y_label, filter_dict2)
             
             if val1 is not None and val2 is not None:
-                return float(val1) > float(val2)
+                try:
+                    return float(val1) > float(val2)
+                except (ValueError, TypeError):
+                     return False # Treat non-numeric comparison as false
             return False
             
         strictly_greater = self.generator.check_condition_for_all_x(check_condition)
@@ -786,7 +1114,10 @@ class TemplateHandlers:
             val2 = self.generator.get_value(y_label, filter_dict2)
             
             if val1 is not None and val2 is not None:
-                return float(val1) < float(val2)
+                try:
+                    return float(val1) < float(val2)
+                except (ValueError, TypeError):
+                    return False # Treat non-numeric comparison as false
             return False
             
         strictly_less = self.generator.check_condition_for_all_x(check_condition)
@@ -930,8 +1261,8 @@ class TemplateHandlers:
             # 为文本答案创建混淆项
             all_positions = list(position_map.values())
             confusion = [pos for pos in all_positions if pos != position]
-            if len(confusion) > 3:
-                confusion = random.sample(confusion, 3)
+            if len(confusion) > 4:
+                confusion = random.sample(confusion, 4)
                 
             return template, position, confusion, None
             
@@ -962,8 +1293,8 @@ class TemplateHandlers:
             # 为文本答案创建混淆项
             all_positions = list(position_map.values())
             confusion = [pos for pos in all_positions if pos != position]
-            if len(confusion) > 3:
-                confusion = random.sample(confusion, 3)
+            if len(confusion) > 4:
+                confusion = random.sample(confusion, 4)
                 
             return template, position, confusion, None
             
@@ -981,10 +1312,12 @@ class TemplateHandlers:
             "left": "left-aligned",
             "right": "right-aligned",
             "center": "center-aligned",
-            "middle": "center-aligned"
+            "middle": "center-aligned",
+            "justified": "justified"
         }
         
         alignment = alignment_map.get(text_align)
+        
         
         if alignment:
             # 为文本答案创建混淆项
@@ -1008,7 +1341,8 @@ class TemplateHandlers:
             image_count = svg_content.count('<image')
             
             # 生成混淆选项
-            confusion = self._generate_confusion_options(image_count)
+            confusion = generate_numerical_distractors(image_count, 3)
+            print(confusion)
             
             return template, image_count, confusion, None
             
@@ -1051,11 +1385,15 @@ class TemplateHandlers:
     
     def handle_template_46(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[str]]:
         """ Which data field is used for the icon encoding in the chart? """
-        info = self.generator.get_info()
+        info = self.generator.get_requirements() # Changed from get_info() based on T45
         if not info or "required_fields_icons" not in info or not info["required_fields_icons"]:
             # If no specific field is designated for icons, return None or "none"
-            return template, "none", ["category", "value", "group"], None
-    
+            answer = "none"
+            # Generate confusion from potential roles/columns if possible
+            possible_confusion = ["category", "value", "group", self.generator.get_column_by_role('x'), self.generator.get_column_by_role('y')]
+            confusion = random.sample([c for c in possible_confusion if c and c != answer], min(3, len([c for c in possible_confusion if c and c != answer])))
+            return template, answer, confusion, None
+
         icon_roles = info["required_fields_icons"]
         icon_columns = []
         for role in icon_roles:
@@ -1273,11 +1611,16 @@ class TemplateHandlers:
         if answer is None:
             logger.warning(f"Could not retrieve Y value for {ith_tick_value} in template 53")
             return None, None, None, None
+            
+        # 格式化结果
+        formatted_answer = format_numeric_value(answer)
 
         # 生成混淆选项
-        confusion = self._generate_confusion_options(answer)
+        confusion = None
+        if answer is not None:
+            confusion = generate_formatted_distractors(answer)
 
-        return question, answer, confusion, image
+        return question, formatted_answer, confusion, image
 
     def handle_template_54(self, template: str) -> Tuple[Optional[str], Optional[int], Optional[list], Optional[str]]:
         """ What is the rank of the <Y label> for <ithx tick> among all <plural form of X label>? """
@@ -1338,8 +1681,8 @@ class TemplateHandlers:
             logger.warning(f"Could not calculate rank for Y value {target_y_value} in template 54")
             return None, None, None, None
 
-        # 生成混淆选项
-        confusion = self._generate_confusion_options(rank)
+        # 生成混淆选项 (rank is int)
+        confusion = generate_numerical_distractors(rank, 3)
 
         return question, rank, confusion, image
 
@@ -1370,11 +1713,16 @@ class TemplateHandlers:
         if answer is None:
             logger.warning(f"Could not retrieve Y value for tick={ith_tick_value}, legend={legend_value} in template 55")
             return None, None, None, None
+            
+        # 格式化结果
+        formatted_answer = format_numeric_value(answer)
 
         # 生成混淆选项
-        confusion = self._generate_confusion_options(answer)
+        confusion = None
+        if answer is not None:
+            confusion = generate_formatted_distractors(answer)
 
-        return question, answer, confusion, image
+        return question, formatted_answer, confusion, image
 
     def handle_template_56(self, template: str) -> Tuple[Optional[str], Optional[int], Optional[list], Optional[str]]:
         """ What is the rank of the <Y label> for <ithx tick> within the <legend label> group? """
@@ -1444,8 +1792,8 @@ class TemplateHandlers:
             logger.warning(f"Could not calculate rank for Y value {target_y_value} in group {legend_value}, template 56")
             return None, None, None, None
 
-        # 生成混淆选项
-        confusion = self._generate_confusion_options(rank)
+        # 生成混淆选项 (rank is int)
+        confusion = generate_numerical_distractors(rank, 3)
 
         return question, rank, confusion, image
 
@@ -1485,15 +1833,11 @@ class TemplateHandlers:
                 logger.debug(f"Skipping x={x_val} due to no image in template 57")
                 continue # Skip if no image for this x_val
 
-            # Handle potential multiple Y values per X (e.g., grouped data). 
-            # This template seems to assume one Y per X. Take the first/only one? Average?
-            # Let's assume get_value returns a single representative value or None.
             current_y = self.generator.get_value(y_label, self.generator.get_filter_dict(x_tick=x_val))
 
             if current_y is not None:
                 try:
                     diff = abs(float(current_y) - threshold_n)
-                    # Use math.isclose for potential floating point comparisons if needed, but abs diff is fine here.
                     if diff < min_diff:
                         min_diff = diff
                         closest_x = x_val
@@ -1511,11 +1855,19 @@ class TemplateHandlers:
             image = (closest_x, closest_img)
             # 为文本答案创建混淆项，获取所有可能的x值，然后排除正确答案
             if x_values:
-                confusion = [x for x in x_values if x != closest_x]
-                # 最多选择3个混淆项
-                if len(confusion) > 3:
-                    confusion = random.sample(confusion, 3)
-                return question, closest_x, confusion, image
+                confusion = None
+                if x_values:
+                    # Ensure closest_x is treated as the same type as values in x_values if possible
+                    try:
+                        str_closest_x = str(closest_x)
+                        confusion = [str(x) for x in x_values if str(x) != str_closest_x]
+                    except Exception:
+                         confusion = [x for x in x_values if x != closest_x]
+
+                    # 最多选择4个混淆项
+                    if len(confusion) > 4:
+                        confusion = random.sample(confusion, 4)
+                return question, closest_x, confusion if confusion else None, image
         else:
             # No x_value met the image condition AND had a valid numeric y_value
             logger.warning("No suitable (x, y) pair found meeting conditions for template 57")
@@ -1577,15 +1929,20 @@ class TemplateHandlers:
 
         if max_legend is not None:
             # 为文本答案创建混淆项，使用其他图例值作为混淆选项
-            confusion = [legend for legend in legends_at_tick if legend != max_legend]
-            if len(confusion) > 3:
-                confusion = random.sample(confusion, 3)
-            return question, max_legend, confusion, image
+            confusion = None
+            if legends_at_tick:
+                confusion = [legend for legend in legends_at_tick if legend != max_legend]
+                if len(confusion) < 4 and len(legends_at_tick) < 5:
+                    # 如果真实的图例数量不足，添加一些虚构的图例作为混淆项
+                    additional_legends = [f"Other group {i+1}" for i in range(4 - len(confusion))]
+                    confusion.extend(additional_legends)
+                elif len(confusion) > 4:
+                    confusion = random.sample(confusion, 4)
+            return question, max_legend, confusion if confusion else None, image
         else:
             # No numeric Y values found for any legend at this tick
             logger.warning(f"No legend with a numeric Y value found for tick {ith_tick_value} in template 58")
             return None, None, None, None
-
 
     def handle_template_59(self, template: str) -> Tuple[Optional[str], Optional[Any], Optional[list], Optional[str]]:
         """ Which <legend label> has the lowest <Y label> at <ithx tick>? """
@@ -1643,41 +2000,18 @@ class TemplateHandlers:
 
         if min_legend is not None:
             # 为文本答案创建混淆项，使用其他图例值作为混淆选项
-            confusion = [legend for legend in legends_at_tick if legend != min_legend]
-            if len(confusion) > 3:
-                confusion = random.sample(confusion, 3)
-            return question, min_legend, confusion, image
+            confusion = None
+            if legends_at_tick:
+                confusion = [legend for legend in legends_at_tick if legend != min_legend]
+                if len(confusion) < 4 and len(legends_at_tick) < 5:
+                    # 如果真实的图例数量不足，添加一些虚构的图例作为混淆项
+                    additional_legends = [f"Other group {i+1}" for i in range(4 - len(confusion))]
+                    confusion.extend(additional_legends)
+                elif len(confusion) > 4:
+                    confusion = random.sample(confusion, 4)
+            return question, min_legend, confusion if confusion else None, image
         else:
              # No numeric Y values found for any legend at this tick
              logger.warning(f"No legend with a numeric Y value found for tick {ith_tick_value} in template 59")
              return None, None, None, None
-    
-    def _generate_confusion_options(self, answer, num_options=3):
-        """
-        为数值型答案生成混淆选项
-        
-        Args:
-            answer: 正确答案（数值型）
-            num_options: 需要生成的混淆选项数量
-            
-        Returns:
-            list: 混淆选项列表，如果无法生成则返回None
-        """
-        if answer is None:
-            return None
-        
-        try:
-            # 尝试转换答案为浮点数
-            float_answer = float(answer)
-            
-            # 使用generate_numerical_distractors生成混淆选项
-            from generate_choice import generate_numerical_distractors
-            distractors = generate_numerical_distractors(float_answer, num_options)
-            
-            if distractors and len(distractors) > 0:
-                return distractors
-            return None
-        except (ValueError, TypeError):
-            logger.debug(f"无法为非数值型答案生成混淆选项: {answer}")
-            return None
     

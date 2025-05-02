@@ -203,11 +203,11 @@ function makeChart(containerSelector, data) {
         feMerge.append("feMergeNode").attr("in", "SourceGraphic");
     }
     
+    // 获取所有唯一的组值
+    const uniqueGroups = [...new Set(chartData.map(d => d[groupField]))];
+    
     // 为每个组添加不同的渐变（如果启用）
     if (variables.has_gradient) {
-        // 获取所有唯一的组值
-        const uniqueGroups = [...new Set(chartData.map(d => d[groupField]))];
-        
         uniqueGroups.forEach(group => {
             const groupColor = colors.field && colors.field[group] ? 
                 colors.field[group] : 
@@ -435,7 +435,90 @@ function makeChart(containerSelector, data) {
         }
     });
     
-    // 不需要图例，这部分被移除
+    // ---------- 10. 添加图例 ----------
+    
+    // 计算图例位置和大小
+    const legendRectSize = 16;
+    const legendSpacing = 8;
+    const legendTextSize = parseFloat(typography.annotation.font_size) || 12;
+    const legendPadding = 20;
+    
+    // 计算每组图例的宽度（使用临时元素来计算文本宽度）
+    const tempSvgLegend = svg.append("svg")
+        .attr("width", 0)
+        .attr("height", 0)
+        .style("visibility", "hidden");
+    
+    let legendItemWidths = [];
+    let totalLegendWidth = 0;
+    
+    uniqueGroups.forEach(group => {
+        const groupLabel = groupUnit ? 
+            `${group}${groupUnit}` : 
+            `${group}`;
+        
+        const tempText = tempSvgLegend.append("text")
+            .style("font-family", typography.annotation.font_family)
+            .style("font-size", `${legendTextSize}px`)
+            .style("font-weight", typography.annotation.font_weight)
+            .text(groupLabel);
+        
+        const textWidth = tempText.node().getBBox().width;
+        const itemWidth = legendRectSize + legendSpacing + textWidth + legendPadding;
+        
+        legendItemWidths.push(itemWidth);
+        totalLegendWidth += itemWidth;
+        
+        tempText.remove();
+    });
+    
+    tempSvgLegend.remove();
+    
+    // 创建图例容器
+    const legend = svg.append("g")
+        .attr("class", "legend")
+        .attr("transform", `translate(${(width - totalLegendWidth) / 2}, ${height - margin.bottom / 2})`);
+    
+    // 添加图例项
+    let xOffset = 0;
+    
+    uniqueGroups.forEach((group, i) => {
+        const legendItem = legend.append("g")
+            .attr("transform", `translate(${xOffset}, 0)`);
+        
+        // 获取组的颜色
+        const groupColor = colors.field && colors.field[group] ? 
+            colors.field[group] : 
+            colors.other.primary || "#4682B4";
+        
+        // 添加颜色框
+        legendItem.append("rect")
+            .attr("width", legendRectSize)
+            .attr("height", legendRectSize)
+            .attr("fill", variables.has_gradient ? `url(#bar-gradient-${group.replace(/\s+/g, '-')})` : groupColor)
+            .attr("rx", variables.has_rounded_corners ? 2 : 0)
+            .attr("ry", variables.has_rounded_corners ? 2 : 0)
+            .style("stroke", variables.has_stroke ? getStrokeColor() : "none")
+            .style("stroke-width", variables.has_stroke ? 1 : 0);
+        
+        // 添加文字标签
+        const groupLabel = groupUnit ? 
+            `${group}${groupUnit}` : 
+            `${group}`;
+            
+        legendItem.append("text")
+            .attr("x", legendRectSize + legendSpacing)
+            .attr("y", legendRectSize / 2)
+            .attr("dy", "0.35em")
+            .style("font-family", typography.annotation.font_family)
+            .style("font-size", `${legendTextSize}px`)
+            .style("font-weight", typography.annotation.font_weight)
+            .style("fill", colors.text_color || "#333333")
+            .text(groupLabel);
+        
+        // 更新下一个图例项的x偏移
+        xOffset += legendItemWidths[i];
+    });
     
     // 返回SVG节点
     return svg.node();
