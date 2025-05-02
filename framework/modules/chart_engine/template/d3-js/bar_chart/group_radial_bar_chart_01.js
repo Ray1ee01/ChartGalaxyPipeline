@@ -1,11 +1,11 @@
 /*
 REQUIREMENTS_BEGIN
 {
-    "chart_type": "Radial Bar Chart",
-    "chart_name": "radial_bar_chart_03",
-    "required_fields": ["x", "y"],
-    "required_fields_type": [["categorical"], ["numerical"]],
-    "required_fields_range": [[3, 20], [0, 100]],
+    "chart_type": "Group Radial Bar Chart",
+    "chart_name": "group_radial_bar_chart_01",
+    "required_fields": ["x", "y", "group"],
+    "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
+    "required_fields_range": [[3, 20], [0, 100], [2, 20]],
     "required_fields_icons": [],
     "required_other_icons": [],
     "required_fields_colors": [],
@@ -33,6 +33,15 @@ function makeChart(containerSelector, data) {
 
     const xField = dataColumns[0].name;
     const yField = dataColumns[1].name;
+    const groupField = dataColumns[2].name;
+
+    // 获取所有唯一的分组
+    const groups = [...new Set(chartData.map(d => d[groupField]))];
+    
+    // 创建颜色比例尺
+    const colorScale = d3.scaleOrdinal()
+        .domain(groups)
+        .range(d3.schemeCategory10);
 
     // 按yField降序排序
     chartData.sort((a, b) => b[yField] - a[yField]);
@@ -94,6 +103,7 @@ function makeChart(containerSelector, data) {
             .style("font-size", "12px")
             .text(Math.round(tick));
     });
+
     const labelPadding = 20;
     // 条形
     chartData.forEach((d, i) => {
@@ -108,7 +118,7 @@ function makeChart(containerSelector, data) {
                 .startAngle(0)
                 .endAngle(endAngle)
             )
-            .attr("fill", colors.primary || "#ff4d4f")
+            .attr("fill", colorScale(d[groupField]))
             .attr("opacity", 0.85);
 
         // 类别标签
@@ -122,22 +132,20 @@ function makeChart(containerSelector, data) {
             .style("font-weight", "bold")
             .text(d[xField]);
 
-        // 数值标签（沿柱子末端弧线）
+        // 数值标签
         const valueText = d[yField];
         const valueRadius = innerR + barWidth / 2;
         const valueAngle = endAngle;
         const valueTextPathId = `valueTextPath-${i}`;
         
-        // 根据数值大小动态计算文字路径长度
-        const valueTextLen = String(valueText).length * 8; // 减小每个字符的宽度估计
-        const minAngle = 0.1; // 减小最小角度
-        const maxAngle = 0.3; // 设置最大角度
+        const valueTextLen = String(valueText).length * 8;
+        const minAngle = 0.1;
+        const maxAngle = 0.3;
         const valueShiftAngle = Math.min(
             Math.max(valueTextLen / valueRadius, minAngle),
             maxAngle
         );
 
-        // 计算文字路径的起始和结束角度
         const pathStartAngle = Math.max(0, valueAngle - valueShiftAngle);
         const pathEndAngle = Math.min(1.5 * Math.PI, valueAngle + valueShiftAngle);
 
@@ -157,10 +165,32 @@ function makeChart(containerSelector, data) {
             .attr("fill", "#b71c1c")
             .append("textPath")
             .attr("xlink:href", `#${valueTextPathId}`)
-            .attr("startOffset", "50%") // 将文字居中显示
+            .attr("startOffset", "50%")
             .attr("text-anchor", "middle")
             .attr("dominant-baseline", "middle")
             .text(valueText);
+    });
+
+    // 添加图例
+    const legend = svg.append("g")
+        .attr("class", "legend")
+        .attr("transform", `translate(${width - 150}, 20)`);
+
+    groups.forEach((group, i) => {
+        const legendRow = legend.append("g")
+            .attr("transform", `translate(0, ${i * 20})`);
+
+        legendRow.append("rect")
+            .attr("width", 15)
+            .attr("height", 15)
+            .attr("fill", colorScale(group))
+            .attr("opacity", 0.85);
+
+        legendRow.append("text")
+            .attr("x", 20)
+            .attr("y", 12)
+            .attr("font-size", "12px")
+            .text(group);
     });
 
     return svg.node();

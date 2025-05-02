@@ -2,10 +2,10 @@
 REQUIREMENTS_BEGIN
 {
     "chart_type": "Vertical Group Bar Chart",
-    "chart_name": "vertical_group_bar_chart_9",
+    "chart_name": "vertical_group_bar_chart_12",
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
-    "required_fields_range": [[3, 6], [0, 100], [3, 4]],
+    "required_fields_range": [[2,4], [0, 100], [2,2]],
     "required_fields_icons": [],
     "required_other_icons": [],
     "required_fields_colors": ["group"],
@@ -39,9 +39,9 @@ function makeChart(containerSelector, data) {
     const colors = jsonData.colors || { 
         text_color: "#333333",
         other: { 
-            primary: "#D32F2F",    // Red for "Still active"
-            secondary: "#AAAAAA",  // Gray for "Ended"
-            background: "#F0F0F0" 
+            primary: "#1f77b4",    // 蓝色
+            secondary: "#2ca02c",  // 绿色
+            background: "#FFFFFF" 
         }
     };  // 颜色设置
     const dataColumns = jsonData.data.columns || []; // 数据列定义
@@ -213,14 +213,42 @@ function makeChart(containerSelector, data) {
         .attr("class", "bar-group")
         .attr("transform", d => `translate(${xScale(d.category)},0)`);
 
-    groups.forEach(group => {
-        barGroups.append("rect")
+    // 反转groups数组以确保正确的绘制顺序
+    const reversedGroups = [...groups].reverse();
+
+
+    reversedGroups.forEach(group => {
+        // 主柱子
+        barGroups.append("path")
             .attr("class", "bar")
-            .attr("x", d => groupScale(group))
-            .attr("y", d => yScale(d.groups[group] || 0))
-            .attr("width", groupScale.bandwidth()*1.5)
-            .attr("height", d => chartHeight - yScale(d.groups[group] || 0))
-            .attr("fill", colors.field[group]);
+            .attr("d", d => {
+                const x = groupScale(group) - groupScale.bandwidth() * 0.2;
+                const y = yScale(d.groups[group] || 0);
+                const width = groupScale.bandwidth() * 1.8;
+                const height = chartHeight - yScale(d.groups[group] || 0);
+                const skewOffset = width * 0.25;
+
+                return `
+                    M ${x} ${y}
+                    L ${x + width} ${y + skewOffset}
+                    L ${x + width} ${y + height}
+                    L ${x} ${y + height - skewOffset}
+                    Z
+                `;
+            })
+            .attr("fill", colors.other[group === groups[0] ? "primary" : "secondary"])
+            .style("opacity", 0.7);
+
+        // 数值标签
+        barGroups.append("text")
+            .attr("class", "value-label")
+            .attr("x", d => groupScale(group) + groupScale.bandwidth() * 0.7)
+            .attr("y", d => yScale(d.groups[group] || 0) - 8)
+            .attr("text-anchor", "middle")
+            .style("font-family", typography.label.font_family)
+            .style("font-size", typography.label.font_size)
+            .style("fill", colors.text_color)
+            .text(d => `${(d.groups[group] || 0).toFixed(1)}%`);
     });
     // 添加图例 - 放在图表上方
     const legendGroup = svg.append("g")
