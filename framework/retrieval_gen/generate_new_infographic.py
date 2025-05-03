@@ -70,5 +70,5 @@ def generate_new_infographic(raw_data_path, old_layout_path, output_file):
     process(updated_raw_data_path, new_layout_path, output_file, client_key, base_url)
 
 if __name__ == "__main__":
-    generate_new_infographic("/data1/lizhen/resources/result/data_pool_v2/13717.json", "./output_info/chart_info_26.json", "./output_svg/new_infographic.svg")
+    generate_new_infographic("/data1/lizhen/resources/result/data_pool_v2/402.json", "./output_info/chart_info_375.json", "./output_svg/new_infographic.svg")
 

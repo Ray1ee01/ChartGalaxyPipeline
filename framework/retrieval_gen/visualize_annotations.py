@@ -38,7 +38,7 @@ def visualize_annotations(annotations_file, image_dir, output_dir):
     
     # 获取有标注的图片ID列表
     image_ids_with_annotations = list(annotation_map.keys())
-    image_ids_with_annotations = image_ids_with_annotations[:30]
+    image_ids_with_annotations = image_ids_with_annotations[30:]
     
     # 为不同类别定义不同的颜色
     category_colors = {
@@ -110,10 +110,10 @@ def visualize_annotations(annotations_file, image_dir, output_dir):
 if __name__ == "__main__":
     # 设置路径
     image_dir = "./data"  # 图片在realworld_test文件夹下
-    # annotations_file = "./data/title_annotations.json"
-    # output_dir = "./output_title_annotations"
-    annotations_file = "./data/text_annotations.json"
-    output_dir = "./output_text_annotations"
+    annotations_file = "./data/title_annotations.json"
+    output_dir = "./output_title_annotations"
+    # annotations_file = "./data/text_annotations.json"
+    # output_dir = "./output_text_annotations"
     
     # 可视化标注
     visualize_annotations(annotations_file, image_dir, output_dir)
