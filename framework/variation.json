@@ -500,5 +500,10 @@
   "multiple radar line chart": {
     "total_count": 6,
     "multiple_radar_line_chart_03": 6
+  },
+  "bump chart": {
+    "total_count": 24,
+    "bump_chart_02": 12,
+    "bump_chart_03": 12
   }
 }
