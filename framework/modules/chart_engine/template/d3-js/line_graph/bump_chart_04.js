@@ -127,6 +127,19 @@ function makeChart(containerSelector, data) {
             .attr("fill", getColor(group))
             .attr("stroke", "#fff")
             .attr("stroke-width", 2);
+            
+        // 添加数据点标签
+        g.selectAll(`.label-${group}`)
+            .data(groupRanks)
+            .enter()
+            .append("text")
+            .attr("class", `label-${group}`)
+            .attr("x", d => xScale(parseDate(d.x)))
+            .attr("y", d => yScale(d.rank) - 10)
+            .attr("text-anchor", "middle")
+            .attr("font-size", "12px")
+            .attr("fill", "#fff")
+            .text(d => d.value);
     });
 
     // 4. 绘制y轴标签（排名）
@@ -138,6 +151,7 @@ function makeChart(containerSelector, data) {
             .attr("text-anchor", "end")
             .attr("font-weight", "bold")
             .attr("font-size", 16)
+            .attr("fill", "#fff") // 将标签改为白色
             .text(i);
     }
 
@@ -167,16 +181,16 @@ function makeChart(containerSelector, data) {
             .text(group);
     });
 
-    // 6. 绘制x轴刻度（去除domain和tick，不绘制x轴）
-    // 不绘制x轴
-    // const xAxis = d3.axisBottom(xScale)
-    //     .tickValues(xTicks)
-    //     .tickFormat(xFormat);
-    // g.append("g")
-    //     .attr("transform", `translate(0,${innerHeight})`)
-    //     .call(xAxis)
-    //     .selectAll("text")
-    //     .attr("font-size", 16);
+    // 6. 添加顶部时间标签
+    xTicks.forEach(tick => {
+        g.append("text")
+            .attr("x", xScale(tick))
+            .attr("y", -40)
+            .attr("text-anchor", "middle")
+            .attr("font-size", 16)
+            .attr("fill", "#fff")
+            .text(xFormat(tick));
+    });
 
     return svg.node();
 } 
