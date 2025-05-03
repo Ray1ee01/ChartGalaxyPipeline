@@ -258,19 +258,19 @@
         "subcategory": "style detection"
     },
     {
-        "template_44": "How many icons or images are present in this chart?",
+        "template_44": "How many icons and images are present in this infographic chart?",
         "type": "counting",
         "category": "visual understanding",
         "subcategory": "visual elements retrieval"
     },
     {
-        "template_45": "What visual attribute or data dimension is encoded using different colors in this chart?",
+        "template_45": "What data attribute or dimension is encoded using different colors in this infographic chart?",
         "type": "visual analysis",
         "category": "visual understanding", 
         "subcategory": "visual elements retrieval"
     },
     {
-        "template_46": "What data attribute or dimension is represented by icons in this visualization?",
+        "template_46": "What data attribute or dimension is represented by icons in this infographic chart?",
         "type": "visual analysis",
         "category": "visual understanding",
         "subcategory": "visual elements retrieval"
@@ -282,7 +282,7 @@
         "subcategory": "chart classification"
     },
     {
-        "template_48": "How are decorative images presented in relation to the charts in this visualization? Select one: [overlay, side_by_side, background]",
+        "template_48": "How are decorative images presented in relation to the charts in this infographic chart? Select one: [overlay, side_by_side, background]",
         "type": "visual analysis",
         "category": "visual understanding",
         "subcategory": "visual elements retrieval"

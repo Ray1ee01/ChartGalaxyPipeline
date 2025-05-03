@@ -32,95 +32,6 @@ class QuestionAnswerGenerator:
         """获取图像路径，从BaseGenerator获取"""
         return self.base_generator.get_image_path()
     
-    def _generate_numerical_distractors(self, correct_answer_num: float) -> List[str]:
-        """为数值答案生成混淆选项"""
-        distractors = set()
-        correct_answer_str = str(correct_answer_num)
-        num_decimals = 0
-        is_int = isinstance(correct_answer_num, int)
-        if not is_int and '.' in correct_answer_str:
-            try:
-                num_decimals = len(correct_answer_str.split('.')[1])
-            except IndexError: # Should not happen if '.' is present
-                 pass
-
-        # Helper to format distractors
-        def format_distractor(num):
-            if is_int:
-                return str(int(round(num)))
-            else:
-                return f"{num:.{num_decimals}f}"
-
-        # Try adding +/- percentages
-        for factor in [0.1, 0.2, -0.1, -0.2]:
-            distractor = correct_answer_num * (1 + factor)
-            distractors.add(format_distractor(distractor))
-
-        # Try adding +/- small absolute values
-        for diff in [1, 2, -1, -2]:
-            distractor = correct_answer_num + diff
-            distractors.add(format_distractor(distractor))
-
-        # Remove correct answer if accidentally generated
-        distractors.discard(correct_answer_str)
-
-        # Add random variations if still not enough distractors
-        attempts = 0
-        while len(distractors) < 3 and attempts < 10: # Limit attempts to prevent infinite loops
-            random_factor = random.uniform(0.5, 1.5)
-            if random.random() < 0.2: # Occasionally add different order of magnitude
-                 random_factor *= random.choice([0.1, 10, 0.01, 100])
-
-            distractor_val = correct_answer_num * random_factor
-            # Avoid generating zero as a distractor unless the answer is zero
-            if abs(distractor_val) < 1e-9 and abs(correct_answer_num) > 1e-9:
-                 distractor_val += random.choice([0.1, 1, -0.1, -1]) # Add a small offset
-
-            distractor_str = format_distractor(distractor_val)
-
-            if distractor_str != correct_answer_str:
-                distractors.add(distractor_str)
-            attempts += 1
-
-         # If still not enough, add simple variations like +10, -10, *2, /2
-        extra_distractors_needed = 3 - len(distractors)
-        potential_extras = []
-        if correct_answer_num != 0: # Avoid division by zero
-             potential_extras.extend([
-                 format_distractor(correct_answer_num + 10),
-                 format_distractor(correct_answer_num - 10),
-                 format_distractor(correct_answer_num * 2),
-                 format_distractor(correct_answer_num / 2)
-             ])
-        else:
-             potential_extras.extend([format_distractor(10), format_distractor(-10), format_distractor(1), format_distractor(-1)])
-
-        for extra in potential_extras:
-             if len(distractors) < 3 and extra != correct_answer_str:
-                 distractors.add(extra)
-
-        # Final fallback: if still short, add random numbers (less ideal)
-        while len(distractors) < 3:
-             fallback_num = random.uniform(correct_answer_num * 0.1, correct_answer_num * 10) if correct_answer_num != 0 else random.uniform(-10, 10)
-             fallback_str = format_distractor(fallback_num)
-             if fallback_str != correct_answer_str:
-                 distractors.add(fallback_str)
-
-
-        # Ensure exactly 3 unique distractors are returned
-        final_distractors = list(distractors)
-        if len(final_distractors) > 3:
-             return random.sample(final_distractors, 3)
-        # If somehow we still have fewer than 3 unique distractors (highly unlikely with fallbacks)
-        while len(final_distractors) < 3:
-             fallback_num = random.uniform(-100, 100) # Wider range fallback
-             fallback_str = format_distractor(fallback_num)
-             if fallback_str != correct_answer_str and fallback_str not in final_distractors:
-                 final_distractors.append(fallback_str)
-
-        return final_distractors
-
-
     def format_multiple_choice(self, question: str, correct_answer: str, distractors: List[str]) -> Tuple[str, Dict[str, str], str]:
         """格式化为多选题"""
         options_list = distractors + [correct_answer]
@@ -200,9 +111,10 @@ class QuestionAnswerGenerator:
                 if confusion:
                     pair_data["confusion"] = confusion
 
-                if is_numeric:
+                if is_numeric and confusion and len(confusion) >= 3:
                     try:
-                         distractors = self._generate_numerical_distractors(numeric_value)
+                         # 使用已有的混淆选项
+                         distractors = confusion[:3]  # 确保只取3个混淆项
                          # Use the original string answer for formatting consistency in options
                          formatted_question, options_dict, correct_letter = self.format_multiple_choice(question, str_answer, distractors)
 
@@ -222,7 +134,11 @@ class QuestionAnswerGenerator:
                          pair_data["type"] = template_obj.get("type", "unknown_fallback")
                          pair_data["category"] = template_obj.get("category", "unknown_fallback")
                          pair_data["subcategory"] = template_obj.get("subcategory", "unknown_fallback")
-
+                elif is_numeric:
+                    # 数值类型但没有混淆项时的默认处理
+                    pair_data["question"] = f"{question}\n\nProvide the numerical answer."
+                    pair_data["answer"] = str_answer
+                    pair_data["answer_type"] = "close_numeric"
                 elif str_answer.lower() in ["yes", "no"]:
                      pair_data["question"] = f"{question}\n\nAnswer with exactly 'Yes' or 'No'."
                      pair_data["answer"] = str_answer.capitalize() # Standardize case

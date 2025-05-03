@@ -8,10 +8,9 @@ REQUIREMENTS_BEGIN
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["temporal"], ["numerical"], ["categorical"]],
     "required_fields_range": [
-        [2, 30],
+        [2, 12],
         [0, "inf"],
-        [2,2],
-        [2,2]
+        [4, 10]
     ],
     "required_fields_icons": [],
     "required_other_icons": [],
@@ -20,7 +19,7 @@ REQUIREMENTS_BEGIN
     "supported_effects": ["spacing"],
     "min_height": 400,
     "min_width": 400,
-    "background": "no",
+    "background": "dark",
     "icon_mark": "none",
     "icon_label": "none",
     "has_x_axis": "no",
@@ -63,25 +62,6 @@ function makeChart(containerSelector, data) {
     // 获取唯一的组值和X值
     const groups = [...new Set(chartData.map(d => d[groupField]))];
     const xValues = [...new Set(chartData.map(d => d[xField]))].sort();
-
-    // 如果 group 数量 <= 2，自动扩增到 5 个 group
-    if (groups.length <= 2) {
-        const baseNames = ["A", "B", "C", "D", "E"];
-        const existing = new Set(groups);
-        for (let i = 0; i < baseNames.length && groups.length < 5; i++) {
-            if (!existing.has(baseNames[i])) {
-                groups.push(baseNames[i]);
-                // 为每个 x 补充一条虚拟数据，y 设为 0
-                xValues.forEach(x => {
-                    chartData.push({
-                        [xField]: x,
-                        [yField]: Math.floor(Math.random() * 100),
-                        [groupField]: baseNames[i]
-                    });
-                });
-            }
-        }
-    }
     
     // 创建SVG
     const svg = d3.select(containerSelector)
@@ -99,22 +79,40 @@ function makeChart(containerSelector, data) {
 
     const { xScale, xTicks, xFormat, timeSpan } = createXAxisScaleAndTicks(chartData, xField, 0, innerWidth);
     
+    // 将组名转换为CSS安全的类名
+    const safeClassName = (name) => {
+        return "group-" + (name || "").toString().replace(/[^a-zA-Z0-9]/g, "-");
+    };
     
     // 1. 计算每个x下各group的排名
     // 构建排名数据结构：{ group1: [{x, rank}], group2: ... }
     const rankData = {};
+    
+    // 初始化每个组的数据数组
+    groups.forEach(group => {
+        rankData[group] = [];
+    });
+    
+    // 为每个时间点计算排名
     xValues.forEach(x => {
         // 取出该x下所有group的数据
         const items = chartData.filter(d => d[xField] === x);
+        
+        // 排序前检查数据有效性，过滤掉无效的数据点
+        const validItems = items.filter(d => d[yField] !== null && d[yField] !== undefined && !isNaN(d[yField]));
+        
         // 按yField降序排序（y越大排名越高）
-        items.sort((a, b) => b[yField] - a[yField]);
-        items.forEach((d, i) => {
-            if (!rankData[d[groupField]]) rankData[d[groupField]] = [];
-            rankData[d[groupField]].push({
-                x: d[xField],
-                rank: i + 1, // 排名从1开始
-                value: d[yField]
-            });
+        validItems.sort((a, b) => b[yField] - a[yField]);
+        
+        // 为每个有效的组添加排名数据
+        validItems.forEach((d, i) => {
+            if (d[groupField]) {
+                rankData[d[groupField]].push({
+                    x: d[xField],
+                    rank: i + 1, // 排名从1开始
+                    value: d[yField]
+                });
+            }
         });
     });
 
@@ -125,29 +123,58 @@ function makeChart(containerSelector, data) {
 
     // 3. 绘制线条
     groups.forEach(group => {
+        if (!rankData[group] || rankData[group].length === 0) {
+            return; // 跳过没有数据的组
+        }
+        
         const groupRanks = rankData[group];
-        g.append("path")
-            .datum(groupRanks)
-            .attr("fill", "none")
-            .attr("stroke", getColor(group))
-            .attr("stroke-width", 3)
-            .attr("d", d3.line()
-                .x(d => xScale(parseDate(d.x)))
-                .y(d => yScale(d.rank))
-                .curve(d3.curveCatmullRom.alpha(0.5)) // 添加曲线平滑效果
-            );
+        const safeClass = safeClassName(group);
+        
+        // 确保数据点按x排序
+        groupRanks.sort((a, b) => {
+            return parseDate(a.x) - parseDate(b.x);
+        });
+        
+        // 只在有足够数据点时绘制线条
+        if (groupRanks.length > 1) {
+            g.append("path")
+                .datum(groupRanks)
+                .attr("fill", "none")
+                .attr("stroke", getColor(group))
+                .attr("stroke-width", 3)
+                .attr("d", d3.line()
+                    .defined(d => d.rank !== null && d.rank !== undefined && !isNaN(d.rank))
+                    .x(d => xScale(parseDate(d.x)))
+                    .y(d => yScale(d.rank))
+                    .curve(d3.curveCatmullRom.alpha(0.5)) // 添加曲线平滑效果
+                );
+        }
+        
         // 绘制每个点的圆点
-        g.selectAll(`.dot-${group}`)
+        g.selectAll(null)  // 使用null避免选择器问题
             .data(groupRanks)
             .enter()
             .append("circle")
-            .attr("class", `dot-${group}`)
+            .attr("class", `dot-${safeClass}`)
             .attr("cx", d => xScale(parseDate(d.x)))
             .attr("cy", d => yScale(d.rank))
             .attr("r", 5)
             .attr("fill", getColor(group))
             .attr("stroke", "#fff")
             .attr("stroke-width", 2);
+            
+        // 添加数据点标签
+        g.selectAll(null)  // 使用null避免选择器问题
+            .data(groupRanks)
+            .enter()
+            .append("text")
+            .attr("class", `label-${safeClass}`)
+            .attr("x", d => xScale(parseDate(d.x)))
+            .attr("y", d => yScale(d.rank) - 10)
+            .attr("text-anchor", "middle")
+            .attr("font-size", "12px")
+            .attr("fill", "#fff")
+            .text(d => d.value);
     });
 
     // 4. 绘制y轴标签（排名）
@@ -159,75 +186,119 @@ function makeChart(containerSelector, data) {
             .attr("text-anchor", "end")
             .attr("font-weight", "bold")
             .attr("font-size", 16)
+            .attr("fill", "#fff") // 将标签改为白色
             .text(i);
     }
 
     // 5. 绘制group标签（左侧和右侧）
     // 左侧
     groups.forEach(group => {
+        if (!rankData[group] || rankData[group].length === 0) {
+            return; // 跳过没有数据的组
+        }
+        
         const first = rankData[group][0];
-        g.append("text")
-            .attr("x", -margin.left + 10)
-            .attr("y", yScale(first.rank) + 5)
-            .attr("text-anchor", "end")
-            .attr("font-weight", "bold")
-            .attr("font-size", 18)
-            .attr("fill", getColor(group))
-            .text(group);
+        if (first && first.rank) {
+            g.append("text")
+                .attr("x", -margin.left + 10)
+                .attr("y", yScale(first.rank) + 5)
+                .attr("text-anchor", "end")
+                .attr("font-weight", "bold")
+                .attr("font-size", 18)
+                .attr("fill", getColor(group))
+                .text(group);
+        }
     });
+    
     // 右侧
     groups.forEach(group => {
+        if (!rankData[group] || rankData[group].length === 0) {
+            return; // 跳过没有数据的组
+        }
+        
         const last = rankData[group][rankData[group].length - 1];
-        g.append("text")
-            .attr("x", innerWidth + 10)
-            .attr("y", yScale(last.rank) + 5)
-            .attr("text-anchor", "start")
-            .attr("font-weight", "bold")
-            .attr("font-size", 18)
-            .attr("fill", getColor(group))
-            .text(group);
+        if (last && last.rank) {
+            g.append("text")
+                .attr("x", innerWidth + 10)
+                .attr("y", yScale(last.rank) + 5)
+                .attr("text-anchor", "start")
+                .attr("font-weight", "bold")
+                .attr("font-size", 18)
+                .attr("fill", getColor(group))
+                .text(group);
+        }
     });
 
-    // 6. 绘制x轴刻度（不显示domain和tick）
-    const xAxis = d3.axisBottom(xScale)
-        .tickValues(xTicks)
-        .tickFormat(xFormat)
-        .tickSize(0)  // 不显示tick
-        .tickPadding(10);
-    // 检查文本是否重叠
-    const xAxisG = g.append("g")
-        .attr("transform", `translate(0,${innerHeight})`)
-        .call(xAxis)
-        .call(g => g.select(".domain").remove());  // 不显示domain线
+    // 6. 添加顶部时间标签（优化以避免重叠）
+    // 创建一个临时的SVG元素来测量文本宽度
+    const tempSvg = d3.select("body").append("svg").attr("width", 0).attr("height", 0);
+    const tempText = tempSvg.append("text").attr("font-size", 16);
     
-    // 获取所有刻度文本
-    const tickTexts = xAxisG.selectAll(".tick text");
-    
-    // 检查文本是否重叠
-    let overlap = false;
-    const textRects = [];
-    
-    tickTexts.each(function(d, i) {
-        const bbox = this.getBBox();
-        // 检查与前一个文本是否重叠
-        if (i > 0 && bbox.x < textRects[i-1].x + textRects[i-1].width + 5) {
-            overlap = true;
-        }
-        textRects.push({x: bbox.x, width: bbox.width});
+    // 估算每个标签的宽度
+    const estimatedLabelWidths = xTicks.map(tick => {
+        tempText.text(xFormat(tick));
+        const width = tempText.node().getComputedTextLength ? 
+                     tempText.node().getComputedTextLength() : 
+                     xFormat(tick).length * 10; // 如果无法计算，使用一个近似值
+        return width;
     });
     
-    // 如果有重叠，旋转文本
-    if (overlap) {
-        tickTexts
-            .attr("transform", "rotate(-45)")
-            .attr("text-anchor", "end")
-            .attr("font-size", 16)
-            .attr("fill", "#000");
-    } else {
-        tickTexts
-            .attr("font-size", 16)
-            .attr("fill", "#000");
+    // 删除临时SVG
+    tempSvg.remove();
+    
+    // 计算可用空间和标签所需空间
+    const availableWidth = innerWidth;
+    const minLabelSpacing = 10; // 标签之间的最小间距
+    
+    // 动态计算要显示的标签数量
+    let ticksToShow = [...xTicks];
+    
+    // 如果标签会重叠，减少标签数量
+    // 先计算所有标签占用的总宽度
+    const totalLabelWidth = estimatedLabelWidths.reduce((sum, width) => sum + width, 0) + 
+                           (estimatedLabelWidths.length - 1) * minLabelSpacing;
+    
+    // 如果总宽度超过可用空间，则减少标签
+    if (totalLabelWidth > availableWidth) {
+        // 根据可用空间计算可以显示的标签数量
+        const idealCount = Math.floor(availableWidth / (d3.mean(estimatedLabelWidths) + minLabelSpacing));
+        
+        // 至少保留首尾两个标签
+        if (idealCount >= 2) {
+            // 如果理想数量小于实际数量，则需要筛选标签
+            if (idealCount < xTicks.length) {
+                // 保留首尾两个标签，其余均匀抽样
+                ticksToShow = [xTicks[0]];
+                
+                if (xTicks.length > 2) {
+                    // 在中间均匀选择idealCount-2个标签
+                    const step = (xTicks.length - 2) / (idealCount - 1);
+                    for (let i = 1; i < idealCount - 1; i++) {
+                        const index = Math.round(1 + i * step);
+                        if (index < xTicks.length - 1) {
+                            ticksToShow.push(xTicks[index]);
+                        }
+                    }
+                }
+                
+                ticksToShow.push(xTicks[xTicks.length - 1]);
+            }
+        } else {
+            // 如果连两个标签都显示不下，则只显示首尾标签
+            ticksToShow = [xTicks[0], xTicks[xTicks.length - 1]];
+        }
     }
+    
+    // 绘制选中的标签
+    ticksToShow.forEach(tick => {
+        g.append("text")
+            .attr("x", xScale(tick))
+            .attr("y", -40)
+            .attr("text-anchor", "middle")
+            .attr("font-size", 16)
+            .attr("fill", "#fff")
+            .text(xFormat(tick));
+    });
 
     return svg.node();
 } 

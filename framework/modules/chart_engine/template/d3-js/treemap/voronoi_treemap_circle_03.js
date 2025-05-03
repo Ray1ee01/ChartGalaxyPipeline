@@ -2,7 +2,7 @@
 REQUIREMENTS_BEGIN
 {
     "chart_type": "Voronoi Treemap(Circle)",
-    "chart_name": "voronoi_treemap_circle_03",
+    "chart_name": "voronoi_treemap_circle_03_hand",
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],
     "required_fields_range": [[5, 40], [0, "inf"]],

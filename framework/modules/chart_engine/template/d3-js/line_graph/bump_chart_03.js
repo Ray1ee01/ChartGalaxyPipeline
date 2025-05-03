@@ -8,10 +8,9 @@ REQUIREMENTS_BEGIN
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["temporal"], ["numerical"], ["categorical"]],
     "required_fields_range": [
-        [2, 30],
+        [2, 12],
         [0, "inf"],
-        [2,2],
-        [2,2]
+        [3, 10]
     ],
     "required_fields_icons": [],
     "required_other_icons": [],
@@ -20,7 +19,7 @@ REQUIREMENTS_BEGIN
     "supported_effects": ["spacing"],
     "min_height": 400,
     "min_width": 400,
-    "background": "no",
+    "background": "dark",
     "icon_mark": "none",
     "icon_label": "none",
     "has_x_axis": "no",
@@ -64,26 +63,6 @@ function makeChart(containerSelector, data) {
     const groups = [...new Set(chartData.map(d => d[groupField]))];
     const xValues = [...new Set(chartData.map(d => d[xField]))].sort();
 
-    // 如果 group 数量 <= 2，自动扩增到 5 个 group
-    if (groups.length <= 2) {
-        const baseNames = ["A", "B", "C", "D", "E"];
-        const existing = new Set(groups);
-        for (let i = 0; i < baseNames.length && groups.length < 5; i++) {
-            if (!existing.has(baseNames[i])) {
-                groups.push(baseNames[i]);
-                // 为每个 x 补充一条虚拟数据，y 设为随机值
-                xValues.forEach(x => {
-                    // 生成0到100之间的随机值
-                    const randomValue = Math.floor(Math.random() * 100);
-                    chartData.push({
-                        [xField]: x,
-                        [yField]: randomValue,
-                        [groupField]: baseNames[i]
-                    });
-                });
-            }
-        }
-    }
     
     // 创建SVG
     const svg = d3.select(containerSelector)
@@ -148,8 +127,8 @@ function makeChart(containerSelector, data) {
                 .attr("text-anchor", "middle")
                 .attr("dy", 0) // 将标签放在线条上
                 .attr("font-size", 14)
-                .attr("fill", "#000000") // 使用黑色
-                .text(d.rank); // 显示排名值
+                .attr("fill", "#ffffff") // 改为白色
+                .text(d.value); // 显示原始值而非排名
         });
     });
 
@@ -162,6 +141,7 @@ function makeChart(containerSelector, data) {
             .attr("text-anchor", "end")
             .attr("font-weight", "bold")
             .attr("font-size", 16)
+            .attr("fill", "#ffffff") // 改为白色
             .text(i);
     }
 
