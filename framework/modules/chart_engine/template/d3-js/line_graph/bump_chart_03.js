@@ -171,28 +171,46 @@ function makeChart(containerSelector, data) {
             .text(group);
     });
 
-    // 在顶部添加时间标签
-    xValues.forEach(x => {
-        g.append("text")
-            .attr("x", xScale(parseDate(x)))
-            .attr("y", -30) // 向上移动30px
-            .attr("text-anchor", "middle")
-            .attr("font-weight", "bold")
-            .attr("font-size", 16)
-            .attr("fill", "#ffffff") // 白色标签
-            .text(x);
+    // 6. 绘制x轴刻度（不显示domain和tick）
+    const xAxis = d3.axisBottom(xScale)
+        .tickValues(xTicks)
+        .tickFormat(xFormat)
+        .tickSize(0)  // 不显示tick
+        .tickPadding(10);
+    // 检查文本是否重叠
+    const xAxisG = g.append("g")
+        .attr("transform", `translate(0,${innerHeight})`)
+        .call(xAxis)
+        .call(g => g.select(".domain").remove());  // 不显示domain线
+    
+    // 获取所有刻度文本
+    const tickTexts = xAxisG.selectAll(".tick text");
+    
+    // 检查文本是否重叠
+    let overlap = false;
+    const textRects = [];
+    
+    tickTexts.each(function(d, i) {
+        const bbox = this.getBBox();
+        // 检查与前一个文本是否重叠
+        if (i > 0 && bbox.x < textRects[i-1].x + textRects[i-1].width + 5) {
+            overlap = true;
+        }
+        textRects.push({x: bbox.x, width: bbox.width});
     });
-
-    // 6. 绘制x轴刻度（去除domain和tick，不绘制x轴）
-    // 不绘制x轴
-    // const xAxis = d3.axisBottom(xScale)
-    //     .tickValues(xTicks)
-    //     .tickFormat(xFormat);
-    // g.append("g")
-    //     .attr("transform", `translate(0,${innerHeight})`)
-    //     .call(xAxis)
-    //     .selectAll("text")
-    //     .attr("font-size", 16);
+    
+    // 如果有重叠，旋转文本
+    if (overlap) {
+        tickTexts
+            .attr("transform", "rotate(-45)")
+            .attr("text-anchor", "end")
+            .attr("font-size", 16)
+            .attr("fill", "#000");
+    } else {
+        tickTexts
+            .attr("font-size", 16)
+            .attr("fill", "#000");
+    }
 
     return svg.node();
 } 
