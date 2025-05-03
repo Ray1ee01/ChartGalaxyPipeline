@@ -41,6 +41,9 @@ def make_options(json_data):
     colors_data = json_data['colors']
     images = json_data['images']
     data_columns = json_data['data']['columns']
+    unit = data_columns[1].get('unit', '')
+    if len(unit) > 3:
+        unit = ''
     
     # Extract field names from data_columns
     category_field = data_columns[0]['name']
@@ -111,7 +114,7 @@ def make_options(json_data):
             "label": {
                 "show": True,
                 "position": "outside",
-                "formatter": "{c}" + data_columns[1].get('unit', ''),
+                "formatter": "{c}" + unit,
                 "fontSize": int(typography['label']['font_size'].replace('px', '')),
                 "fontFamily": typography['label']['font_family'],
                 "color": colors_data['text_color'],

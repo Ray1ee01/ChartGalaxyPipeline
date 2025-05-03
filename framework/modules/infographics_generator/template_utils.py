@@ -107,8 +107,6 @@ def analyze_templates(templates: Dict) -> Tuple[int, Dict[str, str], int]:
     
     return template_count, template_requirements
 
-block_list = ["multiple_line_graph_06", "layered_area_chart_02", "multiple_area_chart_01", "stacked_area_chart_01", "stacked_area_chart_03"]
-
 def check_field_color_compatibility(requirements: Dict, data: Dict) -> bool:
     """Check if the field color is compatible with the template"""
     if len(requirements.get('required_fields_colors', [])) > 0 and len(data.get("colors", {}).get("field", {}).keys()) == 0:
@@ -164,8 +162,6 @@ def check_template_compatibility(data: Dict, templates: Dict, specific_chart_nam
         for chart_type, chart_names_dict in templates_dict.items():
             for chart_name, template_info in chart_names_dict.items():
                 if 'base' in chart_name:
-                    continue
-                if chart_name in block_list:
                     continue
                 if engine == 'vegalite_py':
                     continue

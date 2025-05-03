@@ -170,47 +170,82 @@ function makeChart(containerSelector, data) {
             .attr("fill", getColor(group))
             .text(group);
     });
-
-    // 6. 绘制x轴刻度（不显示domain和tick）
-    const xAxis = d3.axisBottom(xScale)
-        .tickValues(xTicks)
-        .tickFormat(xFormat)
-        .tickSize(0)  // 不显示tick
-        .tickPadding(10);
-    // 检查文本是否重叠
-    const xAxisG = g.append("g")
-        .attr("transform", `translate(0,${innerHeight})`)
-        .call(xAxis)
-        .call(g => g.select(".domain").remove());  // 不显示domain线
-    
-    // 获取所有刻度文本
-    const tickTexts = xAxisG.selectAll(".tick text");
-    
-    // 检查文本是否重叠
-    let overlap = false;
-    const textRects = [];
-    
-    tickTexts.each(function(d, i) {
-        const bbox = this.getBBox();
-        // 检查与前一个文本是否重叠
-        if (i > 0 && bbox.x < textRects[i-1].x + textRects[i-1].width + 5) {
-            overlap = true;
+    // 优化时间标签避免重叠
+    const optimizeTimeLabels = (ticks, format, availableWidth) => {
+        if (ticks.length <= 1) return ticks;
+        
+        // 创建临时文本元素计算宽度
+        const tempLabelText = g.append("text")
+            .attr("font-size", 14)
+            .attr("visibility", "hidden");
+        
+        // 计算所有标签的宽度
+        const calculateLabelWidth = (tick) => {
+            tempLabelText.text(format(tick));
+            return tempLabelText.node().getComputedTextLength() + 20; // 添加一些边距
+        };
+        
+        const tickWidths = ticks.map(tick => calculateLabelWidth(tick));
+        
+        // 检查是否会重叠
+        let willOverlap = false;
+        let positions = ticks.map(t => xScale(t));
+        
+        for (let i = 0; i < positions.length - 1; i++) {
+            const gap = positions[i+1] - positions[i];
+            if (gap < (tickWidths[i] + tickWidths[i+1]) / 2) {
+                willOverlap = true;
+                break;
+            }
         }
-        textRects.push({x: bbox.x, width: bbox.width});
+        
+        // 如果不会重叠，显示所有标签
+        if (!willOverlap) {
+            tempLabelText.remove();
+            return ticks;
+        }
+        
+        // 计算可以显示的标签数量
+        const averageWidth = tickWidths.reduce((a, b) => a + b, 0) / ticks.length;
+        let maxLabels = Math.floor(availableWidth / averageWidth);
+        
+        // 确保至少显示首尾标签
+        if (maxLabels <= 2) {
+            tempLabelText.remove();
+            return [ticks[0], ticks[ticks.length - 1]];
+        }
+        
+        // 均匀选择标签
+        const step = Math.ceil(ticks.length / maxLabels);
+        const optimizedTicks = [];
+        
+        for (let i = 0; i < ticks.length; i += step) {
+            optimizedTicks.push(ticks[i]);
+        }
+        
+        // 确保包含最后一个标签
+        if (optimizedTicks[optimizedTicks.length - 1] !== ticks[ticks.length - 1]) {
+            optimizedTicks.push(ticks[ticks.length - 1]);
+        }
+        
+        tempLabelText.remove();
+        return optimizedTicks;
+    };
+    
+    // 优化时间标签
+    const optimizedXTicks = optimizeTimeLabels(xTicks, xFormat, innerWidth);
+
+    // 添加顶部时间标签
+    optimizedXTicks.forEach(tick => {
+        g.append("text")
+            .attr("x", xScale(tick))
+            .attr("y", -40)
+            .attr("text-anchor", "middle")
+            .attr("font-size", 14)
+            .attr("fill", "#fff")
+            .text(xFormat(tick));
     });
     
-    // 如果有重叠，旋转文本
-    if (overlap) {
-        tickTexts
-            .attr("transform", "rotate(-45)")
-            .attr("text-anchor", "end")
-            .attr("font-size", 16)
-            .attr("fill", "#000");
-    } else {
-        tickTexts
-            .attr("font-size", 16)
-            .attr("fill", "#000");
-    }
 
     return svg.node();
 } 
