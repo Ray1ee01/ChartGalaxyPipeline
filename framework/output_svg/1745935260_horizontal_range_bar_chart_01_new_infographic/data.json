@@ -1,0 +1,89 @@
+{
+    "data": [
+        {
+            "Smart Home Application Type": "Connectivity & Automation",
+            "Units": 85.0,
+            "Year": "2027"
+        },
+        {
+            "Smart Home Application Type": "Connectivity & Automation",
+            "Units": 70.0,
+            "Year": "2031"
+        },
+        {
+            "Smart Home Application Type": "Entertainment Systems",
+            "Units": 35.0,
+            "Year": "2027"
+        },
+        {
+            "Smart Home Application Type": "Entertainment Systems",
+            "Units": 25.0,
+            "Year": "2031"
+        },
+        {
+            "Smart Home Application Type": "Automated Comfort",
+            "Units": 70.0,
+            "Year": "2027"
+        },
+        {
+            "Smart Home Application Type": "Automated Comfort",
+            "Units": 60.0,
+            "Year": "2031"
+        },
+        {
+            "Smart Home Application Type": "Home Security",
+            "Units": 60.0,
+            "Year": "2027"
+        },
+        {
+            "Smart Home Application Type": "Home Security",
+            "Units": 50.0,
+            "Year": "2031"
+        },
+        {
+            "Smart Home Application Type": "Energy Management",
+            "Units": 55.0,
+            "Year": "2027"
+        },
+        {
+            "Smart Home Application Type": "Energy Management",
+            "Units": 45.0,
+            "Year": "2031"
+        },
+        {
+            "Smart Home Application Type": "Smart Appliances",
+            "Units": 45.0,
+            "Year": "2027"
+        },
+        {
+            "Smart Home Application Type": "Smart Appliances",
+            "Units": 35.0,
+            "Year": "2031"
+        }
+    ],
+    "columns": [
+        {
+            "name": "Smart Home Application Type",
+            "importance": "primary",
+            "description": "Category of smart home application",
+            "unit": "none",
+            "data_type": "categorical",
+            "role": "x"
+        },
+        {
+            "name": "Units",
+            "importance": "primary",
+            "description": "Units for the corresponding year",
+            "role": "y",
+            "data_type": "numerical"
+        },
+        {
+            "name": "Year",
+            "importance": "primary",
+            "description": "The year of the data point",
+            "role": "group",
+            "data_type": "temporal"
+        }
+    ],
+    "type_combination": "categorical + numerical + temporal"
+}

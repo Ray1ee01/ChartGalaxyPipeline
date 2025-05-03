@@ -84,6 +84,7 @@ You are a data visualization expert. You are given a table data and an old layou
 Please generate new chart titles and descriptions based on the following table data.
 Do not change the original bbox and category_id.
 category_id=1 is for image, category_id=2 is for chart, category_id=3 is for title.
+New title should be concise and informative, and should not be longer than 5 words.
 
 Old Layout Description: {old_layout_str}
 New Data Column Info: {column_info_str}
@@ -102,7 +103,7 @@ Example:
             1139.77
         ],
         "category_id": 2,
-        "description": "New Description",
+        "chart_description": "New Description"
         }},
         {{
         "bbox": [
@@ -112,7 +113,7 @@ Example:
             1149.55
         ],
         "category_id": 1,
-        "description": "A image for chart decoration. This image is ...",
+        "image_description": "A image for chart decoration. This image is ..."
         }},
         {{
         "bbox": [
@@ -122,7 +123,7 @@ Example:
             104.0
         ],
         "category_id": 3,
-        "description": New Title",
+        "title": "New Title"
         }}
     ]
 }}
@@ -148,8 +149,10 @@ Example:
         # 尝试解析JSON
         try:
             result = json.loads(content)
+            print(f"result: {result}")
             return result
         except json.JSONDecodeError:
+            print(f"json.JSONDecodeError: {content}")
             result = {
                 "new_layout": []
             }
@@ -162,59 +165,10 @@ Example:
             "new_layout": []
         }
 
-def generate_new_images_in_layout(new_layout):
-    """Generate new images using LLM"""
-    # Create output directory
-    output_dir = "generated_images"
-    os.makedirs(output_dir, exist_ok=True)
-    
-    for element in new_layout:
-        if element['category_id'] == 1:
-            description = element['description']
-            # Generate new image using LLM
-            prompt = description
-            try:
-                # 调用API生成图片
-                response = client.chat.completions.create(
-                    model="gemini-2.0-flash-exp",
-                    messages=[
-                        {"role": "user", "content": prompt}
-                    ],
-                    modalities=["text", "image"]
-                )
-                
-                # 从响应中提取图片数据
-                image_data = None
-                if (hasattr(response.choices[0].message, "multi_mod_content") and 
-                    response.choices[0].message.multi_mod_content is not None):
-                    for part in response.choices[0].message.multi_mod_content:
-                        if "inline_data" in part and part["inline_data"] is not None:
-                            image_data = part["inline_data"]["data"]
-                            break
-                
-                if image_data is None:
-                    raise Exception("未能从响应中获取图片数据")
-                    
-                # 解码base64并保存为PNG
-                image_bytes = base64.b64decode(image_data)
-                image_path = os.path.join(output_dir, f"visual_element_{uuid.uuid4()}.png")
-                
-                with open(image_path, "wb") as f:
-                    f.write(image_bytes)
-                    
-                # Add image path to element
-                element["image_path"] = image_path
-                
-            except Exception as e:
-                print(f"Error generating image: {e}")
-                element["image_path"] = None
-            
-    return new_layout
-
-def create_new_layout(raw_data, annotations, old_layout, image_info, text_category_id, output_dir):
+def create_new_layout(raw_data, annotations, old_layout, output_path):
     """为指定的图片创建新的布局描述"""
-    image_id = image_info['id']
-    file_name = image_info['file_name']
+    image_id = old_layout['image_id']
+    file_name = old_layout['file_name']
     
     # 获取图片的所有标注
     image_annotations = get_image_annotation(annotations, image_id)
@@ -225,96 +179,31 @@ def create_new_layout(raw_data, annotations, old_layout, image_info, text_catego
     
     # 使用LLM生成新内容
     new_content = generate_new_content_with_llm(image_annotations, table_data, column_info, old_layout)
+    print(f"new_content: {new_content}")
     new_layout = new_content.get("new_layout", [])
-    new_layout = generate_new_images_in_layout(new_layout)
     
     # 创建新的布局描述
     new_layout = {
         "image_id": image_id,
         "file_name": file_name,
         "new_layout": new_layout,
+        "width": old_layout['width'],
+        "height": old_layout['height'],
         "raw_data": {
             "table_data": table_data,
             "columns": column_info
         }
     }
     
-    # 保存新布局
-    output_path = os.path.join(output_dir, f"layout_{image_id}.json")
     save_json_file(new_layout, output_path)
-    
-    return output_path
 
-def process_data_files(table_data_file, annotations_file, old_layout_folder, output_dir, limit=None):
-    """处理数据文件，为每个图片生成新的布局"""
-    # 加载表格数据文件路径列表
-    table_data_paths = load_json_file(table_data_file)
-    
+def process_data_file(raw_data_path, old_layout_path, annotations_file, output_path):
+    """处理数据文件，为图片生成新的布局"""
     # 加载标注文件
     annotations_data = load_json_file(annotations_file)
     annotations = annotations_data.get('annotations', [])
-    images = annotations_data.get('images', [])
-    
-    # 获取文本类别ID
-    text_category_id = 3  # 假设文本类别ID为3
-    
-    # 创建输出目录
-    os.makedirs(output_dir, exist_ok=True)
-    
-    # 处理每个表格数据文件
-    results = []
-    processed_count = 0
-    
-    # 如果有限制，随机选择图片
-    if limit and limit < len(images):
-        selected_images = random.sample(images, limit)
-    else:
-        selected_images = images
 
-    # test, select image with id 12
-    selected_images = [image for image in selected_images if image['id'] == 12]
-    
-    for image_info in tqdm(selected_images, desc="处理图片"):
-        # 随机选择一个表格数据文件
-        raw_data_path = random.choice(table_data_paths)
-        
-        # test, select first table data
-        raw_data_path = table_data_paths[0]
-        
-        try:
-            # 加载原始数据
-            raw_data = load_json_file(raw_data_path)
-            old_layout = load_json_file(os.path.join(old_layout_folder, f"chart_info_{image_info['id']}.json"))
-            
-            # 创建新布局
-            output_path = create_new_layout(raw_data, annotations, old_layout, image_info, text_category_id, output_dir)
-            
-            processed_count += 1
-            
-            # 添加短暂延迟，避免API限制
-            time.sleep(0.5)
-            
-        except Exception as e:
-            print(f"处理图片 {image_info['id']} 时出错: {e}")
-    
-
-def main():
-    parser = argparse.ArgumentParser(description='生成新的图表布局描述')
-    parser.add_argument('--table_data', type=str, default='data/table_data.json',
-                        help='表格数据文件路径列表')
-    parser.add_argument('--annotations', type=str, default='data/title_annotations.json',
-                        help='标注文件路径')
-    parser.add_argument('--old_layout', type=str, default='./output_info/',
-                        help='旧布局文件路径')
-    parser.add_argument('--output_dir', type=str, default='./output_generated',
-                        help='输出目录')
-    parser.add_argument('--limit', type=int, default=None,
-                        help='处理的图片数量限制')
-    
-    args = parser.parse_args()
-    
-    # 处理数据文件
-    process_data_files(args.table_data, args.annotations, args.old_layout, args.output_dir, args.limit)
-
-if __name__ == "__main__":
-    main() 
+    # 加载原始数据
+    raw_data = load_json_file(raw_data_path)
+    old_layout = load_json_file(old_layout_path)
+    create_new_layout(raw_data, annotations, old_layout, output_path)
