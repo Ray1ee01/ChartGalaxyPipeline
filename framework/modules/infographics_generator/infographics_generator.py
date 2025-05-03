@@ -236,9 +236,8 @@ def make_infographic(
     
     # 初始化best_title默认值为None，用于后续检查
     best_title = None
-
-    """
-    if mask_1_ratio > 0.25 and mask_1_ratio < 0.5:
+    print(f"mask_1_ratio: {mask_1_ratio}")
+    if mask_1_ratio > 0.20 and mask_1_ratio < 0.5 and ("donut" in data["chart_type"] or "Donut" in data["chart_type"]):
         width = average_distance*2
         title_content = title_styler_process(
             input_data=data, max_width=int(width), text_align="center", show_embellishment=False, show_sub_title=False,
@@ -264,7 +263,7 @@ def make_infographic(
                     "show_sub_title": False
                 }
                 break
-    """
+    print(f"best_title: {best_title}")
     # 如果没有找到合适的best_title（width太大或其他原因），使用默认处理逻辑
     if best_title is None:
         default_title = {
@@ -955,6 +954,7 @@ def process(input: str, output: str, base_url: str, api_key: str, chart_name: st
             chart_inner_content = extract_svg_content(chart_svg_content)
         # print("chart_inner_content: ", chart_inner_content)
         assemble_start = time.time()
+        data["chart_type"] = chart_type
         final_svg, layout_info = make_infographic(
             data=data,
             chart_svg_content=chart_inner_content,
