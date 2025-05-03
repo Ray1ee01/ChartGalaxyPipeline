@@ -28,14 +28,14 @@
     "horizontal_diverging_bar_chart_01_hand": 508
   },
   "donut_chart": {
-    "total_count": 526,
+    "total_count": 532,
     "donut_chart_00_hand": 72,
     "donut_chart_06_d3": 72,
     "donut_chart_03_d3": 71,
     "donut_chart_03_d3_hand": 72,
     "donut_chart_04_d3": 71,
     "donut_chart_05_d3": 72,
-    "donut_chart_00": 72,
+    "donut_chart_00": 78,
     "donut_chart_04_hand": 18,
     "donut_chart_05_hand": 6
   },
@@ -389,8 +389,8 @@
     "pyramid_chart_02": 71
   },
   "donut chart": {
-    "total_count": 80,
-    "donut_chart_02": 72,
+    "total_count": 88,
+    "donut_chart_02": 80,
     "donut_chart_02_hand": 8
   },
   "grouped scatterplot": {
@@ -502,8 +502,10 @@
     "multiple_radar_line_chart_03": 6
   },
   "bump chart": {
-    "total_count": 24,
-    "bump_chart_02": 12,
-    "bump_chart_03": 12
+    "total_count": 62,
+    "bump_chart_02": 18,
+    "bump_chart_03": 18,
+    "bump_chart_04": 10,
+    "bump_chart_05": 16
   }
 }
