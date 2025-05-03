@@ -4,15 +4,9 @@ REQUIREMENTS_BEGIN
     "chart_type": "Horizontal Stacked Bar Chart",
     "chart_name": "horizontal_stacked_bar_chart_4",
     "is_composite": true,
-    "required_fields": [["x", "y" ,"group"], ["x", "y2"]],
-    "required_fields_type": [
-        [["categorical"], ["numerical"], ["categorical"]],
-        [["categorical"], ["numerical"]]
-    ],
-    "required_fields_range": [
-        [[2, 30], [0, "inf"], [2, 30]],
-        [[2, 30], [0, "inf"]]
-    ],
+    "required_fields": ["x", "y", "y2", "group"],
+    "required_fields_type": [["categorical"], ["numerical"], ["numerical"],["categorical"]],
+    "required_fields_range": [[2, 30], [0, "inf"], [0, "inf"], [2, 5]],
     "required_fields_icons": ["x"],
     "required_other_icons": [],
     "required_fields_colors": ["group"],

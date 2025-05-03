@@ -47,6 +47,10 @@ def measure_text_bounds(text, font_family, font_size, font_weight="normal"):
 
 def get_font(font_family, font_size, font_weight="normal"):
     """获取字体对象，处理各种字体格式和降级情况"""
+    # 处理特殊字体名称
+    if font_family and font_family.lower() == 'comics':
+        font_family = 'Comic Sans MS, cursive'
+    
     # 从字体大小中提取数字部分
     if isinstance(font_size, str):
         font_size = int(font_size.replace('px', ''))
@@ -65,6 +69,7 @@ def get_font(font_family, font_size, font_weight="normal"):
                 'Times': '/usr/share/fonts/truetype/msttcorefonts/Times_New_Roman.ttf',
                 'Courier': '/usr/share/fonts/truetype/msttcorefonts/Courier_New.ttf',
                 'Verdana': '/usr/share/fonts/truetype/msttcorefonts/Verdana.ttf',
+                'Comic': '/usr/share/fonts/truetype/msttcorefonts/Comic_Sans_MS.ttf',
                 'Default': '/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf'
             }
             
@@ -163,12 +168,13 @@ def split_text_into_lines(text, max_width, font_family="Arial", font_size=16, fo
     return lines
 
 class TitleGenerator:
-    def __init__(self, json_data: Dict, max_width = 0, text_align = "left", show_embellishment = True, show_sub_title = True):
+    def __init__(self, json_data: Dict, max_width = 0, text_align = "left", show_embellishment = True, show_sub_title = True, font_family = None):
         self.json_data = json_data
         self.max_width = max_width
         self.text_align = text_align  # 保留接口，但内部只实现左对齐
         self.show_embellishment = show_embellishment
         self.show_sub_title = show_sub_title
+        self.font_family = font_family
 
     def generate(self):
         self.main_title_svg, self.main_title_bounding_box = self.generate_main_title()
@@ -293,6 +299,11 @@ class TitleGenerator:
         
         # 使用PIL直接测量文本尺寸
         font_family = typography.get('font_family', 'Arial')
+        if self.font_family:  # 如果全局字体被设置，优先使用全局字体
+            font_family = self.font_family
+        # 如果字体是comics，自动转换为Comic Sans MS, cursive
+        if font_family and font_family.lower() == 'comics':
+            font_family = 'Comic Sans MS, cursive'
         font_size = typography.get('font_size', '16px')
         font_weight = typography.get('font_weight', 'normal')
         
@@ -330,6 +341,11 @@ class TitleGenerator:
 
     def generate_one_line_text(self, typography: Dict, text: str, max_width: int = 0, text_align: str = "left"):
         font_family = typography.get('font_family', 'Arial')
+        if self.font_family:  # 如果全局字体被设置，优先使用全局字体
+            font_family = self.font_family
+        # 如果字体是comics，自动转换为Comic Sans MS, cursive
+        if font_family and font_family.lower() == 'comics':
+            font_family = 'Comic Sans MS, cursive'
         font_size = typography.get('font_size', '16px')
         font_weight = typography.get('font_weight', 'normal')
         
@@ -349,6 +365,11 @@ class TitleGenerator:
     def generate_multi_line_text(self, typography: Dict, text: str, max_width: int, text_align: str = "left"):
         """生成多行文本，确保每行不超过最大宽度"""
         font_family = typography.get('font_family', 'Arial')
+        if self.font_family:  # 如果全局字体被设置，优先使用全局字体
+            font_family = self.font_family
+        # 如果字体是comics，自动转换为Comic Sans MS, cursive
+        if font_family and font_family.lower() == 'comics':
+            font_family = 'Comic Sans MS, cursive'
         font_size = typography.get('font_size', '16px')
         font_weight = typography.get('font_weight', 'normal')
         
@@ -414,7 +435,8 @@ def process(
     max_width: int = 500,
     text_align: str = "left",
     show_embellishment: bool = True,
-    show_sub_title: bool = True
+    show_sub_title: bool = True,
+    font_family: str = None
 ) -> Union[bool, str]:
     """
     Process function for generating styled title SVG from input data.
@@ -426,6 +448,8 @@ def process(
         max_width (int, optional): Maximum width constraint for the title. Defaults to 500.
         text_align (str, optional): Text alignment. Options: "left", "center", "right". Defaults to "left".
         show_embellishment (bool, optional): Whether to show the decoration element. Defaults to True.
+        show_sub_title (bool, optional): Whether to show the subtitle. Defaults to True.
+        font_family (str, optional): Font family to use for all text. Defaults to None (use from typography).
 
     Returns:
         Union[bool, str]:
@@ -446,7 +470,8 @@ def process(
         title_generator = TitleGenerator(data, max_width=max_width, 
                                          text_align=text_align, 
                                          show_embellishment=show_embellishment,
-                                         show_sub_title=show_sub_title)
+                                         show_sub_title=show_sub_title,
+                                         font_family=font_family)
         svg_content, bounding_box = title_generator.generate()
 
         if output:
@@ -469,15 +494,23 @@ def main():
     parser.add_argument('--text-align', '-a', type=str, default='left', choices=['left', 'center', 'right'],
                         help='Text alignment: left, center, or right')
     parser.add_argument('--no-embellishment', action='store_true', help='Hide the decoration element')
+    parser.add_argument('--no-subtitle', action='store_true', help='Hide the subtitle')
+    parser.add_argument('--font', type=str, help='Font family to use for all text (e.g. Arial, Comic, Times)')
     
     args = parser.parse_args()
     
+    # 处理font参数中的comics
+    if args.font and args.font.lower() == 'comics':
+        args.font = 'Comic Sans MS, cursive'
+        
     success = process(
         input=args.input,
         output=args.output,
         max_width=args.max_width,
         text_align=args.text_align,
-        show_embellishment=not args.no_embellishment
+        show_embellishment=not args.no_embellishment,
+        show_sub_title=not args.no_subtitle,
+        font_family=args.font
     )
     
     if success:

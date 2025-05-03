@@ -7,7 +7,7 @@ REQUIREMENTS_BEGIN
     "is_composite": false,
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
-    "required_fields_range": [[2, 20], [0, "inf"], [2,2]],
+    "required_fields_range": [[2, 20], [0, "inf"], [2, 2]],
     "required_fields_icons": [],
     "required_other_icons": [],
     "required_fields_colors": ["group"],
@@ -82,9 +82,9 @@ function makeChart(containerSelector, data) {
         dimensionUnit = dataColumns.find(col => col.role === "x").unit;
     }
     
-    if (dataColumns.find(col => col.role === "y").unit !== "none") {
-        valueUnit = dataColumns.find(col => col.role === "y").unit;
-    }
+    //if (dataColumns.find(col => col.role === "y").unit !== "none") {
+    //    valueUnit = dataColumns.find(col => col.role === "y").unit;
+    //}
     if (dataColumns.find(col => col.role === "group").unit !== "none") {
         groupUnit = dataColumns.find(col => col.role === "group").unit; 
     }

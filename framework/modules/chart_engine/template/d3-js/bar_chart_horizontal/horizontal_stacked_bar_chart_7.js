@@ -2,10 +2,10 @@
 REQUIREMENTS_BEGIN
 {
     "chart_type": "Horizontal Stacked Bar Chart",
-    "chart_name": "horizontal_stacked_bar_chart_0",
+    "chart_name": "horizontal_stacked_bar_chart_7",
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
-    "required_fields_range": [[3, 20], [0, 10000], [3, 20]],
+    "required_fields_range": [[3, 20], [0, "inf"], [2, 4]],
     "required_fields_icons": ["x"],
     "required_other_icons": [],
     "required_fields_colors": ["group"],
@@ -61,7 +61,7 @@ function makeChart(containerSelector, data) {
     // 设置边距
     const margin = {
         top: 50,
-        right: 30,
+        right: 100,  // 增加右侧边距，为图标预留空间
         bottom: 80,
         left: 200
     };
@@ -143,7 +143,13 @@ function makeChart(containerSelector, data) {
         .domain(groups)
         .range(group_colors)
     
-
+    // 用于测量文本宽度的辅助函数
+    function getTextWidth(text, fontSize) {
+        const canvas = document.createElement("canvas");
+        const context = canvas.getContext("2d");
+        context.font = fontSize + " Arial";
+        return context.measureText(text).width;
+    }
 
     // ---------- 6. 创建SVG容器 ----------
     
@@ -196,8 +202,8 @@ function makeChart(containerSelector, data) {
         .text(d => {
             const value = d[1] - d[0];
             const width = xScale(d[1]) - xScale(d[0]);
-            const textwidth = getTextWidth(value.toFixed(1),typography.annotation.font_size)
-            // 只在宽度大于20且值大于0时显示文本
+            const textwidth = getTextWidth(value.toFixed(1), typography.annotation.font_size)
+            // 只在宽度大于文本宽度且值大于0时显示文本
             return (width > textwidth && value > 0) ? value.toFixed(1) : '';
         });
 
@@ -219,66 +225,174 @@ function makeChart(containerSelector, data) {
             .tickSize(0)
             .tickPadding(10)
             .tickFormat(d => d))
-        .call(g => g.select(".domain").remove())
-    yAxis.selectAll("text")
-        .style("text-anchor", "end")
-        .style("font-family", typography.label.font_family)
-        .style("font-size", typography.label.font_size)
-        .style("fill", colors.text_color);
+        .call(g => g.select(".domain").remove());
 
-    let bandWidth = yScale.bandwidth()
-    let iconSize = yScale.bandwidth()*0.7
-    let iconPadding = 10;
-    // 添加文本和图标
+    // 添加黑色背景矩形和白色文本
     yAxis.selectAll(".tick").each(function(d) {
         const tick = d3.select(this);
-        if(jsonData.images && jsonData.images.field[d]) {
-            tick.append("image")
-                .attr("x", - iconSize - iconPadding)  // 10是原有的padding
-                .attr("y", -iconSize/2)
-                .attr("width", iconSize)
-                .attr("height", iconSize)
-                .attr("xlink:href", jsonData.images.field[d]);
-            tick.select("text")
-                .style("text-anchor", "end") 
-                .style("font-family", typography.label.font_family)
-                .style("font-size", typography.label.font_size)
-                .attr("x", -iconSize-2*iconPadding)
-        }
+        
+        // 获取标签文本内容
+        const labelText = d;
+        
+        // 移除原始文本
+        tick.select("text").remove();
+        
+        // 添加黑色背景矩形
+        tick.append("rect")
+            .attr("x", -margin.left + 5)  // 稍微缩进一点
+            .attr("y", -yScale.bandwidth() / 2)
+            .attr("width", margin.left - 10)  // 减去一些边距
+            .attr("height", yScale.bandwidth())
+            .attr("fill", "black")
+            .attr("opacity", 0.5)
+            .attr("rx", 3)
+            .attr("ry", 3);
+        
+        // 添加白色文本
+        tick.append("text")
+            .attr("x", -10)  // 保持一些右侧边距
+            .attr("y", 0)
+            .attr("text-anchor", "end")
+            .attr("dominant-baseline", "middle")
+            .style("fill", "#ffffff")
+            .style("font-family", typography.label.font_family)
+            .style("font-size", 12)
+            .text(labelText);
     });
 
-    // 添加图例 - 放在图表上方
-    const legendGroup = svg.append("g")
-        .attr("transform", `translate(0, -50)`);
+    let bandWidth = yScale.bandwidth();
+    let iconSize = yScale.bandwidth() * 0.7;
     
-    // 计算字段名宽度并添加间距
-    const titleWidth = groupField.length * 10;
-    const titleMargin = 15;
+    // 在右侧添加图标
+    if (jsonData.images) {
+        chartGroup.selectAll(".icon")
+            .data(processedData)
+            .enter()
+            .append("image")
+            .attr("class", "icon")
+            .attr("x", chartWidth + 10)  // 放在条形图右侧
+            .attr("y", d => yScale(d.period) + (yScale.bandwidth() - iconSize) / 2)
+            .attr("width", iconSize)
+            .attr("height", iconSize)
+            .attr("xlink:href", d => jsonData.images.field[d.period]);
+    }
 
-
-    const legendSize = layoutLegend(legendGroup, groups, colors, {
-        x: titleWidth + titleMargin,
-        y: 0,
-        fontSize: 14,
-        fontWeight: "bold",
-        align: "left",
-        maxWidth: chartWidth - titleWidth - titleMargin,
-        shape: "rect",
+    // ---------- 8. 图例 ----------
+    
+    // 测量所有图例项目的文本宽度
+    const getLegendItemWidth = (text, fontSize) => {
+        return getTextWidth(text, fontSize) + 30; // 增加到30px，为色块和文本间留出更多空间
+    };
+    
+    const legendFontSize = "14px";
+    let legendItems = [];
+    
+    // 计算标题宽度
+    const titleWidth = getTextWidth(groupField, legendFontSize) + 25; // 增加到25px，为标题和第一个图例项留出更多空间
+    
+    // 计算每个图例项的宽度
+    groups.forEach(group => {
+        legendItems.push({
+            key: group,
+            width: getLegendItemWidth(group, legendFontSize)
+        });
     });
-
-    // 添加字段名称
-    legendGroup.append("text")
-        .attr("x", 0)
-        .attr("y", legendSize.height / 2)
-        .attr("dominant-baseline", "middle")
-        .attr("fill", "#333")
-        .style("font-size", "16px")
-        .style("font-weight", "bold")
-        .text(groupField);
     
-    // 将图例组向上移动 height/2, 并居中
-    legendGroup.attr("transform", `translate(${(chartWidth - legendSize.width - titleWidth - titleMargin) / 2}, 0)`);
+    // 计算总宽度
+    const totalLegendWidth = titleWidth + legendItems.reduce((sum, item) => sum + item.width, 0);
     
+    // 创建图例布局
+    const createLegend = () => {
+        // 添加图例组 - 左边与x标签左端对齐
+        const legendGroup = svg.append("g")
+            .attr("transform", `translate(0, 30)`); // 将x坐标设为0以左对齐
+        
+        // 添加图例标题
+        legendGroup.append("text")
+            .attr("x", 0)
+            .attr("y", 0)
+            .attr("dominant-baseline", "middle")
+            .attr("fill", "#333")
+            .style("font-size", legendFontSize)
+            .style("font-weight", "bold")
+            .text(groupField);
+        
+        return legendGroup;
+    };
+    
+    // 检查是否需要单行或双行布局
+    const availableWidth = width - 20; // 留出一些边距
+    
+    if (totalLegendWidth < availableWidth) {
+        // 单行布局 - 固定间隔
+        const legendGroup = createLegend();
+        
+        // 使用固定间距而不是动态计算
+        const fixedSpacing = 10; // 固定的最小间距
+        let xOffset = titleWidth;
+        
+        legendItems.forEach((item, i) => {
+            const itemGroup = legendGroup.append("g")
+                .attr("transform", `translate(${xOffset}, 0)`);
+            
+            // 添加颜色方块
+            itemGroup.append("rect")
+                .attr("width", 15)
+                .attr("height", 15)
+                .attr("y", -7.5)
+                .attr("fill", colorScale(item.key));
+            
+            // 添加文本
+            itemGroup.append("text")
+                .attr("x", 20)
+                .attr("y", 0)
+                .attr("dominant-baseline", "middle")
+                .style("font-size", legendFontSize)
+                .text(item.key);
+            
+            // 更新偏移量，加上当前项的宽度和固定间距
+            xOffset += item.width + fixedSpacing;
+        });
+    } else {
+        // 双行布局
+        const legendGroup1 = createLegend();
+        
+        // 第一行只显示标题
+        
+        // 第二行显示图例项
+        const legendGroup2 = svg.append("g")
+            .attr("transform", `translate(0, 55)`); // 第二行位置
+        
+        const fixedSpacing = 20; // 第二行的间距可以更大一些
+        let xOffset = 0; // 第二行从左边开始
+        
+        legendItems.forEach((item, i) => {
+            const itemGroup = legendGroup2.append("g")
+                .attr("transform", `translate(${xOffset}, 0)`);
+            
+            // 添加颜色方块
+            itemGroup.append("rect")
+                .attr("width", 15)
+                .attr("height", 15)
+                .attr("y", -7.5)
+                .attr("fill", colorScale(item.key));
+            
+            // 添加文本
+            itemGroup.append("text")
+                .attr("x", 20)
+                .attr("y", 0)
+                .attr("dominant-baseline", "middle")
+                .style("font-size", legendFontSize)
+                .text(item.key);
+            
+            // 更新偏移量
+            xOffset += item.width + fixedSpacing;
+        });
+        
+        // 增加顶部边距以容纳两行图例
+        margin.top = 75;
+        chartGroup.attr("transform", `translate(${margin.left}, ${margin.top})`);
+    }
 
     return svg.node();
 }

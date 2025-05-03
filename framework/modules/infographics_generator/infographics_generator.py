@@ -76,7 +76,8 @@ def make_infographic(
     between_padding: int,
     dark: bool,
     html_path: str,
-    mask_path: str
+    mask_path: str,
+    title_font_family: str
 ) -> str:
     if not dark:
         background_color = data["colors"].get("background_color", "#FFFFFF")
@@ -151,7 +152,13 @@ def make_infographic(
 
     for i in range(steps + 1):
         width = min_title_width + i * (max_title_width - min_title_width) / steps
-        title_content = title_styler_process(input_data=data, max_width=int(width), text_align="left", show_embellishment=False)
+        title_content = title_styler_process(
+            input_data=data, 
+            max_width=int(width), 
+            text_align="left", 
+            show_embellishment=False,
+            font_family=title_font_family
+        )
         title_svg_content = title_content  # Assuming title_content is the SVG content
         svg_tree = etree.fromstring(title_svg_content.encode())
         width = int(float(svg_tree.get("width", 0)))
@@ -233,7 +240,10 @@ def make_infographic(
     """
     if mask_1_ratio > 0.25 and mask_1_ratio < 0.5:
         width = average_distance*2
-        title_content = title_styler_process(input_data=data, max_width=int(width), text_align="center", show_embellishment=False, show_sub_title=False)
+        title_content = title_styler_process(
+            input_data=data, max_width=int(width), text_align="center", show_embellishment=False, show_sub_title=False,
+            font_family=title_font_family
+        )
         title_svg_content = title_content  # Assuming title_content is the SVG content
         svg_tree = etree.fromstring(title_svg_content.encode())
         width = int(float(svg_tree.get("width", 0)))
@@ -504,7 +514,8 @@ def make_infographic(
                                          max_width=best_title["width"], \
                                          text_align=best_title["text-align"], \
                                          show_embellishment=best_title["text-align"] == "left" and best_title.get("is_first", False), \
-                                         show_sub_title=best_title.get("show_sub_title", True))
+                                         show_sub_title=best_title.get("show_sub_title", True), \
+                                         font_family=title_font_family)
     title_inner_content = extract_svg_content(title_content)
     
     total_height = best_title["total_height"] + padding * 2
@@ -885,6 +896,9 @@ def process(input: str, output: str, base_url: str, api_key: str, chart_name: st
     
     # 处理输出文件名，将路径分隔符替换为下划线
     safe_output_name = os.path.basename(output).replace('/', '_').replace('\\', '_')
+    title_font_family = "Arial"
+    if "hand" in chart_name:
+        title_font_family = "Comics"
     
     # 生成图表SVG，使用安全的文件名
     chart_svg_path = os.path.join(tmp_dir, f"{os.path.splitext(safe_output_name)[0]}.chart.tmp")
@@ -947,33 +961,10 @@ def process(input: str, output: str, base_url: str, api_key: str, chart_name: st
         between_padding=between_padding,
         dark=requirements.get("background", "light") == "dark",
         html_path=html_path,
-        mask_path=mask_path
+        mask_path=mask_path,
+        title_font_family=title_font_family
     )
     # print("final_svg: ", final_svg)
-    layout_info["chart_variation"] = chart_name
-    layout_info["chart_type"] = chart_type
-    layout_info["data_source"] = input
-
-    assemble_time = time.time() - assemble_start
-    logger.info(f"Assembling infographic took: {assemble_time:.4f} seconds")
-    # 读取生成的SVG内容
-    read_svg_start = time.time()
-    
-    if final_svg is None:
-        logger.error("Failed to assemble infographic: SVG content extraction failed")
-        return False
-    chart_inner_content = extract_svg_content(chart_svg_content)
-    
-    assemble_start = time.time()
-    final_svg, layout_info = make_infographic(
-        data=data,
-        chart_svg_content=chart_inner_content,
-        padding=padding,
-        between_padding=between_padding,
-        dark=requirements.get("background", "light") == "dark",
-        html_path=html_path,
-        mask_path=mask_path
-    )
     layout_info["chart_variation"] = chart_name
     layout_info["chart_type"] = chart_type
     layout_info["data_source"] = input

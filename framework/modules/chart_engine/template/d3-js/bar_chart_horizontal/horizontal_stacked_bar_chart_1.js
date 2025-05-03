@@ -5,7 +5,7 @@ REQUIREMENTS_BEGIN
     "chart_name": "horizontal_stacked_bar_chart_1",
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
-    "required_fields_range": [[3, 20], [0, 100], [3, 20]],
+    "required_fields_range": [[3, 20], [0, 10000], [3, 20]],
     "required_fields_icons": ["x"],
     "required_other_icons": [],
     "required_fields_colors": ["group"],

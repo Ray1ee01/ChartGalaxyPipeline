@@ -9,7 +9,7 @@ REQUIREMENTS_BEGIN
     "required_fields_range": [[2, 20], [0, 100], [2, 2],[2, 2]],
     "required_fields_icons": [],
     "required_other_icons": [],
-    "required_fields_colors": ["group"],
+    "required_fields_colors": ["group", "group2"],
     "required_other_colors": ["primary"],
     "supported_effects": ["shadow", "radius_corner", "gradient", "stroke", "spacing"],
     "min_height": 400,
