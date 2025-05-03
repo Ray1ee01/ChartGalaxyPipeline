@@ -64,6 +64,9 @@ def make_options(json_data):
     # Calculate available space for chart
     content_top = title_height + legend_height
     content_height = canvas_height - content_top
+    unit = data_columns[1].get('unit', '')
+    if len(unit) > 3:
+        unit = ''
     
     # Calculate pie radius based on available space
     min_dimension = min(canvas_width, content_height)
@@ -111,7 +114,7 @@ def make_options(json_data):
             "label": {
                 "show": True,
                 "position": "inside",
-                "formatter": "{c}" + data_columns[1].get('unit', ''),
+                "formatter": "{c}" + unit,
                 "fontSize": int(typography['label']['font_size'].replace('px', '')),
                 "fontFamily": typography['label']['font_family'],
                 "color": colors_data['text_color'],
