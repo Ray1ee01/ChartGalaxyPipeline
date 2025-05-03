@@ -8,7 +8,7 @@ REQUIREMENTS_BEGIN
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["temporal"], ["numerical"], ["categorical"]],
     "required_fields_range": [
-        [2, 30],
+        [2, 12],
         [0, "inf"],
         [3, 10]
     ],
@@ -127,8 +127,8 @@ function makeChart(containerSelector, data) {
                 .attr("text-anchor", "middle")
                 .attr("dy", 0) // 将标签放在线条上
                 .attr("font-size", 14)
-                .attr("fill", "#000000") // 使用黑色
-                .text(d.rank); // 显示排名值
+                .attr("fill", "#ffffff") // 改为白色
+                .text(d.value); // 显示原始值而非排名
         });
     });
 
@@ -141,6 +141,7 @@ function makeChart(containerSelector, data) {
             .attr("text-anchor", "end")
             .attr("font-weight", "bold")
             .attr("font-size", 16)
+            .attr("fill", "#ffffff") // 改为白色
             .text(i);
     }
 
@@ -168,6 +169,18 @@ function makeChart(containerSelector, data) {
             .attr("font-size", 18)
             .attr("fill", getColor(group))
             .text(group);
+    });
+
+    // 在顶部添加时间标签
+    xValues.forEach(x => {
+        g.append("text")
+            .attr("x", xScale(parseDate(x)))
+            .attr("y", -30) // 向上移动30px
+            .attr("text-anchor", "middle")
+            .attr("font-weight", "bold")
+            .attr("font-size", 16)
+            .attr("fill", "#ffffff") // 白色标签
+            .text(x);
     });
 
     // 6. 绘制x轴刻度（去除domain和tick，不绘制x轴）
