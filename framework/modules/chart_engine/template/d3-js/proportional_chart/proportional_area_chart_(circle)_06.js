@@ -2,7 +2,7 @@
 REQUIREMENTS_BEGIN
 {
     "chart_type": "Proportional Area Chart(circle)",
-    "chart_name": "proportional_area_chart_circle_01",
+    "chart_name": "proportional_area_chart_circle_06",
     "is_composite": false,
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],
@@ -104,35 +104,37 @@ function makeChart(containerSelector, dataJSON) {
     
     // 创建防碰撞力模拟布局
     const simulation = d3.forceSimulation()
-        .force("center", d3.forceCenter(W/2, H/2).strength(0.02)) // 减弱中心引力
-        .force("charge", d3.forceManyBody().strength(-15)) // 增强节点间斥力
+        .force("center", d3.forceCenter(W/2, H/2).strength(0.05)) // 中心引力
+        .force("charge", d3.forceManyBody().strength(-10)) // 节点间斥力
         // 使用collide力允许适度重叠（minDistance = radius1 + radius2 - 5）
-        .force("collide", d3.forceCollide().radius(d => d.r).strength(0.95))
-        // 添加环形引力，帮助节点保持在圆环位置
-        .force("radial", d3.forceRadial(Math.min(W, H) * 0.3, W/2, H/2).strength(0.1))
+        .force("collide", d3.forceCollide().radius(d => d.r - 5).strength(0.9))
         .stop();
 
-    // 设置初始位置 - 大圆在中心，小圆在周围螺旋状排列
-    if (nodes.length > 0) {
-        // 最大的圆固定在中心位置
-        nodes[0].fx = W * 0.5;
-        nodes[0].fy = H * 0.5;
-    }
+    // 计算虚拟中心圆的半径 - 基于可用空间和节点数量
+    const centralCircleRadius = Math.min(W, H) * 0.25; // 虚拟中心圆半径，占绘图区较小边的25%
     
-    // 对于更多的圆，螺旋状初始位置
-    if (nodes.length > 1) {
-        const angle_step = 2 * Math.PI / (nodes.length - 1);
-        let radius_step = Math.min(W, H) * 0.15;
-        let current_radius = radius_step;
+    // 设置初始位置 - 所有圆按大小围绕虚拟中心圆排列
+    if (nodes.length > 0) {
+        // 计算排列角度和间距
+        const totalAngle = 2 * Math.PI; // 完整圆周
+        const angleStep = totalAngle / nodes.length; // 每个节点的角度间隔
         
-        for (let i = 1; i < nodes.length; i++) {
-            const angle = i * angle_step;
-            nodes[i].x = W/2 + current_radius * Math.cos(angle);
-            nodes[i].y = H/2 + current_radius * Math.sin(angle);
+        // 按照顺序排列圆形（从最大到最小）
+        for (let i = 0; i < nodes.length; i++) {
+            const angle = i * angleStep; // 当前节点的角度
+            const node = nodes[i];
             
-            // 每5个节点增加螺旋半径
-            if (i % 5 === 0) {
-                current_radius += radius_step;
+            // 计算距离中心的距离（虚拟中心圆半径 + 当前节点半径 + 一些间距）
+            const distance = centralCircleRadius + node.r + 10;
+            
+            // 设置初始位置
+            node.x = W/2 + distance * Math.cos(angle);
+            node.y = H/2 + distance * Math.sin(angle);
+            
+            // 对较大的圆（前1/3的圆）应用固定位置以保持稳定的环形布局
+            if (i < nodes.length / 3) {
+                node.fx = node.x;
+                node.fy = node.y;
             }
         }
     }
@@ -149,6 +151,20 @@ function makeChart(containerSelector, dataJSON) {
         // 每次迭代后应用边界约束
         nodes.forEach(d => {
             if (!d.fx) { // 如果节点没有被固定
+                // 向中心的力 - 保持环形布局
+                const dx = d.x - W/2;
+                const dy = d.y - H/2;
+                const distance = Math.sqrt(dx*dx + dy*dy);
+                const targetDistance = centralCircleRadius + d.r + 10;
+                const factor = 0.1; // 调整力度
+                
+                if (Math.abs(distance - targetDistance) > d.r * 0.2) {
+                    // 如果偏离目标距离，施加力将其拉回环形路径
+                    const angle = Math.atan2(dy, dx);
+                    d.x = W/2 + (distance * (1 - factor) + targetDistance * factor) * Math.cos(angle);
+                    d.y = H/2 + (distance * (1 - factor) + targetDistance * factor) * Math.sin(angle);
+                }
+                
                 // 水平边界约束
                 d.x = Math.max(d.r, Math.min(W - d.r, d.x));
                 // 垂直边界约束，确保不进入顶部保护区域
@@ -156,6 +172,18 @@ function makeChart(containerSelector, dataJSON) {
             }
         });
     }
+
+    // 渲染虚拟中心圆的参考线（可选，仅用于调试）
+    /*
+    g.append("circle")
+        .attr("cx", W/2)
+        .attr("cy", H/2)
+        .attr("r", centralCircleRadius)
+        .attr("fill", "none")
+        .attr("stroke", "#ccc")
+        .attr("stroke-dasharray", "5,5")
+        .attr("stroke-width", 1.0);
+    */
 
     /* ============ 4. 绘图 ============ */
     d3.select(containerSelector).html(""); // 清空容器

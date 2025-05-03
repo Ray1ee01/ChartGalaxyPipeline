@@ -2,7 +2,7 @@
 REQUIREMENTS_BEGIN
 {
     "chart_type": "Proportional Area Chart(circle)",
-    "chart_name": "proportional_area_chart_circle_01",
+    "chart_name": "proportional_area_chart_circle_3d_01",
     "is_composite": false,
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],
@@ -31,6 +31,10 @@ function makeChart(containerSelector, dataJSON) {
     const xField = cols.find(c=>c.role==="x")?.name;
     const yField = cols.find(c=>c.role==="y")?.name;
     const yUnit = cols.find(c=>c.role==="y")?.unit === "none" ? "" : cols.find(c=>c.role==="y")?.unit ?? "";
+    
+    // 检查是否启用动画效果 (默认启用)
+    const enableAnimation = dataJSON.variables?.enable_animation !== false;
+    
     if(!xField || !yField){
         d3.select(containerSelector).html('<div style="color:red">缺少必要字段</div>');
         return;
@@ -173,19 +177,405 @@ function makeChart(containerSelector, dataJSON) {
     const g=svg.append("g")
         .attr("transform",`translate(${margin.left},${margin.top})`);
 
+    // 添加SVG滤镜用于投影阴影效果
+    const defs = svg.append("defs");
+    
+    // 3D效果控制参数
+    const lightSource = {
+        x: 0.25,    // 光源X位置 (0-1)
+        y: 0.25,    // 光源Y位置 (0-1)
+        radius: 0.85, // 渐变半径 (0-1)
+        highlight: 0.8  // 高光强度 (0-1)
+    };
+    
+    const shadow = {
+        offsetX: 6,      // 阴影X偏移
+        offsetY: 8,      // 阴影Y偏移
+        blur: 5,         // 阴影模糊度
+        opacity: 0.4     // 阴影不透明度 (0-1)
+    };
+    
+    // 动画参数
+    const animation = {
+        enabled: enableAnimation,   // 是否启用动画
+        duration: 2000,             // 动画持续时间 (毫秒)
+        delay: 500,                 // 初始动画延迟 (毫秒)
+        hover: {                    // 悬浮动画参数
+            amplitude: 5,           // 悬浮振幅 (像素)
+            period: 3000            // 悬浮周期 (毫秒)
+        }
+    };
+
+    // 为每个圆创建唯一的径向渐变
+    nodes.forEach((node, i) => {
+        // 创建径向渐变
+        const gradientId = `circle3DGradient-${i}`;
+        const gradient = defs.append("radialGradient")
+            .attr("id", gradientId)
+            .attr("cx", lightSource.x)
+            .attr("cy", lightSource.y)
+            .attr("r", lightSource.radius)
+            .attr("fx", lightSource.x - 0.05)
+            .attr("fy", lightSource.y - 0.05)
+            .attr("spreadMethod", "pad");
+
+        // 获取基础颜色
+        const baseColor = node.color;
+        let baseRgb;
+
+        // 解析颜色为RGB值
+        if (baseColor.startsWith('#')) {
+            // 十六进制颜色
+            let hex = baseColor.substring(1);
+            if (hex.length === 3) {
+                hex = hex.split('').map(c => c + c).join('');
+            }
+            baseRgb = {
+                r: parseInt(hex.substring(0, 2), 16),
+                g: parseInt(hex.substring(2, 4), 16),
+                b: parseInt(hex.substring(4, 6), 16)
+            };
+        } else if (baseColor.startsWith('rgb')) {
+            // RGB或RGBA颜色
+            const match = baseColor.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([0-9.]+))?\)/);
+            if (match) {
+                baseRgb = {
+                    r: parseInt(match[1]),
+                    g: parseInt(match[2]),
+                    b: parseInt(match[3]),
+                    a: match[4] ? parseFloat(match[4]) : 1
+                };
+            }
+        }
+
+        if (baseRgb) {
+            // 创建亮部颜色 (增亮60%)
+            const lighterColor = `rgb(${Math.min(255, Math.floor(baseRgb.r * 1.6))}, ${Math.min(255, Math.floor(baseRgb.g * 1.6))}, ${Math.min(255, Math.floor(baseRgb.b * 1.6))})`;
+            
+            // 创建高光颜色
+            const highlightColor = `rgba(255, 255, 255, 0.9)`;
+            
+            // 创建暗部颜色 (减暗50%)
+            const darkerColor = `rgb(${Math.floor(baseRgb.r * 0.5)}, ${Math.floor(baseRgb.g * 0.5)}, ${Math.floor(baseRgb.b * 0.5)})`;
+            
+            // 创建边缘过渡色（中间值）
+            const midColor = `rgb(${Math.floor(baseRgb.r * 0.85)}, ${Math.floor(baseRgb.g * 0.85)}, ${Math.floor(baseRgb.b * 0.85)})`;
+            
+            // 添加渐变色标 - 更精细的过渡
+            gradient.append("stop")
+                .attr("offset", "0%")
+                .attr("stop-color", highlightColor);
+                
+            gradient.append("stop")
+                .attr("offset", "10%")
+                .attr("stop-color", lighterColor);
+                
+            gradient.append("stop")
+                .attr("offset", "65%")
+                .attr("stop-color", baseColor);
+                
+            gradient.append("stop")
+                .attr("offset", "85%")
+                .attr("stop-color", midColor);
+                
+            gradient.append("stop")
+                .attr("offset", "100%")
+                .attr("stop-color", darkerColor);
+        } else {
+            // 如果颜色解析失败，使用简单渐变
+            gradient.append("stop")
+                .attr("offset", "0%")
+                .attr("stop-color", "white");
+                
+            gradient.append("stop")
+                .attr("offset", "25%")
+                .attr("stop-color", "white");
+                
+            gradient.append("stop")
+                .attr("offset", "70%")
+                .attr("stop-color", baseColor);
+                
+            gradient.append("stop")
+                .attr("offset", "100%")
+                .attr("stop-color", "black");
+        }
+
+        // 保存渐变ID用于后续引用
+        node.gradientId = gradientId;
+        
+        // 创建高光渐变
+        const highlightGradientId = `highlight-gradient-${i}`;
+        const highlightGradient = defs.append("radialGradient")
+            .attr("id", highlightGradientId)
+            .attr("cx", lightSource.x - 0.05)
+            .attr("cy", lightSource.y - 0.05)
+            .attr("r", 0.25) // 较小的高光范围
+            .attr("fx", lightSource.x - 0.1)
+            .attr("fy", lightSource.y - 0.1);
+            
+        highlightGradient.append("stop")
+            .attr("offset", "0%")
+            .attr("stop-color", "white")
+            .attr("stop-opacity", lightSource.highlight); // 明亮的高光中心
+            
+        highlightGradient.append("stop")
+            .attr("offset", "100%")
+            .attr("stop-color", "white")
+            .attr("stop-opacity", "0"); // 渐隐高光边缘
+            
+        node.highlightGradientId = highlightGradientId;
+    });
+
+    // 创建投影阴影滤镜
+    const filter = defs.append("filter")
+        .attr("id", "circle-shadow")
+        .attr("width", "180%")
+        .attr("height", "180%")
+        .attr("x", "-40%")
+        .attr("y", "-40%");
+        
+    filter.append("feGaussianBlur")
+        .attr("in", "SourceAlpha")
+        .attr("stdDeviation", shadow.blur)
+        .attr("result", "blur");
+        
+    filter.append("feOffset")
+        .attr("in", "blur")
+        .attr("dx", shadow.offsetX)
+        .attr("dy", shadow.offsetY)
+        .attr("result", "offsetBlur");
+        
+    const feComponentTransfer = filter.append("feComponentTransfer")
+        .attr("in", "offsetBlur")
+        .attr("result", "shadow");
+        
+    feComponentTransfer.append("feFuncA")
+        .attr("type", "linear")
+        .attr("slope", shadow.opacity);
+        
+    const feMerge = filter.append("feMerge");
+    feMerge.append("feMergeNode")
+        .attr("in", "shadow");
+    feMerge.append("feMergeNode")
+        .attr("in", "SourceGraphic");
+
     // 创建节点分组 <g> 元素
     const nodeG=g.selectAll("g.node")
         .data(nodes,d=>d.id) // 绑定已放置节点数据，使用 id 作为 key
         .join("g")
         .attr("class","node")
-        .attr("transform",d=>`translate(${d.x},${d.y})`); // 定位到计算好的位置
+        .attr("transform",d=>`translate(${d.x},${d.y})`) // 定位到计算好的位置
+        .style("cursor", "pointer"); // 鼠标悬停时显示指针
 
-    // 绘制圆形
+    // 绘制带投影阴影的圆形底层
     nodeG.append("circle")
-        .attr("r",d=>d.r) // 半径
-        .attr("fill",d=>d.color) // 填充色
-        .attr("stroke","#fff") // 白色描边
-        .attr("stroke-width",1.0); // 描边宽度
+        .attr("class", "shadow-circle")
+        .attr("r", d => d.r)
+        .attr("fill", d => d.color)
+        .attr("opacity", 0.35)
+        .attr("filter", "url(#circle-shadow)");
+
+    // 绘制3D效果圆形 - 基础层
+    nodeG.append("circle")
+        .attr("class", "base-circle")
+        .attr("r", d => d.r)
+        .attr("fill", d => `url(#${d.gradientId})`) // 使用径向渐变
+        .attr("stroke", "#fff")
+        .attr("stroke-width", 0.5) // 更细的边框
+        .attr("stroke-opacity", 0.6); // 半透明边框
+        
+    // 添加高光效果
+    nodeG.append("circle")
+        .attr("class", "highlight-circle")
+        .attr("r", d => d.r)
+        .attr("fill", d => `url(#${d.highlightGradientId})`) // 使用高光渐变
+        .attr("stroke", "none"); // 没有边框
+        
+    // 添加鼠标交互效果
+    nodeG
+        .on("mouseover", function(event, d) {
+            // 1. 突出显示当前圆形
+            const node = d3.select(this);
+            
+            // 短暂暂停悬浮动画
+            if (d.animationTimer) {
+                d.animationTimer.stop();
+                delete d.animationTimer;
+            }
+            
+            // 放大效果
+            node.transition()
+                .duration(300)
+                .attr("transform", `translate(${d.x},${d.y}) scale(1.07)`)
+                .style("z-index", 10); // 提高层级
+            
+            // 增强阴影效果
+            node.select(".shadow-circle")
+                .transition()
+                .duration(300)
+                .attr("opacity", 0.5)
+                .attr("filter", "url(#circle-shadow) drop-shadow(0 0 3px rgba(0,0,0,0.3))");
+               
+            // 2. 显示tooltip
+            const tooltip = g.append("g")
+                .attr("class", "tooltip")
+                .attr("transform", `translate(${d.x},${d.y - d.r - 15})`)
+                .style("opacity", 0);
+                
+            // 添加提示信息背景
+            const tooltipText = `${d.id}: ${d.val}${yUnit}`;
+            const textWidth = getTextWidthCanvas(tooltipText, 'Arial', 14, 'bold') + 20;
+            
+            tooltip.append("rect")
+                .attr("x", -textWidth / 2)
+                .attr("y", -30)
+                .attr("width", textWidth)
+                .attr("height", 30)
+                .attr("rx", 5)
+                .attr("ry", 5)
+                .attr("fill", "rgba(0, 0, 0, 0.7)");
+                
+            // 添加提示信息文本
+            tooltip.append("text")
+                .attr("text-anchor", "middle")
+                .attr("y", -10)
+                .attr("fill", "white")
+                .attr("font-size", "14px")
+                .attr("font-weight", "bold")
+                .text(tooltipText);
+            
+            // 显示tooltip
+            tooltip.transition()
+                .duration(300)
+                .style("opacity", 1);
+                
+            // 保存tooltip引用
+            d.tooltip = tooltip;
+        })
+        .on("mouseout", function(event, d) {
+            // 恢复正常状态
+            const node = d3.select(this);
+            
+            // 移除tooltip
+            if (d.tooltip) {
+                d.tooltip.transition()
+                    .duration(200)
+                    .style("opacity", 0)
+                    .remove();
+                delete d.tooltip;
+            }
+            
+            // 恢复正常大小
+            node.transition()
+                .duration(300)
+                .attr("transform", `translate(${d.x},${d.y})`)
+                .style("z-index", 0);
+                
+            // 恢复阴影效果
+            node.select(".shadow-circle")
+                .transition()
+                .duration(300)
+                .attr("opacity", 0.35)
+                .attr("filter", "url(#circle-shadow)");
+                
+            // 如果动画已启用，恢复悬浮动画
+            if (animation.enabled) {
+                const scaleFactor = Math.max(0.5, Math.min(1.2, 25 / d.r));
+                const amplitude = animation.hover.amplitude * scaleFactor;
+                animate(node, d, amplitude);
+            }
+        })
+        .on("click", function(event, d) {
+            // 点击事件，可以在这里添加更多交互，如链接到详情页等
+            console.log(`圆形 ${d.id} 被点击，值为 ${d.val}`);
+            
+            // 示例：播放简单的点击动画
+            const node = d3.select(this);
+            
+            // 短暂放大缩小的弹性动画
+            node.transition()
+                .duration(150)
+                .attr("transform", `translate(${d.x},${d.y}) scale(1.12)`)
+                .transition()
+                .duration(150)
+                .attr("transform", `translate(${d.x},${d.y}) scale(0.95)`)
+                .transition()
+                .duration(150)
+                .attr("transform", `translate(${d.x},${d.y}) scale(1.05)`)
+                .transition()
+                .duration(150)
+                .attr("transform", `translate(${d.x},${d.y}) scale(1.0)`);
+        });
+
+    // 添加动画效果 - 如果启用
+    if (animation.enabled) {
+        // 初始动画：逐渐显示圆形
+        nodeG.style("opacity", 0)
+            .transition()
+            .duration(500)
+            .delay((d, i) => animation.delay + i * 50)
+            .style("opacity", 1);
+        
+        // 给每个圆形一个随机的初始相位，使动画错开
+        nodeG.each(function(d) {
+            d.phaseOffset = Math.random() * 2 * Math.PI;
+        });
+        
+        // 持续悬浮动画
+        function startFloatAnimation() {
+            nodeG.each(function(d) {
+                // 由节点大小决定悬浮幅度，较小的圆移动较大
+                const scaleFactor = Math.max(0.5, Math.min(1.2, 25 / d.r));
+                const amplitude = animation.hover.amplitude * scaleFactor;
+                
+                const node = d3.select(this);
+                
+                // 为相对较小的圆应用更大的移动
+                animate(node, d, amplitude);
+            });
+        }
+        
+        // 悬浮动画函数
+        function animate(node, d, amplitude) {
+            const period = animation.hover.period + (Math.random() * 1000 - 500); // 为每个圆略微错开周期
+            
+            // 计算曲线函数的基准点
+            const startTime = Date.now();
+            const phaseOffset = d.phaseOffset;
+            
+            // 执行动画
+            d.animationTimer = d3.timer(function() {
+                const elapsed = Date.now() - startTime;
+                const t = (elapsed % period) / period;
+                
+                // 计算简谐运动的位移 - 通过正弦函数实现
+                const delta = amplitude * Math.sin(2 * Math.PI * t + phaseOffset);
+                
+                // 随机选择垂直或水平方向
+                if (d.movementDirection === undefined) {
+                    // 维持一个随机运动方向的偏好
+                    d.movementDirection = Math.random() > 0.5 ? 'vertical' : 'horizontal';
+                }
+                
+                // 应用变换 - 偏好特定方向但有轻微的二维运动
+                if (d.movementDirection === 'vertical') {
+                    // 主要垂直运动
+                    node.attr('transform', `translate(${d.x + delta * 0.3}, ${d.y + delta})`);
+                } else {
+                    // 主要水平运动
+                    node.attr('transform', `translate(${d.x + delta}, ${d.y + delta * 0.3})`);
+                }
+                
+                // 返回true表示继续动画，false表示停止
+                return false; // 在每一帧都停止当前timer并重新开始下一个timer
+            });
+            
+            return d.animationTimer;
+        }
+        
+        // 延迟一段时间后启动悬浮动画
+        setTimeout(startFloatAnimation, animation.delay + animation.duration);
+    }
 
     /* ---- 文本 ---- */
     // 提取字体排印设置，提供默认值

@@ -222,7 +222,7 @@ function makeChart(containerSelector, data) {
             .attr("y", d => yScale(d.groups[group] || 0))
             .attr("width", groupScale.bandwidth())
             .attr("height", d => chartHeight - yScale(d.groups[group] || 0))
-            .attr("xlink:href", d => d.icon)
+            .attr("xlink:href", jsonData.images.field[group])
             .attr("preserveAspectRatio", "none");
 
         // 添加数值标签

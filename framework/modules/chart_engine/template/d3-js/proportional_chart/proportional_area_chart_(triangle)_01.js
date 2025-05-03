@@ -1,8 +1,8 @@
 /*
 REQUIREMENTS_BEGIN
 {
-    "chart_type": "Proportional Area Chart (Triangle)",
-    "chart_name": "proportional_area_chart_triangle_01",
+    "chart_type": "Proportional Area Chart (Triangle) 3D",
+    "chart_name": "proportional_area_chart_triangle_3d_01",
     "is_composite": false,
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],
@@ -11,7 +11,7 @@ REQUIREMENTS_BEGIN
     "required_other_icons": [],
     "required_fields_colors": ["x"],
     "required_other_colors": ["primary"],
-    "supported_effects": [],
+    "supported_effects": ["3d", "animation"],
     "min_height": 400,
     "min_width": 400,
     "background": "no",
@@ -31,6 +31,10 @@ function makeChart(containerSelector, dataJSON) {
     const xField = cols.find(c=>c.role==="x")?.name;
     const yField = cols.find(c=>c.role==="y")?.name;
     const yUnit = cols.find(c=>c.role==="y")?.unit === "none" ? "" : cols.find(c=>c.role==="y")?.unit ?? "";
+    
+    // 检查是否启用动画效果 (默认启用)
+    const enableAnimation = dataJSON.variables?.enable_animation !== false;
+    
     if(!xField || !yField){
         d3.select(containerSelector).html('<div style="color:red">缺少必要字段</div>');
         return;
