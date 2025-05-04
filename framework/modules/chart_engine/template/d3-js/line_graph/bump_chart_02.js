@@ -8,7 +8,7 @@ REQUIREMENTS_BEGIN
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["temporal"], ["numerical"], ["categorical"]],
     "required_fields_range": [
-        [2, 30],
+        [2, 12],
         [0, "inf"],
         [3, 10]
     ],
@@ -89,8 +89,10 @@ function makeChart(containerSelector, data) {
         // 按yField降序排序（y越大排名越高）
         items.sort((a, b) => b[yField] - a[yField]);
         items.forEach((d, i) => {
-            if (!rankData[d[groupField]]) rankData[d[groupField]] = [];
-            rankData[d[groupField]].push({
+            const groupVal = d[groupField];
+            // 确保groupVal是合法的CSS选择器
+            if (!rankData[groupVal]) rankData[groupVal] = [];
+            rankData[groupVal].push({
                 x: d[xField],
                 rank: i + 1, // 排名从1开始
                 value: d[yField]
@@ -103,43 +105,81 @@ function makeChart(containerSelector, data) {
         .domain([1, groups.length])
         .range([0, innerHeight]);
 
+    // 添加顶部时间标签
+    // 计算适当的时间标签数量，避免重叠
+    let filteredXValues = xValues;
+    if (xValues.length > 6) {
+        // 如果标签过多，则减少标签数量
+        const step = Math.ceil(xValues.length / 6);
+        filteredXValues = xValues.filter((_, i) => i % step === 0);
+    }
+    
+    filteredXValues.forEach(x => {
+        g.append("text")
+            .attr("x", xScale(parseDate(x)))
+            .attr("y", -30) // 向上移动30px
+            .attr("text-anchor", "middle")
+            .attr("font-size", 14)
+            .attr("fill", "#ffffff") // 修改为白色文本
+            .text(xFormat(parseDate(x)));
+    });
+
     // 3. 绘制线条
     groups.forEach(group => {
         const groupRanks = rankData[group];
-        g.append("path")
-            .datum(groupRanks)
-            .attr("fill", "none")
-            .attr("stroke", getColor(group))
-            .attr("stroke-width", 3)
-            .attr("d", d3.line()
-                .x(d => xScale(parseDate(d.x)))
-                .y(d => yScale(d.rank))
-            );
-        // 绘制每个点的圆点
-        g.selectAll(`.dot-${group}`)
-            .data(groupRanks)
-            .enter()
-            .append("circle")
-            .attr("class", `dot-${group}`)
-            .attr("cx", d => xScale(parseDate(d.x)))
-            .attr("cy", d => yScale(d.rank))
-            .attr("r", 5)
-            .attr("fill", getColor(group))
-            .attr("stroke", "#fff")
-            .attr("stroke-width", 2);
+        // 创建安全的CSS类名
+        const safeGroupName = CSS.escape(group);
+        
+        if (groupRanks && groupRanks.length > 0) {
+            g.append("path")
+                .datum(groupRanks)
+                .attr("fill", "none")
+                .attr("stroke", getColor(group))
+                .attr("stroke-width", 3)
+                .attr("d", d3.line()
+                    .x(d => xScale(parseDate(d.x)))
+                    .y(d => yScale(d.rank))
+                );
+            // 绘制每个点的圆点
+            g.selectAll(`.dot-${safeGroupName}`)
+                .data(groupRanks)
+                .enter()
+                .append("circle")
+                .attr("class", `dot-${safeGroupName}`)
+                .attr("cx", d => xScale(parseDate(d.x)))
+                .attr("cy", d => yScale(d.rank))
+                .attr("r", 5)
+                .attr("fill", getColor(group))
+                .attr("stroke", "#fff")
+                .attr("stroke-width", 2);
+                
+            // 添加原始数值标签（而非排名）
+            g.selectAll(`.value-${safeGroupName}`)
+                .data(groupRanks)
+                .enter()
+                .append("text")
+                .attr("class", `value-${safeGroupName}`)
+                .attr("x", d => xScale(parseDate(d.x)) + 10)
+                .attr("y", d => yScale(d.rank) - 5) // 向上移动5px
+                .attr("text-anchor", "start")
+                .attr("font-size", 12)
+                .attr("fill", "#ffffff") // 白色文本
+                .text(d => d.value.toLocaleString());
+        }
     });
 
-    // 4. 绘制y轴标签（排名）
-    const yAxisG = g.append("g");
-    for (let i = 1; i <= groups.length; i++) {
-        yAxisG.append("text")
-            .attr("x", -10)
-            .attr("y", yScale(i) + 5)
-            .attr("text-anchor", "end")
-            .attr("font-weight", "bold")
-            .attr("font-size", 16)
-            .text(i);
-    }
+    // 4. 绘制y轴标签（不再显示排名，去掉这部分）
+    // const yAxisG = g.append("g");
+    // for (let i = 1; i <= groups.length; i++) {
+    //     yAxisG.append("text")
+    //         .attr("x", -10)
+    //         .attr("y", yScale(i) + 5)
+    //         .attr("text-anchor", "end")
+    //         .attr("font-weight", "bold")
+    //         .attr("font-size", 16)
+    //         .attr("fill", "#ffffff") // 白色文本
+    //         .text(i);
+    // }
 
     // 5. 绘制group标签（左侧和右侧）
     // 左侧
@@ -151,7 +191,7 @@ function makeChart(containerSelector, data) {
             .attr("text-anchor", "end")
             .attr("font-weight", "bold")
             .attr("font-size", 18)
-            .attr("fill", getColor(group))
+            .attr("fill", "#fff")
             .text(group);
     });
     // 右侧
@@ -163,20 +203,9 @@ function makeChart(containerSelector, data) {
             .attr("text-anchor", "start")
             .attr("font-weight", "bold")
             .attr("font-size", 18)
-            .attr("fill", getColor(group))
+            .attr("fill", "#fff")
             .text(group);
     });
-
-    // 6. 绘制x轴刻度（去除domain和tick，不绘制x轴）
-    // 不绘制x轴
-    // const xAxis = d3.axisBottom(xScale)
-    //     .tickValues(xTicks)
-    //     .tickFormat(xFormat);
-    // g.append("g")
-    //     .attr("transform", `translate(0,${innerHeight})`)
-    //     .call(xAxis)
-    //     .selectAll("text")
-    //     .attr("font-size", 16);
 
     return svg.node();
 } 

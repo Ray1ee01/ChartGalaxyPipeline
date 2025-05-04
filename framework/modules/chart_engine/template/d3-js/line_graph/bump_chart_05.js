@@ -8,9 +8,9 @@ REQUIREMENTS_BEGIN
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["temporal"], ["numerical"], ["categorical"]],
     "required_fields_range": [
-        [2, 30],
+        [2, 12],
         [0, "inf"],
-        [3, 10]
+        [4, 10]
     ],
     "required_fields_icons": [],
     "required_other_icons": [],
@@ -50,7 +50,7 @@ function makeChart(containerSelector, data) {
     // 设置尺寸和边距 - 右侧留出更多空间用于标签
     const width = variables.width;
     const height = variables.height;
-    const margin = { top: 40, right: 180, bottom: 60, left: 80 };
+    const margin = { top: 60, right: 180, bottom: 60, left: 80 }; // 增加顶部边距以容纳时间标签
     const innerWidth = width - margin.left - margin.right;
     const innerHeight = height - margin.top - margin.bottom;
     
@@ -79,22 +79,84 @@ function makeChart(containerSelector, data) {
 
     const { xScale, xTicks, xFormat, timeSpan } = createXAxisScaleAndTicks(chartData, xField, 0, innerWidth);
     
+    // 为每个组分配固定位置 (1到groups.length)
+    const fixedGroupPositions = {};
+    groups.forEach((group, i) => {
+        fixedGroupPositions[group] = i + 1;
+    });
     
     // 1. 计算每个x下各group的排名
     // 构建排名数据结构：{ group1: [{x, rank}], group2: ... }
     const rankData = {};
+    
+    // 初始化每个group的数据结构
+    groups.forEach(group => {
+        rankData[group] = [];
+    });
+    
+    // 为每个时间点和每个组创建排名数据
     xValues.forEach(x => {
         // 取出该x下所有group的数据
         const items = chartData.filter(d => d[xField] === x);
+        
+        // 记录该时间点存在的组
+        const existingGroups = items.map(d => d[groupField]);
+        
         // 按yField降序排序（y越大排名越高）
         items.sort((a, b) => b[yField] - a[yField]);
+        
+        // 为有数据的组计算排名
+        const rankByGroup = {};
         items.forEach((d, i) => {
-            if (!rankData[d[groupField]]) rankData[d[groupField]] = [];
-            rankData[d[groupField]].push({
-                x: d[xField],
-                rank: i + 1, // 排名从1开始
-                value: d[yField]
-            });
+            rankByGroup[d[groupField]] = i + 1; // 排名从1开始
+        });
+        
+        // 为每个组添加排名数据，无论是否存在
+        groups.forEach(group => {
+            if (existingGroups.includes(group)) {
+                // 该组在该时间点有数据
+                const dataItem = items.find(d => d[groupField] === group);
+                rankData[group].push({
+                    x: x,
+                    rank: rankByGroup[group],
+                    value: dataItem[yField],
+                    missing: false
+                });
+            } else {
+                // 该组在该时间点没有数据
+                
+                // 查找该组最近的有效排名
+                let nearestRank = null;
+                // 先尝试找前一个时间点的排名
+                const groupData = rankData[group];
+                if (groupData && groupData.length > 0) {
+                    const lastValidPoint = [...groupData].reverse().find(d => !d.missing);
+                    if (lastValidPoint) {
+                        nearestRank = lastValidPoint.rank;
+                    }
+                }
+                
+                // 如果找不到有效的历史排名，使用固定位置
+                if (nearestRank === null) {
+                    nearestRank = fixedGroupPositions[group];
+                }
+                
+                rankData[group].push({
+                    x: x,
+                    rank: nearestRank, // 使用最近的有效排名或固定位置
+                    value: null,
+                    missing: true
+                });
+            }
+        });
+    });
+    
+    // 对每个组的数据按x值排序
+    groups.forEach(group => {
+        rankData[group].sort((a, b) => {
+            const dateA = parseDate(a.x);
+            const dateB = parseDate(b.x);
+            return dateA - dateB;
         });
     });
 
@@ -106,18 +168,22 @@ function makeChart(containerSelector, data) {
     // 3. 绘制线条
     groups.forEach(group => {
         const groupRanks = rankData[group];
+        
+        // 使用定义的线条生成器来创建中断的线条
+        const lineGenerator = d3.line()
+            .x(d => xScale(parseDate(d.x)))
+            .y(d => yScale(d.rank))
+            .defined(d => !d.missing); // 只在有效数据点之间绘制线条
+            
         g.append("path")
             .datum(groupRanks)
             .attr("fill", "none")
             .attr("stroke", getColor(group))
             .attr("stroke-width", 3)
-            .attr("d", d3.line()
-                .x(d => xScale(parseDate(d.x)))
-                .y(d => yScale(d.rank))
-            );
+            .attr("d", lineGenerator);
         
         // 计算y值的范围用于缩放圆点大小
-        const yValues = chartData.map(d => d[yField]);
+        const yValues = chartData.map(d => d[yField]).filter(d => d !== null && d !== undefined);
         const yMin = Math.min(...yValues);
         const yMax = Math.max(...yValues);
         const radiusScale = d3.scaleLinear()
@@ -130,12 +196,15 @@ function makeChart(containerSelector, data) {
             return (0.299 * rgb.r + 0.587 * rgb.g + 0.114 * rgb.b) / 255;
         };
 
-        // 绘制每个点的圆点
-        g.selectAll(`.dot-${group}`)
-            .data(groupRanks)
+        // 为每个组生成一个安全的CSS类名
+        const safeGroupId = `group-${groups.indexOf(group)}`;
+
+        // 绘制每个点的圆点 - 只绘制非缺失的点
+        g.selectAll(`.dot-${safeGroupId}`)
+            .data(groupRanks.filter(d => !d.missing))
             .enter()
             .append("circle")
-            .attr("class", `dot-${group}`)
+            .attr("class", `dot-${safeGroupId}`)
             .attr("cx", d => xScale(parseDate(d.x)))
             .attr("cy", d => yScale(d.rank))
             .attr("r", d => radiusScale(d.value))
@@ -143,12 +212,12 @@ function makeChart(containerSelector, data) {
             .attr("stroke", "#fff")
             .attr("stroke-width", 2);
 
-        // 添加数值标签
-        g.selectAll(`.label-${group}`)
-            .data(groupRanks)
+        // 添加数值标签 - 只为非缺失的点添加
+        g.selectAll(`.label-${safeGroupId}`)
+            .data(groupRanks.filter(d => !d.missing))
             .enter()
             .append("text")
-            .attr("class", `label-${group}`)
+            .attr("class", `label-${safeGroupId}`)
             .attr("x", d => xScale(parseDate(d.x)))
             .attr("y", d => {
                 const radius = radiusScale(d.value);
@@ -174,11 +243,82 @@ function makeChart(containerSelector, data) {
             .text(d => Math.round(d.value));
     });
 
-    // 4. 绘制y轴标签（排名）
-    const yAxisG = g.append("g");
+    // 优化时间标签避免重叠
+    const optimizeTimeLabels = (ticks, format, availableWidth) => {
+        if (ticks.length <= 1) return ticks;
+        
+        // 创建临时文本元素计算宽度
+        const tempLabelText = g.append("text")
+            .attr("font-size", 14)
+            .attr("visibility", "hidden");
+        
+        // 计算所有标签的宽度
+        const calculateLabelWidth = (tick) => {
+            tempLabelText.text(format(tick));
+            return tempLabelText.node().getComputedTextLength() + 20; // 添加一些边距
+        };
+        
+        const tickWidths = ticks.map(tick => calculateLabelWidth(tick));
+        
+        // 检查是否会重叠
+        let willOverlap = false;
+        let positions = ticks.map(t => xScale(t));
+        
+        for (let i = 0; i < positions.length - 1; i++) {
+            const gap = positions[i+1] - positions[i];
+            if (gap < (tickWidths[i] + tickWidths[i+1]) / 2) {
+                willOverlap = true;
+                break;
+            }
+        }
+        
+        // 如果不会重叠，显示所有标签
+        if (!willOverlap) {
+            tempLabelText.remove();
+            return ticks;
+        }
+        
+        // 计算可以显示的标签数量
+        const averageWidth = tickWidths.reduce((a, b) => a + b, 0) / ticks.length;
+        let maxLabels = Math.floor(availableWidth / averageWidth);
+        
+        // 确保至少显示首尾标签
+        if (maxLabels <= 2) {
+            tempLabelText.remove();
+            return [ticks[0], ticks[ticks.length - 1]];
+        }
+        
+        // 均匀选择标签
+        const step = Math.ceil(ticks.length / maxLabels);
+        const optimizedTicks = [];
+        
+        for (let i = 0; i < ticks.length; i += step) {
+            optimizedTicks.push(ticks[i]);
+        }
+        
+        // 确保包含最后一个标签
+        if (optimizedTicks[optimizedTicks.length - 1] !== ticks[ticks.length - 1]) {
+            optimizedTicks.push(ticks[ticks.length - 1]);
+        }
+        
+        tempLabelText.remove();
+        return optimizedTicks;
+    };
+    
+    // 优化时间标签
+    const optimizedXTicks = optimizeTimeLabels(xTicks, xFormat, innerWidth);
 
-
-    // 5. 绘制group标签和三角形标记
+    // 添加顶部时间标签
+    optimizedXTicks.forEach(tick => {
+        g.append("text")
+            .attr("x", xScale(tick))
+            .attr("y", -40)
+            .attr("text-anchor", "middle")
+            .attr("font-size", 14)
+            .attr("fill", "#555")
+            .text(xFormat(tick));
+    });
+    // 4. 绘制group标签和三角形标记
     // 首先计算所有group标签的宽度
     const tempText = g.append("text")
         .attr("font-size", 18)
@@ -203,20 +343,20 @@ function makeChart(containerSelector, data) {
     // 计算rank标签的位置（在group标签左侧）
     const rankX = groupX - 30; // rank标签固定宽度
 
-    // 绘制三角形和标签
+    // 使用固定位置绘制标签而不是第一个数据点的位置，避免重叠
     groups.forEach((group, i) => {
-        const first = rankData[group][0];
+        const fixedRank = fixedGroupPositions[group];
         
         // 添加三角形标记（指向右侧）
         g.append("path")
             .attr("d", "M0,-5 L10,0 L0,5 Z")
-            .attr("transform", `translate(${triangleX},${yScale(first.rank)})`)
+            .attr("transform", `translate(${triangleX},${yScale(fixedRank)})`)
             .attr("fill", getColor(group));
             
         // 添加group标签
         g.append("text")
             .attr("x", groupX)
-            .attr("y", yScale(first.rank) + 5)
+            .attr("y", yScale(fixedRank) + 5)
             .attr("text-anchor", "start")
             .attr("font-weight", "bold")
             .attr("font-size", 18)
@@ -226,23 +366,12 @@ function makeChart(containerSelector, data) {
         // 添加rank标签
         g.append("text")
             .attr("x", rankX)
-            .attr("y", yScale(first.rank) + 5)
+            .attr("y", yScale(fixedRank) + 5)
             .attr("text-anchor", "end")
             .attr("font-weight", "bold")
             .attr("font-size", 16)
             .text(i + 1);
     });
-
-    // 6. 绘制x轴刻度（去除domain和tick，不绘制x轴）
-    // 不绘制x轴
-    // const xAxis = d3.axisBottom(xScale)
-    //     .tickValues(xTicks)
-    //     .tickFormat(xFormat);
-    // g.append("g")
-    //     .attr("transform", `translate(0,${innerHeight})`)
-    //     .call(xAxis)
-    //     .selectAll("text")
-    //     .attr("font-size", 16);
 
     return svg.node();
 } 

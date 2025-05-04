@@ -126,6 +126,9 @@ def make_options(json_data):
     # Calculate chart dimensions
     content_top = title_height + legend_height
     content_height = canvas_height - content_top
+    unit = data_columns[1].get('unit', '')
+    if len(unit) > 3:
+        unit = ''
     
     # For 2 columns, use more of the available width
     if cols == 2:
@@ -237,7 +240,7 @@ def make_options(json_data):
                     "fontFamily": typography['label']['font_family'],
                     "color": colors[j % len(colors)],
                     "offsetCenter": [0, max_radius - (j + 1) * 20],
-                    "formatter": "{value}" + data_columns[1].get('unit', '')
+                    "formatter": "{value}" + unit
                 },
                 "data": [{
                     "value": item["value"],

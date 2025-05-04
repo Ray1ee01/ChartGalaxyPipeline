@@ -166,8 +166,6 @@ def check_template_compatibility(data: Dict, templates: Dict, specific_chart_nam
             for chart_name, template_info in chart_names_dict.items():
                 if 'base' in chart_name:
                     continue
-                if chart_name in block_list:
-                    continue
                 if engine == 'vegalite_py':
                     continue
                     
