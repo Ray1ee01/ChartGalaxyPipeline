@@ -20,6 +20,7 @@ In this aspect, you will decide whether to **decorate the text with icons**. You
 In this aspect, you will decide the **font style and artistic effects** for the text. You need to judge whether "{title}" is suitable for a specific font style (e.g., classical, futuristic, anime-style, etc.) and certain artistic text effects (e.g., cracks on the text surface, melting text, etc.). If applicable, please provide:
 1. The font style, such as classical, futuristic, anime-style, etc.
 2. The artistic effect, such as cracks on the text surface, melting text, burning text, etc.
+3. The color of the text, which should be selected from the following colors: {color}.
 
 # Output
 **Output Requirements**:

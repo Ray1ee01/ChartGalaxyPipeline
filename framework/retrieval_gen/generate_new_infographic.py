@@ -43,22 +43,40 @@ def generate_new_infographic(raw_data_path, old_layout_path, output_file):
     with open(all_pallete_path, 'r') as f:
         all_pallete_file = json.load(f)
         pallete_data = all_pallete_file[old_filename]
+    
     # 转换调色板
     raw_data = convert_palette_to_data(raw_data, pallete_data)
+
+    # 提取调色板中的所有颜色
+    color_list = []
+    
+    def extract_colors(data):
+        if isinstance(data, str) and data.startswith('#'):
+            color_list.append(data)
+        elif isinstance(data, list):
+            for item in data:
+                extract_colors(item)
+        elif isinstance(data, dict):
+            for value in data.values():
+                extract_colors(value)
+    
+    # 递归提取所有颜色
+    extract_colors(pallete_data)
 
     # 获取标题
     with open(new_layout_path, 'r') as f:
         new_layout_file = json.load(f)
         new_layout = new_layout_file["new_layout"]
     title_info = [layout for layout in new_layout if layout["category_id"] == 3]
+    print(f"title_info: {title_info}")
     title = title_info[0]["title"]
     raw_data['metadata']['title'] = title
     raw_data['titles']['main_title'] = title
-    succ, title_image_base64 = get_title_b64(title, raw_data['colors']['background_color'])
+    succ, title_image_base64 = get_title_b64(title, color_list)
     raw_data['images']['title'] = title_image_base64
 
     # 生成图像
-    primary_image_base64 = generate_image(title, raw_data['colors']['other']['primary'])
+    primary_image_base64 = generate_image(title, color_list)
     raw_data['images']['other']['primary'] = primary_image_base64
 
 

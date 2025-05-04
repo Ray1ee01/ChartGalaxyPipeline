@@ -129,7 +129,7 @@ def check_field_icon_compatibility(requirements: Dict, data: Dict) -> bool:
                 return False
     return True
 
-def check_template_compatibility(data: Dict, templates: Dict, specific_chart_name: str = None) -> List[str]:
+def check_template_compatibility(data: Dict, templates: Dict, specific_chart_name: str = None, color_theme: str = 'light') -> List[str]:
     """Check which templates are compatible with the given data"""
     compatible_templates = []
     
@@ -163,6 +163,10 @@ def check_template_compatibility(data: Dict, templates: Dict, specific_chart_nam
                     if 'requirements' in template_info:
                         req = template_info['requirements']
                         hierarchy = req.get('hierarchy', [])
+
+                        if color_theme != req.get('background', 'light'):
+                            continue
+                        
                         if 'required_fields' in req and 'required_fields_type' in req:
                             ordered_fields, field_types, ordered_ranges = get_unique_fields_and_types(
                                 req['required_fields'],

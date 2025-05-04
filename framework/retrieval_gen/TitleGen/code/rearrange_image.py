@@ -1,7 +1,7 @@
 from PIL import Image
 import numpy as np
 
-def rearrange_image(image_path, space=50):
+def rearrange_image(image_path, hspace=50, vspace=20):
     # 打开图片并转换为RGBA模式
     img = Image.open(image_path).convert("RGBA")
     width, height = img.size
@@ -79,10 +79,10 @@ def rearrange_image(image_path, space=50):
             
             # 添加间距，除了最后一个框
             if i < end_idx - 1:
-                row_width += space
+                row_width += hspace
         
         new_width = max(new_width, row_width)
-        new_height += row_height
+        new_height += row_height + vspace
     
     # 创建新的透明图像
     new_img = Image.new("RGBA", (new_width, new_height), (0, 0, 0, 0))
@@ -112,10 +112,10 @@ def rearrange_image(image_path, space=50):
             new_img.paste(text_img, (x_offset, paste_y), text_img)
             
             # 更新x偏移
-            x_offset += (box[2] - box[0]) + space
+            x_offset += (box[2] - box[0]) + hspace
         
         # 更新y偏移
-        y_offset += row_height
+        y_offset += row_height + vspace
     
     # 保存新图像
     new_img.save(image_path)

@@ -1,13 +1,14 @@
 from openai import OpenAI
 
 def get_prompt( title, 
-                bg_color, 
+                color_list, 
                 prompt_path = './TitleGen/prompts/generate_prompt_gpt_en.md', 
                 save_path = './TitleGen/prompts/generated_output.md'):
     with open(prompt_path, 'r', encoding='utf-8') as file:
         generate_prompt = file.read()
     generate_prompt = generate_prompt.replace("{title}", title)
-    generate_prompt = generate_prompt.replace("{color}", bg_color)
+    color_list_str = ', '.join(color_list)
+    generate_prompt = generate_prompt.replace("{color}", color_list_str)
 
     client = OpenAI(
         api_key="sk-149DmKTCIvVQbbgk9099Bf51Ef2d4009A1B09c22246823F9",

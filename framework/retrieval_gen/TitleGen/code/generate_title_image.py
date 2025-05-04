@@ -56,7 +56,7 @@ def create_client():
 #             file.write(response_image.content)
 #     return response
 
-def get_image_from_openai(bg_hex, 
+def get_image_from_openai(color_list, 
                 prompt_path = './TitleGen/prompts/generated_output.md',
                 save_path = './images/title/generated_image.png',
                 res = "RESOLUTION_1408_576"):
@@ -110,7 +110,7 @@ def get_image_from_openai(bg_hex,
         return None
 
 def get_title(title, 
-            bg_hex, 
+            color_list, 
             prompt_times = 2, 
             image_times = 4, 
             image_res = "RESOLUTION_1536_640",#"RESOLUTION_1408_576", 
@@ -120,11 +120,11 @@ def get_title(title,
         if succ == 1:
             break
         print("Prompt times: ", i)
-        get_prompt(title, bg_hex)
+        get_prompt(title, color_list)
         print("Prompt generated.")
         for j in range(image_times):
             print("Image times: ", j)
-            image_response = get_image_from_openai(bg_hex=bg_hex, res=image_res, save_path=save_path)
+            image_response = get_image_from_openai(color_list=color_list, res=image_res, save_path=save_path)
             print("image_response: ", image_response.json())
             
             crop(image_path=save_path)
@@ -139,7 +139,7 @@ def get_title(title,
     return succ, save_path
 
 def get_title_b64(title, 
-            bg_hex, 
+            color_list, 
             prompt_times = 2, 
             image_times = 4, 
             image_res = "RESOLUTION_1536_640",#"RESOLUTION_1408_576", 
@@ -149,11 +149,11 @@ def get_title_b64(title,
         if succ == 1:
             break
         print("Prompt times: ", i)
-        get_prompt(title, bg_hex)
+        get_prompt(title, color_list)
         print("Prompt generated.")
         for j in range(image_times):
             print("Image times: ", j)
-            get_image_from_openai(bg_hex=bg_hex, res=image_res, save_path=save_path)
+            get_image_from_openai(color_list=color_list, res=image_res, save_path=save_path)
             
             crop(image_path=save_path)
             rearrange_image(image_path=save_path)

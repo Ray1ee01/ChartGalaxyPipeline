@@ -38,13 +38,13 @@ def query_llm_for_metadata(image_path):
     Please analyze this chart and provide the following information:
     1. A detailed description of the chart (including chart type, main content, data representation method, etc.)
     2. The topic or domain of the chart (e.g., economics, health, education, etc.)
-    3. The background color of the chart (e.g., #000000, #FFFFFF, etc.)
+    3. The color theme of the chart (light or dark)
     
     Please return in JSON format as follows:
     {
         "description": "detailed description...",
         "topic": "topic or domain",
-        "background_color": "background color"
+        "color_theme": "color theme"
     }
     """
     

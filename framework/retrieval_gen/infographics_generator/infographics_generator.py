@@ -440,8 +440,8 @@ def make_infographic(
             best_x, best_y, overlap = find_best_position(original_mask, int(image_size), int(best_x), int(best_y), 10)
 
             image_opacity = 1
-            if overlap:
-                image_opacity = 0.3
+            # if overlap:
+            #     image_opacity = 0.3
 
             image_element = f"""
                 <image
@@ -563,7 +563,7 @@ def make_infographic(
 
 
 
-def process(input: str, new_layout_path: str, output: str, base_url: str, api_key: str, chart_name: str = None) -> bool:
+def process(input: str, new_layout_path: str, output: str, base_url: str, api_key: str, chart_name: str = None, color_theme: str = 'light') -> bool:
     """
     Pipeline入口函数，处理单个文件的信息图生成
     
@@ -573,7 +573,7 @@ def process(input: str, new_layout_path: str, output: str, base_url: str, api_ke
         base_url: API基础URL
         api_key: API密钥
         chart_name: 指定图表名称，如果提供则使用该图表，否则自动选择
-        
+        color_theme: 颜色主题，可选值为'light'或'dark'
     Returns:
         bool: 处理是否成功
     """
@@ -596,7 +596,7 @@ def process(input: str, new_layout_path: str, output: str, base_url: str, api_ke
     # 分析模板并获取要求
     analyze_templates_start = time.time()
     template_count, template_requirements = analyze_templates(templates)
-    compatible_templates = check_template_compatibility(data, templates, chart_name)
+    compatible_templates = check_template_compatibility(data, templates, chart_name, color_theme)
     analyze_templates_time = time.time() - analyze_templates_start
     # logger.info(f"Analyzing templates took: {analyze_templates_time:.4f} seconds")
         

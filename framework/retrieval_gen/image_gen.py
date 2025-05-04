@@ -22,14 +22,22 @@ def create_client():
 # 全局客户端仅用于主进程
 client = create_client()
 
-def generate_image(description, main_color=None):
+def generate_image(description, color_list=None):
     
     # 每个进程创建自己的客户端实例
     local_client = create_client()
-    
-    prompt = f"""Create a flat-design pictogram symbolizing '{description}'. The design should be simple, no text or intricate details, no shading or gradients, and set against a white background."""
-    if main_color:
-        prompt += f" The main color of the design should be around {main_color} if possible."
+
+    prompt = f"""
+        Create a pictogram for an infographic with the theme of "{description}".
+        The pictogram should visually represent key concepts related to this theme using creative symbols, icons, or illustrations,
+        such as people, light bulbs, or everyday objects, to clearly communicate the main idea to the audience.
+        The pictogram should emphasize important concepts or data points central to the theme.
+        Ensure the design is simple, clean, and easy to understand, with clear and intuitive use of shapes and symbols that relate to the theme.
+        Ensure there is no text and chart elements in the design.
+        The pictogram should be figurative, visually appealing, and have no background (pure white) to integrate seamlessly into the overall layout of the infographic.
+    """
+    if color_list:
+        prompt += f" Use colors from {color_list} selectively in the design. You can choose some of these colors to create a harmonious and balanced color scheme. The design should incorporate the selected colors naturally while maintaining visual cohesion."
     
     try:
         result = local_client.images.generate(
