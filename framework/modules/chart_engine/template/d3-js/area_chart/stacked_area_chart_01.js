@@ -17,7 +17,7 @@ REQUIREMENTS_BEGIN
     "icon_mark": "overlay",
     "icon_label": "side",
     "has_x_axis": "yes",
-    "has_y_axis": "no"
+    "has_y_axis": "yes"
 }
 REQUIREMENTS_END
 */
@@ -52,7 +52,7 @@ function makeChart(containerSelector, data) {
     // 设置尺寸和边距
     const width = variables.width;
     const height = variables.height;
-    const margin = { top: 20, right: 60, bottom: 40, left: 60 };
+    const margin = { top: 20, right: 60, bottom: 40, left: 80 }; // 增加左边距为Y轴留出空间
     
     // 创建SVG
     const svg = d3.select(containerSelector)
@@ -113,6 +113,32 @@ function makeChart(containerSelector, data) {
         .domain([0, yMax])
         .range([chartHeight, 0]);
     
+    // 添加Y轴
+    const yTicks = yScale.ticks(5);
+    
+    // 添加网格线
+    yTicks.forEach(tick => {
+        g.append("line")
+            .attr("x1", 0)
+            .attr("y1", yScale(tick))
+            .attr("x2", chartWidth)
+            .attr("y2", yScale(tick))
+            .attr("stroke", "#ffffff")
+            .attr("stroke-opacity", 0.1);
+    });
+    
+    // 添加刻度文本
+    yTicks.forEach(tick => {
+        g.append("text")
+            .attr("x", -10)
+            .attr("y", yScale(tick))
+            .attr("text-anchor", "end")
+            .attr("dominant-baseline", "middle")
+            .attr("fill", "#cccccc")
+            .attr("font-size", "12px")
+            .text(d3.format(".1s")(tick));
+    });
+    
     // 添加x轴刻度和标签
     xTicks.forEach((tick, i) => {
         // 添加刻度标签
@@ -131,7 +157,7 @@ function makeChart(containerSelector, data) {
         .x(d => xScale(d.data.date))
         .y0(d => yScale(d[0]))
         .y1(d => yScale(d[1]))
-        .curve(d3.curveLinear); // 改为折线
+        .curve(d3.curveLinear); // 使用折线
     
     console.log("images: ", images);
 
@@ -224,8 +250,6 @@ function makeChart(containerSelector, data) {
                 avgWidth: sum / count,
                 dataIdx: gridWidths[i].dataIdx
             });
-
-            console.log("avgWidths: ", avgWidths);
         }
         
         // 找到平均宽度最大的网格
@@ -281,6 +305,16 @@ function makeChart(containerSelector, data) {
             .style("opacity", 0.8)
             .text(group);
     });
+    
+    // 添加Y轴标题
+    g.append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("y", -margin.left + 20)
+        .attr("x", -chartHeight / 2)
+        .attr("text-anchor", "middle")
+        .attr("fill", "#ffffff")
+        .style("font-size", "14px")
+        .text(yField);
     
     return svg.node();
 } 

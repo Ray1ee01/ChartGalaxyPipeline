@@ -107,7 +107,8 @@ def analyze_templates(templates: Dict) -> Tuple[int, Dict[str, str], int]:
     
     return template_count, template_requirements
 
-block_list = ["multiple_line_graph_06", "layered_area_chart_02", "multiple_area_chart_01", "stacked_area_chart_01", "stacked_area_chart_03"]
+# block_list = ["multiple_line_graph_06", "layered_area_chart_02", "multiple_area_chart_01", "stacked_area_chart_01", "stacked_area_chart_03"]
+block_list = []
 
 def check_field_color_compatibility(requirements: Dict, data: Dict) -> bool:
     """Check if the field color is compatible with the template"""
