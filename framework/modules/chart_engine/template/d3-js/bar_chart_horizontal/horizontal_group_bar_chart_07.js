@@ -7,7 +7,7 @@ REQUIREMENTS_BEGIN
     "is_composite": false,
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
-    "required_fields_range": [[2, 20], [0, "inf"], [2, 5]],
+    "required_fields_range": [[2, 20], [0, "inf"], [5,7]],
     "required_fields_icons": ["x"],
     "required_other_icons": [],
     "required_fields_colors": ["group"],
@@ -280,62 +280,103 @@ function makeChart(containerSelector, data) {
     
     // ---------- 8. 创建图例 ----------
     
-    // 添加图例 (修改为水平胶囊，与数据条一致)
-    const legend = svg.append("g")
+    // 添加图例 (修改为水平胶囊，与数据条一致，并实现自动换行，且每行居中)
+    const legendGroup = svg.append("g")
         .attr("class", "legend")
-        .attr("transform", `translate(${width / 2}, ${margin.top / 2})`); // 初始定位，稍后居中
-    let legendOffset = 0;
-    // 更新图例项宽度计算以适应水平胶囊
+        .attr("transform", `translate(0, ${margin.top * 0.7})`); // Y 轴位置不变，X 轴将动态计算
+
+    // 图例项样式参数
     const legendCapsuleHeightH = 10; // 水平胶囊的高度
     const legendCapsuleWidthH = 15;  // 水平胶囊的宽度
-    totalLegendWidth = 0; // 重置总宽度计算
-    legendItemWidths.length = 0; // 清空旧宽度
-    // // 重新测量图例项宽度 - 使用临时 SVG (如果之前被移除)
+    const legendVerticalSpacing = 10; // 行之间的垂直间距
+    const legendItemPadding = 15; // 图例项之间的间距
+    const rowHeight = legendCapsuleHeightH + legendVerticalSpacing;
+
+    // 1. 计算每个图例项的完整宽度（包括内部间距和项间距）
+    const legendItemsData = [];
     const tempLegendSvg = d3.select(containerSelector).append("svg").attr("width", 0).attr("height", 0).style("visibility", "hidden");
-    groups.forEach(group => {
-        const tempText = tempLegendSvg.append("text") // 使用临时 SVG
+    groups.forEach((group, i) => {
+        const tempText = tempLegendSvg.append("text")
             .style("font-family", typography.label.font_family)
             .style("font-size", typography.label.font_size)
             .style("font-weight", typography.label.font_weight)
             .text(group);
         const textWidth = tempText.node().getBBox().width;
         tempText.remove();
-        // 图例项宽度 = 胶囊宽度 + 间距 + 文本宽度 + 右侧间距
-        const legendItemWidth = legendCapsuleWidthH + legendTextPadding + textWidth + legendPadding;
-        legendItemWidths.push(legendItemWidth);
-        totalLegendWidth += legendItemWidth;
+        // 单个图例项内容宽度 = 胶囊宽度 + 胶囊与文本间距 + 文本宽度
+        const itemContentWidth = legendCapsuleWidthH + legendTextPadding + textWidth;
+        // 完整图例项宽度 = 内容宽度 + 项之间的间距
+        const itemWidth = itemContentWidth + legendItemPadding;
+        legendItemsData.push({ group: group, width: itemWidth, contentWidth: itemContentWidth, index: i });
     });
-    tempLegendSvg.remove(); // 移除临时SVG
+    tempLegendSvg.remove();
 
-    groups.forEach((group, i) => {
-        const legendItem = legend.append("g")
-            .attr("transform", `translate(${legendOffset}, 0)`);
-        
-        // 图例水平胶囊 (使用对应的 pattern 填充)
-        const patternId = `pattern-${group.replace(/[^a-zA-Z0-9]/g, '-')}-${i}`;
-        const legendCapsule = legendItem.append("rect")
-            .attr("width", legendCapsuleWidthH)
-            .attr("height", legendCapsuleHeightH)
-            .attr("rx", legendCapsuleHeightH / 2) // 基于高度圆角
-            .attr("ry", legendCapsuleHeightH / 2)
-            .attr("y", -legendCapsuleHeightH / 2) // 垂直居中
-            .attr("fill", `url(#${patternId})`); // 使用 pattern 填充
+    // 2. 模拟布局并分组到行
+    const legendRows = [];
+    let currentRow = [];
+    let currentRowWidth = 0;
+    const maxLegendWidthForRow = width - 50 - 50; // 图例行的最大可用宽度
 
-        // 图例文本
-        legendItem.append("text")
-            .attr("x", legendCapsuleWidthH + legendTextPadding) // 胶囊右侧 + 间距
-            .attr("y", 0) // 与胶囊中心对齐
-            .attr("dy", "0.35em") // 垂直居中文本
-            .style("font-family", typography.label.font_family)
-            .style("font-size", typography.label.font_size)
-            .style("font-weight", typography.label.font_weight)
-            .style("fill", colors.text_color)
-            .text(group);
-            
-        legendOffset += legendItemWidths[i];
+    legendItemsData.forEach(itemData => {
+        // 检查添加此项是否会超出最大宽度 (注意第一个元素不需要检查)
+        if (currentRow.length > 0 && currentRowWidth + itemData.width > maxLegendWidthForRow) {
+            // 完成当前行
+            legendRows.push({ items: currentRow, totalWidth: currentRowWidth - legendItemPadding }); // 减去最后一个元素的右侧间距
+            // 开始新行
+            currentRow = [itemData];
+            currentRowWidth = itemData.width;
+        } else {
+            // 添加到当前行
+            currentRow.push(itemData);
+            currentRowWidth += itemData.width;
+        }
     });
-    // 调整图例组使其整体居中
-    legend.attr("transform", `translate(${(width - totalLegendWidth + legendPadding) / 2}, ${margin.top / 2})`);
+    // 添加最后一行
+    if (currentRow.length > 0) {
+        legendRows.push({ items: currentRow, totalWidth: currentRowWidth - legendItemPadding }); // 减去最后一个元素的右侧间距
+    }
+
+    // 3. & 4. 计算每行起始位置并绘制
+    let currentY = 0;
+    legendRows.forEach(row => {
+        // 计算该行居中的起始 X 坐标
+        const startX = (width - row.totalWidth) / 2;
+        let currentX = startX;
+
+        row.items.forEach(itemData => {
+            // 创建当前图例项的容器
+            const legendItem = legendGroup.append("g")
+                .attr("transform", `translate(${currentX}, ${currentY})`);
+
+            // 图例水平胶囊 (使用对应的 pattern 填充)
+            const patternId = `pattern-${itemData.group.replace(/[^a-zA-Z0-9]/g, '-')}-${itemData.index}`;
+            legendItem.append("rect")
+                .attr("x", 0)
+                .attr("y", -legendCapsuleHeightH / 2) // 垂直居中胶囊
+                .attr("width", legendCapsuleWidthH)
+                .attr("height", legendCapsuleHeightH)
+                .attr("rx", legendCapsuleHeightH / 2)
+                .attr("ry", legendCapsuleHeightH / 2)
+                .attr("fill", `url(#${patternId})`);
+
+            // 图例文本
+            legendItem.append("text")
+                .attr("x", legendCapsuleWidthH + legendTextPadding)
+                .attr("y", 0) // 与胶囊中心对齐
+                .attr("dy", "0.35em")
+                .style("font-family", typography.label.font_family)
+                .style("font-size", typography.label.font_size)
+                .style("font-weight", typography.label.font_weight)
+                .style("fill", colors.text_color)
+                .text(itemData.group);
+
+            // 更新下一个图例项的起始 X 坐标 (使用包含项间距的总宽度)
+            currentX += itemData.width;
+        });
+
+        // 更新下一行的 Y 坐标
+        currentY += rowHeight;
+    });
     
     // ---------- 9. 创建主图表组 ----------
     

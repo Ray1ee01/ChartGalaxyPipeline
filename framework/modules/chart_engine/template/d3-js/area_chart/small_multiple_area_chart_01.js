@@ -9,7 +9,7 @@ REQUIREMENTS_BEGIN
     "required_fields_icons": [],
     "required_other_icons": [],
     "required_fields_colors": ["group"],
-    "required_other_colors": [],
+    "required_other_colors": ["background"],
     "supported_effects": ["gradient", "opacity"],
     "min_height": 600,
     "min_width": 800,
@@ -17,7 +17,7 @@ REQUIREMENTS_BEGIN
     "icon_mark": "none",
     "icon_label": "none",
     "has_x_axis": "yes",
-    "has_y_axis": "no"
+    "has_y_axis": "yes"
 }
 REQUIREMENTS_END
 */
@@ -48,14 +48,14 @@ function makeChart(containerSelector, data) {
     // 每个字符估计宽度为8像素，再加上基础边距和一些额外空间
     const dynamicLeftMargin = Math.max(120, maxGroupNameLength * 8 + 40);
     
-    // 设置尺寸和边距 - 动态调整左侧边距
+    // 设置尺寸和边距 - 动态调整左侧边距和右侧边距（为Y轴留出空间）
     const width = variables.width;
     const height = variables.height;
     const margin = { 
         top: 60, 
-        right: 40, 
+        right: 60, // 增加右边距为Y轴留出空间
         bottom: 60, 
-        left: dynamicLeftMargin // 使用动态计算的左边距
+        left: dynamicLeftMargin
     };
     
     // 创建SVG
@@ -142,7 +142,7 @@ function makeChart(containerSelector, data) {
         .y1(d => groupPositions[group] + yScales[group](d[yField])) // 顶部根据数据变化
         .curve(d3.curveBasis); // 使用平滑曲线
     
-    // 为每个组创建面积图
+    // 为每个组创建面积图和Y轴
     groups.forEach(group => {
         // 过滤该组的数据
         const groupData = chartData.filter(d => d[groupField] === group);
@@ -181,6 +181,41 @@ function makeChart(containerSelector, data) {
             .attr("font-weight", "bold")
             .style("font-size", "14px")
             .text(group);
+        
+        // 创建Y轴 - 在右侧
+        const yAxis = d3.axisRight(yScales[group])
+            .ticks(3) // 减少刻度数量，避免拥挤
+            .tickSize(0) // 不显示刻度线
+            .tickFormat(d => d3.format(".1s")(d)); // 使用简洁格式
+        
+        // 添加Y轴
+        const yAxisGroup = g.append("g")
+            .attr("transform", `translate(${chartWidth}, ${groupPositions[group]})`)
+            .call(yAxis);
+        
+        // 设置Y轴样式
+        yAxisGroup.selectAll("path")
+            .attr("stroke", color);
+        
+        yAxisGroup.selectAll("text")
+            .attr("fill", color)
+            .attr("font-size", "10px")
+            .attr("dx", "0.5em"); // 向右移动文本
+        
+        // 添加水平辅助线
+        yScales[group].ticks(3).forEach(tick => {
+            if (tick > 0) { // 跳过0线，因为已经单独添加了
+                g.append("line")
+                    .attr("x1", 0)
+                    .attr("y1", groupPositions[group] + yScales[group](tick))
+                    .attr("x2", chartWidth)
+                    .attr("y2", groupPositions[group] + yScales[group](tick))
+                    .attr("stroke", color)
+                    .attr("stroke-opacity", 0.2)
+                    .attr("stroke-width", 0.5)
+                    .attr("stroke-dasharray", "2,2"); // 虚线
+            }
+        });
     });
     
     return svg.node();
