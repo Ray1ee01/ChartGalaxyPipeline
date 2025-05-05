@@ -2,21 +2,21 @@
 REQUIREMENTS_BEGIN
 {
     "chart_type": "Proportional Area Chart (Square)",
-    "chart_name": "proportional_area_chart_(square)_03",
+    "chart_name": "proportional_area_chart_square_03",
     "is_composite": false,
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],
-    "required_fields_range": [[2, 30], [0, "inf"]],
-    "required_fields_icons": ["x"],
+    "required_fields_range": [[2, 20], [0, "inf"]],
+    "required_fields_icons": [],
     "required_other_icons": [],
     "required_fields_colors": ["x"],
     "required_other_colors": ["primary"],
     "supported_effects": [],
-    "min_height": 400,
-    "min_width": 400,
+    "min_height": 600,
+    "min_width": 600,
     "background": "no",
     "icon_mark": "none",
-    "icon_label": "side",
+    "icon_label": "none",
     "has_x_axis": "no",
     "has_y_axis": "no"
 }
@@ -31,7 +31,6 @@ function makeChart(containerSelector, dataJSON) {
     const xField = cols.find(c=>c.role==="x")?.name;
     const yField = cols.find(c=>c.role==="y")?.name;
     const yUnit = cols.find(c=>c.role==="y")?.unit === "none" ? "" : cols.find(c=>c.role==="y")?.unit ?? "";
-   
     if(!xField || !yField){
         d3.select(containerSelector).html('<div style="color:red">缺少必要字段</div>');
         return;
@@ -44,8 +43,8 @@ function makeChart(containerSelector, dataJSON) {
     }
 
     /* ============ 2. 尺寸与比例尺 ============ */
-    // 1) 圆占画布比例，越大越拥挤、越难排
-    const fillRatio = 0.80;                 // 0.70 ~ 0.90
+    // 1) 方形占画布比例，控制总面积
+    const fillRatio = 0.50;                 // 设置为50%，与圆形图表保持一致
 
     // 2) 外切候选角度步长，值越小候选越密，单位 rad
     const angleStep = Math.PI / 24;         // Math.PI/8(粗) ~ Math.PI/24(细)
@@ -71,121 +70,301 @@ function makeChart(containerSelector, dataJSON) {
     const H = fullH  - margin.top  - margin.bottom; // 绘图区域高度
 
     // 8) 半径限制
-    const minRadius = 5; // 最小圆半径
-    const maxRadius = H / 3; // 最大圆半径（不超过绘图区域高度的三分之一）
+    const minRadius = 5; // 最小半径
+    const maxSide = 200; // 最大矩形边长限制为200
+    const maxRadius = Math.min(H / 3, maxSide/2); // 最大半径（取两个限制中较小的）
 
-    const totalArea   = W * H * fillRatio; // 圆允许占用的总面积
-    const totalValue  = d3.sum(raw,d=>+d[yField]); // Y字段总和
-    const areaPerUnit = totalArea / totalValue; // 每单位Y值对应的面积
+    // 设置顶部保护区域，防止与可能的标题或图例重叠
+    const TOP_PROTECTED_AREA = 30;
 
-    // 数据处理：计算每个节点的面积、半径、颜色等
-    const nodes = raw.map((d,i)=>({
+    // 计算可用面积的50%作为矩形最大总面积限制
+    const maxTotalArea = W * H * fillRatio;
+    const totalValue = d3.sum(raw, d => +d[yField]); // Y字段总和
+    const areaPerUnit = maxTotalArea / totalValue; // 每单位Y值对应的面积
+
+    // 创建颜色比例尺
+    const uniqueCategories = [...new Set(raw.map(d => d[xField]))];
+    const colorScale = d3.scaleOrdinal()
+        .domain(uniqueCategories)
+        .range(uniqueCategories.map((cat, i) => 
+            // 优先使用colors.field中的颜色
+            dataJSON.colors?.field?.[cat] || 
+            // 如果没有对应颜色，使用默认调色板
+            d3.schemeTableau10[i % 10]
+        ));
+
+    // 数据处理：计算每个节点的面积、边长、颜色等
+    const nodes = raw.map((d,i) => ({
         id   : d[xField]!=null?String(d[xField]):`__${i}__`, // 节点ID (X字段)，若为空则生成临时ID
         val  : +d[yField], // 节点值 (Y字段)
-        area : +d[yField]*areaPerUnit, // 节点面积
-        color: dataJSON.colors?.field?.[d[xField]] || d3.schemeTableau10[i%10], // 节点颜色
-        icon : dataJSON.images?.field?.[d[xField]] || null, // 节点图标 (从JSON中获取)
+        area : +d[yField] * areaPerUnit, // 节点面积
+        color: colorScale(d[xField]), // 节点颜色
         raw  : d // 原始数据
-    })).sort((a,b)=>b.area-a.area); // 按面积降序排序，方便布局
+    })).sort((a,b) => b.area - a.area); // 按面积降序排序，方便布局
 
-    // 计算每个节点的半径并应用限制
-    nodes.forEach(n=>{ 
-        // 从面积计算理论半径
-        let calculatedRadius = Math.sqrt(n.area/Math.PI);
-        // 应用半径限制（保证在[minRadius, maxRadius]范围内）
-        n.r = Math.max(minRadius, Math.min(calculatedRadius, maxRadius));
-        // 更新面积以匹配新半径（保持一致性）
-        n.area = Math.PI * n.r * n.r;
+    // 计算每个节点的边长并应用限制
+    nodes.forEach(n => { 
+        // 方形边长 = √面积 (而不是通过圆形半径计算)
+        let side = Math.sqrt(n.area);
+        
+        // 应用边长限制
+        const minSide = minRadius * 2;  // 最小边长
+        side = Math.max(minSide, Math.min(side, maxSide));
+        
+        // 更新节点属性
+        n.width = n.height = side;
+        n.area = side * side; // 更新面积以匹配新边长
     });
 
-    /* ============ 3. 数学工具函数 ============ */
-    // 计算两圆相交面积 (用于重叠检查)
-    function interArea(a,b){
-        const dx=a.x-b.x,dy=a.y-b.y,d=Math.hypot(dx,dy); // 圆心距
-        if(d>=a.r+b.r) return 0; // 外离或外切
-        if(d<=Math.abs(a.r-b.r)) return Math.PI*Math.min(a.r,b.r)**2; // 内含或内切
-        // 相交情况
-        const α=Math.acos((a.r*a.r+d*d-b.r*b.r)/(2*a.r*d)); // 圆a扇形角
-        const β=Math.acos((b.r*b.r+d*d-a.r*a.r)/(2*b.r*d)); // 圆b扇形角
-        return a.r*a.r*α + b.r*b.r*β - d*a.r*Math.sin(α); // 两扇形面积 - 三角形面积 * 2
+    // 检查总面积是否超过限制并按比例缩小
+    const initialTotalArea = d3.sum(nodes, d => d.area);
+    if (initialTotalArea > maxTotalArea) {
+        const scaleFactor = Math.sqrt(maxTotalArea / initialTotalArea);
+        nodes.forEach(n => {
+            n.width *= scaleFactor;
+            n.height *= scaleFactor;
+            n.area = n.width * n.height;
+        });
     }
-    // 检查两圆是否可接受重叠
-    const okPair=(a,b)=> {
-        const ia=interArea(a,b);
-        // 重叠面积占各自面积的比例不超过阈值
-        return ia/a.area<=overlapMax && ia/b.area<=overlapMax;
-    };
-    // 检查新圆与所有已放置圆是否可接受重叠
-    const okAll=(n,placed)=>placed.every(p=>okPair(n,p));
 
-    /* ============ 4. 生成候选位置 ============ */
-    function genCandidates(node, placed){
-        const list=[]; // 候选位置列表
-        // ---- 首个圆 ----
-        if(!placed.length){
-            if(firstPositions.includes("topleft"))
-                list.push({x:node.r, y:node.r}); // 左上角
-            if(firstPositions.includes("center"))
-                list.push({x:W/2, y:H/2}); // 中心
-            return list;
+    /* ============ 3. 力导向布局 ============ */
+    // 设置更好的初始位置 - 使用网格布局避免初始重叠
+    function assignInitialPositions() {
+        // 计算所有节点所需的近似网格大小
+        const totalArea = d3.sum(nodes, d => d.area);
+        const gridSide = Math.ceil(Math.sqrt(nodes.length));
+        const cellSize = Math.max(
+            d3.max(nodes, d => d.width),
+            Math.sqrt(W * H / (gridSide * gridSide))
+        );
+        
+        // 创建网格
+        const grid = new Array(gridSide).fill(0).map(() => new Array(gridSide).fill(false));
+        const centerX = W / 2;
+        const centerY = H / 2;
+        const startX = centerX - (cellSize * (gridSide - 1)) / 2;
+        const startY = centerY - (cellSize * (gridSide - 1)) / 2;
+        
+        // 按从大到小的顺序分配网格位置
+        // 大矩形优先在中心位置，小矩形在周围
+        let assignedCount = 0;
+        
+        // 计算距离网格中心的距离
+        function distanceToCenter(row, col) {
+            const centerRow = (gridSide - 1) / 2;
+            const centerCol = (gridSide - 1) / 2;
+            return Math.sqrt(Math.pow(row - centerRow, 2) + Math.pow(col - centerCol, 2));
         }
-        // ---- 与已放置圆外切 ----
-        placed.forEach(p=>{
-            const dist = p.r + node.r + distPadding; // 外切圆心距 + 额外间距
-            for(let θ=0; θ<2*Math.PI; θ+=angleStep){ // 遍历外切角度
-                const x=p.x+dist*Math.cos(θ), y=p.y+dist*Math.sin(θ);
-                // 检查是否超出边界
-                if(x-node.r<0||x+node.r>W||y-node.r<0||y+node.r>H) continue;
-                list.push({x,y});
+        
+        // 按照到中心的距离给网格单元排序
+        let cells = [];
+        for (let row = 0; row < gridSide; row++) {
+            for (let col = 0; col < gridSide; col++) {
+                cells.push({row, col, distance: distanceToCenter(row, col)});
+            }
+        }
+        cells.sort((a, b) => a.distance - b.distance);
+        
+        // 从中心开始，螺旋状向外分配位置
+        for (let i = 0; i < nodes.length; i++) {
+            const node = nodes[i];
+            const cell = cells[i % cells.length];
+            
+            // 分配位置并添加一些随机偏移以避免完全对齐
+            const jitter = cellSize * 0.1; // 添加10%的随机偏移
+            node.x = startX + cell.col * cellSize + cellSize/2 + (Math.random() - 0.5) * jitter;
+            node.y = startY + cell.row * cellSize + cellSize/2 + (Math.random() - 0.5) * jitter;
+            
+            // 确保在画布内
+            node.x = Math.max(node.width/2, Math.min(W - node.width/2, node.x));
+            node.y = Math.max(TOP_PROTECTED_AREA + node.height/2, Math.min(H - node.height/2, node.y));
+        }
+        
+        // 特殊处理最大节点（可选）- 固定在中心
+        if (nodes.length > 0) {
+            // 松散固定最大节点，让它有一定移动空间
+            nodes[0].x = W * 0.5 + (Math.random() - 0.5) * 10;
+            nodes[0].y = H * 0.5 + (Math.random() - 0.5) * 10;
+        }
+    }
+
+    // 分配初始位置
+    assignInitialPositions();
+
+    // 创建自定义碰撞检测函数 - 处理矩形之间的碰撞，考虑方形的特性
+    function rectCollide() {
+        let nodes = [];
+        let strength = 1;
+        
+        // 计算两个矩形之间的碰撞和间距
+        function distance(nodeA, nodeB) {
+            // 计算两个矩形中心点之间的距离
+            const dx = nodeB.x - nodeA.x;
+            const dy = nodeB.y - nodeA.y;
+            
+            // 计算两个矩形边缘之间的距离（负值表示重叠）
+            const overlapX = (nodeA.width + nodeB.width) / 2 - Math.abs(dx);
+            const overlapY = (nodeA.height + nodeB.height) / 2 - Math.abs(dy);
+            
+            // 如果没有重叠，返回正距离
+            if (overlapX <= 0 || overlapY <= 0) {
+                // 返回最近边缘之间的欧几里得距离
+                const edgeDistX = overlapX <= 0 ? -overlapX : 0;
+                const edgeDistY = overlapY <= 0 ? -overlapY : 0;
+                return Math.sqrt(edgeDistX * edgeDistX + edgeDistY * edgeDistY);
+            }
+            
+            // 如果重叠，返回负的重叠程度（更精确地描述重叠情况）
+            // 重叠值越大（负值绝对值越大），斥力越强
+            return -Math.sqrt(overlapX * overlapY); // 使用重叠面积的平方根增强斥力效果
+        }
+        
+        // 主要碰撞处理函数 - 防止矩形重叠，考虑方形的正交性质
+        function force(alpha) {
+            const quadtree = d3.quadtree()
+                .x(d => d.x)
+                .y(d => d.y)
+                .addAll(nodes);
+                
+            for (let i = 0; i < nodes.length; i++) {
+                const nodeA = nodes[i];
+                
+                // 查找可能与当前节点碰撞的其他节点
+                const padding = 5; // 额外的安全间距
+                const searchRadius = Math.max(nodeA.width, nodeA.height) * 1.5 + padding;
+                quadtree.visit((quad, x1, y1, x2, y2) => {
+                    if (!quad.length) {
+                        do {
+                            if (quad.data !== nodeA) {
+                                const nodeB = quad.data;
+                                const dist = distance(nodeA, nodeB);
+                                
+                                // 即使矩形没有重叠，只要它们很接近，也应用较弱斥力
+                                // 这样可以在布局阶段保持一定的间距
+                                const repulsionThreshold = padding; // 没有重叠时也保持这个距离
+                                
+                                if (dist < repulsionThreshold) {
+                                    const dx = nodeB.x - nodeA.x;
+                                    const dy = nodeB.y - nodeA.y;
+                                    const l = Math.sqrt(dx * dx + dy * dy) || 1;
+                                    
+                                    // 计算斥力
+                                    // 如果重叠（dist < 0），则力很强
+                                    // 如果接近但不重叠（0 <= dist < repulsionThreshold），则力较弱
+                                    const repulsionStrength = dist < 0 ? 1.0 : 1 - (dist / repulsionThreshold);
+                                    let force = Math.min(
+                                        Math.abs(dist < 0 ? dist : dist - repulsionThreshold) * strength * alpha * repulsionStrength,
+                                        15 // 最大斥力上限提高
+                                    );
+                                    
+                                    // 考虑节点大小差异，使大节点更稳定
+                                    const ratio = nodeA.area / (nodeA.area + nodeB.area);
+                                    
+                                    // 矩形特有：方向向量应考虑矩形特性
+                                    // 计算主要重叠方向（水平或垂直）
+                                    const overlapX = (nodeA.width + nodeB.width) / 2 - Math.abs(dx);
+                                    const overlapY = (nodeA.height + nodeB.height) / 2 - Math.abs(dy);
+                                    
+                                    // 根据重叠方向分配力度
+                                    let forceX = force * (dx / l);
+                                    let forceY = force * (dy / l);
+                                    
+                                    // 矩形正交性处理：对不同方向应用不同力度
+                                    // 如果矩形主要在水平方向重叠，增强垂直方向的力
+                                    if (overlapX > overlapY && Math.abs(dy) > 0.1) {
+                                        forceY *= 1.8; // 增强正交方向斥力
+                                    }
+                                    // 如果矩形主要在垂直方向重叠，增强水平方向的力
+                                    else if (overlapY > overlapX && Math.abs(dx) > 0.1) {
+                                        forceX *= 1.8; // 增强正交方向斥力
+                                    }
+                                    
+                                    // 应用力（根据面积比例）
+                                    if (!nodeA.fx) {
+                                        nodeA.x -= forceX * (1 - ratio) * 0.95;
+                                        nodeA.y -= forceY * (1 - ratio) * 0.95;
+                                    }
+                                    
+                                    if (!nodeB.fx) {
+                                        nodeB.x += forceX * ratio * 0.95;
+                                        nodeB.y += forceY * ratio * 0.95;
+                                    }
+                                }
+                            }
+                        } while (quad = quad.next);
+                    }
+                    
+                    // 如果当前四叉树区域与搜索区域不重叠，停止遍历该分支
+                    const nodeRadius = Math.max(nodeA.width, nodeA.height) / 2 + padding;
+                    return x1 > nodeA.x + nodeRadius || 
+                           x2 < nodeA.x - nodeRadius || 
+                           y1 > nodeA.y + nodeRadius || 
+                           y2 < nodeA.y - nodeRadius;
+                });
+            }
+        }
+        
+        // 设置API
+        force.initialize = function(_) {
+            nodes = _;
+        };
+        
+        force.strength = function(_) {
+            strength = _ ?? strength;
+            return force;
+        };
+        
+        return force;
+    }
+
+    // 创建防碰撞力模拟布局
+    const simulation = d3.forceSimulation(nodes)
+        .force("center", d3.forceCenter(W/2, H/2).strength(0.05)) // 中心引力，调整为适中强度
+        .force("charge", d3.forceManyBody().strength(-20)) // 节点间斥力，增强以避免过度拥挤
+        .force("collide", rectCollide().strength(1.0)) // 自定义矩形碰撞检测，增强强度
+        .force("x", d3.forceX(W / 2).strength(0.02)) // x方向引力
+        .force("y", d3.forceY(H / 2).strength(0.02)) // y方向引力
+        .stop();
+
+    // 使用模拟分阶段降温冷却，以获得更好的布局
+    const MIN_ITERATIONS = 350; // 增加迭代次数以获得更稳定的布局
+    for (let i = 0; i < MIN_ITERATIONS; ++i) {
+        // 在早期阶段应用更强的边界约束，确保矩形不会飞出边界
+        const boundaryStrength = 1 - Math.min(1, i / (MIN_ITERATIONS * 0.8));
+        
+        simulation.tick();
+        
+        // 每次迭代后应用边界约束
+        nodes.forEach(d => {
+            if (!d.fx) { // 如果节点没有被固定
+                // 添加额外的边界吸引力，随着迭代的进行逐渐减弱
+                const maxBoundaryForce = 2 * boundaryStrength;
+                
+                // 计算到边界的距离
+                const distToLeft = d.x - d.width/2;
+                const distToRight = W - d.x - d.width/2;
+                const distToTop = d.y - d.height/2 - TOP_PROTECTED_AREA;
+                const distToBottom = H - d.y - d.height/2;
+                
+                // 如果接近边界，施加一个向中心的力
+                if (distToLeft < 20) d.x += maxBoundaryForce * (1 - distToLeft/20);
+                if (distToRight < 20) d.x -= maxBoundaryForce * (1 - distToRight/20);
+                if (distToTop < 20) d.y += maxBoundaryForce * (1 - distToTop/20);
+                if (distToBottom < 20) d.y -= maxBoundaryForce * (1 - distToBottom/20);
+                
+                // 强制约束在边界内
+                d.x = Math.max(d.width/2 + 1, Math.min(W - d.width/2 - 1, d.x));
+                d.y = Math.max(TOP_PROTECTED_AREA + d.height/2 + 1, Math.min(H - d.height/2 - 1, d.y));
             }
         });
-
-        // ---- 去重 ---- (通过Map，键为保留两位小数的坐标字符串)
-        const uniq=new Map();
-        list.forEach(p=>uniq.set(p.x.toFixed(2)+","+p.y.toFixed(2),p));
-        const arr=[...uniq.values()];
-
-        // ---- 排序 ---- (影响放置顺序)
-        if(candidateSort==="center"){ // 优先靠近中心
-            arr.sort((a,b)=> (a.y-H/2)**2+(a.x-W/2)**2 - (b.y-H/2)**2-(b.x-W/2)**2 );
-        }else if(candidateSort==="random"){ // 随机
-            d3.shuffle(arr);
-        }else{ // 默认左上优先 (topleft)
-            arr.sort((a,b)=>a.y-b.y || a.x-b.x);
-        }
-        return arr;
     }
 
-    /* ============ 5. DFS + 回溯布局 ============ */
-    // 深度优先搜索尝试放置所有节点
-    function dfs(idx, placed){
-        if(idx===nodes.length) return true;           // 递归基：全部放置成功
-        const node = nodes[idx]; // 当前要放置的节点
-        // 遍历当前节点的所有候选位置
-        for(const c of genCandidates(node,placed)){
-            node.x=c.x; node.y=c.y; // 尝试放置
-            if(okAll(node,placed)){ // 检查是否与已放置节点重叠过多
-                placed.push(node); // 放置成功，加入已放置列表
-                if(dfs(idx+1,placed)) return true; // 递归放置下一个节点
-                placed.pop();                         // 回溯：取出当前节点，尝试下一个候选位置
-            }
-        }
-        return false;                                 // 该层全部候选位置失败
-    }
+    // 数据处理 - 添加绘图顺序索引（面积小的在上层，大的在底层）
+    nodes.forEach((d, i) => {
+        d.zIndex = nodes.length - i; // 由于数据已按面积降序排序，所以索引大的（面积小的）会有更高的zIndex
+    });
 
-    let placed=[]; // 已成功放置的节点
-    let success=dfs(0,placed); // 启动DFS
-
-    /* ============ 6. 若失败则删除最小圆重试 ============ */
-    let drop=0; // 已丢弃的节点数
-    // 如果布局失败，且允许丢弃节点，且还有节点可丢
-    while(!success && drop<maxDropTries && nodes.length){
-        nodes.pop(); drop++; // 丢弃面积最小的节点（因为已排序）
-        placed=[]; success=dfs(0,placed); // 重新尝试布局
-    }
-    if(!success) placed=[]; // 最终仍失败则返回空结果
-
-    /* ============ 7. 绘图 ============ */
+    /* ============ 4. 绘图 ============ */
     d3.select(containerSelector).html(""); // 清空容器
     // 创建 SVG 画布
     const svg=d3.select(containerSelector)
@@ -194,39 +373,261 @@ function makeChart(containerSelector, dataJSON) {
         .attr("height",fullH) // 高度固定
         .attr("viewBox",`0 0 ${fullW} ${fullH}`) // 设置视窗
         .attr("preserveAspectRatio","xMidYMid meet") // 保持宽高比
-        .style("max-width","100%") // 最大宽度
-        .style("height","auto")// 高度自适应
         .attr("xmlns", "http://www.w3.org/2000/svg")
-        .attr("xmlns:xlink", "http://www.w3.org/1999/xlink");
+        .attr("xmlns:xlink", "http://www.w3.org/1999/xlink")
+        .style("max-width","100%") // 最大宽度
+        .style("height","auto"); // 高度自适应
+
+    // 创建渐变定义
+    const defs = svg.append("defs");
+    
+    // 为每个节点创建唯一的渐变ID
+    nodes.forEach((node, i) => {
+        // 提取基础颜色
+        const baseColor = node.color;
+        
+        // 创建渐变
+        const gradientId = `square-gradient-${i}`;
+        node.gradientId = gradientId;
+        
+        // 创建线性渐变 - 从左上到右下
+        const gradient = defs.append("linearGradient")
+            .attr("id", gradientId)
+            .attr("x1", "0%")
+            .attr("y1", "0%")
+            .attr("x2", "100%")
+            .attr("y2", "100%")
+            .attr("spreadMethod", "pad");
+        
+        // 颜色处理
+        let color1, color2, color3, color4;
+        
+        // 如果是十六进制颜色
+        if (baseColor.startsWith("#")) {
+            // 将颜色转换为 RGB 格式
+            const r = parseInt(baseColor.slice(1, 3), 16);
+            const g = parseInt(baseColor.slice(3, 5), 16);
+            const b = parseInt(baseColor.slice(5, 7), 16);
+            
+            // 创建显著更亮的左上角颜色 (增加亮度约70%)
+            const lighterR = Math.min(255, Math.round(r * 1.7));
+            const lighterG = Math.min(255, Math.round(g * 1.7));
+            const lighterB = Math.min(255, Math.round(b * 1.7));
+            
+            // 创建中上部过渡颜色
+            const midLightR = Math.min(255, Math.round(r * 1.3));
+            const midLightG = Math.min(255, Math.round(g * 1.3));
+            const midLightB = Math.min(255, Math.round(b * 1.3));
+            
+            // 创建中下部过渡颜色
+            const midDarkR = Math.min(255, Math.round(r * 0.9));
+            const midDarkG = Math.min(255, Math.round(g * 0.9));
+            const midDarkB = Math.min(255, Math.round(b * 0.9));
+            
+            // 创建显著更暗的右下角颜色 (减少亮度约40%)
+            const darkerR = Math.max(0, Math.round(r * 0.6));
+            const darkerG = Math.max(0, Math.round(g * 0.6));
+            const darkerB = Math.max(0, Math.round(b * 0.6));
+            
+            color1 = `rgb(${lighterR}, ${lighterG}, ${lighterB})`;
+            color2 = `rgb(${midLightR}, ${midLightG}, ${midLightB})`;
+            color3 = `rgb(${midDarkR}, ${midDarkG}, ${midDarkB})`;
+            color4 = `rgb(${darkerR}, ${darkerG}, ${darkerB})`;
+        } 
+        // 如果是RGB或RGBA颜色
+        else if (baseColor.startsWith("rgb")) {
+            // 提取RGB值
+            const rgbMatch = baseColor.match(/\d+/g);
+            if (rgbMatch && rgbMatch.length >= 3) {
+                const r = parseInt(rgbMatch[0]);
+                const g = parseInt(rgbMatch[1]);
+                const b = parseInt(rgbMatch[2]);
+                
+                // 创建显著更亮的左上角颜色
+                const lighterR = Math.min(255, Math.round(r * 1.7));
+                const lighterG = Math.min(255, Math.round(g * 1.7));
+                const lighterB = Math.min(255, Math.round(b * 1.7));
+                
+                // 创建中上部过渡颜色
+                const midLightR = Math.min(255, Math.round(r * 1.3));
+                const midLightG = Math.min(255, Math.round(g * 1.3));
+                const midLightB = Math.min(255, Math.round(b * 1.3));
+                
+                // 创建中下部过渡颜色
+                const midDarkR = Math.min(255, Math.round(r * 0.9));
+                const midDarkG = Math.min(255, Math.round(g * 0.9));
+                const midDarkB = Math.min(255, Math.round(b * 0.9));
+                
+                // 创建显著更暗的右下角颜色
+                const darkerR = Math.max(0, Math.round(r * 0.6));
+                const darkerG = Math.max(0, Math.round(g * 0.6));
+                const darkerB = Math.max(0, Math.round(b * 0.6));
+                
+                // 处理透明度
+                const alpha = rgbMatch.length > 3 ? rgbMatch[3] : "1";
+                
+                color1 = `rgba(${lighterR}, ${lighterG}, ${lighterB}, ${alpha})`;
+                color2 = `rgba(${midLightR}, ${midLightG}, ${midLightB}, ${alpha})`;
+                color3 = `rgba(${midDarkR}, ${midDarkG}, ${midDarkB}, ${alpha})`;
+                color4 = `rgba(${darkerR}, ${darkerG}, ${darkerB}, ${alpha})`;
+            } else {
+                // 回退到原始颜色
+                color1 = baseColor;
+                color2 = baseColor;
+                color3 = baseColor;
+                color4 = baseColor;
+            }
+        } else {
+            // 对于其他颜色格式，使用原始颜色
+            color1 = baseColor;
+            color2 = baseColor;
+            color3 = baseColor;
+            color4 = baseColor;
+        }
+        
+        // 添加渐变停止点 - 更多的渐变点创造更平滑的效果
+        gradient.append("stop")
+            .attr("offset", "0%")
+            .attr("stop-color", color1)
+            .attr("stop-opacity", 1);
+            
+        gradient.append("stop")
+            .attr("offset", "35%")
+            .attr("stop-color", color2)
+            .attr("stop-opacity", 1);
+            
+        gradient.append("stop")
+            .attr("offset", "70%")
+            .attr("stop-color", color3)
+            .attr("stop-opacity", 1);
+            
+        gradient.append("stop")
+            .attr("offset", "100%")
+            .attr("stop-color", color4)
+            .attr("stop-opacity", 1);
+            
+        // 添加高光效果
+        const highlightId = `square-highlight-${i}`;
+        node.highlightId = highlightId;
+        
+        // 创建高光渐变 - 从左上向右下
+        const highlight = defs.append("linearGradient")
+            .attr("id", highlightId)
+            .attr("x1", "0%")
+            .attr("y1", "0%")
+            .attr("x2", "100%")
+            .attr("y2", "100%");
+            
+        highlight.append("stop")
+            .attr("offset", "0%")
+            .attr("stop-color", "white")
+            .attr("stop-opacity", 0.6);
+            
+        highlight.append("stop")
+            .attr("offset", "15%")
+            .attr("stop-color", "white")
+            .attr("stop-opacity", 0.2);
+            
+        highlight.append("stop")
+            .attr("offset", "30%")
+            .attr("stop-color", "white")
+            .attr("stop-opacity", 0.1);
+            
+        highlight.append("stop")
+            .attr("offset", "100%")
+            .attr("stop-color", "white")
+            .attr("stop-opacity", 0);
+            
+        // 添加阴影
+        const shadowId = `square-shadow-${i}`;
+        node.shadowId = shadowId;
+        
+        // 创建滤镜
+        const filter = defs.append("filter")
+            .attr("id", shadowId)
+            .attr("width", "150%")
+            .attr("height", "150%");
+            
+        // 添加阴影效果
+        filter.append("feDropShadow")
+            .attr("dx", "3") // 水平偏移
+            .attr("dy", "3") // 垂直偏移
+            .attr("stdDeviation", "2.5") // 模糊度
+            .attr("flood-color", "rgba(0,0,0,0.3)") // 阴影颜色
+            .attr("flood-opacity", "0.5"); // 阴影不透明度
+    });
+
+    // 可选：添加全局背景微光效果，使图表更有深度感
+    const backgroundGlowId = "background-glow";
+    const backgroundGlow = defs.append("radialGradient")
+        .attr("id", backgroundGlowId)
+        .attr("cx", "50%")
+        .attr("cy", "50%")
+        .attr("r", "70%")
+        .attr("fx", "50%")
+        .attr("fy", "50%");
+    
+    backgroundGlow.append("stop")
+        .attr("offset", "0%")
+        .attr("stop-color", "#ffffff")
+        .attr("stop-opacity", 0.2);
+        
+    backgroundGlow.append("stop")
+        .attr("offset", "70%")
+        .attr("stop-color", "#f0f0f0")
+        .attr("stop-opacity", 0.1);
+        
+    backgroundGlow.append("stop")
+        .attr("offset", "100%")
+        .attr("stop-color", "#f5f5f5")
+        .attr("stop-opacity", 0);
 
     // 创建主绘图区域 <g> 元素，应用边距
     const g=svg.append("g")
         .attr("transform",`translate(${margin.left},${margin.top})`);
-        
-    // 添加绘图顺序索引（面积小的在上层，大的在底层）
-    placed.forEach((d, i) => {
-        d.zIndex = placed.length - i; // 由于数据已按面积降序排序，所以索引大的（面积小的）会有更高的zIndex
-    });
 
-    // 创建节点分组 <g> 元素，按zIndex排序确保小方块在上层
+    // 添加微光背景效果
+    g.append("rect")
+        .attr("width", W)
+        .attr("height", H)
+        .attr("fill", `url(#${backgroundGlowId})`)
+        .attr("opacity", 0.5); // 降低背景透明度，使其更微妙
+
+    // 创建节点分组 <g> 元素（按zIndex排序）
     const nodeG=g.selectAll("g.node")
-        .data(placed,d=>d.id) // 绑定已放置节点数据，使用 id 作为 key
+        .data(nodes, d => d.id) // 绑定节点数据，使用 id 作为 key
         .join("g")
-        .attr("class","node")
-        .attr("transform",d=>`translate(${d.x},${d.y})`) // 定位到计算好的位置
+        .attr("class", "node")
+        .attr("transform", d => `translate(${d.x},${d.y})`) // 定位到力模拟计算后的位置
         .sort((a, b) => a.zIndex - b.zIndex); // 确保面积小的在上层绘制
 
-    // 绘制正方形（替代圆形）
+    // 绘制正方形
     nodeG.append("rect")
-        .attr("x", d => -d.r) // x位置（居中）
-        .attr("y", d => -d.r) // y位置（居中）
-        .attr("width", d => 2*d.r) // 宽度=直径
-        .attr("height", d => 2*d.r) // 高度=直径
-        .attr("fill", d => d.color) // 填充色
+        .attr("x", d => -d.width/2) // x位置（居中）
+        .attr("y", d => -d.height/2) // y位置（居中）
+        .attr("width", d => d.width) // 宽度
+        .attr("height", d => d.height) // 高度
+        .attr("fill", d => `url(#${d.gradientId})`) // 使用渐变填充
         .attr("stroke", "#fff") // 白色描边
-        .attr("stroke-width", 1.0); // 描边宽度
+        .attr("stroke-width", 1.0) // 描边宽度
+        .attr("rx", d => Math.min(5, d.width * 0.05)) // 添加圆角，但不超过5像素
+        .attr("ry", d => Math.min(5, d.height * 0.05)) // 添加圆角，但不超过5像素
+        .attr("filter", d => `url(#${d.shadowId})`) // 应用阴影效果
+        .style("box-shadow", "0 4px 8px rgba(0,0,0,0.2)"); // 添加CSS盒阴影
+        
+    // 添加高光层 - 覆盖在矩形上面增加光泽
+    nodeG.append("rect")
+        .attr("class", "highlight")
+        .attr("x", d => -d.width/2) // x位置（居中）
+        .attr("y", d => -d.height/2) // y位置（居中）
+        .attr("width", d => d.width) // 宽度
+        .attr("height", d => d.height) // 高度
+        .attr("fill", d => `url(#${d.highlightId})`) // 使用高光渐变
+        .attr("rx", d => Math.min(5, d.width * 0.05)) // 添加圆角，但不超过5像素
+        .attr("ry", d => Math.min(5, d.height * 0.05)) // 添加圆角，但不超过5像素
+        .attr("pointer-events", "none"); // 确保高光不会影响交互
 
-    /* ---- 文本和图标设置 ---- */
+    /* ---- 文本 ---- */
     // 提取字体排印设置，提供默认值
     const valueFontFamily = dataJSON.typography?.annotation?.font_family || 'Arial';
     const valueFontSizeBase = parseFloat(dataJSON.typography?.annotation?.font_size || '12'); // 数值标签基础字号
@@ -243,7 +644,22 @@ function makeChart(containerSelector, dataJSON) {
         ctx.font = `${fontWeight || 'normal'} ${fontSize}px ${fontFamily || 'Arial'}`;
         return ctx.measureText(text).width;
     }
-    
+
+    // ---- 类别标签换行控制 ----
+    const minCatFontSize = 10; // 维度标签最小字号 (再小就换行或省略)
+    const catLineHeight = 0.3; // 维度标签换行行高倍数（相对于字号）
+    const needsWrapping = true; // 需要时是否允许换行
+
+    // 正方形中可用宽度计算函数 - 对于正方形，直接使用边长作为最大宽度
+    function getSquareWidth(side, distanceFromCenter) {
+        // 检查是否超出正方形范围
+        if (Math.abs(distanceFromCenter) >= side/2) {
+            return 0; // 如果距离大于或等于半边长，宽度为0
+        }
+        // 正方形中，在任何高度都可以使用完整的宽度
+        return side; // 返回正方形边长
+    }
+
     // 计算颜色亮度的函数 (用于确定文本颜色)
     function getColorBrightness(color) {
         // 处理rgba格式
@@ -286,228 +702,208 @@ function makeChart(containerSelector, dataJSON) {
         return brightness > 0.6 ? '#000000' : '#ffffff';
     }
 
-    // 图标大小和字体大小计算函数
-    const iconSizeRatio = 0.6; // 图标相对于方形边长的比例
-    const minIconSize = 16; // 最小图标尺寸
-    const maxIconSize = 120; // 最大图标尺寸
-    const getIconSize = (side) => Math.max(minIconSize, Math.min(side * iconSizeRatio, maxIconSize));
-    
-    // 字体大小计算基准
-    const fontSizeScaleFactor = 0.35; // 字体大小与方形边长的缩放比例
-    const minFontSize = 8; // 可接受的最小字体大小 
-    const maxFontSize = 22; // 最大字体大小
-    
-    // 如果方形边长小于阈值，则只显示图标
-    const minSideForText = 20; // 最小需要的边长来显示文本
+    // --- 新的文本渲染逻辑 ---
+    const minAcceptableFontSize = 8; // 可接受的最小字体大小
+    const minSideForCategoryLabel = 10; // 显示维度标签的最小边长阈值
+    const fontSizeScaleFactor = 0.38; // 字体大小与正方形边长的缩放比例
+    const maxFontSize = 28; // 最大字体大小
 
-    // ---- 类别标签换行控制 ----
-    const minCatFontSize = 10; // 维度标签最小字号 (再小就换行)
-    const catLineHeight = 0.3; // 维度标签换行行高倍数
-    const needsWrapping = true; // 需要时是否允许换行
-    
-    // --- 渲染内容 ---
     nodeG.each(function(d) {
         const gNode = d3.select(this);
-        const r = d.r;
-        const side = 2 * r; // 正方形边长 = 圆直径
-        
-        // 对于非常小的正方形，只显示图标
-        if (side < minSideForText) {
-            // 只添加图标，不添加文本
-            if (d.icon) {
-                // 对于小正方形，图标要更小，防止溢出
-                const iconSize = Math.min(side * 0.8, minIconSize * 1.2);
-                
-                gNode.append("image")
-                    .attr("xlink:href", d.icon)
-                    .attr("width", iconSize)
-                    .attr("height", iconSize)
-                    .attr("x", -iconSize/2)
-                    .attr("y", -iconSize/2)
-                    .attr("preserveAspectRatio", "xMidYMid meet");
-            }
-            return;
-        }
-        
-        // 计算安全区域 - 对于大于50px的正方形，内容限制在中心70%区域内
-        const useSafeZone = side > 50;
-        const safeZoneRatio = 0.7; // 安全区域占总面积的比例
-        const safeZoneSide = useSafeZone ? side * safeZoneRatio : side;
-        const safeZoneR = safeZoneSide / 2;
-        const safeZoneOffset = (side - safeZoneSide) / 2;
-        
-        // 边长小于20px只显示图标（已在上面处理）
-        // 边长小于50px时，图标比例降低到0.3
-        const iconSizeRatioModified = side < 50 ? 0.3 : 0.5;
-        
-        // 对于足够大的正方形，添加图标和文本
+        const side = d.width; // 正方形边长
         const valText = `${d.val}${yUnit}`;
         let catText = d.id.startsWith("__") ? "" : d.id;
+        const maxTextWidth = side * 0.85; // 正方形内文本允许的最大宽度 (85%边长)
         
-        // 1. 确定布局比例和空间分配 - 使用安全区域边长
-        const verticalSafetyMargin = safeZoneSide * 0.95; // 垂直安全边界，避免内容太靠近边缘
-        const verticalCenter = 0; // 中心点Y坐标
-        
-        // 重新计算垂直布局，让图标尽量靠近安全区域顶部
-        const topPadding = safeZoneSide * 0.1; // 顶部安全边距
-        
-        // 计算相对于中心点的安全区域顶部位置
-        const safeZoneTop = useSafeZone ? -r + safeZoneOffset : -r;
-        
-        // 计算理想的图标大小，考虑安全区域的大小
-        const idealIconSize = Math.min(safeZoneSide * iconSizeRatioModified, maxIconSize); // 根据条件使用修改后的图标比例
-        
-        // 2. 计算垂直布局位置
-        // 计算垂直布局的起点和终点，从上到下为负到正
-        const verticalStart = safeZoneTop + topPadding / 2; // 从安全区域顶部开始，留一点边距
-        const verticalEnd = safeZoneTop + safeZoneSide * 0.9; // 底部留一点边距
-        
-        // 计算图标的位置 - 靠近顶部
-        const iconTopPosition = verticalStart; // 图标顶部位置
-        const iconSize = idealIconSize; // 正方形可以使用全宽
-        
-        // 计算文本区域的位置，位于图标下方
-        const iconBottomY = iconTopPosition + iconSize;
-        const textAreaStart = iconBottomY + safeZoneSide * 0.03; // 文本区域起始位置，留一点间距
-        const textAreaEnd = verticalEnd; // 文本区域结束位置
-        const textAreaHeight = textAreaEnd - textAreaStart;
-        
-        // 当边长小于20px时，只显示图标
-        if (side < 20) {
-            if (d.icon) {
-                const smallIconSize = Math.min(side * 0.7, minIconSize * 1.2);
-                
-                gNode.append("image")
-                    .attr("xlink:href", d.icon)
-                    .attr("width", smallIconSize)
-                    .attr("height", smallIconSize)
-                    .attr("x", -smallIconSize/2)
-                    .attr("y", -smallIconSize/2)
-                    .attr("preserveAspectRatio", "xMidYMid meet");
-            }
-            return;
-        }
-        
-        // 计算文本的理想字体大小
-        const idealFontSize = Math.max(
-            minFontSize,
+        // 根据正方形的背景色选择合适的文本颜色
+        const backgroundColor = d.color;
+        const adaptiveTextColor = getTextColorForBackground(backgroundColor);
+
+        // 1. 计算初始字体大小候选值
+        let currentFontSize = Math.max(
+            minAcceptableFontSize,
             Math.min(
-                safeZoneSide * fontSizeScaleFactor,
+                side * fontSizeScaleFactor,
                 (valueFontSizeBase + categoryFontSizeBase) / 2,
-                maxFontSize,
-                textAreaHeight / (catText ? 3 : 1.5) // 根据有无分类文本调整大小
+                maxFontSize
             )
         );
-        
-        // 3. 均匀分配文本空间 - 使用固定间距比例
-        const textSpaceTotal = textAreaEnd - textAreaStart;
-        // 文本间距系数 (相对于字体大小)
-        const spacingFactor = 0.3; 
-        
-        // 计算类别文本位置
-        const categoryPosition = catText ? textAreaStart : 0;
-        
-        // 4. 确定最终的字体大小，确保文本不会溢出
-        let fontSize = idealFontSize;
-        const valTextWidth = getTextWidthCanvas(valText, valueFontFamily, fontSize, valueFontWeight);
-        const catTextWidth = catText ? getTextWidthCanvas(catText, categoryFontFamily, fontSize, categoryFontWeight) : 0;
-        
-        // 计算最大可用宽度 - 使用安全区域宽度的85%
-        const maxTextWidth = safeZoneSide * 0.85;
-        
-        // 5. 计算值文本位置（考虑类别文本高度和间距）
-        let categoryLines = 1;
-        let categoryLabelHeight = fontSize;
-        let shouldWrapCategory = false;
-        
-        // 如果文本宽度超过可用宽度，则缩小字体
-        if (valTextWidth > maxTextWidth || (catText && catTextWidth > maxTextWidth)) {
-            const valueRatio = valTextWidth / maxTextWidth;
-            const catRatio = catText ? catTextWidth / maxTextWidth : 0;
-            const maxRatio = Math.max(valueRatio, catRatio);
-            
-            if (maxRatio > 1) {
-                fontSize = Math.max(minFontSize, fontSize / maxRatio);
-            }
-        }
-        
-        // 再次检查维度文本是否需要换行处理
-        const adjustedCatTextWidth = catText ? getTextWidthCanvas(catText, categoryFontFamily, fontSize, categoryFontWeight) : 0;
-        
-        if (catText && adjustedCatTextWidth > maxTextWidth) {
-            shouldWrapCategory = needsWrapping;
-            if (shouldWrapCategory) {
-                const tempCanvas = document.createElement('canvas');
-                const tempCtx = tempCanvas.getContext('2d');
-                tempCtx.font = `${categoryFontWeight} ${fontSize}px ${categoryFontFamily}`;
-                
-                const words = catText.split(/\s+/);
-                let lines = [];
-                
-                if (words.length <= 1) { // 按字符模拟
-                    const chars = catText.split('');
-                    let currentLine = '';
-                    for (let i = 0; i < chars.length; i++) {
-                        const testLine = currentLine + chars[i];
-                        if (tempCtx.measureText(testLine).width <= maxTextWidth || currentLine.length === 0) {
-                            currentLine += chars[i];
-                        } else {
-                            lines.push(currentLine);
-                            currentLine = chars[i];
-                        }
-                    }
-                    lines.push(currentLine);
-                } else { // 按单词模拟
-                    let line = [];
-                    let word;
+
+        // 2. 检查文本宽度并调整字体大小
+        let valueWidth = getTextWidthCanvas(valText, valueFontFamily, currentFontSize, valueFontWeight);
+        let categoryWidth = catText ? getTextWidthCanvas(catText, categoryFontFamily, currentFontSize, categoryFontWeight) : 0;
+        let categoryLines = 1; // 默认类别标签只有一行
+        let categoryLabelHeight = currentFontSize; // 类别标签默认高度
+        let shouldWrapCategory = false; // 默认不换行
+
+        // 估算文本放置的垂直位置（简化处理，假设类别在上，数值在下）
+        const estimatedCategoryY = catText ? -currentFontSize * 0.55 : 0;
+        const estimatedValueY = catText ? currentFontSize * 0.55 : 0;
+
+        // 循环减小字体，直到两个标签都能放下，或达到最小字号
+        while (currentFontSize > minAcceptableFontSize) {
+            valueWidth = getTextWidthCanvas(valText, valueFontFamily, currentFontSize, valueFontWeight);
+            categoryWidth = catText ? getTextWidthCanvas(catText, categoryFontFamily, currentFontSize, categoryFontWeight) : 0;
+
+            // 对于正方形，最大可用宽度就是边长的一定比例
+            const categoryMaxWidth = maxTextWidth; 
+            const valueMaxWidth = maxTextWidth;
+
+            // 检查宽度是否合适
+            const valueFits = valueWidth <= valueMaxWidth;
+            let categoryFits = !catText || categoryWidth <= categoryMaxWidth;
+            shouldWrapCategory = false; // 重置换行标记
+
+            // 如果类别标签不适合，并且允许换行，并且字号足够大，尝试换行
+            if (catText && !categoryFits && needsWrapping && currentFontSize >= minCatFontSize) {
+                 shouldWrapCategory = true;
+                 // 使用临时canvas估算换行后的行数和总高度
+                 const tempCanvas = document.createElement('canvas');
+                 const tempCtx = tempCanvas.getContext('2d');
+                 tempCtx.font = `${categoryFontWeight} ${currentFontSize}px ${categoryFontFamily}`;
+                 const words = catText.split(/\s+/);
+                 let lines = [];
+                 let line = [];
+                 let word;
+                 let fitsWithWrapping = true;
+
+                 if (words.length <= 1) { // 按字符模拟换行
+                     const chars = catText.split('');
+                     let currentLine = '';
+                     for (let i = 0; i < chars.length; i++) {
+                         const testLine = currentLine + chars[i];
+                         if (tempCtx.measureText(testLine).width <= categoryMaxWidth || currentLine.length === 0) {
+                             currentLine += chars[i];
+                         } else {
+                             // 检查单行是否太高
+                             if ((lines.length + 1) * currentFontSize * (1 + catLineHeight) > side * 0.85) { // 检查总高度不超过边长的85%
+                                 fitsWithWrapping = false;
+                                 break;
+                             }
+                             lines.push(currentLine);
+                             currentLine = chars[i];
+                         }
+                     }
+                     if (fitsWithWrapping) lines.push(currentLine);
+                 } else { // 按单词模拟换行
                     while (word = words.shift()) {
-                        line.push(word);
-                        const testLine = line.join(" ");
-                        if (tempCtx.measureText(testLine).width > maxTextWidth && line.length > 1) {
-                            line.pop();
-                            lines.push(line.join(" "));
-                            line = [word];
-                        }
-                    }
-                    lines.push(line.join(" "));
-                }
+                         line.push(word);
+                         const testLine = line.join(" ");
+                         if (tempCtx.measureText(testLine).width > categoryMaxWidth && line.length > 1) {
+                             line.pop();
+                             // 检查单行是否太高
+                             if ((lines.length + 1) * currentFontSize * (1 + catLineHeight) > side * 0.85) {
+                                 fitsWithWrapping = false;
+                                 break;
+                             }
+                             lines.push(line.join(" "));
+                             line = [word];
+                         }
+                     }
+                     if (fitsWithWrapping) lines.push(line.join(" "));
+                 }
                 
-                categoryLines = Math.max(1, lines.length);
-                // 修改行高计算 - 使用更小的行高倍数
-                categoryLabelHeight = categoryLines * fontSize * (1 + catLineHeight);
+                 if(fitsWithWrapping && lines.length > 0){ 
+                     categoryLines = lines.length; // 更新行数
+                     categoryLabelHeight = categoryLines * currentFontSize * (1 + catLineHeight); // 更新总高度
+                     categoryFits = true; // 标记为可通过换行解决
+                 } else {
+                     // 即使换行也放不下，或者换行后太高
+                     categoryFits = false;
+                     shouldWrapCategory = false;
+                 }
+             } else if (catText && !categoryFits) {
+                 // 字号太小不能换行，或者不允许换行
+                 shouldWrapCategory = false;
+             }
+
+            // 如果两个标签都合适 (类别可能通过换行解决)
+            if (valueFits && categoryFits) {
+                break; // 找到合适的字号，跳出循环
             }
+
+            // 如果不合适，减小字号继续尝试
+            currentFontSize -= 1;
         }
+
+        // 3. 确定最终字体大小和是否显示标签
+        const finalFontSize = currentFontSize;
+        const showValue = valueWidth <= maxTextWidth && finalFontSize >= minAcceptableFontSize;
+        const showCategory = catText && finalFontSize >= minAcceptableFontSize && (categoryWidth <= maxTextWidth || shouldWrapCategory) && side >= minSideForCategoryLabel;
+
+        // 4. 渲染标签 - 动态调整垂直位置
+        let finalValueY = 0;
+        let finalCategoryY = 0;
         
-        // 计算值文本位置 - 使用固定间距而不是比例
-        const valuePosition = catText ?
-            categoryPosition + categoryLabelHeight + (fontSize * spacingFactor) : // 类别下方固定间距
-            textAreaStart + textSpaceTotal * 0.5; // 如果没有类别，则居中
+        if (showValue && showCategory) {
+            // 计算总高度
+            const totalHeight = categoryLabelHeight + finalFontSize + finalFontSize * catLineHeight; // 类别高度 + 数值高度 + 间距
+            // 垂直居中这个整体
+            const startY = -totalHeight / 2;
+            finalCategoryY = startY; // 类别标签从顶部开始
+            finalValueY = startY + categoryLabelHeight + finalFontSize * catLineHeight; // 数值标签在类别下方加间距
+        } else if (showValue) {
+            finalValueY = 0; // 只显示数值，垂直居中
+        } else if (showCategory) {
+            // 只显示类别，将其垂直居中（考虑可能的多行）
+            finalCategoryY = -categoryLabelHeight / 2;
+        }
+
+        // 渲染数值标签（添加背景确保在重叠时可见）
+        if (showValue) {
+            // 先添加一个背景矩形
+            const valueText = gNode.append("text")
+                .attr("class", "value-label-measure")
+                .attr("text-anchor", "middle")
+                .attr("dominant-baseline", "hanging")
+                .attr("y", finalValueY)
+                .style("font-size", `${finalFontSize}px`)
+                .style("font-weight", valueFontWeight)
+                .style("font-family", valueFontFamily)
+                .style("visibility", "hidden")
+                .text(valText);
+                
+            // 获取文本尺寸
+            let valueBBox;
+            try {
+                valueBBox = valueText.node().getBBox();
+            } catch(e) {
+                // 如果getBBox失败，使用估算值
+                valueBBox = {
+                    width: valueWidth,
+                    height: finalFontSize * 1.2,
+                    x: -valueWidth / 2,
+                    y: finalValueY
+                };
+            }
             
-        // 获取文本颜色（根据背景颜色自适应）
-        const adaptiveTextColor = getTextColorForBackground(d.color);
-        
-        // 6. 绘制图标 - 靠近顶部，并添加背景确保可见性
-        if (d.icon) {
-            gNode.append("image")
-                .attr("xlink:href", d.icon)
-                .attr("width", iconSize)
-                .attr("height", iconSize)
-                .attr("x", -iconSize/2)
-                .attr("y", iconTopPosition)
-                .attr("preserveAspectRatio", "xMidYMid meet");
+            valueText.style("visibility", "visible"); // 显示文本
+            
+            // 实际文本（在背景上方）
+            gNode.append("text")
+                .attr("class", "value-label")
+                .attr("text-anchor", "middle")
+                .attr("dominant-baseline", "hanging")
+                .attr("y", finalValueY)
+                .style("font-size", `${finalFontSize}px`)
+                .style("font-weight", valueFontWeight)
+                .style("font-family", valueFontFamily)
+                .style("fill", adaptiveTextColor)
+                .style("pointer-events", "none")
+                .text(valText);
         }
-        
-        // 7. 绘制类别标签 - 添加背景确保在重叠时可见
-        if (catText) {
+
+        // 渲染类别标签 (可能换行)，添加背景确保在重叠时可见
+        if (showCategory) {
             // 首先创建临时文本来计算尺寸
             const tempCatLabel = gNode.append("text")
                 .attr("class", "temp-category-label")
                 .attr("text-anchor", "middle")
                 .attr("dominant-baseline", "hanging")
-                .attr("y", categoryPosition)
+                .attr("y", finalCategoryY)
                 .style("font-family", categoryFontFamily)
                 .style("font-weight", categoryFontWeight)
-                .style("font-size", `${fontSize}px`)
+                .style("font-size", `${finalFontSize}px`)
                 .style("visibility", "hidden");
                 
             // 如果需要换行，计算换行后的完整高度
@@ -515,12 +911,13 @@ function makeChart(containerSelector, dataJSON) {
                 const words = catText.split(/\s+/);
                 let lineCount = 0;
                 
-                if (words.length <= 1) { // 按字符换行模拟
+                if (words.length <= 1) {
+                    // 按字符换行模拟
                     const chars = catText.split('');
                     let currentLine = '';
                     for (let i = 0; i < chars.length; i++) {
                         const testLine = currentLine + chars[i];
-                        if (getTextWidthCanvas(testLine, categoryFontFamily, fontSize, categoryFontWeight) <= maxTextWidth || currentLine.length === 0) {
+                        if (getTextWidthCanvas(testLine, categoryFontFamily, finalFontSize, categoryFontWeight) <= maxTextWidth || currentLine.length === 0) {
                             currentLine += chars[i];
                         } else {
                             tempCatLabel.append("tspan")
@@ -537,7 +934,8 @@ function makeChart(containerSelector, dataJSON) {
                             .attr("dy", lineCount === 0 ? 0 : `${1 + catLineHeight}em`)
                             .text(currentLine);
                     }
-                } else { // 按单词换行模拟
+                } else {
+                    // 按单词换行模拟
                     let line = [];
                     let word;
                     const wordsCopy = [...words];
@@ -545,7 +943,7 @@ function makeChart(containerSelector, dataJSON) {
                     while (word = wordsCopy.shift()) {
                         line.push(word);
                         const testLine = line.join(" ");
-                        if (getTextWidthCanvas(testLine, categoryFontFamily, fontSize, categoryFontWeight) > maxTextWidth && line.length > 1) {
+                        if (getTextWidthCanvas(testLine, categoryFontFamily, finalFontSize, categoryFontWeight) > maxTextWidth && line.length > 1) {
                             line.pop();
                             tempCatLabel.append("tspan")
                                 .attr("x", 0)
@@ -573,10 +971,10 @@ function makeChart(containerSelector, dataJSON) {
             } catch(e) {
                 // 如果getBBox失败，使用估算值
                 catBBox = {
-                    width: adjustedCatTextWidth,
+                    width: categoryWidth,
                     height: categoryLabelHeight,
-                    x: -adjustedCatTextWidth / 2,
-                    y: categoryPosition
+                    x: -categoryWidth / 2,
+                    y: finalCategoryY
                 };
             }
             
@@ -590,25 +988,30 @@ function makeChart(containerSelector, dataJSON) {
                 .attr("class", "category-label")
                 .attr("text-anchor", "middle")
                 .attr("dominant-baseline", "hanging")
-                .attr("y", categoryPosition)
+                .attr("y", finalCategoryY)
                 .style("fill", adaptiveTextColor)
                 .style("font-family", categoryFontFamily)
                 .style("font-weight", categoryFontWeight)
-                .style("font-size", `${fontSize}px`)
+                .style("font-size", `${finalFontSize}px`)
                 .style("pointer-events", "none");
-                
+
             if (shouldWrapCategory) {
+                // 执行换行逻辑，使用 tspan
                 const words = catText.split(/\s+/);
                 let line = [];
                 let lineNumber = 0;
-                let tspan = catLabel.append("tspan").attr("x", 0).attr("dy", 0);
-                
+                let tspan = catLabel.append("tspan").attr("x", 0).attr("dy", 0); // 第一个tspan的dy为0
+                const tempCanvas = document.createElement('canvas');
+                const tempCtx = tempCanvas.getContext('2d');
+                tempCtx.font = `${categoryFontWeight} ${finalFontSize}px ${categoryFontFamily}`;
+
                 if (words.length <= 1) { // 按字符换行
                     const chars = catText.split('');
                     let currentLine = '';
                     for (let i = 0; i < chars.length; i++) {
                         const testLine = currentLine + chars[i];
-                        if (getTextWidthCanvas(testLine, categoryFontFamily, fontSize, categoryFontWeight) <= maxTextWidth || currentLine.length === 0) {
+                        // 检查宽度是否适合
+                        if (tempCtx.measureText(testLine).width <= maxTextWidth || currentLine.length === 0) {
                             currentLine += chars[i];
                         } else {
                             tspan.text(currentLine);
@@ -616,7 +1019,7 @@ function makeChart(containerSelector, dataJSON) {
                             currentLine = chars[i];
                             tspan = catLabel.append("tspan")
                                 .attr("x", 0)
-                                .attr("dy", `${1 + catLineHeight}em`) // 修改行高
+                                .attr("dy", `${1 + catLineHeight}em`) // 后续行的dy
                                 .text(currentLine);
                         }
                     }
@@ -626,14 +1029,15 @@ function makeChart(containerSelector, dataJSON) {
                     while (word = words.shift()) {
                         line.push(word);
                         const testLine = line.join(" ");
-                        if (getTextWidthCanvas(testLine, categoryFontFamily, fontSize, categoryFontWeight) > maxTextWidth && line.length > 1) {
+                        // 检查宽度是否适合
+                        if (tempCtx.measureText(testLine).width > maxTextWidth && line.length > 1) {
                             line.pop();
                             tspan.text(line.join(" "));
                             lineNumber++;
                             line = [word];
                             tspan = catLabel.append("tspan")
                                 .attr("x", 0)
-                                .attr("dy", `${1 + catLineHeight}em`) // 修改行高
+                                .attr("dy", `${1 + catLineHeight}em`) // 后续行的dy
                                 .text(word);
                         } else {
                             tspan.text(line.join(" "));
@@ -641,59 +1045,11 @@ function makeChart(containerSelector, dataJSON) {
                     }
                 }
             } else {
+                // 不换行，直接显示
                 catLabel.text(catText);
             }
         }
-        
-        // 8. 绘制数值标签 - 添加背景确保在重叠时可见
-        // 创建临时文本来计算尺寸
-        const tempValLabel = gNode.append("text")
-            .attr("class", "temp-value-label")
-            .attr("text-anchor", "middle")
-            .attr("dominant-baseline", "hanging")
-            .attr("y", valuePosition)
-            .style("font-size", `${fontSize}px`)
-            .style("font-weight", valueFontWeight)
-            .style("font-family", valueFontFamily)
-            .style("visibility", "hidden")
-            .text(valText);
-            
-        // 获取文本边界
-        let valBBox;
-        try {
-            valBBox = tempValLabel.node().getBBox();
-        } catch(e) {
-            // 如果getBBox失败，使用估算值
-            const valTextWidth = getTextWidthCanvas(valText, valueFontFamily, fontSize, valueFontWeight);
-            valBBox = {
-                width: valTextWidth,
-                height: fontSize * 1.2,
-                x: -valTextWidth / 2,
-                y: valuePosition
-            };
-        }
-        
-        
-            
-        // 移除临时文本
-        tempValLabel.remove();
-        
-        // 创建实际值标签
-        gNode.append("text")
-            .attr("class", "value-label")
-            .attr("text-anchor", "middle")
-            .attr("dominant-baseline", "hanging")
-            .attr("y", valuePosition)
-            .style("font-size", `${fontSize}px`)
-            .style("font-weight", valueFontWeight)
-            .style("font-family", valueFontFamily)
-            .style("fill", adaptiveTextColor)
-            .style("pointer-events", "none")
-            .text(valText);
     });
-
-    // 进一步确保小方块在上方（根据面积重新排序）
-    nodeG.sort((a, b) => a.zIndex - b.zIndex); 
 
     return svg.node(); // 返回 SVG DOM 节点
 }

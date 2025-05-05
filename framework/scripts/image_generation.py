@@ -24,7 +24,7 @@ response = client.chat.completions.create(
   messages=[
     {
       "role": "user",
-      "content": 'A clipart in a infographic chart for "Theresa May's Attributes Decline Over Time". No gradients, shadows, or complex details. Avoid photorealistic rendering.'
+      "content": 'A cartt in a infographic chart for "Theresa May's Attributes Decline Over Time". No gradients, shadows, or complex details. Avoid photorealistic rendering.'
     }
   ]
 )
@@ -38,7 +38,7 @@ response = client.chat.completions.create(
             "content": [
                 {
                     "type": "text",
-                    "text": 'A clipart for ‘Pfizers Revenue Surge Driven by Covid-19 Products". No gradients, shadows, or complex details. Avoid photorealistic rendering. No text, no title.',
+                    "text": 'A pictogram for Italian Cuisine. No gradients, shadows, or complex details. Avoid photorealistic rendering. No text, no title.',
                 }
             ],
         },

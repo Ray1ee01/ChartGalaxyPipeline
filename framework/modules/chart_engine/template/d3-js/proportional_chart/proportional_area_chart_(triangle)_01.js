@@ -1,8 +1,8 @@
 /*
 REQUIREMENTS_BEGIN
 {
-    "chart_type": "Proportional Area Chart (Triangle)",
-    "chart_name": "proportional_area_chart_(triangle)_01",
+    "chart_type": "Proportional Area Chart (Triangle) 3D",
+    "chart_name": "proportional_area_chart_triangle_3d_01",
     "is_composite": false,
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],
@@ -11,7 +11,7 @@ REQUIREMENTS_BEGIN
     "required_other_icons": [],
     "required_fields_colors": ["x"],
     "required_other_colors": ["primary"],
-    "supported_effects": [],
+    "supported_effects": ["3d", "animation"],
     "min_height": 400,
     "min_width": 400,
     "background": "no",
@@ -31,6 +31,10 @@ function makeChart(containerSelector, dataJSON) {
     const xField = cols.find(c=>c.role==="x")?.name;
     const yField = cols.find(c=>c.role==="y")?.name;
     const yUnit = cols.find(c=>c.role==="y")?.unit === "none" ? "" : cols.find(c=>c.role==="y")?.unit ?? "";
+    
+    // 检查是否启用动画效果 (默认启用)
+    const enableAnimation = dataJSON.variables?.enable_animation !== false;
+    
     if(!xField || !yField){
         d3.select(containerSelector).html('<div style="color:red">缺少必要字段</div>');
         return;
@@ -463,14 +467,35 @@ function makeChart(containerSelector, dataJSON) {
              const totalHeight = categoryLabelHeight + labelSpacing + finalFontSize;
              // 将这个块在三角形垂直中心偏下一点的位置居中 (大约在高度的1/3处)
              const blockCenterY = triangleHeight * 0.1;
-             finalCategoryY = blockCenterY - totalHeight / 2; // 类别标签的起始Y
-             finalValueY = finalCategoryY + categoryLabelHeight + labelSpacing; // 数值标签的起始Y
+             
+             // 调整类别标签位置，当有多行时向上移动更多
+             let categoryYOffset = 0;
+             if (shouldWrapCategory && categoryLines > 1) {
+                 // 根据行数增加向上的偏移量，行数越多偏移越大
+                 // 增加偏移系数，从0.3增加到0.8，使标签向上移动更多
+                 categoryYOffset = -(categoryLines - 1) * finalFontSize * 0.8;
+                 
+                 // 为每个额外行添加固定偏移量
+                 categoryYOffset -= finalFontSize * 0.5;
+             }
+             
+             // 将x标签向上移动8px，data标签向下移动8px
+             finalCategoryY = blockCenterY - totalHeight / 2 + categoryYOffset - 8; // 类别标签的起始Y，额外向上移动8px
+             finalValueY = finalCategoryY + categoryLabelHeight + labelSpacing + 16; // 数值标签的起始Y，额外向下移动8px
          } else if (showValue) {
              // 只显示值时，将其放在三角形中心偏下一点
-             finalValueY = triangleHeight * 0.1 - finalFontSize / 2;
+             finalValueY = triangleHeight * 0.1 - finalFontSize / 2 + 8; // 向下移动8px
          } else if (showCategory) {
              // 只显示类别时，将其放在三角形中心偏下一点
-             finalCategoryY = triangleHeight * 0.1 - categoryLabelHeight / 2;
+             finalCategoryY = triangleHeight * 0.1 - categoryLabelHeight / 2 - 8; // 向上移动8px
+             
+             // 当只显示类别标签且有多行时，也向上移动
+             if (shouldWrapCategory && categoryLines > 1) {
+                 // 增加偏移系数，从0.3增加到0.8
+                 finalCategoryY -= (categoryLines - 1) * finalFontSize * 0.8;
+                 // 添加额外固定偏移量
+                 finalCategoryY -= finalFontSize * 0.5;
+             }
          }
          
         // --- 渲染 --- 

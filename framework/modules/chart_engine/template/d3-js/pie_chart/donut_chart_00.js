@@ -106,23 +106,55 @@ function makeChart(containerSelector, data) {
         .innerRadius(maxRadius * 0.8)
         .outerRadius(maxRadius * 0.8);
 
-    const labels = g.selectAll("text")
+    const labels = g.selectAll("g.label-group")
         .data(pie(dataWithPercentages))
         .enter()
-        .append("text")
-        .attr("transform", d => `translate(${labelArc.centroid(d)})`)
+        .append("g")
+        .attr("class", "label-group")
+        .attr("transform", d => `translate(${labelArc.centroid(d)})`);
+
+    // 判断颜色是否为亮色的函数
+    const isLightColor = (color) => {
+        // 将颜色转换为RGB
+        const rgb = d3.rgb(color);
+        // 计算亮度 (基于人眼对RGB的感知)
+        const brightness = (rgb.r * 299 + rgb.g * 587 + rgb.b * 114) / 1000;
+        // 亮度大于128认为是亮色
+        return brightness > 128;
+    };
+
+    // 添加百分比文本
+    labels.append("text")
         .attr("text-anchor", "middle")
-        .attr("dy", ".35em")
-        .style("fill", colors.text_color)
+        .attr("dy", "-0.5em")
+        .style("fill", d => {
+            const arcColor = colors.field[d.data[xField]] || colors.other.primary;
+            return isLightColor(arcColor) ? "#000000" : "#FFFFFF";
+        })
         .style("font-family", typography.label.font_family)
         .style("font-size", typography.label.font_size)
         .text(d => d.data.percentage >= 2 ? `${d.data.percentage.toFixed(1)}%` : '');
+
+    // 添加原始数值文本
+    labels.append("text")
+        .attr("text-anchor", "middle")
+        .attr("dy", "1.2em")
+        .style("fill", d => {
+            const arcColor = colors.field[d.data[xField]] || colors.other.primary;
+            return isLightColor(arcColor) ? "#000000" : "#FFFFFF";
+        })
+        .style("font-family", typography.label.font_family)
+        .style("font-size", typography.label.font_size)
+        .text(d => d.data.percentage >= 2 ? d.data[yField] : '');
 
     // 加入label
     const label = g.append("text")
         .attr("transform", `translate(${centerX}, ${centerY})`)
         .attr("text-anchor", "middle")
-        .style("fill", colors.text_color)
+        .style("fill", d => {
+            const arcColor = colors.field[d.data[xField]] || colors.other.primary;
+            return isLightColor(arcColor) ? "#000000" : "#FFFFFF";
+        })
         .style("font-family", typography.label.font_family)
         .style("font-size", typography.label.font_size)
         .text(jsonData.title);

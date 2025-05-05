@@ -1,122 +1,332 @@
 [
     {
-        "template_1": "What is the sum of <Y label> ?"
+        "template_1": "What is the total sum of <Y label>?",
+        "type": "calculation",
+        "category": "data understanding",
+        "subcategory": "data extraction with condition"
     },
     {
-        "template_2": "What is the difference between the <Y label> in <ithx tick> and <jthx tick> ?"
+        "template_2": "What is the difference between the <Y label> in <ithx tick> and <jthx tick>?",
+        "type": "calculation",
+        "category": "data understanding",
+        "subcategory": "data comparison"
     },
     {
-        "template_3": "What is the average <Y label> per <singular form of X label> ?"
+        "template_3": "What is the average <Y label> per <singular form of X label>?",
+        "type": "calculation",
+        "category": "data understanding",
+        "subcategory": "data extraction with condition"
     },
     {
-        "template_4": "What is the median <Y label> ?"
+        "template_4": "What is the median <Y label>?",
+        "type": "calculation",
+        "category": "data understanding",
+        "subcategory": "data extraction with condition"
     },
     {
-        "template_5": "What is the total <Y label> of/in <legend label> in the graph?"
+        "template_5": "What is the total <Y label> of <legend label> in the graph?",
+        "type": "calculation",
+        "category": "data understanding",
+        "subcategory": "data extraction with condition"
     },
     {
-        "template_6": "What is the difference between the <Y label> of/in <legend label> in <ithx tick> and that in <jthx tick> ?"
+        "template_6": "What is the difference between the <Y label> of <legend label> in <ithx tick> and that in <jthx tick>?",
+        "type": "calculation",
+        "category": "data understanding",
+        "subcategory": "data comparison"
     },
     {
-        "template_7": "What is the difference between the <Y label> of/in <legend label1> in <ithx tick> and the <Y label> of/in <legend label2> in <jthx tick> ?"
+        "template_7": "What is the difference between the <Y label> of <legend label1> in <ithx tick> and the <Y label> of <legend label2> in <jthx tick>?",
+        "type": "calculation",
+        "category": "data understanding",
+        "subcategory": "data comparison"
     },
     {
-        "template_8": "What is the average <Y label> of/in <legend label> per <singular form of X label> ?"
+        "template_8": "What is the average <Y label> of <legend label> per <singular form of X label>?",
+        "type": "calculation",
+        "category": "data understanding",
+        "subcategory": "data extraction with condition"
     },
     {
-        "template_9": "In <ithx tick>, what is the difference between the <Y label> of/in <legend label1> and <Y label> of/in <legend label2> ?"
+        "template_9": "In <ithx tick>, what is the difference between the <Y label> of <legend label1> and <legend label2>?",
+        "type": "calculation",
+        "category": "data understanding",
+        "subcategory": "data comparison"
     },
     {
-        "template_10": "What is the difference between the <Y label> of/in <legend label1> and <Y label> of/in <legend label2> in <ithx tick> ?"
+        "template_10": "What is the difference between the <Y label> of <legend label1> and <legend label2> in <ithx tick>?",
+        "type": "calculation",
+        "category": "data understanding",
+        "subcategory": "data comparison"
     },
     {
-        "template_11": "In how many <plural form of X label>, is the <Y label> greater than <N> units ?"
+        "template_11": "In how many <plural form of X label> is the <Y label> greater than <N> units?",
+        "type": "counting",
+        "category": "data understanding",
+        "subcategory": "data counting with condition"
     },
     {
-        "template_12": "What is the ratio of the <Y label> in <ithx tick> to that in <jthx tick> ?"
+        "template_12": "What is the ratio of the <Y label> in <ithx tick> to that in <jthx tick>?",
+        "type": "calculation",
+        "category": "data understanding",
+        "subcategory": "data comparison"
     },
     {
-        "template_13": "Is the <Y label> in <ithx tick> less than that in <jthx tick> ?"
+        "template_13": "Is the <Y label> in <ithx tick> less than that in <jthx tick>?",
+        "type": "comparison",
+        "category": "data understanding",
+        "subcategory": "fact checking"
     },
     {
-        "template_14": "In how many <plural form of X label>, is the <Y label> of/in <legend label> greater than <N> units ?"
+        "template_14": "In how many <plural form of X label> is the <Y label> of <legend label> greater than <N> units?",
+        "type": "counting",
+        "category": "data understanding",
+        "subcategory": "data counting with condition"
     },
     {
-        "template_15": "What is the ratio of the <Y label> of/in <legend label> in <ithx tick> to that in <jthx tick> ?"
+        "template_15": "What is the ratio of the <Y label> of <legend label> in <ithx tick> to that in <jthx tick>?",
+        "type": "calculation",
+        "category": "data understanding",
+        "subcategory": "data comparison"
     },
     {
-        "template_16": "Is the <Y label> of/in <legend label> in <ithx tick> less than that in <jthx tick> ?"
+        "template_16": "Is the <Y label> of <legend label> in <ithx tick> less than that in <jthx tick>?",
+        "type": "comparison",
+        "category": "data understanding",
+        "subcategory": "fact checking"
     },
     {
-        "template_17": "Is the difference between the <Y label> in <ithx tick> and <jthx tick> greater than the difference between any two <plural form of X label> ?"
+        "template_17": "Is the difference between the <Y label> in <ithx tick> and <jthx tick> greater than the difference between any other two <plural form of X label>?",
+        "type": "comparison",
+        "category": "data understanding",
+        "subcategory": "fact checking"
     },
     {
-        "template_18": "What is the difference between the highest and the second highest <Y label> ?"
+        "template_18": "What is the difference between the highest and second highest <Y label>?",
+        "type": "calculation",
+        "category": "data understanding",
+        "subcategory": "data comparison"
     },
     {
-        "template_19": "Is the sum of the <Y label> of/in <legend label1> in <ithx tick> and <jthx tick> greater than the maximum <Y label> of/in <legend label2> across all <plural form of X label> ?"
+        "template_19": "Is the sum of the <Y label> of <legend label1> in <ithx tick> and <jthx tick> greater than the maximum <Y label> of <legend label2> across all <plural form of X label>?",
+        "type": "comparison",
+        "category": "data understanding",
+        "subcategory": "fact checking"
     },
     {
-        "template_20": "Is it the case that in every <singular form of X label>, the sum of the <Y label> of/in <legend label1> and <legend label2> is greater than the sum of <Y label> of <legend label3> and <Y label> of <legend label4> ?"
+        "template_20": "Is it true that in every <singular form of X label>, the sum of <Y label> of <legend label1> and <legend label2> is greater than the sum of <Y label> of <legend label3> and <legend label4>?",
+        "type": "comparison",
+        "category": "data understanding",
+        "subcategory": "fact checking"
     },
     {
-        "template_21": "Is the sum of the <Y label> in <ithx tick> and <jthx tick> greater than the maximum <Y label> across all <plural form of X label> ?"
+        "template_21": "Is the sum of the <Y label> in <ithx tick> and <jthx tick> greater than the maximum <Y label> across all <plural form of X label>?",
+        "type": "comparison",
+        "category": "data understanding",
+        "subcategory": "fact checking"
     },
     {
-        "template_22": "What is the difference between the highest and the lowest <Y label> ?"
+        "template_22": "What is the difference between the highest and lowest <Y label>?",
+        "type": "calculation",
+        "category": "data understanding",
+        "subcategory": "data comparison"
     },
     {
-        "template_23": "In how many <plural form of X label>, is the <Y label> greater than the average <Y label> taken over all <plural form of X label> ?"
+        "template_23": "In how many <plural form of X label> is the <Y label> greater than the average <Y label> across all <plural form of X label>?",
+        "type": "counting",
+        "category": "data understanding",
+        "subcategory": "data counting with condition"
     },
     {
-        "template_24": "Is the difference between the <Y label> of/in <legend label1> in <ithx tick> and <jthx tick> greater than the difference between the <Y label> of/in <legend label2> in <ithx tick> and <jthx tick> ?"
+        "template_24": "Is the difference between the <Y label> of <legend label1> in <ithx tick> and <jthx tick> greater than the difference between the <Y label> of <legend label2> in <ithx tick> and <jthx tick>?",
+        "type": "comparison",
+        "category": "data understanding",
+        "subcategory": "fact checking"
     },
     {
-        "template_25": "What is the difference between the highest and the second highest <Y label> of/in <legend label> ?"
+        "template_25": "What is the difference between the highest and second highest <Y label> of <legend label>?",
+        "type": "calculation",
+        "category": "data understanding",
+        "subcategory": "data comparison"
     },
     {
-        "template_26": "What is the difference between the highest and the lowest <Y label> of/in <legend label> ?"
+        "template_26": "What is the difference between the highest and lowest <Y label> of <legend label>?",
+        "type": "calculation",
+        "category": "data understanding",
+        "subcategory": "data comparison"
     },
     {
-        "template_27": "In how many <plural form of X label>, is the <Y label> of/in <legend label> greater than the average <Y label> of/in <legend label> taken over all <plural form of X label> ?"
+        "template_27": "In how many <plural form of X label> is the <Y label> of <legend label> greater than the average <Y label> of <legend label> across all <plural form of X label>?",
+        "type": "counting",
+        "category": "data understanding",
+        "subcategory": "data counting with condition"
     },
     {
-        "template_28": "Is it the case that in every <singular form of X label>, the sum of the <Y label> of/in <legend label1> and <legend label2> is greater than the <Y label> of/in <legend label3> ?"
+        "template_28": "Is it true that in every <singular form of X label>, the sum of the <Y label> of <legend label1> and <legend label2> is greater than the <Y label> of <legend label3>?",
+        "type": "comparison",
+        "category": "data understanding",
+        "subcategory": "fact checking"
     },
     {
-        "template_29": "Is the <Y label> of/in <legend label1> strictly greater than the <Y label> of/in <legend label2> over the <plural form of X label> ?"
+        "template_29": "Is the <Y label> of <legend label1> consistently greater than the <Y label> of <legend label2> across all <plural form of X label>?",
+        "type": "trend analysis",
+        "category": "data understanding",
+        "subcategory": "fact checking"
     },
     {
-        "template_30": "Is the <Y label> of/in <legend label1> strictly less than the <Y label> of/in <legend label2> over the <plural form of X label> ?"
+        "template_30": "Is the <Y label> of <legend label1> consistently less than the <Y label> of <legend label2> across all <plural form of X label>?",
+        "type": "trend analysis",
+        "category": "data understanding",
+        "subcategory": "fact checking"
     },
     {
-        "template_31": "Does the <Y label> of/in <legend label> monotonically increase over the <plural form of X label> ?"
+        "template_31": "Does the <Y label> of <legend label> increase monotonically across the <plural form of X label>?",
+        "type": "trend analysis",
+        "category": "data understanding",
+        "subcategory": "fact checking"
     },
     {
-        "template_32": "What is the difference between two consecutive major ticks on the Y-axis ?"
+        "template_32": "What is the difference between two consecutive major ticks on the Y-axis?",
+        "type": "visual analysis",
+        "category": "visual understanding",
+        "subcategory": "visual elements retrieval"
     },
     {
-        "template_33": "Across all <plural form of X label>, what is the maximum <Y label> ?"
+        "template_33": "What is the maximum <Y label> across all <plural form of X label>?",
+        "type": "identification",
+        "category": "data understanding",
+        "subcategory": "data identification"
     },
     {
-        "template_34": "Across all <plural form of X label>, what is the minimum <Y label> ?"
+        "template_34": "What is the minimum <Y label> across all <plural form of X label>?",
+        "type": "identification",
+        "category": "data understanding",
+        "subcategory": "data identification"
     },
     {
-        "template_35": "In which <X label> was the <Y label> maximum ?"
+        "template_35": "In which <X label> was the <Y label> at its maximum?",
+        "type": "identification",
+        "category": "data understanding",
+        "subcategory": "data identification"
     },
     {
-        "template_36": "In which <X label> was the <Y label> minimum ?"
+        "template_36": "In which <X label> was the <Y label> at its minimum?",
+        "type": "identification",
+        "category": "data understanding",
+        "subcategory": "data identification"
     },
     {
-        "template_37": "Across all <plural form of X label>, what is the maximum <Y label> of/in <legend label> ?"
+        "template_37": "What is the maximum <Y label> of <legend label> across all <plural form of X label>?",
+        "type": "identification",
+        "category": "data understanding",
+        "subcategory": "data identification"
     },
     {
-        "template_38": "Across all <plural form of X label>, what is the minimum <Y label> of/in <legend label> ?"
+        "template_38": "What is the minimum <Y label> of <legend label> across all <plural form of X label>?",
+        "type": "identification",
+        "category": "data understanding",
+        "subcategory": "data identification"
     },
     {
-        "template_39": "In which <singular form of X label> was the <Y label> of/in <legend label> maximum ?"
+        "template_39": "In which <singular form of X label> was the <Y label> of <legend label> at its maximum?",
+        "type": "identification",
+        "category": "data understanding",
+        "subcategory": "data identification"
     },
     {
-        "template_40": "In which <singular form of X label> was the <Y label> of/in <legend label> minimum ?"
+        "template_40": "In which <singular form of X label> was the <Y label> of <legend label> at its minimum?",
+        "type": "identification",
+        "category": "data understanding",
+        "subcategory": "data identification"
+    },
+    {
+        "template_41": "What is the position of the title in this infographic? Select one: [top-left, top-center, top-right, left, center, right, bottom-left, bottom-center, bottom-right]",
+        "type": "visual analysis",
+        "category": "visual understanding",
+        "subcategory": "visual elements retrieval"
+    },
+    {
+        "template_42": "What is the position of the decorative images in this chart? Select one: [top-left, top-center, top-right, left, center, right, bottom-left, bottom-center, bottom-right]",
+        "type": "visual analysis",
+        "category": "visual understanding",
+        "subcategory": "visual elements retrieval"
+    },
+    {
+        "template_43": "What is the alignment style of the main text content (chart title, subtitle)? Select one: [left-aligned, center-aligned, right-aligned]",
+        "type": "visual analysis",
+        "category": "visual understanding",
+        "subcategory": "style detection"
+    },
+    {
+        "template_44": "How many icons and images are present in this infographic chart?",
+        "type": "counting",
+        "category": "visual understanding",
+        "subcategory": "visual elements retrieval"
+    },
+    {
+        "template_45": "What data attribute or dimension is encoded using different colors in this infographic chart?",
+        "type": "visual analysis",
+        "category": "visual understanding", 
+        "subcategory": "visual elements retrieval"
+    },
+    {
+        "template_46": "What data attribute or dimension is represented by icons in this infographic chart?",
+        "type": "visual analysis",
+        "category": "visual understanding",
+        "subcategory": "visual elements retrieval"
+    },
+    {
+        "template_47": "What types of charts are included in this infographic?",
+        "type": "identification",
+        "category": "visual understanding",
+        "subcategory": "chart classification"
+    },
+    {
+        "template_48": "How are decorative images presented in relation to the charts in this infographic chart? Select one: [overlay, side_by_side, background]",
+        "type": "visual analysis",
+        "category": "visual understanding",
+        "subcategory": "visual elements retrieval"
+    },
+    {
+        "template_53": "What is the <Y label> for <ithx tick>?",
+        "type": "identification",
+        "category": "composite understanding",
+        "subcategory": "data identification"
+    },
+    {
+        "template_54": "What is the rank of the <Y label> for <ithx tick> among all <plural form of X label>?",
+        "type": "identification",
+        "category": "composite understanding",
+        "subcategory": "data identification"
+    },
+    {
+        "template_55": "What is the <Y label> for <ithx tick> in the <legend label> group?",
+        "type": "identification",
+        "category": "composite understanding",
+        "subcategory": "data identification"
+    },
+    {
+        "template_56": "What is the rank of the <Y label> for <ithx tick> within the <legend label> group?",
+        "type": "identification",
+        "category": "composite understanding",
+        "subcategory": "data identification"
+    },
+    {
+        "template_57": "Which <singular form of X label> has a <Y label> closest to <N>?",
+        "type": "identification",
+        "category": "composite understanding",
+        "subcategory": "data identification"
+    },
+    {
+        "template_58": "Which <legend label> has the highest <Y label> at <ithx tick>?",
+        "type": "identification",
+        "category": "composite understanding",
+        "subcategory": "data identification"
+    },
+    {
+        "template_59": "Which <legend label> has the lowest <Y label> at <ithx tick>?",
+        "type": "identification",
+        "category": "composite understanding",
+        "subcategory": "data identification"
     }
 ]

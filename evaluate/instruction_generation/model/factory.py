@@ -1,6 +1,5 @@
 from model.closeQA import *
 from model.openQA import *
-from model.infographicsQA import *
 from model.base import SingleData, BaseQAGenerator
 
 class QAGeneratorFactory:
@@ -17,8 +16,6 @@ class QAGeneratorFactory:
         "compare": CompareQAGenerator,
         "discover": DiscoverQAGenerator,
 
-        "visual_element_design": VisualElementDesignQAGenerator,
-        "multimedia_integration": MultimediaIntegrationQAGenerator,
         "summarization_narration": SummarizationNarrationQAGenerator
     }
     

@@ -46,6 +46,17 @@ function makeChart(containerSelector, data) {
         }
     };
 
+    // 计算颜色亮度的辅助函数
+    function getColorBrightness(hexColor) {
+        // 移除#号并转换为RGB
+        const r = parseInt(hexColor.slice(1, 3), 16);
+        const g = parseInt(hexColor.slice(3, 5), 16);
+        const b = parseInt(hexColor.slice(5, 7), 16);
+        
+        // 计算亮度 (YIQ公式)
+        return (r * 299 + g * 587 + b * 114) / 1000;
+    }
+
     // 提取字段名称
     const xField = dataColumns[0].name;
     const yField = dataColumns[1].name;
@@ -83,8 +94,9 @@ function makeChart(containerSelector, data) {
     const arc = d3.arc()
         .innerRadius(0)
         .outerRadius(maxRadius)
-        .padAngle(0.02)
+        .padAngle(0.01)
         .cornerRadius(5);
+
 
     // 计算每个组的百分比
     const total = d3.sum(chartData, d => d[yField]);
@@ -92,6 +104,7 @@ function makeChart(containerSelector, data) {
         ...d,
         percentage: (d[yField] / total) * 100
     }));
+
 
     // 绘制甜甜圈图的各个部分
     const arcs = g.selectAll("path")
@@ -113,7 +126,11 @@ function makeChart(containerSelector, data) {
         .attr("transform", d => `translate(${labelArc.centroid(d)})`)
         .attr("text-anchor", "middle")
         .attr("dy", ".35em")
-        .style("fill", colors.text_color)
+        .style("fill", d => {
+            const color = colors.field[d.data[xField]] || colors.other.primary;
+            const brightness = getColorBrightness(color);
+            return brightness > 128 ? "#000000" : "#FFFFFF";
+        })
         .style("font-family", typography.label.font_family)
         .style("font-size", typography.label.font_size)
         .text(d => d.data.percentage >= 2 ? `${d.data.percentage.toFixed(1)}%` : '');

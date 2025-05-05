@@ -5,7 +5,7 @@ REQUIREMENTS_BEGIN
     "chart_name": "voronoi_treemap_circle_01",
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],
-    "required_fields_range": [[3, 40], [0, "inf"]],
+    "required_fields_range": [[5, 40], [0, "inf"]],
     "required_fields_icons": [],
     "required_other_icons": [],
     "required_fields_colors": ["x"],
@@ -112,15 +112,6 @@ function makeChart(containerSelector, data) {
     // 获取最终的多边形
     const polygons = state.polygons;
     
-    // 绘制背景圆
-    g.append("circle")
-        .attr("cx", centerX)
-        .attr("cy", centerY)
-        .attr("r", radius)
-        .attr("fill", "#f8f8f8")
-        .attr("stroke", "#ddd")
-        .attr("stroke-width", 1);
-    
     // 绘制多边形
     const cells = g.selectAll("g.cell")
         .data(polygons)
@@ -142,8 +133,7 @@ function makeChart(containerSelector, data) {
             }
         })
         .attr("fill-opacity", 0.8)
-        .attr("stroke", "#fff")
-        .attr("stroke-width", 1);
+        .attr("stroke", "none")
     
     // 添加文本标签
     cells.append("text")
@@ -194,12 +184,65 @@ function makeChart(containerSelector, data) {
                 const textWidth = this.getComputedTextLength();
                 
                 if (textWidth > boxWidth * 0.8 || boxHeight < 30) {
-                    // 如果文本太长或单元格太小，隐藏它
-                    d3.select(this).style("display", "none");
+                    // 如果文本太长或单元格太小，缩小字体而不是隐藏
+                    d3.select(this)
+                        .attr("font-size", "10px")
+                        .text(function() {
+                            const origText = this.textContent;
+                            // 如果文本超过10个字符且单元格很小，尝试换行
+                            if (origText.length > 10 && boxHeight < 40) {
+                                const midPoint = Math.floor(origText.length / 2);
+                                // 找到最近的空格或标点符号
+                                let breakPoint = midPoint;
+                                const punctuation = [' ', '，', '。', '、', ',', '.'];
+                                let minDistance = origText.length;
+                                
+                                for (let i = 0; i < origText.length; i++) {
+                                    if (punctuation.includes(origText[i])) {
+                                        const distance = Math.abs(i - midPoint);
+                                        if (distance < minDistance) {
+                                            minDistance = distance;
+                                            breakPoint = i;
+                                        }
+                                    }
+                                }
+                                
+                                // 如果找到合适的断点就换行，否则直接在中间换行
+                                if (punctuation.includes(origText[breakPoint])) {
+                                    return origText.substring(0, breakPoint + 1) + '\n' + origText.substring(breakPoint + 1);
+                                } else {
+                                    return origText.substring(0, midPoint) + '\n' + origText.substring(midPoint);
+                                }
+                            }
+                            return origText;
+                        })
+                        .attr("dy", function() {
+                            // 如果文本包含换行符，调整垂直位置
+                            return this.textContent.includes('\n') ? "-0.5em" : "0";
+                        });
+                    
+                    // 如果文本包含换行符，创建第二行
+                    if (d3.select(this).text().includes('\n')) {
+                        const lines = d3.select(this).text().split('\n');
+                        d3.select(this).text(lines[0]);
+                        
+                        // 添加第二行
+                        g.append("text")
+                            .attr("x", d3.polygonCentroid(d)[0])
+                            .attr("y", d3.polygonCentroid(d)[1])
+                            .attr("text-anchor", "middle")
+                            .attr("dominant-baseline", "middle")
+                            .attr("fill", "#fff")
+                            .attr("font-size", "10px")
+                            .attr("font-weight", "bold")
+                            .attr("dy", "1em")
+                            .text(lines[1]);
+                    }
                 }
             } catch (e) {
                 console.error("Error in text sizing:", e);
-                d3.select(this).style("display", "none");
+                // 即使出错也不隐藏文本，而是显示小号字体
+                d3.select(this).attr("font-size", "8px");
             }
         });
     
@@ -215,7 +258,10 @@ function makeChart(containerSelector, data) {
         })
         .attr("y", d => {
             try {
-                return d3.polygonCentroid(d)[1] + 15;
+                // 根据分类标签是否换行来调整位置
+                const name = d.site.originalObject.data.originalData.name;
+                const offset = name.length > 10 ? 25 : 15;
+                return d3.polygonCentroid(d)[1] + offset;
             } catch (e) {
                 return 0;
             }
@@ -251,12 +297,15 @@ function makeChart(containerSelector, data) {
                 const textWidth = this.getComputedTextLength();
                 
                 if (textWidth > boxWidth * 0.8 || boxHeight < 40) {
-                    // 如果文本太长或单元格太小，隐藏它
-                    d3.select(this).style("display", "none");
+                    // 如果单元格很小，缩小字体而不是隐藏文本
+                    d3.select(this)
+                        .attr("font-size", "8px")
+                        .attr("fill-opacity", 0.9);
                 }
             } catch (e) {
                 console.error("Error in value sizing:", e);
-                d3.select(this).style("display", "none");
+                // 即使出错也不隐藏文本，而是显示小号字体
+                d3.select(this).attr("font-size", "8px");
             }
         });
     

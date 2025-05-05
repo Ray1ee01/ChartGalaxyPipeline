@@ -8,6 +8,25 @@ from typing import Tuple
 import tempfile
 from bs4 import BeautifulSoup
 import scipy.ndimage as ndimage
+import time
+import logging
+
+# 设置日志
+logging.basicConfig(level=logging.ERROR, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
+def validate_svg_file(file_path):
+    """验证SVG文件是否存在且内容有效"""
+    if not os.path.exists(file_path):
+        logger.error(f"SVG文件不存在: {file_path}")
+        return False
+    
+    file_size = os.path.getsize(file_path)
+    if file_size == 0:
+        logger.error(f"SVG文件为空: {file_path}")
+        return False
+    
+    return True
 
 def calculate_mask_v3(svg_content: str, width: int, height: int, background_color: str, grid_size: int = 5, max_difference = 15) -> np.ndarray:
     """将SVG转换为基于背景色的二值化mask数组"""
@@ -22,35 +41,41 @@ def calculate_mask_v3(svg_content: str, width: int, height: int, background_colo
     
     # 解析SVG内容
     soup = BeautifulSoup(svg_content, 'xml')
-    
     # 删除class="background"的所有元素
     background_elements = soup.select('[class="background"]')
     for element in background_elements:
         element.decompose()
     
-    # 删除stroke-width<=1的所有line元素
+    # 删除stroke-width<=1或没有stroke-width的所有line元素
     thin_lines = soup.find_all('line')
     for line in thin_lines:
         stroke_width = line.get('stroke-width')
-        if stroke_width and float(stroke_width) <= 1:
+        if not stroke_width or float(stroke_width) <= 1:
             line.decompose()
+            
+    # 删除opacity<=0.1的所有元素
+    all_elements = soup.find_all()
+    for element in all_elements:
+        opacity = element.get('opacity')
+        if opacity and float(opacity) <= 0.1:
+            element.decompose()
     # 删除所有text元素
     text_elements = soup.find_all('text')
     for text in text_elements:
         text.decompose()
     
     # 重新获取处理后的SVG内容
-    svg_content = str(soup)
+    svg_content_without_text = str(soup)
     
     # 创建临时文件
-    with tempfile.NamedTemporaryFile(suffix='.svg', delete=False) as mask_svg_file, \
-         tempfile.NamedTemporaryFile(suffix='.png', delete=False) as temp_mask_png_file:
-        mask_svg = mask_svg_file.name
-        temp_mask_png = temp_mask_png_file.name
+    with tempfile.NamedTemporaryFile(suffix='.svg', delete=False) as mask_svg_file_without_text, \
+         tempfile.NamedTemporaryFile(suffix='.png', delete=False) as temp_mask_png_file_without_text:
+        mask_svg_without_text = mask_svg_file_without_text.name
+        temp_mask_png_without_text = temp_mask_png_file_without_text.name
         
         # 修改SVG内容，移除渐变
         # 将渐变填充替换为可见的纯色填充，而不是none
-        mask_svg_content = svg_content
+        mask_svg_content = svg_content_without_text
         # mask_svg_content = re.sub(r'fill="url\(#[^"]*\)"', 'fill="#333333"', mask_svg_content)
         # mask_svg_content = re.sub(r'stroke="url\(#[^"]*\)"', 'stroke="#333333"', mask_svg_content)
         mask_svg_content = mask_svg_content.replace('&', '&amp;')
@@ -65,37 +90,105 @@ def calculate_mask_v3(svg_content: str, width: int, height: int, background_colo
             {inner_content} \
             </svg>'
         
-        mask_svg_file.write(mask_svg_content.encode('utf-8'))
+        mask_svg_file_without_text.write(mask_svg_content.encode('utf-8'))
+        mask_svg_file_without_text.flush()
         
-    subprocess.run([
-        'rsvg-convert',
-        '-f', 'png',
-        '-o', temp_mask_png,
-        '--dpi-x', '300',
-        '--dpi-y', '300',
-        '--background-color', original_background_color,
-        mask_svg
-    ], check=True)
-    
-    # 读取为numpy数组并处理
-    img = Image.open(temp_mask_png).convert('RGB')
-    img_array = np.array(img)
+        # 验证SVG文件
+        if not validate_svg_file(mask_svg_without_text):
+            logger.error(f"无效的SVG文件: {mask_svg_without_text}")
+        
+        retry_count = 0
+        max_retries = 3
+        while retry_count < max_retries:
+            try:
+                subprocess.run([
+                    'rsvg-convert',
+                    '-f', 'png',
+                    '-o', temp_mask_png_without_text,
+                    '--dpi-x', '300',
+                    '--dpi-y', '300',
+                    '--background-color', f"{original_background_color}",
+                    mask_svg_without_text
+                ], check=True)
+                break
+            except Exception as e:
+                retry_count += 1
+                logger.error(f"rsvg-convert执行失败 (尝试 {retry_count}/{max_retries}): {str(e)}")
+                if retry_count >= max_retries:
+                    raise e
+                time.sleep(1)
+                
+    img_without_text = Image.open(temp_mask_png_without_text).convert('RGB')
+    img_array_without_text = np.array(img_without_text)
     
     # 确保图像尺寸匹配预期尺寸
-    actual_height, actual_width = img_array.shape[:2]
+    actual_height, actual_width = img_array_without_text.shape[:2]
     if actual_width != width or actual_height != height:
-        img = img.resize((width, height), Image.LANCZOS)
-        img_array = np.array(img)
+        img_without_text = img_without_text.resize((width, height), Image.LANCZOS)
+        img_array_without_text = np.array(img_without_text)
+    
+    
+    # 解析SVG内容
+    soup = BeautifulSoup(svg_content, 'xml')
+    # 仅保留text、group和image元素
+    for element in soup.find_all():
+        if element.name not in ['text', 'g', 'svg', 'image']:
+            element.decompose()
+    
+    svg_content_only_text = str(soup)
+    
+    # 创建临时文件
+    with tempfile.NamedTemporaryFile(suffix='.svg', delete=False) as mask_svg_file_only_text, \
+         tempfile.NamedTemporaryFile(suffix='.png', delete=False) as temp_mask_png_file_only_text:
+        mask_svg_only_text = mask_svg_file_only_text.name
+        temp_mask_png_only_text = temp_mask_png_file_only_text.name
+        mask_svg_file_only_text.write(svg_content_only_text.encode('utf-8'))
+        mask_svg_file_only_text.flush()
+        
+        # 验证SVG文件
+        if not validate_svg_file(mask_svg_only_text):
+            logger.error(f"无效的SVG文件: {mask_svg_only_text}")
+            
+        retry_count = 0
+        max_retries = 3
+        while retry_count < max_retries:
+            try:
+                subprocess.run([
+                    'rsvg-convert',
+                    '-f', 'png', 
+                    '-o', temp_mask_png_only_text,
+                    '--dpi-x', '300',
+                    '--dpi-y', '300',
+                    '--background-color', f"{original_background_color}",
+                    mask_svg_only_text
+                ], check=True)
+                break
+            except Exception as e:
+                retry_count += 1
+                logger.error(f"rsvg-convert执行失败 (尝试 {retry_count}/{max_retries}): {str(e)}")
+                if retry_count >= max_retries:
+                    raise e
+                time.sleep(1)
+        
+        
+    img_only_text = Image.open(temp_mask_png_only_text).convert('RGB')
+    img_array_only_text = np.array(img_only_text)
+    
+    # 确保图像尺寸匹配预期尺寸
+    actual_height, actual_width = img_array_only_text.shape[:2]
+    if actual_width != width or actual_height != height:
+        img_only_text = img_only_text.resize((width, height), Image.LANCZOS)
+        img_array_only_text = np.array(img_only_text)
     
     # 转换为二值mask
     mask = np.ones((height, width), dtype=np.uint8)
     # 随机采样300个点
     total_pixels = height * width
-    sample_indices = np.random.choice(total_pixels, min(300, total_pixels), replace=False)
-    sample_pixels = img_array.reshape(-1, 3)[sample_indices]
+    sample_indices = np.random.choice(total_pixels, min(1000, total_pixels), replace=False)
+    sample_pixels = img_array_without_text.reshape(-1, 3)[sample_indices]
     
     # 排除接近背景色的像素
-    non_bg_pixels = sample_pixels[~np.all(np.abs(sample_pixels - background_color) <= 10, axis=1)]
+    non_bg_pixels = sample_pixels[~np.all(np.abs(sample_pixels - background_color) <= 40, axis=1)]
     
     if len(non_bg_pixels) == 0:
         mode_color = np.array([0, 0, 0])  # 如果没有非背景色像素，返回黑色
@@ -105,14 +198,21 @@ def calculate_mask_v3(svg_content: str, width: int, height: int, background_colo
         # 直接用Counter找出最常见的颜色
         from collections import Counter
         mode_color = np.array(Counter(pixels_tuple).most_common(1)[0][0])
-    
     # 使用mode_color作为众数颜色创建mask
     mask = np.zeros((height, width), dtype=np.uint8)
-    color_diff = np.sqrt(np.sum((img_array - mode_color) ** 2, axis=2))
-    mask[color_diff <= 10] = 1
-    fill_mask = np.zeros((height, width), dtype=np.uint8)
+    mask_only_text = np.zeros((height, width), dtype=np.uint8)
     
-    mask_padding = 8
+    color_diff = np.sqrt(np.sum((img_array_without_text - mode_color) ** 2, axis=2))
+    mask[color_diff <= 2] = 1
+    
+    # 计算与背景色的差异,使用更严格的阈值
+    color_diff_only_text = np.sqrt(np.sum((img_array_only_text - background_color) ** 2, axis=2))
+    mask_only_text[color_diff_only_text >= 15] = 1  # 提高阈值从10到15,要求与背景色差异更大
+    
+    # 初始化填充mask
+    fill_mask = np.zeros((height, width), dtype=np.uint8)
+    fill_mask_only_text = np.zeros((height, width), dtype=np.uint8)
+    mask_padding = 3
     for i in range(height):
         last_j = -mask_padding
         for j in range(width):
@@ -133,11 +233,34 @@ def calculate_mask_v3(svg_content: str, width: int, height: int, background_colo
                     fill_mask[i, j] = 1
                 last_i = i
 
+    for j in range(width):
+        last_i = -mask_padding
+        for i in range(height):
+            if mask_only_text[i, j] == 1:
+                if i - last_i < mask_padding:
+                    fill_mask_only_text[last_i:i+1, j] = 1
+                else:
+                    fill_mask_only_text[i, j] = 1
+                last_i = i
+
+    for i in range(height):
+        last_j = -mask_padding
+        for j in range(width):
+            if mask_only_text[i, j] == 1:
+                if j - last_j < mask_padding:
+                    fill_mask_only_text[i, last_j:j+1] = 1
+                else:
+                    fill_mask_only_text[i, j] = 1
+                last_j = j
+
     mask = fill_mask
-    os.remove(mask_svg)
-    os.remove(temp_mask_png)
+    mask_only_text = fill_mask_only_text
+    os.remove(mask_svg_without_text)
+    os.remove(temp_mask_png_without_text)
+    os.remove(mask_svg_only_text)
+    os.remove(temp_mask_png_only_text)
     
-    return mask
+    return mask, mask_only_text
 
 
 
@@ -155,18 +278,24 @@ def calculate_mask_v2(svg_content: str, width: int, height: int, background_colo
     # 解析SVG内容
     soup = BeautifulSoup(svg_content, 'xml')
     
-    # 删除class="background"的所有元素
     background_elements = soup.select('[class="background"]')
     for element in background_elements:
         element.decompose()
     
-    # 删除stroke-width<=1的所有line元素
+    # 删除stroke-width<=1或没有stroke-width的所有line元素
     thin_lines = soup.find_all('line')
     for line in thin_lines:
         stroke_width = line.get('stroke-width')
-        if stroke_width and float(stroke_width) <= 1:
+        if not stroke_width or float(stroke_width) <= 1:
             line.decompose()
-    
+            
+    # 删除opacity<=0.1的所有元素
+    all_elements = soup.find_all()
+    for element in all_elements:
+        opacity = element.get('opacity')
+        if opacity and float(opacity) <= 0.1:
+            element.decompose()
+            
     # 重新获取处理后的SVG内容
     svg_content = str(soup)
     
@@ -193,16 +322,32 @@ def calculate_mask_v2(svg_content: str, width: int, height: int, background_colo
             </svg>'
         
         mask_svg_file.write(mask_svg_content.encode('utf-8'))
+        mask_svg_file.flush()
         
-    subprocess.run([
-        'rsvg-convert',
-        '-f', 'png',
-        '-o', temp_mask_png,
-        '--dpi-x', '300',
-        '--dpi-y', '300',
-        '--background-color', original_background_color,
-        mask_svg
-    ], check=True)
+        # 验证SVG文件
+        if not validate_svg_file(mask_svg):
+            logger.error(f"无效的SVG文件: {mask_svg}")
+        
+    max_retries = 3
+    retry_count = 0
+    while retry_count < max_retries:
+        try:
+            subprocess.run([
+                'rsvg-convert',
+                '-f', 'png', 
+                '-o', temp_mask_png,
+                '--dpi-x', '300',
+                '--dpi-y', '300',
+                '--background-color', f"{original_background_color}",
+                mask_svg
+            ], check=True)
+            break
+        except Exception as e:
+            retry_count += 1
+            logger.error(f"rsvg-convert执行失败 (尝试 {retry_count}/{max_retries}): {str(e)}")
+            if retry_count >= max_retries:
+                raise Exception(f"重试{max_retries}次后仍然失败: {str(e)}")
+            time.sleep(1)  # 等待1秒后重试
     
     # 读取为numpy数组并处理
     img = Image.open(temp_mask_png).convert('RGB')
@@ -277,15 +422,30 @@ def calculate_mask(svg_content: str, width: int, height: int, padding: int, grid
         with open(mask_svg, "w", encoding="utf-8") as f:
             f.write(mask_svg_content)
             
-        subprocess.run([
-            'rsvg-convert',
-            '-f', 'png',
-            '-o', temp_mask_png,
-            '--dpi-x', '300',
-            '--dpi-y', '300',
-            '--background-color', '#ffffff',
-            mask_svg
-        ], check=True)
+        # 验证SVG文件
+        if not validate_svg_file(mask_svg):
+            logger.error(f"无效的SVG文件: {mask_svg}")
+            
+        retry_count = 0
+        max_retries = 3
+        while retry_count < max_retries:
+            try:
+                subprocess.run([
+                    'rsvg-convert',
+                    '-f', 'png',
+                    '-o', temp_mask_png,
+                    '--dpi-x', '300',
+                    '--dpi-y', '300',
+                    '--background-color', "#ffffff",
+                    mask_svg
+                ], check=True)
+                break
+            except Exception as e:
+                retry_count += 1
+                logger.error(f"rsvg-convert执行失败 (尝试 {retry_count}/{max_retries}): {str(e)}")
+                if retry_count >= max_retries:
+                    raise e
+                time.sleep(1)
         
         # 读取为numpy数组并处理
         img = Image.open(temp_mask_png).convert('RGB')

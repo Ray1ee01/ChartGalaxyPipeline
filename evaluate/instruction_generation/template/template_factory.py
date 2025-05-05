@@ -47,13 +47,13 @@ class TemplateFactory:
         
         return answer
     
-    def process_template(self, template_id: str, template_text: str) -> Tuple[Any, Any]:
+    def process_template(self, template_id: str, template_text: str) -> Tuple[Any, Any, Any, Any]:
         """ 处理模板 """
         handler = self.get_handler(template_id)
         if handler:
-            question, answer = handler(template_text)
-            processed_answer = self.post_process_answer(answer)
-            return question, processed_answer
+            template, answer, confusion, image = handler(template_text)
+            answer = self.post_process_answer(answer)
+            return template, answer, confusion, image
         else:
             logger.error(f"未找到模板 '{template_id}' 的处理函数")
-            return None, None
+            return None, None, None, None

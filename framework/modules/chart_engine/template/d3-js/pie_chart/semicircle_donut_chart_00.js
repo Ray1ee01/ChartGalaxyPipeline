@@ -23,7 +23,6 @@ REQUIREMENTS_BEGIN
 REQUIREMENTS_END
 */
 
-// 半圆饼图实现 - 使用半圆饼图表示数据值
 function makeChart(containerSelector, data) {
     // ---------- 1. 数据准备 ----------
     // 提取数据和配置
@@ -50,8 +49,8 @@ function makeChart(containerSelector, data) {
     const xField = dataColumns[0].name;
     const yField = dataColumns[1].name;
     // Set dimensions and margins
-    const width = variables.width*2;
-    const height = variables.height*2;
+    const width = variables.width;
+    const height = variables.height;
     const margin = { top: 40, right: 40, bottom: 40, left: 40 };
     const chartWidth = width - margin.left - margin.right;
     const chartHeight = height - margin.top - margin.bottom;
@@ -76,7 +75,7 @@ function makeChart(containerSelector, data) {
     
     // 绘制半圆饼图
     const arc = d3.arc()
-        .innerRadius(maxRadius * 0.5)
+        .innerRadius(maxRadius * 0.75)
         .outerRadius(maxRadius)
         .padAngle(0.02)
         .cornerRadius(5);
@@ -93,9 +92,7 @@ function makeChart(containerSelector, data) {
         .value(d => d.percentage)
         .sort(null)
         .startAngle(-Math.PI / 2)  // 设置起始角度为-90度
-        .endAngle(Math.PI / 2)     // 设置结束角度为90度
-        .innerRadius(maxRadius * 0.6)  // 设置内径为外径的60%
-        .outerRadius(maxRadius);       // 设置外径
+        .endAngle(Math.PI / 2);    // 设置结束角度为90度
 
     // 绘制每个组的弧线
     const arcs = g.selectAll("path")
@@ -104,35 +101,134 @@ function makeChart(containerSelector, data) {
         .attr("fill", d => colors.field[d.data[xField]] || colors.other.primary)
         .attr("d", arc);
 
-    // 绘制标签
-    const labels = g.selectAll("text")
-        .data(dataWithPercentages)
-        .enter().append("text")
-        .attr("text-anchor", "middle")
-        .attr("dy", ".35em")
-        .text(d => d.data.percentage >= 2 ? `${d.data.percentage.toFixed(1)}%` : '');
+    // 创建用于外部标签的弧形路径
+    const outerArc = d3.arc()
+        .innerRadius(maxRadius * 1.1)  // 减小为1.1，让标签更靠近图形
+        .outerRadius(maxRadius * 1.1);
 
+    // 添加外部标签和连接线
+    const labelGroup = g.selectAll(".label-group")
+        .data(arcData(dataWithPercentages))
+        .enter()
+        .append("g")
+        .attr("class", "label-group");
+
+    // 记录labelGroup的位置信息
+    const labelPositions = labelGroup.data().map(d => {
+        const midPos = outerArc.centroid(d);
+        const angle = midAngle(d);
+        
+        // 根据角度决定标签位置
+        const textPos = [
+            midPos[0] * 1.2,
+            midPos[1] * 1.1
+        ];
+        
+        // 确保标签在正确方向
+        if (angle > 0) {
+            textPos[0] = Math.abs(textPos[0]); // 右侧标签
+        } else {
+            textPos[0] = -Math.abs(textPos[0]); // 左侧标签
+        }
+        
+        return {
+            category: d.data[xField],
+            value: d.data[yField],
+            percentage: d.data.percentage,
+            position: textPos,
+            angle: angle
+        };
+    });
+
+
+    // 找出y坐标最小的标签位置（即最上方的标签）
+    const topLabelPosition = labelPositions.reduce((minYPos, currentPos) => {
+        return (currentPos.position[1] < minYPos.position[1]) ? currentPos : minYPos;
+    }, labelPositions[0]);
+
+    // 添加连接线
+    labelGroup.append("polyline")
+        .attr("points", function(d) {
+            const pos = arc.centroid(d);
+            const midPos = outerArc.centroid(d);
+            const angle = midAngle(d);
+            
+            // 确定标签位置，与半圆形状匹配
+            const textPos = [
+                midPos[0] * 1.2, // 减小为1.2，让标签更靠近图形
+                midPos[1] * 1.1  // 减小为1.1，让标签更靠近图形
+            ];
+            
+            // 确保连接线在正确方向
+            if (angle > 0) {
+                textPos[0] = Math.abs(textPos[0]); // 右侧标签
+            } else {
+                textPos[0] = -Math.abs(textPos[0]); // 左侧标签
+            }
+            
+            return [pos, midPos, textPos];
+        })
+        .attr("stroke", "#888")
+        .attr("fill", "none")
+        .attr("stroke-width", 1);
+
+    // 添加文本标签
+    labelGroup.append("text")
+        .attr("transform", function(d) {
+            const midPos = outerArc.centroid(d);
+            const angle = midAngle(d);
+            
+            // 根据角度决定标签位置
+            const textPos = [
+                midPos[0] * 1.2, // 减小为1.2，让标签更靠近图形
+                midPos[1] * 1.1  // 减小为1.1，让标签更靠近图形
+            ];
+            
+            // 确保标签在正确方向
+            if (angle > 0) {
+                textPos[0] = Math.abs(textPos[0]); // 右侧标签
+            } else {
+                textPos[0] = -Math.abs(textPos[0]); // 左侧标签
+            }
+            
+            return `translate(${textPos})`;
+        })
+        .attr("text-anchor", d => midAngle(d) < 0 ? "end" : "start")
+        .attr("dominant-baseline", "middle")
+        .style("font-size", "16px") // 增大字体大小为16px
+        .style("font-family", typography.label.font_family)
+        .style("font-weight", typography.label.font_weight)
+        .attr("fill", colors.text_color)
+        .text(d => {
+            const percentage = (d.data.percentage * 100).toFixed(1) + '%';
+            return `${d.data[xField]}: ${percentage}`;
+        });
+
+    // 辅助函数：计算中间角度
+    function midAngle(d) {
+        return d.startAngle + (d.endAngle - d.startAngle) / 2;
+    }
 
     // 添加图例 - 放在图表上方
     const legendGroup = svg.append("g")
-    .attr("transform", `translate(0, -50)`);
+    .attr("transform", `translate(0, 0)`);
     
     // 计算字段名宽度并添加间距
     const titleWidth = xField.length * 10;
     const titleMargin = 15;
     
     let xs = [...new Set(chartData.map(d => d[xField]))];
-
+    console.log(topLabelPosition.position)
     const legendSize = layoutLegend(legendGroup, xs, colors, {
         x: titleWidth + titleMargin,
-        y: 0,
+        y: topLabelPosition.position[1] + centerY,
         fontSize: 14,
         fontWeight: "bold",
         align: "left",
-        maxWidth: chartWidth - titleWidth - titleMargin,
+        maxWidth: chartWidth,
         shape: "rect",
     });
-
+    console.log("legendSize", legendSize)
     // 添加字段名称
     legendGroup.append("text")
         .attr("x", 0)
@@ -144,7 +240,7 @@ function makeChart(containerSelector, data) {
         .text(xField);
     
     // 将图例组向上移动 height/2, 并居中
-    legendGroup.attr("transform", `translate(${(chartWidth - legendSize.width - titleWidth - titleMargin) / 2}, ${-legendSize.height / 2 - 20})`);
+    legendGroup.attr("transform", `translate(${(chartWidth - legendSize.width - titleWidth - titleMargin) / 2}, ${-legendSize.height-20})`);
     
     return svg.node();
 }

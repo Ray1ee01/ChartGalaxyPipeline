@@ -31,16 +31,42 @@ class SingleData:
     def __init__(self, tabular_data: Optional[dict]=None,
                  meta_data: Optional[dict]=None,
                  chart_image: Optional[str]=None,
-                 chart_type: Union[list, str]=None): # TODO 传入内容 & 格式
+                 chart_type: Union[list, str]=None):
         self.tabular_data = tabular_data
         self.meta_data = meta_data
         self.chart_image = chart_image
+        self.svg_path = None
+        
+        # 如果chart_image是目录路径，自动解析目录结构
+        if chart_image and os.path.isdir(chart_image):
+            dir_path = chart_image
+            self.chart_image = os.path.join(dir_path, "chart.png")
+            self.svg_path = os.path.join(dir_path, "chart.svg")
+            data_file = os.path.join(dir_path, "data.json")
+            if os.path.exists(data_file):
+                with open(data_file, "r", encoding="utf-8") as f:
+                    self.tabular_data = json.load(f)
+            
+            info_file = os.path.join(dir_path, "info.json")
+            if os.path.exists(info_file):
+                with open(info_file, "r", encoding="utf-8") as f:
+                    self.generation_info = json.load(f)
+
+            original_data_file = self.generation_info["data_source"]
+            if os.path.exists(original_data_file):
+                with open(original_data_file, "r", encoding="utf-8") as f:
+                    original_data = json.load(f)
+                    self.meta_data = original_data["metadata"]
         
         if isinstance(chart_type, list):
             self.chart_type = ", ".join(chart_type) + "\n" if chart_type else ""
         else:
             self.chart_type = chart_type
- 
+    
+    def get_svg_path(self) -> Optional[str]:
+        """获取SVG文件路径"""
+        return self.svg_path
+
 
 class SingleQA:
     """

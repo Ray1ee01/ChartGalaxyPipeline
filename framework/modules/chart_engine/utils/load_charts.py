@@ -266,26 +266,25 @@ def load_d3js(json_data=None, output_file=None, js_file=None, width=None, height
     </body>
     </html>
     """
-    
     # 获取D3.js库文件的绝对路径
     d3_lib_path = os.path.abspath(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static', 'lib', 'd3.min.js'))
     d3_voronoi_lib_path = os.path.abspath(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static', 'lib', 'd3-voronoi-map.min.js'))
     d3_weighted_voronoi_lib_path = os.path.abspath(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static', 'lib', 'd3-weighted-voronoi.min.js'))
     d3_sankey_lib_path = os.path.abspath(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static', 'lib', 'd3-sankey.min.js'))
+    d3_rough_lib_path = os.path.abspath(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static', 'lib', 'svg2roughjs.umd.min.js'))
     # 使用文件协议的URL (用于SVG渲染)
     d3_lib_url = f"file://{d3_lib_path}"
     d3_voronoi_lib_url = f"file://{d3_voronoi_lib_path}"
     d3_weighted_voronoi_lib_url = f"file://{d3_weighted_voronoi_lib_path}"
     d3_sankey_lib_url = f"file://{d3_sankey_lib_path}"
-    lib_urls = [d3_lib_url, d3_voronoi_lib_url, d3_weighted_voronoi_lib_url, d3_sankey_lib_url]
+    d3_rough_lib_url = f"file://{d3_rough_lib_path}"
+
+    lib_urls = [d3_lib_url, d3_voronoi_lib_url, d3_weighted_voronoi_lib_url, d3_sankey_lib_url, d3_rough_lib_url]
     lib_urls_str = "\n".join([f"<script src='{url}'></script>" for url in lib_urls])
 
     utils_lib_path = os.path.abspath(os.path.join(os.path.dirname(os.path.dirname(__file__)), 'static', 'lib', 'utils.js'))
-
     utils_code = _load_js_code(utils_lib_path)
-    
     js_code = _load_js_code(js_file)
-    
     # Create HTML content    
     formatted_html = html_template % (lib_urls_str, width, height)
     formatted_html = formatted_html.replace('JSON_DATA_PLACEHOLDER', json.dumps(json_data))
@@ -293,7 +292,6 @@ def load_d3js(json_data=None, output_file=None, js_file=None, width=None, height
     formatted_html = formatted_html.replace('UTILS_LIB_PLACEHOLDER', utils_code)
     # Save the HTML to a file
     output_file = _save_to_file(formatted_html, output_file, prefix="_d3")
-    
     # 简化日志输出
     return output_file
 
@@ -429,6 +427,11 @@ def render_chart_to_svg(json_data, output_svg_path, \
                 sankey_file_pattern = r'file://.*?/d3-sankey\.min\.js'
                 cdn_url_sankey = "https://cdn.jsdelivr.net/npm/d3-sankey@0.12.3/dist/d3-sankey.min.js"
                 html_content = re.sub(sankey_file_pattern, cdn_url_sankey, html_content)
+                
+                # Replace svg2roughjs.umd.min.js
+                rough_file_pattern = r'file://.*?/svg2roughjs\.umd\.min\.js'
+                cdn_url_rough = "https://unpkg.com/svg2roughjs@3.2.1/dist/svg2roughjs.umd.min.js"
+                html_content = re.sub(rough_file_pattern, cdn_url_rough, html_content)
             
             with open(html_output_path, 'w', encoding='utf-8') as f:
                 f.write(html_content)
@@ -445,7 +448,7 @@ def render_chart_to_svg(json_data, output_svg_path, \
             raise Exception(f"Failed to create SVG file from {framework.upper()} HTML")
     
     except Exception as e:
-        print(f"Error: {e}")
+        print(f"Error load charts: {e}")
         return None
     
     finally:

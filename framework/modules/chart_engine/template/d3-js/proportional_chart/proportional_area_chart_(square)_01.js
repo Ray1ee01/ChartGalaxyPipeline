@@ -2,7 +2,7 @@
 REQUIREMENTS_BEGIN
 {
     "chart_type": "Proportional Area Chart (Square)",
-    "chart_name": "proportional_area_chart_(square)_01",
+    "chart_name": "proportional_area_chart_square_01",
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],
     "required_fields_range": [[4, 10], [0, 100]],

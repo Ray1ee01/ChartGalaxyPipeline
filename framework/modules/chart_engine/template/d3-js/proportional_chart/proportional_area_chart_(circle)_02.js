@@ -2,7 +2,7 @@
 REQUIREMENTS_BEGIN
 {
     "chart_type": "Proportional Area Chart(circle)",
-    "chart_name": "proportional_area_chart_(circle)_02",
+    "chart_name": "proportional_area_chart_circle_02",
     "is_composite": false,
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],
@@ -12,8 +12,8 @@ REQUIREMENTS_BEGIN
     "required_fields_colors": ["x"],
     "required_other_colors": ["primary"],
     "supported_effects": [],
-    "min_height": 400,
-    "min_width": 400,
+    "min_height": 600,
+    "min_width": 600,
     "background": "no",
     "icon_mark": "none",
     "icon_label": "side",
@@ -44,148 +44,121 @@ function makeChart(containerSelector, dataJSON) {
     }
 
     /* ============ 2. 尺寸与比例尺 ============ */
-    // 1) 圆占画布比例，越大越拥挤、越难排
-    const fillRatio = 0.80;                 // 0.70 ~ 0.90
-
-    // 2) 外切候选角度步长，值越小候选越密，单位 rad
-    const angleStep = Math.PI / 24;         // Math.PI/8(粗) ~ Math.PI/24(细)
-
-    // 3) 不同圆外切时额外加的空隙，越小越紧密
-    const distPadding = 0.3;                // 0.3 ~ 0.8
-
-    // 4) 最大允许重叠比例（占各自面积）
-    const overlapMax = 0.12;               
-
-    // 5) 排列失败后最多丢多少个最小圆重试
-    const maxDropTries = 2;                 // 0 表示绝不丢圆
-
-    // 6) 第一个圆放置位置，可多选：topleft / center
-    const firstPositions = ["topleft", "center"];
-
-    // 7) 候选排序方式：topleft / center / random
-    const candidateSort = "topleft";
     const fullW = dataJSON.variables?.width  || 600;
     const fullH = dataJSON.variables?.height || 600;
     const margin = { top: 90, right: 20, bottom: 60, left: 20 }; // 边距
     const W = fullW  - margin.left - margin.right; // 绘图区域宽度
     const H = fullH  - margin.top  - margin.bottom; // 绘图区域高度
 
-    // 8) 半径限制
+    // 计算可用面积的50%作为圆形最大总面积限制
+    const maxTotalCircleArea = W * H * 0.5;
+
+    // 半径限制
     const minRadius = 5; // 最小圆半径
     const maxRadius = H / 3; // 最大圆半径（不超过绘图区域高度的三分之一）
 
-    const totalArea   = W * H * fillRatio; // 圆允许占用的总面积
-    const totalValue  = d3.sum(raw,d=>+d[yField]); // Y字段总和
-    const areaPerUnit = totalArea / totalValue; // 每单位Y值对应的面积
+    // 创建颜色比例尺
+    const uniqueCategories = [...new Set(raw.map(d => d[xField]))];
+    const colorScale = d3.scaleOrdinal()
+        .domain(uniqueCategories)
+        .range(uniqueCategories.map((cat, i) => 
+            // 优先使用colors.field中的颜色
+            dataJSON.colors?.field?.[cat] || 
+            // 如果没有对应颜色，使用默认调色板
+            d3.schemeTableau10[i % 10]
+        ));
 
-    // 数据处理：计算每个节点的面积、半径、颜色等
-    const nodes = raw.map((d,i)=>({
-        id   : d[xField]!=null?String(d[xField]):`__${i}__`, // 节点ID (X字段)，若为空则生成临时ID
-        val  : +d[yField], // 节点值 (Y字段)
-        area : +d[yField]*areaPerUnit, // 节点面积
-        color: dataJSON.colors?.field?.[d[xField]] || d3.schemeTableau10[i%10], // 节点颜色
-        icon : dataJSON.images?.field?.[d[xField]] || null, // 节点图标 (从JSON中获取)
-        raw  : d // 原始数据
-    })).sort((a,b)=>b.area-a.area); // 按面积降序排序，方便布局
-
-    // 计算每个节点的半径并应用限制
-    nodes.forEach(n=>{ 
-        // 从面积计算理论半径
-        let calculatedRadius = Math.sqrt(n.area/Math.PI);
-        // 应用半径限制（保证在[minRadius, maxRadius]范围内）
-        n.r = Math.max(minRadius, Math.min(calculatedRadius, maxRadius));
-        // 更新面积以匹配新半径（保持一致性）
-        n.area = Math.PI * n.r * n.r;
-    });
-
-    /* ============ 3. 数学工具函数 ============ */
-    // 计算两圆相交面积 (用于重叠检查)
-    function interArea(a,b){
-        const dx=a.x-b.x,dy=a.y-b.y,d=Math.hypot(dx,dy); // 圆心距
-        if(d>=a.r+b.r) return 0; // 外离或外切
-        if(d<=Math.abs(a.r-b.r)) return Math.PI*Math.min(a.r,b.r)**2; // 内含或内切
-        // 相交情况
-        const α=Math.acos((a.r*a.r+d*d-b.r*b.r)/(2*a.r*d)); // 圆a扇形角
-        const β=Math.acos((b.r*b.r+d*d-a.r*a.r)/(2*b.r*d)); // 圆b扇形角
-        return a.r*a.r*α + b.r*b.r*β - d*a.r*Math.sin(α); // 两扇形面积 - 三角形面积 * 2
+    // 创建初始半径比例尺
+    const radiusScale = d3.scaleSqrt()
+        .domain([0, d3.max(raw, d => +d[yField])])
+        .range([minRadius, maxRadius * 0.8]);
+        
+    // 计算每个节点的初始半径和面积
+    let nodes = raw.map((d, i) => {
+        const val = +d[yField];
+        const r = radiusScale(val);
+        return {
+            id: d[xField] != null ? String(d[xField]) : `__${i}__`,
+            val: val,
+            r: r,
+            area: Math.PI * r * r,
+            color: colorScale(d[xField]),
+            icon: dataJSON.images?.field?.[d[xField]] || null,
+            raw: d
+        };
+    }).sort((a, b) => b.r - a.r); // 按半径从大到小排序
+    
+    // 计算总面积
+    const initialTotalArea = d3.sum(nodes, d => d.area);
+    
+    // 如果总面积超过最大限制，按比例缩小所有半径
+    if (initialTotalArea > maxTotalCircleArea) {
+        const areaRatio = Math.sqrt(maxTotalCircleArea / initialTotalArea);
+        nodes.forEach(node => {
+            node.r *= areaRatio;
+            node.area = Math.PI * node.r * node.r;
+        });
+        console.log(`缩小圆形总面积，缩放比例: ${areaRatio.toFixed(2)}`);
     }
-    // 检查两圆是否可接受重叠
-    const okPair=(a,b)=> {
-        const ia=interArea(a,b);
-        // 重叠面积占各自面积的比例不超过阈值
-        return ia/a.area<=overlapMax && ia/b.area<=overlapMax;
-    };
-    // 检查新圆与所有已放置圆是否可接受重叠
-    const okAll=(n,placed)=>placed.every(p=>okPair(n,p));
 
-    /* ============ 4. 生成候选位置 ============ */
-    function genCandidates(node, placed){
-        const list=[]; // 候选位置列表
-        // ---- 首个圆 ----
-        if(!placed.length){
-            if(firstPositions.includes("topleft"))
-                list.push({x:node.r, y:node.r}); // 左上角
-            if(firstPositions.includes("center"))
-                list.push({x:W/2, y:H/2}); // 中心
-            return list;
+    /* ============ 3. 力模拟布局 ============ */
+    // 设置顶部保护区域，防止与可能的标题或图例重叠
+    const TOP_PROTECTED_AREA = 30;
+    
+    // 创建防碰撞力模拟布局
+    const simulation = d3.forceSimulation()
+        .force("center", d3.forceCenter(W/2, H/2).strength(0.05)) // 中心引力
+        .force("charge", d3.forceManyBody().strength(-10)) // 节点间斥力
+        // 使用collide力允许适度重叠（minDistance = radius1 + radius2 - 10）
+        .force("collide", d3.forceCollide().radius(d => d.r - 5).strength(0.9))
+        .stop();
+
+    // 设置初始位置 - 大圆在中心，小圆在周围螺旋状排列
+    if (nodes.length > 0) {
+        // 最大的圆固定在中心位置
+        nodes[0].fx = W * 0.5;
+        nodes[0].fy = H * 0.5;
+    }
+    
+    // 对于更多的圆，螺旋状初始位置
+    if (nodes.length > 1) {
+        const angle_step = 2 * Math.PI / (nodes.length - 1);
+        let radius_step = Math.min(W, H) * 0.15;
+        let current_radius = radius_step;
+        
+        for (let i = 1; i < nodes.length; i++) {
+            const angle = i * angle_step;
+            nodes[i].x = W/2 + current_radius * Math.cos(angle);
+            nodes[i].y = H/2 + current_radius * Math.sin(angle);
+            
+            // 每5个节点增加螺旋半径
+            if (i % 5 === 0) {
+                current_radius += radius_step;
+            }
         }
-        // ---- 与已放置圆外切 ----
-        placed.forEach(p=>{
-            const dist = p.r + node.r + distPadding; // 外切圆心距 + 额外间距
-            for(let θ=0; θ<2*Math.PI; θ+=angleStep){ // 遍历外切角度
-                const x=p.x+dist*Math.cos(θ), y=p.y+dist*Math.sin(θ);
-                // 检查是否超出边界
-                if(x-node.r<0||x+node.r>W||y-node.r<0||y+node.r>H) continue;
-                list.push({x,y});
+    }
+
+    // 设置节点并运行模拟
+    simulation.nodes(nodes);
+
+    // 运行模拟迭代
+    const MIN_ITERATIONS = 200; // 较大的迭代次数以获得稳定布局
+    
+    for (let i = 0; i < MIN_ITERATIONS; ++i) {
+        simulation.tick();
+        
+        // 每次迭代后应用边界约束
+        nodes.forEach(d => {
+            if (!d.fx) { // 如果节点没有被固定
+                // 水平边界约束
+                d.x = Math.max(d.r, Math.min(W - d.r, d.x));
+                // 垂直边界约束，确保不进入顶部保护区域
+                d.y = Math.max(TOP_PROTECTED_AREA + d.r, Math.min(H - d.r, d.y));
             }
         });
-
-        // ---- 去重 ---- (通过Map，键为保留两位小数的坐标字符串)
-        const uniq=new Map();
-        list.forEach(p=>uniq.set(p.x.toFixed(2)+","+p.y.toFixed(2),p));
-        const arr=[...uniq.values()];
-
-        // ---- 排序 ---- (影响放置顺序)
-        if(candidateSort==="center"){ // 优先靠近中心
-            arr.sort((a,b)=> (a.y-H/2)**2+(a.x-W/2)**2 - (b.y-H/2)**2-(b.x-W/2)**2 );
-        }else if(candidateSort==="random"){ // 随机
-            d3.shuffle(arr);
-        }else{ // 默认左上优先 (topleft)
-            arr.sort((a,b)=>a.y-b.y || a.x-b.x);
-        }
-        return arr;
     }
 
-    /* ============ 5. DFS + 回溯布局 ============ */
-    // 深度优先搜索尝试放置所有节点
-    function dfs(idx, placed){
-        if(idx===nodes.length) return true;           // 递归基：全部放置成功
-        const node = nodes[idx]; // 当前要放置的节点
-        // 遍历当前节点的所有候选位置
-        for(const c of genCandidates(node,placed)){
-            node.x=c.x; node.y=c.y; // 尝试放置
-            if(okAll(node,placed)){ // 检查是否与已放置节点重叠过多
-                placed.push(node); // 放置成功，加入已放置列表
-                if(dfs(idx+1,placed)) return true; // 递归放置下一个节点
-                placed.pop();                         // 回溯：取出当前节点，尝试下一个候选位置
-            }
-        }
-        return false;                                 // 该层全部候选位置失败
-    }
-
-    let placed=[]; // 已成功放置的节点
-    let success=dfs(0,placed); // 启动DFS
-
-    /* ============ 6. 若失败则删除最小圆重试 ============ */
-    let drop=0; // 已丢弃的节点数
-    // 如果布局失败，且允许丢弃节点，且还有节点可丢
-    while(!success && drop<maxDropTries && nodes.length){
-        nodes.pop(); drop++; // 丢弃面积最小的节点（因为已排序）
-        placed=[]; success=dfs(0,placed); // 重新尝试布局
-    }
-    if(!success) placed=[]; // 最终仍失败则返回空结果
-
-    /* ============ 7. 绘图 ============ */
+    /* ============ 4. 绘图 ============ */
     d3.select(containerSelector).html(""); // 清空容器
     // 创建 SVG 画布
     const svg=d3.select(containerSelector)
@@ -205,7 +178,7 @@ function makeChart(containerSelector, dataJSON) {
 
     // 创建节点分组 <g> 元素
     const nodeG=g.selectAll("g.node")
-        .data(placed,d=>d.id) // 绑定已放置节点数据，使用 id 作为 key
+        .data(nodes,d=>d.id) // 绑定已放置节点数据，使用 id 作为 key
         .join("g")
         .attr("class","node")
         .attr("transform",d=>`translate(${d.x},${d.y})`); // 定位到计算好的位置
@@ -213,20 +186,11 @@ function makeChart(containerSelector, dataJSON) {
     // 绘制圆形
     nodeG.append("circle")
         .attr("r",d=>d.r) // 半径
-        .attr("fill",d=>d.color) // 填充色
+        .attr("fill",d=>d.color) // 使用纯色填充
         .attr("stroke","#fff") // 白色描边
         .attr("stroke-width",1.0); // 描边宽度
 
-    /* ---- 文本和图标设置 ---- */
-    // 提取字体排印设置，提供默认值
-    const valueFontFamily = dataJSON.typography?.annotation?.font_family || 'Arial';
-    const valueFontSizeBase = parseFloat(dataJSON.typography?.annotation?.font_size || '12'); // 数值标签基础字号
-    const valueFontWeight = dataJSON.typography?.annotation?.font_weight || 'bold'; // 数值标签字重
-    const categoryFontFamily = dataJSON.typography?.label?.font_family || 'Arial';
-    const categoryFontSizeBase = parseFloat(dataJSON.typography?.label?.font_size || '11'); // 维度标签基础字号
-    const categoryFontWeight = dataJSON.typography?.label?.font_weight || 'normal'; // 维度标签字重
-    const textColor = dataJSON.colors?.text_color || '#fff'; // 文本颜色 (优先JSON，默认白色)
-
+    /* ============ 5. 文本工具函数 ============ */
     // 文本宽度测量辅助函数 (使用 canvas 提高性能)
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
@@ -276,8 +240,23 @@ function makeChart(containerSelector, dataJSON) {
         // 亮度阈值0.6: 高于0.6用黑色文本，低于用白色
         return brightness > 0.6 ? '#000000' : '#ffffff';
     }
+    
+    // 弦长计算函数 - 根据到圆心的距离计算该位置的最大水平宽度
+    function getChordLength(radius, distanceFromCenter) {
+        // 根据毕达哥拉斯定理，在距离圆心d的位置，水平弦长=2*√(r²-d²)
+        return 2 * Math.sqrt(Math.max(0, radius * radius - distanceFromCenter * distanceFromCenter));
+    }
 
-    // 图标大小和字体大小计算函数
+    /* ============ 6. 文本和图标参数 ============ */
+    // 提取字体排印设置，提供默认值
+    const valueFontFamily = dataJSON.typography?.annotation?.font_family || 'Arial';
+    const valueFontSizeBase = parseFloat(dataJSON.typography?.annotation?.font_size || '12'); // 数值标签基础字号
+    const valueFontWeight = dataJSON.typography?.annotation?.font_weight || 'bold'; // 数值标签字重
+    const categoryFontFamily = dataJSON.typography?.label?.font_family || 'Arial';
+    const categoryFontSizeBase = parseFloat(dataJSON.typography?.label?.font_size || '11'); // 维度标签基础字号
+    const categoryFontWeight = dataJSON.typography?.label?.font_weight || 'normal'; // 维度标签字重
+    
+    // 图标大小和字体大小计算参数
     const iconSizeRatio = 0.6; // 图标相对于圆半径的比例
     const minIconSize = 16; // 最小图标尺寸
     const maxIconSize = 120; // 最大图标尺寸
@@ -291,18 +270,12 @@ function makeChart(containerSelector, dataJSON) {
     // 如果圆半径小于阈值，则只显示图标
     const minRadiusForText = 10; // 最小需要的半径来显示文本
 
-    // ---- 类别标签换行控制 ----
+    // 类别标签换行控制
     const minCatFontSize = 10; // 维度标签最小字号 (再小就换行)
-    const catLineHeight = 0.3; // 维度标签换行行高倍数（修改为0.3，原来是1.1）
+    const catLineHeight = 0.3; // 维度标签换行行高倍数
     const needsWrapping = true; // 需要时是否允许换行
-    
-    // 弦长计算函数 - 根据到圆心的距离计算该位置的最大水平宽度
-    function getChordLength(radius, distanceFromCenter) {
-        // 根据毕达哥拉斯定理，在距离圆心d的位置，水平弦长=2*√(r²-d²)
-        return 2 * Math.sqrt(Math.max(0, radius * radius - distanceFromCenter * distanceFromCenter));
-    }
-    
-    // --- 渲染内容 ---
+
+    /* ============ 7. 渲染内容 ============ */
     nodeG.each(function(d) {
         const gNode = d3.select(this);
         const r = d.r;
@@ -336,7 +309,7 @@ function makeChart(containerSelector, dataJSON) {
         const topPadding = r * 0.2; // 顶部安全边距，图标到圆顶部的距离
         
         // 计算理想的图标大小，考虑圆的大小
-        const idealIconSize = Math.min(r , maxIconSize); // 图标尺寸相对保守
+        const idealIconSize = Math.min(r, maxIconSize); // 图标尺寸相对保守
         
         // 2. 计算垂直布局位置
         // 计算垂直布局的起点和终点，从上到下为负到正

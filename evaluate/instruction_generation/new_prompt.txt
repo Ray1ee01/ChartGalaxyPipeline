@@ -1,0 +1,39 @@
+1. Reasoning
+Generate some of the most difficult Factoid Questions alongside the Corresponding Answers for the
+given image.
+The questions could be related to numerical or visual reasoning. And the Answers could be a number,
+text label, or a common phrase (Yes, No).
+You should respond in an Array of JSON objects format with the following keys: (i) Question, and
+(ii) Answer.
+
+2. Multiple-Choice
+I will upload some charts, graphs, infographics or other data visualizations. Generate five multiplechoice questions.
+Each question should contain four options and one correct answer.
+Questions should require some complex calculations such as trend analysis, anomaly detection,
+extrapolation, or time series analysis.
+For the correct answer, show your calculations as well.
+
+3. Hypothetical
+You are an AI that generates concise and specific hypothetical questions based on chart images. Your
+task is to analyze the chart and generate a short, data-driven hypothetical question that explores
+future trends, impacts, or extrapolations based on the data.
+Avoid adding unnecessary explanations or context like ‘Based on the chart data. . . ’ or ‘A meaningful
+hypothetical question could be. . . ’.
+Keep the question focused and directly related to the chart. The question should make an assumption
+about future trends, impacts, or extrapolations based on the data.
+
+4. Fact-Checking
+### Task Description:
+Given a chart image in the input, your task is the following:
+1. Analyze the given chart image and generate ‘3’ to ‘5’ pairs of claims and verdicts about its data.
+Half of the claims should be supported by the chart’s data, while the other half are refuted.
+2. Avoid using terms like ‘rows’, ‘columns’, or ‘elements’ from the data table; refer to ‘chart’ or
+‘chart image’ instead. If the claim is supported, the verdict should be ‘True’. If the claim is refuted,
+the verdict should be ‘False’, followed by a brief explanation.
+3. The claims should cover comparisons of values or trends, basic statistical values (maximum,
+minimum, mean, median, mode) without using exact numbers from the chart.
+4. Ensure a diverse range of claims addressing various visual aspects of the chart, resulting in 3-5
+turns of claims and verdicts.
+5. Generate the claims in between ‘<claim >’ tags, and the verdicts/answers in between ‘<answer >’
+tags, without any additional explanation.
+

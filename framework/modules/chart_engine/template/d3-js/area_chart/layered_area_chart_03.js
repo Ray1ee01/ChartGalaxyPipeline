@@ -9,7 +9,7 @@ REQUIREMENTS_BEGIN
     "required_fields_icons": [],
     "required_other_icons": [],
     "required_fields_colors": ["group"],
-    "required_other_colors": ["primary", "secondary", "background"],
+    "required_other_colors": [],
     "supported_effects": ["gradient", "opacity"],
     "min_height": 600,
     "min_width": 800,
@@ -25,7 +25,7 @@ REQUIREMENTS_END
 function makeChart(containerSelector, data) {
     // 提取数据
     const jsonData = data;
-    const chartData = jsonData.data.data;
+    let chartData = jsonData.data.data;
     const variables = jsonData.variables;
     const typography = jsonData.typography;
     const colors = jsonData.colors_dark || {};
@@ -39,6 +39,12 @@ function makeChart(containerSelector, data) {
     const xField = dataColumns[0].name;
     const yField = dataColumns[1].name;
     const groupField = dataColumns[2].name;
+
+    chartData = temporalFilter(chartData, xField);
+    if (chartData.length === 0) {
+        console.log("chartData is empty");
+        return;
+    }
     
     // 获取唯一的组值并按最后y值排序
     const groups = [...new Set(chartData.map(d => d[groupField]))]
@@ -289,14 +295,14 @@ function makeChart(containerSelector, data) {
         
         // 更新上一个标签位置
         prevLabelYBase = labelYBase;
-        
+        let textWidth = getTextWidth(group, 10) * 1.3;
         // 创建标签背景
         const labelBg = g.append("rect")
-            .attr("x", labelXBase - 40)
+            .attr("x", labelXBase - textWidth / 2)
             .attr("y", labelYBase - 50)
             .attr("rx", 10)
             .attr("ry", 10)
-            .attr("width", 80)
+            .attr("width", textWidth)
             .attr("height", 40)
             .attr("fill", color);
         

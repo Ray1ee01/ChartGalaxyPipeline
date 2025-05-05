@@ -14,10 +14,10 @@ REQUIREMENTS_BEGIN
     "min_height": 600,
     "min_width": 800,
     "background": "dark",
-    "icon_mark": "none",
-    "icon_label": "none",
+    "icon_mark": "overlay",
+    "icon_label": "side",
     "has_x_axis": "yes",
-    "has_y_axis": "yes"
+    "has_y_axis": "no"
 }
 REQUIREMENTS_END
 */

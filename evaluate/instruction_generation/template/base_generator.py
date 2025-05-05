@@ -2,10 +2,13 @@ import json
 import pandas as pd
 import random
 import re
+import os
 from typing import Dict, List, Tuple, Any, Optional, Callable
 import logging
 
 logger = logging.getLogger("InstructionGeneration.Template.BaseGenerator")
+variation_path = "./variation.json"
+variation_data = json.load(open(variation_path, 'r'))
 
 class BaseGenerator:
     def __init__(self, data_path: str):
@@ -14,12 +17,44 @@ class BaseGenerator:
         self.df = None
         self.columns_info = None
         self.decimal_places = None # 存放 tabular data 中小数位数
+        self.image_path = None
+        self.svg_path = None
+        self.info = None
     
     def load_data(self) -> pd.DataFrame:
-        """ 加载和解析数据JSON文件 """
+        """ 加载和解析数据目录中的文件 """
         try:
-            with open(self.data_path, 'r') as f:
-                self.data = json.load(f)
+            # 判断data_path是目录还是文件
+            if os.path.isdir(self.data_path):
+                # 如果是目录，加载目录中的数据文件
+                data_file = os.path.join(self.data_path, "data.json")
+                info_file = os.path.join(self.data_path, "info.json")
+                self.image_path = os.path.join(self.data_path, "chart.png") 
+                self.svg_path = os.path.join(self.data_path, "chart.svg")
+                
+                # 加载数据文件
+                with open(data_file, 'r') as f:
+                    data_content = json.load(f)
+                
+                # 加载信息文件
+                if os.path.exists(info_file):
+                    with open(info_file, 'r') as f:
+                        self.info = json.load(f)
+                self.requirements = variation_data[self.info["chart_variation"]]
+                
+                original_data_file = self.info["data_source"]
+                with open(original_data_file, 'r') as f:
+                    original_data = json.load(f)
+                self.field_images = original_data["images"]["field"]
+                
+                # 构建数据结构
+                self.data = {
+                    'data': data_content
+                }
+            else:
+                # 如果是文件，按原来的方式加载
+                with open(self.data_path, 'r') as f:
+                    self.data = json.load(f)
             
             # 转换为DataFrame以便处理
             self.df = pd.DataFrame(self.data['data']['data'])
@@ -32,6 +67,56 @@ class BaseGenerator:
             logger.error(f"加载数据错误: {e}")
             return None
         
+    def get_image_path(self) -> str:
+        """获取图表图像路径"""
+        return self.image_path
+        
+    def get_svg_path(self) -> str:
+        """获取SVG路径"""
+        return self.svg_path
+    
+    def get_field_images(self, field_name: str) -> Dict:
+        """获取field_images，并验证SVG中是否使用了该字段对应的base64图像
+        
+        Args:
+            field_name: 字段名称
+            
+        Returns:
+            如果SVG中使用了该字段的base64图像，则返回对应的field_images字典，否则返回None
+        """
+        field_image = self.field_images.get(field_name, None)
+        
+        if field_image is None:
+            return None
+            
+        # 获取SVG内容
+        svg_path = self.get_svg_path()
+        if svg_path and os.path.exists(svg_path):
+            try:
+                with open(svg_path, 'r', encoding='utf-8') as f:
+                    svg_content = f.read()
+                    
+                # 判断base64是否在SVG内容中使用
+                # field_image本身就是base64字符串
+                if isinstance(field_image, str) and field_image.startswith('data:image') and field_image in svg_content:
+                    return field_image
+                
+                # 如果没有找到匹配的base64，返回None
+                return None
+            except Exception as e:
+                logger.error(f"读取SVG文件错误: {e}")
+                return None
+        
+        return None
+        
+    def get_info(self) -> Dict:
+        """获取info.json中的信息"""
+        return self.info
+    
+    def get_requirements(self) -> Dict:
+        """获取requirements.json中的信息"""
+        return self.requirements
+    
     def detect_decimal_places(self) -> int:
         """ 检测数据中的小数位数 """
         if self.df is None:
@@ -193,7 +278,7 @@ class BaseGenerator:
         for i, tick in enumerate(selected_ticks):
             if i == 0:
                 placeholders["ithx tick"] = str(tick)
-            if i == 0:
+            elif i == 1:
                 placeholders["jthx tick"] = str(tick)
             else:
                 placeholders[f"{i+1}thx tick"] = str(tick)

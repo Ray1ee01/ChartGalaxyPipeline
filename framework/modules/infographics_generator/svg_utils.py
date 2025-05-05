@@ -73,20 +73,20 @@ def add_gradient_to_rect(rect_svg):
 
 def extract_svg_content(svg_content: str) -> Optional[str]:
     """从SVG内容中提取内部元素"""
-    try:
-        svg_tree = etree.fromstring(svg_content.encode())
-        # 获取所有子元素
-        children = svg_tree.getchildren()
-        if not children:
-            return None
-            
-        # 将子元素转换为字符串
-        content = ""
-        for child in children:
-            content += etree.tostring(child, encoding='unicode')
-        return content
-    except Exception as e:
+    # try:
+    svg_tree = etree.fromstring(svg_content.encode())
+    # 获取所有子元素
+    children = svg_tree.getchildren()
+    if not children:
         return None
+    
+    # 将子元素转换为字符串
+    content = ""
+    for child in children:
+        content += etree.tostring(child, encoding='unicode')
+    return content
+    # except Exception as e:
+    #     return None
 
 def remove_large_rects(svg_content: str) -> str:
     """移除SVG中的大型矩形元素"""
@@ -127,7 +127,7 @@ def extract_large_rect(svg_content: str) -> tuple[str, str]:
         # 寻找class为background的rect元素
         background_elements = svg_tree.xpath("//*[local-name()='rect' and @class='background']|"
                             "//*[local-name()='image' and @class='background']")
-        print("background_elements", background_elements)
+        # print("background_elements", background_elements)
         
         for element in background_elements:
             # 获取宽度和高度
@@ -221,7 +221,7 @@ def extract_background_element(svg_content: str) -> str:
             
             # 从原位置移除元素
             element.getparent().remove(element)
-        print("svg_tree", svg_tree)
+        # print("svg_tree", svg_tree)
         # 找到第一个image元素 (tag是image且class是image)
         # 使用xpath查找所有image元素,不管是否有class属性
         first_image = svg_tree.xpath(".//image")
@@ -235,19 +235,19 @@ def extract_background_element(svg_content: str) -> str:
                 first_image = first_image[0]
             else:
                 first_image = None
-        print("找到的image元素:", first_image)
+        # print("找到的image元素:", first_image)
         
         
         # 将提取的元素插入到适当的位置
         if first_image is not None:
-            print("first_image", first_image)
+            # print("first_image", first_image)
             # 如果存在image元素，将背景元素插入到其前面
             parent = first_image.getparent()
             for elem_str in extracted_elements:
                 new_elem = etree.fromstring(elem_str)
                 parent.insert(parent.index(first_image), new_elem)
         else:
-            print("no first_image")
+            # print("no first_image")
             # 如果不存在image元素，将背景元素添加到SVG的开始位置
             for elem_str in reversed(extracted_elements):
                 new_elem = etree.fromstring(elem_str)
@@ -284,44 +284,45 @@ def adjust_and_get_bbox(svg_content, background_color = "#FFFFFF"):
         temp_svg_path = temp_svg.name
         temp_png_path = temp_png.name
 
-    svg_container = f"<svg \
-        width='1000' \
-        height='1000' \
-        xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'> \
-        {svg_content}</svg>"
+        svg_container = f"<svg \
+            width='1000' \
+            height='1000' \
+            xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'> \
+            {svg_content}</svg>"
+        with open(temp_svg_path, 'w', encoding='utf-8') as f:
+            f.write(svg_container)
+            f.flush()
+        print("temp_svg_path: ", temp_svg_path)
+        bbox = get_svg_actual_bbox(temp_svg_path)
+        # print("bbox: ", bbox)
+        padding = 150
+        new_width = bbox['width'] + padding * 2
+        new_height = bbox['height'] + padding * 2
+        svg_container = f"<svg \
+            width='{new_width}' \
+            height='{new_height}' \
+            xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'> \
+            <rect width='{new_width}' height='{new_height}' fill='{background_color}' /> \
+            <g transform='translate({padding - bbox['min_x']}, {padding - bbox['min_y']})'> \
+                {svg_content} \
+            </g> \
+            </svg>"
     
-    with open(temp_svg_path, 'w', encoding='utf-8') as f:
-        f.write(svg_container)
-
-    bbox = get_svg_actual_bbox(temp_svg_path)
-    padding = 150
-    new_width = bbox['width'] + padding * 2
-    new_height = bbox['height'] + padding * 2
-    svg_container = f"<svg \
-        width='{new_width}' \
-        height='{new_height}' \
-        xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink'> \
-        <rect width='{new_width}' height='{new_height}' fill='{background_color}' /> \
-        <g transform='translate({padding - bbox['min_x']}, {padding - bbox['min_y']})'> \
+        with open(temp_svg_path, 'w', encoding='utf-8') as f:
+            f.write(svg_container)
+            f.flush()
+        svg_to_png(temp_svg_path, temp_png_path, background_color)
+        x_min, y_min, x_max, y_max = get_precise_bbox(temp_png_path, background_color)
+        width = x_max - x_min + 1
+        height = y_max - y_min + 1
+        offset_x = padding - bbox['min_x'] - x_min
+        offset_y = padding - bbox['min_y'] - y_min
+        svg_container = f"<g transform='translate({offset_x}, {offset_y})'> \
             {svg_content} \
-        </g> \
-        </svg>"
-    
-    with open(temp_svg_path, 'w', encoding='utf-8') as f:
-        f.write(svg_container)
+        </g>"
 
-    svg_to_png(temp_svg_path, temp_png_path, background_color)
-    x_min, y_min, x_max, y_max = get_precise_bbox(temp_png_path, background_color)
-    width = x_max - x_min + 1
-    height = y_max - y_min + 1
-    offset_x = padding - bbox['min_x'] - x_min
-    offset_y = padding - bbox['min_y'] - y_min
-    svg_container = f"<g transform='translate({offset_x}, {offset_y})'> \
-        {svg_content} \
-    </g>"
-
-    os.unlink(temp_svg_path)
-    os.unlink(temp_png_path)
+        os.unlink(temp_svg_path)
+        os.unlink(temp_png_path)
     
     return svg_container, width, height, offset_x, offset_y
     
@@ -339,7 +340,7 @@ def remove_image_element(svg_content: str) -> str:
         namespaces = {'svg': 'http://www.w3.org/2000/svg', 
                      'xlink': 'http://www.w3.org/1999/xlink'}
         for image in svg_tree.xpath("//image | //*[local-name()='image']", namespaces=namespaces):
-            print("image", image)
+            # print("image", image)
             image.getparent().remove(image)
             
         # 转换回字符串
@@ -390,10 +391,10 @@ def get_precise_bbox(png_path, background_color = "#FFFFFF"):
     return x_min, y_min, x_max + 1, y_max + 1
 
 def get_svg_actual_bbox(svg_path):
+    # print("svg_path: ", svg_path)
     # 使用lxml而不是xml.etree.ElementTree
     tree = etree.parse(svg_path)
     root = tree.getroot()
-
     # 获取SVG的原始宽度和高度
     svg_width = float(root.get('width', '0').replace('px', ''))
     svg_height = float(root.get('height', '0').replace('px', ''))
@@ -442,7 +443,7 @@ def get_svg_actual_bbox(svg_path):
     for elem in root.iter():
         tag = elem.tag.split('}')[-1]
         dx, dy = get_accumulated_transform(elem)
-
+        # print("tag: ", tag)
         if tag == 'rect':
             # 检查是否应该忽略此矩形（fill="none"且没有stroke属性）
             fill = elem.get('fill', '').lower()
@@ -521,7 +522,10 @@ def get_svg_actual_bbox(svg_path):
                 [text_left, text_right],
                 [y - 0.8 * text_height, y + 0.2 * text_height]
             )
-
+    # print("min_x: ", min_x)
+    # print("min_y: ", min_y)
+    # print("max_x: ", max_x)
+    # print("max_y: ", max_y)
     if min_x == float('inf'):
         return None  # 没有有效图形
 

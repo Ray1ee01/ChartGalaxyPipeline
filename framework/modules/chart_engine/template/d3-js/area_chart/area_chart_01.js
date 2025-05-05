@@ -9,7 +9,7 @@ REQUIREMENTS_BEGIN
     "required_fields_icons": [],
     "required_other_icons": [],
     "required_fields_colors": [],
-    "required_other_colors": ["primary", "secondary", "background"],
+    "required_other_colors": [],
     "supported_effects": ["gradient", "opacity"],
     "min_height": 600,
     "min_width": 800,
@@ -17,7 +17,7 @@ REQUIREMENTS_BEGIN
     "icon_mark": "none",
     "icon_label": "none",
     "has_x_axis": "yes",
-    "has_y_axis": "yes"
+    "has_y_axis": "no"
 }
 REQUIREMENTS_END
 */
@@ -25,13 +25,15 @@ REQUIREMENTS_END
 function makeChart(containerSelector, data) {
     // 提取数据
     const jsonData = data;
-    const chartData = jsonData.data.data;
+    let chartData = jsonData.data.data;
     const variables = jsonData.variables;
     const typography = jsonData.typography;
     const colors = jsonData.colors || {};
     const dataColumns = jsonData.data.columns || [];
     const images = jsonData.images || {};
     
+
+
     // 清空容器
     d3.select(containerSelector).html("");
     
@@ -39,6 +41,13 @@ function makeChart(containerSelector, data) {
     const xField = dataColumns[0].name;
     const yField = dataColumns[1].name;
     
+    chartData = temporalFilter(chartData, xField);
+    if (chartData.length === 0) {
+        console.log("chartData is empty");
+        return;
+    }
+
+
     // 设置尺寸和边距
     const width = variables.width;
     const height = variables.height;
@@ -470,7 +479,7 @@ function makeChart(containerSelector, data) {
                 .style("font-size", "10px")
                 .style("font-weight", "bold")
                 .style("fill", yearColor) // 根据位置选择颜色
-                .text(xFormat(d[xField]));
+                .text(xFormat(parseDate(d[xField])));
             
             // 添加调试可视化 - 标签区域
             if (debugLayout) {
