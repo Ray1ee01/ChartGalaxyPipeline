@@ -5,3 +5,4 @@ crops
 *.png
 *.jpg
 *.json
+clip_model/
