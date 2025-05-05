@@ -17,7 +17,7 @@ REQUIREMENTS_BEGIN
     "icon_mark": "none",
     "icon_label": "none",
     "has_x_axis": "yes",
-    "has_y_axis": "no"
+    "has_y_axis": "yes"
 }
 REQUIREMENTS_END
 */
@@ -149,55 +149,57 @@ function makeChart(containerSelector, data) {
         .attr("xmlns", "http://www.w3.org/2000/svg")
         .attr("xmlns:xlink", "http://www.w3.org/1999/xlink");
     
+    // 创建X轴比例尺
     const { xScale, xTicks, xFormat, timeSpan } = createXAxisScaleAndTicks(chartData, xField, 0, innerWidth);
     
-    // Y轴比例尺
-    const yMin = Math.min(0, d3.min(chartData, d => d[yField]) * 1.1);
+    // 创建Y轴比例尺
+    const yMin = d3.min(chartData, d => d[yField]) * 0.9;
     const yMax = d3.max(chartData, d => d[yField]) * 1.1;
-    
     const yScale = d3.scaleLinear()
         .domain([yMin, yMax])
         .range([innerHeight, 0]);
     
-    // 获取颜色
-    const getColor = (group) => {
-        return colors.field && colors.field[group] ? colors.field[group] : colors.other.primary;
-    };
-    
-    // 创建曲线生成器
+    // 创建线条生成器
     const line = d3.line()
         .x(d => xScale(parseDate(d[xField])))
         .y(d => yScale(d[yField]))
-        .curve(d3.curveMonotoneX); // 使用单调曲线插值
-
+        .curve(d3.curveMonotoneX);
+    
+    // 辅助函数：获取组的颜色
+    function getColor(group) {
+        return colors.field && colors.field[group] 
+            ? colors.field[group] 
+            : d3.schemeCategory10[groups.indexOf(group) % 10];
+    }
+    
+    // 辅助函数：估算文本宽度
+    function getTextWidth(text, fontSize) {
+        return text.length * (fontSize * 0.6);
+    }
+    
     // 辅助函数：找到最接近给定日期的数据点
-    function findClosestDataPoint(data, targetDate) {
+    function findClosestDataPoint(data, date) {
         if (!data || data.length === 0) return null;
         
-        // 将目标日期转换为时间戳以便比较
-        const targetTime = targetDate.getTime();
-        
-        // 找到时间上最接近的数据点
-        let closestPoint = data[0];
-        let minTimeDiff = Math.abs(parseDate(data[0][xField]).getTime() - targetTime);
+        let closest = data[0];
+        let minDiff = Math.abs(parseDate(closest[xField]) - date);
         
         for (let i = 1; i < data.length; i++) {
-            const currentTime = parseDate(data[i][xField]).getTime();
-            const timeDiff = Math.abs(currentTime - targetTime);
-            
-            if (timeDiff < minTimeDiff) {
-                minTimeDiff = timeDiff;
-                closestPoint = data[i];
+            const diff = Math.abs(parseDate(data[i][xField]) - date);
+            if (diff < minDiff) {
+                minDiff = diff;
+                closest = data[i];
             }
         }
         
-        return closestPoint;
+        return closest;
     }
     
     // 为每个组创建子图
     groups.forEach((group, i) => {
-        // 计算子图位置 - 对于特殊情况进行处理
         let row, col;
+        
+        // 特殊布局处理
         if (groups.length === 5) {
             if (i < 2) {
                 // 5个组的情况：前2个在第一行居中
@@ -262,6 +264,35 @@ function makeChart(containerSelector, data) {
             .style("font-weight", "bold")
             .style("fill", "#1a1a4f") // 深蓝色
             .text(group);
+        
+        // 添加Y轴 - 左侧
+        const yTicks = yScale.ticks(3); // 使用3个刻度点，避免拥挤
+        
+        // 添加Y轴网格线
+        yTicks.forEach(tick => {
+            g.append("line")
+                .attr("x1", 0)
+                .attr("y1", yScale(tick))
+                .attr("x2", innerWidth)
+                .attr("y2", yScale(tick))
+                .attr("stroke", "#1a1a4f")
+                .attr("stroke-opacity", 0.1)
+                .attr("stroke-dasharray", "2,2");
+        });
+        
+        // 添加Y轴刻度文本
+        yTicks.forEach(tick => {
+            g.append("text")
+                .attr("x", -5)
+                .attr("y", yScale(tick))
+                .attr("text-anchor", "end")
+                .attr("dominant-baseline", "middle")
+                .style("font-family", typography.label.font_family)
+                .style("font-size", "10px")
+                .style("fill", "#1a1a4f")
+                .style("opacity", 0.7)
+                .text(d3.format(".1s")(tick));
+        });
         
         // 绘制基准线（虚线）
         g.append("line")

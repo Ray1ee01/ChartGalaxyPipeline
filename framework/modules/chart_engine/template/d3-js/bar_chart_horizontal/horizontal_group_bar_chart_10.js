@@ -202,9 +202,14 @@ function makeChart(containerSelector, data) {
     // 计算理想的条形高度(包括间距)
     const idealBarUnitHeight = availableForBars / totalBars;
     
-    // 实际条形高度(不包括间距)
-    const barHeight = idealBarUnitHeight * (1 - barPaddingRatio);
-    const barPadding = idealBarUnitHeight * barPaddingRatio;
+    // 初始计算实际条形高度(不包括间距)
+    let calculatedBarHeight = idealBarUnitHeight * (1 - barPaddingRatio);
+    
+    // 限制最大条形高度
+    const barHeight = Math.min(calculatedBarHeight, 40);
+    
+    // 根据最终的条形高度计算条形间距，以保持总单元高度
+    const barPadding = idealBarUnitHeight - barHeight;
     
     // 计算每组的高度和偏移量
     const groupHeights = {};

@@ -6,7 +6,7 @@ REQUIREMENTS_BEGIN
     "is_composite": false,
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],
-    "required_fields_range": [[2, 30], [0, "inf"]],
+    "required_fields_range": [[2, 30], [100000000, "inf"]],
     "required_fields_icons": ["x"],
     "required_other_icons": [],
     "required_fields_colors": [],
@@ -270,8 +270,47 @@ function makeChart(containerSelector, data) {
     
     xAxisGroup.selectAll(".tick text")
         .style("font-family", typography.annotation.font_family)
-        .style("font-size", "12px")
+        .style("font-size", "12px") // 初始字体大小
         .style("fill", colors.text_color);
+        
+    // 动态调整X轴标签字体大小防止重叠
+    const ticks = xAxisGroup.selectAll(".tick").nodes();
+    const tickTexts = xAxisGroup.selectAll(".tick text").nodes();
+    
+    if (ticks.length > 1 && tickTexts.length > 0) {
+        let maxWidth = 0;
+        tickTexts.forEach(text => {
+            maxWidth = Math.max(maxWidth, text.getComputedTextLength());
+        });
+
+        // 计算相邻刻度之间的最小距离
+        let minDistance = Infinity;
+        for (let i = 1; i < ticks.length; i++) {
+            const tick1Transform = ticks[i-1].getAttribute('transform');
+            const tick2Transform = ticks[i].getAttribute('transform');
+            // 提取 translate(x, y) 中的 x 值
+            const x1Match = tick1Transform.match(/translate\(([^,]+),/);
+            const x2Match = tick2Transform.match(/translate\(([^,]+),/);
+            if (x1Match && x2Match) {
+                 const x1 = parseFloat(x1Match[1]);
+                 const x2 = parseFloat(x2Match[1]);
+                 minDistance = Math.min(minDistance, Math.abs(x2 - x1));
+            }
+           
+        }
+
+        const originalFontSize = 12; // 初始字体大小
+        const minAllowedFontSize = 6; // 最小允许字体大小
+        const paddingFactor = 0.95; // 刻度间距的填充因子
+
+        if (maxWidth > minDistance * paddingFactor) {
+            const scaleFactor = (minDistance * paddingFactor) / maxWidth;
+            let newFontSize = Math.max(minAllowedFontSize, originalFontSize * scaleFactor);
+            
+            xAxisGroup.selectAll(".tick text")
+                .style("font-size", `${newFontSize}px`);
+        }
+    }
     
     // ---------- 11. 为每个维度绘制条形和标签 ----------
     
