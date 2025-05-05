@@ -55,6 +55,7 @@ from .template_utils import (
     analyze_templates,
     check_template_compatibility,
     select_template,
+    select_template_by_clip,
     process_template_requirements,
     get_unique_fields_and_types
 )
@@ -578,6 +579,11 @@ def process(input: str, new_layout_path: str, output: str, base_url: str, api_ke
         bool: 处理是否成功
     """
     start_time = time.time()
+
+    with open(new_layout_path, "r", encoding="utf-8") as f:
+        new_layout_file = json.load(f)
+        new_layout = new_layout_file["new_layout"]
+    new_layout_chart_info = [layout for layout in new_layout if layout["category_id"] == 2]
     
     # 读取输入文件
     file_read_start = time.time()
@@ -663,11 +669,14 @@ def process(input: str, new_layout_path: str, output: str, base_url: str, api_ke
             logger.error("No compatible templates found for the given data")
             return False
     
+    print(f'all compatible templates: {compatible_templates}')
+    
     # 选择模板
     select_template_start = time.time()
-    engine, chart_type, chart_name, ordered_fields = select_template(compatible_templates)
+    # engine, chart_type, chart_name, ordered_fields = select_template(compatible_templates)
+    engine, chart_type, chart_name, ordered_fields = select_template_by_clip(compatible_templates, new_layout_chart_info[0]['chart_description'])
     select_template_time = time.time() - select_template_start
-    # logger.info(f"Selecting template took: {select_template_time:.4f} seconds")
+    logger.info(f"Selecting template took: {select_template_time:.4f} seconds")
     
     # 打印选择的模板信息
     logger.info(f"\nSelected template: {engine}/{chart_type}/{chart_name}")
@@ -744,10 +753,6 @@ def process(input: str, new_layout_path: str, output: str, base_url: str, api_ke
         datatable_name = "data.json"
         datatable_path = os.path.join(subfolder_path, datatable_name)
         #try:
-        with open(new_layout_path, "r", encoding="utf-8") as f:
-            new_layout_file = json.load(f)
-            new_layout = new_layout_file["new_layout"]
-        new_layout_chart_info = [layout for layout in new_layout if layout["category_id"] == 2]
         chart_width = int(new_layout_chart_info[0]["bbox"][2])
         chart_height = int(new_layout_chart_info[0]["bbox"][3])
 

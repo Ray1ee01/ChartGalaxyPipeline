@@ -15,7 +15,7 @@ def get_prompt( title,
         base_url="https://aihubmix.com/v1"
     )
     response = client.chat.completions.create(
-        model="gpt-4o-mini",
+        model="gpt-4o",
         messages=[
             {
                 "role": "user",

@@ -85,11 +85,11 @@ Please generate new chart titles and descriptions based on the following table d
 Do not change the original bbox and category_id.
 category_id=1 is for image, category_id=2 is for chart, category_id=3 is for title.
 New title should be concise and informative, and should not be longer than 5 words.
+The new chart description should describe the chart type. The chart type should be the same as the old layout and do not describe the data and color.
 
 Old Layout Description: {old_layout_str}
 New Data Column Info: {column_info_str}
-New Table Data:
-{formatted_table}
+New Table Data: {formatted_table}
 
 Please return in JSON format with the following fields: new_layout, start with {{ and end with }}, do not start with ```json
 Example:
@@ -103,7 +103,7 @@ Example:
             1139.77
         ],
         "category_id": 2,
-        "chart_description": "New Description"
+        "chart_description": "New Chart Description"
         }},
         {{
         "bbox": [

@@ -1,10 +1,1 @@
-Generate a text image with the content of "Tech Giants Growth Trend". Generate an image with the text "Tech Giants Growth Trend" arranged in two lines on a pure white background, with the following layout: 
-
-Line 1: "Tech Giants"  
-Line 2: "Growth Trend"  
-
-Maintain extra blank space above and below the text. The key text "Tech Giants" should be emphasized by enlarging the font size by 25% compared to "Growth Trend." Use a color gradient effect for the letters in "Tech Giants," transitioning from #C59B4B at the top to #E5B8BC at the bottom, while "Growth Trend" should be in a solid color #273337. 
-
-To enhance the overall design, replace the letter "T" in "Tech" with a stylized icon of a rising graph, symbolizing growth, integrating smoothly into the text. 
-
-The font style should be futuristic with a sleek appearance, featuring a shadow effect for depth. No additional artistic effects like cracks or melting textures should be applied. Please ensure the text adheres strictly to the two-line format and follow this arrangement without deviation.
+Generate a text image with the content of "US House Price Trends". Create a text image for the title "US House Price Trends," arranged in one line to ensure it contains more than 5 words. The key emphasis should be on "House Price Trends," which will have a larger font size and a gradient color effect, transitioning from #0058D3 to #ABD0E4 to grab attention and add visual interest. The text will be in a classical serif font style, suggesting stability and tradition, resonating with themes of real estate. The artistic effect applied will include subtle embossed or shadow highlights to give a three-dimensional look, enhancing its visual impact without overpowering the simplicity of the message. The letter 'S' in "US" will incorporate an icon of a small house silhouette seamlessly within its curve, symbolizing real estate. The text color chosen is #797979 to ensure readability and balance against the pure white background. Emphasize that the text must follow the specified line arrangement and ensure there is no additional text below or above, maintaining a clean design with adequate blank space around it.

@@ -8,6 +8,8 @@ import sys
 import time
 import multiprocessing
 from concurrent.futures import ProcessPoolExecutor
+import cv2
+import numpy as np
 
 API_KEY = 'sk-149DmKTCIvVQbbgk9099Bf51Ef2d4009A1B09c22246823F9'
 API_PROVIDER = 'https://aihubmix.com/v1'
@@ -45,7 +47,7 @@ def generate_image(description, color_list=None):
             prompt=prompt,
             n=1,
             size="1024x1024",
-            quality="low",
+            quality="high",
             # moderation="low",
             # background="auto",
         )
@@ -74,6 +76,25 @@ def generate_image(description, color_list=None):
                     new_data.append(item)
                     
             image.putdata(new_data)
+
+            # 将图像转换为numpy数组
+            img_array = np.array(image)
+            
+            # 创建二值掩码,非透明像素为1,透明像素为0
+            mask = (img_array[:,:,3] > 0).astype(np.uint8)
+            
+            # 标记联通区域
+            num_labels, labels = cv2.connectedComponents(mask)
+            
+            # 计算每个联通区域的像素数
+            for label in range(1, num_labels):
+                area = np.sum(labels == label)
+                # 如果区域像素数小于20,将其设为透明
+                if area < 20:
+                    img_array[labels == label] = [255, 255, 255, 0]
+                    
+            # 转回PIL图像
+            image = Image.fromarray(img_array)
             
             # 转回base64
             buffered = BytesIO()

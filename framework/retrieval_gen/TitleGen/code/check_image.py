@@ -18,7 +18,7 @@ def check(  title,
     base64_image = base64.b64encode(image_data).decode('utf-8')
 
     response = client.chat.completions.create(
-        model="gpt-4o-mini",
+        model="gpt-4o",
         messages=[
             {
                 "role": "developer", 

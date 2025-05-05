@@ -163,7 +163,7 @@ def extract_chart_info(annotations_file, image_dir, output_dir):
     # 为每张图片处理信息
     results = []
 
-    image_ids_with_annotations = [375]
+    image_ids_with_annotations = [882]
     
     for image_id in image_ids_with_annotations:
         print(f"处理图片ID: {image_id}")

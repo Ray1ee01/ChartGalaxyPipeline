@@ -1,5 +1,6 @@
 import sys
 import os
+import base64
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from infographics_generator.infographics_generator import process
 from generate_new_layouts import process_data_file as generate_new_layout
@@ -8,6 +9,7 @@ from TitleGen.code.generate_title_image import get_title_b64
 from convert_pallete_to_data import convert_palette_to_data
 import json
 import logging
+from gpt_infographic_gen import generate_infographic_gpt
 
 client_key = 'sk-149DmKTCIvVQbbgk9099Bf51Ef2d4009A1B09c22246823F9'
 base_url = 'https://aihubmix.com/v1'
@@ -43,6 +45,8 @@ def generate_new_infographic(raw_data_path, old_layout_path, output_file):
     with open(all_pallete_path, 'r') as f:
         all_pallete_file = json.load(f)
         pallete_data = all_pallete_file[old_filename]
+    
+    print(f'pallete_data: {pallete_data}')
     
     # 转换调色板
     raw_data = convert_palette_to_data(raw_data, pallete_data)
@@ -88,5 +92,18 @@ def generate_new_infographic(raw_data_path, old_layout_path, output_file):
     process(updated_raw_data_path, new_layout_path, output_file, client_key, base_url)
 
 if __name__ == "__main__":
-    generate_new_infographic("/data1/lizhen/resources/result/data_pool_v2/402.json", "./output_info/chart_info_375.json", "./output_svg/new_infographic.svg")
+    # data_path = "/data1/lizhen/resources/result/data_pool_v2/168.json" # energy
+    data_path = "/data1/lizhen/resources/result/data_pool_v2/93.json"
+    data_name = data_path.split('/')[-1][:-5]
+
+    old_layout_path = f"./output_info/chart_info_26.json"
+    generate_new_infographic(data_path, old_layout_path, "./output_svg/new_infographic.svg")
+
+    raw_data = json.load(open(data_path, 'r'))
+    raw_data_str = json.dumps(raw_data['data'])
+
+    # img_base64 = generate_infographic_gpt(raw_data_str)
+    # save_path = f"./output_gpt/{data_name}_gpt.png"
+    # with open(save_path, 'wb') as f:
+    #     f.write(base64.b64decode(img_base64))
 

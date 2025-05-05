@@ -11,6 +11,24 @@ def rearrange_image(image_path, hspace=50, vspace=20):
     
     # 创建透明度掩码 (非零表示非透明像素)
     alpha_mask = img_array[:, :, 3] > 0
+
+    # 使用OpenCV的连通组件分析找到所有联通块
+    from scipy.ndimage import label
+    
+    # 对alpha通道进行连通组件标记
+    labeled_array, num_features = label(alpha_mask)
+    
+    # 统计每个联通块的像素数
+    for i in range(1, num_features + 1):
+        # 获取当前联通块的掩码
+        component_mask = labeled_array == i
+        # 计算像素数
+        pixel_count = np.sum(component_mask)
+        
+        # 如果像素数小于20,将该区域设为透明
+        if pixel_count < 20:
+            img_array[component_mask] = [0, 0, 0, 0]
+            alpha_mask[component_mask] = False
     
     # 找出每一行是否包含非透明像素
     row_has_content = np.any(alpha_mask, axis=1)
@@ -46,7 +64,6 @@ def rearrange_image(image_path, hspace=50, vspace=20):
         
         # 找出每一列是否包含非透明像素
         col_has_content = np.any(row_mask, axis=0)
-        
         # 找出第一个和最后一个非透明像素的列
         non_empty_cols = np.where(col_has_content)[0]
         if len(non_empty_cols) > 0:
@@ -117,6 +134,13 @@ def rearrange_image(image_path, hspace=50, vspace=20):
         # 更新y偏移
         y_offset += row_height + vspace
     
+    # new_img_path = image_path.replace(".png", "_rearranged.png")
     # 保存新图像
     new_img.save(image_path)
     return image_path
+
+# if __name__ == "__main__":
+#     image_path = "./TitleGen/images/title/generated_image.png"
+#     new_img_path = rearrange_image(image_path)
+#     print(f"New image saved at: {new_img_path}")
+
