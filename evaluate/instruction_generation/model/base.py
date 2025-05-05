@@ -2,9 +2,11 @@ import json
 import logging
 import base64
 import os
+import csv
 from openai import OpenAI
 from abc import ABC, abstractmethod
-from typing import Union, Optional
+from typing import Union, Optional, List, Dict, Any
+import re
 
 logger = logging.getLogger("InstructionGeneration.Base")
 
@@ -28,72 +30,184 @@ def encode_image_to_base64(image_path: str) -> Optional[str]:
 
 class SingleData:
     """ 表示单个数据 """
-    def __init__(self, tabular_data: Optional[dict]=None,
-                 meta_data: Optional[dict]=None,
-                 chart_image: Optional[str]=None,
-                 chart_type: Union[list, str]=None):
-        self.tabular_data = tabular_data
-        self.meta_data = meta_data
-        self.chart_image = chart_image
-        self.svg_path = None
-        
-        # 如果chart_image是目录路径，自动解析目录结构
+    def __init__(self, chart_image: Optional[str]=None):
+
+        self.tabular_data: Union[Dict, List[Dict]] = {}
+        self.meta_data: dict = {}
+        self.generation_info: dict = {}
+        self.chart_image: Optional[str] = chart_image
+        self.chart_type: str = "" # Initialize chart_type
+
+        # Auto-parse if chart_image is a directory
         if chart_image and os.path.isdir(chart_image):
             dir_path = chart_image
             self.chart_image = os.path.join(dir_path, "chart.png")
-            self.svg_path = os.path.join(dir_path, "chart.svg")
-            data_file = os.path.join(dir_path, "data.json")
-            if os.path.exists(data_file):
-                with open(data_file, "r", encoding="utf-8") as f:
-                    self.tabular_data = json.load(f)
-            
-            info_file = os.path.join(dir_path, "info.json")
-            if os.path.exists(info_file):
-                with open(info_file, "r", encoding="utf-8") as f:
-                    self.generation_info = json.load(f)
 
-            original_data_file = self.generation_info["data_source"]
-            if os.path.exists(original_data_file):
-                with open(original_data_file, "r", encoding="utf-8") as f:
-                    original_data = json.load(f)
-                    self.meta_data = original_data["metadata"]
-        
-        if isinstance(chart_type, list):
-            self.chart_type = ", ".join(chart_type) + "\n" if chart_type else ""
-        else:
-            self.chart_type = chart_type
-    
-    def get_svg_path(self) -> Optional[str]:
-        """获取SVG文件路径"""
-        return self.svg_path
+            # Load tabular data: JSON -> CSV -> Empty Dict
+            data_json_path = os.path.join(dir_path, "data.json")
+            data_csv_path = os.path.join(dir_path, "data.csv")
+            loaded_data = False
+
+            if os.path.exists(data_json_path):
+                try:
+                    with open(data_json_path, "r", encoding="utf-8") as f:
+                        self.tabular_data = json.load(f)
+                        loaded_data = True
+                    logger.info(f"Loaded data from JSON: {data_json_path}")
+                except Exception as e:
+                    logger.warning(f"Failed to load data.json {data_json_path}: {e}, trying CSV.")
+                    self.tabular_data = {} # Reset before trying CSV
+
+            if not loaded_data and os.path.exists(data_csv_path):
+                try:
+                    with open(data_csv_path, mode='r', encoding='utf-8', newline='') as f:
+                        reader = csv.DictReader(f)
+                        self.tabular_data = list(reader)
+                        loaded_data = True
+                    logger.info(f"Loaded data from CSV: {data_csv_path}")
+                except Exception as e:
+                    logger.warning(f"Failed to load data.csv {data_csv_path}: {e}")
+                    self.tabular_data = {} # Ensure it's empty if CSV fails
+
+            # Load generation info, metadata, and potentially chart_type from info.json
+            info_path = os.path.join(dir_path, "info.json")
+            if os.path.exists(info_path):
+                try:
+                    with open(info_path, "r", encoding="utf-8") as f:
+                        self.generation_info = json.load(f)
+
+                    # Attempt to load chart_type from info.json if available
+                    loaded_chart_type = self.generation_info.get("chart_type")
+                    if isinstance(loaded_chart_type, list):
+                        self.chart_type = ", ".join(loaded_chart_type) + "\n" if loaded_chart_type else ""
+                    elif isinstance(loaded_chart_type, str):
+                        self.chart_type = loaded_chart_type
+
+                    # Load original metadata if possible
+                    original_data_path = self.generation_info.get("data_source")
+                    if original_data_path and os.path.exists(original_data_path):
+                        try:
+                            with open(original_data_path, "r", encoding="utf-8") as f_orig:
+                                original_data = json.load(f_orig)
+                            self.meta_data = original_data.get("metadata", {})
+                        except Exception as e:
+                            logger.warning(f"Failed to load original data/metadata {original_data_path}: {e}")
+                            self.meta_data = {}
+                    # else: No action needed if path missing
+                except Exception as e:
+                    logger.warning(f"Failed to load info.json {info_path}: {e}")
+                    self.generation_info = {}
+                    self.meta_data = {}
+                    self.chart_type = "" # Reset chart_type on info.json load failure
+            # else: No action needed if info.json missing
 
 
 class SingleQA:
     """
-    定义：直接从图表中检索特定的数据点或值
-    不需要复杂的计算或推理
-    通常可以通过直接查看图表元素回答
-    "What's the percentage of men who thinks Valentine's Day is overrated?"
-    "In what year did Portugal's population reach 10.29 million?"
+    问答对的基础类，支持多种类型的问答：
+    1. 直接检索型问答：从图表中直接获取数据点或值
+    2. 选择题型问答：提供多个选项的问答
+    3. 开放式问答：需要解释或推理的问答
     """
-    def __init__(self, question: str, answer: str, question_type: str, answer_type: str):
+    def __init__(self, 
+                 instruction: str,
+                 question: str, 
+                 answer: Union[str, List, Dict], 
+                 question_type: str, 
+                 answer_type: str,
+                 options: List[str] = None,
+                 correct_option_index: int = None,
+                 explanation: str = None,
+                 difficulty: str = None):
         self.question = question
-        self.answer = answer
-
+        self.instruction = instruction
+        
+        # 根据answer_type处理不同类型的答案
+        if answer_type == "multiple_choice" and isinstance(answer, str) and len(answer) == 1:
+            # 选择题，答案是单个字母（A,B,C,D...）
+            self.answer = answer.upper()  # 确保大写
+            # 如果没有提供correct_option_index，尝试从字母计算
+            if correct_option_index is None and ord(self.answer) >= ord('A') and ord(self.answer) <= ord('Z'):
+                self.correct_option_index = ord(self.answer) - ord('A')
+            else:
+                self.correct_option_index = correct_option_index
+        elif isinstance(answer, list) and answer_type in ["multi_select", "multiple_items"]:
+            # 对于多选题或多项答案，保持列表格式
+            self.answer = answer
+            self.correct_option_index = correct_option_index
+        else:
+            # 将非列表答案或单选题答案转为字符串
+            self.answer = str(answer) if not isinstance(answer, (list, dict)) else answer
+            self.correct_option_index = correct_option_index
+            
         self.question_type = question_type
         self.answer_type = answer_type
+        self.options = options or []
+        self.explanation = explanation
+        self.difficulty = difficulty
+        self.full_question = self._generate_full_question()
+    
+    def _generate_full_question(self) -> str:
+        """生成完整的问题文本，包括选项和引导语"""
+        question_text = self.question.strip()
+        
+        question_text = self.instruction + "\n\n" + question_text
+        # 如果有选项，添加选项部分
+        if self.options:
+            # 添加换行确保问题和选项分开
+            question_text += "\n\n"
+            # 使用字母作为选项标记
+            for i, option in enumerate(self.options):
+                option_letter = chr(65 + i)  # A, B, C, D...
+                question_text += f"{option_letter}. {option}\n"
+            
+            # 添加答题引导语
+            question_text += "\nAnswer with the letter of the correct option only."
+        else:
+            # 对于非选择题，可以添加其他类型的引导语
+            if self.answer_type == "number":
+                question_text += "\n\nPlease provide a numerical answer."
+            elif self.answer_type == "text":
+                question_text += "\n\nPlease provide your answer as specifically as possible."
+        
+        return question_text
     
     def __repr__(self):
         return f"SingleQA(question='{self.question}', answer='{self.answer}')"
     
     def to_dict(self):
         """ 将 QA 对转换为字典格式 """
-        return {
+        # 确保answer能被JSON序列化
+        if isinstance(self.answer, list):
+            # 列表类型的答案，确保列表中的每个元素都是可序列化的
+            json_answer = [str(item) if not isinstance(item, (str, int, float, bool, type(None))) else item for item in self.answer]
+        elif isinstance(self.answer, dict):
+            # 字典类型的答案
+            json_answer = {k: str(v) if not isinstance(v, (str, int, float, bool, type(None))) else v for k, v in self.answer.items()}
+        else:
+            # 字符串或其他简单类型的答案
+            json_answer = self.answer
+            
+        result = {
             "question": self.question,
-            "answer": self.answer,
+            "full_question": self.full_question,
+            "answer": json_answer,
             "question_type": self.question_type,
             "answer_type": self.answer_type
         }
+        
+        # 只在有值的情况下添加可选字段
+        if self.options:
+            result["options"] = self.options
+        if self.correct_option_index is not None:
+            result["correct_option_index"] = self.correct_option_index
+        if self.explanation:
+            result["explanation"] = self.explanation
+        if self.difficulty:
+            result["difficulty"] = self.difficulty
+            
+        return result
+
     
 class QAResult:
     """ 存储数据检索型问答对的结果集合 """
@@ -108,9 +222,19 @@ class QAResult:
     def add_qa_pairs(self, qa_list: list):
         """ 批量添加问答对 """
         for qa_dict in qa_list:
-            qa = SingleQA(qa_dict["question"], qa_dict["answer"], qa_dict["question_type"], qa_dict["answer_type"])
+            qa = SingleQA(
+                instruction=qa_dict.get("instruction"),
+                question=qa_dict["question"],
+                answer=qa_dict["answer"],
+                question_type=qa_dict.get("question_type", ""),
+                answer_type=qa_dict.get("answer_type", ""),
+                options=qa_dict.get("options"),
+                correct_option_index=qa_dict.get("correct_option_index"),
+                explanation=qa_dict.get("explanation"),
+                difficulty=qa_dict.get("difficulty")
+            )
             self.qa_pairs.append(qa)
-    
+
     def set_error(self, error_msg: str):
         """ 设置错误信息 """
         self.error = error_msg
@@ -159,67 +283,67 @@ class BaseQAGenerator(ABC):
         """ 生成QA对, 使用子类提供的 prompt """
         result = QAResult()
         chart_image = self.single_data.chart_image if hasattr(self.single_data, 'chart_image') else None
-        
-        try:
-            prompt = self.generate_prompt()
+        prompt = self.generate_prompt()
 
-            messages = [
-                {"role": "system", "content": self.system_message},
-                {"role": "user", "content": prompt}
-            ]
+        messages = [
+            {"role": "system", "content": self.system_message},
+            {"role": "user", "content": prompt}
+        ]
 
-            if chart_image and self.visual:
-                if os.path.exists(chart_image):
-                    base64_image = encode_image_to_base64(chart_image)
-                    if base64_image:
-                        messages[1]["content"] = [
-                            {"type": "text", "text": prompt},
-                            {
-                                "type": "image_url", 
-                                "image_url": {
-                                    "url": f"data:image/png;base64,{base64_image}"
-                                }
-                            }
-                        ]
-                    else:
-                        self.logger.warning(f"无法加载图片: {chart_image}, 将继续但没有图像")
-                else:
-                    # URL
+        if chart_image and self.visual:
+            if os.path.exists(chart_image):
+                base64_image = encode_image_to_base64(chart_image)
+                if base64_image:
                     messages[1]["content"] = [
                         {"type": "text", "text": prompt},
-                        {"type": "image_url", "image_url": {"url": chart_image}}
+                        {
+                            "type": "image_url", 
+                            "image_url": {
+                                "url": f"data:image/png;base64,{base64_image}"
+                            }
+                        }
                     ]
+                else:
+                    self.logger.warning(f"无法加载图片: {chart_image}, 将继续但没有图像")
+            else:
+                # URL
+                messages[1]["content"] = [
+                    {"type": "text", "text": prompt},
+                    {"type": "image_url", "image_url": {"url": chart_image}}
+                ]
 
-            response = self.client.chat.completions.create(
-                model="gpt-4o-mini",
-                messages=messages,
-                response_format={"type": "json_object"}
-            )
-            
-            content = response.choices[0].message.content
-            
-            try:
-                qa_data = json.loads(content)
-                
-                qa_dicts = qa_data["results"]
-                self.add_question_answer_types(qa_dicts)
-
-                for qa in qa_dicts:
-                    if isinstance(qa.get("answer"), dict):
-                        # 如果 answer 是 list, 把其拼起来
-                        qa["answer"] = "".join(str(part) for part in qa["answer"])
-                
-                result.add_qa_pairs(qa_dicts)
-            except json.JSONDecodeError as json_err:
-                error_msg = f"JSON parsing error: {json_err}. Raw content: {content[:200]}..."
-                self.logger.error(error_msg)
-                result.set_error(error_msg)
-            
-            return result
-            
-        except Exception as e:
-            error_msg = f"Error generating {self.question_type} QA pairs: {e}"
-            self.logger.error(error_msg)
-            result.set_error(error_msg)
-            return result
+        response = self.client.chat.completions.create(
+            model="gemini-2.5-flash-preview-04-17-nothink",
+            messages=messages,
+            response_format={"type": "json_object"}
+        )
         
+        content = response.choices[0].message.content
+        cleaned_content = re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]', '', content)
+        
+        qa_data = json.loads(cleaned_content)
+        qa_dicts = qa_data["results"]
+        
+        # 在处理answer之前先添加问题和回答类型
+        self.add_question_answer_types(qa_dicts)
+
+        for qa in qa_dicts:
+            # 处理选项格式
+            if isinstance(qa.get("options"), dict):
+                # 选项字典可能按照 A, B, C, D 排序，需要保持顺序
+                sorted_options = []
+                # 首先查找常见的选项键格式
+                option_keys = ["A", "B", "C", "D", "E", "F", "G", "H"] 
+                for key in option_keys:
+                    if key in qa["options"]:
+                        sorted_options.append(f"{qa['options'][key]}")
+                
+                # 如果没有找到顺序键，则尝试按字母排序
+                if not sorted_options:
+                    sorted_keys = sorted(qa["options"].keys())
+                    sorted_options = [f"{qa['options'][key]}" for key in sorted_keys]
+                
+                qa["options"] = sorted_options
+        result.add_qa_pairs(qa_dicts)
+        
+        return result

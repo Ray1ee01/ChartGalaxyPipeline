@@ -97,7 +97,7 @@ def analyze_templates(templates: Dict) -> Tuple[int, Dict[str, str], int]:
                         template_requirements[f"{engine}/{chart_type}/{chart_name}"] = template_info['requirements']
                         requirement_dump[chart_name] = template_info['requirements']
       
-    print("template_count", template_count)
+    # print("template_count", template_count)
     f = open("template_list.txt", "w")
     f.write("\n".join(template_list))
     f.close()
@@ -220,7 +220,7 @@ def check_template_compatibility(data: Dict, templates: Dict, specific_chart_nam
                                 continue
 
                             flag = True
-                            print("check compatibility")
+                            # print("check compatibility")
                             for i, range in enumerate(ordered_ranges):
                                 if i >= len(data["data"]["columns"]):
                                     flag = False

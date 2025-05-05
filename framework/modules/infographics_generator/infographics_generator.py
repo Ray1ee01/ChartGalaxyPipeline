@@ -236,7 +236,7 @@ def make_infographic(
     
     # 初始化best_title默认值为None，用于后续检查
     best_title = None
-    print(f"mask_1_ratio: {mask_1_ratio}")
+    # print(f"mask_1_ratio: {mask_1_ratio}")
     if mask_1_ratio > 0.20 and mask_1_ratio < 0.5 and ("donut" in data["chart_type"] or "Donut" in data["chart_type"]):
         width = average_distance*2
         title_content = title_styler_process(
@@ -263,7 +263,7 @@ def make_infographic(
                     "show_sub_title": False
                 }
                 break
-    print(f"best_title: {best_title}")
+    # print(f"best_title: {best_title}")
     # 如果没有找到合适的best_title（width太大或其他原因），使用默认处理逻辑
     if best_title is None:
         default_title = {
@@ -946,7 +946,7 @@ def process(input: str, output: str, base_url: str, api_key: str, chart_name: st
         )
         render_chart_time = time.time() - render_chart_start
         logger.info(f"Rendering chart took: {render_chart_time:.4f} seconds")
-        print("chart_svg_path: ", chart_svg_path)
+        # print("chart_svg_path: ", chart_svg_path)
         with open(chart_svg_path, "r", encoding="utf-8") as f:
             chart_svg_content = f.read()
             if "This is a fallback SVG using a PNG screenshot" in chart_svg_content:

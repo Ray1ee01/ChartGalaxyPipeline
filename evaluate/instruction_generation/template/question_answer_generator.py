@@ -51,11 +51,36 @@ class QuestionAnswerGenerator:
         if not correct_letter: # Should always find the correct answer
             raise ValueError(f"Correct answer '{correct_answer}' not found in options: {options_dict}")
 
-
+        # 生成full_question，包含选项
         options_str = "\n".join([f"{k}. {v}" for k, v in options_dict.items()]) # Format options vertically
-        formatted_question = f"{question}\n\nSelect the correct answer from the following options:\n{options_str}\n\nAnswer with the letter corresponding to the correct option only (e.g., A, B, C, or D)."
+        full_question = f"{question}\n\nSelect the correct answer from the following options:\n{options_str}\n\nAnswer with the letter corresponding to the correct option only (e.g., A, B, C, or D)."
 
-        return formatted_question, options_dict, correct_letter
+        return full_question, options_dict, correct_letter
+
+    def _generate_full_question(self, question: str, answer_type: str, options: Optional[Dict] = None) -> str:
+        """生成完整问题文本，包括选项和引导语"""
+        question_text = question.strip()
+        
+        # 如果有选项，添加选项部分
+        if options:
+            # 添加换行确保问题和选项分开
+            question_text += "\n\n"
+            # 使用字母作为选项标记
+            for option_letter, option in options.items():
+                question_text += f"{option_letter}. {option}\n"
+            
+            # 添加答题引导语
+            question_text += "\nAnswer with the letter of the correct option only."
+        else:
+            # 对于非选择题，可以添加其他类型的引导语
+            if answer_type == "number" or answer_type == "close_numeric":
+                question_text += "\n\nPlease provide a numerical answer."
+            elif answer_type == "text" or answer_type == "close_text":
+                question_text += "\n\nPlease provide your answer as specifically as possible."
+            elif answer_type == "yes_no":
+                question_text += "\n\nAnswer with exactly 'Yes' or 'No'."
+        
+        return question_text
 
     def generate_question_answer_pairs(self) -> List[Dict]:
         if self.templates is None:
@@ -94,14 +119,10 @@ class QuestionAnswerGenerator:
                 except ValueError:
                     is_numeric = False
 
-                # Store original question and potentially the original answer text
-                # The final "answer" field will hold the choice letter for MCQs
+                # 存储原始问题和答案
                 pair_data = {
-                    "question": question, # Original question text
+                    "question": question, # 原始问题文本
                     "template": template_id,
-                    "answer_type": "close", # Default type
-                    "question_type": "template", # Add default template question type
-                    # Add type, category, subcategory from template object
                     "type": template_obj.get("type", "unknown"), 
                     "category": template_obj.get("category", "unknown"),
                     "subcategory": template_obj.get("subcategory", "unknown")
@@ -115,43 +136,38 @@ class QuestionAnswerGenerator:
                     try:
                          # 使用已有的混淆选项
                          distractors = confusion[:3]  # 确保只取3个混淆项
-                         # Use the original string answer for formatting consistency in options
-                         formatted_question, options_dict, correct_letter = self.format_multiple_choice(question, str_answer, distractors)
+                         # 格式化为多选题
+                         full_question, options_dict, correct_letter = self.format_multiple_choice(question, str_answer, distractors)
 
-                         pair_data["question"] = formatted_question
+                         pair_data["full_question"] = full_question
                          pair_data["options"] = options_dict
-                         pair_data["answer"] = correct_letter # Final answer is the letter
+                         pair_data["answer"] = correct_letter # 最终答案是选项字母
                          pair_data["answer_type"] = "multiple_choice"
-                         # type, category, subcategory are already set from template_obj
+                         pair_data["question_type"] = "template"
                     except Exception as e:
-                         logger.error(f"Error processing numeric template {template_id} with answer {str_answer}: {e}")
-                         # Fallback to original question/answer if MCQ generation fails
-                         pair_data["question"] = f"{question}\n\nProvide the numerical answer." # Basic prompt
-                         pair_data["answer"] = str_answer
-                         pair_data["answer_type"] = "close_numeric_fallback"
-                         pair_data["question_type"] = "template_fallback"
-                         # Ensure type info is still present in fallback (might be less accurate)
-                         pair_data["type"] = template_obj.get("type", "unknown_fallback")
-                         pair_data["category"] = template_obj.get("category", "unknown_fallback")
-                         pair_data["subcategory"] = template_obj.get("subcategory", "unknown_fallback")
+                         logger.error(f"处理数值模板错误 {template_id} 答案 {str_answer}: {e}")
+                         # 跳过出现错误的问答对
+                         continue
                 elif is_numeric:
-                    # 数值类型但没有混淆项时的默认处理
-                    pair_data["question"] = f"{question}\n\nProvide the numerical answer."
+                    # 数值类型
                     pair_data["answer"] = str_answer
-                    pair_data["answer_type"] = "close_numeric"
+                    pair_data["answer_type"] = "number"
+                    pair_data["question_type"] = "template"
+                    pair_data["full_question"] = self._generate_full_question(question, "number")
                 elif str_answer.lower() in ["yes", "no"]:
-                     pair_data["question"] = f"{question}\n\nAnswer with exactly 'Yes' or 'No'."
-                     pair_data["answer"] = str_answer.capitalize() # Standardize case
+                     # 是/否类型
+                     pair_data["answer"] = str_answer.capitalize() # 标准化大小写
                      pair_data["answer_type"] = "yes_no"
-                     # type, category, subcategory are already set from template_obj
-                # Add other specific type handling here if needed (e.g., categories)
+                     pair_data["question_type"] = "template"
+                     pair_data["full_question"] = self._generate_full_question(question, "yes_no")
                 else:
-                     # Default for non-numeric, non-yes/no text answers
-                     pair_data["question"] = f"{question}\n\nProvide a direct answer."
+                     # 文本类型答案
                      pair_data["answer"] = str_answer
-                     pair_data["answer_type"] = "close_text"
-                     # type, category, subcategory are already set from template_obj
+                     pair_data["answer_type"] = "text"
+                     pair_data["question_type"] = "template"
+                     pair_data["full_question"] = self._generate_full_question(question, "text")
 
+                # 添加图像信息（如果有）
                 if image:
                     pair_data["image"] = image
 
