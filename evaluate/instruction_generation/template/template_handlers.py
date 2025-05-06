@@ -1318,7 +1318,6 @@ class TemplateHandlers:
         
         alignment = alignment_map.get(text_align)
         
-        
         if alignment:
             # 为文本答案创建混淆项
             all_alignments = list(set(alignment_map.values()))
