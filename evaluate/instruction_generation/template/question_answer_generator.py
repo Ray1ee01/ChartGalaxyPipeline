@@ -132,7 +132,7 @@ class QuestionAnswerGenerator:
                 if confusion:
                     pair_data["confusion"] = confusion
 
-                if is_numeric and confusion and len(confusion) >= 3:
+                if confusion and len(confusion) >= 3:
                     try:
                          # 使用已有的混淆选项
                          distractors = confusion[:3]  # 确保只取3个混淆项
@@ -170,6 +170,8 @@ class QuestionAnswerGenerator:
                 # 添加图像信息（如果有）
                 if image:
                     pair_data["image"] = image
+
+                pair_data["question"] = pair_data["full_question"]
 
                 pairs.append(pair_data)
         

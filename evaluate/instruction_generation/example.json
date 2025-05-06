@@ -240,19 +240,19 @@
         "subcategory": "data identification"
     },
     {
-        "template_41": "What is the position of the title in this infographic? Select one: [top-left, top-center, top-right, left, center, right, bottom-left, bottom-center, bottom-right]",
+        "template_41": "What is the position of the title in this infographic?",
         "type": "visual analysis",
         "category": "visual understanding",
         "subcategory": "visual elements retrieval"
     },
     {
-        "template_42": "What is the position of the decorative images in this chart? Select one: [top-left, top-center, top-right, left, center, right, bottom-left, bottom-center, bottom-right]",
+        "template_42": "What is the position of the decorative images in this chart?",
         "type": "visual analysis",
         "category": "visual understanding",
         "subcategory": "visual elements retrieval"
     },
     {
-        "template_43": "What is the alignment style of the main text content (chart title, subtitle)? Select one: [left-aligned, center-aligned, right-aligned]",
+        "template_43": "What is the alignment style of the main text content (chart title, subtitle)?",
         "type": "visual analysis",
         "category": "visual understanding",
         "subcategory": "style detection"
@@ -282,7 +282,7 @@
         "subcategory": "chart classification"
     },
     {
-        "template_48": "How are decorative images presented in relation to the charts in this infographic chart? Select one: [overlay, side_by_side, background]",
+        "template_48": "How are decorative images presented in relation to the charts in this infographic chart?",
         "type": "visual analysis",
         "category": "visual understanding",
         "subcategory": "visual elements retrieval"

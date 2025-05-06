@@ -98,7 +98,7 @@ class BaseGenerator:
                     
                 # 判断base64是否在SVG内容中使用
                 # field_image本身就是base64字符串
-                if isinstance(field_image, str) and field_image.startswith('data:image') and field_image in svg_content:
+                if isinstance(field_image, str) and field_image.startswith('data:image') and svg_content.count(field_image) == 1:
                     return field_image
                 
                 # 如果没有找到匹配的base64，返回None
@@ -146,6 +146,10 @@ class BaseGenerator:
     def get_decimal_places(self) -> int:
         """ 获取检测到的小数位数 """
         return self.decimal_places if self.decimal_places is not None else 2
+    
+    def get_column_names(self) -> List[str]:
+        """ 获取所有列名 """
+        return [col['name'] for col in self.data['data']['columns']]
     
     def get_column_by_role(self, role: str) -> Optional[str]:
         for col in self.data['data']['columns']:
