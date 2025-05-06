@@ -1480,7 +1480,7 @@
         "icon_mark": "overlay",
         "icon_label": "side",
         "has_x_axis": "yes",
-        "has_y_axis": "no"
+        "has_y_axis": "yes"
     },
     "stacked_area_chart_02": {
         "chart_type": "Stacked Area Chart",
@@ -2323,8 +2323,8 @@
                 Infinity
             ],
             [
-                2,
-                5
+                5,
+                7
             ]
         ],
         "required_fields_icons": [
@@ -6712,7 +6712,7 @@
                 30
             ],
             [
-                0,
+                100000000,
                 Infinity
             ]
         ],
@@ -9805,7 +9805,7 @@
         "icon_mark": "none",
         "icon_label": "none",
         "has_x_axis": "yes",
-        "has_y_axis": "no"
+        "has_y_axis": "yes"
     },
     "slope_chart_01": {
         "chart_type": "Slope Chart",
@@ -14239,7 +14239,9 @@
         "required_fields_colors": [
             "group"
         ],
-        "required_other_colors": [],
+        "required_other_colors": [
+            "background"
+        ],
         "supported_effects": [
             "gradient",
             "opacity"
@@ -14250,7 +14252,7 @@
         "icon_mark": "none",
         "icon_label": "none",
         "has_x_axis": "yes",
-        "has_y_axis": "no"
+        "has_y_axis": "yes"
     },
     "layered_area_chart_03": {
         "chart_type": "Layered Area Chart",
@@ -14351,7 +14353,7 @@
         "icon_mark": "overlay",
         "icon_label": "side",
         "has_x_axis": "yes",
-        "has_y_axis": "no"
+        "has_y_axis": "yes"
     },
     "spline_area_chart_01": {
         "chart_type": "Spline Area Chart",

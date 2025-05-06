@@ -5,10 +5,11 @@ class QAGeneratorFactory:
     """ QA 生成器工厂 """
     
     _generators = {
+        "summarization": SummarizationQAGenerator,
         "identify": IdentifyQAGenerator,
         "compare": CompareQAGenerator,
-        "summarization": SummarizationQAGenerator,
-        "reasoning": ReasoningQAGenerator,
+        "calculate": CalculateQAGenerator,
+        "analyze": AnalyzeQAGenerator,
         "multiple_choice_complex": MultipleChoiceQAGenerator,
         "factoid_claim_verdict": FactoidQAGenerator,
         "hypothetical": HypotheticalQAGenerator

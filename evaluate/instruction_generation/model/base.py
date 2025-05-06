@@ -101,7 +101,6 @@ class SingleData:
                     self.chart_type = "" # Reset chart_type on info.json load failure
             # else: No action needed if info.json missing
 
-
 class SingleQA:
     """
     问答对的基础类，支持多种类型的问答：
@@ -131,10 +130,6 @@ class SingleQA:
                 self.correct_option_index = ord(self.answer) - ord('A')
             else:
                 self.correct_option_index = correct_option_index
-        elif isinstance(answer, list) and answer_type in ["multi_select", "multiple_items"]:
-            # 对于多选题或多项答案，保持列表格式
-            self.answer = answer
-            self.correct_option_index = correct_option_index
         else:
             # 将非列表答案或单选题答案转为字符串
             self.answer = str(answer) if not isinstance(answer, (list, dict)) else answer
@@ -152,23 +147,26 @@ class SingleQA:
         question_text = self.question.strip()
         
         question_text = self.instruction + "\n\n" + question_text
-        # 如果有选项，添加选项部分
-        if self.options:
-            # 添加换行确保问题和选项分开
+        
+        # 根据answer_type添加不同的引导语
+        if self.answer_type == "multiple_choice":
+            # 添加选项
             question_text += "\n\n"
-            # 使用字母作为选项标记
             for i, option in enumerate(self.options):
                 option_letter = chr(65 + i)  # A, B, C, D...
                 question_text += f"{option_letter}. {option}\n"
-            
-            # 添加答题引导语
             question_text += "\nAnswer with the letter of the correct option only."
-        else:
-            # 对于非选择题，可以添加其他类型的引导语
-            if self.answer_type == "number":
-                question_text += "\n\nPlease provide a numerical answer."
-            elif self.answer_type == "text":
-                question_text += "\n\nPlease provide your answer as specifically as possible."
+        elif self.answer_type == "open":
+            # 根据实际答案类型添加引导语
+            try:
+                float(self.answer)  # 尝试转换为数字
+                question_text += "\n\nPlease provide a numerical answer only."
+            except (ValueError, TypeError):
+                question_text += "\n\nPlease provide a text answer as specifically as possible."
+        elif self.answer_type == "close":
+            pass
+        elif self.answer_type == "summarization":
+            question_text += "\n\nPlease provide a concise summary of the key insights."
         
         return question_text
     
@@ -205,7 +203,6 @@ class SingleQA:
             result["explanation"] = self.explanation
         if self.difficulty:
             result["difficulty"] = self.difficulty
-            
         return result
 
     

@@ -921,7 +921,7 @@ if __name__ == "__main__":
 
     if args.mode == 'train':
         process_folder(
-            folder_path="/data/lizhen/resources/data/realdata2",
+            folder_path="/data/lizhen/resources/data/instruction/syndata",
             #folder_path="/data/lizhen/resources/generated/0428",  # 包含多个数据目录的父文件夹
             output_path="./train.jsonl",
             template_path=args.template_path if args.source == "template" else None,
