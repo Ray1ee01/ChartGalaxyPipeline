@@ -183,17 +183,17 @@ def check_template_compatibility(data: Dict, templates: Dict, specific_chart_nam
                             )
                             data_types = [field_types[field] for field in ordered_fields]
                             data_type_str = ' + '.join(data_types)
-                            if len(req.get('required_fields_colors', [])) > 0 and len(data.get("colors", {}).get("field", [])) == 0:
-                                # print(f"template {template_key} failed color compatibility check")
-                                continue
+                            # if len(req.get('required_fields_colors', [])) > 0 and len(data.get("colors", {}).get("field", [])) == 0:
+                            #     # print(f"template {template_key} failed color compatibility check")
+                            #     continue
 
                             if len(req.get('required_fields_icons', [])) > 0 and len(data.get("images", {}).get("field", [])) == 0:
                                 # print(f"template {template_key} failed icon compatibility check")
                                 continue
 
-                            if not check_field_color_compatibility(req, data):
-                                # print(f"template {template_key} failed color compatibility check")
-                                continue
+                            # if not check_field_color_compatibility(req, data):
+                            #     # print(f"template {template_key} failed color compatibility check")
+                            #     continue
                             
                             if not check_field_icon_compatibility(req, data):
                                 # print(f"template {template_key} failed icon compatibility check")

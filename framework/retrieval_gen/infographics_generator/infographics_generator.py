@@ -323,6 +323,8 @@ def make_infographic(
     overlay_image_size = 0
     side_image_size = 0
     background_image_size = 0
+    best_x = 0
+    best_y = 0
     if primary_image:
         if "base64," not in primary_image:
             primary_image = f"data:image/png;base64,{primary_image}"

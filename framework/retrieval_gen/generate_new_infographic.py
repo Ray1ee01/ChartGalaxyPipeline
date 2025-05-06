@@ -77,23 +77,30 @@ def generate_new_infographic(raw_data_path, old_layout_path, output_file):
     raw_data['metadata']['title'] = title
     raw_data['titles']['main_title'] = title
     succ, title_image_base64 = get_title_b64(title, color_list)
+    # title_image_base64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
     raw_data['images']['title'] = title_image_base64
 
     # 生成图像
-    primary_image_base64 = generate_image(title, color_list)
+    # primary_image_base64 = generate_image(title, color_list)
+    primary_image_base64 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
     raw_data['images']['other']['primary'] = primary_image_base64
-
 
     updated_raw_data_path = os.path.join(tmp_dir, 'updated_raw_data.json')
     # 保存数据
     with open(updated_raw_data_path, 'w') as f:
         json.dump(raw_data, f, ensure_ascii=False, indent=4)
 
-    process(updated_raw_data_path, new_layout_path, output_file, client_key, base_url)
+    process(updated_raw_data_path, new_layout_path, output_file, client_key, base_url, chart_name="pyramid_chart_01")
 
 if __name__ == "__main__":
     # data_path = "/data1/lizhen/resources/result/data_pool_v2/168.json" # energy
-    data_path = "/data1/lizhen/resources/result/data_pool_v2/93.json"
+    # data_path = "/data1/lizhen/resources/result/claude_data_v2/Art_scenario_1_163730_69876.json" # energy 
+    # data_path = "/data1/lizhen/resources/result/claude_data_v2/Wildlife_Conservation_scenario_3_204419_45138.json"
+    # data_path = "/data1/lizhen/resources/result/claude_data_v2/Sports_scenario_5_135209_29792.json"
+    # data_path = "/data1/lizhen/resources/result/claude_data_v2/Energy_scenario_3_021315_79695.json"
+    # data_path = "/data1/lizhen/resources/result/claude_data_v2/Wildlife_Conservation_scenario_1_202610_44111.json"
+    data_path = "/data1/lizhen/resources/result/claude_data_v2/Wildlife_Conservation_scenario_1_205234_14839.json"
+    # data_path = "/data1/lizhen/resources/result/data_pool_v2/93.json"
     data_name = data_path.split('/')[-1][:-5]
 
     old_layout_path = f"./output_info/chart_info_26.json"
