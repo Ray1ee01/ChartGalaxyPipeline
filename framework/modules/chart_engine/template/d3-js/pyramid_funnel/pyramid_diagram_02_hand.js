@@ -184,10 +184,10 @@ function makeChart(containerSelector, data) {
             .text(`${d[categoryField]}`);
     });
     
-    const roughness = 0.5;
+    const roughness = 1;
     const bowing = 2;
     const fillStyle = "hachure";
-    const randomize = true;
+    const randomize = false;
     const pencilFilter = false;
         
     const svgConverter = new svg2roughjs.Svg2Roughjs(containerSelector);
