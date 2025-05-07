@@ -1429,7 +1429,7 @@ class TemplateHandlers:
         # Format result
         formatted_answer = format_numeric_value(answer)
 
-        return question, formatted_answer, None, None
+        return question, formatted_answer, None, image
 
     def handle_template_54(self, template: str) -> Tuple[Optional[str], Optional[int], Optional[list], Optional[str]]:
         """ What is the rank of the <Y label> for <ithx tick> among all <plural form of X label>? """
@@ -1591,10 +1591,7 @@ class TemplateHandlers:
             logger.warning(f"Could not calculate rank for Y value {target_y_value} in group {legend_value}, template 56")
             return None, None, None, None
 
-        # 生成混淆选项 (rank is int)
-        confusion = generate_numerical_distractors(rank, 3)
-
-        return question, rank, confusion, image
+        return question, rank, None, image
 
     def handle_template_57(self, template: str) -> Tuple[Optional[str], Optional[Any], Optional[list], Optional[str]]:
         """ Which <singular form of X label> has a <Y label> closest to <N>? """
