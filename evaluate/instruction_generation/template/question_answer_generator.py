@@ -98,6 +98,12 @@ class QuestionAnswerGenerator:
                 
             # 处理返回的4元组(问题, 答案, 混淆选项, 图像)
             question, answer, confusion, image = ret
+            if image is not None:
+                print(f"template {template_id} has image")
+                print(question)
+                print(answer)
+                print(confusion)
+                print(image)
 
             if question and answer is not None:
                 str_answer = str(answer).strip()
