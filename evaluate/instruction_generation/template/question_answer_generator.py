@@ -103,7 +103,6 @@ class QuestionAnswerGenerator:
                 print(question)
                 print(answer)
                 print(confusion)
-                print(image)
 
             if question and answer is not None:
                 str_answer = str(answer).strip()
@@ -178,6 +177,15 @@ class QuestionAnswerGenerator:
                     pair_data["image"] = image
 
                 pair_data["question"] = pair_data["full_question"]
+                if image is not None:
+                    print('--------------------------------')
+                    print(pair_data["question"])
+                    print(pair_data["answer"])
+                    print(pair_data["answer_type"])
+                    print(pair_data["question_type"])
+                    print(pair_data["category"])
+                    print(pair_data["subcategory"])
+                    print('--------------------------------')
 
                 pairs.append(pair_data)
         

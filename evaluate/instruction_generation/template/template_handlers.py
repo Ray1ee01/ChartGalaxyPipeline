@@ -1239,7 +1239,10 @@ class TemplateHandlers:
             if column_name:
                 icon_columns.append(column_name)
     
-        answer = ", ".join(icon_columns)
+        if len(icon_columns) > 1:
+            answer = "[" + ", ".join(icon_columns) + "]"
+        else:
+            answer = icon_columns[0]
         confusion = self.generator.get_column_names()
         confusion = [col for col in confusion if col not in icon_columns]
         confusion.append("none")
@@ -1487,10 +1490,7 @@ class TemplateHandlers:
             logger.warning(f"Could not calculate rank for Y value {target_y_value} in template 54")
             return None, None, None, None
 
-        # 生成混淆选项 (rank is int)
-        confusion = generate_numerical_distractors(rank, 3)
-
-        return question, rank, confusion, image
+        return question, rank, None, image
 
     def handle_template_55(self, template: str) -> Tuple[Optional[str], Optional[Any], Optional[list], Optional[str]]:
         """ What is the <Y label> for <ithx tick> in the <legend label> group? """
@@ -1692,6 +1692,8 @@ class TemplateHandlers:
              logger.info(f"No image found for tick value: {ith_tick_value} in template 58")
              return None, None, None, None
 
+        # 修复：确保替换模板中的<legend label>为实际的标签名称
+        placeholders["legend label"] = group_label
         question = self.generator.replace_placeholders(template, placeholders)
 
         # Find legends present at this tick
@@ -1760,6 +1762,8 @@ class TemplateHandlers:
              logger.info(f"No image found for tick value: {ith_tick_value} in template 59")
              return None, None, None, None
 
+        # 修复：确保替换模板中的<legend label>为实际的标签名称
+        placeholders["legend label"] = group_label
         question = self.generator.replace_placeholders(template, placeholders)
 
         # Find legends present at this tick

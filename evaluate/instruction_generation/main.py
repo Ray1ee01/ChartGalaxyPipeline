@@ -115,38 +115,42 @@ def process(data_path, output_path="./output.jsonl", template_path=None,
         template_pairs = generator.generate()
         data_understanding_pairs = []
         visual_understanding_pairs = []
-
+        composition_understanding_pairs = []
         # 分类问题
         for pair in template_pairs:
             category = pair.get("category", "data understanding")
             pair["question_type"] = pair.get("type", "unknown")
             pair.pop("template", None)
-            # 移除混淆项（confusion）相关的处理
-            if "confusion" in pair:
-                pair.pop("confusion", None)
 
-            if category == "visual understanding":
-                 visual_understanding_pairs.append(pair)
+            if category == "composite understanding":
+                composition_understanding_pairs.append(pair)
+            elif category == "visual understanding":
+                visual_understanding_pairs.append(pair)
             else:
-                 data_understanding_pairs.append(pair)
+                data_understanding_pairs.append(pair)
 
-        # 从模板中平衡选择问题
-        half_count = min(num // 2, len(visual_understanding_pairs))
-
-        selected_visual_count = min(half_count, len(visual_understanding_pairs))
-        selected_data_count = min(num - selected_visual_count, len(data_understanding_pairs))
-
-        # 如果 visual understanding 不足，从 data understanding 中补充
-        if selected_visual_count < half_count:
-             selected_data_count = min(num - selected_visual_count, len(data_understanding_pairs))
-
-        # 随机采样
+        # 计算每个类别需要的数量
+        k = max(2, num // 4)
+        
+        # 优先从composition understanding选择k个
+        selected_composition_count = min(k, len(composition_understanding_pairs))
+        selected_composition = random.sample(composition_understanding_pairs, selected_composition_count) if selected_composition_count > 0 else []
+        
+        # 从visual understanding选择k个
+        selected_visual_count = min(k, len(visual_understanding_pairs))
         selected_visual = random.sample(visual_understanding_pairs, selected_visual_count) if selected_visual_count > 0 else []
+        
+        # 剩余的从data understanding中选择
+        remaining_count = num - selected_composition_count - selected_visual_count
+        selected_data_count = min(remaining_count, len(data_understanding_pairs))
         selected_data = random.sample(data_understanding_pairs, selected_data_count) if selected_data_count > 0 else []
 
-        logger.info(f"从模板中选择了 {len(selected_data)} 个 Data Understanding 问题和 {len(selected_visual)} 个 Visual Understanding 问题")
+        logger.info(f"从模板中选择了 {len(selected_composition)} 个 Composition Understanding 问题, "
+                   f"{len(selected_visual)} 个 Visual Understanding 问题, "
+                   f"和 {len(selected_data)} 个 Data Understanding 问题")
 
-        # 合并模板结果
+
+        all_results.extend(selected_composition)
         all_results.extend(selected_data)
         all_results.extend(selected_visual)
 
