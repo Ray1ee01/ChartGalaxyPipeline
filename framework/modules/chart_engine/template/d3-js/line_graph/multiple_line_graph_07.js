@@ -383,7 +383,7 @@ function makeChart(containerSelector, data) {
     xAxis.selectAll("text")
         .style("font-family", typography.label.font_family)
         .style("font-size", "12px")
-        .style("fill", "#5f5e60")
+        .style("fill", "#ffffff")
         .attr("dy", "0.7em"); // 下移文本
     
     // 移除X轴线和刻度
@@ -417,7 +417,7 @@ function makeChart(containerSelector, data) {
         .attr("dy", -5)
         .style("font-family", typography.label.font_family)
         .style("font-size", "12px")
-        .style("fill", "#5f5e60") // 白色
+        .style("fill", "#ffffff") // 白色
         .style("text-anchor", "end") 
         .text(d => d);
     
@@ -430,7 +430,7 @@ function makeChart(containerSelector, data) {
         .style("text-anchor", "middle")
         .style("font-family", typography.label.font_family)
         .style("font-size", "12px")
-        .style("fill", "#5f5e60")
+        .style("fill", "#ffffff")
         .text(dataColumns[1].label || yField); // 使用标签或字段名
     
 
