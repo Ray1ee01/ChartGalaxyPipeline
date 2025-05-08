@@ -57,12 +57,45 @@ You should respond in an Array of JSON objects format with the following keys: (
 (ii) Answer.
 """
 
+ReasoningPromptAnswerable = """
+Generate some Factoid Questions for the given image.
+**All questions must be constructed such that they are unanswerable solely based on the information visually presented in the image.**
+
+The questions should be framed as if they might require numerical or visual reasoning.
+**Crucially, these questions should be formulated in a way that, if the image *did* provide the necessary information, the answer would typically be a number, a text label, or a common phrase (e.g., Yes, No).**
+However, since they are designed to be unanswerable from the *given* image, their actual answer in the output will reflect this.
+
+You should respond in an Array of JSON objects format with the following keys:
+(i) Question: [The unanswerable question text, framed to expect a numerical, textual, or Yes/No answer if data were available]
+(ii) Answer: "Unanswerable"
+"""
+
 MultipleChoicePrompt = """
-I will upload some charts, graphs, infographics or other data visualizations.Generate five multiplechoice questions.
+I will upload some charts, graphs, infographics or other data visualizations. Generate some multiplechoice questions.
 Each question should contain four options and one correct answer.
 Questions should require some complex calculations such as trend analysis, anomaly detection,
 extrapolation, or time series analysis.
 For the correct answer, show your calculations as well.
+"""
+
+MultipleChoicePromptAnswerable = """
+I will upload some charts, graphs, infographics or other data visualizations. Generate five multiple-choice questions based on these visuals.
+
+**All questions must be constructed such that they are unanswerable solely based on the information visually presented in the chart(s).**
+
+Each question should:
+1.  Have a question stem framed as if it requires complex calculations (e.g., trend analysis, anomaly detection, extrapolation, or time series analysis). However, the chart must lack the specific data points, granularity, or full range needed to perform these calculations accurately and definitively.
+2.  Be accompanied by four multiple-choice options. **All four of these options should be plausible-sounding values or statements, but all of them must be effectively incorrect or unverifiable from the provided chart because the question stem itself describes an unanswerable query.**
+
+You should respond in an Array of JSON objects format. Each JSON object should represent one multiple-choice question item and contain the following keys:
+(i) QuestionStem: [The unanswerable question text/stem, framed to imply complex calculation but unanswerable from the chart]
+(ii) Options: {
+    "A": "[Option A text - plausible but incorrect/unverifiable]",
+    "B": "[Option B text - plausible but incorrect/unverifiable]",
+    "C": "[Option C text - plausible but incorrect/unverifiable]",
+    "D": "[Option D text - plausible but incorrect/unverifiable]"
+   }
+(iii) Answer: "Unanswerable"
 """
 
 HypotheticalPrompt = """
@@ -75,9 +108,26 @@ Keep the question focused and directly related to the chart.The question should 
 about future trends, impacts, or extrapolations based on the data.
 """
 
+HypotheticalPromptAnswerable = """
+You are an AI that generates concise and specific hypothetical questions based on chart images.
+Your task is to analyze the chart and generate short, data-driven-sounding hypothetical questions.
+
+**Crucially, all questions must be constructed such that they are unanswerable solely based on the information visually presented in the chart.**
+
+Each question should:
+1.  Be framed as if it explores future trends, potential impacts, or requires extrapolations based on the visual cues in the data. However, the chart must lack the specific data points, granularity, full range, or contextual information needed to actually answer such a hypothetical question definitively.
+2.  Be concise, focused, and directly related to the visual elements of the chart.
+3.  Avoid unnecessary explanations or introductory phrases like 'Based on the chart data...' or 'A meaningful hypothetical question could be...'.
+4.  Make an assumption or pose a scenario about future trends, impacts, or extrapolations, but this assumption or scenario must not be verifiable or quantifiable using only the provided chart data.
+
+You should respond in an Array of JSON objects format. Each JSON object should contain the following keys:
+(i) Question: [The unanswerable hypothetical question text, framed as exploring future trends/impacts/extrapolations but unanswerable from the chart]
+(ii) Answer: "Unanswerable"
+"""
+
 FactoidPrompt = """
 Given a chart image in the input, your task is the following:
-1.Analyze the given chart image and generate '3' to '5' pairs of claims and verdicts about its data.
+1.Analyze the given chart image and generate 2-3 pairs of claims and verdicts about its data.
 Half of the claims should be supported by the chart's data, while the other half are refuted.
 2.Avoid using terms like 'rows', 'columns', or 'elements' from the data table; refer to 'chart' or
 'chart image' instead.If the claim is supported, the verdict should be 'True'.If the claim is refuted,
@@ -86,7 +136,22 @@ the verdict should be 'False', followed by a brief explanation.
 minimum, mean, median, mode) without using exact numbers from the chart.
 4.Ensure a diverse range of claims addressing various visual aspects of the chart, resulting in 2-3
 turns of claims and verdicts.
-5.Generate the verdicts/answers without any additional explanation."""
+5.Generate the verdicts/answers without any additional explanation.
+"""
+
+FactoidPromptAnswerable = """
+Given a chart image in the input, your task is the following:
+
+1.  Analyze the given chart image and generate 2-3 statements that appear to be claims about its data.
+2.  **Crucially, all these statements (claims) must be constructed in such a way that they are unanswerable or unverifiable solely based on the information visually presented in the chart.** They should seem like they are making an assertion about the chart, but the chart must lack the specific data, granularity, context, or clarity to definitively confirm or deny the statement.
+3.  The statements should be phrased as if they are making claims about comparisons of values, trends, or implied basic statistical ideas (like maximums, minimums, or general tendencies) but should avoid using exact numbers from the chart and be constructed to be unverifiable.
+4.  Avoid using terms like 'rows', 'columns', or 'elements'; refer to 'chart' or 'chart image' instead.
+5.  Ensure a diverse range of such unverifiable statements, addressing various visual aspects of the chart.
+
+You should respond in an Array of JSON objects format. Each JSON object should represent one such statement and its outcome, containing the following keys:
+(i) Claim: [The unverifiable statement about the chart, phrased as a claim]
+(ii) Answer: "Unanswerable"
+"""
 
 ConversationalPrompt = """
 Show me conversational question answering for analyzing the <chart type>. Make sure this looks
@@ -98,7 +163,7 @@ operations (e.g., 'sum', 'min', 'max', 'diff', 'ratio', etc).
 """
 
 
-factoid_instruction = """You are given a factoid question that you need to answer based on the provided image.
+FactoidInstruction = """You are given a factoid question that you need to answer based on the provided image.
 Your answer should be a single word, number, or phrase. If the question is unanswerable based on
 the information in the provided image, your answer should be "unanswerable". Do not generate units.
 But if numerical units such as million, m, billion, B, or K are required, use the exact notation
@@ -275,9 +340,9 @@ class IdentifyQAGenerator(BaseQAGenerator):
             qa_dict["type"] = "analysis"
             qa_dict["category"] = "numerical_reasoning"
             qa_dict["subcategory"] = "identify_reasoning" # Combine original question with instruction
-            qa_dict["instruction"] = factoid_instruction
+            qa_dict["instruction"] = FactoidInstruction
 
-    def generate_prompt(self) -> str:
+    def generate_prompt(self, unanswerable: bool = False) -> str:
         tabular_data = self.single_data.tabular_data
         meta_data = self.single_data.meta_data
         chart_type = self.single_data.chart_type
@@ -293,12 +358,15 @@ class IdentifyQAGenerator(BaseQAGenerator):
         for example in IdentifyQuestions:
             examples_section += f"- {example}\n"
         
+        # 根据unanswerable参数选择使用的prompt
+        prompt = ReasoningPromptAnswerable if unanswerable else ReasoningPrompt
+        
         # Inject context into the base ReasoningPrompt
         formatted_prompt = textwrap.dedent(f"""
             {header}
 
             # INSTRUCTIONS
-            {ReasoningPrompt}
+            {prompt}
 
             {examples_section}
 
@@ -330,9 +398,9 @@ class CompareQAGenerator(BaseQAGenerator):
             qa_dict["type"] = "analysis"
             qa_dict["category"] = "numerical_reasoning"
             qa_dict["subcategory"] = "compare_reasoning" # Combine original question with instruction
-            qa_dict["instruction"] = factoid_instruction
+            qa_dict["instruction"] = FactoidInstruction
 
-    def generate_prompt(self) -> str:
+    def generate_prompt(self, unanswerable: bool = False) -> str:
         tabular_data = self.single_data.tabular_data
         meta_data = self.single_data.meta_data
         chart_type = self.single_data.chart_type
@@ -348,12 +416,13 @@ class CompareQAGenerator(BaseQAGenerator):
         for example in CompareQuestions:
             examples_section += f"- {example}\n"
         
+        prompt = ReasoningPromptAnswerable if unanswerable else ReasoningPrompt
         # Inject context into the base ReasoningPrompt
         formatted_prompt = textwrap.dedent(f"""
             {header}
 
             # INSTRUCTIONS
-            {ReasoningPrompt}
+            {prompt}
 
             {examples_section}
 
@@ -386,9 +455,9 @@ class CalculateQAGenerator(BaseQAGenerator):
             qa_dict["type"] = "analysis"
             qa_dict["category"] = "numerical_reasoning"
             qa_dict["subcategory"] = "calculate_reasoning" # Combine original question with instruction
-            qa_dict["instruction"] = factoid_instruction
+            qa_dict["instruction"] = FactoidInstruction
 
-    def generate_prompt(self) -> str:
+    def generate_prompt(self, unanswerable: bool = False) -> str:
         tabular_data = self.single_data.tabular_data
         meta_data = self.single_data.meta_data
         chart_type = self.single_data.chart_type
@@ -403,13 +472,15 @@ class CalculateQAGenerator(BaseQAGenerator):
         examples_section = "# EXAMPLES OF CALCULATE QUESTIONS\n"
         for example in CalculateQuestions:
             examples_section += f"- {example}\n"
+
+        prompt = ReasoningPromptAnswerable if unanswerable else ReasoningPrompt
         
         # Inject context into the base ReasoningPrompt
         formatted_prompt = textwrap.dedent(f"""
             {header}
 
             # INSTRUCTIONS
-            {ReasoningPrompt}
+            {prompt}
 
             {examples_section}
 
@@ -441,9 +512,9 @@ class AnalyzeQAGenerator(BaseQAGenerator):
             qa_dict["type"] = "analysis"
             qa_dict["category"] = "numerical_reasoning"
             qa_dict["subcategory"] = "analyze_reasoning" # Combine original question with instruction
-            qa_dict["instruction"] = factoid_instruction
+            qa_dict["instruction"] = FactoidInstruction
 
-    def generate_prompt(self) -> str:
+    def generate_prompt(self, unanswerable: bool = False) -> str:
         tabular_data = self.single_data.tabular_data
         meta_data = self.single_data.meta_data
         chart_type = self.single_data.chart_type
@@ -459,12 +530,13 @@ class AnalyzeQAGenerator(BaseQAGenerator):
         for example in AnalyzeQuestions:
             examples_section += f"- {example}\n"
         
+        prompt = ReasoningPromptAnswerable if unanswerable else ReasoningPrompt
         # Inject context into the base ReasoningPrompt
         formatted_prompt = textwrap.dedent(f"""
             {header}
 
             # INSTRUCTIONS
-            {ReasoningPrompt}
+            {prompt}
 
             {examples_section}
 
@@ -509,7 +581,7 @@ Question: """
             # 将原始问题与指令结合
             qa_dict["instruction"] = hypothetical_instruction
 
-    def generate_prompt(self) -> str:
+    def generate_prompt(self, unanswerable: bool = False) -> str:
         tabular_data = self.single_data.tabular_data
         meta_data = self.single_data.meta_data
         chart_type = self.single_data.chart_type
@@ -524,13 +596,15 @@ Question: """
         
         # 添加通用输出格式指南
         output_format_guide = generate_common_output_format_guide()
+        prompt = HypotheticalPromptAnswerable if unanswerable else HypotheticalPrompt
         
         # Inject context into the base HypotheticalPrompt
         formatted_prompt = textwrap.dedent(f"""
             {header}
 
             # INSTRUCTIONS
-            {HypotheticalPrompt}
+            {prompt}
+
             {examples_section}
 
             {output_format_guide}
@@ -569,7 +643,7 @@ Question: """
             
             qa_dict["instruction"] = summarization_instruction
 
-    def generate_prompt(self) -> str:
+    def generate_prompt(self, unanswerable: bool = False) -> str:
         tabular_data = self.single_data.tabular_data
         meta_data = self.single_data.meta_data
         chart_type = self.single_data.chart_type
@@ -651,7 +725,7 @@ Question: """
             # 将原始问题与指令结合
             qa_dict["instruction"] = fact_checking_instruction
 
-    def generate_prompt(self) -> str:
+    def generate_prompt(self, unanswerable: bool = False) -> str:
         tabular_data = self.single_data.tabular_data
         meta_data = self.single_data.meta_data
         chart_type = self.single_data.chart_type
@@ -667,12 +741,13 @@ Question: """
         for example in random_examples:
             examples_section += f"- {example}\n"
         
+        prompt = FactoidPromptAnswerable if unanswerable else FactoidPrompt
         # Inject context into the base FactoidPrompt
         formatted_prompt = textwrap.dedent(f"""
             {header}
 
             # INSTRUCTIONS
-            {FactoidPrompt}
+            {prompt}
 
             {examples_section}
 
@@ -716,7 +791,7 @@ Question: """
             # 将原始问题与指令结合
             qa_dict["instruction"] = multi_choice_instruction
 
-    def generate_prompt(self) -> str:
+    def generate_prompt(self, unanswerable: bool = False) -> str:
         tabular_data = self.single_data.tabular_data
         meta_data = self.single_data.meta_data
         chart_type = self.single_data.chart_type
@@ -732,16 +807,21 @@ Question: """
         for example in random_examples:
             examples_section += f"- {example}\n"
         
+        prompt = MultipleChoicePromptAnswerable if unanswerable else MultipleChoicePrompt
+        extra_instruction = "Ensure the correct answer option includes the necessary calculation steps as requested."
+        if unanswerable:
+            extra_instruction = ""
+        
         # Inject context into the base MultipleChoicePrompt
         formatted_prompt = textwrap.dedent(f"""
             {header}
 
             # INSTRUCTIONS
-            {MultipleChoicePrompt}
+            {prompt}
 
             {examples_section}
 
-            Ensure the correct answer option includes the necessary calculation steps as requested.
+            {extra_instruction}
 
             {output_format_guide}
         """)

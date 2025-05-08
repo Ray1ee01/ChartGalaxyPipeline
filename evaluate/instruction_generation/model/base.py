@@ -276,11 +276,11 @@ class BaseQAGenerator(ABC):
         """ 给大模型生成的每对 QA 生成回答类型 """
         raise NotImplementedError("Subclasses must implement add_question_answer_types()")
 
-    def generate(self) -> QAResult:
+    def generate(self, unanswerable: bool = False) -> QAResult:
         """ 生成QA对, 使用子类提供的 prompt """
         result = QAResult()
         chart_image = self.single_data.chart_image if hasattr(self.single_data, 'chart_image') else None
-        prompt = self.generate_prompt()
+        prompt = self.generate_prompt(unanswerable)
 
         messages = [
             {"role": "system", "content": self.system_message},

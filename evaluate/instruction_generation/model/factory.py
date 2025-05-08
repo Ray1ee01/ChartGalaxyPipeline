@@ -5,7 +5,7 @@ class QAGeneratorFactory:
     """ QA 生成器工厂 """
     
     _generators = {
-        "summarization": SummarizationQAGenerator,
+        #"summarization": SummarizationQAGenerator,
         "identify": IdentifyQAGenerator,
         "compare": CompareQAGenerator,
         "calculate": CalculateQAGenerator,

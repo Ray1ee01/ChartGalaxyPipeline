@@ -34,8 +34,8 @@ def generate_random_id(length=4):
 
 def process(data_path, output_path="./output.jsonl", template_path=None,
             source="template", write2disk=False, num=20,
-            image_output_dir=None, # Removed custom_instruction_suffix
-            include_multiple_choice=False, prefix_id=None, append_mode=False):
+            unanswerable=False,
+            image_output_dir=None, prefix_id=None, append_mode=False):
     """
     处理单个数据目录，生成问答对
 
@@ -79,8 +79,9 @@ def process(data_path, output_path="./output.jsonl", template_path=None,
         with tqdm(total=required_generator_count, desc="使用LLM生成问答对") as pbar:
             while successful_count < required_generator_count and generator_pool:
                 generator = random.choice(generator_pool)
+                print(f"generator: {generator}")
                 try:
-                    res = generator.generate()
+                    res = generator.generate(unanswerable)
                     if res.error:
                         continue
 
@@ -177,6 +178,9 @@ def process(data_path, output_path="./output.jsonl", template_path=None,
     if not all_results:
         logger.warning(f"未能生成任何问题")
         return []
+    
+    if num <= 3:
+        all_results = all_results[:num]
 
     # 生成图像ID并准备结果
     base_id = prefix_id if prefix_id else "c"
@@ -340,8 +344,8 @@ def process(data_path, output_path="./output.jsonl", template_path=None,
     return formatted_results
 
 def process_single_dir(subdir, output_path, template_path, image_output_dir,
-                       # Removed custom_instruction_suffix
                        include_multiple_choice, progress_counter,
+                       unanswerable = False,
                        source="template", num_questions=8):
     """处理单个目录的函数，用于多线程调用
 
@@ -372,8 +376,7 @@ def process_single_dir(subdir, output_path, template_path, image_output_dir,
             write2disk=True,
             source=source,
             image_output_dir=image_output_dir,
-            # Removed custom_instruction_suffix argument
-            include_multiple_choice=include_multiple_choice,
+            unanswerable=unanswerable,
             prefix_id=prefix_id,
             append_mode=True,
             num=num_questions
@@ -394,6 +397,7 @@ def process_single_dir(subdir, output_path, template_path, image_output_dir,
 
 def process_folder(folder_path, output_path="./train.jsonl", template_path=None,
                   image_output_dir="./images", # Removed custom_instruction_suffix
+                  unanswerable=False,
                   include_multiple_choice=True, num_threads=10, source="template",
                   num_questions=8):
     """批量处理文件夹中的所有数据目录，支持多线程处理
@@ -453,6 +457,7 @@ def process_folder(folder_path, output_path="./train.jsonl", template_path=None,
                 # Removed custom_instruction_suffix argument
                 include_multiple_choice,
                 progress_counter,
+                unanswerable,
                 source,
                 num_questions
             ): subdir for subdir in subdirs
@@ -593,6 +598,8 @@ if __name__ == "__main__":
                       help='每个图表生成的问题数量')
     parser.add_argument('--threads', type=int, default=1,
                       help='并行处理的线程数量')
+    parser.add_argument('--unanswerable', action='store_true',
+                      help='是否生成不可回答的问题')
     parser.add_argument('--template_path', type=str, default='./example.json',
                       help='模板文件路径，仅当source=template时需要')
     # Removed custom_instruction_suffix argument
@@ -600,7 +607,8 @@ if __name__ == "__main__":
 
     if args.mode == 'train':
         process_folder(
-            folder_path="/data/lizhen/resources/data/instruction/syndata",
+            folder_path="/data/lizhen/resources/data/instruction/realdata",
+            #folder_path="/data/lizhen/resources/data/instruction/syndata",
             #folder_path="/data/lizhen/resources/generated/0428",  # 包含多个数据目录的父文件夹
             output_path="./train.jsonl",
             template_path=args.template_path if args.source == "template" else None,
@@ -609,7 +617,8 @@ if __name__ == "__main__":
             include_multiple_choice=True,
             num_threads=args.threads,
             source=args.source,
-            num_questions=args.num
+            num_questions=args.num,
+            unanswerable=args.unanswerable
         )
     else:
         process_folder(
@@ -623,5 +632,6 @@ if __name__ == "__main__":
             include_multiple_choice=True,
             num_threads=max(1, args.threads // 2),  # 测试模式使用更少的线程
             source=args.source,
-            num_questions=args.num
+            num_questions=args.num,
+            unanswerable=args.unanswerable
         )
