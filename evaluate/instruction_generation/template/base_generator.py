@@ -212,7 +212,7 @@ class BaseGenerator:
         filtered_df = self.get_filtered_data(filter_dict)
         
         if not filtered_df.empty and column_name in filtered_df.columns:
-            return filtered_df[column_name].iloc[0]
+            return filtered_df[column_name].sum()
         return None
     
     def get_difference(self, column_name: str, filter_dict1: Dict, filter_dict2: Dict) -> Optional[float]:
@@ -284,6 +284,8 @@ class BaseGenerator:
                 placeholders["ithx tick"] = str(tick)
             elif i == 1:
                 placeholders["jthx tick"] = str(tick)
+            elif i == 2:
+                placeholders["kthx tick"] = str(tick)
             else:
                 placeholders[f"{i+1}thx tick"] = str(tick)
         

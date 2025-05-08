@@ -210,8 +210,15 @@ def process(data_path, output_path="./output.jsonl", template_path=None,
             images_list = [relative_image_path]
 
             # 处理额外图像
+            # 返回的 image 从 tuple 变为 list[tuple], 表示一个问题中包含的多个 icons
             if "image" in qa_pair and qa_pair["image"] is not None:
-                value, base64_data = qa_pair["image"]
+                values = [] # 存放多个 icon 对应数据
+                base64_datas = [] # 存放多个 icon
+
+                for single_image_tuple in qa_pair["image"]:
+                    values.append(single_image_tuple[0])
+                    base64_datas.append(single_image_tuple[1])
+
                 has_options = has_existing_options(question_content)
                 original_content = question_content
 
@@ -225,84 +232,90 @@ def process(data_path, output_path="./output.jsonl", template_path=None,
                         if has_options_pattern(part):
                             options_section = part
                             break
-
-                    # 如果找到选项部分且值在选项中，避免替换
-                    if options_section and is_in_options_section(question_content, value, options_section):
-                        logger.warning(f"检测到值 '{value}' 在选项中，避免替换为<image>标签")
-                        # 仅替换选项之外的部分
-                        for i, part in enumerate(question_parts):
-                            if part != options_section:
-                                question_parts[i] = part.replace(value, "<image>", 1)
-                        question_content = "\n\n".join(question_parts) # Use single newline join
-                    else:
-                        # 选项部分不包含该值，可以全局替换（仅一次）
-                        question_content = question_content.replace(value, "<image>", 1)
+                    
+                    # 替换每个 icon 数据
+                    for value in values:
+                        # 如果找到选项部分且值在选项中，避免替换
+                        if options_section and is_in_options_section(question_content, value, options_section):
+                            logger.warning(f"检测到值 '{value}' 在选项中，避免替换为<image>标签")
+                            # 仅替换选项之外的部分
+                            for i, part in enumerate(question_parts):
+                                if part != options_section:
+                                    question_parts[i] = part.replace(value, "<image>", 1)
+                            question_content = "\n\n".join(question_parts) # Use single newline join
+                        else:
+                            # 选项部分不包含该值，可以全局替换（仅一次）
+                            question_content = question_content.replace(value, "<image>", 1)
                 else:
                     # 没有选项，可以直接替换（仅一次）
-                    question_content = question_content.replace(value, "<image>", 1)
+                    for value in values:
+                        question_content = question_content.replace(value, "<image>", 1)
 
                 # 检查是否实际替换了<image>标签
                 if question_content != original_content:
                     # 生成额外图像的文件名
-                    extra_image_filename = f"{image_id}_{idx}_extra.png"
-                    extra_image_path = os.path.join(image_output_dir, extra_image_filename)
+                    for image_idx, value in enumerate(values):
+                        base64_data = base64_datas[image_idx]
+                        
+                        extra_image_filename = f"{image_id}_{idx}_{image_idx}_extra.png"
+                        extra_image_path = os.path.join(image_output_dir, extra_image_filename)
 
-                    # 从base64保存图像到文件
-                    try:
-                        # 打印数据前几个字符用于调试
-                        logger.info(f"Base64数据前20个字符: {base64_data[:20]}...")
-
-                        # 检查数据是否为标准base64格式
-                        if ',' in base64_data:
-                            # 可能是data URI格式 (data:image/png;base64,...)
-                            header, base64_data = base64_data.split(',', 1)
-                            logger.info(f"检测到data URI格式: {header}")
-
-                        # 修复base64填充问题
-                        base64_data = base64_data.strip()
-                        # 添加必要的填充
-                        missing_padding = len(base64_data) % 4
-                        if missing_padding:
-                            base64_data += '=' * (4 - missing_padding)
-
-                        # 尝试解码base64数据
-                        image_data = base64.b64decode(base64_data)
-
-                        # 检查数据是否为有效的图像格式
-                        if len(image_data) < 100:
-                            raise ValueError(f"解码后数据过小({len(image_data)}字节)，可能不是有效图像")
-
-                        # 尝试直接写入文件
-                        with open(extra_image_path, 'wb') as f:
-                            f.write(image_data)
-
-                        # 验证文件是否为有效图像
+                        # 从base64保存图像到文件
                         try:
-                            with Image.open(extra_image_path) as img:
-                                img.verify() # Verify headers
-                                # Re-open to get properties after verify
-                                with Image.open(extra_image_path) as img_reopened:
-                                     logger.info(f"验证图像成功: {img_reopened.format}, 尺寸: {img_reopened.size}")
+                            # 打印数据前几个字符用于调试
+                            logger.info(f"Base64数据前20个字符: {base64_data[:20]}...")
 
-                            # 添加到图像列表
-                            relative_extra_image_path = f"{os.path.basename(image_output_dir)}/{extra_image_filename}"
-                            images_list.append(relative_extra_image_path)
-                            logger.info(f"额外图像已保存到: {extra_image_path}")
-                        except Exception as img_err:
-                            logger.error(f"保存的文件不是有效图像: {img_err}")
-                            # 删除无效图像文件
-                            if os.path.exists(extra_image_path):
-                                os.remove(extra_image_path)
-                            raise ValueError(f"无法验证图像格式: {img_err}")
+                            # 检查数据是否为标准base64格式
+                            if ',' in base64_data:
+                                # 可能是data URI格式 (data:image/png;base64,...)
+                                header, base64_data = base64_data.split(',', 1)
+                                logger.info(f"检测到data URI格式: {header}")
 
-                    except Exception as e:
-                        logger.error(f"保存额外图像时出错: {e}")
-                        # 记录详细错误信息以便调试
-                        import traceback
-                        logger.error(f"错误详情: {traceback.format_exc()}")
+                            # 修复base64填充问题
+                            base64_data = base64_data.strip()
+                            # 添加必要的填充
+                            missing_padding = len(base64_data) % 4
+                            if missing_padding:
+                                base64_data += '=' * (4 - missing_padding)
 
-                        # 如果图像处理失败，继续处理问题而不添加额外图像
-                        logger.info(f"将继续处理问题，但不添加额外图像")
+                            # 尝试解码base64数据
+                            image_data = base64.b64decode(base64_data)
+
+                            # 检查数据是否为有效的图像格式
+                            if len(image_data) < 100:
+                                raise ValueError(f"解码后数据过小({len(image_data)}字节)，可能不是有效图像")
+
+                            # 尝试直接写入文件
+                            with open(extra_image_path, 'wb') as f:
+                                f.write(image_data)
+
+                            # 验证文件是否为有效图像
+                            try:
+                                with Image.open(extra_image_path) as img:
+                                    img.verify() # Verify headers
+                                    # Re-open to get properties after verify
+                                    with Image.open(extra_image_path) as img_reopened:
+                                        logger.info(f"验证图像成功: {img_reopened.format}, 尺寸: {img_reopened.size}")
+
+                                # 添加到图像列表
+                                relative_extra_image_path = f"{os.path.basename(image_output_dir)}/{extra_image_filename}"
+                                images_list.append(relative_extra_image_path)
+                                logger.info(f"额外图像已保存到: {extra_image_path}")
+                            except Exception as img_err:
+                                logger.error(f"保存的文件不是有效图像: {img_err}")
+                                # 删除无效图像文件
+                                if os.path.exists(extra_image_path):
+                                    os.remove(extra_image_path)
+                                raise ValueError(f"无法验证图像格式: {img_err}")
+
+                        except Exception as e:
+                            logger.error(f"保存额外图像时出错: {e}")
+                            # 记录详细错误信息以便调试
+                            import traceback
+                            logger.error(f"错误详情: {traceback.format_exc()}")
+
+                            # 如果图像处理失败，继续处理问题而不添加额外图像
+                            logger.info(f"将继续处理问题，但不添加额外图像")
                 else:
                     logger.info(f"没有替换<image>标签，跳过额外图像处理")
 

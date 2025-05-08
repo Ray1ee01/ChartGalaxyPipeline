@@ -207,13 +207,13 @@ class QuestionAnswerGenerator:
         if write2disk:
             self.save_results(pairs)
         return pairs
+
+if __name__ == "__main__":
+    generator = QuestionAnswerGenerator(
+        data_path="/home/shenyu/code/ChartPipeline/evaluate/instruction_generation/try_input/1746390416_horizontal_bar_chart_24_COVIDGovernmentResponseOxBSG_categorical_numerical_numerical_2429",
+        template_path="/home/shenyu/code/ChartPipeline/evaluate/instruction_generation/example.json",
+        output_path="./try_output3.json"
+    )
     
-# if __name__ == "__main__":
-#     generator = QuestionAnswerGenerator(
-#         data_path="/data1/lizhen/resources/result/data_pool_v2/11592.json",
-#         template_path="/home/lizhen/ChartPipeline/evaluate/instruction_generation/example.json",
-#         output_path="/home/lizhen/ChartPipeline/evaluate/instruction_generation/template_output_34.json"
-#     )
-    
-#     pairs = generator.generate()
-#     print(f"已生成 {len(pairs)} 个问答对。")
+    pairs = generator.generate(write2disk=True)
+    print(f"已生成 {len(pairs)} 个问答对。")

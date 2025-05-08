@@ -328,5 +328,131 @@
         "type": "identification",
         "category": "composite understanding",
         "subcategory": "data identification"
+    },
+    {
+        "template_60": "Which <legend label> has the second highest <Y label> at <ithx tick>?",
+        "type": "identification",
+        "category": "composite understanding",
+        "subcategory": "data identification"
+    },
+    {
+        "template_61": "Is the <Y label> of <ithx tick> greater than the average <Y label> across all <plural form of X label>?",
+        "type": "comparison",
+        "category": "composite understanding",
+        "subcategory": "fact checking"
+    },
+    {
+        "template_62": "Is the <Y label> of <ithx tick> greater than the average <Y label> within the <legend label> group?",
+        "type": "comparison",
+        "category": "composite understanding",
+        "subcategory": "fact checking"
+    },
+    {
+        "template_63": "How many <plural form of X label> have <Y label> values strictly above that of <ithx tick>?",
+        "type": "counting",
+        "category": "composite understanding",
+        "subcategory": "data counting with condition"
+    },
+    {
+        "template_64": "How many <plural form of X label> have <Y label> values strictly above that of <ithx tick> within the <legend label> group?",
+        "type": "counting",
+        "category": "composite understanding",
+        "subcategory": "data counting with condition"
+    },
+    {
+        "template_65": "What is the ratio of <Y label> between <ithx tick> and the highest value within the <legend label> group?",
+        "type": "calculation",
+        "category": "composite understanding",
+        "subcategory": "data comparison"
+    },
+    {
+        "template_66": "What is the difference between the <Y label> of <ithx tick> and <jthx tick>?",
+        "type": "calculation",
+        "category": "composite understanding",
+        "subcategory": "data comparison"
+    },
+    {
+        "template_67": "What is the difference between the <Y label> of <ithx tick> and <jthx tick> within the <legend label> group?",
+        "type": "calculation",
+        "category": "composite understanding",
+        "subcategory": "data comparison"
+    },
+    {
+        "template_68": "Which has a higher <Y label>: <ithx tick> or <jthx tick>?",
+        "type": "comparison",
+        "category": "composite understanding",
+        "subcategory": "data comparison"
+    },
+    {
+        "template_69": "Which has a higher <Y label> within the <legend label> group: <ithx tick> or <jthx tick>?",
+        "type": "comparison",
+        "category": "composite understanding",
+        "subcategory": "data comparison"
+    },
+    {
+        "template_70": "Is the sum of <Y label> values for <ithx tick> and <jthx tick> greater than the <Y label> of <kthx tick>?",
+        "type": "comparison",
+        "category": "composite understanding",
+        "subcategory": "fact checking"
+    },
+    {
+        "template_71": "Is the sum of <Y label> values for <ithx tick> of the <legend label> group and <jthx tick> of the <legend label> group greater than that of <kthx tick> of the <legend label> group?",
+        "type": "comparison",
+        "category": "composite understanding",
+        "subcategory": "fact checking"
+    },
+    {
+        "template_72": "What is the average <Y label> of <ithx tick>, <jthx tick>, and <kthx tick>?",
+        "type": "calculation",
+        "category": "composite understanding",
+        "subcategory": "data extraction with condition"
+    },
+    {
+        "template_73": "What is the average <Y label> of <ithx tick>, <jthx tick>, and <kthx tick> within the <legend label> group?",
+        "type": "calculation",
+        "category": "composite understanding",
+        "subcategory": "data extraction with condition"
+    },
+    {
+        "template_74": "Which has a greater percentage change in <Y label>: from <ithx tick> to <jthx tick> or from <jthx tick> to <kthx tick>?",
+        "type": "comparison",
+        "category": "composite understanding",
+        "subcategory": "data comparison"
+    },
+    {
+        "template_75": "Which has a greater percentage change in <Y label> within the <legend label> group: from <ithx tick> to <jthx tick> or from <jthx tick> to <kthx tick>?",
+        "type": "comparison",
+        "category": "composite understanding",
+        "subcategory": "data comparison"
+    },
+    {
+        "template_76": "Is the <Y label> of <ithx tick> closer to the <Y label> of <jthx tick> or <kthx tick>?",
+        "type": "comparison",
+        "category": "composite understanding",
+        "subcategory": "data comparison"
+    },
+    {
+        "template_77": "Is the <Y label> of <ithx tick> closer to the <Y label> of <jthx tick> or <kthx tick> within the <legend label> group?",
+        "type": "comparison",
+        "category": "composite understanding",
+        "subcategory": "data comparison"
+    },
+    {
+        "template_78": "In the <legend label> group, which is greater: the <Y label> at <ithx tick> or the sum of <Y label> at <jthx tick> and <kthx tick>?",
+        "type": "comparison",
+        "category": "composite understanding",
+        "subcategory": "data comparison"
+    },
+    {
+        "template_79": "Which <legend label> has the highest <Y label> at the sum of <ithx tick> and <jthx tick>?",
+        "type": "identification",
+        "category": "composite understanding",
+        "subcategory": "data identification"
+    },
+    {
+        "template_80": "Which <legend label> has the lowest <Y label> at the sum of <ithx tick> and <jthx tick>?",
+        "type": "identification",
+        "category": "composite understanding",
+        "subcategory": "data identification"
     }
-]
+] 

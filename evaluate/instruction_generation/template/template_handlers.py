@@ -90,9 +90,30 @@ class TemplateHandlers:
             "template_57": self.handle_template_57,
             "template_58": self.handle_template_58,
             "template_59": self.handle_template_59,
+            "template_60": self.handle_template_60,
+            "template_61": self.handle_template_61,
+            "template_62": self.handle_template_62,
+            "template_63": self.handle_template_63,
+            "template_64": self.handle_template_64,
+            "template_65": self.handle_template_65,
+            "template_66": self.handle_template_66,
+            "template_67": self.handle_template_67,
+            "template_68": self.handle_template_68,
+            "template_69": self.handle_template_69,
+            "template_70": self.handle_template_70,
+            "template_71": self.handle_template_71,
+            "template_72": self.handle_template_72,
+            "template_73": self.handle_template_73,
+            "template_74": self.handle_template_74,
+            "template_75": self.handle_template_75,
+            "template_76": self.handle_template_76,
+            "template_77": self.handle_template_77,
+            "template_78": self.handle_template_78,
+            "template_79": self.handle_template_79,
+            "template_80": self.handle_template_80,
         }
         
-    def _handle_basic_calculation(self, template: str, calc_type: str) -> Tuple[Optional[str], Optional[float], Optional[list], Optional[str]]:
+    def _handle_basic_calculation(self, template: str, calc_type: str) -> Tuple[Optional[str], Optional[float], Optional[list], Optional[list]]:
         """
         Handle basic calculation templates
         
@@ -145,7 +166,7 @@ class TemplateHandlers:
         
         return question, formatted_result, None, None
     
-    def _handle_difference(self, template: str, with_legend: bool = False) -> Tuple[Optional[str], Optional[float], Optional[list], Optional[str]]:
+    def _handle_difference(self, template: str, with_legend: bool = False) -> Tuple[Optional[str], Optional[float], Optional[list], Optional[list]]:
         """
         Handle difference templates
         
@@ -181,7 +202,7 @@ class TemplateHandlers:
         
         return question, formatted_difference, None, None
     
-    def _handle_legend_calculation(self, template: str, calc_type: str) -> Tuple[Optional[str], Optional[float], Optional[list], Optional[str]]:
+    def _handle_legend_calculation(self, template: str, calc_type: str) -> Tuple[Optional[str], Optional[float], Optional[list], Optional[list]]:
         """
         Handle legend calculation templates
         
@@ -220,7 +241,7 @@ class TemplateHandlers:
 
         return question, formatted_result, confusion, None
     
-    def _handle_threshold_count(self, template: str, with_legend: bool = False) -> Tuple[Optional[str], Optional[int], Optional[list], Optional[str]]:
+    def _handle_threshold_count(self, template: str, with_legend: bool = False) -> Tuple[Optional[str], Optional[int], Optional[list], Optional[list]]:
         """
         Handle threshold count templates
         
@@ -265,7 +286,7 @@ class TemplateHandlers:
                 
         return question, count, None, None
     
-    def _handle_comparison_question(self, template: str, with_legend: bool = False) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[str]]:
+    def _handle_comparison_question(self, template: str, with_legend: bool = False) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[list]]:
         """
         Handle comparison question templates
         
@@ -317,9 +338,9 @@ class TemplateHandlers:
         return f"{question} If there are multiple answers, put them in brackets using this format ['Answer1', 'Answer2'].\n", answer, confusion, None
     
     # Add helper function for handling Yes/No questions
-    def _format_yes_no_question(self, question: str, answer: str) -> Tuple[str, str, None, None]:
+    def _format_yes_no_question(self, question: str, answer: str, image: list[tuple[str, str]]=None) -> Tuple[str, str, None, None]:
         """Add prompt to Yes/No questions and remove distractors"""
-        return f"{question}", answer, None, None
+        return f"{question}", answer, None, image
     
     def _format_chart_type(self, question: str, answer: str) -> Tuple[str, str, None, None]:
         """Format chart type"""
@@ -379,7 +400,7 @@ class TemplateHandlers:
         
         return f"{question}", answer, confusion, None
     
-    def _handle_ratio(self, template: str, with_legend: bool = False) -> Tuple[Optional[str], Optional[float], Optional[list], Optional[str]]:
+    def _handle_ratio(self, template: str, with_legend: bool = False) -> Tuple[Optional[str], Optional[float], Optional[list], Optional[list]]:
         """
         Handle ratio template
         
@@ -432,7 +453,7 @@ class TemplateHandlers:
 
         return None, None, None, None
     
-    def _handle_extreme_value_x(self, template: str, extreme_type: str, with_legend: bool = False) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[str]]:
+    def _handle_extreme_value_x(self, template: str, extreme_type: str, with_legend: bool = False) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[list]]:
         """
         Handle templates for X value corresponding to extreme Y values
         
@@ -458,7 +479,7 @@ class TemplateHandlers:
         
         return question, extreme_x, None, None
     
-    def _handle_extremes_difference(self, template: str, first_rank: int, second_rank: int) -> Tuple[Optional[str], Optional[float], Optional[list], Optional[str]]:
+    def _handle_extremes_difference(self, template: str, first_rank: int, second_rank: int) -> Tuple[Optional[str], Optional[float], Optional[list], Optional[list]]:
         """
         Handle templates for difference between extreme values
         
@@ -494,31 +515,31 @@ class TemplateHandlers:
 
         return None, None, None, None
         
-    def handle_template_1(self, template: str) -> Tuple[Optional[str], Optional[float], Optional[list], Optional[str]]:
+    def handle_template_1(self, template: str) -> Tuple[Optional[str], Optional[float], Optional[list], Optional[list]]:
         """ What is the sum of <Y label> ? """
         return self._handle_basic_calculation(template, 'sum')
     
-    def handle_template_2(self, template: str) -> Tuple[Optional[str], Optional[float], Optional[list], Optional[str]]:
+    def handle_template_2(self, template: str) -> Tuple[Optional[str], Optional[float], Optional[list], Optional[list]]:
         """ What is the difference between the <Y label> in <ithx tick> and <jthx tick> ? """
         return self._handle_difference(template)
     
-    def handle_template_3(self, template: str) -> Tuple[Optional[str], Optional[float], Optional[list], Optional[str]]:
+    def handle_template_3(self, template: str) -> Tuple[Optional[str], Optional[float], Optional[list], Optional[list]]:
         """ What is the average <Y label> per <singular form of X label> ? """
         return self._handle_basic_calculation(template, 'avg')
     
-    def handle_template_4(self, template: str) -> Tuple[Optional[str], Optional[float], Optional[list], Optional[str]]:
+    def handle_template_4(self, template: str) -> Tuple[Optional[str], Optional[float], Optional[list], Optional[list]]:
         """ What is the median <Y label> ? """
         return self._handle_basic_calculation(template, 'median')
     
-    def handle_template_5(self, template: str) -> Tuple[Optional[str], Optional[float], Optional[list], Optional[str]]:
+    def handle_template_5(self, template: str) -> Tuple[Optional[str], Optional[float], Optional[list], Optional[list]]:
         """ What is the total <Y label> of/in <legend label> in the graph? """
         return self._handle_legend_calculation(template, 'sum')
     
-    def handle_template_6(self, template: str) -> Tuple[Optional[str], Optional[float], Optional[list], Optional[str]]:
+    def handle_template_6(self, template: str) -> Tuple[Optional[str], Optional[float], Optional[list], Optional[list]]:
         """ What is the difference between the <Y label> of/in <legend label> in <ithx tick> and that in <jthx tick> ? """
         return self._handle_difference(template, with_legend=True)
     
-    def handle_template_7(self, template: str) -> Tuple[Optional[str], Optional[float], Optional[list], Optional[str]]:
+    def handle_template_7(self, template: str) -> Tuple[Optional[str], Optional[float], Optional[list], Optional[list]]:
         """ What is the difference between the <Y label> of/in <legend label1> in <ithx tick>
         and the <Y label> of/in <legend label2> in <jthx tick> ? """
         y_label = self.generator.get_column_by_role('y')
@@ -542,15 +563,15 @@ class TemplateHandlers:
         confusion = None
         return question, difference, confusion, None
     
-    def handle_template_8(self, template: str) -> Tuple[Optional[str], Optional[float], Optional[list], Optional[str]]:
+    def handle_template_8(self, template: str) -> Tuple[Optional[str], Optional[float], Optional[list], Optional[list]]:
         """ What is the average <Y label> of/in <legend label> per <singular form of X label>? """
         return self._handle_legend_calculation(template, 'avg')
     
-    def handle_template_9(self, template: str) -> Tuple[Optional[str], Optional[float], Optional[list], Optional[str]]:
+    def handle_template_9(self, template: str) -> Tuple[Optional[str], Optional[float], Optional[list], Optional[list]]:
         """ 和 10 没区别 """
         return None, None, None, None
     
-    def handle_template_10(self, template: str) -> Tuple[Optional[str], Optional[float], Optional[list], Optional[str]]:
+    def handle_template_10(self, template: str) -> Tuple[Optional[str], Optional[float], Optional[list], Optional[list]]:
         """ What is the difference between the <Y label> of/in <legend label1> and <Y label>
         of/in <legend label2> in <ithx tick> ? """
         y_label = self.generator.get_column_by_role('y')
@@ -573,15 +594,15 @@ class TemplateHandlers:
         confusion = None
         return question, difference, confusion, None
     
-    def handle_template_11(self, template: str) -> Tuple[Optional[str], Optional[int], Optional[list], Optional[str]]:
+    def handle_template_11(self, template: str) -> Tuple[Optional[str], Optional[int], Optional[list], Optional[list]]:
         """ In how many <plural form of X label>, is the <Y label> greater than <N> units ? """
         return self._handle_threshold_count(template)
     
-    def handle_template_12(self, template: str) -> Tuple[Optional[str], Optional[float], Optional[list], Optional[str]]:
+    def handle_template_12(self, template: str) -> Tuple[Optional[str], Optional[float], Optional[list], Optional[list]]:
         """ What is the ratio of the <Y label> in <ithx tick> to that in <jthx tick> ? """
         return self._handle_ratio(template)
     
-    def handle_template_13(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[str]]:
+    def handle_template_13(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[list]]:
         """ Is the <Y label> in <ithx tick> less than that in <jthx tick> ? """
         y_label = self.generator.get_column_by_role('y')
 
@@ -608,15 +629,15 @@ class TemplateHandlers:
 
         return None, None, None, None
     
-    def handle_template_14(self, template: str) -> Tuple[Optional[str], Optional[int], Optional[list], Optional[str]]:
+    def handle_template_14(self, template: str) -> Tuple[Optional[str], Optional[int], Optional[list], Optional[list]]:
         """ In how many <plural form of X label>, is the <Y label> of/in <legend label> greater than <N> <units> ? """
         return self._handle_threshold_count(template, with_legend=True)
     
-    def handle_template_15(self, template: str) -> Tuple[Optional[str], Optional[float], Optional[list], Optional[str]]:
+    def handle_template_15(self, template: str) -> Tuple[Optional[str], Optional[float], Optional[list], Optional[list]]:
         """ What is the ratio of the <Y label> of/in <legend label> in <ithx tick> to that in <jthx tick> ? """
         return self._handle_ratio(template, with_legend=True)
     
-    def handle_template_16(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[str]]:
+    def handle_template_16(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[list]]:
         """ Is the <Y label> of/in <legend label> in <ithx tick> less than that in <jthx tick> ? """
         y_label = self.generator.get_column_by_role('y')
 
@@ -644,7 +665,7 @@ class TemplateHandlers:
 
         return None, None, None, None
     
-    def handle_template_17(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[str]]:
+    def handle_template_17(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[list]]:
         """ Is the difference between the <Y label> in <ithx tick> and <jthx tick> greater than
         he difference between any two <plural form of X label> ? """
         y_label = self.generator.get_column_by_role('y')
@@ -688,11 +709,11 @@ class TemplateHandlers:
             
         return None, None, None, None
     
-    def handle_template_18(self, template: str) -> Tuple[Optional[str], Optional[float], Optional[list], Optional[str]]:
+    def handle_template_18(self, template: str) -> Tuple[Optional[str], Optional[float], Optional[list], Optional[list]]:
         """ What is the difference between the highest and the second highest <Y label> ? """
         return self._handle_basic_calculation(template, 'max_second_max_diff')
     
-    def handle_template_19(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[str]]:
+    def handle_template_19(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[list]]:
         """Is the sum of the <Y label> of/in <legend label1> in <ithx tick> and <jthx tick>
         greater than the maximum <Y label> of/in <legend label2> across all <plural form of X label> ?"""
         y_label = self.generator.get_column_by_role('y')
@@ -724,7 +745,7 @@ class TemplateHandlers:
 
         return None, None, None, None
     
-    def handle_template_20(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[str]]:
+    def handle_template_20(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[list]]:
         """Is it the case that in every <singular form of X label>, the sum of the <Y label>
         of/in <legend label1> and <legend label2> is greater than the sum of <Y label> of <legend label3> and <Y label> of <legend label4> ?"""
         y_label = self.generator.get_column_by_role('y')
@@ -760,7 +781,7 @@ class TemplateHandlers:
         
         return self._format_yes_no_question(question, answer)
     
-    def handle_template_21(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[str]]:
+    def handle_template_21(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[list]]:
         """ Is the sum of the <Y label> in <ithx tick> and <jthx tick> greater than the
         maximum <Y label> across all <plural form of X label> ? """
         y_label = self.generator.get_column_by_role('y')
@@ -791,11 +812,11 @@ class TemplateHandlers:
 
         return None, None, None, None
         
-    def handle_template_22(self, template: str) -> Tuple[Optional[str], Optional[float], Optional[list], Optional[str]]:
+    def handle_template_22(self, template: str) -> Tuple[Optional[str], Optional[float], Optional[list], Optional[list]]:
         """ What is the difference between the highest and the lowest <Y label> ? """
         return self._handle_basic_calculation(template, 'max_min_diff')
     
-    def handle_template_23(self, template: str) -> Tuple[Optional[str], Optional[int], Optional[list], Optional[str]]:
+    def handle_template_23(self, template: str) -> Tuple[Optional[str], Optional[int], Optional[list], Optional[list]]:
         """ In how many <plural form of X label>, is the <Y label> of/in <legend label> greater
         than the average <Y label> of/in <legend label> across all <plural form of X label> ? """
         y_label = self.generator.get_column_by_role('y')
@@ -838,7 +859,7 @@ class TemplateHandlers:
                 
         return question, count, None, None
     
-    def handle_template_24(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[str]]:
+    def handle_template_24(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[list]]:
         """ Is the difference between the <Y label> of <legend label1> in <ithx tick> and <jthx tick> greater than
         the difference between the <Y label> of <legend label2> in <ithx tick> and <jthx tick>? """
         y_label = self.generator.get_column_by_role('y')
@@ -881,23 +902,23 @@ class TemplateHandlers:
 
         return None, None, None, None
         
-    def handle_template_25(self, template: str) -> Tuple[Optional[str], Optional[float], Optional[list], Optional[str]]:
+    def handle_template_25(self, template: str) -> Tuple[Optional[str], Optional[float], Optional[list], Optional[list]]:
         """ What is the difference between the highest and second highest <Y label> of <legend label>? """
         # 使用通用方法处理极值差值：0为最高，1为次高
         return self._handle_extremes_difference(template, 0, 1)
     
-    def handle_template_26(self, template: str) -> Tuple[Optional[str], Optional[float], Optional[list], Optional[str]]:
+    def handle_template_26(self, template: str) -> Tuple[Optional[str], Optional[float], Optional[list], Optional[list]]:
         """ What is the difference between the highest and lowest <Y label> of <legend label>? """
         # 使用通用方法处理极值差值：0为最高，-1为最低
         return self._handle_extremes_difference(template, 0, -1)
     
-    def handle_template_27(self, template: str) -> Tuple[Optional[str], Optional[int], Optional[list], Optional[str]]:
+    def handle_template_27(self, template: str) -> Tuple[Optional[str], Optional[int], Optional[list], Optional[list]]:
         """ In how many <plural form of X label> is the <Y label> of <legend label> greater than 
         the average <Y label> of <legend label> across all <plural form of X label>? """
         # 这个与template_23基本相同，可以复用代码
         return self.handle_template_23(template)
     
-    def handle_template_28(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[str]]:
+    def handle_template_28(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[list]]:
         """ Is it the case that in every <singular form of X label>, the sum of the <Y label> of/in
         <legend label1> and <legend label2> is greater than the <Y label> of/in <legend label3> ? """
         y_label = self.generator.get_column_by_role('y')
@@ -930,7 +951,7 @@ class TemplateHandlers:
         
         return self._format_yes_no_question(question, answer)
     
-    def handle_template_29(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[str]]:
+    def handle_template_29(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[list]]:
         """ Is the <Y label> of/in <legend label1> strictly greater than the <Y label> of/in
         <legend label2> over the <plural form of X label> ? """
         y_label = self.generator.get_column_by_role('y')
@@ -960,7 +981,7 @@ class TemplateHandlers:
         
         return self._format_yes_no_question(question, answer)
     
-    def handle_template_30(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[str]]:
+    def handle_template_30(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[list]]:
         """ Is the <Y label> of/in <legend label1> strictly less than the <Y label> of/in
         <legend label2> over the <plural form of X label> ? """
         y_label = self.generator.get_column_by_role('y')
@@ -990,7 +1011,7 @@ class TemplateHandlers:
         
         return self._format_yes_no_question(question, answer)
     
-    def handle_template_31(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[str]]:
+    def handle_template_31(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[list]]:
         """ Does the <Y label> of <legend label> monotonically increase over the
         <plural form of X label> ? """
         y_label = self.generator.get_column_by_role('y')
@@ -1049,45 +1070,45 @@ class TemplateHandlers:
                     
         return None, None, None, None
     
-    def handle_template_32(self, template: str) -> Tuple[Optional[str], Optional[float], Optional[list], Optional[str]]:
+    def handle_template_32(self, template: str) -> Tuple[Optional[str], Optional[float], Optional[list], Optional[list]]:
         """ What is the difference between two consecutive major ticks on the Y-axis ? """
         return None, None, None, None # NOTE 不太容易标准化
     
-    def handle_template_33(self, template: str) -> Tuple[Optional[str], Optional[float], Optional[list], Optional[str]]:
+    def handle_template_33(self, template: str) -> Tuple[Optional[str], Optional[float], Optional[list], Optional[list]]:
         """ Across all <plural form of X label> , what is the maximum <Y label> ? """
         return self._handle_basic_calculation(template, 'max')
     
-    def handle_template_34(self, template: str) -> Tuple[Optional[str], Optional[float], Optional[list], Optional[str]]:
+    def handle_template_34(self, template: str) -> Tuple[Optional[str], Optional[float], Optional[list], Optional[list]]:
         """ Across all <plural form of X label> , what is the minimum <Y label> ? """
         return self._handle_basic_calculation(template, 'min')
     
-    def handle_template_35(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[str]]:
+    def handle_template_35(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[list]]:
         """ In which <X label> was the <Y label> maximum ? """
         return self._handle_extreme_value_x(template, 'max')
     
-    def handle_template_36(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[str]]:
+    def handle_template_36(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[list]]:
         """  In which <X label> was the <Y label> minimum ? """
         return self._handle_extreme_value_x(template, 'min')
     
-    def handle_template_37(self, template: str) -> Tuple[Optional[str], Optional[float], Optional[list], Optional[str]]:
+    def handle_template_37(self, template: str) -> Tuple[Optional[str], Optional[float], Optional[list], Optional[list]]:
         """ Across all <plural form of X label> , what is the maximum <Y label> of/in <legend
         label> ? """
         return self._handle_legend_calculation(template, 'max')
     
-    def handle_template_38(self, template: str) -> Tuple[Optional[str], Optional[float], Optional[list], Optional[str]]:
+    def handle_template_38(self, template: str) -> Tuple[Optional[str], Optional[float], Optional[list], Optional[list]]:
         """ Across all <plural form of X label> , what is the minimum <Y label> of/in <legend
         label> ? """
         return self._handle_legend_calculation(template, 'min')
     
-    def handle_template_39(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[str]]:
+    def handle_template_39(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[list]]:
         """ In which <singular form of X label> was the <Y label> of/in <legend label> maximum ? """
         return self._handle_extreme_value_x(template, 'max', with_legend=True)
     
-    def handle_template_40(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[str]]:
+    def handle_template_40(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[list]]:
         """ In which <singular form of X label> was the <Y label> of/in <legend label> minimum ? """
         return self._handle_extreme_value_x(template, 'min', with_legend=True)
     
-    def handle_template_41(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[str]]:
+    def handle_template_41(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[list]]:
         """ What is the position of the title in this infographic? """
         info = self.generator.get_info()
         if not info or "title_to_chart" not in info:
@@ -1119,7 +1140,7 @@ class TemplateHandlers:
             
         return None, None, None, None
     
-    def handle_template_42(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[str]]:
+    def handle_template_42(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[list]]:
         """ What is the position of the main image in this infographic? """
         info = self.generator.get_info()
         if not info or "image_to_chart" not in info:
@@ -1151,7 +1172,7 @@ class TemplateHandlers:
             
         return None, None, None, None
     
-    def handle_template_43(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[str]]:
+    def handle_template_43(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[list]]:
         """ What is the alignment style of the main text content? """
         info = self.generator.get_info()
         if not info or "text_align" not in info:
@@ -1178,7 +1199,7 @@ class TemplateHandlers:
             
         return None, None, None, None
     
-    def handle_template_44(self, template: str) -> Tuple[Optional[str], Optional[int], Optional[list], Optional[str]]:
+    def handle_template_44(self, template: str) -> Tuple[Optional[str], Optional[int], Optional[list], Optional[list]]:
         """ How many icons or images are present in this infographic? """
         svg_path = self.generator.get_svg_path()
         if not svg_path or not os.path.exists(svg_path):
@@ -1196,7 +1217,7 @@ class TemplateHandlers:
             logger.error(f"读取SVG文件错误: {e}")
             return None, None, None, None
     
-    def handle_template_45(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[str]]:
+    def handle_template_45(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[list]]:
         """ Which data field determines the color encoding for the chart elements? """
         info = self.generator.get_requirements()
         if not info or "required_fields_colors" not in info:
@@ -1222,7 +1243,7 @@ class TemplateHandlers:
         
         return template, answer, confusion, None
     
-    def handle_template_46(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[str]]:
+    def handle_template_46(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[list]]:
         """ Which data field is used for the icon encoding in the chart? """
         info = self.generator.get_requirements() # Changed from get_info() based on T45
         if not info or "required_fields_icons" not in info or not info["required_fields_icons"] or len(info["required_fields_icons"]) == 0:
@@ -1251,13 +1272,13 @@ class TemplateHandlers:
         
         return self._format_multiple_answers(template, answer, confusion)
     
-    def handle_template_47(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[str]]:
+    def handle_template_47(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[list]]:
         """ What types of charts are included in this infographic? """
         info = self.generator.get_info()
         chart_type = info["chart_type"]
         return self._format_chart_type(template, chart_type)
     
-    def handle_template_48(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[str]]:
+    def handle_template_48(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[list]]:
         """ How are images presented in relation to the charts in this infographic? """
         info = self.generator.get_info()
         if not info or "image_mode" not in info:
@@ -1282,7 +1303,7 @@ class TemplateHandlers:
             
         return None, None, None, None
     '''
-    def handle_template_49(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[str]]:
+    def handle_template_49(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[list]]:
         """ Does this chart have a visible x-axis structure with labels or title? """
         info = self.generator.get_requirements()
         if not info or "has_x_axis" not in info:
@@ -1305,7 +1326,7 @@ class TemplateHandlers:
             
         return template, answer, confusion, None
     
-    def handle_template_50(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[str]]:
+    def handle_template_50(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[list]]:
         """ Does this chart have a visible y-axis structure with labels or title? """
         info = self.generator.get_requirements()
         if not info or "has_y_axis" not in info:
@@ -1327,7 +1348,7 @@ class TemplateHandlers:
             
         return template, answer, confusion, None
     
-    def handle_template_51(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[str]]:
+    def handle_template_51(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[list]]:
         """ How are small icons used with data marks in the visualization? """
         info = self.generator.get_requirements()
         if not info or "icon_mark" not in info:
@@ -1358,7 +1379,7 @@ class TemplateHandlers:
             logger.warning(f"Unexpected value for icon_mark: {icon_mark}")
             return None, None, None, None # Or default to 'none'
 
-    def handle_template_52(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[str]]:
+    def handle_template_52(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[list]]:
         """ How are icons integrated with axis labels? """
         info = self.generator.get_requirements()
         if not info or "icon_label" not in info:
@@ -1399,7 +1420,7 @@ class TemplateHandlers:
             logger.warning(f"Value {value} not found in list for ranking.")
             return None
             
-    def handle_template_53(self, template: str) -> Tuple[Optional[str], Optional[Any], Optional[list], Optional[str]]:
+    def handle_template_53(self, template: str) -> Tuple[Optional[str], Optional[Any], Optional[list], Optional[list]]:
         """ What is the <Y label> for <ithx tick>? """
         y_label = self.generator.get_column_by_role('y')
         if not y_label:
@@ -1412,7 +1433,7 @@ class TemplateHandlers:
         ith_tick_value = x_ticks[0]
         # Ensure the value passed to get_field_images is the actual x-axis value
         image_base64 = self.generator.get_field_images(ith_tick_value)
-        image = (ith_tick_value, image_base64) if image_base64 else None
+        image = [(ith_tick_value, image_base64) if image_base64 else None]
 
         if image_base64 is None:
             logger.info(f"No image found for tick value: {ith_tick_value} in template 53")
@@ -1431,7 +1452,7 @@ class TemplateHandlers:
 
         return question, formatted_answer, None, image
 
-    def handle_template_54(self, template: str) -> Tuple[Optional[str], Optional[int], Optional[list], Optional[str]]:
+    def handle_template_54(self, template: str) -> Tuple[Optional[str], Optional[int], Optional[list], Optional[list]]:
         """ What is the rank of the <Y label> for <ithx tick> among all <plural form of X label>? """
         y_label = self.generator.get_column_by_role('y')
         x_label = self.generator.get_column_by_role('x') # Needed for placeholder replacement
@@ -1444,7 +1465,7 @@ class TemplateHandlers:
             
         ith_tick_value = x_ticks[0]
         image_base64 = self.generator.get_field_images(ith_tick_value)
-        image = (ith_tick_value, image_base64) if image_base64 else None
+        image = [(ith_tick_value, image_base64) if image_base64 else None]
 
         if image_base64 is None:
             logger.info(f"No image found for tick value: {ith_tick_value} in template 54")
@@ -1492,7 +1513,7 @@ class TemplateHandlers:
 
         return question, rank, None, image
 
-    def handle_template_55(self, template: str) -> Tuple[Optional[str], Optional[Any], Optional[list], Optional[str]]:
+    def handle_template_55(self, template: str) -> Tuple[Optional[str], Optional[Any], Optional[list], Optional[list]]:
         """ What is the <Y label> for <ithx tick> in the <legend label> group? """
         y_label = self.generator.get_column_by_role('y')
         group_label = self.generator.get_column_by_role('group')
@@ -1506,7 +1527,7 @@ class TemplateHandlers:
         ith_tick_value = x_ticks[0]
         legend_value = legend_values[0]
         image_base64 = self.generator.get_field_images(ith_tick_value) # Check image for the tick itself
-        image = (ith_tick_value, image_base64) if image_base64 else None
+        image = [(ith_tick_value, image_base64) if image_base64 else None]
 
         if image_base64 is None:
              logger.info(f"No image found for tick value: {ith_tick_value} in template 55")
@@ -1523,7 +1544,7 @@ class TemplateHandlers:
         formatted_answer = format_numeric_value(answer)
         return question, formatted_answer, None, image
 
-    def handle_template_56(self, template: str) -> Tuple[Optional[str], Optional[int], Optional[list], Optional[str]]:
+    def handle_template_56(self, template: str) -> Tuple[Optional[str], Optional[int], Optional[list], Optional[list]]:
         """ What is the rank of the <Y label> for <ithx tick> within the <legend label> group? """
         y_label = self.generator.get_column_by_role('y')
         group_label = self.generator.get_column_by_role('group')
@@ -1538,7 +1559,7 @@ class TemplateHandlers:
         ith_tick_value = x_ticks[0]
         legend_value = legend_values[0]
         image_base64 = self.generator.get_field_images(ith_tick_value) # Check image for the tick itself
-        image = (ith_tick_value, image_base64) if image_base64 else None
+        image = [(ith_tick_value, image_base64) if image_base64 else None]
 
         if image_base64 is None:
              logger.info(f"No image found for tick value: {ith_tick_value} in template 56")
@@ -1593,7 +1614,7 @@ class TemplateHandlers:
 
         return question, rank, None, image
 
-    def handle_template_57(self, template: str) -> Tuple[Optional[str], Optional[Any], Optional[list], Optional[str]]:
+    def handle_template_57(self, template: str) -> Tuple[Optional[str], Optional[Any], Optional[list], Optional[list]]:
         """ Which <singular form of X label> has a <Y label> closest to <N>? """
         y_label = self.generator.get_column_by_role('y')
         x_label = self.generator.get_column_by_role('x')
@@ -1648,7 +1669,7 @@ class TemplateHandlers:
                     continue # Skip if y_val is not numeric
 
         if closest_x is not None:
-            image = (closest_x, closest_img)
+            image = [(closest_x, closest_img)]
             # 为文本答案创建混淆项，获取所有可能的x值，然后排除正确答案
             if x_values:
                 confusion = None
@@ -1669,7 +1690,7 @@ class TemplateHandlers:
             logger.warning("No suitable (x, y) pair found meeting conditions for template 57")
             return None, None, None, None
 
-    def handle_template_58(self, template: str) -> Tuple[Optional[str], Optional[Any], Optional[list], Optional[str]]:
+    def handle_template_58(self, template: str) -> Tuple[Optional[str], Optional[Any], Optional[list], Optional[list]]:
         """ Which <legend label> has the highest <Y label> at <ithx tick>? """
         y_label = self.generator.get_column_by_role('y')
         group_label = self.generator.get_column_by_role('group')
@@ -1683,7 +1704,7 @@ class TemplateHandlers:
             
         ith_tick_value = x_ticks[0]
         image_base64 = self.generator.get_field_images(ith_tick_value) # Check image for the tick itself
-        image = (ith_tick_value, image_base64) if image_base64 else None
+        image = [(ith_tick_value, image_base64) if image_base64 else None]
 
         if image_base64 is None:
              logger.info(f"No image found for tick value: {ith_tick_value} in template 58")
@@ -1739,7 +1760,7 @@ class TemplateHandlers:
             logger.warning(f"No legend with a numeric Y value found for tick {ith_tick_value} in template 58")
             return None, None, None, None
 
-    def handle_template_59(self, template: str) -> Tuple[Optional[str], Optional[Any], Optional[list], Optional[str]]:
+    def handle_template_59(self, template: str) -> Tuple[Optional[str], Optional[Any], Optional[list], Optional[list]]:
         """ Which <legend label> has the lowest <Y label> at <ithx tick>? """
         y_label = self.generator.get_column_by_role('y')
         group_label = self.generator.get_column_by_role('group')
@@ -1753,7 +1774,7 @@ class TemplateHandlers:
             
         ith_tick_value = x_ticks[0]
         image_base64 = self.generator.get_field_images(ith_tick_value) # Check image for the tick itself
-        image = (ith_tick_value, image_base64) if image_base64 else None
+        image = [(ith_tick_value, image_base64) if image_base64 else None]
 
         if image_base64 is None:
              logger.info(f"No image found for tick value: {ith_tick_value} in template 59")
@@ -1808,3 +1829,1138 @@ class TemplateHandlers:
              logger.warning(f"No legend with a numeric Y value found for tick {ith_tick_value} in template 59")
              return None, None, None, None
     
+    def handle_template_60(self, template: str) -> Tuple[Optional[str], Optional[Any], Optional[list], Optional[list]]:
+        """ Which <legend label> has the second highest <Y label> at <ithx tick>? """
+        y_label = self.generator.get_column_by_role('y')
+        group_label = self.generator.get_column_by_role('group')
+        x_label = self.generator.get_column_by_role('x')  # Needed for placeholder replacement
+        if not y_label or not group_label or not x_label:
+            return None, None, None, None
+
+        placeholders, _, x_ticks = self.generator.get_common_placeholders(tick_num=1)
+        if not x_ticks:
+            return None, None, None, None
+            
+        ith_tick_value = x_ticks[0]
+        image_base64 = self.generator.get_field_images(ith_tick_value)
+        image = [(ith_tick_value, image_base64) if image_base64 else None]
+
+        if image_base64 is None:
+            logger.info(f"No image found for tick value: {ith_tick_value} in template_60")
+            return None, None, None, None
+
+        # Ensure replacement of <legend label> with the actual group label name
+        placeholders["legend label"] = group_label
+        question = self.generator.replace_placeholders(template, placeholders)
+
+        # Find legends present at this tick
+        filter_tick = self.generator.get_filter_dict(x_tick=ith_tick_value)
+        filtered_df = self.generator.get_filtered_data(filter_tick)
+        legends_at_tick = []
+        if not filtered_df.empty and group_label in filtered_df.columns:
+            legends_at_tick = list(filtered_df[group_label].unique())
+
+        if len(legends_at_tick) < 2:  # Need at least 2 legends to find second highest
+            logger.warning(f"Not enough legends found for tick {ith_tick_value} in template_60")
+            return None, None, None, None
+
+        # Create a list of (legend, y_value) pairs
+        legend_y_pairs = []
+        for legend in legends_at_tick:
+            filter_dict = self.generator.get_filter_dict(x_tick=ith_tick_value, legend_value=legend)
+            y_val = self.generator.get_value(y_label, filter_dict)
+            
+            if y_val is not None:
+                try:
+                    numeric_y = float(y_val)
+                    legend_y_pairs.append((legend, numeric_y))
+                except (ValueError, TypeError):
+                    logger.debug(f"Skipping non-numeric Y value {y_val} for legend {legend} at tick {ith_tick_value}")
+                    continue
+        
+        if len(legend_y_pairs) < 2:  # Need at least 2 valid pairs to find second highest
+            logger.warning(f"Not enough legends with numeric Y values found for tick {ith_tick_value}")
+            return None, None, None, None
+            
+        # Sort by Y value in descending order
+        legend_y_pairs.sort(key=lambda pair: pair[1], reverse=True)
+        
+        # Get the second highest legend
+        second_highest_legend = legend_y_pairs[1][0]
+        
+        # Create confusion options from other legends
+        confusion = [legend for legend in legends_at_tick if legend != second_highest_legend]
+        if len(confusion) > 4:
+            confusion = random.sample(confusion, 4)
+            
+        return question, second_highest_legend, confusion, image
+
+    def handle_template_61(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[list]]:
+        """ Is the <Y label> of <ithx tick> greater than the average <Y label> across all <plural form of X label>? """
+        y_label = self.generator.get_column_by_role('y')
+        if not y_label:
+            return None, None, None, None
+
+        placeholders, _, x_ticks = self.generator.get_common_placeholders(tick_num=1)
+        if not x_ticks:
+            return None, None, None, None
+            
+        ith_tick_value = x_ticks[0]
+        image_base64 = self.generator.get_field_images(ith_tick_value)
+        image = [(ith_tick_value, image_base64) if image_base64 else None]
+
+        if image_base64 is None:
+            logger.info(f"No image found for tick value: {ith_tick_value} in template 61")
+            return None, None, None, None
+
+        question = self.generator.replace_placeholders(template, placeholders)
+        
+        filter_dict = self.generator.get_filter_dict(x_tick=ith_tick_value)
+        specific_y = self.generator.get_value(y_label, filter_dict)
+        
+        avg_y = self.generator.get_average(y_label)
+        
+        if specific_y is None or avg_y is None:
+            logger.warning(f"Missing data for comparison in template 61: specific_y={specific_y}, avg_y={avg_y}")
+            return None, None, None, None
+            
+        try:
+            is_greater = float(specific_y) > float(avg_y)
+            answer = "Yes" if is_greater else "No"
+            return self._format_yes_no_question(question, answer, image)
+        except (ValueError, TypeError):
+            logger.warning(f"Non-numeric values in comparison for template 61: specific_y={specific_y}, avg_y={avg_y}")
+            return None, None, None, None
+
+    def handle_template_62(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[list]]:
+        """ Is the <Y label> of <ithx tick> greater than the average <Y label> within the <legend label> group? """
+        y_label = self.generator.get_column_by_role('y')
+        group_label = self.generator.get_column_by_role('group')
+        if not y_label or not group_label:
+            return None, None, None, None
+
+        placeholders, legend_values, x_ticks = self.generator.get_common_placeholders(legend_num=1, tick_num=1)
+        if not legend_values or not x_ticks:
+            return None, None, None, None
+            
+        ith_tick_value = x_ticks[0]
+        legend_value = legend_values[0]
+        image_base64 = self.generator.get_field_images(ith_tick_value)
+        image = [(ith_tick_value, image_base64) if image_base64 else None]
+
+        if image_base64 is None:
+            logger.info(f"No image found for tick value: {ith_tick_value} in template 62")
+            return None, None, None, None
+
+        question = self.generator.replace_placeholders(template, placeholders)
+        
+        # Get the specific Y value for the tick in the legend group
+        filter_dict_tick = self.generator.get_filter_dict(x_tick=ith_tick_value, legend_value=legend_value)
+        specific_y = self.generator.get_value(y_label, filter_dict_tick)
+        
+        # Get the average Y value within the legend group
+        filter_dict_legend = self.generator.get_filter_dict(legend_value=legend_value)
+        avg_y = self.generator.get_average(y_label, filter_dict_legend)
+        
+        if specific_y is None or avg_y is None:
+            logger.warning(f"Missing data for comparison in template 62: specific_y={specific_y}, avg_y={avg_y}")
+            return None, None, None, None
+            
+        try:
+            is_greater = float(specific_y) > float(avg_y)
+            answer = "Yes" if is_greater else "No"
+            return self._format_yes_no_question(question, answer, image)
+        except (ValueError, TypeError):
+            logger.warning(f"Non-numeric values in comparison for template 62: specific_y={specific_y}, avg_y={avg_y}")
+            return None, None, None, None
+
+    def handle_template_63(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[list]]:
+        """ How many <plural form of X label> have <Y label> values strictly above that of <ithx tick>? """
+        y_label = self.generator.get_column_by_role('y')
+        x_label = self.generator.get_column_by_role('x')
+        if not y_label or not x_label:
+            return None, None, None, None
+
+        placeholders, _, x_ticks = self.generator.get_common_placeholders(tick_num=1)
+        if not x_ticks:
+            return None, None, None, None
+            
+        ith_tick_value = x_ticks[0]
+        image_base64 = self.generator.get_field_images(ith_tick_value)
+        image = [(ith_tick_value, image_base64) if image_base64 else None]
+
+        if image_base64 is None:
+            logger.info(f"No image found for tick value: {ith_tick_value} in template 63")
+            return None, None, None, None
+
+        question = self.generator.replace_placeholders(template, placeholders)
+        
+        filter_dict_threshold = self.generator.get_filter_dict(x_tick=ith_tick_value)
+        threshold_y = self.generator.get_value(y_label, filter_dict_threshold)
+        
+        if threshold_y is None:
+            logger.warning(f"Could not retrieve threshold Y value for {ith_tick_value} in template 63")
+            return None, None, None, None
+            
+        try:
+            threshold_y_numeric = float(threshold_y)
+        except (ValueError, TypeError):
+            logger.warning(f"Non-numeric threshold Y value {threshold_y} in template 63")
+            return None, None, None, None
+        
+        count = 0
+        x_values = self.generator.get_column_values(x_label)
+        
+        for x_val in x_values:
+            if x_val == ith_tick_value:
+                continue
+                
+            filter_dict = self.generator.get_filter_dict(x_tick=x_val)
+            y_val = self.generator.get_value(y_label, filter_dict)
+            
+            if y_val is not None:
+                try:
+                    if float(y_val) > threshold_y_numeric:
+                        count += 1
+                except (ValueError, TypeError):
+                    logger.debug(f"Skipping non-numeric Y value {y_val} for x={x_val} in template 63")
+                    continue
+                    
+        return question, count, None, image
+
+    def handle_template_64(self, template: str) -> Tuple[Optional[str], Optional[int], Optional[list], Optional[list]]:
+        """ How many <plural form of X label> have <Y label> values strictly above that of <ithx tick> within the <legend label> group? """
+        y_label = self.generator.get_column_by_role('y')
+        x_label = self.generator.get_column_by_role('x')
+        group_label = self.generator.get_column_by_role('group')
+        if not y_label or not x_label or not group_label:
+            return None, None, None, None
+
+        placeholders, legend_values, x_ticks = self.generator.get_common_placeholders(legend_num=1, tick_num=1)
+        if not legend_values or not x_ticks:
+            return None, None, None, None
+            
+        ith_tick_value = x_ticks[0]
+        legend_value = legend_values[0]
+        image_base64 = self.generator.get_field_images(ith_tick_value)
+        image = [(ith_tick_value, image_base64) if image_base64 else None]
+
+        if image_base64 is None:
+            logger.info(f"No image found for tick value: {ith_tick_value} in template 64")
+            return None, None, None, None
+
+        question = self.generator.replace_placeholders(template, placeholders)
+        
+        # Get the threshold Y value for the specific tick within the legend group
+        filter_dict_threshold = self.generator.get_filter_dict(x_tick=ith_tick_value, legend_value=legend_value)
+        threshold_y = self.generator.get_value(y_label, filter_dict_threshold)
+        
+        if threshold_y is None:
+            logger.warning(f"Could not retrieve threshold Y value for tick={ith_tick_value}, legend={legend_value} in template 64")
+            return None, None, None, None
+            
+        try:
+            threshold_y_numeric = float(threshold_y)
+        except (ValueError, TypeError):
+            logger.warning(f"Non-numeric threshold Y value {threshold_y} in template 64")
+            return None, None, None, None
+        
+        # Count how many x values have y values greater than the threshold within the same legend group
+        count = 0
+        x_values = self.generator.get_column_values(x_label)
+        
+        for x_val in x_values:
+            if x_val == ith_tick_value:
+                continue
+                
+            filter_dict = self.generator.get_filter_dict(x_tick=x_val, legend_value=legend_value)
+            y_val = self.generator.get_value(y_label, filter_dict)
+            
+            if y_val is not None:
+                try:
+                    if float(y_val) > threshold_y_numeric:
+                        count += 1
+                except (ValueError, TypeError):
+                    logger.debug(f"Skipping non-numeric Y value {y_val} for x={x_val}, legend={legend_value} in template 64")
+                    continue
+                    
+        return question, count, None, image
+
+    def handle_template_65(self, template: str) -> Tuple[Optional[str], Optional[float], Optional[list], Optional[list]]:
+        """ What is the ratio of <Y label> between <ithx tick> and the highest value within the <legend label> group? """
+        y_label = self.generator.get_column_by_role('y')
+        group_label = self.generator.get_column_by_role('group')
+        if not y_label or not group_label:
+            return None, None, None, None
+
+        placeholders, legend_values, x_ticks = self.generator.get_common_placeholders(legend_num=1, tick_num=1)
+        if not legend_values or not x_ticks:
+            return None, None, None, None
+            
+        ith_tick_value = x_ticks[0]
+        legend_value = legend_values[0]
+        image_base64 = self.generator.get_field_images(ith_tick_value)
+        image = [(ith_tick_value, image_base64) if image_base64 else None]
+
+        if image_base64 is None:
+            logger.info(f"No image found for tick value: {ith_tick_value} in template 65")
+            return None, None, None, None
+
+        question = self.generator.replace_placeholders(template, placeholders)
+        
+        # Get the Y value for the specific tick within the legend group
+        filter_dict_tick = self.generator.get_filter_dict(x_tick=ith_tick_value, legend_value=legend_value)
+        specific_y = self.generator.get_value(y_label, filter_dict_tick)
+        
+        # Get the maximum Y value within the legend group
+        filter_dict_legend = self.generator.get_filter_dict(legend_value=legend_value)
+        max_y = self.generator.get_max(y_label, filter_dict_legend)
+        
+        if specific_y is None or max_y is None:
+            logger.warning(f"Missing data for ratio calculation in template 65: specific_y={specific_y}, max_y={max_y}")
+            return None, None, None, None
+            
+        try:
+            float_specific_y = float(specific_y)
+            float_max_y = float(max_y)
+            
+            # Avoid division by zero
+            if float_max_y == 0:
+                logger.warning("Division by zero in ratio calculation, template 65")
+                return None, None, None, None
+                
+            ratio = float_specific_y / float_max_y
+            formatted_ratio = format_numeric_value(ratio)
+            
+            return question, formatted_ratio, None, image
+        except (ValueError, TypeError):
+            logger.warning(f"Non-numeric values in ratio calculation for template 65")
+            return None, None, None, None
+
+    def _get_y_values_with_legend(self, y_label, x_ticks, legend_value=None, sort_values=False):
+        """
+        获取指定刻度和图例的 Y 值及相关数据，可选是否按 Y 值排序
+        
+        Args:
+            y_label: Y 轴标签名
+            x_ticks: X 刻度值列表
+            legend_value: 图例值，如果为 None 则不考虑图例
+            sort_values: 是否按 Y 值从小到大排序
+            
+        Returns:
+            处理后的 (y_val, filter_dict, tick_value, image_base64) 数据列表，若任一 Y 值缺失或非数值则返回 None
+        """
+        data_list = []
+        
+        for tick_value in x_ticks:
+            # 创建适当的 filter_dict
+            if legend_value is not None:
+                filter_dict = self.generator.get_filter_dict(x_tick=tick_value, legend_value=legend_value)
+            else:
+                filter_dict = self.generator.get_filter_dict(x_tick=tick_value)
+                
+            y_val = self.generator.get_value(y_label, filter_dict)
+            image_base64 = self.generator.get_field_images(tick_value)
+            
+            # 检查 Y 值和图像是否存在
+            if y_val is None:
+                logger.debug(f"Missing Y value for tick {tick_value}")
+                return None
+                
+            if image_base64 is None:
+                logger.debug(f"Missing image for tick {tick_value}")
+                return None
+                
+            try:
+                float_y_val = float(y_val)
+                data_list.append((float_y_val, y_val, filter_dict, tick_value, image_base64))
+            except (ValueError, TypeError):
+                logger.debug(f"Non-numeric Y value {y_val} for tick {tick_value}")
+                return None
+        
+        # 如果需要排序
+        if sort_values:
+            data_list.sort(key=lambda x: x[0])
+        
+        # 返回数据（移除 float_y_val，保留原始 y_val）
+        return [(item[1], item[2], item[3], item[4]) for item in data_list]
+
+    def handle_template_66(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[list]]:
+        """ What is the difference between the <Y label> of <ithx tick> and <jthx tick>? """
+        y_label = self.generator.get_column_by_role('y')
+        if not y_label:
+            return None, None, None, None
+
+        placeholders, _, x_ticks = self.generator.get_common_placeholders(tick_num=2)
+        if len(x_ticks) < 2:
+            return None, None, None, None
+                        
+        data = self._get_y_values_with_legend(y_label, x_ticks)
+        if data is None:
+            return None, None, None, None
+            
+        (y_val1, filter_dict1, ith_tick_value, image_base64_i), \
+        (y_val2, filter_dict2, jth_tick_value, image_base64_j) = data
+        
+        image = [
+            (ith_tick_value, image_base64_i),
+            (jth_tick_value, image_base64_j),
+        ]
+
+        question = self.generator.replace_placeholders(template, placeholders)
+            
+        try:
+            diff = self.generator.get_difference(y_label, filter_dict1, filter_dict2)
+            
+            return question, diff, None, image
+        except (ValueError, TypeError):
+            logger.warning(f"Non-numeric values in percentage difference calculation, template 64")
+            return None, None, None, None
+
+    def handle_template_67(self, template: str) -> Tuple[Optional[str], Optional[float], Optional[list], Optional[list]]:
+        """ What is the difference between the <Y label> of <ithx tick> and <jthx tick> within the <legend label> group? """
+        y_label = self.generator.get_column_by_role('y')
+        group_label = self.generator.get_column_by_role('group')
+        if not y_label or not group_label:
+            return None, None, None, None
+
+        placeholders, legend_values, x_ticks = self.generator.get_common_placeholders(legend_num=1, tick_num=2)
+        if not legend_values or len(x_ticks) < 2:
+            return None, None, None, None
+
+        legend_value = legend_values[0]
+            
+        data = self._get_y_values_with_legend(y_label, x_ticks, legend_value)
+        if data is None:
+            return None, None, None, None
+            
+        (y_val1, filter_dict1, ith_tick_value, image_base64_i), \
+        (y_val2, filter_dict2, jth_tick_value, image_base64_j) = data
+        
+        image = [
+            (ith_tick_value, image_base64_i),
+            (jth_tick_value, image_base64_j),
+        ]
+
+        question = self.generator.replace_placeholders(template, placeholders)
+            
+        try:
+            diff = self.generator.get_difference(y_label, filter_dict1, filter_dict2)
+            
+            return question, diff, None, image
+        except (ValueError, TypeError):
+            logger.warning(f"Non-numeric values in difference calculation, template 67")
+            return None, None, None, None
+
+    def handle_template_68(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[list]]:
+        """ Which has a higher <Y label>: <ithx tick> or <jthx tick>? """
+        y_label = self.generator.get_column_by_role('y')
+        if not y_label:
+            return None, None, None, None
+
+        placeholders, _, x_ticks = self.generator.get_common_placeholders(tick_num=2)
+        if len(x_ticks) < 2:
+            return None, None, None, None
+            
+        data = self._get_y_values_with_legend(y_label, x_ticks)
+        if data is None:
+            return None, None, None, None
+            
+        (y_val1, filter_dict1, ith_tick_value, image_base64_i), \
+        (y_val2, filter_dict2, jth_tick_value, image_base64_j) = data
+        
+        image = [
+            (ith_tick_value, image_base64_i),
+            (jth_tick_value, image_base64_j),
+        ]
+
+        question = self.generator.replace_placeholders(template, placeholders)
+        
+        if y_val1 is None or y_val2 is None:
+            logger.warning(f"Missing Y values for comparison in template 65")
+            return None, None, None, None
+            
+        try:
+            float_val1 = float(y_val1)
+            float_val2 = float(y_val2)
+            
+            if float_val1 == float_val2:
+                answer = "both are equal"
+                confusion = [ith_tick_value, jth_tick_value]
+            elif float_val1 > float_val2:
+                answer = str(ith_tick_value)
+                confusion = [str(jth_tick_value), "both are equal"]
+            else:
+                answer = str(jth_tick_value)
+                confusion = [str(ith_tick_value), "both are equal"]
+            
+            return question, answer, confusion, image
+        except (ValueError, TypeError):
+            logger.warning(f"Non-numeric values in comparison, template 65")
+            return None, None, None, None
+
+    def handle_template_69(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[list]]:
+        """ Which has a higher <Y label> within the <legend label> group: <ithx tick> or <jthx tick>? """
+        y_label = self.generator.get_column_by_role('y')
+        group_label = self.generator.get_column_by_role('group')
+        if not y_label or not group_label:
+            return None, None, None, None
+
+        placeholders, legend_values, x_ticks = self.generator.get_common_placeholders(legend_num=1, tick_num=2)
+        if not legend_values or len(x_ticks) < 2:
+            return None, None, None, None
+            
+        ith_tick_value = x_ticks[0]
+        jth_tick_value = x_ticks[1]
+        legend_value = legend_values[0]
+
+        data = self._get_y_values_with_legend(y_label, x_ticks, legend_value)
+        if data is None:
+            return None, None, None, None
+            
+        (y_val1, filter_dict1, ith_tick_value, image_base64_i), \
+        (y_val2, filter_dict2, jth_tick_value, image_base64_j) = data
+        
+        image = [
+            (ith_tick_value, image_base64_i),
+            (jth_tick_value, image_base64_j),
+        ]
+
+        question = self.generator.replace_placeholders(template, placeholders)
+        
+        if y_val1 is None or y_val2 is None:
+            logger.warning(f"Missing Y values for comparison in template 69")
+            return None, None, None, None
+            
+        try:
+            float_val1 = float(y_val1)
+            float_val2 = float(y_val2)
+            
+            if float_val1 == float_val2:
+                answer = "both are equal"
+                confusion = [ith_tick_value, jth_tick_value]
+            elif float_val1 > float_val2:
+                answer = str(ith_tick_value)
+                confusion = [str(jth_tick_value), "both are equal"]
+            else:
+                answer = str(jth_tick_value)
+                confusion = [str(ith_tick_value), "both are equal"]
+            
+            return question, answer, confusion, image
+        except (ValueError, TypeError):
+            logger.warning(f"Non-numeric values in comparison, template 69")
+            return None, None, None, None
+
+    def handle_template_70(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[list]]:
+        """ Is the sum of <Y label> values for <ithx tick> and <jthx tick> greater than the <Y label> of <kthx tick>? """
+        y_label = self.generator.get_column_by_role('y')
+        if not y_label:
+            return None, None, None, None
+
+        placeholders, _, x_ticks = self.generator.get_common_placeholders(tick_num=3)
+        if len(x_ticks) < 3:
+            return None, None, None, None
+            
+        data = self._get_y_values_with_legend(y_label, x_ticks)
+        if data is None:
+            return None, None, None, None
+            
+        (y_val1, filter_dict1, ith_tick_value, image_base64_i), \
+        (y_val2, filter_dict2, jth_tick_value, image_base64_j), \
+        (y_val3, filter_dict3, kth_tick_value, image_base64_k) = data
+        
+        image = [
+            (ith_tick_value, image_base64_i),
+            (jth_tick_value, image_base64_j),
+            (kth_tick_value, image_base64_k)
+        ]
+
+        question = self.generator.replace_placeholders(template, placeholders)
+        
+        if y_val1 is None or y_val2 is None or y_val3 is None:
+            logger.warning(f"Missing Y values for comparison in template 70")
+            return None, None, None, None
+            
+        try:
+            sum_vals = float(y_val1) + float(y_val2)
+            is_greater = sum_vals > float(y_val3)
+            answer = "Yes" if is_greater else "No"
+            return self._format_yes_no_question(question, answer, image)
+        except (ValueError, TypeError):
+            logger.warning(f"Non-numeric values in comparison, template 70")
+            return None, None, None, None
+
+    def handle_template_71(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[list]]:
+        """ Is the sum of <Y label> values for <ithx tick> and <jthx tick> greater than the <Y label> of <kthx tick> within the <legend label> group? """
+        y_label = self.generator.get_column_by_role('y')
+        group_label = self.generator.get_column_by_role('group')
+        if not y_label or not group_label:
+            return None, None, None, None
+
+        placeholders, legend_values, x_ticks = self.generator.get_common_placeholders(legend_num=1, tick_num=3)
+        if not legend_values or len(x_ticks) < 3:
+            return None, None, None, None
+
+        legend_value = legend_values[0]
+            
+        data = self._get_y_values_with_legend(y_label, x_ticks, legend_value)
+        if data is None:
+            return None, None, None, None
+            
+        (y_val1, filter_dict1, ith_tick_value, image_base64_i), \
+        (y_val2, filter_dict2, jth_tick_value, image_base64_j), \
+        (y_val3, filter_dict3, kth_tick_value, image_base64_k) = data
+        
+        image = [
+            (ith_tick_value, image_base64_i),
+            (jth_tick_value, image_base64_j),
+            (kth_tick_value, image_base64_k)
+        ]
+
+        question = self.generator.replace_placeholders(template, placeholders)
+        
+        if y_val1 is None or y_val2 is None or y_val3 is None:
+            logger.warning(f"Missing Y values for comparison in template 71")
+            return None, None, None, None
+            
+        try:
+            sum_vals = float(y_val1) + float(y_val2)
+            is_greater = sum_vals > float(y_val3)
+            answer = "Yes" if is_greater else "No"
+            return self._format_yes_no_question(question, answer, image)
+        except (ValueError, TypeError):
+            logger.warning(f"Non-numeric values in comparison, template 71")
+            return None, None, None, None
+
+    def handle_template_72(self, template: str) -> Tuple[Optional[str], Optional[float], Optional[list], Optional[list]]:
+        """ What is the average <Y label> of <ithx tick>, <jthx tick>, and <kthx tick>? """
+        y_label = self.generator.get_column_by_role('y')
+        if not y_label:
+            return None, None, None, None
+
+        placeholders, _, x_ticks = self.generator.get_common_placeholders(tick_num=3)
+        if len(x_ticks) < 3:
+            return None, None, None, None
+            
+        data = self._get_y_values_with_legend(y_label, x_ticks)
+        if data is None:
+            return None, None, None, None
+            
+        (y_val1, filter_dict1, ith_tick_value, image_base64_i), \
+        (y_val2, filter_dict2, jth_tick_value, image_base64_j), \
+        (y_val3, filter_dict3, kth_tick_value, image_base64_k) = data
+        
+        image = [
+            (ith_tick_value, image_base64_i),
+            (jth_tick_value, image_base64_j),
+            (kth_tick_value, image_base64_k)
+        ]
+
+        question = self.generator.replace_placeholders(template, placeholders)
+        
+        if y_val1 is None or y_val2 is None or y_val3 is None:
+            logger.warning(f"Missing Y values for average calculation in template 72")
+            return None, None, None, None
+            
+        try:
+            avg_val = (float(y_val1) + float(y_val2) + float(y_val3)) / 3
+            formatted_avg = format_numeric_value(avg_val)
+            return question, formatted_avg, None, image
+        except (ValueError, TypeError):
+            logger.warning(f"Non-numeric values in average calculation, template 72")
+            return None, None, None, None
+
+    def handle_template_73(self, template: str) -> Tuple[Optional[str], Optional[float], Optional[list], Optional[list]]:
+        """ What is the average <Y label> of <ithx tick>, <jthx tick>, and <kthx tick> within the <legend label> group? """
+        y_label = self.generator.get_column_by_role('y')
+        group_label = self.generator.get_column_by_role('group')
+        if not y_label or not group_label:
+            return None, None, None, None
+
+        placeholders, legend_values, x_ticks = self.generator.get_common_placeholders(legend_num=1, tick_num=3)
+        if not legend_values or len(x_ticks) < 3:
+            return None, None, None, None
+
+        legend_value = legend_values[0]
+            
+        data = self._get_y_values_with_legend(y_label, x_ticks, legend_value)
+        if data is None:
+            return None, None, None, None
+            
+        (y_val1, filter_dict1, ith_tick_value, image_base64_i), \
+        (y_val2, filter_dict2, jth_tick_value, image_base64_j), \
+        (y_val3, filter_dict3, kth_tick_value, image_base64_k) = data
+        
+        image = [
+            (ith_tick_value, image_base64_i),
+            (jth_tick_value, image_base64_j),
+            (kth_tick_value, image_base64_k)
+        ]
+        
+        question = self.generator.replace_placeholders(template, placeholders)
+
+        if y_val1 is None or y_val2 is None or y_val3 is None:
+            logger.warning(f"Missing Y values for average calculation in template 73")
+            return None, None, None, None
+            
+        try:
+            avg_val = (float(y_val1) + float(y_val2) + float(y_val3)) / 3
+            formatted_avg = format_numeric_value(avg_val)
+            return question, formatted_avg, None, image
+        except (ValueError, TypeError):
+            logger.warning(f"Non-numeric values in average calculation, template 73")
+            return None, None, None, None
+
+    def handle_template_74(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[list]]:
+        """ Which has a greater percentage change in <Y label>: from <ithx tick> to <jthx tick> or from <jthx tick> to <kthx tick>? """
+        y_label = self.generator.get_column_by_role('y')
+        if not y_label:
+            return None, None, None, None
+
+        placeholders, _, x_ticks = self.generator.get_common_placeholders(tick_num=3)
+        if len(x_ticks) < 3:
+            return None, None, None, None
+
+        sorted_data = self._get_y_values_with_legend(y_label, x_ticks, sort_values=True)
+        if sorted_data is None:
+            return None, None, None, None
+            
+        (y_val1, filter_dict1, ith_tick_value, image_base64_i), \
+        (y_val2, filter_dict2, jth_tick_value, image_base64_j), \
+        (y_val3, filter_dict3, kth_tick_value, image_base64_k) = sorted_data
+        
+        image = [
+            (ith_tick_value, image_base64_i),
+            (jth_tick_value, image_base64_j),
+            (kth_tick_value, image_base64_k)
+        ]
+
+        placeholders["ithx tick"] = ith_tick_value
+        placeholders["jthx tick"] = jth_tick_value
+        placeholders["kthx tick"] = kth_tick_value
+
+        question = self.generator.replace_placeholders(template, placeholders)
+
+        if y_val1 is None or y_val2 is None or y_val3 is None:
+            logger.warning(f"Missing Y values for percentage change calculation in template 74")
+            return None, None, None, None
+                
+        try:
+            float_val1 = float(y_val1)
+            float_val2 = float(y_val2)
+            float_val3 = float(y_val3)
+            
+            # Avoid division by zero
+            if float_val1 == 0 or float_val2 == 0:
+                logger.warning("Division by zero in percentage change calculation, template 74")
+                return None, None, None, None
+                
+            # Calculate percentage changes
+            pct_change1 = abs((float_val2 - float_val1) / float_val1) * 100
+            pct_change2 = abs((float_val3 - float_val2) / float_val2) * 100
+            
+            # Determine which change is greater
+            if pct_change1 == pct_change2:
+                answer = "both are equal"
+                confusion = [f"from {ith_tick_value} to {jth_tick_value}", f"from {jth_tick_value} to {kth_tick_value}"]
+            elif pct_change1 > pct_change2:
+                answer = f"from {ith_tick_value} to {jth_tick_value}"
+                confusion = [f"from {jth_tick_value} to {kth_tick_value}", "both are equal"]
+            else:
+                answer = f"from {jth_tick_value} to {kth_tick_value}"
+                confusion = [f"from {ith_tick_value} to {jth_tick_value}", "both are equal"]
+            
+            return question, answer, confusion, image
+        except (ValueError, TypeError):
+            logger.warning(f"Non-numeric values in percentage change calculation, template 74")
+            return None, None, None, None
+
+    def handle_template_75(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[list]]:
+        """ Which has a greater percentage change in <Y label> within the <legend label> group: from <ithx tick> to <jthx tick> or from <jthx tick> to <kthx tick>? """
+        y_label = self.generator.get_column_by_role('y')
+        group_label = self.generator.get_column_by_role('group')
+        if not y_label or not group_label:
+            return None, None, None, None
+
+        placeholders, legend_values, x_ticks = self.generator.get_common_placeholders(legend_num=1, tick_num=3)
+        if not legend_values or len(x_ticks) < 3:
+            return None, None, None, None
+            
+        legend_value = legend_values[0]
+        
+        data = self._get_y_values_with_legend(y_label, x_ticks, legend_value, sort_values=False)
+        if data is None:
+            return None, None, None, None
+        
+        (y_val1, filter_dict1, ith_tick_value, image_base64_i), \
+        (y_val2, filter_dict2, jth_tick_value, image_base64_j), \
+        (y_val3, filter_dict3, kth_tick_value, image_base64_k) = data
+        
+        image = [
+            (ith_tick_value, image_base64_i),
+            (jth_tick_value, image_base64_j),
+            (kth_tick_value, image_base64_k)
+        ]
+        
+        question = self.generator.replace_placeholders(template, placeholders)
+        
+        try:
+            float_val1 = float(y_val1)
+            float_val2 = float(y_val2)
+            float_val3 = float(y_val3)
+            
+            # 避免除以零
+            if float_val1 == 0 or float_val2 == 0:
+                logger.warning("Division by zero in percentage change calculation, template 75")
+                return None, None, None, None
+                
+            # 计算百分比变化
+            pct_change1 = abs((float_val2 - float_val1) / float_val1) * 100
+            pct_change2 = abs((float_val3 - float_val2) / float_val2) * 100
+            
+            # 确定哪个变化更大
+            if pct_change1 == pct_change2:
+                answer = "both are equal"
+                confusion = [f"from {ith_tick_value} to {jth_tick_value}", f"from {jth_tick_value} to {kth_tick_value}"]
+            elif pct_change1 > pct_change2:
+                answer = f"from {ith_tick_value} to {jth_tick_value}"
+                confusion = [f"from {jth_tick_value} to {kth_tick_value}", "both are equal"]
+            else:
+                answer = f"from {jth_tick_value} to {kth_tick_value}"
+                confusion = [f"from {ith_tick_value} to {jth_tick_value}", "both are equal"]
+            
+            return question, answer, confusion, image
+        except (ValueError, TypeError):
+            logger.warning(f"Non-numeric values in percentage change calculation, template 75")
+            return None, None, None, None
+
+    def handle_template_76(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[list]]:
+        """ Is the <Y label> of <ithx tick> closer to the <Y label> of <jthx tick> or <kthx tick>? """
+        y_label = self.generator.get_column_by_role('y')
+        if not y_label:
+            return None, None, None, None
+
+        placeholders, _, x_ticks = self.generator.get_common_placeholders(tick_num=3)
+        if len(x_ticks) < 3:
+            return None, None, None, None
+                    
+        data = self._get_y_values_with_legend(y_label, x_ticks)
+        if data is None:
+            return None, None, None, None
+        
+        (y_val1, filter_dict1, ith_tick_value, image_base64_i), \
+        (y_val2, filter_dict2, jth_tick_value, image_base64_j), \
+        (y_val3, filter_dict3, kth_tick_value, image_base64_k) = data
+        
+        image = [
+            (ith_tick_value, image_base64_i),
+            (jth_tick_value, image_base64_j),
+            (kth_tick_value, image_base64_k)
+        ]
+
+        question = self.generator.replace_placeholders(template, placeholders)
+        
+        if y_val1 is None or y_val2 is None or y_val3 is None:
+            logger.warning(f"Missing Y values for proximity comparison in template 76")
+            return None, None, None, None
+            
+        try:
+            float_val1 = float(y_val1)
+            float_val2 = float(y_val2)
+            float_val3 = float(y_val3)
+            
+            # Calculate differences
+            diff1 = abs(float_val1 - float_val2)
+            diff2 = abs(float_val1 - float_val3)
+            
+            # Determine which is closer
+            if diff1 == diff2:
+                answer = "equally close to both"
+                confusion = [str(jth_tick_value), str(kth_tick_value)]
+            elif diff1 < diff2:
+                answer = str(jth_tick_value)
+                confusion = [str(kth_tick_value), "equally close to both"]
+            else:
+                answer = str(kth_tick_value)
+                confusion = [str(jth_tick_value), "equally close to both"]
+            
+            return question, answer, confusion, image
+        except (ValueError, TypeError):
+            logger.warning(f"Non-numeric values in proximity comparison, template 76")
+            return None, None, None, None
+
+    def handle_template_77(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[list]]:
+        """ Is the <Y label> of <ithx tick> closer to the <Y label> of <jthx tick> or <kthx tick> within the <legend label> group? """
+        y_label = self.generator.get_column_by_role('y')
+        group_label = self.generator.get_column_by_role('group')
+        if not y_label or not group_label:
+            return None, None, None, None
+
+        placeholders, legend_values, x_ticks = self.generator.get_common_placeholders(legend_num=1, tick_num=3)
+        if not legend_values or len(x_ticks) < 3:
+            return None, None, None, None
+            
+        data = self._get_y_values_with_legend(y_label, x_ticks)
+        if data is None:
+            return None, None, None, None
+        
+        (y_val1, filter_dict1, ith_tick_value, image_base64_i), \
+        (y_val2, filter_dict2, jth_tick_value, image_base64_j), \
+        (y_val3, filter_dict3, kth_tick_value, image_base64_k) = data
+        
+        image = [
+            (ith_tick_value, image_base64_i),
+            (jth_tick_value, image_base64_j),
+            (kth_tick_value, image_base64_k)
+        ]
+
+        question = self.generator.replace_placeholders(template, placeholders)
+        
+        if y_val1 is None or y_val2 is None or y_val3 is None:
+            logger.warning(f"Missing Y values for proximity comparison in template 77")
+            return None, None, None, None
+            
+        try:
+            float_val1 = float(y_val1)
+            float_val2 = float(y_val2)
+            float_val3 = float(y_val3)
+            
+            # Calculate differences
+            diff1 = abs(float_val1 - float_val2)
+            diff2 = abs(float_val1 - float_val3)
+            
+            # Determine which is closer
+            if diff1 == diff2:
+                answer = "equally close to both"
+                confusion = [str(jth_tick_value), str(kth_tick_value)]
+            elif diff1 < diff2:
+                answer = str(jth_tick_value)
+                confusion = [str(kth_tick_value), "equally close to both"]
+            else:
+                answer = str(kth_tick_value)
+                confusion = [str(jth_tick_value), "equally close to both"]
+            
+            return question, answer, confusion, image
+        except (ValueError, TypeError):
+            logger.warning(f"Non-numeric values in proximity comparison, template 77")
+            return None, None, None, None
+
+    def handle_template_78(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[list]]:
+        """ In the <legend label> group, which is greater: the <Y label> at <ithx tick> or the sum of <Y label> at <jthx tick> and <kthx tick>? """
+        y_label = self.generator.get_column_by_role('y')
+        group_label = self.generator.get_column_by_role('group')
+        if not y_label or not group_label:
+            return None, None, None, None
+
+        placeholders, legend_values, x_ticks = self.generator.get_common_placeholders(legend_num=1, tick_num=3)
+        if not legend_values or len(x_ticks) < 3:
+            return None, None, None, None
+            
+        data = self._get_y_values_with_legend(y_label, x_ticks)
+        if data is None:
+            return None, None, None, None
+        
+        (y_val1, filter_dict1, ith_tick_value, image_base64_i), \
+        (y_val2, filter_dict2, jth_tick_value, image_base64_j), \
+        (y_val3, filter_dict3, kth_tick_value, image_base64_k) = data
+        
+        image = [
+            (ith_tick_value, image_base64_i),
+            (jth_tick_value, image_base64_j),
+            (kth_tick_value, image_base64_k)
+        ]
+
+        question = self.generator.replace_placeholders(template, placeholders)
+        
+        if y_val1 is None or y_val2 is None or y_val3 is None:
+            logger.warning(f"Missing Y values for comparison in template 78")
+            return None, None, None, None
+            
+        try:
+            float_val1 = float(y_val1)
+            float_val2 = float(y_val2)
+            float_val3 = float(y_val3)
+            
+            sum_val23 = float_val2 + float_val3
+            
+            # Determine which is greater
+            if float_val1 == sum_val23:
+                answer = "both are equal"
+                confusion = [f"the {y_label} at {ith_tick_value}", f"the sum of {y_label} at {jth_tick_value} and {kth_tick_value}"]
+            elif float_val1 > sum_val23:
+                answer = f"the {y_label} at {ith_tick_value}"
+                confusion = [f"the sum of {y_label} at {jth_tick_value} and {kth_tick_value}", "both are equal"]
+            else:
+                answer = f"the sum of {y_label} at {jth_tick_value} and {kth_tick_value}"
+                confusion = [f"the {y_label} at {ith_tick_value}", "both are equal"]
+            
+            return question, answer, confusion, image
+        except (ValueError, TypeError):
+            logger.warning(f"Non-numeric values in comparison, template 78")
+            return None, None, None, None
+
+    def handle_template_79(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[list]]:
+        """ Which <legend label> has the highest <Y label> at the sum of <ithx tick> and <jthx tick>? """
+        y_label = self.generator.get_column_by_role('y')
+        group_label = self.generator.get_column_by_role('group')
+        if not y_label or not group_label:
+            return None, None, None, None
+
+        placeholders, _, x_ticks = self.generator.get_common_placeholders(tick_num=2)
+        if len(x_ticks) < 2:
+            return None, None, None, None
+            
+        ith_tick_value = x_ticks[0]
+        jth_tick_value = x_ticks[1]
+        
+        image_base64_i = self.generator.get_field_images(ith_tick_value)
+        image_base64_j = self.generator.get_field_images(jth_tick_value)
+        
+        # Need at least one image
+        if image_base64_i is None or image_base64_j is None:
+            logger.info(f"No images found for ticks in template 79")
+            return None, None, None, None
+            
+        # Compile images we have
+        image = []
+        if image_base64_i:
+            image.append((ith_tick_value, image_base64_i))
+        if image_base64_j:
+            image.append((jth_tick_value, image_base64_j))
+
+        # Replace '<legend label>' with the actual group label name in the question
+        placeholders["legend label"] = group_label
+        question = self.generator.replace_placeholders(template, placeholders)
+        
+        # Find all legend values present for these ticks
+        filtered_df_i = self.generator.get_filtered_data(self.generator.get_filter_dict(x_tick=ith_tick_value))
+        filtered_df_j = self.generator.get_filtered_data(self.generator.get_filter_dict(x_tick=jth_tick_value))
+        
+        legends_at_tick_i = []
+        legends_at_tick_j = []
+        
+        if not filtered_df_i.empty and group_label in filtered_df_i.columns:
+            legends_at_tick_i = list(filtered_df_i[group_label].unique())
+        if not filtered_df_j.empty and group_label in filtered_df_j.columns:
+            legends_at_tick_j = list(filtered_df_j[group_label].unique())
+        
+        # Find common legends present at both ticks
+        common_legends = set(legends_at_tick_i).intersection(set(legends_at_tick_j))
+        
+        if not common_legends:
+            logger.warning(f"No common legends found for both ticks in template 79")
+            return None, None, None, None
+        
+        max_sum = float('-inf')
+        max_legend = None
+        
+        for legend in common_legends:
+            filter_dict_i = self.generator.get_filter_dict(x_tick=ith_tick_value, legend_value=legend)
+            filter_dict_j = self.generator.get_filter_dict(x_tick=jth_tick_value, legend_value=legend)
+            
+            y_val_i = self.generator.get_value(y_label, filter_dict_i)
+            y_val_j = self.generator.get_value(y_label, filter_dict_j)
+            
+            if y_val_i is not None and y_val_j is not None:
+                try:
+                    sum_val = float(y_val_i) + float(y_val_j)
+                    if sum_val > max_sum:
+                        max_sum = sum_val
+                        max_legend = legend
+                except (ValueError, TypeError):
+                    logger.debug(f"Skipping non-numeric Y values for legend {legend} in template 79")
+                    continue
+        
+        if max_legend is not None:
+            # Create confusion options from other legends
+            confusion = [legend for legend in common_legends if legend != max_legend]
+            if len(confusion) > 3:
+                confusion = random.sample(confusion, 3)
+            
+            return question, max_legend, confusion, image
+        else:
+            logger.warning(f"No legend with valid numeric Y values found in template 79")
+            return None, None, None, None
+
+    def handle_template_80(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[list]]:
+        """ Which <legend label> has the lowest <Y label> at the sum of <ithx tick> and <jthx tick>? """
+        y_label = self.generator.get_column_by_role('y')
+        group_label = self.generator.get_column_by_role('group')
+        if not y_label or not group_label:
+            return None, None, None, None
+
+        placeholders, _, x_ticks = self.generator.get_common_placeholders(tick_num=2)
+        if len(x_ticks) < 2:
+            return None, None, None, None
+            
+        ith_tick_value = x_ticks[0]
+        jth_tick_value = x_ticks[1]
+        
+        image_base64_i = self.generator.get_field_images(ith_tick_value)
+        image_base64_j = self.generator.get_field_images(jth_tick_value)
+        
+        # Need at least one image
+        if image_base64_i is None or image_base64_j is None:
+            logger.info(f"No images found for ticks in template 80")
+            return None, None, None, None
+            
+        # Compile images we have
+        image = []
+        if image_base64_i:
+            image.append((ith_tick_value, image_base64_i))
+        if image_base64_j:
+            image.append((jth_tick_value, image_base64_j))
+
+        # Replace '<legend label>' with the actual group label name in the question
+        placeholders["legend label"] = group_label
+        question = self.generator.replace_placeholders(template, placeholders)
+        
+        # Find all legend values present for these ticks
+        filtered_df_i = self.generator.get_filtered_data(self.generator.get_filter_dict(x_tick=ith_tick_value))
+        filtered_df_j = self.generator.get_filtered_data(self.generator.get_filter_dict(x_tick=jth_tick_value))
+        
+        legends_at_tick_i = []
+        legends_at_tick_j = []
+        
+        if not filtered_df_i.empty and group_label in filtered_df_i.columns:
+            legends_at_tick_i = list(filtered_df_i[group_label].unique())
+        if not filtered_df_j.empty and group_label in filtered_df_j.columns:
+            legends_at_tick_j = list(filtered_df_j[group_label].unique())
+        
+        # Find common legends present at both ticks
+        common_legends = set(legends_at_tick_i).intersection(set(legends_at_tick_j))
+        
+        if not common_legends:
+            logger.warning(f"No common legends found for both ticks in template 80")
+            return None, None, None, None
+        
+        min_sum = float('inf')
+        min_legend = None
+        
+        for legend in common_legends:
+            filter_dict_i = self.generator.get_filter_dict(x_tick=ith_tick_value, legend_value=legend)
+            filter_dict_j = self.generator.get_filter_dict(x_tick=jth_tick_value, legend_value=legend)
+            
+            y_val_i = self.generator.get_value(y_label, filter_dict_i)
+            y_val_j = self.generator.get_value(y_label, filter_dict_j)
+            
+            if y_val_i is not None and y_val_j is not None:
+                try:
+                    sum_val = float(y_val_i) + float(y_val_j)
+                    if sum_val < min_sum:
+                        min_sum = sum_val
+                        min_legend = legend
+                except (ValueError, TypeError):
+                    logger.debug(f"Skipping non-numeric Y values for legend {legend} in template 80")
+                    continue
+        
+        if min_legend is not None:
+            # Create confusion options from other legends
+            confusion = [legend for legend in common_legends if legend != min_legend]
+            if len(confusion) > 3:
+                confusion = random.sample(confusion, 3)
+            
+            return question, min_legend, confusion, image
+        else:
+            logger.warning(f"No legend with valid numeric Y values found in template 80")
+            return None, None, None, None
