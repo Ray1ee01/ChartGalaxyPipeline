@@ -52,6 +52,19 @@ function makeChart(containerSelector, data) {
     // 清空容器
     d3.select(containerSelector).html("");
     
+    // 添加数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    }
+    
     // ---------- 2. 尺寸和布局设置 ----------
     
     // 设置图表总尺寸
@@ -204,7 +217,7 @@ function makeChart(containerSelector, data) {
         .style("fill", colors.text_color)
         .style("font-family", typography.annotation.font_family)
         .style("font-size", typography.annotation.font_size)
-        .text(d => d.total.toFixed(1));
+        .text(d => formatValue(d.total) + (yUnit ? ` ${yUnit}` : ''));
 
     // 添加数值标注
     layers.selectAll("text")
@@ -223,8 +236,8 @@ function makeChart(containerSelector, data) {
         .text(d => {
             const value = d[1] - d[0];
             const height = yScale(d[0]) - yScale(d[1]);
-            // 只在高度大于20且值大于0时显示文本
-            return (height > 16 && value > 0) ? value.toFixed(1) : '';
+            // 只在高度大于16且值大于0时显示文本
+            return (height > 16 && value > 0) ? formatValue(value) + (yUnit ? ` ${yUnit}` : '') : '';
         });
 
     // 添加X轴

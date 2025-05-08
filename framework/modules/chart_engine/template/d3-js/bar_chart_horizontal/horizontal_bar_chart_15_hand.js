@@ -92,6 +92,19 @@ function makeChart(containerSelector, data) {
     const sortedData = [...chartData].sort((a, b) => +b[valueField1] - +a[valueField1]);
     const sortedDimensions = sortedData.map(d => d[dimensionField]);
     
+    // 添加数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    };
+    
     // ---------- 4. 创建SVG容器用于临时文本测量 ----------
     
     const tempSvg = d3.select(containerSelector)
@@ -114,13 +127,13 @@ function makeChart(containerSelector, data) {
     
     // 4.3 测量数值标签的最大宽度
     const valueWidths = sortedData.map(d => {
-        tempText.text(`${d[valueField1]}${valueUnit1}`);
+        tempText.text(`${formatValue(+d[valueField1])}${valueUnit1}`);
         return tempText.node().getComputedTextLength();
     });
     
     // 4.4 测量第二个数值标签的最大宽度
     const value2Widths = sortedData.map(d => {
-        tempText.text(`${d[valueField2]}${valueUnit2}`);
+        tempText.text(`${formatValue(+d[valueField2])}${valueUnit2}`);
         return tempText.node().getComputedTextLength();
     });
     
@@ -422,7 +435,7 @@ function makeChart(containerSelector, data) {
                 .attr("opacity", 0.9);
             
             // 4. 添加条形数值标签
-            const formattedValue1 = `${dataPoint[valueField1]}${valueUnit1}`;
+            const formattedValue1 = `${formatValue(+dataPoint[valueField1])}${valueUnit1}`;
             
             g.append("text")
                 .attr("x", barWidthValue + valueLabelGap)
@@ -449,7 +462,7 @@ function makeChart(containerSelector, data) {
                 .attr("opacity", 0.7);
             
             // 6. 添加圆形数值标签
-            const formattedValue2 = `${dataPoint[valueField2]}${valueUnit2}`;
+            const formattedValue2 = `${formatValue(+dataPoint[valueField2])}${valueUnit2}`;
             g.append("text")
                 .attr("x", circleX)
                 .attr("y", centerY)

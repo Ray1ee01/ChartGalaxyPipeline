@@ -101,6 +101,19 @@ function makeChart(containerSelector, data) {
         const sortedData = [...chartData].sort((a, b) => b[valueField1] - a[valueField1]);
         const sortedDimensions = sortedData.map(d => d[dimensionField]);
         
+        // 添加数值格式化函数
+        const formatValue = (value) => {
+            if (value >= 1000000000) {
+                return d3.format("~g")(value / 1000000000) + "B";
+            } else if (value >= 1000000) {
+                return d3.format("~g")(value / 1000000) + "M";
+            } else if (value >= 1000) {
+                return d3.format("~g")(value / 1000) + "K";
+            } else {
+                return d3.format("~g")(value);
+            }
+        };
+        
         // ---------- 5. 布局计算 ----------
         
         // 设置条形图和圆形图的布局比例
@@ -152,6 +165,92 @@ function makeChart(containerSelector, data) {
             .attr("xmlns", "http://www.w3.org/2000/svg")
             .attr("xmlns:xlink", "http://www.w3.org/1999/xlink");
         
+    // ---------- Temporary SVG for text measurement (for titles) ----------
+    const tempTextSvgForTitles = svg.append("g").attr("visibility", "hidden");
+
+    // ---------- Helper: Estimate Generic Text Width (for titles) ----------
+    const estimateGenericTextWidth_forTitles = (text, fontConfig) => {
+        tempTextSvgForTitles.selectAll("text").remove(); // Clear old text
+        const tempText = tempTextSvgForTitles.append("text")
+            .style("font-family", fontConfig.font_family)
+            .style("font-size", fontConfig.font_size)
+            .style("font-weight", fontConfig.font_weight)
+            .text(text);
+        const width = tempText.node().getBBox().width;
+        tempText.node().remove(); // Remove the temporary text element
+        return width;
+    };
+
+    // ---------- Helper: Get Wrapped Lines (for titles) ----------
+    function getWrappedLines_forTitles(textContent, availableWidth, fontConfig) {
+        const words = (textContent || "").trim().split(/\s+/).filter(w => w !== "");
+        const lines = [];
+        const fontSizeValue = parseFloat(fontConfig.font_size);
+        const lineHeight = fontSizeValue * 1.2; // Estimate line height
+
+        if (words.length === 0) {
+            return { linesArray: [], numLines: 0, lineHeight: lineHeight };
+        }
+
+        let currentLine = words[0];
+        if (words.length === 1) {
+             if (estimateGenericTextWidth_forTitles(currentLine, fontConfig) > availableWidth) {
+                // Attempt to break the single word if it's too long
+                let tempLine = "";
+                for (let char of currentLine) {
+                    if (estimateGenericTextWidth_forTitles(tempLine + char, fontConfig) > availableWidth && tempLine !== "") {
+                        lines.push(tempLine);
+                        tempLine = char;
+                    } else {
+                        tempLine += char;
+                    }
+                }
+                if (tempLine !== "") lines.push(tempLine);
+                if (lines.length === 0 && currentLine !== "") lines.push(currentLine); // Fallback for very short availableWidth
+             } else {
+                lines.push(currentLine);
+             }
+             return { linesArray: lines, numLines: lines.length, lineHeight: lineHeight };
+        }
+        
+        // For multiple words
+        for (let i = 1; i < words.length; i++) {
+            const word = words[i];
+            const testLine = currentLine + " " + word;
+            if (estimateGenericTextWidth_forTitles(testLine, fontConfig) > availableWidth && currentLine !== "") {
+                lines.push(currentLine);
+                currentLine = word;
+            } else {
+                currentLine = testLine;
+            }
+        }
+        if (currentLine !== "") { // Add the last line
+            // Check if the last line (which could be a single word) itself needs breaking
+            if (estimateGenericTextWidth_forTitles(currentLine, fontConfig) > availableWidth && !currentLine.includes(" ")) {
+                let tempLine = "";
+                for (let char of currentLine) {
+                     if (estimateGenericTextWidth_forTitles(tempLine + char, fontConfig) > availableWidth && tempLine !== "") {
+                        lines.push(tempLine);
+                        tempLine = char;
+                    } else {
+                        tempLine += char;
+                    }
+                }
+                if (tempLine !== "") lines.push(tempLine);
+                if (lines.length === 0 && currentLine !== "") lines.push(currentLine);
+            } else if (estimateGenericTextWidth_forTitles(currentLine, fontConfig) > availableWidth && currentLine.includes(" ")) {
+                 // Re-process the last line as if it's a new text to wrap (if it's multi-word but still too long)
+                const subWrapped = getWrappedLines_forTitles(currentLine, availableWidth, fontConfig);
+                lines.push(...subWrapped.linesArray);
+            }
+            else {
+                lines.push(currentLine);
+            }
+        }
+        
+        return { linesArray: lines.filter(l => l.length > 0), numLines: lines.filter(l => l.length > 0).length, lineHeight: lineHeight };
+    }
+
         // ---------- 8. 添加SVG定义 ----------
         
         // 添加defs用于视觉效果
@@ -207,63 +306,86 @@ function makeChart(containerSelector, data) {
         
         // ---------- 9. 添加标题和标题下的线条 ----------
        
-        // 计算标题位置
-        const leftTitleX = margin.left;
-        // 右标题的X位置应该基于右侧列的中心
-        const rightTitleX = margin.left + barChartWidth + circleChartWidth / 2; 
-        const titleY = margin.top - 25; // 标题Y坐标
-        const lineY = margin.top - 10; // 分割线Y坐标
+        // 计算标题位置 - Refactored for wrapping
+        const titleFontConfig = typography.description;
+        const titleTextBottomMargin = 15; // Space between title text's last line and the decorative line
+        const decorativeLineY = margin.top - titleTextBottomMargin; // Y position of the decorative line
+        const desiredBaselineOfLastTitleLine = decorativeLineY - 5; // Baseline of the last line of title text (5px above the decorative line)
         
         // 左侧列标题
-        const leftTitleText = svg.append("text")
-            .attr("x", leftTitleX)
-            .attr("y", titleY)
-            .attr("text-anchor", "start") // 左对齐
-            .style("font-family", typography.description.font_family)
-            .style("font-size", typography.description.font_size)
-            .style("font-weight", typography.description.font_weight)
-            .style("fill", colors.text_color)
-            .text(columnTitle1.toUpperCase()); // 转换为大写
-    
-        // 计算左侧标题宽度，用于定位三角形
-        const leftTitleWidth = leftTitleText.node().getBBox().width;
+        const leftTitleAvailableWidth = innerWidth * 0.6;
+        const leftTitleXPos = margin.left;
+        const columnTitle1Upper = columnTitle1.toUpperCase();
+        const wrappedLeftTitle = getWrappedLines_forTitles(columnTitle1Upper, leftTitleAvailableWidth, titleFontConfig);
         
+        if (wrappedLeftTitle.numLines > 0) {
+            const initialYLeft = desiredBaselineOfLastTitleLine - (wrappedLeftTitle.numLines - 1) * wrappedLeftTitle.lineHeight;
+            const leftTitleText = svg.append("text")
+                .attr("x", leftTitleXPos)
+                .attr("y", initialYLeft)
+                .attr("text-anchor", "start")
+                .style("font-family", titleFontConfig.font_family)
+                .style("font-size", titleFontConfig.font_size)
+                .style("font-weight", titleFontConfig.font_weight)
+                .style("fill", colors.text_color);
+    
+            wrappedLeftTitle.linesArray.forEach((line, i) => {
+                leftTitleText.append("tspan")
+                    .attr("x", leftTitleXPos)
+                    .attr("dy", i === 0 ? 0 : wrappedLeftTitle.lineHeight)
+                    .text(line);
+            });
+        }
+    
         // 右侧列标题
-        const rightTitleText = svg.append("text")
-            .attr("x", width - margin.right) // 右对齐到SVG右边缘
-            .attr("y", titleY)
-            .attr("text-anchor", "end") // 右对齐
-            .style("font-family", typography.description.font_family)
-            .style("font-size", typography.description.font_size)
-            .style("font-weight", typography.description.font_weight)
-            .style("fill", colors.text_color)
-            .text(columnTitle2.toUpperCase()); // 转换为大写
+        const rightTitleAvailableWidth = innerWidth * 0.4;
+        const rightTitleXPos = width - margin.right; // Align to the right edge of the chart
+        const columnTitle2Upper = columnTitle2.toUpperCase();
+        const wrappedRightTitle = getWrappedLines_forTitles(columnTitle2Upper, rightTitleAvailableWidth, titleFontConfig);
     
-        // 计算右侧标题宽度，用于定位三角形
-        const rightTitleWidth = rightTitleText.node().getBBox().width;
-        // 修正右侧三角形的X位置，使其位于右标题的中心下方
-        const rightTriangleX = (width - margin.right) - (rightTitleWidth / 2);
+        if (wrappedRightTitle.numLines > 0) {
+            const initialYRight = desiredBaselineOfLastTitleLine - (wrappedRightTitle.numLines - 1) * wrappedRightTitle.lineHeight;
+            const rightTitleText = svg.append("text")
+                .attr("x", rightTitleXPos)
+                .attr("y", initialYRight)
+                .attr("text-anchor", "end") // Right-align
+                .style("font-family", titleFontConfig.font_family)
+                .style("font-size", titleFontConfig.font_size)
+                .style("font-weight", titleFontConfig.font_weight)
+                .style("fill", colors.text_color);
     
-        // 标题下的黑线
+            wrappedRightTitle.linesArray.forEach((line, i) => {
+                rightTitleText.append("tspan")
+                    .attr("x", rightTitleXPos)
+                    .attr("dy", i === 0 ? 0 : wrappedRightTitle.lineHeight)
+                    .text(line);
+            });
+        }
+    
+        // 标题下的黑线 (Adjusted Y position)
         svg.append("line")
             .attr("x1", margin.left)
-            .attr("y1", lineY)
-            .attr("x2", width - margin.right) // 线条延伸到右边距
-            .attr("y2", lineY)
-            .attr("stroke", "#000000") // 黑色
-            .attr("stroke-width", 1.5); // 线条粗细
+            .attr("y1", decorativeLineY)
+            .attr("x2", width - margin.right)
+            .attr("y2", decorativeLineY)
+            .attr("stroke", "#000000")
+            .attr("stroke-width", 1.5);
         
-        // 左侧标题下的三角形 - 放在左标题的正中心下面
-        const leftTriangleX = leftTitleX + leftTitleWidth / 2;
+        // 左侧标题下的三角形 (Adjusted X and Y position)
+        const leftTriangleCenterX = margin.left + leftTitleAvailableWidth / 2;
         svg.append("polygon")
-            .attr("points", `${leftTriangleX - 6},${lineY + 1} ${leftTriangleX + 6},${lineY + 1} ${leftTriangleX},${lineY + 8}`) // 定义三角形顶点
-            .attr("fill", "#000000"); // 黑色填充
+            .attr("points", `${leftTriangleCenterX - 6},${decorativeLineY + 1} ${leftTriangleCenterX + 6},${decorativeLineY + 1} ${leftTriangleCenterX},${decorativeLineY + 8}`)
+            .attr("fill", "#000000");
         
-        // 右侧标题下的三角形 - 放在右标题的正中心下面
+        // 右侧标题下的三角形 (Adjusted X and Y position)
+        const rightTriangleCenterX = (margin.left + leftTitleAvailableWidth) + (rightTitleAvailableWidth / 2);
         svg.append("polygon")
-            .attr("points", `${rightTriangleX - 6},${lineY + 1} ${rightTriangleX + 6},${lineY + 1} ${rightTriangleX},${lineY + 8}`) // 定义三角形顶点
-            .attr("fill", "#000000"); // 黑色填充
+            .attr("points", `${rightTriangleCenterX - 6},${decorativeLineY + 1} ${rightTriangleCenterX + 6},${decorativeLineY + 1} ${rightTriangleCenterX},${decorativeLineY + 8}`)
+            .attr("fill", "#000000");
         
+        // Remove the temporary SVG element for title measurement once done with titles
+        tempTextSvgForTitles.remove();
+
         // ---------- 10. 创建主图表组 ----------
         
         const g = svg.append("g")
@@ -308,6 +430,84 @@ function makeChart(containerSelector, data) {
         
         // ---------- 13. 为每个维度绘制条形、标签和连接线 ----------
         
+        // Helper function for text wrapping (can be defined here as it uses getTextWidth from the loop's scope)
+        function getWrappedLines_local(text, maxWidth, style, getTextWidthFunc) {
+            const words = text.split(/\s+/).filter(w => w.length > 0);
+            const lines = [];
+        
+            if (words.length === 0) return [""]; // Return an empty string in an array if no words
+        
+            // Helper to wrap a single word if it's too long
+            const wrapSingleWord = (singleWord) => {
+                const wordLines = [];
+                let currentWordPart = "";
+                for (let char of singleWord) {
+                    if (getTextWidthFunc(currentWordPart + char, style) > maxWidth && currentWordPart !== "") {
+                        wordLines.push(currentWordPart);
+                        currentWordPart = char;
+                    } else {
+                        currentWordPart += char;
+                    }
+                }
+                if (currentWordPart !== "") wordLines.push(currentWordPart);
+                return wordLines.length > 0 ? wordLines : [singleWord]; // Fallback to original word if wrapping fails
+            };
+        
+            if (words.length === 1) {
+                if (getTextWidthFunc(words[0], style) > maxWidth) {
+                    return wrapSingleWord(words[0]);
+                } else {
+                    return [words[0]];
+                }
+            }
+        
+            let currentLine = words[0];
+            // Check if the first word itself is too long
+            if (getTextWidthFunc(currentLine, style) > maxWidth) {
+                const wrappedFirstWordLines = wrapSingleWord(currentLine);
+                lines.push(...wrappedFirstWordLines.slice(0, -1));
+                currentLine = wrappedFirstWordLines.length > 0 ? wrappedFirstWordLines[wrappedFirstWordLines.length - 1] : "";
+                 if (currentLine === "" && words.length > 1) currentLine = words[1]; // Move to next word if first was fully consumed and broken
+                 else if (currentLine === "" && words.length ===1) { lines.push(...wrapSingleWord(words[0])); return lines.filter(l => l!="");}
+
+
+            }
+
+
+            for (let i = 1; i < words.length; i++) {
+                const word = words[i];
+                 // First check if the current word itself is too long
+                if (getTextWidthFunc(word, style) > maxWidth) {
+                    if (currentLine !== "") lines.push(currentLine); // Push the line before this long word
+                    lines.push(...wrapSingleWord(word)); // Push the wrapped parts of the long word
+                    currentLine = ""; // Reset currentLine
+                    continue;
+                }
+
+                const testLine = currentLine === "" ? word : currentLine + " " + word;
+                if (getTextWidthFunc(testLine, style) > maxWidth && currentLine !== "") {
+                    lines.push(currentLine);
+                    currentLine = word;
+                } else {
+                     currentLine = testLine;
+                }
+            }
+
+            if (currentLine !== "") { // Add the last line
+                if (getTextWidthFunc(currentLine, style) > maxWidth && !currentLine.includes(" ") ) { // Single long word as last line
+                     lines.push(...wrapSingleWord(currentLine));
+                } else if (getTextWidthFunc(currentLine, style) > maxWidth && currentLine.includes(" ")) { // Last line has multiple words but still too long (edge case after loop logic)
+                    // Re-process the last line as if it's a new text to wrap
+                    const subLines = getWrappedLines_local(currentLine, maxWidth, style, getTextWidthFunc);
+                    lines.push(...subLines);
+                }
+                else {
+                    lines.push(currentLine);
+                }
+            }
+            return lines.filter(l => l !== ""); // Ensure no empty lines
+        }
+        
         sortedDimensions.forEach((dimension, index) => {
             try {
                 const dataPoint = chartData.find(d => d[dimensionField] === dimension);
@@ -334,9 +534,9 @@ function makeChart(containerSelector, data) {
                 const barWidthValue = xScale(+dataPoint[valueField1]); // 计算条形宽度
                 const labelPadding = 5; // 标签与元素之间的通用内边距/外边距
                 const labelPaddingInside = 10; // 标签在条形内部时的左右内边距
-                const countryText = dimension.toUpperCase(); // 国家名称（大写）
-                const value1Text = `${dataPoint[valueField1]}${valueUnit1}`; // 第一个数值的文本
-                const value2Text = `${dataPoint[valueField2]}${valueUnit2}`; // 第二个数值的文本
+                const countryTextOriginal = dimension; // Keep original case for data, use uppercase for display if needed
+                const value1Text = `${formatValue(+dataPoint[valueField1])}${valueUnit1}`; // 第一个数值的文本
+                const value2Text = `${formatValue(+dataPoint[valueField2])}${valueUnit2}`; // 第二个数值的文本
                 
                 // 1. 绘制条形（应用视觉效果）
                 const barFill = variables.has_gradient 
@@ -357,10 +557,10 @@ function makeChart(containerSelector, data) {
     
                 // --- 标签定位逻辑 ---
     
-                // a. 测量标签宽度 (使用临时元素获取精确宽度)
+                // Helper to measure text width (already defined in outer scope by user, but ensuring it's clear)
                 const getTextWidth = (text, style) => {
                     const tempText = g.append("text")
-                        .attr("x", -1000).attr("y", -1000) // 移出可视区域
+                        .attr("x", -10000).attr("y", -10000) // 移出可视区域 更大的负值
                         .style("font-family", style.font_family)
                         .style("font-size", style.font_size)
                         .style("font-weight", style.font_weight)
@@ -369,85 +569,120 @@ function makeChart(containerSelector, data) {
                     tempText.remove();
                     return width;
                 };
-    
-                const countryLabelWidth = getTextWidth(countryText, typography.label);
-                const value1LabelWidth = getTextWidth(value1Text, typography.label);
-                const value2LabelWidth = getTextWidth(value2Text, typography.label);
-    
-                // b. 决定国家标签的位置和颜色
-                let countryLabelX, countryLabelColor, countryLabelAnchor;
-                let countryLabelIsInside = false; // 标记国家标签是否在条形内部
-                // 条件：条形宽度是否足够容纳国家标签（包括左右内边距）
-                if (barWidthValue >= labelPaddingInside + countryLabelWidth + labelPaddingInside) {
-                    // 足够宽，放在内部左侧
-                    countryLabelX = labelPaddingInside;
-                    countryLabelColor = "#FFFFFF"; // 内部用白色
-                    countryLabelAnchor = "start";
-                    countryLabelIsInside = true;
-                } else {
-                    // 不够宽，放在外部右侧
-                    countryLabelX = barWidthValue + labelPadding;
-                    countryLabelColor = colors.text_color; // 外部用默认颜色
-                    countryLabelAnchor = "start";
-                    countryLabelIsInside = false;
-                }
-    
-                // c. 决定数值1标签的位置和颜色
-                let value1LabelX, value1LabelColor, value1LabelAnchor;
-                let value1LabelIsOutside = false; // 标记数值1标签是否在条形外部
-                let value1LabelEndPos = 0; // 记录数值1标签的右侧结束位置
-    
-                if (countryLabelIsInside) {
-                    // --- 国家标签在内部 ---
-                    // 检查条形内部剩余空间是否足够容纳数值1标签（在国家标签右侧，有间距）
-                    if (barWidthValue >= countryLabelX + countryLabelWidth + labelPadding + value1LabelWidth + labelPaddingInside) {
-                        // 空间足够，放在内部右侧
-                        value1LabelX = barWidthValue - labelPaddingInside;
-                        value1LabelColor = "#FFFFFF"; // 内部用白色
-                        value1LabelAnchor = "end";
-                        value1LabelIsOutside = false;
-                        value1LabelEndPos = barWidthValue; // 结束位置就是条形末端
-                    } else {
-                        // 内部空间不足，放在外部
-                        value1LabelX = barWidthValue + labelPadding;
-                        value1LabelColor = colors.text_color; // 外部用默认颜色
-                        value1LabelAnchor = "start";
-                        value1LabelIsOutside = true;
-                        value1LabelEndPos = value1LabelX + value1LabelWidth; // 结束位置是标签右侧
+
+                // --- Dimension Label (countryText) Processing ---
+                const countryTextForDisplay = countryTextOriginal.toUpperCase();
+                const maxAllowedDimLabelWidth = innerWidth * 0.3;
+                let finalDimFontSize = parseFloat(typography.label.font_size);
+                let currentDimLabelWidth = getTextWidth(countryTextForDisplay, { ...typography.label, font_size: `${finalDimFontSize}px` });
+
+                if (currentDimLabelWidth > maxAllowedDimLabelWidth) {
+                    let tempSize = finalDimFontSize;
+                    while (tempSize > 8) { // Min font size 8px
+                        tempSize--;
+                        const tempWidth = getTextWidth(countryTextForDisplay, { ...typography.label, font_size: `${tempSize}px` });
+                        if (tempWidth <= maxAllowedDimLabelWidth) {
+                            break; 
+                        }
                     }
-                } else {
-                    // --- 国家标签在外部 ---
-                    // 数值1标签必须放在国家标签的右侧
-                    value1LabelX = countryLabelX + countryLabelWidth + labelPadding + 15; // 国家标签右侧+间距
-                    value1LabelColor = colors.text_color; // 外部用默认颜色
-                    value1LabelAnchor = "start";
-                    value1LabelIsOutside = true;
-                    value1LabelEndPos = value1LabelX + value1LabelWidth; // 结束位置是标签右侧
+                    finalDimFontSize = tempSize;
+                    currentDimLabelWidth = getTextWidth(countryTextForDisplay, { ...typography.label, font_size: `${finalDimFontSize}px` });
                 }
-    
-                // --- 绘制标签 ---
-    
-                // 2. 绘制国家/地区名称标签
-                g.append("text")
-                    .attr("x", countryLabelX)
-                    .attr("y", centerY)
-                    .attr("dy", "0.35em") // 垂直居中微调
-                    .attr("text-anchor", countryLabelAnchor)
-                    .style("font-family", typography.label.font_family)
-                    .style("font-size", typography.label.font_size)
-                    .style("font-weight", typography.label.font_weight)
-                    .style("fill", countryLabelColor)
-                    .text(countryText);
-    
-                // 3. 绘制条形数值标签 (Value 1)
+                
+                const finalDimLabelStyle = { 
+                    ...typography.label, 
+                    font_size: `${finalDimFontSize}px`
+                };
+
+                let dimLabelLines = [countryTextForDisplay];
+                let dimLabelIsWrapped = false;
+                let dimLabelEffectiveWidth = currentDimLabelWidth; // Width after font reduction
+
+                if (currentDimLabelWidth > maxAllowedDimLabelWidth) { // Still too wide, so wrap
+                    dimLabelIsWrapped = true;
+                    dimLabelLines = getWrappedLines_local(countryTextForDisplay, maxAllowedDimLabelWidth, finalDimLabelStyle, getTextWidth);
+                    // Recalculate effective width based on the longest wrapped line
+                    let maxWidthOfWrappedLine = 0;
+                    dimLabelLines.forEach(line => {
+                        const lineWidth = getTextWidth(line, finalDimLabelStyle);
+                        if (lineWidth > maxWidthOfWrappedLine) maxWidthOfWrappedLine = lineWidth;
+                    });
+                    dimLabelEffectiveWidth = maxWidthOfWrappedLine > 0 ? maxWidthOfWrappedLine : maxAllowedDimLabelWidth; // Use measured if available
+                }
+
+                let dimLabelX, dimLabelColor, dimLabelAnchor;
+                let dimLabelEndPosX; 
+
+                if (!dimLabelIsWrapped && barWidthValue >= labelPaddingInside + dimLabelEffectiveWidth + labelPaddingInside) {
+                    dimLabelX = labelPaddingInside;
+                    dimLabelColor = "#FFFFFF";
+                    dimLabelAnchor = "start";
+                    dimLabelEndPosX = dimLabelX + dimLabelEffectiveWidth;
+                } else {
+                    dimLabelX = barWidthValue + labelPadding;
+                    dimLabelColor = colors.text_color;
+                    dimLabelAnchor = "start";
+                    dimLabelEndPosX = dimLabelX + dimLabelEffectiveWidth; 
+                }
+
+                // Render Dimension Label
+                const dimLabelLineHeight = parseFloat(finalDimLabelStyle.font_size) * 1.2;
+                const totalDimLabelHeight = dimLabelLines.length * dimLabelLineHeight;
+                const firstDimLineY = centerY - (totalDimLabelHeight / 2) + (dimLabelLineHeight / 2);
+
+                const dimTextElement = g.append("text")
+                    .attr("y", firstDimLineY) 
+                    .attr("text-anchor", dimLabelAnchor)
+                    .style("font-family", finalDimLabelStyle.font_family)
+                    .style("font-size", finalDimLabelStyle.font_size)
+                    .style("font-weight", finalDimLabelStyle.font_weight)
+                    .style("fill", dimLabelColor);
+
+                dimLabelLines.forEach((line, i) => {
+                    dimTextElement.append("tspan")
+                        .attr("x", dimLabelX) // X is set per tspan for consistent alignment
+                        .attr("dy", i === 0 ? 0 : dimLabelLineHeight)
+                        .text(line);
+                });
+
+                // --- Value 1 Label (Percentage) Processing ---
+                const value1LabelStyle = typography.label; // Assuming value1 uses standard label typography
+                const value1LabelWidth = getTextWidth(value1Text, value1LabelStyle);
+                
+                let value1LabelX, value1LabelColor, value1LabelAnchor;
+                let value1LabelEndPos;
+
+                // Check if dimension label is effectively inside the bar for positioning value1
+                const isDimLabelInsideBar = (dimLabelX === labelPaddingInside);
+
+                if (isDimLabelInsideBar) { 
+                    if (barWidthValue >= dimLabelEndPosX + labelPadding + value1LabelWidth + labelPaddingInside) {
+                        value1LabelX = barWidthValue - labelPaddingInside;
+                        value1LabelColor = "#FFFFFF";
+                        value1LabelAnchor = "end";
+                        value1LabelEndPos = barWidthValue;
+                    } else { 
+                        value1LabelX = barWidthValue + labelPadding;
+                        value1LabelColor = colors.text_color;
+                        value1LabelAnchor = "start";
+                        value1LabelEndPos = value1LabelX + value1LabelWidth;
+                    }
+                } else { 
+                    value1LabelX = dimLabelEndPosX + labelPadding; 
+                    value1LabelColor = colors.text_color;
+                    value1LabelAnchor = "start";
+                    value1LabelEndPos = value1LabelX + value1LabelWidth;
+                }
+                
+                // Render Value 1 Label
                 g.append("text")
                     .attr("x", value1LabelX)
                     .attr("y", centerY)
-                    .attr("dy", "0.35em") // 垂直居中微调
+                    .attr("dy", "0.35em")
                     .attr("text-anchor", value1LabelAnchor)
-                    .style("font-family", typography.label.font_family)
-                    .style("font-size", typography.label.font_size)
-                    .style("font-weight", typography.label.font_weight)
+                    .style("font-family", value1LabelStyle.font_family)
+                    .style("font-size", value1LabelStyle.font_size)
+                    .style("font-weight", value1LabelStyle.font_weight)
                     .style("fill", value1LabelColor)
                     .text(value1Text);
                     
@@ -456,6 +691,7 @@ function makeChart(containerSelector, data) {
                 // 圆心X坐标在右侧列的中心
                 const circleX = barChartWidth + circleChartWidth / 2; 
                 let value2LabelX, value2LabelY, value2LabelColor, value2LabelAnchor, value2LabelDy;
+                const value2LabelWidth = getTextWidth(value2Text, typography.label); // Re-measure for value2
     
                 // 判断文本宽度是否小于圆的直径 (留一些边距)
                 if (circleRadius * 2 > value2LabelWidth + labelPadding * 2) {
@@ -473,7 +709,7 @@ function makeChart(containerSelector, data) {
                     value2LabelAnchor = "middle";
                     value2LabelDy = "0em"; // 基线对齐
                      // 如果标签放在上方后低于图表顶部标题线，则尝试放在下方
-                    if (value2LabelY - (parseFloat(typography.label.font_size)/2) < -(margin.top - lineY -10) ){ // -margin.top是g元素的顶部，lineY是线的位置
+                    if (value2LabelY - (parseFloat(typography.label.font_size)/2) < -(margin.top - decorativeLineY -10) ){ // -margin.top是g元素的顶部，decorativeLineY是线的位置
                          value2LabelY = centerY + circleRadius + labelPadding + parseFloat(typography.label.font_size); // 圆底下方加间距和字体高度
                          value2LabelDy = "0.8em"; // 调整基线使文本看起来在圆下方
                     }
@@ -489,10 +725,10 @@ function makeChart(containerSelector, data) {
                     .style("font-weight", typography.label.font_weight)
                     .style("fill", value2LabelColor)
                     .text(value2Text);
-                
-                // 5. 添加连接线 - 从条形图（或标签）到圆形
-                const lineColor = getBarColor(dimension); // 线条颜色与条形/圆形一致
-                
+    
+                // 5. 添加连接线 - 从条形图（或标签）到圆形
+                const lineColor = getBarColor(dimension); // 线条颜色与条形/圆形一致
+                
                 // 确定线的起始X坐标：应在数值1标签的右侧结束位置之后
                 const lineStartX = value1LabelEndPos + labelPadding;
     

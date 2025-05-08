@@ -32,6 +32,20 @@ function makeChart(containerSelector, data) {
     const dataColumns = jsonData.data.columns || [];
     const images = jsonData.images || {};
     
+    // 数值单位规范
+    // 添加数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    }
+    
     // 清空容器
     d3.select(containerSelector).html("");
     

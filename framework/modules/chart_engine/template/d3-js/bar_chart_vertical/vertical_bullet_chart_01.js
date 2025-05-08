@@ -33,6 +33,20 @@ function makeChart(containerSelector, data) {
     const chartId = jsonData.chart_id;
     const chartName = jsonData.chart_name;
 
+    // 数值单位规范
+    // 添加数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    }
+
     const chartContainer = d3.select(containerSelector);
     const width = chartContainer.node().getBoundingClientRect().width;
     const height = chartContainer.node().getBoundingClientRect().height;
@@ -102,7 +116,8 @@ function makeChart(containerSelector, data) {
         .style("fill", colors.text_color || "#000000");
     
     // 绘制y轴
-    const yAxis = d3.axisLeft(y);
+    const yAxis = d3.axisLeft(y)
+        .tickFormat(d => formatValue(d));
     g.append("g")
         .attr("class", "y-axis")
         .call(yAxis)

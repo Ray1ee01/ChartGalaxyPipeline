@@ -51,6 +51,94 @@ function makeChart(containerSelector, data) {
     // 清空容器
     d3.select(containerSelector).html("");
     
+    // ---------- Temporary SVG for column title text measurement (defined early) ----------
+    const tempTextSvgForColumnTitles = d3.select(containerSelector)
+        .append("svg").attr("width", 0).attr("height", 0).style("visibility", "hidden");
+
+    // ---------- Helper: Estimate Generic Text Width (for column titles) ----------
+    const estimateGenericTextWidth_forTitles = (text, fontConfig) => {
+        tempTextSvgForColumnTitles.selectAll("text").remove(); // Clear old text
+        const tempTextNode = tempTextSvgForColumnTitles.append("text")
+            .style("font-family", fontConfig.font_family)
+            .style("font-size", fontConfig.font_size)
+            .style("font-weight", fontConfig.font_weight)
+            .text(text);
+        const width = tempTextNode.node().getBBox().width;
+        tempTextNode.remove(); // Remove the temporary text element immediately
+        return width;
+    };
+
+    // ---------- Helper: Get Wrapped Lines (for column titles) ----------
+    function getWrappedLines_forTitles(textContent, availableWidth, fontConfig) {
+        const words = (textContent || "").trim().split(/\s+/).filter(w => w !== "");
+        const lines = [];
+        const fontSizeValue = parseFloat(fontConfig.font_size);
+        const lineHeight = fontSizeValue * 1.2; // Estimate line height
+
+        if (words.length === 0) {
+            return { linesArray: [], numLines: 0, lineHeight: lineHeight };
+        }
+
+        // Simplified single word breaking logic (breaks by char if too long)
+        const breakSingleWord = (word) => {
+            let currentWordPart = "";
+            const wordLines = [];
+            for (let char of word) {
+                if (estimateGenericTextWidth_forTitles(currentWordPart + char, fontConfig) > availableWidth && currentWordPart !== "") {
+                    wordLines.push(currentWordPart);
+                    currentWordPart = char;
+                } else {
+                    currentWordPart += char;
+                }
+            }
+            if (currentWordPart !== "") wordLines.push(currentWordPart);
+            return wordLines.length > 0 ? wordLines : [word]; // Fallback to original word if wrapping fails
+        };
+
+        if (words.length === 1) {
+            if (estimateGenericTextWidth_forTitles(words[0], fontConfig) > availableWidth) {
+                lines.push(...breakSingleWord(words[0]));
+            } else {
+                lines.push(words[0]);
+            }
+            return { linesArray: lines.filter(l=>l), numLines: lines.filter(l=>l).length, lineHeight: lineHeight };
+        }
+        
+        let currentLine = words[0];
+        if (estimateGenericTextWidth_forTitles(currentLine, fontConfig) > availableWidth) {
+            const brokenFirstWord = breakSingleWord(currentLine);
+            lines.push(...brokenFirstWord.slice(0, -1));
+            currentLine = brokenFirstWord.length > 0 ? brokenFirstWord[brokenFirstWord.length-1] : "";
+        }
+
+        for (let i = 1; i < words.length; i++) {
+            const word = words[i];
+            if (estimateGenericTextWidth_forTitles(word, fontConfig) > availableWidth) { // Current word itself is too long
+                if (currentLine !== "") lines.push(currentLine);
+                lines.push(...breakSingleWord(word));
+                currentLine = "";
+                continue;
+            }
+
+            const testLine = currentLine === "" ? word : currentLine + " " + word;
+            if (estimateGenericTextWidth_forTitles(testLine, fontConfig) > availableWidth && currentLine !== "") {
+                lines.push(currentLine);
+                currentLine = word;
+            } else {
+                currentLine = testLine;
+            }
+        }
+        if (currentLine !== "") {
+            if (estimateGenericTextWidth_forTitles(currentLine, fontConfig) > availableWidth) {
+                 lines.push(...breakSingleWord(currentLine));
+            } else {
+                lines.push(currentLine);
+            }
+        }
+        
+        return { linesArray: lines.filter(l=>l), numLines: lines.filter(l=>l).length, lineHeight: lineHeight };
+    }
+
     // 2. 尺寸和布局设置
     const width = variables.width || 800;
     const height = variables.height || 600;
@@ -85,6 +173,19 @@ function makeChart(containerSelector, data) {
     // 4. 数据处理
     const sortedData = [...chartData].sort((a, b) => b[valueField1] - a[valueField1]);
     const sortedDimensions = sortedData.map(d => d[dimensionField]);
+    
+    // 添加数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    };
     
     // 5. 布局计算 和 字体调整
     const flagWidth = 30;
@@ -169,7 +270,7 @@ function makeChart(containerSelector, data) {
         .domain([0, maxValue2])
         .range([minRadius, maxRadius]);
     
-    // 7. 创建SVG容器
+    // 7. 创建SVG容器 ( Titles will be appended to this directly)
     const svg = d3.select(containerSelector)
         .append("svg")
         .attr("width", "100%")
@@ -200,31 +301,63 @@ function makeChart(containerSelector, data) {
         .attr("offset", "100%")
         .attr("stop-color", d3.rgb(primaryColor).brighter(0.5));
 
-    // 8. 添加标题
-    const leftTitleX = margin.left; 
-    
+    // 8. 添加标题 (Refactored for wrapping)
+    const titleFontConfig = typography.description;
+    const titleBottomPadding = 5; // 标题底部与图表顶部(主绘图区g元素)之间的间距
+    const desiredBaselineOfLastLine = margin.top - titleBottomPadding; // g元素上方10px
+
     // 左侧列标题
-    svg.append("text")
-        .attr("x", leftTitleX)
-        .attr("y", margin.top - 10)
-        .attr("text-anchor", "start")
-        .style("font-family", typography.description.font_family)
-        .style("font-size", typography.description.font_size)
-        .style("font-weight", typography.description.font_weight)
-        .style("fill", colors.text_color)
-        .text(columnTitle1);
-    
+    // Note: innerWidth here is calculated based on the dynamic margin.left from _23.js
+    const leftTitleAvailableWidth = innerWidth * 0.6; 
+    const leftTitleXPos = margin.left; // Starts at the beginning of the main chart content area
+    const wrappedLeftTitle = getWrappedLines_forTitles(columnTitle1, leftTitleAvailableWidth, titleFontConfig);
+
+    if (wrappedLeftTitle.numLines > 0) {
+        const initialYLeft = desiredBaselineOfLastLine - (wrappedLeftTitle.numLines - 1) * wrappedLeftTitle.lineHeight;
+        const leftTitleText = svg.append("text") // Append to svg, not g
+            .attr("x", leftTitleXPos)
+            .attr("y", initialYLeft)
+            .attr("text-anchor", "start")
+            .style("font-family", titleFontConfig.font_family)
+            .style("font-size", titleFontConfig.font_size)
+            .style("font-weight", titleFontConfig.font_weight)
+            .style("fill", colors.text_color);
+
+        wrappedLeftTitle.linesArray.forEach((line, i) => {
+            leftTitleText.append("tspan")
+                .attr("x", leftTitleXPos)
+                .attr("dy", i === 0 ? 0 : wrappedLeftTitle.lineHeight)
+                .text(line);
+        });
+    }
+
     // 右侧列标题
-    svg.append("text")
-        .attr("x", width - margin.right - 10)
-        .attr("y", margin.top - 10)
-        .attr("text-anchor", "end")
-        .style("font-family", typography.description.font_family)
-        .style("font-size", typography.description.font_size)
-        .style("font-weight", typography.description.font_weight)
-        .style("fill", colors.text_color)
-        .text(columnTitle2);
+    const rightTitleAvailableWidth = innerWidth * 0.4;
+    const rightTitleXPos = margin.left + innerWidth; // Right edge of the main chart content area
+    const wrappedRightTitle = getWrappedLines_forTitles(columnTitle2, rightTitleAvailableWidth, titleFontConfig);
+
+    if (wrappedRightTitle.numLines > 0) {
+        const initialYRight = desiredBaselineOfLastLine - (wrappedRightTitle.numLines - 1) * wrappedRightTitle.lineHeight;
+        const rightTitleText = svg.append("text") // Append to svg, not g
+            .attr("x", rightTitleXPos)
+            .attr("y", initialYRight)
+            .attr("text-anchor", "end") 
+            .style("font-family", titleFontConfig.font_family)
+            .style("font-size", titleFontConfig.font_size)
+            .style("font-weight", titleFontConfig.font_weight)
+            .style("fill", colors.text_color);
+
+        wrappedRightTitle.linesArray.forEach((line, i) => {
+            rightTitleText.append("tspan")
+                .attr("x", rightTitleXPos) 
+                .attr("dy", i === 0 ? 0 : wrappedRightTitle.lineHeight)
+                .text(line);
+        });
+    }
     
+    // Remove the temporary SVG for column title measurement
+    tempTextSvgForColumnTitles.remove();
+
     // ---------- Helper: Estimate Text Width ----------
     const tempTextSvg = svg.append("g").attr("visibility", "hidden");
     const estimateLabelWidth = (text, fontConfig, barHeight) => {
@@ -348,7 +481,7 @@ function makeChart(containerSelector, data) {
             }
 
             // 4. 添加条形数值标签 (需要重新评估位置逻辑)
-            const valueLabelText = `${dataPoint[valueField1]}${valueUnit1}`;
+            const valueLabelText = `${formatValue(+dataPoint[valueField1])}${valueUnit1}`;
             const currentValueLabelWidth = estimateLabelWidth(valueLabelText, typography.annotation, barHeight);
             const valueLabelFontSize = `${Math.min(20, Math.max(barHeight * 0.6, parseFloat(typography.annotation.font_size)))}px`;
             
@@ -391,7 +524,7 @@ function makeChart(containerSelector, data) {
                 .attr("opacity", 0.6);
 
             // 6. 添加圆形数值标签 (GDP Value)
-            const formattedValue2 = `${dataPoint[valueField2]}${valueUnit2}`;
+            const formattedValue2 = `${formatValue(+dataPoint[valueField2])}${valueUnit2}`;
             const circleLabelFontSize = `${Math.min(20, Math.max(barHeight * 0.6, parseFloat(typography.annotation.font_size)))}px`;
             g.append("text")
                 .attr("x", circleX)

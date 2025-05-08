@@ -98,6 +98,19 @@ function makeChart(containerSelector, data) {
     const sortedData = [...chartData].sort((a, b) => b[valueField] - a[valueField]);
     const sortedDimensions = sortedData.map(d => d[dimensionField]);
     
+    // 添加数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    };
+    
     // ---------- 5. 计算标签宽度 ----------
     
     // 创建临时SVG来测量文本宽度
@@ -138,8 +151,8 @@ function makeChart(containerSelector, data) {
     let maxValueWidth = 0;
     chartData.forEach(d => {
         const formattedValue = valueUnit ? 
-            `${d[valueField]}${valueUnit}` : 
-            `${d[valueField]}`;
+            `${formatValue(d[valueField])}${valueUnit}` : 
+            `${formatValue(d[valueField])}`;
             
         const tempText = tempSvg.append("text")
             .style("font-family", typography.annotation.font_family)
@@ -158,8 +171,8 @@ function makeChart(containerSelector, data) {
     let maxValueWidth2 = 0;
     chartData.forEach(d => {
         const formattedValue2 = valueUnit2 ? 
-            `${d[valueField2]}${valueUnit2}` : 
-            `${d[valueField2]}`;
+            `${formatValue(d[valueField2])}${valueUnit2}` : 
+            `${formatValue(d[valueField2])}`;
             
         const tempText = tempSvg.append("text")
             .style("font-family", typography.annotation.font_family)
@@ -334,8 +347,8 @@ function makeChart(containerSelector, data) {
             const dynamicFontSize = `${Math.max(barHeight * 0.4, 8)}px`;
             // 格式化数值
             const formattedValue = valueUnit ? 
-                `${dataPoint[valueField]}${valueUnit}` : 
-                `${dataPoint[valueField]}`;
+                `${formatValue(dataPoint[valueField])}${valueUnit}` : 
+                `${formatValue(dataPoint[valueField])}`;
             
             // 临时计算文本宽度
             const tempTextSvg = d3.select(containerSelector)
@@ -358,7 +371,7 @@ function makeChart(containerSelector, data) {
             const sideLength = squareSideScale(y2Value);
             const squareX = innerWidth + margin.right / 2 - sideLength / 2; // 水平居中于右侧边距
             const squareY = yScale(dimension) + barHeight / 2 - sideLength / 2; // 垂直居中于条形
-            const formattedValue2 = valueUnit2 ? `${y2Value}${valueUnit2}` : `${y2Value}`;
+            const formattedValue2 = valueUnit2 ? `${formatValue(y2Value)}${valueUnit2}` : `${formatValue(y2Value)}`;
 
             // -- 添加 Y 数值标签 (考虑重叠) --
             const textFitsInside = barWidth > valueTextWidth + 10; // 内部判断加宽边距

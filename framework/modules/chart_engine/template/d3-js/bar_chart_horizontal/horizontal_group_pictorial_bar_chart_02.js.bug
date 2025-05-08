@@ -29,19 +29,32 @@ function makeChart(containerSelector, data) {
     
     // 提取数据和配置
     const jsonData = data;                          // 完整的JSON数据对象
-    const chartData = jsonData.data.data                // 实际数据点数组
-    const variables = jsonData.variables || {};     // 图表配置
+    const chartData = jsonData.data.data;           // 实际数据点数组
+    const variables = jsonData.variables || {};     // 图表配置，如果不存在则使用空对象
     const typography = jsonData.typography || {     // 字体设置，如果不存在则使用默认值
         title: { font_family: "Arial", font_size: "18px", font_weight: "bold" },
         label: { font_family: "Arial", font_size: "12px", font_weight: "normal" },
         description: { font_family: "Arial", font_size: "14px", font_weight: "normal" },
         annotation: { font_family: "Arial", font_size: "12px", font_weight: "normal" }
     };
-    const colors = jsonData.colors || { text_color: "#333333" };  // 颜色设置
-    const images = jsonData.images || { field: {}, other: {} };  // 图像设置
+    const colors = jsonData.colors || { text_color: "#333333" };  // 颜色设置，如果不存在则使用默认值
+    const images = jsonData.images || { field: {}, other: {} };  // 图像(国旗等)
     const dataColumns = jsonData.data.columns || []; // 数据列定义
     
-    // 设置视觉效果变量的默认值
+    // 数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    }
+    
+    // 检查并设置缺失的视觉效果变量，确保不会因为缺少变量而出错
     variables.has_rounded_corners = variables.has_rounded_corners || false;
     variables.has_shadow = variables.has_shadow || false;
     variables.has_gradient = variables.has_gradient || false;
@@ -416,9 +429,7 @@ function makeChart(containerSelector, data) {
                     .attr("preserveAspectRatio", "none");
                 
                 // 绘制数值标签（附加单位，如果有）
-                const formattedValue = valueUnit ? 
-                    `${dataPoint[valueField]}${valueUnit}` : 
-                    `${dataPoint[valueField]}`;
+                const formattedValue = `${formatValue(+dataPoint[valueField])}${valueUnit ? ` ${valueUnit}` : ''}`;
                 
                 // 创建临时文本元素来计算数值文本的宽度
                 const tempText = g.append("text")

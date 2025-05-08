@@ -42,6 +42,19 @@ function makeChart(containerSelector, data) {
     const images = jsonData.images || { field: {}, other: {} };   // 图像设置
     const dataColumns = jsonData.data.columns || []; // 数据列定义
     
+    // 数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    }
+    
     // 设置视觉效果变量的默认值
     variables.has_rounded_corners = variables.has_rounded_corners || false;
     variables.has_shadow = variables.has_shadow || false;
@@ -56,7 +69,7 @@ function makeChart(containerSelector, data) {
     
     // 设置图表总尺寸
     const width = variables.width || 800;
-    const height = variables.height || 600;
+    let height = variables.height || 600;
     
     // 设置边距
     const margin = {
@@ -91,6 +104,14 @@ function makeChart(containerSelector, data) {
     const sortedData = [...chartData].sort((a, b) => b[valueField] - a[valueField]);
     const sortedDimensions = sortedData.map(d => d[dimensionField]);
     
+    // 动态调整高度：如果x维度数量超过15，每增加一个维度，高度增加3%
+    if (sortedDimensions.length > 15) {
+        const extraDimensions = sortedDimensions.length - 15;
+        const heightAdjustmentFactor = 1 + (extraDimensions * 0.03); // 增加比例因子
+        height = Math.round(height * heightAdjustmentFactor); // 应用高度调整
+        console.log(`调整图表高度: ${sortedDimensions.length}个维度, 高度增加${Math.round((heightAdjustmentFactor-1)*100)}%`);
+    }
+    
     // ---------- 5. 计算布局参数 ----------
     
     // 创建临时SVG元素用于文本测量
@@ -123,9 +144,7 @@ function makeChart(containerSelector, data) {
     // 计算最大数值标签宽度
     let maxValueWidth = 0;
     sortedData.forEach(d => {
-        const formattedValue = valueUnit ? 
-            `${d[valueField]}${valueUnit}` : 
-            `${d[valueField]}`;
+        const formattedValue = `${formatValue(+d[valueField])}${valueUnit ? ` ${valueUnit}` : ''}`;
             
         const tempText = tempSvgForWidth.append("text")
             .style("font-family", typography.annotation.font_family)
@@ -258,8 +277,8 @@ function makeChart(containerSelector, data) {
         .ticks(5)
         .tickSize(0)  // 不显示刻度线
         .tickPadding(8)
-        .tickFormat(d => d); // New format: only show the number
-    
+        .tickFormat(d => formatValue(d)); // 使用格式化函数
+
     const xAxisGroup = g.append("g")
         .attr("class", "x-axis")
         .attr("transform", `translate(0, ${innerHeight})`)
@@ -353,20 +372,37 @@ function makeChart(containerSelector, data) {
 
         let labelX = 0; // Default position: left
         let labelAnchor = "start";
-
+        let labelY = y; // 维持标准高度位置
+        
+        // 默认使用标准字体大小
+        let labelFontSize = typography.label.font_size;
+        
         // Check if label overlaps with the icon circle area
         if (dimLabelWidth > circleLeftEdge - labelPadding) {
-            // If overlap, move label to the right of the circle
+            // 如果标签与圆圈区域重叠，将标签移到圆圈右侧
             labelX = circleX + iconRadius + labelPadding;
             // labelAnchor remains "start"
+            
+            // 重要修改：当标签在右侧时，缩小字体大小而不是移动位置
+            // 计算可用垂直空间 - 约为条形高度的60%，确保在垂直方向上不会与数值标签重叠
+            const availableHeight = barHeight * 0.6;
+            
+            // 获取原始字体大小（移除单位）
+            const originalSize = parseFloat(labelFontSize);
+            
+            // 根据可用高度计算新字体大小，但不小于8px
+            const reducedSize = Math.max(8, Math.min(originalSize, availableHeight));
+            
+            // 更新字体大小
+            labelFontSize = `${reducedSize}px`;
         }
 
         g.append("text")
             .attr("x", labelX) // Use calculated X position
-            .attr("y", y)      // Keep Y position above the bar
+            .attr("y", labelY) // 保持原始Y位置
             .attr("text-anchor", labelAnchor) // Use calculated anchor
             .style("font-family", typography.label.font_family)
-            .style("font-size", typography.label.font_size)
+            .style("font-size", labelFontSize) // 使用计算后的字体大小
             .style("font-weight", typography.label.font_weight)
             .style("fill", colors.text_color)
             .text(dimension);
@@ -397,9 +433,7 @@ function makeChart(containerSelector, data) {
         }
         
         // 5. 添加数值标签（在圆圈右侧）
-        const formattedValue = valueUnit ? 
-            `${value}${valueUnit}` : 
-            `${value}`;
+        const formattedValue = `${formatValue(value)}${valueUnit ? ` ${valueUnit}` : ''}`;
             
         g.append("text")
             .attr("x", circleX + iconRadius + iconPadding * 2) // Use circleX here

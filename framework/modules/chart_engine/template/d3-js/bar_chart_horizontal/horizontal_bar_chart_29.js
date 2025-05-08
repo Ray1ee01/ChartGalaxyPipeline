@@ -126,6 +126,19 @@ function makeChart(containerSelector, data) {
     const sortedData = [...chartData].sort((a, b) => b[valueField] - a[valueField]);
     const sortedDimensions = sortedData.map(d => d[dimensionField]);
     
+    // 添加数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    };
+    
     // ---------- 5. 计算标签宽度 ----------
     
     // 创建临时SVG来测量文本宽度
@@ -139,8 +152,8 @@ function makeChart(containerSelector, data) {
     let maxValueWidth = 0;
     chartData.forEach(d => {
         const formattedValue = valueUnit ? 
-            `${d[valueField]}${valueUnit}` : 
-            `${d[valueField]}`;
+            `${formatValue(d[valueField])}${valueUnit}` : 
+            `${formatValue(d[valueField])}`;
             
         const tempText = tempSvg.append("text")
             .style("font-family", typography.annotation.font_family)
@@ -326,8 +339,10 @@ function makeChart(containerSelector, data) {
                     .attr("xlink:href", images.field[dimension]);
             }
             
-            // 格式化数值用于显示 - 不带单位
-            const formattedValue = `${dataPoint[valueField]}`;
+            // 格式化数值用于显示
+            const formattedValue = valueUnit ? 
+                `${formatValue(dataPoint[valueField])}${valueUnit}` : 
+                `${formatValue(dataPoint[valueField])}`;
             
             // 计算动态字体大小（条形高度的60%）
             const dynamicFontSize = `${barBandHeight * 0.6}px`;

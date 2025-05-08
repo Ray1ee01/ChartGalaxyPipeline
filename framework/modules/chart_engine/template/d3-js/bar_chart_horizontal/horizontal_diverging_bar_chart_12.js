@@ -49,6 +49,19 @@ function makeChart(containerSelector, data) {
     variables.has_stroke = variables.has_stroke || false;
     variables.has_spacing = variables.has_spacing || false;
     
+    // 数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    }
+    
     // 清空容器 - 在添加新图表前移除可能存在的内容
     d3.select(containerSelector).html("");
     
@@ -437,7 +450,7 @@ function makeChart(containerSelector, data) {
             }
             
             // 添加左侧数值标签
-            const formattedValue = valueUnit ? `${value}${valueUnit}` : `${value}`;
+            const formattedValue = valueUnit ? `${formatValue(value)}${valueUnit}` : `${formatValue(value)}`;
             const lastBarX = leftStartX - barCount * (barWidth + barSpacing) - 5;
             
             g.append("text")
@@ -478,7 +491,7 @@ function makeChart(containerSelector, data) {
             }
             
             // 添加右侧数值标签
-            const formattedValue = valueUnit ? `${value}${valueUnit}` : `${value}`;
+            const formattedValue = valueUnit ? `${formatValue(value)}${valueUnit}` : `${formatValue(value)}`;
             const lastBarX = rightStartX + barCount * (barWidth + barSpacing) + 5;
             
             g.append("text")

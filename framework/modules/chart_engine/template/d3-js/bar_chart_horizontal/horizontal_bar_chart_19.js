@@ -101,6 +101,19 @@ function makeChart(containerSelector, data) {
     // 确定是否有负值
     const hasNegativeValues = minValue < 0;
     
+    // 添加数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    };
+    
     // ---------- 5. 计算标签宽度和图表尺寸 ----------
     
     // 创建临时SVG来测量文本宽度
@@ -126,13 +139,19 @@ function makeChart(containerSelector, data) {
     // 计算最大数值标签宽度
     let maxValueWidth = 0;
     chartData.forEach(d => {
-        const formattedValue = valueUnit ? `${d[valueField]}${valueUnit}` : `${d[valueField]}`;
+        const formattedValue = valueUnit ? 
+            `${formatValue(d[valueField])}${valueUnit}` : 
+            `${formatValue(d[valueField])}`;
+            
         const tempText = tempSvg.append("text")
             .style("font-family", typography.annotation.font_family)
             .style("font-size", typography.annotation.font_size)
             .style("font-weight", typography.annotation.font_weight)
             .text(formattedValue);
-        maxValueWidth = Math.max(maxValueWidth, tempText.node().getBBox().width);
+        
+        const textWidth = tempText.node().getBBox().width;
+        maxValueWidth = Math.max(maxValueWidth, textWidth);
+        
         tempText.remove();
     });
     
@@ -301,8 +320,8 @@ function makeChart(containerSelector, data) {
             
             // ---------- 添加数值标签（条形外侧左边） ----------
             const formattedValue = valueUnit ? 
-                `${value}${valueUnit}` : 
-                `${value}`;
+                `${formatValue(value)}${valueUnit}` : 
+                `${formatValue(value)}`;
             
             barGroup.append("text")
                 .attr("x", barX - 5) // 条形外左侧5px

@@ -50,6 +50,19 @@ function makeChart(containerSelector, data) {
     variables.has_stroke = variables.has_stroke || false;
     variables.has_spacing = variables.has_spacing || false;
     
+    // 数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    }
+    
     // 清空容器
     d3.select(containerSelector).html("");
     
@@ -74,9 +87,9 @@ function makeChart(containerSelector, data) {
     const valueField = dataColumns.find(col => col.role === "y").name;
     
     // 提取群组字段（默认取前两个group角色的列）
-    const groupColumns = dataColumns.filter(col => col.role === "group");
-    const primaryGroupField = dataColumns.filter(col => col.role === "group").name;
-    const secondaryGroupField = dataColumns.filter(col => col.role === "group2").name;
+    
+    const primaryGroupField = dataColumns.filter(col => col.role === "group")[0].name;
+    const secondaryGroupField = dataColumns.filter(col => col.role === "group2")[0].name;
     
     // 获取字段单位（如果存在）
     let dimensionUnit = "";
@@ -419,8 +432,8 @@ function makeChart(containerSelector, data) {
             
             // 添加数值标签
             const formattedValue = valueUnit ? 
-                `${dataPoint[valueField]}${valueUnit}` : 
-                `${dataPoint[valueField]}`;
+                `${formatValue(dataPoint[valueField])}${valueUnit}` : 
+                `${formatValue(dataPoint[valueField])}`;
             
             g.append("text")
                 .attr("x", barWidth + 5)

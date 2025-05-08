@@ -41,6 +41,20 @@ function makeChart(containerSelector, data) {
     const images = jsonData.images || {};
     const dataColumns = jsonData.data.columns || [];
 
+    // 数值单位规范
+    // 添加数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    }
+
     // 视觉效果默认值
     variables.has_rounded_corners = variables.has_rounded_corners || false;
     variables.has_shadow = variables.has_shadow || false;
@@ -216,7 +230,7 @@ function makeChart(containerSelector, data) {
             .attr("stroke-width", 1);
 
         // 添加总值标签
-        const valueText = `${d3.format(",.1f")(d.total)}${valueUnit}`;
+        const valueText = `${formatValue(d.total)}${valueUnit}`;
         sectorsGroup.append("text")
             .attr("x", endCircleX)
             .attr("y", endCircleY)

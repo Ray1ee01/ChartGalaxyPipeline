@@ -51,6 +51,19 @@ function makeChart(containerSelector, data) {
     variables.has_stroke = variables.has_stroke !== undefined ? variables.has_stroke : false;
     variables.has_spacing = variables.has_spacing !== undefined ? variables.has_spacing : false;
     
+    // 数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    }
+    
     // ---------- 2. 提取字段名和单位 ----------
     
     // 根据数据列角色（role）提取字段名
@@ -168,7 +181,7 @@ function makeChart(containerSelector, data) {
     let maxNegativeLabelWidth = 0;
     negativeData.forEach(d => {
         const performance = d[performanceField];
-        const formattedValue = `${performance.toFixed(1)}${performanceUnit}`;
+        const formattedValue = `${formatValue(performance)}${performanceUnit}`;
         
         const tempText = tempSvg.append("text")
             .style("font-family", typography.annotation.font_family)
@@ -469,8 +482,8 @@ function makeChart(containerSelector, data) {
         
         // 格式化数值标签（添加加号或保留负号，添加单位）
         const formattedValue = performance >= 0 ? 
-            `+${performance.toFixed(1)}${performanceUnit}` : 
-            `${performance.toFixed(1)}${performanceUnit}`;
+            `+${formatValue(performance)}${performanceUnit}` : 
+            `${formatValue(performance)}${performanceUnit}`;
         
         // 横条开始位置和宽度
         let barX, barWidth;

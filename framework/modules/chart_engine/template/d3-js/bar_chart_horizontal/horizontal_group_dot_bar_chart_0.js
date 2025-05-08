@@ -49,6 +49,19 @@ function makeChart(containerSelector, data) {
     variables.has_shadow = variables.has_shadow || false;
     variables.has_stroke = variables.has_stroke || false;
     
+    // 数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    }
+    
     // 清空容器
     d3.select(containerSelector).html("");
     
@@ -185,7 +198,7 @@ function makeChart(containerSelector, data) {
     // 添加X轴
     const xAxis = d3.axisBottom(xScale)
         .ticks(5)
-        .tickFormat(d => d + (xUnit ? ` ${xUnit}` : ''))
+        .tickFormat(d => formatValue(d) + (xUnit ? ` ${xUnit}` : ''))
         .tickSize(0)          // 移除刻度线
         .tickPadding(10);     // 增加文字和轴的间距
     
@@ -329,7 +342,7 @@ function makeChart(containerSelector, data) {
                 .style("font-size", typography.annotation.font_size)
                 .style("font-weight", typography.annotation.font_weight)
                 .style("fill", colors.text_color)
-                .text(value + (yUnit ? ` ${yUnit}` : ''));
+                .text(formatValue(value) + (yUnit ? ` ${yUnit}` : ''));
         });
     });
 

@@ -53,6 +53,19 @@ function makeChart(containerSelector, data) {
     // 清空容器
     d3.select(containerSelector).html("");
     
+    // 添加数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    }
+    
     // ---------- 2. 尺寸和布局设置 ----------
     
     // 设置图表总尺寸
@@ -193,7 +206,7 @@ function makeChart(containerSelector, data) {
     // 添加Y轴
     const yAxis = d3.axisLeft(yScale)
         .ticks(5)
-        .tickFormat(d => d + (yUnit ? ` ${yUnit}` : ''))
+        .tickFormat(d => formatValue(d) + (yUnit ? ` ${yUnit}` : ''))
         .tickSize(0)          // 移除刻度线
         .tickPadding(10);     // 增加文字和轴的间距
     
@@ -267,7 +280,7 @@ function makeChart(containerSelector, data) {
             .style("font-family", typography.label.font_family)
             .style("font-size", typography.label.font_size)
             .style("fill", colors.text_color)
-            .text(d => (d.groups[group] || 0) + (yUnit ? ` ${yUnit}` : ''))
+            .text(d => formatValue(d.groups[group] || 0) + (yUnit ? ` ${yUnit}` : ''))
             .style("opacity", 1);
     });
     // // 添加图例 - 放在图表上方

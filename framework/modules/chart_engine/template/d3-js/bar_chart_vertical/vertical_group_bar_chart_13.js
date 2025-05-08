@@ -215,7 +215,17 @@ function makeChart(containerSelector, data) {
     const barWidth = groupScale.bandwidth();
 
     // ---------- 9. 文本格式化 ----------
-    const formatValue = (value) => `${value}${yUnit}`;
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    };
 
     // 计算动态文本大小的函数
     const calculateFontSize = (text, maxWidth, baseSize = 12) => {
@@ -466,45 +476,28 @@ function makeChart(containerSelector, data) {
                 .attr("stroke-width", variables.has_stroke ? 1 : 0)
                 .style("filter", variables.has_shadow ? "url(#shadow)" : "none");
 
-            // --- 修改: 绘制带背景的数值标签 ---
+            // --- 修改: 绘制数值标签，不带手绘背景 ---
             if (leftBarHeight > 5) { 
                 const labelX = leftBarX + barWidth / 2;
-                const labelY = leftBarY - 8; 
-                const textContent = formatValue(leftValue);
+                const labelY = leftBarY - 5; // 将标签放置在柱子上方5个像素
+                const textContent = formatValue(leftValue) + (yUnit ? ` ${yUnit}` : '');
                 
-                // 使用临时 group 来绘制标签和背景
-                const labelGroup = chart.append("g")
-                    .attr("class", "value-label-group left-value-label");
+                // 计算字体大小
+                const tempText = chart.append("text").style("visibility", "hidden")
+                    .style("font-family", "'Comic Sans MS', cursive")
+                    .style("font-size", `${baseFontSizeValue}px`)
+                    .style("font-weight", "bold")
+                    .text(textContent);
                 
-                // 复用字体大小调整逻辑 (可以封装成函数)
-                const tempText = labelGroup.append("text").style("visibility", "hidden").style("font-family", "'Comic Sans MS', cursive").style("font-size", `${baseFontSizeValue}px`).style("font-weight", "bold").text(textContent);
                 let currentFontSize = baseFontSizeValue;
-                let bbox = tempText.node().getBBox();
-                if (bbox.width > valueLabelMaxWidth - 2 * sketchPadding) {
-                    currentFontSize = Math.max(8, baseFontSizeValue * ((valueLabelMaxWidth - 2 * sketchPadding) / bbox.width));
-                }
-                tempText.remove();
-
-                // 获取最终尺寸
-                const finalText = labelGroup.append("text").style("visibility", "hidden").style("font-family", "'Comic Sans MS', cursive").style("font-size", `${currentFontSize}px`).style("font-weight", "bold").text(textContent);
-                bbox = finalText.node().getBBox();
-                finalText.remove();
+                const textWidth = tempText.node().getComputedTextLength();
                 
-                const bgWidth = bbox.width + 2 * sketchPadding;
-                const bgHeight = bbox.height + 1.5 * sketchPadding;
-                const bgX = labelX - bgWidth / 2;
-                const bgY = labelY - bgHeight + sketchPadding / 2;
-
-                labelGroup.append("rect")
-                    .attr("x", bgX)
-                    .attr("y", bgY)
-                    .attr("width", bgWidth)
-                    .attr("height", bgHeight)
-                    .attr("fill", "url(#pattern-label-sketch)")
-                    .attr("stroke", "#AAAAAA")
-                    .attr("stroke-width", 0.5);
-
-                labelGroup.append("text")
+                if (textWidth > valueLabelMaxWidth) {
+                    currentFontSize = Math.max(8, baseFontSizeValue * (valueLabelMaxWidth / textWidth));
+                }
+                
+                // 添加实际文本标签
+                const textLabel = chart.append("text")
                     .attr("class", "bar-label")
                     .attr("x", labelX)
                     .attr("y", labelY)
@@ -512,9 +505,32 @@ function makeChart(containerSelector, data) {
                     .style("font-family", "'Comic Sans MS', cursive")
                     .style("font-size", `${currentFontSize}px`)
                     .style("font-weight", "bold")
-                    .style("fill", colors.text_color)
-                    .attr("dominant-baseline", "alphabetic")
-                    .text(textContent);
+                    .style("fill", colors.text_color);
+                
+                // 如果即使缩小到8px后文本仍然超出宽度，应用文本换行
+                if (currentFontSize <= 8 && textWidth > valueLabelMaxWidth) {
+                    wrapText(textLabel, textContent, barWidth, 1.1);
+                    
+                    // 获取tspan元素计算最后一行位置
+                    const tspans = textLabel.selectAll("tspan");
+                    const lineCount = tspans.size();
+                    
+                    if (lineCount > 1) {
+                        // 计算文本高度以确保最后一行紧贴柱子顶部
+                        const lineHeight = currentFontSize * 1.1;
+                        const totalTextHeight = lineHeight * lineCount;
+                        
+                        // 重新定位所有tspan，使最后一行紧贴柱子顶部
+                        tspans.each(function(d, i) {
+                            const tspan = d3.select(this);
+                            tspan.attr("y", labelY - totalTextHeight + (i + 1) * lineHeight);
+                        });
+                    }
+                } else {
+                    textLabel.text(textContent);
+                }
+                
+                tempText.remove();
             }
         }
 
@@ -539,43 +555,28 @@ function makeChart(containerSelector, data) {
                 .attr("stroke-width", variables.has_stroke ? 1 : 0)
                 .style("filter", variables.has_shadow ? "url(#shadow)" : "none");
 
-            // --- 修改: 绘制带背景的数值标签 ---
-             if (rightBarHeight > 5) { 
-                 const labelX = rightBarX + barWidth / 2;
-                 const labelY = rightBarY - 8; 
-                 const textContent = formatValue(rightValue);
-                 
-                 const labelGroup = chart.append("g")
-                     .attr("class", "value-label-group right-value-label");
-
-                // 复用字体大小调整逻辑 
-                const tempText = labelGroup.append("text").style("visibility", "hidden").style("font-family", "'Comic Sans MS', cursive").style("font-size", `${baseFontSizeValue}px`).style("font-weight", "bold").text(textContent);
+            // --- 修改: 绘制数值标签，不带手绘背景 ---
+            if (rightBarHeight > 5) { 
+                const labelX = rightBarX + barWidth / 2;
+                const labelY = rightBarY - 5; // 将标签放置在柱子上方5个像素
+                const textContent = formatValue(rightValue) + (yUnit ? ` ${yUnit}` : '');
+                
+                // 计算字体大小
+                const tempText = chart.append("text").style("visibility", "hidden")
+                    .style("font-family", "'Comic Sans MS', cursive")
+                    .style("font-size", `${baseFontSizeValue}px`)
+                    .style("font-weight", "bold")
+                    .text(textContent);
+                
                 let currentFontSize = baseFontSizeValue;
-                let bbox = tempText.node().getBBox();
-                if (bbox.width > valueLabelMaxWidth - 2 * sketchPadding) {
-                    currentFontSize = Math.max(8, baseFontSizeValue * ((valueLabelMaxWidth - 2 * sketchPadding) / bbox.width));
+                const textWidth = tempText.node().getComputedTextLength();
+                
+                if (textWidth > valueLabelMaxWidth) {
+                    currentFontSize = Math.max(8, baseFontSizeValue * (valueLabelMaxWidth / textWidth));
                 }
-                tempText.remove();
-
-                const finalText = labelGroup.append("text").style("visibility", "hidden").style("font-family", "'Comic Sans MS', cursive").style("font-size", `${currentFontSize}px`).style("font-weight", "bold").text(textContent);
-                bbox = finalText.node().getBBox();
-                finalText.remove();
                 
-                const bgWidth = bbox.width + 2 * sketchPadding;
-                const bgHeight = bbox.height + 1.5 * sketchPadding;
-                const bgX = labelX - bgWidth / 2;
-                const bgY = labelY - bgHeight + sketchPadding / 2;
-
-                labelGroup.append("rect")
-                    .attr("x", bgX)
-                    .attr("y", bgY)
-                    .attr("width", bgWidth)
-                    .attr("height", bgHeight)
-                    .attr("fill", "url(#pattern-label-sketch)")
-                    .attr("stroke", "#AAAAAA")
-                    .attr("stroke-width", 0.5);
-                
-                labelGroup.append("text")
+                // 添加实际文本标签
+                const textLabel = chart.append("text")
                     .attr("class", "bar-label")
                     .attr("x", labelX)
                     .attr("y", labelY)
@@ -583,10 +584,33 @@ function makeChart(containerSelector, data) {
                     .style("font-family", "'Comic Sans MS', cursive")
                     .style("font-size", `${currentFontSize}px`)
                     .style("font-weight", "bold")
-                    .style("fill", colors.text_color)
-                    .attr("dominant-baseline", "alphabetic")
-                    .text(textContent);
-             }
+                    .style("fill", colors.text_color);
+                
+                // 如果即使缩小到8px后文本仍然超出宽度，应用文本换行
+                if (currentFontSize <= 8 && textWidth > valueLabelMaxWidth) {
+                    wrapText(textLabel, textContent, barWidth, 1.1);
+                    
+                    // 获取tspan元素计算最后一行位置
+                    const tspans = textLabel.selectAll("tspan");
+                    const lineCount = tspans.size();
+                    
+                    if (lineCount > 1) {
+                        // 计算文本高度以确保最后一行紧贴柱子顶部
+                        const lineHeight = currentFontSize * 1.1;
+                        const totalTextHeight = lineHeight * lineCount;
+                        
+                        // 重新定位所有tspan，使最后一行紧贴柱子顶部
+                        tspans.each(function(d, i) {
+                            const tspan = d3.select(this);
+                            tspan.attr("y", labelY - totalTextHeight + (i + 1) * lineHeight);
+                        });
+                    }
+                } else {
+                    textLabel.text(textContent);
+                }
+                
+                tempText.remove();
+            }
         }
     });
 

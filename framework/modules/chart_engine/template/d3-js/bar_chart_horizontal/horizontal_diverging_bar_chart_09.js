@@ -48,6 +48,19 @@ function makeChart(containerSelector, data) {
     variables.has_stroke = variables.has_stroke || false;
     variables.has_spacing = variables.has_spacing || false;
     
+    // 数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    }
+    
     // 清空容器
     d3.select(containerSelector).html("");
     
@@ -79,7 +92,7 @@ function makeChart(containerSelector, data) {
     // 从数据列中安全提取字段名称
     const xColumn = dataColumns.find(col => col.role === "x");
     const yColumn = dataColumns.find(col => col.role === "y");
-    const groupColumns = dataColumns.filter(col => col.role === "group");
+    
     
     // 安全地提取字段名，并提供默认值
     if (xColumn) parentTypeField = xColumn.name; else parentTypeField = "Parent Type";
@@ -445,7 +458,7 @@ function makeChart(containerSelector, data) {
                         .style("font-size", dynamicFontSize)
                         .style("font-weight", typography.annotation.font_weight)
                         .style("fill", colors.text_color || "#333")
-                        .text(`${value}${valueUnit}`);
+                        .text(`${formatValue(value)}${valueUnit}`);
                 }
             });
         });

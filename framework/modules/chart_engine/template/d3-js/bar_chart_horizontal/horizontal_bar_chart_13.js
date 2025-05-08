@@ -10,7 +10,7 @@ REQUIREMENTS_BEGIN
         ["numerical"],
         ["numerical"]
     ],
-    "required_fields_range": [[2, 30], [0, "inf"], [0, "inf"]],
+    "required_fields_range": [[2, 20], [0, "inf"], [0, "inf"]],
     "required_fields_icons": ["x"],
     "required_other_icons": [],
     "required_fields_colors": [],
@@ -57,7 +57,7 @@ function makeChart(containerSelector, data) {
     
     // 2. 尺寸和布局设置
     const width = variables.width || 800;
-    const height = variables.height || 600;
+    let currentChartHeight = variables.height || 600; // 初始化图表高度，后续可能调整
     
     // 设置边距
     const margin = {
@@ -90,9 +90,28 @@ function makeChart(containerSelector, data) {
     const sortedData = [...chartData].sort((a, b) => b[valueField1] - a[valueField1]);
     const sortedDimensions = sortedData.map(d => d[dimensionField]);
     
+    // -- 动态调整SVG高度 --
+    if (sortedDimensions.length > 15) {
+        const excessDimensions = sortedDimensions.length - 15;
+        const percentIncrease = excessDimensions * 0.03; // 每增加一个维度，高度增加3%
+        currentChartHeight = Math.round(currentChartHeight * (1 + percentIncrease));
+    }
+    // -- 结束动态调整SVG高度 --
+    
+    // 添加数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    };
+    
     // 5. 布局计算
-    const flagWidth = 30;
-    const flagHeight = 30;
     const flagMargin = 10;
     const textMargin = 5;
     
@@ -102,7 +121,7 @@ function makeChart(containerSelector, data) {
     
     // 计算内部绘图区域尺寸
     const innerWidth = width - margin.left - margin.right;
-    const innerHeight = height - margin.top - margin.bottom;
+    const innerHeight = currentChartHeight - margin.top - margin.bottom; // 使用调整后的高度
     
     // 计算两列的宽度
     const barChartWidth = innerWidth * leftColumnRatio;
@@ -131,12 +150,26 @@ function makeChart(containerSelector, data) {
         .domain([0, maxValue2])
         .range([minRadius, maxRadius]);
     
+    // 新增: 动态计算图标（flag）的尺寸
+    const barHeightForIconScaling = yScale.bandwidth();
+    const barHeightThresholdForIcon = 35; // px, 用于切换图标缩放比例的阈值
+    // 如果条形高度较低，则图标相对条形较大 (80%)；如果条形高度较高，则图标相对条形较小 (60%)
+    const iconScaleFactor = barHeightForIconScaling < barHeightThresholdForIcon ? 0.8 : 0.6;
+    // 计算图标尺寸，确保最小为10px，且不超过条形本身的高度
+    const calculatedFlagSize = Math.min(
+        barHeightForIconScaling, 
+        Math.max(10, Math.round(barHeightForIconScaling * iconScaleFactor))
+    );
+    
+    const flagWidth = calculatedFlagSize;
+    const flagHeight = calculatedFlagSize;
+    
     // 7. 创建SVG容器
     const svg = d3.select(containerSelector)
         .append("svg")
         .attr("width", "100%")
-        .attr("height", height)
-        .attr("viewBox", `0 0 ${width} ${height}`)
+        .attr("height", currentChartHeight) // 使用调整后的高度
+        .attr("viewBox", `0 0 ${width} ${currentChartHeight}`) // 使用调整后的高度
         .attr("style", "max-width: 100%; height: auto;")
         .attr("xmlns", "http://www.w3.org/2000/svg")
         .attr("xmlns:xlink", "http://www.w3.org/1999/xlink");
@@ -153,32 +186,50 @@ function makeChart(containerSelector, data) {
         .attr("height", innerHeight);
 
     // 8. 添加标题
-    const leftTitleX = margin.left + flagMargin + flagWidth + textMargin;
-    
-    // 左侧列标题
-    svg.append("text")
-        .attr("x", leftTitleX)
-        .attr("y", margin.top - 10)
-        .attr("text-anchor", "start")
-        .style("font-family", typography.description.font_family)
-        .style("font-size", typography.description.font_size)
-        .style("font-weight", typography.description.font_weight)
-        .style("fill", colors.text_color)
-        .text(columnTitle1);
-    
-    // 右侧列标题
-    svg.append("text")
-        .attr("x", width - margin.right - 10)
-        .attr("y", margin.top - 10)
-        .attr("text-anchor", "end")
-        .style("font-family", typography.description.font_family)
-        .style("font-size", typography.description.font_size)
-        .style("font-weight", typography.description.font_weight)
-        .style("fill", colors.text_color)
-        .text(columnTitle2);
-    
-    // ---------- Helper: Estimate Text Width ----------
     const tempTextSvg = svg.append("g").attr("visibility", "hidden");
+
+    // ---------- Helper: Estimate Generic Text Width ----------
+    const estimateGenericTextWidth = (text, fontConfig, tempSvg) => {
+        tempSvg.selectAll("text").remove(); // 清除旧文本
+        const tempText = tempSvg.append("text")
+            .style("font-family", fontConfig.font_family)
+            .style("font-size", fontConfig.font_size)
+            .style("font-weight", fontConfig.font_weight)
+            .text(text);
+        const width = tempText.node().getBBox().width;
+        return width;
+    };
+
+    // ---------- Helper: Get Wrapped Lines ----------
+    function getWrappedLines(textContent, availableWidth, fontConfig, tempSvg) {
+        const words = (textContent || "").trim().split(/\s+/).filter(w => w !== "");
+        const lines = [];
+        // 使用 parseFloat 解析字体大小（例如 "16px" -> 16），然后乘以1.2作为行高估计
+        const fontSizeValue = parseFloat(fontConfig.font_size);
+        const lineHeight = fontSizeValue * 1.2; 
+
+        if (words.length === 0) {
+            return { linesArray: [], numLines: 0, lineHeight: lineHeight };
+        }
+
+        let currentLine = words[0];
+        for (let i = 1; i < words.length; i++) {
+            const word = words[i];
+            const testLine = currentLine + " " + word;
+            if (estimateGenericTextWidth(testLine, fontConfig, tempSvg) > availableWidth && currentLine !== "") {
+                lines.push(currentLine);
+                currentLine = word;
+            } else {
+                currentLine = testLine;
+            }
+        }
+        if (currentLine !== "") {
+            lines.push(currentLine);
+        }
+        
+        return { linesArray: lines, numLines: lines.length, lineHeight: lineHeight };
+    }
+
     const estimateLabelWidth = (text, fontConfig, barHeight) => {
         // Calculate dynamic font size for value labels if applicable
         const isValueLabel = fontConfig === typography.annotation;
@@ -198,6 +249,60 @@ function makeChart(containerSelector, data) {
     const g = svg.append("g")
         .attr("transform", `translate(${margin.left}, ${margin.top})`);
     
+    // ---------- 8. 添加标题 (重构部分) ----------
+    const titleFontConfig = typography.description;
+    const titleBottomPadding = 10; // 标题底部与图表顶部之间的间距
+    const desiredBaselineOfLastLine = margin.top - titleBottomPadding;
+
+    // 左侧列标题
+    const leftTitleAvailableWidth = innerWidth * 0.6;
+    const leftTitleXPos = margin.left;
+    const wrappedLeftTitle = getWrappedLines(columnTitle1, leftTitleAvailableWidth, titleFontConfig, tempTextSvg);
+    
+    if (wrappedLeftTitle.numLines > 0) {
+        const initialYLeft = desiredBaselineOfLastLine - (wrappedLeftTitle.numLines - 1) * wrappedLeftTitle.lineHeight;
+        const leftTitleText = svg.append("text")
+            .attr("x", leftTitleXPos)
+            .attr("y", initialYLeft)
+            .attr("text-anchor", "start")
+            .style("font-family", titleFontConfig.font_family)
+            .style("font-size", titleFontConfig.font_size)
+            .style("font-weight", titleFontConfig.font_weight)
+            .style("fill", colors.text_color);
+
+        wrappedLeftTitle.linesArray.forEach((line, i) => {
+            leftTitleText.append("tspan")
+                .attr("x", leftTitleXPos)
+                .attr("dy", i === 0 ? 0 : wrappedLeftTitle.lineHeight)
+                .text(line);
+        });
+    }
+
+    // 右侧列标题
+    const rightTitleAvailableWidth = innerWidth * 0.4;
+    const rightTitleXPos = margin.left + innerWidth; // 新的右对齐X坐标 (即：allocated space for left + allocated space for right)
+    const wrappedRightTitle = getWrappedLines(columnTitle2, rightTitleAvailableWidth, titleFontConfig, tempTextSvg);
+
+    if (wrappedRightTitle.numLines > 0) {
+        const initialYRight = desiredBaselineOfLastLine - (wrappedRightTitle.numLines - 1) * wrappedRightTitle.lineHeight;
+        const rightTitleText = svg.append("text")
+            .attr("x", rightTitleXPos)
+            .attr("y", initialYRight)
+            .attr("text-anchor", "end") // 右侧标题修改为end对齐
+            .style("font-family", titleFontConfig.font_family)
+            .style("font-size", titleFontConfig.font_size)
+            .style("font-weight", titleFontConfig.font_weight)
+            .style("fill", colors.text_color);
+
+        wrappedRightTitle.linesArray.forEach((line, i) => {
+            rightTitleText.append("tspan")
+                .attr("x", rightTitleXPos) // tspan也使用相同的X坐标，由text-anchor控制对齐
+                .attr("dy", i === 0 ? 0 : wrappedRightTitle.lineHeight)
+                .text(line);
+        });
+    }
+    // ---------- 结束添加标题 ----------
+
     // ---------- 10. 绘制条形和标签 ----------
     
     // 获取条形图颜色
@@ -253,7 +358,7 @@ function makeChart(containerSelector, data) {
             const textPadding = 5; // 文本内边距
 
             const dimensionLabelText = dimension.toUpperCase();
-            const valueLabelText = `${dataPoint[valueField1]}${valueUnit1}`;
+            const valueLabelText = `${formatValue(+dataPoint[valueField1])}${valueUnit1}`;
 
             const currentDimLabelWidth = estimateLabelWidth(dimensionLabelText, typography.label, barHeight);
             const currentValueLabelWidth = estimateLabelWidth(valueLabelText, typography.annotation, barHeight);
@@ -366,18 +471,7 @@ function makeChart(containerSelector, data) {
                     .attr("preserveAspectRatio","xMidYMid meet")
                     .attr("xlink:href", images.field[dimension])
                     .attr("clip-path", `url(#${clipId})`);
-            } else {
-                 // Placeholder if no image? Or just omit?
-                 // For now, draw a simple circle placeholder using icon color
-                 iconGroup.append("circle")
-                    .attr("cx", flagWidth / 2)
-                    .attr("cy", flagHeight / 2)
-                    .attr("r", (flagHeight / 2) * 0.8) // Match clipRadius approx
-                    .attr("fill", getBarColor(dimension)) // Use bar color?
-                    .attr("stroke", "#000000")
-                    .attr("stroke-width", 2);
-            }
-
+            } 
             // Dimension Label (Country Name)
             g.append("text")
                 .attr("x", dimLabelX)
@@ -414,7 +508,7 @@ function makeChart(containerSelector, data) {
                 .attr("opacity", 0.6);
 
             // 5. 添加圆形数值标签 (GDP Value)
-            const formattedValue2 = `${dataPoint[valueField2]}${valueUnit2}`;
+            const formattedValue2 = `${formatValue(+dataPoint[valueField2])}${valueUnit2}`;
             const circleLabelFontSize = `${Math.min(20, Math.max(barHeight * 0.6, parseFloat(typography.annotation.font_size)))}px`;
             g.append("text")
                 .attr("x", circleX)

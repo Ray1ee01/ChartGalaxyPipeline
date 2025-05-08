@@ -59,6 +59,19 @@ function makeChart(containerSelector, data) {
     // 清除容器
     d3.select(containerSelector).html("");
     
+    // 添加数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    }
+    
     // ---------- 2. 尺寸和布局设置 ----------
     // 设置图表尺寸和边距
     const width = variables.width || 800;
@@ -176,9 +189,6 @@ function makeChart(containerSelector, data) {
         .style("font-size", typography.label.font_size)
         .style("font-weight", "bold"); // 数值标签使用粗体
     
-    // 创建格式化函数
-    const formatValue = (value) => `${value}${yUnit}`;
-    
     // 数值标签的可用宽度 = bar宽度 + 间距
     const barWidth = groupScale.bandwidth();
     const valueSpacing = xScale.bandwidth() * 0.1;
@@ -193,7 +203,7 @@ function makeChart(containerSelector, data) {
     
     // 计算所有数值标签的最大宽度
     useData.forEach(d => {
-        tempText.text(formatValue(d[yField]));
+        tempText.text(formatValue(d[yField]) + (yUnit ? ` ${yUnit}` : ''));
         const textWidth = tempText.node().getComputedTextLength();
         maxValueLabelWidth = Math.max(maxValueLabelWidth, textWidth);
     });
@@ -659,7 +669,7 @@ function makeChart(containerSelector, data) {
             
             // 绘制左侧柱子顶部的标签
             // 首先计算标签文本宽度并调整字体大小
-            const leftValueText = formatValue(leftValue);
+            const leftValueText = formatValue(leftValue) + (yUnit ? ` ${yUnit}` : '');
             let leftLabelFontSize = valueFontSize; // 默认使用之前计算的字体大小
             
             // 创建临时文本元素测量宽度
@@ -726,7 +736,7 @@ function makeChart(containerSelector, data) {
             
             // 绘制右侧柱子顶部的标签
             // 首先计算标签文本宽度并调整字体大小
-            const rightValueText = formatValue(rightValue);
+            const rightValueText = formatValue(rightValue) + (yUnit ? ` ${yUnit}` : '');
             let rightLabelFontSize = valueFontSize; // 默认使用之前计算的字体大小
             
             // 创建临时文本元素测量宽度

@@ -56,7 +56,18 @@ function makeChart(containerSelector, data) {
     let valueUnit = "";
     if (xColumn && xColumn.unit !== "none") dimensionUnit = xColumn.unit;
     if (yColumn && yColumn.unit !== "none") valueUnit = yColumn.unit;
-    
+     // 添加数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    }
     // ---------- 3. 数据处理 ----------
     // 按y值降序排序数据 (optional, depends on desired vertical order)
     const sortedData = [...chartData].sort((a, b) => b[yField] - a[yField]);
@@ -245,7 +256,7 @@ function makeChart(containerSelector, data) {
             }
 
             // Value Label Text (Prepare for font sizing)
-            const formattedValue = valueUnit ? `${d[yField]}${valueUnit}` : `${d[yField]}`;
+            const formattedValue = `${formatValue(d[yField])}${valueUnit}`;
             const valueText = group.append("text")
                 .attr("class", "value-label")
                 .attr("x", valueSquareX+valueSquareSize/2) // Center in filled portion

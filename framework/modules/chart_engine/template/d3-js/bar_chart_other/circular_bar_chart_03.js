@@ -90,6 +90,19 @@ function makeChart(containerSelector, data) {
 
     // ---------- 4. 数据处理 ----------
 
+    // 添加数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    }
+
     // 按值降序排序数据
     chartData.sort((a, b) => b[valueField] - a[valueField]);
 
@@ -230,7 +243,7 @@ function makeChart(containerSelector, data) {
 
         // --- 8d. 在末端圆圈内添加数值文本 ---
         // 动态计算字体大小以适应圆圈内部
-        const valueText = `${d3.format(",.1f")(value)}${valueUnit}`;
+        const valueText = `${formatValue(value)}${valueUnit}`;
         let valueFontSize = endCircleRadius * 0.9; // 基于半径的最大字体大小
         // 简单检查：如果文本宽度过大（近似值），则减小字体大小
         if (valueText.length * valueFontSize * 0.6 > endCircleRadius * 1.8) {

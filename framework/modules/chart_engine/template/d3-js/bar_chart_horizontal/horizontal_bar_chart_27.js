@@ -86,6 +86,19 @@ function makeChart(containerSelector, data) {
     const sortedData = [...chartData].sort((a, b) => b[valueField1] - a[valueField1]);
     const sortedDimensions = sortedData.map(d => d[dimensionField]);
     
+    // 添加数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    };
+    
     // 5. 布局计算 和 字体调整
     const flagWidth = 30;
     const flagHeight = 30;
@@ -157,27 +170,18 @@ function makeChart(containerSelector, data) {
     const barHeight = yScale.bandwidth();
     const valueLabelFontSize = Math.min(20, Math.max(barHeight * 0.5, 12));
     
-    // 估算最大数值标签宽度 (使用独立的临时 SVG)
-    let maxValueLabelWidth = 0;
-    const externalPadding = 8; // 标签与 bar 之间的间距
-    sortedData.forEach(dataPoint => {
-        const valueLabelText = `${dataPoint[valueField1]}${valueUnit1}`;
-        // 创建独立的临时 SVG 进行测量
-        const localTempSvg = d3.select(containerSelector).append("svg")
-             .attr("width", 0).attr("height", 0).style("visibility", "hidden");
-        const tempText = localTempSvg.append("text") // 附加到独立的 SVG
-             .style("font-family", typography.annotation.font_family)
-             .style("font-size", `${valueLabelFontSize}px`)
-             .style("font-weight", typography.annotation.font_weight)
-             .text(valueLabelText);
-        maxValueLabelWidth = Math.max(maxValueLabelWidth, tempText.node().getBBox().width);
-        // tempText.remove(); // 移除 text 不是必须的，因为父 SVG 会被移除
-        localTempSvg.remove(); // 移除独立的临时 SVG
+    // 4.3 测量数值标签的最大宽度
+    const valueWidths = sortedData.map(d => {
+        const tempText = tempMeasureSvg.append("text")
+            .style("font-family", typography.annotation.font_family)
+            .style("font-size", `${valueLabelFontSize}px`)
+            .style("font-weight", typography.annotation.font_weight)
+            .text(`${formatValue(+d[valueField1])}${valueUnit1}`);
+        return tempText.node().getBBox().width;
     });
-    // tempTextSvg.remove(); // 不再需要，因为没有全局 tempTextSvg
     
     // 计算条形图可用的实际宽度
-    const availableBarWidth = Math.max(0, barAreaWidth - maxValueLabelWidth - externalPadding);
+    const availableBarWidth = Math.max(0, barAreaWidth - valueWidths[0] - textPadding);
     
     // X轴比例尺（第一个数值）- 范围调整为 availableBarWidth
     const xScale = d3.scaleLinear()
@@ -375,7 +379,9 @@ function makeChart(containerSelector, data) {
                 .attr("stroke-opacity", 0.5);
 
             // 4. 添加正方形数值标签 - 根据大小决定位置和颜色
-            const formattedValue2 = `${dataPoint[valueField2]}${valueUnit2}`;
+            const formattedValue2 = valueUnit2 ? 
+                `${formatValue(+dataPoint[valueField2])}${valueUnit2}` : 
+                `${formatValue(+dataPoint[valueField2])}`;
             // 动态调整字体大小，确保适合正方形
             const squareLabelFontSize = Math.min(
                 16, 
@@ -430,9 +436,10 @@ function makeChart(containerSelector, data) {
                 .attr("opacity", 0.9);
 
             // 6. 添加条形数值标签 - 固定放在条形左侧外部
-            const valueLabelText = `${dataPoint[valueField1]}${valueUnit1}`;
-            // const currentValueLabelWidth = estimateLabelWidth(valueLabelText, typography.annotation, barHeight);
-            const valueLabelXPos = barX - externalPadding; // 固定在条形左侧
+            const formattedValue1 = valueUnit1 ? 
+                `${formatValue(+dataPoint[valueField1])}${valueUnit1}` : 
+                `${formatValue(+dataPoint[valueField1])}`;
+            const valueLabelXPos = barX - textPadding; // 固定在条形左侧
             const valueLabelAnchor = "end"; // 右对齐
             const valueLabelFill = colors.text_color; // 固定文本颜色
 
@@ -445,7 +452,7 @@ function makeChart(containerSelector, data) {
                 .style("font-size", `${valueLabelFontSize}px`)
                 .style("font-weight", typography.annotation.font_weight)
                 .style("fill", valueLabelFill)
-                .text(valueLabelText);
+                .text(formattedValue1);
             
         } catch (error) {
             console.error(`渲染${dimension}时出错:`, error);

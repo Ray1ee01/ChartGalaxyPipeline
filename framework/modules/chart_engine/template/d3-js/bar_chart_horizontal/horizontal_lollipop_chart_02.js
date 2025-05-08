@@ -42,6 +42,19 @@ function makeChart(containerSelector, data) {
     const images = jsonData.images || { field: {}, other: {} };   // 图像设置
     const dataColumns = jsonData.data.columns || []; // 数据列定义
     
+    // 数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    }
+    
     // 设置视觉效果变量的默认值
     variables.has_rounded_corners = variables.has_rounded_corners || false;
     variables.has_shadow = variables.has_shadow || false;
@@ -239,7 +252,7 @@ function makeChart(containerSelector, data) {
         .ticks(5)
         .tickSize(0)  // 不显示刻度线
         .tickPadding(8)
-        .tickFormat(d => d); // New format: only show the number
+        .tickFormat(d => formatValue(d)); // 使用格式化函数
     
     const xAxisGroup = g.append("g")
         .attr("class", "x-axis")
@@ -258,17 +271,6 @@ function makeChart(containerSelector, data) {
     
     // 获取主题色
     const primaryColor = colors.other && colors.other.primary ? colors.other.primary : "#F7941D";
-    
-    // 格式化数值的辅助函数
-    function formatNumber(num) {
-        if (num >= 1000000) {
-            return (num / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
-        }
-        if (num >= 1000) {
-            return (num / 1000).toFixed(1).replace(/\.0$/, '') + 'K';
-        }
-        return num.toString();
-    }
     
     sortedData.forEach((d, i) => {
         const dimension = d[dimensionField];
@@ -312,7 +314,7 @@ function makeChart(containerSelector, data) {
             .style("filter", variables.has_shadow ? "url(#shadow)" : "none");
         
         // 5. 在圆圈内添加数值标签（白色）
-        const formattedValue = formatNumber(value);
+        const formattedValue = formatValue(value);
             
         g.append("text")
             .attr("x", circleX)

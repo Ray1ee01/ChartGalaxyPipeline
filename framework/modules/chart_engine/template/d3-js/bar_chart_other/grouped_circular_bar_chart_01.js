@@ -44,6 +44,20 @@ function makeChart(containerSelector, data) {
     };  // 颜色设置
     const dataColumns = jsonData.data.columns || []; // 数据列定义
     
+    // 数值单位规范
+    // 添加数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    }
+    
     // 视觉效果默认值
     variables.has_rounded_corners = variables.has_rounded_corners || false; // 圆角
     variables.has_shadow = variables.has_shadow || false; // 阴影
@@ -245,7 +259,7 @@ function makeChart(containerSelector, data) {
         const maxValueFontSize = 12; // 最大字体
         const minValueFontSize = 8;  // 最小字体
         let finalValueFontSize = 0; // 最终字体大小，0表示不显示
-        const formattedValue = `${Math.round(item[valueField])}${valueUnit}`;
+        const formattedValue = `${formatValue(item[valueField])}${valueUnit}`;
 
         // 循环检查字体大小
         for (let fs = maxValueFontSize; fs >= minValueFontSize; fs--) {

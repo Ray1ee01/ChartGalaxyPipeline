@@ -56,6 +56,19 @@ function makeChart(containerSelector, data) {
     // 清除容器
     d3.select(containerSelector).html("");
 
+    // 添加数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    }
+
     // ---------- 2. 尺寸和布局设置 ----------
     const width = variables.width || 800;
     const height = variables.height || 500;
@@ -435,14 +448,14 @@ function makeChart(containerSelector, data) {
             if (!groupData) return;
 
             // 主指标标签
-            const primaryText = groupData.primaryValue.toFixed(1) + yUnit;
+            const primaryText = formatValue(groupData.primaryValue) + (yUnit ? ` ${yUnit}` : '');
             let width = getTextWidth(primaryText, baseFontSizeAnnotation, typography.annotation.font_weight, typography.annotation.font_family);
             if (width > maxLabelWidth) {
                 minPrimaryLabelRatio = Math.min(minPrimaryLabelRatio, maxLabelWidth / width);
             }
 
             // 次指标标签 (Rate)
-            const secondaryText = groupData.secondaryRate.toFixed(1) + yUnit;
+            const secondaryText = formatValue(groupData.secondaryRate) + (yUnit ? ` ${yUnit}` : '');
             width = getTextWidth(secondaryText, baseFontSizeAnnotation, typography.annotation.font_weight, typography.annotation.font_family);
              if (width > maxLabelWidth) { // 也应用宽度限制
                  minSecondaryLabelRatio = Math.min(minSecondaryLabelRatio, maxLabelWidth / width);
@@ -490,7 +503,7 @@ function makeChart(containerSelector, data) {
                     .style("font-size", `${finalPrimaryFontSize}px`)
                     .style("font-weight", typography.annotation.font_weight)
                     .style("fill", colors.text_color || "#333333")
-                    .text(groupData.primaryValue.toFixed(1) + yUnit);
+                    .text(formatValue(groupData.primaryValue) + (yUnit ? ` ${yUnit}` : ''));
             }
 
 

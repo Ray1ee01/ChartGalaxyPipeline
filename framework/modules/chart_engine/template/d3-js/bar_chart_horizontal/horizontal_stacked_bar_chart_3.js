@@ -46,6 +46,19 @@ function makeChart(containerSelector, data) {
     const dataColumns = jsonData.data.columns || []; // 数据列定义
     const titles = jsonData.titles || {};           // 标题配置
     
+    // 添加数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    }
+    
     // 设置视觉效果变量的默认值
     variables.has_rounded_corners = variables.has_rounded_corners !== undefined ? variables.has_rounded_corners : false;
     variables.has_spacing = variables.has_spacing !== undefined ? variables.has_spacing : false;
@@ -461,12 +474,12 @@ function makeChart(containerSelector, data) {
                 });
                 
                 // 测量标签宽度
-                const labelText = stackItem.value + valueUnit;
+                const formattedValue = `${formatValue(stackItem.value)}${valueUnit}`;
                 const tempLabel = tempSvg.append("text")
                     .style("font-family", typography.annotation.font_family)
                     .style("font-size", `${Math.min(20,Math.max(barHeight * 0.6, parseFloat(typography.annotation.font_size)))}px`)
                     .style("font-weight", typography.annotation.font_weight)
-                    .text(labelText);
+                    .text(formattedValue);
                 
                 const labelWidth = tempLabel.node().getBBox().width;
                 tempLabel.remove();
@@ -485,7 +498,7 @@ function makeChart(containerSelector, data) {
                         .style("font-size", `${Math.min(20,Math.max(barHeight * 0.6, parseFloat(typography.annotation.font_size)))}px`)
                         .style("font-weight", typography.annotation.font_weight)
                         .style("fill", "#FFFFFF")  // 白色文本更易读
-                        .text(labelText);
+                        .text(formattedValue);
                 } else if (isLastGroup) {
                     // 如果是最后一组且条形宽度不够，添加外部标签
                     g.append("text")
@@ -497,7 +510,7 @@ function makeChart(containerSelector, data) {
                         .style("font-size", `${Math.min(20,Math.max(barHeight * 0.6, parseFloat(typography.annotation.font_size)))}px`)
                         .style("font-weight", typography.annotation.font_weight)
                         .style("fill", colors.text_color)  // 使用文本颜色
-                        .text(labelText);
+                        .text(formattedValue);
                 }
             }
         });
@@ -531,7 +544,7 @@ function makeChart(containerSelector, data) {
                 .style("filter", variables.has_shadow ? "url(#shadow)" : "none");
             
             // 添加总值标签
-            const formattedTotal = circleValue + totalUnit;
+            const formattedTotal = `${formatValue(circleValue)}${totalUnit}`;
             
             // 测量文本宽度以决定放置位置
             const tempText = svg.append("text")

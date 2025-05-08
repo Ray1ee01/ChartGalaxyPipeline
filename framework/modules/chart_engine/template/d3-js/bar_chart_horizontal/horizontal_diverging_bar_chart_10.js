@@ -51,6 +51,19 @@ function makeChart(containerSelector, data) {
     variables.has_stroke = variables.has_stroke || false;
     variables.has_spacing = variables.has_spacing || true;  // 默认启用组间距
     
+    // 数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    }
+    
     // 清空容器
     d3.select(containerSelector).html("");
     
@@ -76,13 +89,13 @@ function makeChart(containerSelector, data) {
     // 从数据列中提取字段名称
     const xColumn = dataColumns.find(col => col.role === "x");
     const yColumn = dataColumns.find(col => col.role === "y");
-    const groupColumns = dataColumns.filter(col => col.role === "group");
+    
     
     // 安全地提取字段名，并提供默认值
     if (xColumn) topicField = xColumn.name; 
     if (yColumn) valueField = yColumn.name; 
-    opinionGroupField = dataColumns.filter(col => col.role === "group").name;
-    supporterGroupField = dataColumns.filter(col => col.role === "group2").name;
+    opinionGroupField = dataColumns.filter(col => col.role === "group")[0].name;
+    supporterGroupField = dataColumns.filter(col => col.role === "group2")[0].name;
    
     
     // 获取y轴字段单位（如果存在）
@@ -140,7 +153,7 @@ function makeChart(containerSelector, data) {
     // 计算最大值标签的宽度
     let maxValueLabelWidth = 0;
     chartData.forEach(d => {
-        const valueText = `${d[valueField]}${valueUnit}`;
+        const valueText = `${formatValue(d[valueField])}${valueUnit}`;
         const textWidth = getTextWidth(
             valueText, 
             typography.annotation.font_family,
@@ -477,7 +490,7 @@ function makeChart(containerSelector, data) {
                     .style("filter", variables.has_shadow ? "url(#shadow)" : "none");
                 
                 // 计算标签宽度
-                const valueText = value + valueUnit;
+                const valueText = formatValue(value) + valueUnit;
                 const labelWidth = getTextWidth(
                     valueText,
                     typography.annotation.font_family,
@@ -531,7 +544,7 @@ function makeChart(containerSelector, data) {
                     .style("filter", variables.has_shadow ? "url(#shadow)" : "none");
                 
                 // 计算标签宽度
-                const valueText = value + valueUnit;
+                const valueText = formatValue(value) + valueUnit;
                 const labelWidth = getTextWidth(
                     valueText,
                     typography.annotation.font_family,

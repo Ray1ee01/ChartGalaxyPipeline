@@ -105,7 +105,18 @@ function makeChart(containerSelector, data) {
     const radiusScale = d3.scaleLinear()
         .domain([0, 100])
         .range([innerRadius+50, outerRadius]);
-    
+    // 添加数值格式化函数
+   const formatValue = (value) => {
+    if (value >= 1000000000) {
+        return d3.format("~g")(value / 1000000000) + "B";
+    } else if (value >= 1000000) {
+        return d3.format("~g")(value / 1000000) + "M";
+    } else if (value >= 1000) {
+        return d3.format("~g")(value / 1000) + "K";
+    } else {
+        return d3.format("~g")(value);
+    }
+}
     // 添加条形
     chartData.forEach((d, i) => {
         const startAngleBar = angleScale(i);
@@ -192,7 +203,7 @@ function makeChart(containerSelector, data) {
         const labelRadius = (outerRadiusBar + innerRadius) / 2;
         const labelX = Math.sin(labelAngle) * labelRadius;
         const labelY = -Math.cos(labelAngle) * labelRadius;
-        
+        const formattedValue = `${formatValue(d[yField])}${valueUnit}`;
         g.append("text")
             .attr("x", labelX)
             .attr("y", labelY)
@@ -202,7 +213,7 @@ function makeChart(containerSelector, data) {
             .attr("font-size", "18px")
             .attr("font-weight", "bold")
             .attr("font-family", "Arial, sans-serif")
-            .text(`${d[yField]}%`);
+            .text(formattedValue);
 
         // 添加xField标签
         const xLabelAngle = startAngleBar + (endAngleBar - startAngleBar) / 2;

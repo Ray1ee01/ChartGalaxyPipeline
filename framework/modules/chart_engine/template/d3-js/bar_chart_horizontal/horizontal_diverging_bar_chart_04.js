@@ -49,6 +49,19 @@ function makeChart(containerSelector, data) {
     variables.has_stroke = variables.has_stroke || false;
     variables.has_spacing = variables.has_spacing || false;
     
+    // 数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    }
+    
     // 清空容器 - 在添加新图表前移除可能存在的内容
     d3.select(containerSelector).html("");
     
@@ -379,7 +392,7 @@ function makeChart(containerSelector, data) {
             const barWidth = innerWidth/2 - dimensionLabelWidth/2 - leftXScale(dataPoint[valueField]);
             const yPos = yScale(dimension);
             
-            // ★ 改动处：让“右边缘”竖直，“左边缘”倾斜，下边比上边略宽
+            // ★ 改动处：让"右边缘"竖直，"左边缘"倾斜，下边比上边略宽
             const slopeLeft = 5;  // 下边较上边多出的宽度
             const xStart = leftXScale(dataPoint[valueField]);
             const barHeight = yScale.bandwidth();
@@ -420,8 +433,8 @@ function makeChart(containerSelector, data) {
             
             // ------- 以下是数值标签原逻辑，不作改动 -------
             const formattedValue = valueUnit ? 
-                `${dataPoint[valueField]}${valueUnit}` : 
-                `${dataPoint[valueField]}`;
+                `${formatValue(dataPoint[valueField])}${valueUnit}` : 
+                `${formatValue(dataPoint[valueField])}`;
             
             const tempText = g.append("text")
                 .style("font-family", typography.annotation.font_family)
@@ -493,7 +506,7 @@ function makeChart(containerSelector, data) {
             const yPos = yScale(dimension);
             const barLeft = innerWidth/2 + dimensionLabelWidth/2;
             
-            // ★ 改动处：让“左边缘”竖直，“右边缘”倾斜，下边比上边略宽
+            // ★ 改动处：让"左边缘"竖直，"右边缘"倾斜，下边比上边略宽
             const slopeRight = 5; // 下边比上边多出的宽度
             const barHeight = yScale.bandwidth();
             
@@ -533,8 +546,8 @@ function makeChart(containerSelector, data) {
             
             // ------- 以下是数值标签原逻辑，不作改动 -------
             const formattedValue = valueUnit ? 
-                `${dataPoint[valueField]}${valueUnit}` : 
-                `${dataPoint[valueField]}`;
+                `${formatValue(dataPoint[valueField])}${valueUnit}` : 
+                `${formatValue(dataPoint[valueField])}`;
             
             const tempText = g.append("text")
                 .style("font-family", typography.annotation.font_family)

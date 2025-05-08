@@ -30,6 +30,19 @@ function makeChart(containerSelector, data) {
     const colors = jsonData.colors || {};
     const dataColumns = jsonData.data.columns || [];
 
+    // 数值单位规范
+    // 添加数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    }
 
     // Clear container
     d3.select(containerSelector).html("");
@@ -158,7 +171,7 @@ function makeChart(containerSelector, data) {
         // 创建一个看不见的路径用于定位文本
         const textPathAngle = d.angle;
         const textPathRadius = d.radius + barWidth / 2;
-        let textContent = d[xField] + " / " + d[yField].toFixed(1);
+        let textContent = d[xField] + " / " + formatValue(d[yField]);
         let actual_length = textContent.length * 14
         let shift_angle = actual_length/textPathRadius/2
         // 创建一个弧形路径
@@ -186,12 +199,11 @@ function makeChart(containerSelector, data) {
             .attr("startOffset", "75%")  // 控制文本开始的位置，50%表示中间
             .attr("text-anchor", "middle")
             .attr("dominant-baseline", "middle")
-            .text(`${d[xField]} / ${d[yField].toFixed(1)}`);
+            .text(`${d[xField]} / ${formatValue(d[yField])}`);
     });
 
     // 首先，为第一组添加路径和文本路径
     group0Data.forEach((d, i) => {
-        console.log(d)
         const text = group0Chart.append("text")
             .attr("x", () => {
                 x = Math.cos(-3*Math.PI/4 + 0.03) * (d.radius + barWidth/2);
@@ -272,7 +284,6 @@ function makeChart(containerSelector, data) {
 
     // 首先，为第一组添加路径和文本路径
     group1Data.forEach((d, i) => {
-        console.log(d)
         const text = group1Chart.append("text")
             .attr("x", () => {
                 x = Math.cos(Math.PI/4) * (d.radius + barWidth/2);
@@ -299,7 +310,7 @@ function makeChart(containerSelector, data) {
         // 创建一个看不见的路径用于定位文本
         const textPathAngle = d.angle;
         const textPathRadius = d.radius + barWidth / 2;
-        let textContent = d[xField] + " / " + d[yField].toFixed(1);
+        let textContent = d[xField] + " / " + formatValue(d[yField]);
         let actual_length = textContent.length * 14
         let shift_angle = actual_length/textPathRadius/2
         // 创建一个弧形路径
@@ -327,7 +338,7 @@ function makeChart(containerSelector, data) {
             .attr("startOffset", "75%")  // 控制文本开始的位置，50%表示中间
             .attr("text-anchor", "middle")
             .attr("dominant-baseline", "middle")
-            .text(`${d[xField]} / ${d[yField].toFixed(1)}`);
+            .text(`${d[xField]} / ${formatValue(d[yField])}`);
     });
 
     return svg.node();

@@ -10,10 +10,10 @@ REQUIREMENTS_BEGIN
         [["categorical"], ["numerical"], ["categorical"]]
     ],
     "required_fields_range": [
-        [[2, 30], [0, 100], [2, 30]],
-        [[2, 30], [0, 1000]], [2, 30]
+        [[2, 20], [0, 100], [2, 6]],
+        [[2, 20], [0, 1000]], [2, 6]
     ],
-    "required_fields_icons": ["group"],
+    "required_fields_icons": [],
     "hierarchy":["group"],
     "required_other_icons": [],
     "required_fields_colors": [],
@@ -61,7 +61,7 @@ function makeChart(containerSelector, data) {
     
     // 设置图表总尺寸
     const width = variables.width || 800;
-    const height = variables.height || 600;
+    let currentChartHeight = variables.height || 600; // 初始化图表高度，后续可能调整
     
     // 设置边距 - 初始值，稍后会根据标签长度调整
     const margin = {
@@ -98,9 +98,29 @@ function makeChart(containerSelector, data) {
     // 获取唯一维度值并按数值降序排列数据
     const dimensions = [...new Set(chartData.map(d => d[dimensionField]))];
     
+    // 动态调整图表高度
+    if (dimensions.length > 15) {
+        const excessDimensions = dimensions.length - 15;
+        const percentIncrease = excessDimensions * 0.03; // 每增加一个维度，高度增加3%
+        currentChartHeight = Math.round(currentChartHeight * (1 + percentIncrease));
+    }
+
     // 按数值降序排序数据
     const sortedData = [...chartData].sort((a, b) => b[valueField] - a[valueField]);
     const sortedDimensions = sortedData.map(d => d[dimensionField]);
+    
+    // 添加数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    };
     
     // ---------- 5. 计算标签宽度 ----------
     
@@ -158,8 +178,8 @@ function makeChart(containerSelector, data) {
     let maxValueWidth = 0;
     chartData.forEach(d => {
         const formattedValue = valueUnit ? 
-            `${d[valueField]}${valueUnit}` : 
-            `${d[valueField]}`;
+            `${formatValue(d[valueField])}${valueUnit}` : 
+            `${formatValue(d[valueField])}`;
             
         const tempText = tempSvg.append("text")
             .style("font-family", typography.annotation.font_family)
@@ -178,8 +198,8 @@ function makeChart(containerSelector, data) {
     let maxValueWidth2 = 0;
     chartData.forEach(d => {
         const formattedValue2 = valueUnit2 ? 
-            `${d[valueField2]}${valueUnit2}` : 
-            `${d[valueField2]}`;
+            `${formatValue(d[valueField2])}${valueUnit2}` : 
+            `${formatValue(d[valueField2])}`;
             
         const tempText = tempSvg.append("text")
             .style("font-family", typography.annotation.font_family)
@@ -220,15 +240,15 @@ function makeChart(containerSelector, data) {
     
     // 计算内部绘图区域尺寸
     const innerWidth = width - margin.left - margin.right;
-    const innerHeight = height - margin.top - margin.bottom;
+    const innerHeight = currentChartHeight - margin.top - margin.bottom; // 使用调整后的高度
     
     // ---------- 6. 创建SVG容器 ----------
     
     const svg = d3.select(containerSelector)
         .append("svg")
         .attr("width", width)  // 使用固定宽度而不是百分比
-        .attr("height", height)
-        .attr("viewBox", `0 0 ${width} ${height}`)
+        .attr("height", currentChartHeight) // 使用调整后的高度
+        .attr("viewBox", `0 0 ${width} ${currentChartHeight}`) // 使用调整后的高度
         .attr("style", "max-width: 100%; height: auto;")
         .attr("xmlns", "http://www.w3.org/2000/svg")
         .attr("xmlns:xlink", "http://www.w3.org/1999/xlink");
@@ -426,6 +446,45 @@ function makeChart(containerSelector, data) {
             
             // 标签位置：在图标左侧，右对齐（相对于最长标签）
             const labelX = iconX - flagPadding;
+
+            // -- 动态字体大小和定位逻辑 --
+            const minFontSize = 8; // 最小字体大小 (px)
+            const verticalPaddingBetweenLabels = 2; // 标签之间的垂直间距 (px)
+
+            let initialDimensionFontSize = parseInt(typography.label.font_size) || 12;
+            
+            let currentDimensionFontSize = initialDimensionFontSize;
+            let currentGroupFontSize = Math.max(minFontSize, Math.round(currentDimensionFontSize * 0.8));
+
+            // 当总高度超过条形高度时，按比例缩小字体
+            while (
+                (currentDimensionFontSize + currentGroupFontSize + verticalPaddingBetweenLabels > barHeight) &&
+                currentDimensionFontSize > minFontSize
+            ) {
+                currentDimensionFontSize--;
+                currentGroupFontSize = Math.max(minFontSize, Math.round(currentDimensionFontSize * 0.8));
+            }
+
+            // 如果维度字体已是最小，但仍超高，尝试单独缩小组字体
+            if (currentDimensionFontSize === minFontSize) {
+                while (
+                    (currentDimensionFontSize + currentGroupFontSize + verticalPaddingBetweenLabels > barHeight) &&
+                    currentGroupFontSize > minFontSize
+                ) {
+                    currentGroupFontSize--;
+                }
+            }
+            
+            const finalDimensionFontSize = currentDimensionFontSize;
+            const finalGroupFontSize = currentGroupFontSize;
+
+            // 计算Y轴位置，使两个标签作为一个整体在barHeight内垂直居中
+            const totalEffectiveTextHeight = finalDimensionFontSize + finalGroupFontSize + verticalPaddingBetweenLabels;
+            const labelsTopY = yScale(dimension) + (barHeight - totalEffectiveTextHeight) / 2;
+
+            const dimensionLabelCenterY = labelsTopY + finalDimensionFontSize / 2;
+            const groupLabelCenterY = labelsTopY + finalDimensionFontSize + verticalPaddingBetweenLabels + finalGroupFontSize / 2;
+            // -- 结束动态字体大小和定位逻辑 --
             
             // 2. 添加图标 - 使用组的图标而不是维度的图标
             if (images.field && images.field[group]) {
@@ -450,33 +509,33 @@ function makeChart(containerSelector, data) {
             // 添加维度标签
             g.append("text")
                 .attr("x", labelX)
-                .attr("y", yScale(dimension) + barHeight / 2 - 6) // 向上移动一点以容纳组标签
-                .attr("dy", "0.35em")
+                .attr("y", dimensionLabelCenterY)
                 .attr("text-anchor", "end")
                 .style("font-family", typography.label.font_family)
-                .style("font-size", typography.label.font_size)
+                .style("font-size", finalDimensionFontSize + "px")
                 .style("font-weight", typography.label.font_weight)
                 .style("fill", colors.text_color)
+                .style("dominant-baseline", "middle")
                 .text(formattedDimension);
             
             // 添加组标签
             g.append("text")
                 .attr("x", labelX)
-                .attr("y", yScale(dimension) + barHeight / 2 + 10) // 向下移动一点
-                .attr("dy", "0.35em")
+                .attr("y", groupLabelCenterY)
                 .attr("text-anchor", "end")
                 .style("font-family", typography.label.font_family)
-                .style("font-size", parseInt(typography.label.font_size) * 0.8 + "px") // 小一点的组标签
+                .style("font-size", finalGroupFontSize + "px")
                 .style("font-weight", "normal")
                 .style("fill", colors.text_color)
-                .style("opacity", 0.8) // 稍微透明一点
+                .style("opacity", 0.8)
+                .style("dominant-baseline", "middle")
                 .text(group);
             // 计算动态字体大小（条形高度的60%）
             const dynamicFontSize = `${barHeight * 0.6}px`;
             // 格式化数值
             const formattedValue = valueUnit ? 
-                `${dataPoint[valueField]}${valueUnit}` : 
-                `${dataPoint[valueField]}`;
+                `${formatValue(dataPoint[valueField])}${valueUnit}` : 
+                `${formatValue(dataPoint[valueField])}`;
             
             // 临时计算文本宽度
             const tempTextSvg = d3.select(containerSelector)
@@ -511,8 +570,8 @@ function makeChart(containerSelector, data) {
                 
             // 格式化第二数值
             const formattedValue2 = valueUnit2 ? 
-                `${dataPoint[valueField2]}${valueUnit2}` : 
-                `${dataPoint[valueField2]}`;
+                `${formatValue(dataPoint[valueField2])}${valueUnit2}` : 
+                `${formatValue(dataPoint[valueField2])}`;
                 
             // 添加第二数值标签（在右边缘，右对齐，距离右边缘20px）
             g.append("text")

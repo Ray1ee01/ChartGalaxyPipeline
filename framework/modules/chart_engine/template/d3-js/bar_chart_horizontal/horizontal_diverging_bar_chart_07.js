@@ -49,6 +49,19 @@ function makeChart(containerSelector, data) {
     variables.has_stroke = variables.has_stroke || false;
     variables.has_spacing = variables.has_spacing || false;
     
+    // 数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    }
+    
     // 清空容器 - 在添加新图表前移除可能存在的内容
     d3.select(containerSelector).html("");
     
@@ -210,10 +223,15 @@ function makeChart(containerSelector, data) {
     let maxLeftValueWidth = 0;
     let maxRightValueWidth = 0;
     
+    // 计算最大值，用于生成最长的可能标签
+    const maxLeftValue = d3.max(chartData.filter(d => d[groupField] === leftGroup), d => d[valueField]);
+    const maxRightValue = d3.max(chartData.filter(d => d[groupField] === rightGroup), d => d[valueField]);
+
+    // 为每个数据点计算标签宽度
     chartData.forEach(d => {
         const formattedValue = valueUnit ? 
-            `${d[valueField]}${valueUnit}` : 
-            `${d[valueField]}`;
+            `${formatValue(d[valueField])}${valueUnit}` : 
+            `${formatValue(d[valueField])}`;
             
         const tempText = tempSvg.append("text")
             .style("font-family", typography.annotation.font_family)
@@ -224,9 +242,9 @@ function makeChart(containerSelector, data) {
         const textWidth = tempText.node().getBBox().width;
         
         if (d[groupField] === leftGroup) {
-            maxLeftValueWidth = Math.max(maxLeftValueWidth, textWidth + 10); // 添加边距
+            maxLeftValueWidth = Math.max(maxLeftValueWidth, textWidth);
         } else if (d[groupField] === rightGroup) {
-            maxRightValueWidth = Math.max(maxRightValueWidth, textWidth + 10); // 添加边距
+            maxRightValueWidth = Math.max(maxRightValueWidth, textWidth);
         }
         
         tempText.remove();
@@ -239,8 +257,9 @@ function makeChart(containerSelector, data) {
     const dimensionLabelWidth = Math.max(maxLabelWidth + 5, 80);  // 最小值为80像素
     
     // 为左右两侧的值标签预留空间
-    const leftValueLabelPadding = maxLeftValueWidth;   // 左侧值标签空间
-    const rightValueLabelPadding = maxRightValueWidth; // 右侧值标签空间
+    const labelPadding = 5; // 标签与条形图之间的间距
+    const leftValueLabelPadding = maxLeftValueWidth + labelPadding;   // 左侧值标签空间
+    const rightValueLabelPadding = maxRightValueWidth + labelPadding; // 右侧值标签空间
     
     // ---------- 6. 创建SVG容器 ----------
     
@@ -411,16 +430,32 @@ function makeChart(containerSelector, data) {
         .range([0, innerHeight])
         .padding(variables.has_spacing ? 0.4 : 0.3);
     
-    const maxLeftValue = d3.max(chartData.filter(d => d[groupField] === leftGroup), d => d[valueField]);
-    const maxRightValue = d3.max(chartData.filter(d => d[groupField] === rightGroup), d => d[valueField]);
+    // 确保为标签预留足够空间
+    const availableLeftWidth = innerWidth / 2 - dimensionLabelWidth / 2;
+    const availableRightWidth = innerWidth / 2 - dimensionLabelWidth / 2;
     
+    // 使用相同的全局最大值，确保左右比例尺一致
+    const globalMaxValue = Math.max(maxLeftValue, maxRightValue);
+    
+    // 计算标签安全空间 - 比标签宽度多一点余量
+    const leftLabelSafeSpace = leftValueLabelPadding + 15; // 增加额外安全边距
+    const rightLabelSafeSpace = rightValueLabelPadding + 15; // 增加额外安全边距
+    
+    // 确保可用绘图空间
+    const leftAvailableDrawSpace = Math.max(0, availableLeftWidth - leftLabelSafeSpace);
+    const rightAvailableDrawSpace = Math.max(0, availableRightWidth - rightLabelSafeSpace);
+    
+    // 找出两侧中较小的可用空间，确保左右比例尺一致
+    const consistentAvailableSpace = Math.min(leftAvailableDrawSpace, rightAvailableDrawSpace);
+    
+    // 修改左右比例尺使用相同的比例
     const leftXScale = d3.scaleLinear()
-        .domain([0, maxLeftValue])
-        .range([innerWidth / 2 - dimensionLabelWidth/2, leftValueLabelPadding + 10]); // 调整左侧范围，为标签腾出空间
+        .domain([0, globalMaxValue])
+        .range([innerWidth / 2 - dimensionLabelWidth / 2, innerWidth / 2 - dimensionLabelWidth / 2 - consistentAvailableSpace]); 
     
     const rightXScale = d3.scaleLinear()
-        .domain([0, maxRightValue])
-        .range([0, innerWidth / 2 - dimensionLabelWidth/2 - rightValueLabelPadding - 10]); // 调整右侧范围，为标签腾出空间
+        .domain([0, globalMaxValue])
+        .range([0, consistentAvailableSpace]);
     
     const getStrokeColor = () => {
         if (colors.stroke_color) return colors.stroke_color;
@@ -541,11 +576,12 @@ function makeChart(containerSelector, data) {
 
     // ---------- 计算标签位置 ----------
     
-    // 计算左侧标签位置 - 使用固定位置，不依赖于条形长度
-    const leftLabelX = leftValueLabelPadding ; // 左侧标签固定位置
+    // 计算标签位置 - 确保足够远离条形图
+    const leftLabelX = margin.left + leftLabelSafeSpace / 2; // 左侧固定位置
     
-    // 计算右侧标签位置 - 使用固定位置，不依赖于条形长度
-    const rightLabelX = (innerWidth/2 + dimensionLabelWidth/2) + rightXScale(maxRightValue) + rightValueLabelPadding; // 右侧标签固定位置
+    // 右侧标签位置 - 使用固定位置，不依赖于条形长度
+    const rightBarEndX = margin.left + innerWidth / 2 + dimensionLabelWidth / 2 + consistentAvailableSpace;
+    const rightLabelX = width - margin.right - rightLabelSafeSpace / 2; // 右侧固定位置 - 与边缘保持一定距离
     
     // ---------- 11. 绘制左侧条形图 ----------
     
@@ -557,18 +593,24 @@ function makeChart(containerSelector, data) {
         );
         
         if (dataPoint) {
-            // 计算条形宽度
-            const barWidth = innerWidth/2 - dimensionLabelWidth/2 - leftXScale(dataPoint[valueField]);
+            // 确保条形图不会超出预留给标签的空间
+            const maxAllowedWidth = innerWidth / 2 - dimensionLabelWidth / 2 - leftLabelSafeSpace;
+            
+            // 计算条形的理论宽度
+            const theoreticalBarWidth = innerWidth / 2 - dimensionLabelWidth / 2 - leftXScale(dataPoint[valueField]);
+            
+            // 确保不超出预留空间
+            const barWidth = Math.min(theoreticalBarWidth, maxAllowedWidth);
             
             // Y位置
             const yPos = yScale(dimension);
             
             // 绘制条形
             g.append("rect")
-                .attr("x", leftXScale(dataPoint[valueField]))  // 左侧起点
-                .attr("y", yPos)                     // 条形顶部
-                .attr("width", barWidth)             // 条形宽度
-                .attr("height", yScale.bandwidth())  // 条形高度
+                .attr("x", Math.max(leftXScale(dataPoint[valueField]), leftLabelSafeSpace)) // 确保不会遮挡标签
+                .attr("y", yPos)
+                .attr("width", barWidth)
+                .attr("height", yScale.bandwidth())
                 .attr("fill", variables.has_gradient ?
                     `url(#gradient-${leftGroup.replace(/\s+/g, '-').toLowerCase()})` :
                     getColor(leftGroup)
@@ -593,8 +635,8 @@ function makeChart(containerSelector, data) {
             
             // 绘制数值标签（附加单位，如果有）
             const formattedValue = valueUnit ? 
-            `${dataPoint[valueField]}${valueUnit}` : 
-            `${dataPoint[valueField]}`;
+            `${formatValue(dataPoint[valueField])}${valueUnit}` : 
+            `${formatValue(dataPoint[valueField])}`;
             const barHeight = yScale.bandwidth();
             // 绘制左侧标签 - 使用统一的位置和右对齐
             g.append("text")
@@ -622,21 +664,27 @@ function makeChart(containerSelector, data) {
         );
         
         if (dataPoint) {
-            // 计算条形宽度
-            const barWidth = rightXScale(dataPoint[valueField]);
+            // 确保条形图宽度不会超过可用空间
+            const maxAllowedWidth = consistentAvailableSpace;
+            
+            // 计算条形理论宽度
+            const theoreticalBarWidth = rightXScale(dataPoint[valueField]);
+            
+            // 确保不超出预留空间
+            const barWidth = Math.min(theoreticalBarWidth, maxAllowedWidth);
             
             // Y位置
             const yPos = yScale(dimension);
             
             // 条形的左边界位置
-            const barLeft = innerWidth/2 + dimensionLabelWidth/2;
+            const barLeft = innerWidth / 2 + dimensionLabelWidth / 2;
             
             // 绘制条形 - 应用与左侧相同的视觉效果
             g.append("rect")
                 .attr("x", barLeft) // 从中间右侧开始
-                .attr("y", yPos)                    // 条形顶部
-                .attr("width", barWidth)            // 条形宽度
-                .attr("height", yScale.bandwidth()) // 条形高度
+                .attr("y", yPos)
+                .attr("width", barWidth)
+                .attr("height", yScale.bandwidth())
                 .attr("fill", variables.has_gradient ?
                     `url(#gradient-${rightGroup.replace(/\s+/g, '-').toLowerCase()})` :
                     getColor(rightGroup)
@@ -661,8 +709,8 @@ function makeChart(containerSelector, data) {
             
             // 绘制数值标签（附加单位，如果有）
             const formattedValue = valueUnit ? 
-            `${dataPoint[valueField]}${valueUnit}` : 
-            `${dataPoint[valueField]}`;
+            `${formatValue(dataPoint[valueField])}${valueUnit}` : 
+            `${formatValue(dataPoint[valueField])}`;
             const barHeight = yScale.bandwidth();
                 
             // 绘制右侧标签 - 使用统一的位置和左对齐

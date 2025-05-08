@@ -53,6 +53,20 @@ function makeChart(containerSelector, data) {
     // 清空容器
     d3.select(containerSelector).html("");
     
+    // 数值单位规范
+    // 添加数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    }
+    
     // ---------- 2. 尺寸和布局设置 ----------
     
     // 设置图表总尺寸
@@ -136,27 +150,98 @@ function makeChart(containerSelector, data) {
 
     // Y轴比例尺 - 使用数值
     const yScale = d3.scaleLinear()
-        .domain([0, d3.max(chartData, d => +d[yField])])
+        .domain([0, d3.max(chartData, d => +d[yField]) || 1]) // Ensure domain is not [0,0]
         .range([chartHeight, 0])
         .nice();
+    // +++ 辅助函数区 +++
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    function getTextWidthCanvas(text, fontFamily, fontSize, fontWeight) {
+        ctx.font = `${fontWeight || 'normal'} ${fontSize}px ${fontFamily || 'Arial'}`;
+        return ctx.measureText(text).width;
+    }
 
-    // // 颜色比例尺
-    // const colorScale = d3.scaleOrdinal()
-    //     .domain(groups)
-    //     .range(d3.schemeCategory10);
-
-    // 确定标签的最大长度：
-    let minXLabelRatio = 1.0;
-    const maxXLabelWidth = xScale.bandwidth() * 1.03;
-
-    chartData.forEach(d => {
-        // x label
-        const xLabelText = String(d[xField]);
-        let currentWidth = getTextWidth(xLabelText);
-        if (currentWidth > maxXLabelWidth) {
-            minXLabelRatio = Math.min(minXLabelRatio, maxXLabelWidth / currentWidth);
+    const calculateFontSize = (text, maxWidth, baseSize = 14) => {
+        if (!text || typeof text !== 'string' || !maxWidth || maxWidth <= 0 || !baseSize || baseSize <= 0) {
+            return Math.max(10, baseSize || 14);
         }
-    });
+        const avgCharWidth = baseSize * 0.6;
+        const textWidth = text.length * avgCharWidth;
+        if (textWidth < maxWidth) {
+            return baseSize;
+        }
+        return Math.max(10, Math.floor(baseSize * (maxWidth / textWidth)));
+    };
+
+    function wrapText(textElement, str, width, lineHeight = 1.1, alignment = 'middle') {
+        const words = str.split(/\s+/).reverse(); 
+        let word;
+        let line = [];
+        let lineNumber = 0;
+        const initialY = parseFloat(textElement.attr("data-initial-y")); // 从data属性获取初始Y
+        // const initialX = parseFloat(textElement.attr("x")); // 这一行应该被注释掉或移除
+
+        textElement.text(null); 
+        let tspans = []; 
+
+        if (words.length > 1) {
+            let currentLine = [];
+            while (word = words.pop()) {
+                currentLine.push(word);
+                const tempTspan = textElement.append("tspan").text(currentLine.join(" "));
+                const isOverflow = tempTspan.node().getComputedTextLength() > width;
+                tempTspan.remove(); 
+                if (isOverflow && currentLine.length > 1) {
+                    currentLine.pop(); 
+                    tspans.push(currentLine.join(" ")); 
+                    currentLine = [word]; 
+                    lineNumber++;
+                }
+            }
+            if (currentLine.length > 0) {
+                tspans.push(currentLine.join(" "));
+            }
+        } else { 
+            const chars = str.split('');
+            let currentLine = '';
+            for (let i = 0; i < chars.length; i++) {
+                const nextLine = currentLine + chars[i];
+                const tempTspan = textElement.append("tspan").text(nextLine); 
+                const isOverflow = tempTspan.node().getComputedTextLength() > width;
+                tempTspan.remove();
+                if (isOverflow && currentLine.length > 0) { 
+                    tspans.push(currentLine); 
+                    currentLine = chars[i]; 
+                    lineNumber++;
+                } else {
+                    currentLine = nextLine; 
+                }
+            }
+            if (currentLine.length > 0) {
+                tspans.push(currentLine);
+            }
+        }
+
+        const totalLines = tspans.length;
+        let startDy = 0;
+        textElement.attr("y", initialY); // 重置Y到初始值
+        
+        if (alignment === 'middle') {
+            startDy = -( (totalLines - 1) * lineHeight / 2);
+        } else if (alignment === 'bottom') {
+            const totalHeightEm = totalLines * lineHeight;
+            startDy = -(totalHeightEm - lineHeight); 
+        }
+
+        tspans.forEach((lineText, i) => {
+            textElement.append("tspan")
+                // .attr("x", initialX) // 关键：确保这一行被注释掉或移除
+                .attr("dy", (i === 0 ? startDy : lineHeight) + "em") 
+                .text(lineText);
+        });
+        textElement.attr("data-lines", totalLines);
+    }
+    // +++ 辅助函数区结束 +++
 
     // ---------- 6. 创建SVG容器 ----------
     
@@ -176,24 +261,51 @@ function makeChart(containerSelector, data) {
     // ---------- 7. 绘制图表元素 ----------
     
     // 添加X轴
+    const xCategories = processedData.map(d => d.category);
+    const baseLabelFontSize = parseFloat(typography.label.font_size) || 14;
+    const xLabelMaxWidth = xScale.bandwidth() * 0.95; 
+    const longestXLabel = xCategories.reduce((a, b) => String(a).length > String(b).length ? a : b, "").toString();
+    const uniformXLabelFontSize = calculateFontSize(longestXLabel, xLabelMaxWidth, baseLabelFontSize);
+
+    // +++ Pre-calculate for Value Labels +++
+    let longestValueLabelStr = "";
+    processedData.forEach(pd => {
+        groups.forEach(group => {
+            const value = pd.groups[group] || 0;
+            const labelStr = formatValue(value) + (yUnit ? ` ${yUnit}` : '');
+            if (labelStr.length > longestValueLabelStr.length) {
+                longestValueLabelStr = labelStr;
+            }
+        });
+    });
+    const baseValueLabelFontSize = parseFloat(typography.annotation.font_size) || 12; // Use annotation font size as base
+    const valueLabelMaxWidth = groupScale.bandwidth();
+    const uniformValueLabelFontSize = calculateFontSize(longestValueLabelStr, valueLabelMaxWidth, baseValueLabelFontSize);
+    // +++ End Pre-calculate for Value Labels +++
+
     const xAxis = d3.axisBottom(xScale)
-        .tickSize(0); // 移除刻度线
+        .tickSize(0) // 移除刻度线
+        .tickPadding(10); // 增加标签和轴线的间距
     
     chartGroup.append("g")
         .attr("class", "x-axis")
         .attr("transform", `translate(0, ${chartHeight})`)
         .call(xAxis)
-        .selectAll("text")
+        .selectAll(".tick text") // 选择刻度文本
+        .attr("data-initial-y", typography.label.font_size) 
         .style("font-family", typography.label.font_family)
-        .style("font-size", typography.label.font_size)
-        .style("text-anchor", minXLabelRatio < 1.0 ? "end" : "middle")
-        .attr("transform", minXLabelRatio < 1.0 ? "rotate(-45)" : "rotate(0)")
-        .style("fill", colors.text_color);
+        .style("font-size", `${uniformXLabelFontSize}px`)
+        .style("text-anchor", "middle")
+        .style("fill", colors.text_color)
+        .each(function(d) {
+            const textElement = d3.select(this);
+            wrapText(textElement, String(d), xLabelMaxWidth, 1.1, 'top');
+        });
     
     // 添加Y轴
     const yAxis = d3.axisLeft(yScale)
         .ticks(5)
-        .tickFormat(d => d + (yUnit ? ` ${yUnit}` : ''))
+        .tickFormat(d => formatValue(d) + (yUnit ? ` ${yUnit}` : ''))
         .tickSize(0)          // 移除刻度线
         .tickPadding(10);     // 增加文字和轴的间距
     
@@ -227,14 +339,18 @@ function makeChart(containerSelector, data) {
         // 添加数值标签
         barGroups.append("text")
             .attr("class", "label")
-            .attr("x", d => groupScale(group) + groupScale.bandwidth() / 2)
-            .attr("y", d => yScale(d.groups[group] || 0) - 5)
             .attr("text-anchor", "middle")
-            .style("font-family", typography.label.font_family)
-            .style("font-size", typography.label.font_size)
+            .style("font-family", typography.annotation.font_family)
+            .style("font-size", `${uniformValueLabelFontSize}px`)
             .style("fill", colors.text_color)
-            .text(d => (d.groups[group] || 0) + (yUnit ? ` ${yUnit}` : ''))
-            .style("opacity", 1);
+            .attr("data-initial-y", d => yScale(d.groups[group] || 0)-5)
+            .each(function(d_barGroup) {
+                const textElement = d3.select(this);
+                const value = d_barGroup.groups[group] || 0;
+                const labelText = formatValue(value) + (yUnit ? ` ${yUnit}` : '');
+                textElement.attr("x", groupScale(group) + groupScale.bandwidth() / 2);
+                wrapText(textElement, labelText, valueLabelMaxWidth, 1.1, 'bottom');
+            });
     });
     // 添加图例 - 放在图表上方
     const legendGroup = svg.append("g")

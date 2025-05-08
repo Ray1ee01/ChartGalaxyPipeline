@@ -50,6 +50,20 @@ function makeChart(containerSelector, data) {
     const images = jsonData.images || { field: {}, other: {} };
     const dataColumns = jsonData.data.columns || [];
 
+    // 数值单位规范
+    // 添加数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    }
+
     // *** 添加: 创建用于文本测量的Canvas Context ***
     const canvas = document.createElement('canvas');
     const context = canvas.getContext('2d');
@@ -262,7 +276,7 @@ function makeChart(containerSelector, data) {
         }
 
         // 圆圈标签
-        const circleText = d[valueField2].toLocaleString() + valueUnit2; // *** 修改: 单位放在后面 ***
+        const circleText = formatValue(d[valueField2]) + valueUnit2; // *** 修改: 单位放在后面 ***
         currentWidth = getTextWidth(circleText, baseFontSizeLabel, typography.label.font_weight, typography.label.font_family);
         // *** 修改: 圆圈标签宽度只受bar宽度限制 ***
         const effectiveMaxCircleWidth = maxCircleLabelWidth; // Remove constraint from maxAllowedCircleWidth
@@ -272,7 +286,7 @@ function makeChart(containerSelector, data) {
 
         // 条形图标签
         const barValue = d[valueField];
-        const barText = (barValue > 0 ? "+" : "") + barValue.toFixed(1) + valueUnit;
+        const barText = (barValue > 0 ? "+" : "") + formatValue(barValue) + valueUnit;
         // *** 修改: 使用精确宽度计算 ***
         currentWidth = getTextWidth(barText, baseFontSizeAnnotation, typography.annotation.font_weight, typography.annotation.font_family);
         if (currentWidth > maxBarLabelWidth) {
@@ -427,7 +441,7 @@ function makeChart(containerSelector, data) {
                 .attr("ry", 5); 
 
             // 9.2 添加条形图数值标签 (y值)
-            const labelText = (yValue > 0 ? "+" : "") + yValue.toFixed(1) + valueUnit;
+            const labelText = (yValue > 0 ? "+" : "") + formatValue(yValue) + valueUnit;
             // *** 修改: 标签 Y 坐标逻辑不变，但依赖的 barY/barHeight 已更新 ***
             const labelY = (yValue >= 0) ? barY - 5 : barY + barHeight + (finalBarFontSize * 0.8); 
             const textAnchor = "middle";
@@ -468,7 +482,7 @@ function makeChart(containerSelector, data) {
             .attr("opacity", 0.8);
 
         // 9.4 添加圆圈数值标签 (y2值) - 位置和颜色根据大小调整
-        const circleLabelText = d[valueField2].toLocaleString() + valueUnit2;
+        const circleLabelText = formatValue(d[valueField2]) + valueUnit2;
         const textWidth = getTextWidth(circleLabelText, finalCircleFontSize, typography.label.font_weight, typography.label.font_family);
         const isCircleBigEnough = textWidth < (circleRadius * 1.6);
         let labelColor, labelActualY, labelDy;

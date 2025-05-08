@@ -61,7 +61,8 @@ function makeChart(containerSelector, data) {
     
     // 设置图表总尺寸
     const width = variables.width || 800;
-    const height = variables.height || 600;
+    // 使用调整后的高度
+    // const height = variables.height || 600;
     
     // 设置边距 - 后面会根据标签宽度调整左侧边距
     const margin = {
@@ -91,15 +92,31 @@ function makeChart(containerSelector, data) {
     
     // ---------- 4. 数据处理 ----------
     
-    // 获取维度列表
-    const dimensions = chartData.map(d => d[dimensionField]);
-    const maxValue = d3.max(chartData, d => Math.abs(+d[valueField]));
-    if (maxValue > 100) {
-        // 确保所有数值在0-100范围内
-        chartData.forEach(d => {
-            d[valueField] = Math.max(1, Math.floor(+d[valueField] / maxValue * 100));
-        });
-    }
+    // 获取唯一维度值并按数值降序排列数据
+    const dimensions = [...new Set(chartData.map(d => d[dimensionField]))];
+    
+    // 如果x维度数量超过15，每增加一个x，整个图像的高度增加3%
+    const baseHeight = variables.height || 600;
+    const adjustedHeight = dimensions.length > 15 
+        ? baseHeight * (1 + (dimensions.length - 15) * 0.03) 
+        : baseHeight;
+    
+    // 按数值降序排序数据
+    const sortedData = [...chartData].sort((a, b) => b[valueField] - a[valueField]);
+    const sortedDimensions = sortedData.map(d => d[dimensionField]);
+    
+    // 添加数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    };
     
     // ---------- 5. 测量标签宽度和调整布局 ----------
     
@@ -196,25 +213,43 @@ function makeChart(containerSelector, data) {
         return lines;
     }
     
-    
-    
+    // 计算最大数值标签宽度
+    let maxValueWidth = 0;
+    chartData.forEach(d => {
+        const formattedValue = valueUnit ? 
+            `${formatValue(d[valueField])}${valueUnit}` : 
+            `${formatValue(d[valueField])}`;
+            
+        const tempText = tempSvg.append("text")
+            .style("font-family", typography.annotation.font_family)
+            .style("font-size", typography.annotation.font_size)
+            .style("font-weight", typography.annotation.font_weight)
+            .text(formattedValue);
+        
+        const textWidth = tempText.node().getBBox().width;
+        
+        maxValueWidth = Math.max(maxValueWidth, textWidth);
+        
+        tempText.remove();
+    });
     
     // 删除临时SVG
     tempSvg.remove();
     
     // 计算内部绘图区域尺寸
     const innerWidth = width - margin.left - margin.right;
-    const innerHeight = height - margin.top - margin.bottom;
+    const innerHeight = adjustedHeight - margin.top - margin.bottom;
     
     // ---------- 6. 创建SVG容器 ----------
     
     const svg = d3.select(containerSelector)
         .append("svg")
         .attr("width", "100%")
-        .attr("height", height)
-        .attr("viewBox", `0 0 ${width} ${height}`)
+        .attr("height", adjustedHeight)
+        .attr("viewBox", `0 0 ${width} ${adjustedHeight}`)
         .attr("style", "max-width: 100%; height: auto;")
-        .attr("xmlns", "http://www.w3.org/2000/svg");
+        .attr("xmlns", "http://www.w3.org/2000/svg")
+        .attr("xmlns:xlink", "http://www.w3.org/1999/xlink");
     
     // 添加defs用于视觉效果
     const defs = svg.append("defs");
@@ -312,10 +347,10 @@ function makeChart(containerSelector, data) {
             // 计算动态字体大小（条形高度的60%）
             const dynamicFontSize = `${barHeight * 0.4}px`;
             
-            // 格式化数值用于显示
+            // 格式化数值用于显示（根据条形是否有足够空间决定显示位置）
             const formattedValue = valueUnit ? 
-                `${value}${valueUnit}` : 
-                `${value}`;
+                `${formatValue(value)}${valueUnit}` : 
+                `${formatValue(value)}`;
             
             // 创建临时文本测量数值标签宽度（使用动态字体大小）
             const tempValueText = svg.append("text")

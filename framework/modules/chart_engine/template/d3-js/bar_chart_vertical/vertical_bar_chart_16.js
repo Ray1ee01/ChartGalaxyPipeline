@@ -50,6 +50,20 @@ function makeChart(containerSelector, data) {
     variables.has_shadow = variables.has_shadow || false;
     variables.has_stroke = variables.has_stroke || false;
     
+    // 数值单位规范
+    // 添加数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    }
+    
     // 辅助函数 - 用于估算文本宽度
     function getTextWidth(text, fontFamily = typography.label.font_family, fontSize = typography.label.font_size) {
         // 创建临时元素来测量文本宽度
@@ -310,7 +324,7 @@ function makeChart(containerSelector, data) {
     // 添加Y轴
     const yAxis = d3.axisLeft(yScale)
         .ticks(5)
-        .tickFormat(d => d + (yUnit ? ` ${yUnit}` : ''))
+        .tickFormat(d => formatValue(d) + (yUnit ? ` ${yUnit}` : ''))
         .tickSize(0)          // 移除刻度线
         .tickPadding(10);     // 增加文字和轴的间距
     
@@ -424,7 +438,7 @@ function makeChart(containerSelector, data) {
         .style("font-family", typography.label.font_family)
         .style("font-size", typography.label.font_size)
         .style("fill", colors.text_color)
-        .text(d => d.value + (yUnit ? ` ${yUnit}` : ''))
+        .text(d => formatValue(d.value) + (yUnit ? ` ${yUnit}` : ''))
         .style("opacity", 1); // 直接设置为可见
     
 

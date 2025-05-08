@@ -29,6 +29,20 @@ function makeChart(containerSelector, data) {
     const colors = jsonData.colors || {};
     const dataColumns = jsonData.data.columns || [];
 
+    // 数值单位规范
+    // 添加数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    }
+
     d3.select(containerSelector).html("");
 
     const xField = dataColumns[0].name;
@@ -92,7 +106,7 @@ function makeChart(containerSelector, data) {
             .attr("dominant-baseline", "middle")
             .attr("fill", "#888")
             .style("font-size", "12px")
-            .text(Math.round(tick));
+            .text(formatValue(tick));
     });
     const labelPadding = 20;
     // 条形
@@ -123,7 +137,7 @@ function makeChart(containerSelector, data) {
             .text(d[xField]);
 
         // 数值标签（沿柱子末端弧线）
-        const valueText = d[yField];
+        const valueText = formatValue(d[yField]);
         const valueRadius = innerR + barWidth / 2;
         const valueAngle = endAngle;
         const valueTextPathId = `valueTextPath-${i}`;

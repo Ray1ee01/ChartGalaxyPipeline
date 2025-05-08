@@ -52,6 +52,19 @@ function makeChart(containerSelector, data) {
     // 清空容器
     d3.select(containerSelector).html("");
     
+    // 添加数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    }
+    
     // ---------- 2. 尺寸和布局设置 ----------
     
     // 设置图表总尺寸
@@ -112,6 +125,20 @@ function makeChart(containerSelector, data) {
         tempText.remove(); // 清理临时文本元素
         return width;
     };
+
+    // 计算动态文本大小的函数
+    const calculateFontSize = (text, maxWidth, baseSize = 12) => {
+        // 估算每个字符的平均宽度 (假设为baseSize的60%)
+        const avgCharWidth = baseSize * 0.6;
+        // 计算文本的估计宽度
+        const textWidth = text.length * avgCharWidth;
+        // 如果文本宽度小于最大宽度，返回基础大小
+        if (textWidth < maxWidth) {
+            return baseSize;
+        }
+        // 否则，按比例缩小字体大小
+        return Math.max(8, Math.floor(baseSize * (maxWidth / textWidth)));
+    };
     
     // 预计算所有维度标签的宽度
     const dimLabelWidths = {};
@@ -123,9 +150,7 @@ function makeChart(containerSelector, data) {
     // 计算最大数值标签宽度
     let maxValueWidth = 0;
     sortedData.forEach(d => {
-        const formattedValue = valueUnit ? 
-            `${d[valueField]}${valueUnit}` : 
-            `${d[valueField]}`;
+        const formattedValue = formatValue(d[valueField]) + (valueUnit ? ` ${valueUnit}` : '');
             
         const tempText = tempSvgForWidth.append("text")
             .style("font-family", typography.annotation.font_family)
@@ -274,6 +299,17 @@ function makeChart(containerSelector, data) {
     // 获取主题色
     const primaryColor = colors.other && colors.other.primary ? colors.other.primary : "#F7941D";
     
+    // 找出最长的x轴标签文本
+    const longestLabel = sortedDimensions.reduce((a, b) => 
+        a.toString().length > b.toString().length ? a : b, "").toString();
+
+    // 定义每个标签的最大允许宽度
+    const labelMaxWidth = xScale.bandwidth() * 1.5;
+
+    // 计算统一字体大小
+    const baseFontSize = parseInt(typography.label.font_size) || 14;
+    const uniformFontSize = calculateFontSize(longestLabel, labelMaxWidth, baseFontSize);
+    
     sortedData.forEach((d, i) => {
         const dimension = d[dimensionField];
         const value = +d[valueField];
@@ -296,15 +332,21 @@ function makeChart(containerSelector, data) {
         const circleY = yScale(value);
         
         // 3. 添加类别标题（在底部）
-        g.append("text")
+        const textLabel = g.append("text")
             .attr("x", x + columnWidth / 2)
             .attr("y", innerHeight + 20)
             .attr("text-anchor", "middle")
             .style("font-family", typography.label.font_family)
-            .style("font-size", typography.label.font_size)
+            .style("font-size", `${uniformFontSize}px`) // 使用计算出的统一字体大小
             .style("font-weight", typography.label.font_weight)
-            .style("fill", colors.text_color)
-            .text(dimension);
+            .style("fill", colors.text_color);
+            
+        // 检查是否需要文本换行
+        if (dimLabelWidths[dimension] > labelMaxWidth) {
+            wrapText(textLabel, dimension, labelMaxWidth, 1.1, 'top');
+        } else {
+            textLabel.text(dimension);
+        }
         
         // 4. 添加图标圆圈（在线的顶部）
         g.append("circle")
@@ -328,52 +370,218 @@ function makeChart(containerSelector, data) {
         }
         
         // 5. 添加数值标签（在圆圈上方）
-        const formattedValue = valueUnit ? 
-            `${value}${valueUnit}` : 
-            `${value}`;
+        const formattedValue = formatValue(value) + (valueUnit ? ` ${valueUnit}` : '');
+        
+        // 计算数值标签的最大宽度
+        const valueLabelMaxWidth = barWidth * 2;
+        let valueFontSize = Math.min(20, Math.max(barWidth * 0.5, parseFloat(typography.annotation.font_size)));
+        
+        // 创建临时文本来测量宽度
+        const tempValueText = g.append("text")
+            .style("visibility", "hidden")
+            .style("font-family", typography.annotation.font_family)
+            .style("font-size", `${valueFontSize}px`)
+            .style("font-weight", typography.annotation.font_weight)
+            .text(formattedValue);
             
-        g.append("text")
+        const valueTextWidth = tempValueText.node().getComputedTextLength();
+        tempValueText.remove();
+        
+        // 如果超出宽度，调整字体大小
+        if (valueTextWidth > valueLabelMaxWidth) {
+            valueFontSize = Math.max(8, valueFontSize * (valueLabelMaxWidth / valueTextWidth));
+        }
+        
+        // 定义标签位置，确保与圆形图标有适当间距
+        const iconTop = circleY - iconRadius;
+        const labelPadding = iconRadius * 0.3; // 图标顶部与文本底部之间的间距
+        const labelY = iconTop - labelPadding; // 文本基线位置
+        
+        const valueTextLabel = g.append("text")
+            .attr("class", "value-label")
             .attr("x", circleX)
-            .attr("y", circleY - iconRadius - iconPadding)
+            .attr("y", labelY)
             .attr("text-anchor", "middle")
             .style("font-family", typography.annotation.font_family)
-            .style("font-size", `${Math.min(20, Math.max(barWidth * 0.5, parseFloat(typography.annotation.font_size)))}px`)
+            .style("font-size", `${valueFontSize}px`)
             .style("font-weight", typography.annotation.font_weight)
-            .style("fill", colors.text_color)
-            .text(formattedValue);
+            .style("fill", colors.text_color);
+            
+        // 放宽换行条件：如果文本宽度超出最大宽度(即使字体不是最小)，也应用换行
+        if (valueTextWidth > valueLabelMaxWidth) {
+            // 清除当前文本
+            valueTextLabel.text(null);
+            
+            // 应用换行处理函数
+            const words = formattedValue.split(/\s+/);
+            // 如果只有一个词，考虑字符级拆分
+            if (words.length <= 1) {
+                const chars = formattedValue.split('');
+                let line = '';
+                let lines = [];
+                
+                // 逐字构建行，确保不超过最大宽度
+                for (let i = 0; i < chars.length; i++) {
+                    const testLine = line + chars[i];
+                    const testTspan = valueTextLabel.append("tspan").text(testLine);
+                    const testWidth = testTspan.node().getComputedTextLength();
+                    testTspan.remove();
+                    
+                    if (testWidth > valueLabelMaxWidth && line.length > 0) {
+                        lines.push(line);
+                        line = chars[i];
+                    } else {
+                        line = testLine;
+                    }
+                }
+                
+                // 添加最后一行
+                if (line.length > 0) {
+                    lines.push(line);
+                }
+                
+                // 计算所有行所需的总高度
+                const lineHeight = valueFontSize * 1.2; // 行高
+                const totalHeight = lineHeight * lines.length;
+                
+                // 计算第一行的垂直位置，使最后一行恰好位于圆形图标上方
+                const firstLineY = labelY - (totalHeight - lineHeight);
+                
+                // 创建所有行
+                lines.forEach((lineText, i) => {
+                    valueTextLabel.append("tspan")
+                        .attr("x", circleX)
+                        .attr("y", firstLineY)
+                        .attr("dy", `${i * 1.2}em`) // 使用行高系数
+                        .text(lineText);
+                });
+            } else {
+                // 有多个单词时，按单词换行
+                let line = [];
+                let lines = [];
+                
+                while (words.length) {
+                    const word = words.shift();
+                    line.push(word);
+                    
+                    const testTspan = valueTextLabel.append("tspan").text(line.join(' '));
+                    const testWidth = testTspan.node().getComputedTextLength();
+                    testTspan.remove();
+                    
+                    if (testWidth > valueLabelMaxWidth && line.length > 1) {
+                        line.pop();
+                        lines.push(line.join(' '));
+                        line = [word];
+                    }
+                }
+                
+                // 添加最后一行
+                if (line.length > 0) {
+                    lines.push(line.join(' '));
+                }
+                
+                // 计算所有行所需的总高度
+                const lineHeight = valueFontSize * 1.2; // 行高
+                const totalHeight = lineHeight * lines.length;
+                
+                // 计算第一行的垂直位置，使最后一行恰好位于圆形图标上方
+                const firstLineY = labelY - (totalHeight - lineHeight);
+                
+                // 创建所有行
+                lines.forEach((lineText, i) => {
+                    valueTextLabel.append("tspan")
+                        .attr("x", circleX)
+                        .attr("y", firstLineY)
+                        .attr("dy", `${i * 1.2}em`)
+                        .text(lineText);
+                });
+            }
+        } else {
+            // 单行文本直接显示
+            valueTextLabel.text(formattedValue);
+        }
     });
     
     // ---------- 12. 辅助函数 ----------
     
-    // 文本换行函数
-    function wrapText(text, width, lineHeight) {
-        text.each(function() {
-            const text = d3.select(this);
-            const words = text.text().split(/\s+/).reverse();
-            let word;
-            let line = [];
-            let lineNumber = 0;
-            const y = text.attr("y");
-            const dy = parseFloat(text.attr("dy") || 0);
-            let tspan = text.text(null).append("tspan")
-                .attr("x", 0)
-                .attr("y", y)
-                .attr("dy", dy + "em");
-                
+    // 增强的文本换行函数
+    function wrapText(text, str, width, lineHeight = 1.1, alignment = 'middle') {
+        const words = str.split(/\s+/).reverse(); // 按空格分割单词
+        let word;
+        let line = [];
+        let lineNumber = 0;
+        const initialY = parseFloat(text.attr("y")); // 获取原始y坐标
+        const initialX = parseFloat(text.attr("x")); // 获取原始x坐标
+        const actualFontSize = parseFloat(text.style("font-size")); // 获取实际应用的字体大小
+
+        text.text(null); // 清空现有文本
+
+        let tspans = []; // 存储最终要渲染的行
+
+        // 优先按单词换行
+        if (words.length > 1) {
+            let currentLine = [];
             while (word = words.pop()) {
-                line.push(word);
-                tspan.text(line.join(" "));
-                if (tspan.node().getComputedTextLength() > width) {
-                    line.pop();
-                    tspan.text(line.join(" "));
-                    line = [word];
-                    tspan = text.append("tspan")
-                        .attr("x", 0)
-                        .attr("y", y)
-                        .attr("dy", ++lineNumber * lineHeight + dy + "em")
-                        .text(word);
+                currentLine.push(word);
+                const tempTspan = text.append("tspan").text(currentLine.join(" ")); // 创建临时tspan测试宽度
+                const isOverflow = tempTspan.node().getComputedTextLength() > width;
+                tempTspan.remove(); // 移除临时tspan
+
+                if (isOverflow && currentLine.length > 1) {
+                    currentLine.pop(); // 回退一个词
+                    tspans.push(currentLine.join(" ")); // 添加完成的行
+                    currentLine = [word]; // 新行以当前词开始
+                    lineNumber++;
                 }
             }
+            // 添加最后一行
+            if (currentLine.length > 0) {
+                tspans.push(currentLine.join(" "));
+            }
+        } else { // 如果没有空格或只有一个词，则按字符换行
+            const chars = str.split('');
+            let currentLine = '';
+            for (let i = 0; i < chars.length; i++) {
+                const nextLine = currentLine + chars[i];
+                const tempTspan = text.append("tspan").text(nextLine); // 测试宽度
+                const isOverflow = tempTspan.node().getComputedTextLength() > width;
+                tempTspan.remove();
+
+                if (isOverflow && currentLine.length > 0) { // 如果加了新字符就超长了，并且当前行不为空
+                    tspans.push(currentLine); // 添加当前行
+                    currentLine = chars[i]; // 新行从这个字符开始
+                    lineNumber++;
+                } else {
+                    currentLine = nextLine; // 没超长就继续加字符
+                }
+            }
+            // 添加最后一行
+            if (currentLine.length > 0) {
+                tspans.push(currentLine);
+            }
+        }
+
+        // 计算总行数
+        const totalLines = tspans.length;
+        let startDy = 0;
+        
+        // 根据对齐方式计算起始偏移
+        if (alignment === 'middle') {
+             // 垂直居中：向上移动半行*(总行数-1)
+            startDy = -( (totalLines - 1) * lineHeight / 2);
+        } else if (alignment === 'bottom') {
+            // 底部对齐：计算总高度，向上移动 总高度 - 单行高度(近似)
+            const totalHeightEm = totalLines * lineHeight;
+            startDy = -(totalHeightEm - lineHeight); // 将底部对齐到原始y
+        }
+        // 如果是 'top' 对齐，startDy 保持为 0，即第一行基线在原始y位置
+
+        // 创建所有行的tspan元素
+        tspans.forEach((lineText, i) => {
+            text.append("tspan")
+                .attr("x", initialX) // x坐标与父<text>相同
+                .attr("dy", (i === 0 ? startDy : lineHeight) + "em") // 第一行应用起始偏移，后续行应用行高
+                .text(lineText);
         });
     }
     

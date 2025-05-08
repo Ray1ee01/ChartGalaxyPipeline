@@ -233,7 +233,7 @@ function makeChart(containerSelector, data) {
     
     // 计算所有数值标签的最大宽度
     useData.forEach(d => {
-        tempText.text(formatValue(d[yField]));
+        tempText.text(formatValue(d[yField]) + (yUnit ? ` ${yUnit}` : ''));
         const textWidth = tempText.node().getComputedTextLength();
         maxValueLabelWidth = Math.max(maxValueLabelWidth, textWidth);
     });
@@ -439,7 +439,7 @@ function makeChart(containerSelector, data) {
     
     // *** 修改: 计算图例起始 X 坐标以实现右对齐 ***
     const legendStartX = width - margin.right - totalLegendWidth; // 将图例右边缘对齐到图表右边缘
-    const legendY = 70; // 保持 Y 坐标不变 (或者根据需要调整)
+    const legendY = 50; // 保持 Y 坐标不变 (或者根据需要调整)
 
     // 创建图例组
     const legend = svg.append("g")
@@ -520,7 +520,7 @@ function makeChart(containerSelector, data) {
                 .style("filter", variables.has_shadow ? "url(#shadow)" : "none");
             
             // 绘制左侧柱子顶部的标签
-            const leftValueText = formatValue(leftValue);
+            const leftValueText = formatValue(leftValue) + (yUnit ? ` ${yUnit}` : '');
             let leftLabelFontSize = valueFontSize; // Start with calculated size
             const tempLeftValueText = chart.append("text").style("visibility", "hidden").style("font-family", typography.label.font_family).style("font-size", `${leftLabelFontSize}px`).style("font-weight", "bold").text(leftValueText);
             let leftTextWidth = tempLeftValueText.node().getBBox().width;
@@ -536,7 +536,7 @@ function makeChart(containerSelector, data) {
             
             if (leftBarHeight > labelHeightRequired) {
                 // --- 放内部 ---
-                leftLabelY = leftBarY + 15; // 顶部向下一点
+                leftLabelY = leftBarY + 5; // 顶部向下一点
                 leftLabelColor = "#ffffff";
                 leftDominantBaseline = "hanging"; // 锚定到顶部
                 leftLabelIsOutside = false;
@@ -590,7 +590,7 @@ function makeChart(containerSelector, data) {
                 .style("filter", variables.has_shadow ? "url(#shadow)" : "none");
             
             // 绘制右侧柱子顶部的标签
-            const rightValueText = formatValue(rightValue);
+            const rightValueText = formatValue(rightValue) + (yUnit ? ` ${yUnit}` : '');
             let rightLabelFontSize = valueFontSize; // Start with calculated size
             const tempRightValueText = chart.append("text").style("visibility", "hidden").style("font-family", typography.label.font_family).style("font-size", `${rightLabelFontSize}px`).style("font-weight", "bold").text(rightValueText);
             let rightTextWidth = tempRightValueText.node().getBBox().width;
@@ -606,7 +606,7 @@ function makeChart(containerSelector, data) {
             
             if (rightBarHeight > rightLabelHeightRequired) {
                 // --- 放内部 ---
-                rightLabelY = rightBarY + 15;
+                rightLabelY = rightBarY + 5;
                 rightLabelColor = "#ffffff";
                 rightDominantBaseline = "hanging";
                 rightLabelIsOutside = false;

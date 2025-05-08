@@ -29,11 +29,32 @@ function makeChart(containerSelector, data) {
     const colors = jsonData.colors || {};
     const dataColumns = jsonData.data.columns || [];
 
+    // 数值单位规范
+    // 添加数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    }
+
     d3.select(containerSelector).html("");
 
     const xField = dataColumns[0].name;
     const yField = dataColumns[1].name;
     const groupField = dataColumns[2].name;
+
+    // 获取单位信息
+    let valueUnit = "";
+    const valueCol = dataColumns.find(col => col.role === "y");
+    if (valueCol && valueCol.unit && valueCol.unit !== "none") {
+        valueUnit = valueCol.unit;
+    }
 
     // 获取所有唯一的分组
     const groups = [...new Set(chartData.map(d => d[groupField]))];
@@ -101,7 +122,7 @@ function makeChart(containerSelector, data) {
             .attr("dominant-baseline", "middle")
             .attr("fill", "#888")
             .style("font-size", "12px")
-            .text(Math.round(tick));
+            .text(formatValue(Math.round(tick)) + valueUnit);
     });
 
     const labelPadding = 20;
@@ -133,12 +154,12 @@ function makeChart(containerSelector, data) {
             .text(d[xField]);
 
         // 数值标签
-        const valueText = d[yField];
+        const formattedValue = `${formatValue(d[yField])}${valueUnit}`;
         const valueRadius = innerR + barWidth / 2;
         const valueAngle = endAngle;
         const valueTextPathId = `valueTextPath-${i}`;
         
-        const valueTextLen = String(valueText).length * 8;
+        const valueTextLen = formattedValue.length * 8;
         const minAngle = 0.1;
         const maxAngle = 0.3;
         const valueShiftAngle = Math.min(
@@ -168,7 +189,7 @@ function makeChart(containerSelector, data) {
             .attr("startOffset", "50%")
             .attr("text-anchor", "middle")
             .attr("dominant-baseline", "middle")
-            .text(valueText);
+            .text(formattedValue);
     });
 
     // 添加图例

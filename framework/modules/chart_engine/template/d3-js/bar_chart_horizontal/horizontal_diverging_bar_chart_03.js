@@ -52,6 +52,19 @@ function makeChart(containerSelector, data) {
     variables.has_stroke = variables.has_stroke || false;
     variables.has_spacing = variables.has_spacing !== undefined ? variables.has_spacing : true;
 
+    // 数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    }
+
     // 清空容器，防止重复渲染
     d3.select(containerSelector).html("");
 
@@ -108,7 +121,7 @@ function makeChart(containerSelector, data) {
 
     chartData.forEach(d => {
         const value = d[valueField];
-        const formattedValue = (value >= 0 ? "+" : "") + value.toFixed(1) + valueUnit;
+        const formattedValue = (value >= 0 ? "+" : "") + formatValue(value) + valueUnit;
         tempValueTextElement.text(formattedValue);
         maxValueLabelWidth = Math.max(maxValueLabelWidth, tempValueTextElement.node().getComputedTextLength());
     });
@@ -353,7 +366,7 @@ function makeChart(containerSelector, data) {
         .style("opacity", 0.5);
 
     // 添加顶部左右方向指示标签 (例如 "<- Return", "Return ->")
-    const directionLabelY = -(axisTickSpace + directionLabelSpace / 2); // 定位在刻度线上方
+    const directionLabelY = -(axisTickSpace + directionLabelSpace); // 定位在刻度线上方 - 已修改，进一步向上移动
     const directionLabelFontSize = typography.label.font_size;
 
     // 调整标签大小以适应可用空间的函数
@@ -373,10 +386,10 @@ function makeChart(containerSelector, data) {
         .attr("y", directionLabelY)
         .attr("text-anchor", "middle")
         .style("font-family", typography.label.font_family)
+        .style("font-size", "12px") // 设置明确的字体大小
+        .style("font-weight", typography.label.font_weight) // 加粗使其更显眼
         .style("fill", centerTextColor)
         .html(`&larr; ${valueFieldName}`); // 使用度量字段名称
-    // 检查并调整左侧标签字体大小
-    adjustLabel(leftLabel, centerBoxLeft - midPointLeft - 5);
 
     // 右侧方向标签
     const rightLabel = g.append("text")
@@ -384,59 +397,146 @@ function makeChart(containerSelector, data) {
         .attr("y", directionLabelY)
         .attr("text-anchor", "middle")
         .style("font-family", typography.label.font_family)
+        .style("font-size", "12px") // 设置明确的字体大小
+        .style("font-weight", typography.label.font_weight) // 加粗使其更显眼
         .style("fill", centerTextColor)
         .html(`${valueFieldName} &rarr;`); // 使用度量字段名称
-    // 检查并调整右侧标签字体大小
-    adjustLabel(rightLabel, (innerWidth - centerBoxRight) - (midPointRight - centerBoxRight) - 5);
 
     // 生成刻度值 (基于优化后的 niceMaxAbsValue)
     const tickValues = magnitudeScale.ticks(5); // 获取D3优化的刻度值
 
-    // 添加左右两侧的刻度线和刻度标签
+    // 创建一个临时的SVG元素用于刻度标签测量
+    const tempTickMeasureSvg = d3.select(containerSelector).append("svg")
+        .attr("width", 0).attr("height", 0)
+        .style("opacity", 0).style("position", "absolute");
+
+    // 帮助函数：调整刻度标签以避免重叠
+    function adjustTickLabel(fullText, numericString, signString, initialFontSize, minFontSize, availableWidth, unit, tempSvg) {
+        let currentText = fullText;
+        let currentFontSize = initialFontSize;
+
+        tempSvg.selectAll("text").remove(); // 清除之前的临时文本
+        const tempTextElement = tempSvg.append("text")
+            .style("font-family", typography.annotation.font_family)
+            .style("font-weight", typography.annotation.font_weight || "normal");
+
+        const measure = (txt, size) => {
+            tempTextElement.style("font-size", `${size}px`).text(txt);
+            return tempTextElement.node().getComputedTextLength();
+        };
+
+        let textWidth = measure(currentText, currentFontSize);
+
+        // 阶段 1: 使用完整文本（符号 + 数字 + 单位）减小字体大小
+        while (textWidth > availableWidth && currentFontSize > minFontSize) {
+            currentFontSize--;
+            textWidth = measure(currentText, currentFontSize);
+        }
+
+        // 阶段 2: 如果仍然太宽，则删除单位并重新评估
+        if (textWidth > availableWidth && unit && unit.length > 0 && currentText.includes(unit)) {
+            currentText = signString + numericString; // 文本变为类似 "+60" 或 "-60"
+            textWidth = measure(currentText, currentFontSize); // 使用当前（可能已减小）的字体大小测量
+
+            // 阶段 3: 如果仍然太宽（没有单位），尝试进一步减小字体大小
+            while (textWidth > availableWidth && currentFontSize > minFontSize) {
+                currentFontSize--;
+                textWidth = measure(currentText, currentFontSize);
+            }
+        }
+        return { text: currentText, fontSize: currentFontSize };
+    }
+
+    // 计算刻度标签的可用宽度
+    let minTickGap = availableWidthPerSide; // 如果只有一个刻度或除了0没有其他刻度，则默认为整个侧边宽度
+    if (tickValues.length > 1) {
+        const distinctSortedPixelValues = [...new Set(tickValues.map(v => magnitudeScale(v)))]
+                                          .sort((a, b) => a - b);
+        if (distinctSortedPixelValues.length > 1) {
+            minTickGap = Infinity;
+            for (let i = 0; i < distinctSortedPixelValues.length - 1; i++) {
+                const gap = distinctSortedPixelValues[i+1] - distinctSortedPixelValues[i];
+                if (gap > 0) { // 确保间隙为正
+                    minTickGap = Math.min(minTickGap, gap);
+                }
+            }
+        }
+        if (minTickGap === Infinity || minTickGap === 0) { // 如果所有刻度值映射到相同的像素或间隙为0，则回退
+             minTickGap = availableWidthPerSide / (tickValues.filter(v => v !== 0).length || 1);
+        }
+    } else if (tickValues.length === 1 && tickValues[0] !== 0) { // 单个非零刻度
+         minTickGap = magnitudeScale(tickValues[0]); // 从0到此刻度的空间
+    }
+    if (minTickGap <=0) minTickGap = availableWidthPerSide / 2; // 最后的防线
+
+
+    const availableTickLabelWidth = Math.max(10, minTickGap * 0.9); // 刻度标记之间最小间隙的90%，至少10px
+    const initialTickFontSize = 14; // 根据现有代码
+    const minTickFontSize = 8;
+
     tickValues.forEach(value => {
-        if (value === 0) return; // 跳过0刻度线
+        if (value === 0 && tickValues.length > 1) return; // 如果有其他刻度，跳过0刻度线自身的标签 (0线本身可能不需要标签)
+                                                       // 如果只有0刻度，还是会画出来（虽然tickValues可能不只含0）
+        
         const tickWidth = magnitudeScale(value); // 当前刻度值对应的像素宽度
 
         // 正刻度 (右侧)
         const xPosPositive = centerBoxRight + tickWidth;
-        g.append("line") // 刻度线 (虚线)
+        g.append("line") // 刻度线
             .attr("x1", xPosPositive)
             .attr("y1", -axisTickSpace)
             .attr("x2", xPosPositive)
             .attr("y2", innerHeight)
-            .attr("stroke", "#CCCCCC") // 浅灰色刻度线
-            .attr("stroke-width", 0.5) // 统一宽度
+            .attr("stroke", "#CCCCCC")
+            .attr("stroke-width", 0.5)
             .style("opacity", 0.5);
+        
+        const originalPositiveText = `+${formatValue(value)}${valueUnit}`;
+        const positiveNumericString = value.toFixed(0);
+        const adjustedPositiveLabel = adjustTickLabel(originalPositiveText, positiveNumericString, "+", initialTickFontSize, minTickFontSize, availableTickLabelWidth, valueUnit, tempTickMeasureSvg);
+
+        if (value !== 0 || (value === 0 && tickValues.filter(v => v !== 0).length === 0)) { // 只在非零处或仅有0刻度时绘制标签
         g.append("text") // 刻度标签
             .attr("x", xPosPositive)
             .attr("y", -axisTickSpace)
-            .attr("dy", "-0.3em") // 向上偏移，使其在刻度线上方
+                .attr("dy", "-0.3em")
             .attr("text-anchor", "middle")
             .style("font-family", typography.annotation.font_family)
-            .style("font-size", "10px")
+                .style("font-size", `${adjustedPositiveLabel.fontSize}px`)
             .style("fill", centerTextColor)
-            .text(`+${value.toFixed(0)}${valueUnit}`);
+                .text(adjustedPositiveLabel.text);
+        }
 
-        // 负刻度 (左侧)
+        // 负刻度 (左侧) - 仅当值不为0时绘制对称的负刻度
+        if (value !== 0) {
         const xPosNegative = centerBoxLeft - tickWidth;
-        g.append("line") // 刻度线 (虚线)
+            g.append("line") // 刻度线
             .attr("x1", xPosNegative)
             .attr("y1", -axisTickSpace)
             .attr("x2", xPosNegative)
             .attr("y2", innerHeight)
-            .attr("stroke", "#CCCCCC") // 浅灰色刻度线
-            .attr("stroke-width", 0.5) // 统一宽度
+                .attr("stroke", "#CCCCCC")
+                .attr("stroke-width", 0.5)
             .style("opacity", 0.5);
+
+            const originalNegativeText = `-${formatValue(value)}${valueUnit}`;
+            const negativeNumericString = value.toFixed(0); // value本身是正的
+            const adjustedNegativeLabel = adjustTickLabel(originalNegativeText, negativeNumericString, "-", initialTickFontSize, minTickFontSize, availableTickLabelWidth, valueUnit, tempTickMeasureSvg);
+            
         g.append("text") // 刻度标签
             .attr("x", xPosNegative)
             .attr("y", -axisTickSpace)
-            .attr("dy", "-0.3em") // 向上偏移
+                .attr("dy", "-0.3em")
             .attr("text-anchor", "middle")
             .style("font-family", typography.annotation.font_family)
-            .style("font-size", "10px")
+                .style("font-size", `${adjustedNegativeLabel.fontSize}px`)
             .style("fill", centerTextColor)
-            .text(`${-value.toFixed(0)}${valueUnit}`);
+                .text(adjustedNegativeLabel.text);
+        }
     });
+
+    // 清理临时SVG元素
+    tempTickMeasureSvg.remove();
 
     // 找到第一个非零刻度值对应的像素宽度
     const firstTickValue = d3.min(tickValues.filter(v => v !== 0));
@@ -451,12 +551,12 @@ function makeChart(containerSelector, data) {
     const midPointRightNew = centerBoxRight + firstTickWidth / 2;
 
     // 更新标签位置
-    leftLabel.attr("x", midPointLeftNew);
-    rightLabel.attr("x", midPointRightNew);
-
-    // 使用新的可用空间调整字体大小
-    adjustLabel(leftLabel, availableSpaceForDirectionLabel);
-    adjustLabel(rightLabel, availableSpaceForDirectionLabel);
+    leftLabel.attr("x", centerBoxLeft)
+             .attr("text-anchor", "end"); // 改为右对齐
+    
+    rightLabel.attr("x", centerBoxRight)
+              .attr("text-anchor", "start"); // 改为左对齐
+    
 
     // ---------- 11. 绘制条形和标签 ----------
 
@@ -469,7 +569,9 @@ function makeChart(containerSelector, data) {
         const yPos = yScale(dimension); // 获取当前维度对应的Y坐标
 
         const barColor = value >= 0 ? positiveColor : negativeColor; // 根据正负选择颜色
-        const formattedValue = (value >= 0 ? "+" : "") + value.toFixed(1) + valueUnit; // 格式化数值标签文本
+        const formattedValue = value >= 0 ? 
+            `+${formatValue(value)}${valueUnit}` : 
+            `${formatValue(value)}${valueUnit}`;
 
         // 临时测量当前数值标签宽度 (用于判断标签是放内部还是外部)
         const tempValueMeasureSvg = d3.select("body").append("svg").attr("width",0).attr("height",0).style("visibility","hidden");

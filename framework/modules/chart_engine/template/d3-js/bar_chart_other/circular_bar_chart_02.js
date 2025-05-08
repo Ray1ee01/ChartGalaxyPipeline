@@ -30,12 +30,33 @@ function makeChart(containerSelector, data) {
     const colors = jsonData.colors || {};
     const dataColumns = jsonData.data.columns || [];
     
+    // 数值单位规范
+    // 添加数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    }
+    
     // Clear container
     d3.select(containerSelector).html("");
     
     // Get field names
     const xField = dataColumns[0].name;
     const yField = dataColumns[1].name;
+    
+    // 获取单位信息
+    let valueUnit = "";
+    const valueCol = dataColumns.find(col => col.role === "y");
+    if (valueCol && valueCol.unit && valueCol.unit !== "none") {
+        valueUnit = valueCol.unit;
+    }
     
     // 按yField降序排序数据
     chartData.sort((a, b) => b[yField] - a[yField]);
@@ -238,7 +259,7 @@ function makeChart(containerSelector, data) {
             .attr("fill", "#666")
             .attr("text-anchor", "start")
             .attr("dominant-baseline", "middle")
-            .text(Math.round(tickStep * i));
+            .text(formatValue(Math.round(tickStep * i)) + valueUnit);
     }
 
     // Add the CO2 emission bars with padding
@@ -299,7 +320,7 @@ function makeChart(containerSelector, data) {
         
         
         // Add value label
-        const labelText = `${d[xField]}: ${d[yField]}`;
+        const labelText = `${d[xField]}: ${formatValue(d[yField])}${valueUnit}`;
         const textWidth = labelText.length * 16; // 估算文字宽度
       
         const totalRadius = radius + barPadding + barLength;

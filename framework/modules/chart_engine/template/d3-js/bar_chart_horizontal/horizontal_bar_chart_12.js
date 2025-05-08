@@ -88,9 +88,28 @@ function makeChart(containerSelector, data) {
     // 获取唯一维度值并按数值降序排列数据
     const dimensions = [...new Set(chartData.map(d => d[dimensionField]))];
     
+    // 如果x维度数量超过15，每增加一个x，整个图像的高度增加3%
+    const baseHeight = variables.height || 600;
+    const adjustedHeight = dimensions.length > 15 
+        ? baseHeight * (1 + (dimensions.length - 15) * 0.03) 
+        : baseHeight;
+    
     // 按数值降序排序数据
     const sortedData = [...chartData].sort((a, b) => b[valueField] - a[valueField]);
     const sortedDimensions = sortedData.map(d => d[dimensionField]);
+    
+    // 添加数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    };
     
     // ---------- 5. 计算标签宽度 ----------
     
@@ -132,8 +151,8 @@ function makeChart(containerSelector, data) {
     let maxValueWidth = 0;
     chartData.forEach(d => {
         const formattedValue = valueUnit ? 
-            `${d[valueField]}${valueUnit}` : 
-            `${d[valueField]}`;
+            `${formatValue(d[valueField])}${valueUnit}` : 
+            `${formatValue(d[valueField])}`;
             
         const tempText = tempSvg.append("text")
             .style("font-family", typography.annotation.font_family)
@@ -355,8 +374,8 @@ function makeChart(containerSelector, data) {
             
             // 添加数值标签
             const formattedValue = valueUnit ? 
-                `${dataPoint[valueField]}${valueUnit}` : 
-                `${dataPoint[valueField]}`;
+                `${formatValue(dataPoint[valueField])}${valueUnit}` : 
+                `${formatValue(dataPoint[valueField])}`;
             
             g.append("text")
                 .attr("x", barWidth + 5)

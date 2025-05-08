@@ -101,6 +101,19 @@ function makeChart(containerSelector, data) {
     const sortedData = [...chartData].sort((a, b) => b[valueField] - a[valueField]);
     const sortedDimensions = sortedData.map(d => d[dimensionField]);
 
+    // 添加数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    };
+
     // 计算最大值和最小值用于条形高度的缩放
     const maxValue = d3.max(chartData, d => +d[valueField]);
     const minValue = d3.min(chartData, d => +d[valueField]);
@@ -118,8 +131,8 @@ function makeChart(containerSelector, data) {
     let maxValueWidth = 0;
     chartData.forEach(d => {
         const formattedValue = valueUnit ? 
-            `${d[valueField]}${valueUnit}` : 
-            `${d[valueField]}`;
+            `${formatValue(d[valueField])}${valueUnit}` : 
+            `${formatValue(d[valueField])}`;
             
         const tempText = tempSvg.append("text")
             .style("font-family", typography.annotation.font_family)
@@ -345,8 +358,10 @@ function makeChart(containerSelector, data) {
                     .attr("xlink:href", images.field[dimension]);
             }
             
-            // 格式化数值用于显示 - 不带单位
-            const formattedValue = `${dataPoint[valueField]}`;
+            // 格式化数值用于显示
+            const formattedValue = valueUnit ? 
+                `${formatValue(dataPoint[valueField])}${valueUnit}` : 
+                `${formatValue(dataPoint[valueField])}`;
             
             // 减小字体大小（条形高度的比例）
             const valueFontSize = `${barBandHeight * 0.35}px`;

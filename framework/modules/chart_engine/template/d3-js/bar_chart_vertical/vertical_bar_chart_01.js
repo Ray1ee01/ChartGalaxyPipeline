@@ -91,6 +91,20 @@ function makeChart(containerSelector, data) {
         yUnit = yColumn.unit;
     }
     
+    // 数值单位规范
+    // 添加数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    }
+    
     // ---------- 4. 数据处理 ----------
     
     // 获取唯一的x轴值
@@ -353,7 +367,7 @@ function makeChart(containerSelector, data) {
         .style("font-weight", annotationFontWeight)
         .style("fill", colors.text_color || "#333333")
         .each(function(d) {
-            const valueText = (typeof d.y === 'number' ? d.y.toFixed(1) : String(d.y)) + (yUnit || "");
+            const valueText = formatValue(d.y) + (yUnit ? ` ${yUnit}` : "");
             const maxWidth = xScale.bandwidth() * 1.1; // 最大允许宽度为柱宽的1.1倍
             let finalValueFontSize = defaultAnnotationFontSize;
 

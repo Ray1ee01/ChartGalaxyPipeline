@@ -42,6 +42,19 @@ function makeChart(containerSelector, data) {
     const images = jsonData.images || { field: {}, other: {} };  // 图片(标志等)
     const dataColumns = jsonData.data.columns || [];            // 数据列
     
+    // 数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    }
+    
     // 设置视觉效果变量
     variables.has_rounded_corners = variables.has_rounded_corners || false;
     variables.has_shadow = variables.has_shadow || false;
@@ -354,7 +367,7 @@ function makeChart(containerSelector, data) {
         .style("font-weight", annotationFontWeight)
         .style("fill", colors.text_color || "#333333")
         .each(function(d) {
-            const valueText = (typeof d.y === 'number' ? d.y.toFixed(1) : String(d.y)) + (yUnit || "");
+            const valueText = formatValue(d.y) + (yUnit ? ` ${yUnit}` : '');
             const maxWidth = xScale.bandwidth() * 1.1; // 最大允许宽度为柱宽的1.1倍
             let finalValueFontSize = defaultAnnotationFontSize;
 

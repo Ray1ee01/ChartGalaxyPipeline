@@ -45,6 +45,19 @@ function makeChart(containerSelector, data) {
     };  // 颜色设置
     const dataColumns = jsonData.data.columns || []; // 数据列定义
     
+    // 添加数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    };
+    
     // 设置视觉效果变量的默认值
     variables.has_shadow = variables.has_shadow || false;
     variables.has_stroke = variables.has_stroke || false;
@@ -202,9 +215,10 @@ function makeChart(containerSelector, data) {
         .text(d => {
             const value = d[1] - d[0];
             const width = xScale(d[1]) - xScale(d[0]);
-            const textwidth = getTextWidth(value.toFixed(1), typography.annotation.font_size)
+            const formattedText = `${formatValue(value)}${yUnit}`;
+            const textwidth = getTextWidth(formattedText, typography.annotation.font_size);
             // 只在宽度大于文本宽度且值大于0时显示文本
-            return (width > textwidth && value > 0) ? value.toFixed(1) : '';
+            return (width > textwidth && value > 0) ? formattedText : '';
         });
 
     // 添加X轴

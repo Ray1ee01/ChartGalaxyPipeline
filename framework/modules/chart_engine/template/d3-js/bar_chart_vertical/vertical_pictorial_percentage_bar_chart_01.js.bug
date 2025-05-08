@@ -68,7 +68,18 @@ function makeChart(containerSelector, data) {
     if (dataColumns.find(col => col.role === "y").unit !== "none") {
         valueUnit = dataColumns.find(col => col.role === "y").unit;
     }
-    
+    // 添加数值格式化函数
+    const formatValue = (value) => {
+            if (value >= 1000000000) {
+                return d3.format("~g")(value / 1000000000) + "B";
+            } else if (value >= 1000000) {
+                return d3.format("~g")(value / 1000000) + "M";
+            } else if (value >= 1000) {
+                return d3.format("~g")(value / 1000) + "K";
+            } else {
+                return d3.format("~g")(value);
+            }
+    }
     // ---------- 3. 数据处理 ----------
     // 按照y值降序排序数据
     const sortedData = [...chartData].sort((a, b) => b[yField] - a[yField]);
@@ -184,9 +195,7 @@ function makeChart(containerSelector, data) {
                 .attr("ry", 5);
                 
             // 格式化值
-            const formattedValue = valueUnit ? 
-                `${d[yField]}${valueUnit}` : 
-                `${d[yField]}`;
+            const formattedValue = `${formatValue(d[yField])}${valueUnit}`;
             
             // 我们将在下面计算实际字体大小，先使用基础大小创建文本元素
             const baseValueFontSize = 16;

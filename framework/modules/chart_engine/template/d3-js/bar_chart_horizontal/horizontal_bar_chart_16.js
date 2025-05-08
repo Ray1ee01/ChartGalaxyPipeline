@@ -97,6 +97,19 @@ function makeChart(containerSelector, data) {
     const sortedData = [...chartData].sort((a, b) => b[valueField] - a[valueField]);
     const sortedDimensions = sortedData.map(d => d[dimensionField]);
     
+    // 添加数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    };
+    
     // ---------- 5. 计算标签宽度 ----------
     
     // 创建临时SVG来测量文本宽度
@@ -136,8 +149,8 @@ function makeChart(containerSelector, data) {
     let maxValueWidth = 0;
     chartData.forEach(d => {
         const formattedValue = valueUnit ? 
-            `${d[valueField]}${valueUnit}` : 
-            `${d[valueField]}`;
+            `${formatValue(d[valueField])}${valueUnit}` : 
+            `${formatValue(d[valueField])}`;
             
         const tempText = tempSvg.append("text")
             .style("font-family", typography.annotation.font_family)
@@ -332,15 +345,15 @@ function makeChart(containerSelector, data) {
                 .attr("dy", "0.35em")
                 .attr("text-anchor", "end")
                 .style("font-family", typography.label.font_family)
-                .style("font-size", `${barHeight * 0.6}px`)
+                .style("font-size", `${Math.min(30, barHeight * 0.6)}px`)
                 .style("font-weight", typography.label.font_weight)
                 .style("fill", colors.text_color)
                 .text(dimension);
             
             // 添加数值标签 - 改为使用对应条形的颜色
             const formattedValue = valueUnit ? 
-                `${dataPoint[valueField]}${valueUnit}` : 
-                `${dataPoint[valueField]}`;
+                `${formatValue(dataPoint[valueField])}${valueUnit}` : 
+                `${formatValue(dataPoint[valueField])}`;
             
             // 获取与条形相同的颜色
             const valueColor = variables.has_gradient ? 
@@ -353,7 +366,7 @@ function makeChart(containerSelector, data) {
                 .attr("dy", "0.35em")
                 .attr("text-anchor", "start")
                 .style("font-family", typography.annotation.font_family)
-                .style("font-size", `${Math.max(12,barHeight * 0.6)}px`)
+                .style("font-size", `${Math.min(30, Math.max(12,barHeight * 0.6))}px`)
                 .style("font-weight", typography.annotation.font_weight)
                 .style("fill", valueColor) // 修改：使用条形的颜色
                 .text(formattedValue);
@@ -405,11 +418,33 @@ function makeChart(containerSelector, data) {
         // 删除临时SVG
         legendTempSvg.remove();
         
+        // --- Simulate legend layout to determine total height ---
+        let sim_currentX = 0;
+        let sim_currentY = 0; // Y-offset of the top of the current simulated row
+        const sim_rowHeight = legendItemHeight + 5; // Height of one row including spacing
+        let max_sim_Y_for_last_row_top = 0;
+
+        legendItems.forEach((item) => {
+            const neededMargin = (sim_currentX === 0) ? 0 : legendItemMargin;
+            if (sim_currentX !== 0 && (sim_currentX + neededMargin + item.width > maxLegendWidth)) {
+                sim_currentX = 0;
+                sim_currentY += sim_rowHeight;
+            }
+            // Update sim_currentX for the next item in the current simulated row
+            sim_currentX += ((sim_currentX === 0) ? 0 : legendItemMargin) + item.width;
+            max_sim_Y_for_last_row_top = Math.max(max_sim_Y_for_last_row_top, sim_currentY);
+        });
+        const totalLegendBlockHeight = max_sim_Y_for_last_row_top + legendItemHeight;
+        
+        // --- Calculate the actual Y translation for the legend group ---
+        const legendPaddingAboveChart = 10; // Space between legend bottom and chart top
+        const actualLegendGroupTranslateY = margin.top - legendPaddingAboveChart - totalLegendBlockHeight;
+
         // 创建图例容器
         const legend = svg.append("g")
-            .attr("transform", `translate(${0}, ${40})`);
+            .attr("transform", `translate(${0}, ${actualLegendGroupTranslateY})`); // Use new Y translation
         
-        // 计算图例布局
+        // 计算图例布局 (this loop is for actual drawing, currentX/Y are relative to legend group)
         let currentX = 0;
         let currentY = 0;
         const rowHeight = legendItemHeight + 5; // 行高

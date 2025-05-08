@@ -55,7 +55,12 @@ function makeChart(containerSelector, data) {
     
     // 设置图表总尺寸
     const width = variables.width || 800;
-    const height = variables.height || 600;
+    
+    // 如果x维度数量超过15，每增加一个x，整个图像的高度增加3%
+    const baseHeight = variables.height || 600;
+    const adjustedHeight = dimensions.length > 15 
+        ? baseHeight * (1 + (dimensions.length - 15) * 0.03) 
+        : baseHeight;
     
     // 设置边距
     const margin = {
@@ -91,6 +96,19 @@ function makeChart(containerSelector, data) {
     // 按数值降序排序数据
     const sortedData = [...chartData].sort((a, b) => b[valueField] - a[valueField]);
     const sortedDimensions = sortedData.map(d => d[dimensionField]);
+    
+    // 添加数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    };
     
     // ---------- 5. 计算标签宽度 ----------
     
@@ -135,8 +153,8 @@ function makeChart(containerSelector, data) {
     let maxValueWidth = 0;
     chartData.forEach(d => {
         const formattedValue = valueUnit ? 
-            `${d[valueField]}${valueUnit}` : 
-            `${d[valueField]}`;
+            `${formatValue(d[valueField])}${valueUnit}` : 
+            `${formatValue(d[valueField])}`;
             
         const tempText = tempSvg.append("text")
             .style("font-family", typography.annotation.font_family)
@@ -160,7 +178,7 @@ function makeChart(containerSelector, data) {
     
     // 计算内部绘图区域尺寸
     const innerWidth = width - margin.left - margin.right;
-    const innerHeight = height - margin.top - margin.bottom;
+    const innerHeight = adjustedHeight - margin.top - margin.bottom;
     
     // ---------- 6. 创建比例尺 ----------
     
@@ -183,8 +201,8 @@ function makeChart(containerSelector, data) {
     const svg = d3.select(containerSelector)
         .append("svg")
         .attr("width", "100%")
-        .attr("height", height)
-        .attr("viewBox", `0 0 ${width} ${height}`)
+        .attr("height", adjustedHeight)
+        .attr("viewBox", `0 0 ${width} ${adjustedHeight}`)
         .attr("style", "max-width: 100%; height: auto;")
         .attr("xmlns", "http://www.w3.org/2000/svg")
         .attr("xmlns:xlink", "http://www.w3.org/1999/xlink");
@@ -342,8 +360,8 @@ function makeChart(containerSelector, data) {
             
             // 格式化数值用于显示
             const formattedValue = valueUnit ? 
-                `${dataPoint[valueField]}${valueUnit}` : 
-                `${dataPoint[valueField]}`;
+                `${formatValue(dataPoint[valueField])}${valueUnit}` : 
+                `${formatValue(dataPoint[valueField])}`;
             
             // 创建临时文本测量数值标签宽度（使用动态字体大小）
             const tempValueText = svg.append("text")

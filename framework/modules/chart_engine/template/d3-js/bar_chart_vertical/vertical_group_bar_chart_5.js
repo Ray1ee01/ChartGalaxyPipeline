@@ -64,6 +64,19 @@ function makeChart(containerSelector, data) {
     // 清除容器
     d3.select(containerSelector).html("");
     
+    // 添加数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    }
+    
     // ---------- 2. 尺寸和布局设置 ----------
     // 设置图表尺寸和边距
     const width = variables.width || 800;
@@ -319,9 +332,7 @@ function makeChart(containerSelector, data) {
         .attr("class", "y-axis")
         .call(d3.axisLeft(yScale)
             .tickSize(-innerWidth)
-            .tickFormat(d => {
-                return d;
-            })
+            .tickFormat(d => formatValue(d) + (yUnit ? ` ${yUnit}` : ''))
         )
         .call(g => {
             g.select(".domain").remove();

@@ -49,6 +49,19 @@ function makeChart(containerSelector, data) {
     variables.has_stroke = variables.has_stroke !== undefined ? variables.has_stroke : false;
     variables.has_spacing = variables.has_spacing !== undefined ? variables.has_spacing : true; // 胶囊间需要间距
     
+    // 数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    }
+    
     // 清空容器
     d3.select(containerSelector).html("");
     
@@ -480,7 +493,7 @@ function makeChart(containerSelector, data) {
                     }
                     
                     // 添加数值标签
-                    const formattedValue = valueUnit ? `${value}${valueUnit}` : `${value}`;
+                    const formattedValue = valueUnit ? `${formatValue(value)}${valueUnit}` : `${formatValue(value)}`;
                     // 定位在最后一个胶囊之后
                     const lastCapsuleEnd = capsuleCount * (capsuleWidth + capsuleSpacing) - capsuleSpacing; // 最后一个胶囊的结束X坐标 (如果 count > 0)
                     const labelX = (capsuleCount > 0 ? lastCapsuleEnd : 0) + 5; // 如果没有胶囊，标签从0开始，否则从最后一个胶囊后5px开始

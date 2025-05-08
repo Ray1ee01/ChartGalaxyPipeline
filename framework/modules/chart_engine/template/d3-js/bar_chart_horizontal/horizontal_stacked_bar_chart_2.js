@@ -42,6 +42,19 @@ function makeChart(containerSelector, data) {
     const images = jsonData.images || { field: {}, other: {} };  // 图像(国旗等)
     const dataColumns = jsonData.data.columns || []; // 数据列定义
     
+    // 添加数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    }
+    
     // 检查并设置缺失的视觉效果变量，确保不会因为缺少变量而出错
     variables.has_rounded_corners = variables.has_rounded_corners || false;
     variables.has_shadow = variables.has_shadow || false;
@@ -416,8 +429,8 @@ function makeChart(containerSelector, data) {
     };
     
     // 格式化函数
-    const formatValue = (value) => {
-        return valueUnit ? `${value}${valueUnit}` : `${value}`;
+    const formatValueWithUnit = (value) => {
+        return `${formatValue(value)}${valueUnit}`;
     };
 
     // 标签内边距
@@ -497,7 +510,7 @@ function makeChart(containerSelector, data) {
                 // .on("mouseout", function() { d3.select(this).attr("opacity", 1); });
 
             // 处理第一组标签
-            const labelText = formatValue(firstGroupData[valueField]);
+            const labelText = formatValueWithUnit(+firstGroupData[valueField]);
             const labelWidth = estimateLabelWidth(labelText);
             let labelX, labelColor, textAnchor;
 
@@ -552,7 +565,7 @@ function makeChart(containerSelector, data) {
                 // .on("mouseout", function() { d3.select(this).attr("opacity", 1); });
             
              // 处理第二组标签
-            const labelText = formatValue(secondGroupData[valueField]);
+            const labelText = formatValueWithUnit(+secondGroupData[valueField]);
             const labelWidth = estimateLabelWidth(labelText);
             let labelX, labelColor, textAnchor;
 
@@ -611,7 +624,7 @@ function makeChart(containerSelector, data) {
                 .style("font-size", typography.annotation.font_size)
                 .style("font-weight", typography.annotation.font_weight)
                 .style("fill", colors.text_color) // 外部标签用默认色
-                .text(formatValue(firstGroupData[valueField])); // 获取文本
+                .text(formatValueWithUnit(+firstGroupData[valueField])); // 获取文本
         }
 
     });

@@ -57,6 +57,19 @@ function makeChart(containerSelector, data) {
     // 清除容器
     d3.select(containerSelector).html("");
     
+    // 添加数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    }
+    
     // ---------- 2. 尺寸和布局设置 ----------
     // 设置图表尺寸和边距
     const width = variables.width || 800;
@@ -85,8 +98,8 @@ function makeChart(containerSelector, data) {
     
     if (xColumn) xField = xColumn.name;
     if (yColumn) yField = yColumn.name;
-    group1Field = dataColumns.filter(col => col.role === "group").name;
-    group2Field = dataColumns.filter(col => col.role === "group2").name;
+    group1Field = dataColumns.filter(col => col.role === "group")[0].name;
+    group2Field = dataColumns.filter(col => col.role === "group2")[0].name;
     
     // 获取字段单位（如果存在）
     if (yColumn && yColumn.unit && yColumn.unit !== "none") {
@@ -393,7 +406,7 @@ function makeChart(containerSelector, data) {
                     .style("font-size", `${labelHeight * 0.8}px`)
                     .style("font-weight", typography.label.font_weight)
                     .style("fill", "#FFFFFF") // 白色文本
-                    .text(bar2.value.toFixed(1)); // 始终保留一位小数
+                    .text(formatValue(bar2.value) + (yUnit ? ` ${yUnit}` : '')); // 使用格式化函数
                 
                 // 绘制第一个条形的标签背景和文本
                 chart.append("rect")
@@ -415,7 +428,7 @@ function makeChart(containerSelector, data) {
                     .style("font-size", `${labelHeight * 0.8}px`)
                     .style("font-weight", typography.label.font_weight)
                     .style("fill", "#FFFFFF") // 白色文本
-                    .text(bar1.value.toFixed(1)); // 始终保留一位小数
+                    .text(formatValue(bar1.value) + (yUnit ? ` ${yUnit}` : '')); // 使用格式化函数
             }
         });
     });

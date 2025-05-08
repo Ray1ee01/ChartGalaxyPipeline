@@ -46,6 +46,19 @@ function makeChart(containerSelector, data) {
     };  // 颜色设置
     const dataColumns = jsonData.data.columns || []; // 数据列定义
     
+    // 数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    }
+    
     // 设置视觉效果变量的默认值
     variables.has_shadow = variables.has_shadow || false;
     variables.has_stroke = variables.has_stroke || false;
@@ -243,7 +256,7 @@ function makeChart(containerSelector, data) {
         .style("font-family", typography.label.font_family)
         .style("font-size", typography.label.font_size)
         .style("fill", colors.text_color)
-        .text(d => d.value + (yUnit ? ` ${yUnit}` : ''))
+        .text(d => formatValue(d.value) + (yUnit ? ` ${yUnit}` : ''))
         .style("opacity", 1);
 
     return svg.node();

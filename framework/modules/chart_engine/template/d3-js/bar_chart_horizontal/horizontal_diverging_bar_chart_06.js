@@ -50,6 +50,19 @@ function makeChart(containerSelector, data) {
     variables.has_stroke = variables.has_stroke !== undefined ? variables.has_stroke : false;
     variables.has_spacing = variables.has_spacing !== undefined ? variables.has_spacing : true;
     
+    // 数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    }
+    
     // 清空容器
     d3.select(containerSelector).html("");
     
@@ -65,14 +78,13 @@ function makeChart(containerSelector, data) {
     const xField = dataColumns.find(col => col.role === "x").name; 
     const yField = dataColumns.find(col => col.role === "y").name;
     
-    // 查找所有具有 "group" 角色的列
-    const groupColumns = dataColumns.filter(col => col.role === "group");
+    
     
     // 使用第一个 group 作为 categoryField，如果不存在则使用默认值
-    const categoryField =dataColumns.filter(col => col.role === "group").name;
+    const categoryField =dataColumns.filter(col => col.role === "group")[0].name;
     
     // 使用第二个 group 作为 developmentStatusField，如果不存在则使用默认值
-    const developmentStatusField = dataColumns.filter(col => col.role === "group2").name;
+    const developmentStatusField = dataColumns.filter(col => col.role === "group2")[0].name;
     
     // 获取唯一维度和类别
     const allDimensions = [...new Set(chartData.map(d => d[xField]))];
@@ -522,9 +534,7 @@ function makeChart(containerSelector, data) {
         
         // For the left bar values:
         // First, calculate the text width
-        const leftFormattedValue = Number.isInteger(value) ? 
-        value.toLocaleString() : 
-        value.toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1});
+        const leftFormattedValue = `${formatValue(value)}${valueUnit}`;
 
         // Create temporary text element to measure width
         const leftTempText = g.append("text")
@@ -650,9 +660,7 @@ function makeChart(containerSelector, data) {
         
         // For the right bar values:
         // First, calculate the text width
-        const rightFormattedValue = Number.isInteger(value) ? 
-        value.toLocaleString() :    
-        value.toLocaleString(undefined, {minimumFractionDigits: 1, maximumFractionDigits: 1});
+        const rightFormattedValue = `${formatValue(value)}${valueUnit}`;
 
         // Create temporary text element to measure width
         const rightTempText = g.append("text")

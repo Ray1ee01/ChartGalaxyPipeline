@@ -34,6 +34,19 @@ function makeChart(containerSelector, data) {
 
   d3.select(containerSelector).html("");
   
+  // 添加数值格式化函数
+  const formatValue = (value) => {
+      if (value >= 1000000000) {
+          return d3.format("~g")(value / 1000000000) + "B";
+      } else if (value >= 1000000) {
+          return d3.format("~g")(value / 1000000) + "M";
+      } else if (value >= 1000) {
+          return d3.format("~g")(value / 1000) + "K";
+      } else {
+          return d3.format("~g")(value);
+      }
+  }
+  
   // Set width and height based on variables
   const width = variables.width;
   const height = variables.height;
@@ -46,6 +59,13 @@ function makeChart(containerSelector, data) {
   const yField = dataColumns[1].name;
   const groupField = dataColumns[2].name;
   const imageSize = 32;
+  
+  // 获取Y轴单位
+  let yUnit = "";
+  const yColumn = dataColumns.find(col => col.name === yField);
+  if (yColumn && yColumn.unit && yColumn.unit !== "none") {
+      yUnit = yColumn.unit;
+  }
   
   // Get unique x values and groups
   const xValues = [...new Set(chartData.map(d => d[xField]))];
@@ -128,7 +148,8 @@ function makeChart(containerSelector, data) {
   
   // Draw y-axis
   const yAxis = g.append("g")
-    .call(d3.axisLeft(yScale))
+    .call(d3.axisLeft(yScale)
+        .tickFormat(d => formatValue(d) + (yUnit ? ` ${yUnit}` : '')))
     .style("color", colors.text_color);
   
   // Apply typography to y-axis labels
@@ -251,7 +272,7 @@ function makeChart(containerSelector, data) {
     .style("font-size", "10px")
     .style("fill", "white")
     .style("pointer-events", "none")
-    .text(d => d.value);
+    .text(d => formatValue(d.value) + (yUnit ? ` ${yUnit}` : ''));
   
   // Add legend
   const legend = svg.append("g")

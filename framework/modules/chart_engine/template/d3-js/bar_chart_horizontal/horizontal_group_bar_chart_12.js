@@ -6,7 +6,7 @@ REQUIREMENTS_BEGIN
     "is_composite": false,
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
-    "required_fields_range": [[2, 30], [0, "inf"], [2, 10]],
+    "required_fields_range": [[2, 30], [0, "inf"], [2, 6]],
     "required_fields_icons": ["x"],
     "required_other_icons": [],
     "required_fields_colors": ["group"],
@@ -41,7 +41,18 @@ function makeChart(containerSelector, data) {
     const images = jsonData.images || { field: {}, other: {} };  // 图像设置
     const dataColumns = jsonData.data.columns || []; // 数据列定义
     
-
+    // 数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    }
     
     // 清空容器
     d3.select(containerSelector).html("");
@@ -50,7 +61,15 @@ function makeChart(containerSelector, data) {
     
     // 设置图表总尺寸和边距
     const width = variables.width || 800;
-    const height = variables.height || 600;
+    let height = variables.height || 600;
+    
+    // 动态调整高度：如果x维度数量超过15，每增加一个维度，高度增加3%
+    if (dimensions.length > 15) {
+        const extraDimensions = dimensions.length - 15;
+        const heightIncreaseFactor = 1 + (extraDimensions * 0.03); // 增加比例因子
+        height = Math.round(height * heightIncreaseFactor); // 应用高度调整
+        console.log(`调整图表高度: ${dimensions.length}个维度, 高度增加${Math.round((heightIncreaseFactor-1)*100)}%`);
+    }
     
     // 为标题和副标题预留空间，即使不显示它们
     const titleHeight = 70;  // 为标题预留至少70的高度
@@ -353,7 +372,9 @@ function makeChart(containerSelector, data) {
                 const dimensionTextContent = dimension;
                 const dimensionLabelX = -iconWidth - iconRightPadding - 15; // 文本右边缘 X 坐标
                 const dimensionBaseFontSize = parseFloat(typography.label.font_size);
-                const dimensionMaxTextHeight = actualBarHeight * 0.8; // 限制最大高度
+                
+                // 修改：限制文本最大高度为条形高度的80%，确保文本更小
+                const dimensionMaxTextHeight = actualBarHeight * 0.8; 
                 const dimensionFontSize = Math.min(dimensionBaseFontSize, dimensionMaxTextHeight);
 
                 // 1. 创建文本元素 (用于测量)
@@ -373,11 +394,19 @@ function makeChart(containerSelector, data) {
                 const dimBBox = tempDimText.node().getBBox();
                 tempDimText.remove(); // 移除临时文本
                 
-                // 3. 计算背景尺寸和位置
+                // 3. 计算背景尺寸和位置 - 确保背景高度不超过条形高度
                 const dimBgWidth = dimBBox.width + 2 * sketchPadding;
-                const dimBgHeight = dimBBox.height + 1.5 * sketchPadding;
+                
+                
+                const dimBgHeight = Math.min(
+                    dimBBox.height + sketchPadding, // 减小内边距
+                    actualBarHeight * 0.9 // 
+                );
+                
                 const dimBgX = dimensionLabelX - dimBBox.width - sketchPadding; // 背景左上角X
-                const dimBgY = dimBBox.y - sketchPadding * 0.75; // 背景左上角Y (调整垂直居中)
+                
+                // 修改：垂直居中背景
+                const dimBgY = -dimBgHeight / 2; // 确保背景垂直居中
 
                 // 4. 绘制背景 (在文本之前插入)
                 labelGroup.insert("rect", ":first-child") // 插入为第一个子元素
@@ -423,9 +452,9 @@ function makeChart(containerSelector, data) {
                     });
 
                 // *** 修改: 绘制带手绘背景的数值标签 ***
-                const formattedValue = valueUnit ?
-                    `${dataPoint[valueField]}${valueUnit}` :
-                    `${dataPoint[valueField]}`;
+                const formattedValue = valueUnit ? 
+                    `${formatValue(dataPoint[valueField])}${valueUnit}` : 
+                    `${formatValue(dataPoint[valueField])}`;
                 const valueLabelBaseFontSize = Math.min(parseFloat(typography.annotation.font_size), actualBarHeight * 0.55); // 基础字体大小
                 
                 // -- 创建一个组来容纳标签和背景 --

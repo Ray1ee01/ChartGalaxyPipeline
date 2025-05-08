@@ -42,6 +42,19 @@ function makeChart(containerSelector, data) {
     const images = jsonData.images || { field: {}, other: {} };  // 图像(国旗等)
     const dataColumns = jsonData.data.columns || []; // 数据列定义
     
+    // 添加数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    };
+    
     // 检查并设置缺失的视觉效果变量，确保不会因为缺少变量而出错
     variables.has_rounded_corners = variables.has_rounded_corners || false;
     variables.has_shadow = variables.has_shadow || false;
@@ -451,11 +464,12 @@ function makeChart(containerSelector, data) {
     };
     
     // 格式化函数 - 如果单位长度超过3，不显示单位
-    const formatValue = (value) => {
+    const formatValueWithUnit = (value) => {
+        const formattedValue = formatValue(value);
         if (valueUnit && valueUnit.length > 3) {
-            return `${value}`;
+            return `${formattedValue}`;
         } else {
-            return valueUnit ? `${value}${valueUnit}` : `${value}`;
+            return valueUnit ? `${formattedValue}${valueUnit}` : `${formattedValue}`;
         }
     };
 
@@ -531,7 +545,7 @@ function makeChart(containerSelector, data) {
                     .style("filter", variables.has_shadow ? "url(#shadow)" : "none");
 
                 // 收集标签数据
-                const labelText = formatValue(dataPoint[valueField]);
+                const labelText = formatValueWithUnit(+dataPoint[valueField]);
                 const labelWidth = estimateLabelWidth(labelText);
                 
                 // 标签位置 - 默认放在条形图下方右对齐

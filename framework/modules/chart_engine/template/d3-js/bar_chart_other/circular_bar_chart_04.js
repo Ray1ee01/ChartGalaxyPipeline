@@ -37,6 +37,20 @@ function makeChart(containerSelector, data) {
         annotation: { font_family: "Arial", font_size: "12px", font_weight: "normal" }
     };
 
+    // 数值单位规范
+    // 添加数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    }
+
     // 清空容器
     d3.select(containerSelector).html("");
 
@@ -61,6 +75,13 @@ function makeChart(containerSelector, data) {
     // ---------- 3. 提取字段名 ----------
     const dimensionField = jsonData.data.columns.find(col => col.role === "x")?.name || "category";
     const valueField = jsonData.data.columns.find(col => col.role === "y")?.name || "value";
+    
+    // 获取单位信息
+    let valueUnit = "";
+    const valueCol = jsonData.data.columns.find(col => col.role === "y");
+    if (valueCol && valueCol.unit && valueCol.unit !== "none") {
+        valueUnit = valueCol.unit;
+    }
 
     // ---------- 4. 数据处理 ----------
     const totalItems = chartData.length;
@@ -176,6 +197,9 @@ function makeChart(containerSelector, data) {
         const valueX = labelX;
         const valueY = labelY+20;
         
+        // 使用formatValue格式化数值并添加单位
+        const formattedValue = `${formatValue(d[valueField])}${valueUnit}`;
+        
         labelsGroup.append("text")
             .attr("x", valueX)
             .attr("y", valueY)
@@ -185,7 +209,7 @@ function makeChart(containerSelector, data) {
             .attr("font-size", "16px")
             .attr("font-weight", "bold")
             .attr("fill", "#000000")
-            .text(d[valueField]);
+            .text(formattedValue);
     });
 
     return svg.node();

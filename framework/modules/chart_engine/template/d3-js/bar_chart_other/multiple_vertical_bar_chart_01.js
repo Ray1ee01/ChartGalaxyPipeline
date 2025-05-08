@@ -41,6 +41,20 @@ function makeChart(containerSelector, data) {
     const images = jsonData.images || { field: {}, other: {} };  // 图像(国旗等)
     const dataColumns = jsonData.data.columns || [];            // 使用data_columns
     
+    // 数值单位规范
+    // 添加数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    }
+    
     // 添加subtitle字段如果不存在
     typography.subtitle = typography.subtitle || typography.description;
     
@@ -239,7 +253,7 @@ function makeChart(containerSelector, data) {
     
     // 添加左侧图表标题 (yField)
     if (yField) {
-        const fontSize = calculateFontSize(yField, chartWidth / 2);
+        const fontSize = calculateFontSize(yField, chartWidth);
         leftChart.append("text")
             .attr("x", 0)
             .attr("y", -10)
@@ -287,7 +301,7 @@ function makeChart(containerSelector, data) {
             const axis = d3.axisLeft(leftYScale)
                 .ticks(5)
                 .tickSize(0) // 移除刻度线
-                .tickFormat(d => d); // 显示完整数值，不缩写
+                .tickFormat(d => formatValue(d) + yUnit); // 使用formatValue格式化数值并添加单位
             
             g.call(axis);
             g.select(".domain").remove(); // 移除轴线
@@ -341,9 +355,14 @@ function makeChart(containerSelector, data) {
             .attr("transform", d => `translate(${leftXScale(d) + leftXScale.bandwidth() / 2}, ${innerHeight + 20})`)
             .each(function(d) {
                 if (images.field[d]) {
+                    // 计算圆的半径，不超过柱状图宽度的45%
+                    const radius = leftXScale.bandwidth() * 0.50;
+                    // 图像尺寸略小于圆直径
+                    const imageSize = radius * 2;
+                    
                     d3.select(this)
                         .append("circle")
-                        .attr("r", 10)
+                        .attr("r", radius)
                         .attr("fill", "white")
                         .attr("stroke", "#ccc")
                         .attr("stroke-width", 1);
@@ -351,10 +370,10 @@ function makeChart(containerSelector, data) {
                     d3.select(this)
                         .append("image")
                         .attr("xlink:href", images.field[d])
-                        .attr("x", -8)
-                        .attr("y", -8)
-                        .attr("width", 16)
-                        .attr("height", 16)
+                        .attr("x", -imageSize / 2)
+                        .attr("y", -imageSize / 2)
+                        .attr("width", imageSize)
+                        .attr("height", imageSize)
                         .attr("preserveAspectRatio","xMidYMid meet");
                 }
             });
@@ -368,7 +387,7 @@ function makeChart(containerSelector, data) {
     
     // 添加右侧图表标题 (y2Field)
     if (y2Field) {
-        const fontSize = calculateFontSize(y2Field, chartWidth / 2);
+        const fontSize = calculateFontSize(y2Field, chartWidth);
         rightChart.append("text")
             .attr("x", 0)
             .attr("y", -10)
@@ -416,7 +435,7 @@ function makeChart(containerSelector, data) {
             const axis = d3.axisLeft(rightYScale)
                 .ticks(5)
                 .tickSize(0) // 移除刻度线
-                .tickFormat(d => d); // 显示完整数值，不缩写
+                .tickFormat(d => formatValue(d) + y2Unit); // 使用formatValue格式化数值并添加单位
             
             g.call(axis);
             g.select(".domain").remove(); // 移除轴线
@@ -469,9 +488,14 @@ function makeChart(containerSelector, data) {
             .attr("transform", d => `translate(${rightXScale(d) + rightXScale.bandwidth() / 2}, ${innerHeight + 20})`)
             .each(function(d) {
                 if (images.field[d]) {
+                    // 计算圆的半径，不超过柱状图宽度的50%
+                    const radius = rightXScale.bandwidth() * 0.50;
+                    // 图像尺寸略小于圆直径
+                    const imageSize = radius * 2;
+                    
                     d3.select(this)
                         .append("circle")
-                        .attr("r", 10)
+                        .attr("r", radius)
                         .attr("fill", "white")
                         .attr("stroke", "#ccc")
                         .attr("stroke-width", 1);
@@ -479,10 +503,10 @@ function makeChart(containerSelector, data) {
                     d3.select(this)
                         .append("image")
                         .attr("xlink:href", images.field[d])
-                        .attr("x", -8)
-                        .attr("y", -8)
-                        .attr("width", 16)
-                        .attr("height", 16)
+                        .attr("x", -imageSize / 2)
+                        .attr("y", -imageSize / 2)
+                        .attr("width", imageSize)
+                        .attr("height", imageSize)
                         .attr("preserveAspectRatio","xMidYMid meet");
                 }
             });

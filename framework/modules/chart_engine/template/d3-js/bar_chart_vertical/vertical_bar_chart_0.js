@@ -90,6 +90,19 @@ function makeChart(containerSelector, data) {
         yUnit = dataColumns.find(col => col.role === "y").unit;
     }
 
+    // 数值单位规范
+    // 添加数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    }
     
     // ---------- 4. 数据处理 ----------
     
@@ -172,7 +185,7 @@ function makeChart(containerSelector, data) {
     // 添加Y轴
     const yAxis = d3.axisLeft(yScale)
         .ticks(5)
-        .tickFormat(d => d + (yUnit ? ` ${yUnit}` : ''))
+        .tickFormat(d => formatValue(d) + (yUnit ? ` ${yUnit}` : ''))
         .tickSize(0)          // 移除刻度线
         .tickPadding(10);     // 增加文字和轴的间距
     
@@ -209,7 +222,7 @@ function makeChart(containerSelector, data) {
         .style("font-family", typography.label.font_family)
         .style("font-size", typography.label.font_size)
         .style("fill", colors.text_color)
-        .text(d => d.value + (yUnit ? ` ${yUnit}` : ''))
+        .text(d => formatValue(d.value) + (yUnit ? ` ${yUnit}` : ''))
         .style("opacity", 1); // 直接设置为可见
     
 

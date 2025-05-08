@@ -44,6 +44,19 @@ function makeChart(containerSelector, data) {
         } 
     };
     
+    // 添加数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    }
+    
     // 提取图标信息
     const images = jsonData.images || { field: {} };
     
@@ -248,7 +261,7 @@ function makeChart(containerSelector, data) {
             .style("font-family", typography.label.font_family)
             .style("font-size", typography.annotation.font_size)
             .style("fill", colors.text_color)
-            .text(`${info.value} ${yUnit}`);
+            .text(`${formatValue(info.value)} ${yUnit}`);
         
         // 创建背景单元格
         for (let row = 0; row < gridSize; row++) {

@@ -86,6 +86,19 @@ function makeChart(containerSelector, data) {
     const sortedData = [...chartData].sort((a, b) => b[valueField1] - a[valueField1]);
     const sortedDimensions = sortedData.map(d => d[dimensionField]);
     
+    // 添加数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    };
+    
     // 5. 布局计算 和 字体调整
     const flagWidth = 30;
     const flagHeight = 30;
@@ -351,7 +364,7 @@ function makeChart(containerSelector, data) {
                 .attr("stroke-opacity", 0.5);
 
             // 4. 添加正方形数值标签 - 根据大小决定位置和颜色
-            const formattedValue2 = `${dataPoint[valueField2]}${valueUnit2}`;
+            const formattedValue2 = `${formatValue(+dataPoint[valueField2])}${valueUnit2}`;
             // 动态调整字体大小，确保适合正方形
             const squareLabelFontSize = Math.min(
                 16, 
@@ -404,7 +417,7 @@ function makeChart(containerSelector, data) {
                 // .attr("stroke-width", 1);
 
             // 6. 添加条形数值标签 - 根据条形宽度智能放置 (坐标基于新的 barX)
-            const valueLabelText = `${dataPoint[valueField1]}${valueUnit1}`;
+            const valueLabelText = `${formatValue(+dataPoint[valueField1])}${valueUnit1}`;
             const currentValueLabelWidth = estimateLabelWidth(valueLabelText, typography.annotation, barHeight);
             const valueLabelFontSize = Math.min(16, Math.max(barHeight * 0.5, 12));
             

@@ -222,7 +222,17 @@ function makeChart(containerSelector, data) {
         .style("font-weight", "bold"); // 数值标签使用粗体
     
     // 创建格式化函数
-    const formatValue = (value) => `${value}${yUnit}`;
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    };
     
     // 数值标签的可用宽度 = bar宽度 + 间距
     const barWidth = groupScale.bandwidth();
@@ -238,7 +248,7 @@ function makeChart(containerSelector, data) {
     
     // 计算所有数值标签的最大宽度
     useData.forEach(d => {
-        tempText.text(formatValue(d[yField]));
+        tempText.text(formatValue(d[yField]) + (yUnit ? ` ${yUnit}` : ''));
         const textWidth = tempText.node().getComputedTextLength();
         maxValueLabelWidth = Math.max(maxValueLabelWidth, textWidth);
     });
@@ -299,25 +309,45 @@ function makeChart(containerSelector, data) {
         .append("text")
         .attr("class", "x-label")
         .attr("x", d => xScale(d) + xScale.bandwidth() / 2)
-        .attr("y", 20)
+        .attr("y", 20) // 标签第一行基线相对于 xAxisGroup 的初始Y偏移
         .attr("text-anchor", "middle")
         .style("font-family", typography.label.font_family)
         .style("font-size", `${uniformFontSize}px`) // 应用统一的字体大小
         .style("font-weight", typography.label.font_weight)
         .style("fill", colors.text_color)
-        .text(d => d)
+        // .text(d => d) // 文本将由 wrapText 设置
         .each(function(d) {
-            const text = d3.select(this);
-            
-            // 检查使用统一字体大小后，文本是否仍然超过可用宽度
-            if (this.getComputedTextLength() > labelMaxWidth) {
-                // 如果仍然太长，应用文本换行
-                wrapText(text, d.toString(), labelMaxWidth, 1.1);
-            }
+            const textElement = d3.select(this);
+            // 将初始Y存储，供wrapText使用 (wrapText内部已修改为读取此属性)
+            textElement.attr("data-initial-y", parseFloat(textElement.attr("y"))); 
+            wrapText(textElement, d.toString(), labelMaxWidth, 1.1, 'top');
         });
     
+    // 为了准确计算图标Y位置，需要知道X轴标签占用的最大高度
+    let maxOverallLabelLines = 0;
+    xValues.forEach(xVal => {
+        const tempText = svg.append("text").style("opacity",0).attr("y", 20); // 临时，不可见
+        tempText.style("font-family", typography.label.font_family)
+                .style("font-size", `${uniformFontSize}px`)
+                .style("font-weight", typography.label.font_weight);
+        tempText.attr("data-initial-y", 20);
+        wrapText(tempText, xVal.toString(), labelMaxWidth, 1.1, 'top');
+        const lines = parseInt(tempText.attr("data-lines") || 1);
+        if (lines > maxOverallLabelLines) {
+            maxOverallLabelLines = lines;
+        }
+        tempText.remove();
+    });
+
+    const xLabelLineHeight = uniformFontSize * 1.1; // 估算行高
+    const totalXLabelBlockHeight = maxOverallLabelLines * xLabelLineHeight;
+    const iconPaddingAfterLabels = 10; // 图标与X轴标签块底部的间距
+    const iconSize = 30; // 定义图标大小
+    // 图标的Y坐标计算：innerHeight(x轴组的y) + 20(标签第一行初始y) + 标签块总高度 - 单行行高/2 (使对齐到最后一行基线下方) + 内边距 + 图标半径
+    const iconCenterY = innerHeight + 20 + totalXLabelBlockHeight - (xLabelLineHeight / 2) + iconPaddingAfterLabels + (iconSize / 2);
+    
     // 文本换行助手函数
-    function wrapText(text, str, width, lineHeight) {
+    function wrapText(text, str, width, lineHeight, anchor) {
         const words = str.split(/\s+/).reverse();
         let word;
         let line = [];
@@ -412,6 +442,9 @@ function makeChart(containerSelector, data) {
                 .attr("dy", `${i * lineHeight}em`)
                 .text(lineText);
         });
+        
+        // 将初始Y存储，供wrapText使用 (wrapText内部已修改为读取此属性)
+        text.attr("data-initial-y", startY);
     }
     
     // ---------- 11. 绘制图例 (原来的第10步) ----------
@@ -515,7 +548,7 @@ function makeChart(containerSelector, data) {
             
             // 绘制左侧柱子顶部的标签
             // 首先计算标签文本宽度并调整字体大小
-            const leftValueText = formatValue(leftValue);
+            const leftValueText = formatValue(leftValue) + (yUnit ? ` ${yUnit}` : '');
             let leftLabelFontSize = valueFontSize; // 默认使用之前计算的字体大小
             
             // 创建临时文本元素测量宽度
@@ -574,15 +607,15 @@ function makeChart(containerSelector, data) {
                 .attr("width", barWidth)
                 .attr("height", rightBarHeight)
                 .attr("fill", "url(#gradient-right)")
-                .attr("rx", variables.has_rounded_corners ? 4 : 0)
-                .attr("ry", variables.has_rounded_corners ? 4 : 0)
+                .attr("rx", barWidth / 2) // 右侧柱子上下半圆
+                .attr("ry", barWidth / 2) // 右侧柱子上下半圆
                 .attr("stroke", variables.has_stroke ? "#555" : "none")
                 .attr("stroke-width", variables.has_stroke ? 1 : 0)
                 .style("filter", variables.has_shadow ? "url(#shadow)" : "none");
             
             // 绘制右侧柱子顶部的标签
             // 首先计算标签文本宽度并调整字体大小
-            const rightValueText = formatValue(rightValue);
+            const rightValueText = formatValue(rightValue) + (yUnit ? ` ${yUnit}` : '');
             let rightLabelFontSize = valueFontSize; // 默认使用之前计算的字体大小
             
             // 创建临时文本元素测量宽度
@@ -625,9 +658,6 @@ function makeChart(containerSelector, data) {
     });
 
     // *** BEGIN ADDITION: Draw icons below X-axis labels ***
-    const iconSize = 30; // Define icon size
-    const iconY = innerHeight + 45; // Y position below labels (innerHeight + label space + padding + half icon size)
-
     xValues.forEach(xValue => {
         if (images.field && images.field[xValue]) {
             const iconX = xScale(xValue) + xScale.bandwidth() / 2; // Center X under the label
@@ -635,7 +665,7 @@ function makeChart(containerSelector, data) {
             chart.append("image")
                 .attr("class", "category-icon-below") // New class name
                 .attr("x", iconX - iconSize / 2)
-                .attr("y", iconY - iconSize / 2)
+                .attr("y", iconCenterY - iconSize / 2) // 使用统一计算的 iconCenterY
                 .attr("width", iconSize)
                 .attr("height", iconSize)
                 .attr("preserveAspectRatio", "xMidYMid meet")

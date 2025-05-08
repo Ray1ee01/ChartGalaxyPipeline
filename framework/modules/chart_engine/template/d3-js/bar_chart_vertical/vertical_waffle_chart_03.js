@@ -44,6 +44,19 @@ function makeChart(containerSelector, data) {
         } 
     };
     
+    // 添加数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    }
+    
     // 提取字段名称
     let xField, yField;
     
@@ -236,7 +249,7 @@ function makeChart(containerSelector, data) {
             .style("font-size", `${Math.min(gridWidth/5, 24)}px`) // 调整字体大小，最大24px
             .style("font-weight", "bold")
             .style("fill", "#ffffff") // 白色字体以便在彩色背景上更易读
-            .text(`${info.value}${yUnit}`);
+            .text(`${formatValue(info.value)}${yUnit}`);
     });
     
     // 返回SVG节点

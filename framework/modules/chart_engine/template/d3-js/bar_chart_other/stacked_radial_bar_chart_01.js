@@ -29,11 +29,32 @@ function makeChart(containerSelector, data) {
     const colors = jsonData.colors || {};
     const dataColumns = jsonData.data.columns || [];
 
+    // 数值单位规范
+    // 添加数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    }
+
     d3.select(containerSelector).html("");
 
     const xField = dataColumns[0].name;
     const yField = dataColumns[1].name;
     const groupField = dataColumns[2].name;
+
+    // 获取单位信息
+    let valueUnit = "";
+    const valueCol = dataColumns.find(col => col.role === "y");
+    if (valueCol && valueCol.unit && valueCol.unit !== "none") {
+        valueUnit = valueCol.unit;
+    }
 
     // 准备堆叠数据
     const stack = d3.stack()
@@ -108,7 +129,7 @@ function makeChart(containerSelector, data) {
             .attr("dominant-baseline", "middle")
             .attr("fill", "#888")
             .style("font-size", "12px")
-            .text(Math.round(tick));
+            .text(formatValue(tick) + valueUnit);
     });
 
     const labelPadding = 20;
@@ -149,7 +170,8 @@ function makeChart(containerSelector, data) {
 
             // 数值标签
             if (d[1] - d[0] > maxValue * 0.1) { // 只在数值足够大时显示标签
-                const valueText = Math.round(d[1] - d[0]);
+                const value = d[1] - d[0];
+                const formattedValue = formatValue(value) + valueUnit;
                 const valueRadius = innerR + barWidth / 2;
                 const valueAngle = (startAngle + endAngle) / 2;
                 const valueTextPathId = `valueTextPath-${i}-${j}`;
@@ -173,7 +195,7 @@ function makeChart(containerSelector, data) {
                     .attr("startOffset", "50%")
                     .attr("text-anchor", "middle")
                     .attr("dominant-baseline", "middle")
-                    .text(valueText);
+                    .text(formattedValue);
             }
         });
     });

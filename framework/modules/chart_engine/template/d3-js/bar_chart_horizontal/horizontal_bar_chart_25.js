@@ -88,6 +88,20 @@ function makeChart(containerSelector, data) {
     // 4. 数据处理
     const sortedData = [...chartData].sort((a, b) => b[valueField1] - a[valueField1]);
     const sortedDimensions = sortedData.map(d => d[dimensionField]);
+    
+    // 添加数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    };
+    
     const tempSvgForEstimation = d3.select(containerSelector).append("svg").attr("width", 0).attr("height", 0).style("visibility", "hidden"); // 用于估算文本宽度
 
     // ---------- Helper: Estimate Text Width ----------
@@ -281,7 +295,7 @@ function makeChart(containerSelector, data) {
                 .attr("stroke-opacity", 0.5);
 
             // 3. 添加圆形数值标签
-            const formattedValue2 = `${value2}${valueUnit2}`;
+            const formattedValue2 = `${formatValue(value2)}${valueUnit2}`;
             const circleLabelFontSize = Math.min(14, Math.max(10, Math.min(barHeight * 0.4, circleRadius * 0.8)));
             g.append("text")
                 .attr("x", circleX)
@@ -309,7 +323,7 @@ function makeChart(containerSelector, data) {
                 .style("stroke-width", 1);
 
             // 5. 添加条形数值标签 (位置相对条形)
-            const valueLabelText = `${value1}${valueUnit1}`;
+            const valueLabelText = `${formatValue(value1)}${valueUnit1}`;
             const valueLabelFontSize = Math.min(16, Math.max(barHeight * 0.5, 12));
             g.append("text")
                 .attr("x", valueLabelXPos) // 使用相对条形的X坐标

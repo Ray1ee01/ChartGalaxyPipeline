@@ -48,6 +48,19 @@ function makeChart(containerSelector, data) {
     variables.has_stroke = variables.has_stroke || false;
     variables.has_spacing = variables.has_spacing || false;
     
+    // 数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    }
+    
     // 清空容器
     d3.select(containerSelector).html("");
     
@@ -299,7 +312,7 @@ function makeChart(containerSelector, data) {
                 .style("font-family", typography.annotation.font_family)
                 .style("font-size", typography.annotation.font_size)
                 .style("fill", colors.text_color||"#333")
-                .text(valueUnit? val+valueUnit : val);
+                .text(valueUnit? formatValue(val)+valueUnit : formatValue(val));
         } else {
             // 多条bar => 计算顶部、底部和中间
             const topY = centers[0] - actualBarHeight/2;
@@ -315,7 +328,7 @@ function makeChart(containerSelector, data) {
             const bracketX = xScale(val) + 5;
             const bracketWidth = 10; 
             
-            // 1) 画“上横线”
+            // 1) 画"上横线"
             //   M bracketX, topY  -> h bracketWidth
             const pathTopLine = [
                 `M ${bracketX},${topY}`,
@@ -327,7 +340,7 @@ function makeChart(containerSelector, data) {
                 .attr("stroke", colors.text_color||"#333")
                 .attr("stroke-width",1);
             
-            // 2) 画“下横线”
+            // 2) 画"下横线"
             //   M bracketX, bottomY -> h bracketWidth
             const pathBottomLine = [
                 `M ${bracketX},${bottomY}`,
@@ -374,7 +387,7 @@ function makeChart(containerSelector, data) {
                 .style("font-family", typography.annotation.font_family)
                 .style("font-size", typography.annotation.font_size)
                 .style("fill", colors.text_color||"#333")
-                .text(valueUnit? val+valueUnit : val);
+                .text(valueUnit? formatValue(val)+valueUnit : formatValue(val));
         }
     });
     

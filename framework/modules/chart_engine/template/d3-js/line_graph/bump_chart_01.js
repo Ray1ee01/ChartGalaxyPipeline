@@ -81,8 +81,8 @@ function makeChart(containerSelector, data) {
 
     const categoryField = xColumn.name;
     const valueField = yColumn.name;
-    const conditionField = dataColumns.filter(col => col.role === "group").name;
-    const colorField = dataColumns.filter(col => col.role === "group2").name;
+    const conditionField = dataColumns.filter(col => col.role === "group")[0].name;
+    const colorField = dataColumns.filter(col => col.role === "group2")[0].name;
     let valueUnit = (yColumn.unit && yColumn.unit !== "none") ? yColumn.unit : "";
 
     // ---------- 4. 数据处理与排序 ----------

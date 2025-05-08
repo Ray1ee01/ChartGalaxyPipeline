@@ -96,6 +96,20 @@ function makeChart(containerSelector, data) {
     const percentageUnit = dataColumns.find(col => col.role === "y2")?.unit === "none" ? "" : 
                          dataColumns.find(col => col.role === "y2")?.unit || "%";
     
+    // 数值单位规范
+    // 添加数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    }
+    
     // ---------- 4. 数据处理 ----------
     
     // 使用提供的数据
@@ -431,7 +445,7 @@ function makeChart(containerSelector, data) {
             .style("filter", "none");
             
         // --- 数值标签 (底部) ---
-        const valueTextContent = value + (valueUnit ? " " + valueUnit : "");
+        const valueTextContent = formatValue(value) + (valueUnit ? " " + valueUnit : "");
         const valueLabelMaxWidth = barWidth * 1.1; // 最大宽度设置为柱宽的1.1倍
         const valueBaseFontSize = parseInt(typography.label.font_size) || 14; // 基础字体大小
         const valueFontSize = calculateFontSize(valueTextContent, valueLabelMaxWidth, valueBaseFontSize);
@@ -475,7 +489,7 @@ function makeChart(containerSelector, data) {
         
         // FIX: 添加带+号的百分比文本 (假设都需要+) - 如果不需要可以去掉
         // const percentageTextContent = (percentage > 0 ? '+' : '') + percentage + percentageUnit;
-        const percentageTextContent = `${percentage}${percentageUnit}` ;
+        const percentageTextContent = `${formatValue(percentage)}${percentageUnit}` ;
 
         const percentageLabelMaxWidth = barWidth * 1.1; // 最大宽度设置为柱宽的1.1倍
         const percentageBaseFontSize = parseInt(typography.label.font_size) || 12; // 基础字体大小

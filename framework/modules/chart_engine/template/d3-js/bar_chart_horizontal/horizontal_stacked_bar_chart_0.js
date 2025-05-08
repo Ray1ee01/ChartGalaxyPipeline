@@ -5,7 +5,7 @@ REQUIREMENTS_BEGIN
     "chart_name": "horizontal_stacked_bar_chart_0",
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
-    "required_fields_range": [[3, 20], [0, 10000], [3, 20]],
+    "required_fields_range": [[3, 20], [0, "inf"], [2, 5]],
     "required_fields_icons": ["x"],
     "required_other_icons": [],
     "required_fields_colors": ["group"],
@@ -15,7 +15,7 @@ REQUIREMENTS_BEGIN
     "min_width": 800,
     "background": "light",
     "icon_mark": "none",
-    "icon_label": "none",
+    "icon_label": "side",
     "has_x_axis": "yes",
     "has_y_axis": "yes"
 }
@@ -44,6 +44,19 @@ function makeChart(containerSelector, data) {
         }
     };  // 颜色设置
     const dataColumns = jsonData.data.columns || []; // 数据列定义
+    
+    // 添加数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    }
     
     // 设置视觉效果变量的默认值
     variables.has_shadow = variables.has_shadow || false;
@@ -196,9 +209,10 @@ function makeChart(containerSelector, data) {
         .text(d => {
             const value = d[1] - d[0];
             const width = xScale(d[1]) - xScale(d[0]);
-            const textwidth = getTextWidth(value.toFixed(1),typography.annotation.font_size)
-            // 只在宽度大于20且值大于0时显示文本
-            return (width > textwidth && value > 0) ? value.toFixed(1) : '';
+            const formattedText = `${formatValue(value)}${yUnit}`;
+            const textwidth = getTextWidth(formattedText, typography.annotation.font_size);
+            // 只在宽度大于文本宽度且值大于0时显示文本
+            return (width > textwidth && value > 0) ? formattedText : '';
         });
 
     // 添加X轴
@@ -247,38 +261,146 @@ function makeChart(containerSelector, data) {
         }
     });
 
-    // 添加图例 - 放在图表上方
-    const legendGroup = svg.append("g")
-        .attr("transform", `translate(0, -50)`);
-    
-    // 计算字段名宽度并添加间距
-    const titleWidth = groupField.length * 10;
-    const titleMargin = 15;
+    // 辅助函数：获取文本宽度
+    function getTextWidth(text, fontFamily, fontSize, fontWeight) {
+        const tempText = svg.append("text")
+            .attr("x", -1000) // 放在视图外
+            .attr("y", -1000)
+            .style("font-family", fontFamily)
+            .style("font-size", fontSize + "px")
+            .style("font-weight", fontWeight)
+            .text(text);
+        
+        const width = tempText.node().getBBox().width;
+        tempText.remove();
+        return width;
+    }
 
+    /* ============ 4. 添加动态图例 ============ */
+    // 支持图例换行并且居中，并且能够让图例刚好在chart上方
+    if (groups && groups.length > 0) {
+        const legendMarkerWidth = 12; // 图例标记宽度
+        const legendMarkerHeight = 12; // 图例标记高度
+        const legendMarkerRx = 3; // 图例标记圆角X
+        const legendMarkerRy = 3; // 图例标记圆角Y
+        const legendPadding = 6; // 图例标记和文本之间的间距
+        const legendInterItemSpacing = 12; // 图例项之间的水平间距
+        
+        const legendFontFamily = typography.label.font_family || 'Arial'; // 图例字体
+        const legendFontSize = parseFloat(typography.label.font_size || '11'); // 图例字号
+        const legendFontWeight = typography.label.font_weight || 'normal'; // 图例字重
+        const primaryColor = colors.other && colors.other.primary ? colors.other.primary : "#F7941D";
 
-    const legendSize = layoutLegend(legendGroup, groups, colors, {
-        x: titleWidth + titleMargin,
-        y: 0,
-        fontSize: 14,
-        fontWeight: "bold",
-        align: "left",
-        maxWidth: chartWidth - titleWidth - titleMargin,
-        shape: "rect",
-    });
+        // 1. 准备图例项数据
+        const legendItemsData = groups.map(group => {
+            const text = String(group);
+            const color = colors.field?.[group] || primaryColor;
+            const textWidth = getTextWidth(text, legendFontFamily, legendFontSize, legendFontWeight);
+            // visualWidth 是单个图例项（标记+间距+文本）的实际显示宽度
+            const visualWidth = legendMarkerWidth + legendPadding + textWidth;
+            return { text, color, visualWidth };
+        });
 
-    // 添加字段名称
-    legendGroup.append("text")
-        .attr("x", 0)
-        .attr("y", legendSize.height / 2)
-        .attr("dominant-baseline", "middle")
-        .attr("fill", "#333")
-        .style("font-size", "16px")
-        .style("font-weight", "bold")
-        .text(groupField);
-    
-    // 将图例组向上移动 height/2, 并居中
-    legendGroup.attr("transform", `translate(${(chartWidth - legendSize.width - titleWidth - titleMargin) / 2}, 0)`);
-    
+        // 2. 将图例项排列成行
+        const legendLines = [];
+        let currentLineItems = [];
+        let currentLineVisualWidth = 0; // 当前行已占用的视觉宽度
+        // 图例换行的可用宽度，基于图表主体绘图区
+        const availableWidthForLegendWrapping = chartWidth;
+
+        legendItemsData.forEach(item => {
+            let widthIfAdded = item.visualWidth;
+            if (currentLineItems.length > 0) { // 如果不是当前行的第一个元素，需要加上间距
+                widthIfAdded += legendInterItemSpacing;
+            }
+
+            if (currentLineItems.length > 0 && (currentLineVisualWidth + widthIfAdded) > availableWidthForLegendWrapping) {
+                // 当前行已满，将当前行数据存入 legendLines
+                legendLines.push({ items: currentLineItems, totalVisualWidth: currentLineVisualWidth });
+                // 开始新行
+                currentLineItems = [item];
+                currentLineVisualWidth = item.visualWidth; // 新行的初始宽度
+            } else {
+                // 将元素添加到当前行
+                if (currentLineItems.length > 0) {
+                    currentLineVisualWidth += legendInterItemSpacing; // 添加元素间距
+                }
+                currentLineItems.push(item);
+                currentLineVisualWidth += item.visualWidth; // 加上元素自身宽度
+            }
+        });
+
+        // 添加最后一行（如果有）
+        if (currentLineItems.length > 0) {
+            legendLines.push({ items: currentLineItems, totalVisualWidth: currentLineVisualWidth });
+        }
+
+        // 3. 计算图例块的整体垂直位置
+        if (legendLines.length > 0) {
+            const itemMaxHeight = Math.max(legendMarkerHeight, legendFontSize); // 单行图例内容的最大高度
+            const interLineVerticalPadding = 6; // 图例行之间的垂直间距
+            const paddingBelowLegendToChart = 15; // 图例块底部与图表顶部的间距
+            const minSvgGlobalTopPadding = 15; // SVG顶部到图例块的最小间距
+
+            const totalLegendBlockHeight = legendLines.length * itemMaxHeight + Math.max(0, legendLines.length - 1) * interLineVerticalPadding;
+            
+            let legendBlockStartY = margin.top - paddingBelowLegendToChart - totalLegendBlockHeight;
+            legendBlockStartY = Math.max(minSvgGlobalTopPadding, legendBlockStartY); // 确保不超出SVG顶部
+
+            const legendContainerGroup = svg.append("g").attr("class", "custom-legend-container");
+
+            // 4. 渲染每一行图例
+            let currentLineBaseY = legendBlockStartY; // 当前渲染行的顶部Y坐标
+            legendLines.forEach((line) => {
+                // 每一行在整个SVG中水平居中
+                const lineRenderStartX = (width - line.totalVisualWidth) / 2;
+                const lineCenterY = currentLineBaseY + itemMaxHeight / 2; // 用于文本垂直居中
+
+                let currentItemDrawX = lineRenderStartX; // 当前图例项的起始X坐标
+
+                line.items.forEach((item, itemIndex) => {
+                    // 绘制图例标记 (矩形)
+                    legendContainerGroup.append("rect")
+                        .attr("x", currentItemDrawX)
+                        .attr("y", currentLineBaseY + (itemMaxHeight - legendMarkerHeight) / 2) // 使标记在行高内垂直居中
+                        .attr("width", legendMarkerWidth)
+                        .attr("height", legendMarkerHeight)
+                        .attr("rx", legendMarkerRx)
+                        .attr("ry", legendMarkerRy)
+                        .attr("fill", item.color)
+                        .attr("fill-opacity", 0.85); // 与柱状图透明度协调或略作区分
+
+                    // 绘制图例文本
+                    legendContainerGroup.append("text")
+                        .attr("x", currentItemDrawX + legendMarkerWidth + legendPadding)
+                        .attr("y", lineCenterY) // 文本基线对齐到行中心线
+                        .attr("dominant-baseline", "middle") // 确保文本垂直居中
+                        .style("font-family", legendFontFamily)
+                        .style("font-size", `${legendFontSize}px`)
+                        .style("font-weight", legendFontWeight)
+                        .style("fill", "#333") // 保持与X轴标签等文本颜色一致
+                        .text(item.text);
+
+                    // 更新下一个图例项的起始X坐标
+                    if (itemIndex < line.items.length - 1) {
+                         currentItemDrawX += item.visualWidth + legendInterItemSpacing;
+                    }
+                });
+                currentLineBaseY += itemMaxHeight + interLineVerticalPadding; // 移动到下一行的顶部Y坐标
+            });
+
+            // 添加字段名称 - 居中于图例上方
+            const groupNameText = svg.append("text")
+                .attr("x", width / 2)
+                .attr("y", legendBlockStartY - 10) // 放在图例上方，保持间距
+                .attr("text-anchor", "middle")
+                .attr("dominant-baseline", "alphabetic")
+                .attr("fill", "#333")
+                .style("font-size", "16px")
+                .style("font-weight", "bold")
+                .text(groupField);
+        }
+    }
 
     return svg.node();
 }

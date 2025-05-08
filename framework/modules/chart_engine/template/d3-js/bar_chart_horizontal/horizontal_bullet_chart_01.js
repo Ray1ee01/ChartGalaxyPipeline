@@ -74,6 +74,19 @@ function makeChart(containerSelector, data) {
         ]
     }));
     
+    // 添加数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    };
+    
     // 计算最大值来设置比例尺
     const maxValue = d3.max(bulletData, d => Math.max(d3.max(d.ranges), d.actual, d.target)) * 1.1;
     
@@ -150,7 +163,16 @@ function makeChart(containerSelector, data) {
         .attr("y2", bulletHeight)
         .attr("stroke", "#F44336")
         .attr("stroke-width", 2);
+        
+    // 添加数值标签
+    bulletGroups.append("text")
+        .attr("x", d => x(d.actual) + 5)
+        .attr("y", bulletHeight / 2)
+        .attr("dy", ".35em")
+        .style("font-family", typography?.fontFamily || "Arial")
+        .style("font-size", "12px")
+        .style("fill", colors.text_color || "#000000")
+        .text(d => formatValue(d.actual));
 
-    
     return svg.node();
 }

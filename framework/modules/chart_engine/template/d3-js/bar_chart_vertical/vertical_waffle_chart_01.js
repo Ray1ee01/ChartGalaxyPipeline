@@ -44,6 +44,19 @@ function makeChart(containerSelector, data) {
         } 
     };
     
+    // 添加数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    }
+    
     // 提取字段名称
     let xField, yField;
     
@@ -97,7 +110,7 @@ function makeChart(containerSelector, data) {
             .style("font-family", typography.label.font_family)
             .style("font-size", typography.label.font_size)
             .style("font-weight", "bold")
-            .text(`${value} ${yUnit}`);
+            .text(`${formatValue(value)} ${yUnit}`);
         const valueWidth = valueText.node().getBBox().width;
         valueText.remove();
         
@@ -345,7 +358,7 @@ function makeChart(containerSelector, data) {
             .style("font-size", typography.label.font_size)
             .style("font-weight", "bold")
             .style("fill", colors.text_color)
-            .text(`${value} ${yUnit}`);
+            .text(`${formatValue(value)} ${yUnit}`);
         
         // 更新当前X位置，为下一个图例项腾出空间
         currentX += itemWidth + legendSpacing;

@@ -48,6 +48,19 @@ function makeChart(containerSelector, data) {
     variables.has_stroke = variables.has_stroke || false;
     variables.has_spacing = variables.has_spacing || false;
     
+    // 数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    }
+    
     // 清空容器
     d3.select(containerSelector).html("");
     
@@ -475,8 +488,8 @@ function makeChart(containerSelector, data) {
                 
                 // 绘制数值标签（附加单位，如果有）
                 const formattedValue = valueUnit ? 
-                    `${dataPoint[valueField]}${valueUnit}` : 
-                    `${dataPoint[valueField]}`;
+                    `${formatValue(dataPoint[valueField])}${valueUnit}` : 
+                    `${formatValue(dataPoint[valueField])}`;
                 
                 // 创建临时文本元素来计算数值文本的宽度
                 const tempText = g.append("text")

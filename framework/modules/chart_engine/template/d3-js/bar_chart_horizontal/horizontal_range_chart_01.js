@@ -89,6 +89,19 @@ function makeChart(containerSelector, data) {
         groupUnit = dataColumns.find(col => col.role === "group").unit; 
     }
     
+    // 数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    }
+    
     // ---------- 4. 数据处理 ----------
     
     // 获取唯一的维度值和组值
@@ -396,7 +409,7 @@ function makeChart(containerSelector, data) {
         .style("font-family", "Arial")
         .style("font-size", "12px")
         .style("fill", "white")
-        .text(d => d);
+        .text(d => formatValue(d));
     
     // ---------- 11. 添加交替行背景 ----------
     
@@ -485,8 +498,8 @@ function makeChart(containerSelector, data) {
                 
                 // 添加值标签 - 修改这里保留小数点和小数部分
                 const formattedValue = valueUnit ? 
-                    `${point.value.toFixed(1)}${valueUnit}` : 
-                    `${point.value.toFixed(1)}`;
+                    `${formatValue(point.value)}${valueUnit}` : 
+                    `${formatValue(point.value)}`;
                 
                 // 创建临时文本来计算精确宽度和高度
                 const tempTextGroup = svg.append("g").attr("visibility", "hidden");

@@ -48,6 +48,19 @@ function makeChart(containerSelector, data) {
     variables.has_stroke = variables.has_stroke || false;
     variables.has_spacing = variables.has_spacing || false;
     
+    // 数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    }
+    
     // 清空容器
     d3.select(containerSelector).html("");
     
@@ -138,8 +151,8 @@ function makeChart(containerSelector, data) {
     chartData.forEach(d => {
         const value = d[valueField];
         const formattedValue = value >= 0 ? 
-            `+${value}${valueUnit}` : 
-            `${value}${valueUnit}`;
+            `+${formatValue(value)}${valueUnit}` : 
+            `${formatValue(value)}${valueUnit}`;
         tempText.text(formattedValue);
         const textWidth = tempText.node().getComputedTextLength();
         maxValueLabelWidth = Math.max(maxValueLabelWidth, textWidth);
@@ -328,8 +341,8 @@ function makeChart(containerSelector, data) {
         
         // 格式化数值标签（添加加号或保留负号）
         const formattedValue = value >= 0 ? 
-        `+${value.toFixed(1)}${valueUnit}` : 
-        `${value.toFixed(1)}${valueUnit}`;
+        `+${formatValue(value)}${valueUnit}` : 
+        `${formatValue(value)}${valueUnit}`;
         
         // 横条开始位置和宽度
         let barX = center;

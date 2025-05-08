@@ -50,6 +50,19 @@ function makeChart(containerSelector, data) {
     variables.has_stroke = variables.has_stroke !== undefined ? variables.has_stroke : false;
     variables.has_spacing = variables.has_spacing !== undefined ? variables.has_spacing : true;
     
+    // 数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    }
+    
     // 清空容器
     d3.select(containerSelector).html("");
     
@@ -138,8 +151,8 @@ function makeChart(containerSelector, data) {
     let maxValueWidth = 0;
     chartData.forEach(d => {
         const formattedValue = valueUnit ? 
-            `${d[`${valueField}_`]}${valueUnit}` : 
-            `${d[`${valueField}_`]}`;
+            `${formatValue(d[`${valueField}_`])}${valueUnit}` : 
+            `${formatValue(d[`${valueField}_`])}`;
             
         const tempText = tempSvg.append("text")
             .style("font-family", typography.annotation.font_family)
@@ -340,8 +353,8 @@ function makeChart(containerSelector, data) {
             
             // 添加数值标签
             const formattedValue = valueUnit ? 
-                `${dataPoint[valueField]}${valueUnit}` : 
-                `${dataPoint[valueField]}`;
+                `${formatValue(dataPoint[valueField])}${valueUnit}` : 
+                `${formatValue(dataPoint[valueField])}`;
             
             // 计算最后一个棒子的位置，用于放置数值标签
             const lastGroupIndex = Math.floor(barCount  / groupSize);

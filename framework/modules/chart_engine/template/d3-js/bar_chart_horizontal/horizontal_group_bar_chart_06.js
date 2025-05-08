@@ -45,6 +45,19 @@ function makeChart(containerSelector, data) {
     // 设置视觉效果变量的默认值
     variables.has_rounded_corners = variables.has_rounded_corners || false;
     
+    // 数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    }
+    
     // 清空容器
     d3.select(containerSelector).html("");
     
@@ -384,8 +397,8 @@ function makeChart(containerSelector, data) {
                     
                     // 添加数值标签
                     const formattedValue = valueUnit ? 
-                        `${value}${valueUnit}` : 
-                        `${value}`;
+                        `${formatValue(value)}${valueUnit}` : 
+                        `${formatValue(value)}`;
                     
                     g.append("text")
                         .attr("x", barWidth + 5)
