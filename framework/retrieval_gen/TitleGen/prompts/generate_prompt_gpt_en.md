@@ -1,5 +1,5 @@
 # Task Requirements
-I want to generate a **text image**, which will be used as the title of a poster in the future. Please help me generate a text segment as a **prompt for a text-to-image model** to create an appropriate text image. The content of the text is **"{title}"**, and the image background is pure white. You need to design it from the following three perspectives (**Attention! The following content is provided only as a prompt for your consideration. No response or output is required!**):
+I want to generate a **text image**, which will be used as the title of a poster in the future. Please help me generate a text segment as a **prompt for a text-to-image model** to create an appropriate text image. The content of the text is **"{title}"**, and the image background is **pure white**. You need to design it from the following three perspectives (**Attention! The following content is provided only as a prompt for your consideration. No response or output is required!**):
 
 ## Text Layout and Emphasis
 In this aspect, you will decide the **overall layout of the text**. You need to appropriately break down the title "{title}" into lines according to its semantics. and consider whether certain key text should be emphasized. If "{title}" includes two or more sentences, the first sentence should be the main title, and the following sentences do not need to be emphasized.
@@ -20,6 +20,8 @@ In this aspect, you will decide whether to **decorate the text with icons**. You
 In this aspect, you will decide the **font style and artistic effects** for the text. You need to judge whether "{title}" is suitable for a specific font style (e.g., classical, futuristic, anime-style, etc.) and certain artistic text effects (e.g., cracks on the text surface, melting text, etc.). If applicable, please provide:
 1. The font style, such as classical, futuristic, anime-style, etc.
 2. The artistic effect, such as cracks on the text surface, melting text, burning text, etc.
+3. The color of the text, which should be selected from the following colors: **{color}**.
+4. The color of the background, which should be **pure white**.
 
 # Output
 **Output Requirements**:

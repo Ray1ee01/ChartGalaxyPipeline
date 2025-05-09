@@ -55,6 +55,7 @@ from .template_utils import (
     analyze_templates,
     check_template_compatibility,
     select_template,
+    select_template_by_clip,
     process_template_requirements,
     get_unique_fields_and_types
 )
@@ -322,6 +323,8 @@ def make_infographic(
     overlay_image_size = 0
     side_image_size = 0
     background_image_size = 0
+    best_x = 0
+    best_y = 0
     if primary_image:
         if "base64," not in primary_image:
             primary_image = f"data:image/png;base64,{primary_image}"
@@ -440,8 +443,8 @@ def make_infographic(
             best_x, best_y, overlap = find_best_position(original_mask, int(image_size), int(best_x), int(best_y), 10)
 
             image_opacity = 1
-            if overlap:
-                image_opacity = 0.3
+            # if overlap:
+            #     image_opacity = 0.3
 
             image_element = f"""
                 <image
@@ -563,7 +566,7 @@ def make_infographic(
 
 
 
-def process(input: str, new_layout_path: str, output: str, base_url: str, api_key: str, chart_name: str = None) -> bool:
+def process(input: str, new_layout_path: str, output: str, base_url: str, api_key: str, chart_name: str = None, color_theme: str = 'light') -> bool:
     """
     Pipeline入口函数，处理单个文件的信息图生成
     
@@ -573,11 +576,16 @@ def process(input: str, new_layout_path: str, output: str, base_url: str, api_ke
         base_url: API基础URL
         api_key: API密钥
         chart_name: 指定图表名称，如果提供则使用该图表，否则自动选择
-        
+        color_theme: 颜色主题，可选值为'light'或'dark'
     Returns:
         bool: 处理是否成功
     """
     start_time = time.time()
+
+    with open(new_layout_path, "r", encoding="utf-8") as f:
+        new_layout_file = json.load(f)
+        new_layout = new_layout_file["new_layout"]
+    new_layout_chart_info = [layout for layout in new_layout if layout["category_id"] == 2]
     
     # 读取输入文件
     file_read_start = time.time()
@@ -596,7 +604,7 @@ def process(input: str, new_layout_path: str, output: str, base_url: str, api_ke
     # 分析模板并获取要求
     analyze_templates_start = time.time()
     template_count, template_requirements = analyze_templates(templates)
-    compatible_templates = check_template_compatibility(data, templates, chart_name)
+    compatible_templates = check_template_compatibility(data, templates, chart_name, color_theme)
     analyze_templates_time = time.time() - analyze_templates_start
     # logger.info(f"Analyzing templates took: {analyze_templates_time:.4f} seconds")
         
@@ -663,11 +671,14 @@ def process(input: str, new_layout_path: str, output: str, base_url: str, api_ke
             logger.error("No compatible templates found for the given data")
             return False
     
+    print(f'all compatible templates: {compatible_templates}')
+    
     # 选择模板
     select_template_start = time.time()
-    engine, chart_type, chart_name, ordered_fields = select_template(compatible_templates)
+    # engine, chart_type, chart_name, ordered_fields = select_template(compatible_templates)
+    engine, chart_type, chart_name, ordered_fields = select_template_by_clip(compatible_templates, new_layout_chart_info[0]['chart_description'])
     select_template_time = time.time() - select_template_start
-    # logger.info(f"Selecting template took: {select_template_time:.4f} seconds")
+    logger.info(f"Selecting template took: {select_template_time:.4f} seconds")
     
     # 打印选择的模板信息
     logger.info(f"\nSelected template: {engine}/{chart_type}/{chart_name}")
@@ -744,10 +755,6 @@ def process(input: str, new_layout_path: str, output: str, base_url: str, api_ke
         datatable_name = "data.json"
         datatable_path = os.path.join(subfolder_path, datatable_name)
         #try:
-        with open(new_layout_path, "r", encoding="utf-8") as f:
-            new_layout_file = json.load(f)
-            new_layout = new_layout_file["new_layout"]
-        new_layout_chart_info = [layout for layout in new_layout if layout["category_id"] == 2]
         chart_width = int(new_layout_chart_info[0]["bbox"][2])
         chart_height = int(new_layout_chart_info[0]["bbox"][3])
 

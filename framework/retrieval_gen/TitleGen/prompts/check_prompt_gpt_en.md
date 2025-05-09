@@ -6,6 +6,7 @@ This is the title image of a poster. **What is the text displayed in the image?*
    - Some letters or parts of letters are replaced by icons or symbols, but the original letter and the new graphic shape are similar, and the new graphic can visually suggest the original letter.
    - Some icons or illustrations are used to decorate the text, making it more vivid, but without affecting the reader's ability to read and recognize the text.
    - The punctuation in the text displayed in the image is different from that in "{title}". **The punctuation is not important**.
+   - Different capitalization of the same letter does not result in incorrect display.
 
 2. There are certain situations that definitely fall under **incorrect display**:
    - The text displayed in the image is missing one or more words from "{title}".

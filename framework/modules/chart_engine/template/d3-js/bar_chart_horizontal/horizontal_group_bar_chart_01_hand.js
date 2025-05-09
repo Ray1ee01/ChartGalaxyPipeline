@@ -426,10 +426,10 @@ function makeChart(containerSelector, data) {
         });
     });
 
-    const roughness = 2;
+    const roughness = 1;
     const bowing = 2;
     const fillStyle = "hachure";
-    const randomize = true;
+    const randomize = false;
     const pencilFilter = false;
         
     const svgConverter = new svg2roughjs.Svg2Roughjs(containerSelector);

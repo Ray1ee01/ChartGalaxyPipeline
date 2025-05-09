@@ -2,7 +2,7 @@
 REQUIREMENTS_BEGIN
 {
     "chart_type": "Pyramid Diagram",
-    "chart_name": "pyramid_diagram_01_hand",
+    "chart_name": "pyramid_diagram_02_hand",
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],
     "required_fields_range": [[3, 10], [0, 100]],
@@ -13,7 +13,7 @@ REQUIREMENTS_BEGIN
     "supported_effects": [],
     "min_height": 400,
     "min_width": 400,
-    "background": "light",
+    "background": "dark",
     "icon_mark": "none",
     "icon_label": "none",
     "has_x_axis": "no",
@@ -28,7 +28,7 @@ function makeChart(containerSelector, data) {
     const chartData = jsonData.data.data;
     const variables = jsonData.variables;
     const typography = jsonData.typography;
-    const colors = jsonData.colors || {};
+    const colors = jsonData.colors_dark || {};
     const dataColumns = jsonData.data.columns || [];
     const images = jsonData.images || {};
     
@@ -172,9 +172,9 @@ function makeChart(containerSelector, data) {
             
         // 类别标签（在左侧）
         g.append("text")
-            .attr("x", chartWidth / 2 - Math.max(section.topWidth, section.bottomWidth) / 2 - 10)
+            .attr("x", chartWidth / 2 + Math.max(section.topWidth, section.bottomWidth) / 2 + 10)
             .attr("y", labelY)
-            .attr("text-anchor", "end")
+            .attr("text-anchor", "start")
             .attr("dominant-baseline", "middle")
             .attr("font-size", "14px")
             .attr("font-weight", "bold")

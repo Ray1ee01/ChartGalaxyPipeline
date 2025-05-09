@@ -255,9 +255,9 @@ def convert_palette_to_data(data: Dict, palette: Union[List[str], Dict]) -> Dict
             background_color = palette["bcg"]
     
     # 如果没有足够的颜色或调色板为空，使用固定调色板
-    if not colors_to_use or len(colors_to_use) <= required_color_num:
-        scheme = fixed_color_palette[random.randint(0, len(fixed_color_palette) - 1)]
-        colors_to_use = scheme
+    # if not colors_to_use or len(colors_to_use) <= required_color_num:
+    #     scheme = fixed_color_palette[random.randint(0, len(fixed_color_palette) - 1)]
+    #     colors_to_use = scheme
     
     # 确保调色板有足够的颜色
     if len(colors_to_use) < required_color_num:

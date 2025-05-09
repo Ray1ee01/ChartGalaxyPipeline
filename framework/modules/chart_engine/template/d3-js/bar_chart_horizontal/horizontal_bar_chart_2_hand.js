@@ -207,10 +207,10 @@ function makeChart(containerSelector, data) {
         .text(d => d.value + (yUnit ? ` ${yUnit}` : ''))
         .style("opacity", 1); // 直接设置为可见
 
-    const roughness = 2;
+    const roughness = 1;
     const bowing = 2;
     const fillStyle = "hachure";
-    const randomize = true;
+    const randomize = false;
     const pencilFilter = false;
         
     const svgConverter = new svg2roughjs.Svg2Roughjs(containerSelector);

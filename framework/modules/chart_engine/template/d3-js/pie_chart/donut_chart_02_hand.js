@@ -275,7 +275,7 @@ function makeChart(containerSelector, dataJSON) {
     const roughness = 1;
     const bowing = 1;
     const fillStyle = "hachure";
-    const randomize = true;
+    const randomize = false;
     const pencilFilter = false;
         
     const svgConverter = new svg2roughjs.Svg2Roughjs(containerSelector);
