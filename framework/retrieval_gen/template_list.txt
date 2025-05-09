@@ -165,6 +165,7 @@ circular bar chart / circular_bar_chart_03
 circular bar chart / circular_bar_chart_02
 group radial bar chart / group_radial_bar_chart_01
 radial bar chart / radial_bar_chart_03
+radial bar chart / radial_bar_chart_04
 radial bar chart / radial_bar_chart_02
 bottle_bar_chart / bottle_bar_chart_02
 stacked radial bar chart / stacked_radial_bar_chart_01
@@ -245,6 +246,7 @@ pyramid diagram / pyramid_diagram_01
 pyramid diagram / pyramid_diagram_01_3d
 pyramid diagram / pyramid_diagram_01_hand
 pyramid diagram / pyramid_diagram_02
+pyramid diagram / pyramid_diagram_02_hand
 funnel chart / funnel_chart_01
 funnel chart / funnel_chart_02
 pyramid chart / pyramid_chart_01
@@ -255,6 +257,14 @@ proportional area chart (triangle) / proportional_area_chart_triangle_06
 proportional area chart (triangle) / proportional_area_chart_triangle_02
 proportional area chart (triangle) / proportional_area_chart_triangle_03
 proportional area chart (triangle) / proportional_area_chart_triangle_04
+proportional area chart (square) / proportional_area_chart_square_07
+proportional area chart (square) / proportional_area_chart_square_3d_01
+proportional area chart (square) / proportional_area_chart_square_04
+proportional area chart (square) / proportional_area_chart_square_01
+proportional area chart (square) / proportional_area_chart_square_02
+proportional area chart (square) / proportional_area_chart_square_05
+proportional area chart (square) / proportional_area_chart_square_03
+proportional area chart (square) / proportional_area_chart_square_06
 proportional area chart(circle) / proportional_area_chart_circle_06
 proportional area chart(circle) / proportional_area_chart_circle_08
 proportional area chart(circle) / proportional_area_chart_circle_03
@@ -267,13 +277,6 @@ proportional area chart(circle) / proportional_area_chart_circle_04
 proportional area chart(circle) / proportional_area_chart_circle_02
 proportional area chart(circle) / proportional_area_chart_circle_05
 proportional area chart(circle) / proportional_area_chart_circle_07
-proportional area chart (square) / proportional_area_chart_square_3d_01
-proportional area chart (square) / proportional_area_chart_square_04
-proportional area chart (square) / proportional_area_chart_square_01
-proportional area chart (square) / proportional_area_chart_square_02
-proportional area chart (square) / proportional_area_chart_square_05
-proportional area chart (square) / proportional_area_chart_square_03
-proportional area chart (square) / proportional_area_chart_square_06
 triangle bar chart / triangle_bar_chart_01
 triangle bar chart / triangle_bar_chart_02
 proportional area chart (triangle) 3d / proportional_area_chart_triangle_3d_01

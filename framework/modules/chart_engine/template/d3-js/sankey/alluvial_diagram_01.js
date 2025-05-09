@@ -43,7 +43,7 @@ function makeChart(containerSelector, data) {
     // 设置尺寸和边距
     const width = variables.width;
     const height = variables.height;
-    const margin = { top: 40, right: 150, bottom: 40, left: 150 };
+    const margin = { top: 140, right: 150, bottom: 140, left: 150 };
     
     // 创建SVG
     const svg = d3.select(containerSelector)
@@ -76,8 +76,10 @@ function makeChart(containerSelector, data) {
     const targetCategories = [...new Set(chartData.map(d => d[targetField]))];
     
     // 获取主色调
-    const primaryColor = colors.other && colors.other.primary ? colors.other.primary : "#1f77b4";
-    const secondaryColor = colors.other && colors.other.secondary ? colors.other.secondary : "#ff7f0e";
+    // const primaryColor = colors.other && colors.other.primary ? colors.other.primary : "#1f77b4";
+    // const secondaryColor = colors.other && colors.other.secondary ? colors.other.secondary : "#ff7f0e";
+    const primaryColor = "#902d1f";
+    const secondaryColor = "#2f6ae4";
     
     // 创建渐变色系 - 从浅到深
     const createColorScale = (baseColor, count) => {
