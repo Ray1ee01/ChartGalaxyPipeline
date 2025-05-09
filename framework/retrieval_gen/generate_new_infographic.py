@@ -90,7 +90,7 @@ def generate_new_infographic(raw_data_path, old_layout_path, output_file):
     with open(updated_raw_data_path, 'w') as f:
         json.dump(raw_data, f, ensure_ascii=False, indent=4)
 
-    process(updated_raw_data_path, new_layout_path, output_file, client_key, base_url, chart_name="pyramid_chart_01")
+    process(updated_raw_data_path, new_layout_path, output_file, client_key, base_url, chart_name="multiple_radar_chart_01")
 
 if __name__ == "__main__":
     # data_path = "/data1/lizhen/resources/result/data_pool_v2/168.json" # energy
@@ -99,7 +99,13 @@ if __name__ == "__main__":
     # data_path = "/data1/lizhen/resources/result/claude_data_v2/Sports_scenario_5_135209_29792.json"
     # data_path = "/data1/lizhen/resources/result/claude_data_v2/Energy_scenario_3_021315_79695.json"
     # data_path = "/data1/lizhen/resources/result/claude_data_v2/Wildlife_Conservation_scenario_1_202610_44111.json"
-    data_path = "/data1/lizhen/resources/result/claude_data_v2/Wildlife_Conservation_scenario_1_205234_14839.json"
+    # data_path = "/data1/lizhen/resources/result/claude_data_v2/Wildlife_Conservation_scenario_1_205234_14839.json"
+    # data_path = "/data1/lizhen/resources/result/claude_data_v2/Art_scenario_3_162158_83770.json"
+    # data_path = "/data1/lizhen/resources/result/claude_data_v2/Entertainment_scenario_1_235156_92311.json"
+    # data_path = "/data1/lizhen/resources/result/claude_data_v2/Cultural_Traditions_scenario_1_014722_29615.json"
+    # data_path = "/data1/lizhen/resources/result/claude_data_v2/Educational_Systems_scenario_5_192906_66659.json"
+    # data_path = "/data1/lizhen/resources/result/claude_data_v2/Educational_Systems_scenario_1_195246_69059.json"
+    data_path = "/data1/lizhen/resources/result/claude_data_v2/Energy_scenario_3_025843_42770.json"
     # data_path = "/data1/lizhen/resources/result/data_pool_v2/93.json"
     data_name = data_path.split('/')[-1][:-5]
 
