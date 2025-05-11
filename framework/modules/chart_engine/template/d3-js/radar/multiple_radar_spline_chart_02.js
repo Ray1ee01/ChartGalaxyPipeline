@@ -5,7 +5,7 @@ REQUIREMENTS_BEGIN
     "chart_name": "multiple_radar_spline_chart_02",
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
-    "required_fields_range": [[3, 12], [0, "inf"], [1, 6]],
+    "required_fields_range": [[3, 7], [0, "inf"], [1, 6]],
     "required_fields_icons": [],
     "required_other_icons": [],
     "required_fields_colors": ["group"],

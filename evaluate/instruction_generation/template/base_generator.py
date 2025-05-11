@@ -301,7 +301,10 @@ class BaseGenerator:
         if len(group_values) < count:
             return [], {}
             
-        selected_legends = random.sample(group_values, count)
+        if count <= len(group_values):
+            selected_legends = random.sample(group_values, count)
+        else:
+            selected_legends = group_values
         
         placeholders = {}
         for i, legend in enumerate(selected_legends):

@@ -397,7 +397,7 @@ Please respond in JSON format:
                     "Content-Type": "application/json"
                 },
                 json={
-                    "model": "gemini-2.0-flash",
+                    "model": "gpt-4o-mini",
                     "messages": [{
                         "role": "user",
                         "content": prompt

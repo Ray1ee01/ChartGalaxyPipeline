@@ -8,7 +8,7 @@ REQUIREMENTS_BEGIN
     "required_fields_range": [[3, 7], [0, 100], [3, 5]],
     "required_fields_icons": ["x"],
     "required_other_icons": [],
-    "required_fields_colors": [],
+    "required_fields_colors": ["group"],
     "required_other_colors": ["primary", "secondary", "background"],
     "supported_effects": ["gradient", "opacity"],
     "min_height": 600,

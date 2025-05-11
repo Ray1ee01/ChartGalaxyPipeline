@@ -344,7 +344,7 @@ function makeChart(containerSelector, data) {
         .attr("transform", `translate(0,${innerHeight})`)
         .call(d3.axisBottom(xScale)
             .tickFormat(xFormat) // 使用相同的刻度数量
-            .ticks(xTickCount) // 使用相同的刻度数量
+            .ticks(xTicks.length) // 使用ticks的长度作为刻度数量
         );
     
     // 设置X轴样式 - 纯白色

@@ -5,7 +5,7 @@ from io import BytesIO
 from config import client_key, base_url
 
 image_max_size = 512
-model_name = 'gemini-2.0-flash'
+model_name = 'gpt-4o-mini'
 
 client = OpenAI(
     api_key=client_key,

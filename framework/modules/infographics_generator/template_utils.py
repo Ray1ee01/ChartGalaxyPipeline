@@ -1,7 +1,7 @@
 from typing import Dict, List, Tuple, Optional, Union
 import random
 import json
-from modules.infographics_generator.color_utils import get_contrast_color
+from modules.infographics_generator.color_utils import get_contrast_color, has_indistinguishable_colors, generate_distinct_palette
 
 # 添加全局字典来跟踪模板使用频率
 template_usage_counter = {}
@@ -194,9 +194,9 @@ def check_template_compatibility(data: Dict, templates: Dict, specific_chart_nam
                                 # print(f"template {template_key} failed icon compatibility check")
                                 continue
 
-                            # if not check_field_color_compatibility(req, data):
-                            #     # print(f"template {template_key} failed color compatibility check")
-                            #     continue
+                            if not check_field_color_compatibility(req, data):
+                                print(f"template {template_key} failed color compatibility check")
+                                continue
                             
                             if not check_field_icon_compatibility(req, data):
                                 # print(f"template {template_key} failed icon compatibility check")
@@ -387,8 +387,32 @@ def select_template(compatible_templates: List[str]) -> Tuple[str, str, str]:
             json.dump(variation_stats, f, indent=2)
     return engine, chart_type, chart_name, ordered_fields
 
+
 def process_template_requirements(requirements: Dict, data: Dict, engine: str, chart_name: str) -> None:
     """处理模板的颜色要求"""
+    if len(data["colors"]["field"]) > 1:
+        # 检查颜色是否可区分
+        field_colors = list(data["colors"]["field"].values())
+        if has_indistinguishable_colors(field_colors):
+            # 如果颜色不可区分,使用主色生成新的调色板
+            primary_color = data["colors"]["other"]["primary"]
+            new_colors = generate_distinct_palette(primary_color, len(field_colors))
+            # 更新颜色字典
+            for i, field in enumerate(data["colors"]["field"].keys()):
+                data["colors"]["field"][field] = new_colors[i]
+                
+    if len(data["colors_dark"]["field"]) > 1:
+        # 检查颜色是否可区分
+        field_colors = list(data["colors_dark"]["field"].values())
+        if has_indistinguishable_colors(field_colors):
+            # 如果颜色不可区分,使用主色生成新的调色板
+            primary_color = data["colors_dark"]["other"]["primary"]
+            new_colors = generate_distinct_palette(primary_color, len(field_colors))
+            # 更新颜色字典
+            for i, field in enumerate(data["colors_dark"]["field"].keys()):
+                data["colors_dark"]["field"][field] = new_colors[i]
+
+
     if len(requirements["required_other_colors"]) > 0:
         for key in requirements["required_other_colors"]:
             if key == "positive" and "positive" not in data["colors"]["other"]:
@@ -396,6 +420,7 @@ def process_template_requirements(requirements: Dict, data: Dict, engine: str, c
             elif key == "negative" and "negative" not in data["colors"]["other"]:
                 data["colors"]["other"]["negative"] = get_contrast_color(data["colors"]["other"]["primary"]) 
 
+    data["colors_dark"]["text_color"] = "#ffffff"
     # if ('donut' in chart_name or 'pie' in chart_name) and engine == 'vegalite_py':
     #     data["variables"]["height"] = 500
     #     data["variables"]["width"] = 500

@@ -235,10 +235,10 @@ function makeChart(containerSelector, data) {
         pattern.append("line")
             .attr("x1", 0)
             .attr("y1", 0)
-            .attr("x2", 0)
-            .attr("y2", patternDensity) // 使用固定值
+            .attr("x2", patternDensity)
+            .attr("y2", patternDensity)
             .attr("stroke", "white")
-            .attr("stroke-width", patternStrokeWidth) // 使用固定值
+            .attr("stroke-width", patternStrokeWidth)
             .attr("opacity", 0.6);
     });
     

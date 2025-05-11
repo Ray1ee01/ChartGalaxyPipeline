@@ -572,7 +572,7 @@ def make_infographic(
         overlay_image_size, overlay_best_x, overlay_best_y = find_best_size_and_position(overlay_mask, primary_image, padding, mode="overlay", avoid_mask=overlay_mask_only_text)
         measure_overlay_size = min(overlay_image_size, 256)
 
-        min_acceptable_size = 96
+        min_acceptable_size = 48
         if measure_side_size > min_acceptable_size or measure_overlay_size > min_acceptable_size:
             if side_image_size >= overlay_image_size * 0.45:
                 image_size = side_image_size

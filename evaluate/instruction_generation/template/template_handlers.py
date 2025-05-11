@@ -1249,7 +1249,10 @@ class TemplateHandlers:
         if not info or "required_fields_icons" not in info or not info["required_fields_icons"] or len(info["required_fields_icons"]) == 0:
             answer = "none"
             possible_confusion = self.generator.get_column_names()
-            confusion = random.sample(possible_confusion, 3)
+            if len(possible_confusion) > 3:
+                confusion = random.sample(possible_confusion, 3)
+            else:
+                confusion = possible_confusion
             return template, answer, confusion, None
 
         icon_roles = info["required_fields_icons"]

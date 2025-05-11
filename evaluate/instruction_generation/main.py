@@ -132,6 +132,7 @@ def process(data_path, output_path="./output.jsonl", template_path=None,
 
         # 计算每个类别需要的数量
         k = max(2, num // 4)
+        print(f"k: {k}")
         
         # 优先从composition understanding选择k个
         selected_composition_count = min(k, len(composition_understanding_pairs))
@@ -435,6 +436,7 @@ def process_folder(folder_path, output_path="./train.jsonl", template_path=None,
     os.makedirs(image_output_dir, exist_ok=True)
 
     # 获取folder_path下的所有子目录
+    print(f"folder_path: {folder_path}")
     subdirs = [d for d in glob.glob(os.path.join(folder_path, "*")) if os.path.isdir(d)]
 
     # 如果output_path已存在，先备份
@@ -635,15 +637,14 @@ if __name__ == "__main__":
         )
     else:
         process_folder(
-            folder_path="/data/lizhen/resources/generated/0428_test",  # 测试数据目录
+            folder_path="/data/lizhen/resources/data/instruction/finaltest",  # 测试数据目录
             # 在36使用/data1/lizhen/resources/0428_test"
             #folder_path="./tmp",
             output_path="./test.jsonl",
             template_path=args.template_path if args.source == "template" else None,
             image_output_dir="./test_images",
-            # Removed custom_instruction_suffix argument
             include_multiple_choice=True,
-            num_threads=max(1, args.threads // 2),  # 测试模式使用更少的线程
+            num_threads=args.threads,
             source=args.source,
             num_questions=args.num,
             unanswerable=args.unanswerable
