@@ -139,7 +139,7 @@ def recommend_chart_types(data_features: Dict[str, Any]) -> List[Dict[str, Any]]
             })
         else:
             recommendations.append({
-                "type": "pie_chart",
+                "type": "Pie Chart",
                 "confidence": 0.65,
                 "reasoning": "适合展示不同类别的占比情况"
             })

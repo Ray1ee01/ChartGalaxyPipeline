@@ -1,7 +1,7 @@
 /*
 REQUIREMENTS_BEGIN
 {
-    "chart_type": "pie_chart",
+    "chart_type": "Pie Chart",
     "chart_name": "pie_chart_01_hand",
     "is_composite": false,
     "required_fields": ["x", "y"],

@@ -5,11 +5,7 @@ REQUIREMENTS_BEGIN
     "chart_name": "horizontal_bar_chart_27",
     "is_composite": true,
     "required_fields": ["x", "y", "y2"],
-    "required_fields_type": [
-        ["categorical"],
-        ["numerical"],
-        ["numerical"]
-    ],
+    "required_fields_type": [["categorical"],["numerical"],["numerical"]],
     "required_fields_range": [[2, 30], [0, "inf"], [0, "inf"]],
     "required_fields_icons": [],
     "required_other_icons": [],

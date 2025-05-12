@@ -4,15 +4,9 @@ REQUIREMENTS_BEGIN
     "chart_type": "Horizontal Bar Chart",
     "chart_name": "horizontal_bar_chart_11",
     "is_composite": true,
-    "required_fields": [["x", "y" ,"group"], ["x", "y2","group"]],
-    "required_fields_type": [
-        [["categorical"], ["numerical"], ["categorical"]],
-        [["categorical"], ["numerical"], ["categorical"]]
-    ],
-    "required_fields_range": [
-        [[2, 20], [0, 100], [2, 6]],
-        [[2, 20], [0, 1000]], [2, 6]
-    ],
+    "required_fields": ["x", "y", "y2", "group"],
+    "required_fields_type": [["categorical"], ["numerical"], ["numerical"], ["categorical"]],
+    "required_fields_range": [[2, 20], [0, 100], [0, 1000], [2, 6]],
     "required_fields_icons": [],
     "hierarchy":["group"],
     "required_other_icons": [],

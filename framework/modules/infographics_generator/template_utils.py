@@ -2,6 +2,7 @@ from typing import Dict, List, Tuple, Optional, Union
 import random
 import json
 from modules.infographics_generator.color_utils import get_contrast_color, has_indistinguishable_colors, generate_distinct_palette
+import os
 
 # 添加全局字典来跟踪模板使用频率
 template_usage_counter = {}
@@ -98,12 +99,14 @@ def analyze_templates(templates: Dict) -> Tuple[int, Dict[str, str], int]:
                         requirement_dump[chart_name] = template_info['requirements']
       
     # print("template_count", template_count)
-    f = open("template_list.txt", "w")
-    f.write("\n".join(template_list))
-    f.close()
-    f = open("requirement_dump.json", "w")
-    f.write(json.dumps(requirement_dump, indent=4))
-    f.close()
+    if not os.path.exists("template_list.txt"):
+        f = open("template_list.txt", "w")
+        f.write("\n".join(template_list))
+        f.close()
+    if not os.path.exists("requirement_dump.json"):
+        f = open("requirement_dump.json", "w")
+        f.write(json.dumps(requirement_dump, indent=4))
+        f.close()
     
     return template_count, template_requirements
 

@@ -1,7 +1,7 @@
 /*
 REQUIREMENTS_BEGIN
 {
-    "chart_type": "donut_chart",
+    "chart_type": "Donut Chart",
     "chart_name": "donut_chart_03_d3",
     "is_composite": false,
     "required_fields": ["x", "y"],
