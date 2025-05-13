@@ -1,7 +1,7 @@
 /*
 REQUIREMENTS_BEGIN
 {
-    "chart_type": "Horizontal Pictorial Percentage Bar Chart",
+    "chart_type": "Pictorial Percentage Bar Chart",
     "chart_name": "horizontal_pictorial_percentage_bar_chart_01",
     "is_composite": false,
     "required_fields": ["x", "y"],

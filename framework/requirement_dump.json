@@ -171,8 +171,122 @@
         "has_y_axis": "no"
     },
     "gauge_chart_01": {
-        "chart_type": "Gauge Chart",
+        "chart_type": "Multiple Gauge Chart",
         "chart_name": "gauge_chart_01",
+        "required_fields": [
+            "x",
+            "y",
+            "group"
+        ],
+        "required_fields_type": [
+            [
+                "categorical"
+            ],
+            [
+                "numerical"
+            ],
+            [
+                "categorical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                2,
+                8
+            ],
+            [
+                0,
+                100
+            ],
+            [
+                2,
+                3
+            ]
+        ],
+        "required_fields_icons": [
+            "x"
+        ],
+        "required_other_icons": [
+            "primary"
+        ],
+        "required_fields_colors": [
+            "group"
+        ],
+        "required_other_colors": [
+            "primary"
+        ],
+        "supported_effects": [
+            "shadow",
+            "radius_corner"
+        ],
+        "min_height": 600,
+        "min_width": 650,
+        "background": "no",
+        "icon_mark": "none",
+        "icon_label": "side",
+        "has_x_axis": "no",
+        "has_y_axis": "no"
+    },
+    "multiple_gauge_chart_01": {
+        "chart_type": "Multiple Gauge Chart",
+        "chart_name": "multiple_gauge_chart_01",
+        "required_fields": [
+            "x",
+            "y",
+            "group"
+        ],
+        "required_fields_type": [
+            [
+                "categorical"
+            ],
+            [
+                "numerical"
+            ],
+            [
+                "categorical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                2,
+                8
+            ],
+            [
+                0,
+                100
+            ],
+            [
+                2,
+                3
+            ]
+        ],
+        "required_fields_icons": [
+            "x"
+        ],
+        "required_other_icons": [
+            "primary"
+        ],
+        "required_fields_colors": [
+            "group"
+        ],
+        "required_other_colors": [
+            "primary"
+        ],
+        "supported_effects": [
+            "shadow",
+            "radius_corner"
+        ],
+        "min_height": 600,
+        "min_width": 650,
+        "background": "no",
+        "icon_mark": "none",
+        "icon_label": "side",
+        "has_x_axis": "no",
+        "has_y_axis": "no"
+    },
+    "multiple_gauge_chart_02": {
+        "chart_type": "Multiple Gauge Chart",
+        "chart_name": "multiple_gauge_chart_02",
         "required_fields": [
             "x",
             "y",
@@ -431,120 +545,6 @@
         "has_x_axis": "no",
         "has_y_axis": "no"
     },
-    "multiple_gauge_chart_01": {
-        "chart_type": "Multiple Gauge Chart",
-        "chart_name": "multiple_gauge_chart_01",
-        "required_fields": [
-            "x",
-            "y",
-            "group"
-        ],
-        "required_fields_type": [
-            [
-                "categorical"
-            ],
-            [
-                "numerical"
-            ],
-            [
-                "categorical"
-            ]
-        ],
-        "required_fields_range": [
-            [
-                2,
-                8
-            ],
-            [
-                0,
-                100
-            ],
-            [
-                2,
-                3
-            ]
-        ],
-        "required_fields_icons": [
-            "x"
-        ],
-        "required_other_icons": [
-            "primary"
-        ],
-        "required_fields_colors": [
-            "group"
-        ],
-        "required_other_colors": [
-            "primary"
-        ],
-        "supported_effects": [
-            "shadow",
-            "radius_corner"
-        ],
-        "min_height": 600,
-        "min_width": 650,
-        "background": "no",
-        "icon_mark": "none",
-        "icon_label": "side",
-        "has_x_axis": "no",
-        "has_y_axis": "no"
-    },
-    "multiple_gauge_chart_02": {
-        "chart_type": "Multiple Gauge Chart",
-        "chart_name": "multiple_gauge_chart_02",
-        "required_fields": [
-            "x",
-            "y",
-            "group"
-        ],
-        "required_fields_type": [
-            [
-                "categorical"
-            ],
-            [
-                "numerical"
-            ],
-            [
-                "categorical"
-            ]
-        ],
-        "required_fields_range": [
-            [
-                2,
-                8
-            ],
-            [
-                0,
-                100
-            ],
-            [
-                2,
-                3
-            ]
-        ],
-        "required_fields_icons": [
-            "x"
-        ],
-        "required_other_icons": [
-            "primary"
-        ],
-        "required_fields_colors": [
-            "group"
-        ],
-        "required_other_colors": [
-            "primary"
-        ],
-        "supported_effects": [
-            "shadow",
-            "radius_corner"
-        ],
-        "min_height": 600,
-        "min_width": 650,
-        "background": "no",
-        "icon_mark": "none",
-        "icon_label": "side",
-        "has_x_axis": "no",
-        "has_y_axis": "no"
-    },
     "multiple_donut_chart_01": {
         "chart_type": "Multiple Donut Chart",
         "chart_name": "multiple_donut_chart_01",
@@ -775,7 +775,7 @@
         "has_y_axis": "no"
     },
     "echarts_stacked_bar_chart_01": {
-        "chart_type": "Stacked Bar Chart",
+        "chart_type": "Vertical Stacked Bar Chart",
         "chart_name": "echarts_stacked_bar_chart_01",
         "required_fields": [
             "x",
@@ -872,6 +872,55 @@
         "has_x_axis": "no",
         "has_y_axis": "no"
     },
+    "line_chart_01": {
+        "chart_type": "Vertical Bar Chart",
+        "chart_name": "line_chart_01",
+        "is_composite": false,
+        "required_fields": [
+            "x",
+            "y"
+        ],
+        "required_fields_type": [
+            [
+                "categorical"
+            ],
+            [
+                "numerical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                2,
+                12
+            ],
+            [
+                0,
+                "inf"
+            ]
+        ],
+        "required_fields_icons": [
+            "x"
+        ],
+        "required_other_icons": [],
+        "required_fields_colors": [],
+        "required_other_colors": [
+            "primary"
+        ],
+        "supported_effects": [
+            "shadow",
+            "radius_corner",
+            "gradient",
+            "stroke",
+            "spacing"
+        ],
+        "min_height": 400,
+        "min_width": 400,
+        "background": "no",
+        "icon_mark": "overlay",
+        "icon_label": "side",
+        "has_x_axis": "no",
+        "has_y_axis": "no"
+    },
     "vertical_bar_chart_08": {
         "chart_type": "Vertical Bar Chart",
         "chart_name": "vertical_bar_chart_08",
@@ -924,7 +973,7 @@
         "has_y_axis": "no"
     },
     "vertical_bar_chart_12": {
-        "chart_type": "Vertical Bar Chart",
+        "chart_type": "Vertical Bar Chart With Circle",
         "chart_name": "vertical_bar_chart_12",
         "is_composite": true,
         "required_fields": [
@@ -981,7 +1030,7 @@
         "has_y_axis": "no"
     },
     "vertical_bar_chart_13": {
-        "chart_type": "Vertical Bar Chart",
+        "chart_type": "Vertical Bar Chart With Circle",
         "chart_name": "vertical_bar_chart_13",
         "is_composite": true,
         "required_fields": [
@@ -1448,63 +1497,6 @@
         "has_x_axis": "yes",
         "has_y_axis": "yes"
     },
-    "vertical_bar_chart_03": {
-        "chart_type": "Vertical Bar Chart",
-        "chart_name": "vertical_bar_chart_03",
-        "is_composite": true,
-        "required_fields": [
-            [
-                "x",
-                "y",
-                "y2"
-            ]
-        ],
-        "required_fields_type": [
-            [
-                "categorical"
-            ],
-            [
-                "numerical"
-            ],
-            [
-                "numerical"
-            ]
-        ],
-        "required_fields_range": [
-            [
-                2,
-                12
-            ],
-            [
-                "-inf",
-                "inf"
-            ],
-            [
-                0,
-                "inf"
-            ]
-        ],
-        "required_fields_icons": [
-            "x"
-        ],
-        "required_other_icons": [],
-        "required_fields_colors": [],
-        "required_other_colors": [
-            "primary",
-            "secondary"
-        ],
-        "supported_effects": [
-            "radius_corner",
-            "spacing"
-        ],
-        "min_height": 400,
-        "min_width": 400,
-        "background": "no",
-        "icon_mark": "none",
-        "icon_label": "side",
-        "has_x_axis": "no",
-        "has_y_axis": "no"
-    },
     "vertical_bar_chart_18_01": {
         "chart_type": "Vertical Bar Chart",
         "chart_name": "vertical_bar_chart_18_01",
@@ -1551,62 +1543,6 @@
         "icon_label": "none",
         "has_x_axis": "yes",
         "has_y_axis": "yes"
-    },
-    "vertical_bar_chart_02": {
-        "chart_type": "Vertical Bar Chart",
-        "chart_name": "vertical_bar_chart_02",
-        "is_composite": true,
-        "required_fields": [
-            "x",
-            "y",
-            "y2"
-        ],
-        "required_fields_type": [
-            [
-                "categorical"
-            ],
-            [
-                "numerical"
-            ],
-            [
-                "numerical"
-            ]
-        ],
-        "required_fields_range": [
-            [
-                2,
-                12
-            ],
-            [
-                0,
-                "inf"
-            ],
-            [
-                0,
-                "inf"
-            ]
-        ],
-        "required_fields_icons": [],
-        "required_other_icons": [],
-        "required_fields_colors": [],
-        "required_other_colors": [
-            "primary",
-            "secondary"
-        ],
-        "supported_effects": [
-            "radius_corner",
-            "spacing",
-            "shadow",
-            "gradient",
-            "stroke"
-        ],
-        "min_height": 400,
-        "min_width": 400,
-        "background": "no",
-        "icon_mark": "none",
-        "icon_label": "none",
-        "has_x_axis": "no",
-        "has_y_axis": "no"
     },
     "vertical_bar_chart_17": {
         "chart_type": "Vertical Bar Chart",
@@ -1809,51 +1745,6 @@
             [
                 3,
                 10
-            ],
-            [
-                0,
-                100
-            ]
-        ],
-        "required_fields_icons": [],
-        "required_other_icons": [],
-        "required_fields_colors": [],
-        "required_other_colors": [
-            "primary",
-            "secondary",
-            "background"
-        ],
-        "supported_effects": [
-            "gradient",
-            "opacity"
-        ],
-        "min_height": 600,
-        "min_width": 800,
-        "background": "light",
-        "icon_mark": "none",
-        "icon_label": "none",
-        "has_x_axis": "yes",
-        "has_y_axis": "yes"
-    },
-    "vertical_bar_chart_11": {
-        "chart_type": "Vertical Bar Chart",
-        "chart_name": "vertical_bar_chart_11",
-        "required_fields": [
-            "x",
-            "y"
-        ],
-        "required_fields_type": [
-            [
-                "temporal"
-            ],
-            [
-                "numerical"
-            ]
-        ],
-        "required_fields_range": [
-            [
-                20,
-                40
             ],
             [
                 0,
@@ -2435,6 +2326,65 @@
         "has_x_axis": "no",
         "has_y_axis": "no"
     },
+    "stacked_circular_bar_chart_02": {
+        "chart_type": "Stacked Circular Bar Chart",
+        "chart_name": "stacked_circular_bar_chart_02",
+        "is_composite": false,
+        "required_fields": [
+            "x",
+            "y",
+            "group"
+        ],
+        "required_fields_type": [
+            [
+                "categorical"
+            ],
+            [
+                "numerical"
+            ],
+            [
+                "categorical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                5,
+                20
+            ],
+            [
+                0,
+                "inf"
+            ],
+            [
+                2,
+                10
+            ]
+        ],
+        "required_fields_icons": [
+            "x",
+            "group"
+        ],
+        "required_other_icons": [],
+        "required_fields_colors": [
+            "group"
+        ],
+        "required_other_colors": [
+            "primary"
+        ],
+        "supported_effects": [
+            "shadow",
+            "radius_corner",
+            "gradient",
+            "stroke"
+        ],
+        "min_height": 500,
+        "min_width": 500,
+        "background": "no",
+        "icon_mark": "none",
+        "icon_label": "none",
+        "has_x_axis": "no",
+        "has_y_axis": "no"
+    },
     "stacked_area_chart_03": {
         "chart_type": "Stacked Area Chart",
         "chart_name": "stacked_area_chart_03",
@@ -2445,7 +2395,7 @@
         ],
         "required_fields_type": [
             [
-                "categorical"
+                "temporal"
             ],
             [
                 "numerical"
@@ -2482,6 +2432,56 @@
         "background": "dark",
         "icon_mark": "none",
         "icon_label": "none",
+        "has_x_axis": "yes",
+        "has_y_axis": "yes"
+    },
+    "spline_stacked_area_chart_01": {
+        "chart_type": "Stacked Area Chart",
+        "chart_name": "spline_stacked_area_chart_01",
+        "required_fields": [
+            "x",
+            "y",
+            "group"
+        ],
+        "required_fields_type": [
+            [
+                "temporal"
+            ],
+            [
+                "numerical"
+            ],
+            [
+                "categorical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                5,
+                50
+            ],
+            [
+                0,
+                "inf"
+            ],
+            [
+                2,
+                6
+            ]
+        ],
+        "required_fields_icons": [
+            "group"
+        ],
+        "required_other_icons": [],
+        "required_fields_colors": [
+            "group"
+        ],
+        "required_other_colors": [],
+        "supported_effects": [],
+        "min_height": 600,
+        "min_width": 800,
+        "background": "dark",
+        "icon_mark": "overlay",
+        "icon_label": "side",
         "has_x_axis": "yes",
         "has_y_axis": "yes"
     },
@@ -2545,7 +2545,7 @@
         ],
         "required_fields_type": [
             [
-                "categorical"
+                "temporal"
             ],
             [
                 "numerical"
@@ -2635,15 +2635,74 @@
             "spacing"
         ],
         "min_height": 400,
-        "min_width": 400,
+        "min_width": 600,
         "background": "no",
         "icon_mark": "none",
         "icon_label": "side",
         "has_x_axis": "yes",
         "has_y_axis": "no"
     },
+    "multiple_vertical_bar_chart_02": {
+        "chart_type": "Multiple Vertical Bar Chart",
+        "chart_name": "multiple_vertical_bar_chart_02",
+        "chart_for": "comparison",
+        "is_composite": true,
+        "required_fields": [
+            "x",
+            "y",
+            "y2"
+        ],
+        "required_fields_type": [
+            [
+                "categorical"
+            ],
+            [
+                "numerical"
+            ],
+            [
+                "numerical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                2,
+                20
+            ],
+            [
+                0,
+                "inf"
+            ],
+            [
+                0,
+                "inf"
+            ]
+        ],
+        "required_fields_icons": [
+            "x"
+        ],
+        "required_other_icons": [],
+        "required_fields_colors": [],
+        "required_other_colors": [
+            "primary",
+            "secondary"
+        ],
+        "supported_effects": [
+            "shadow",
+            "radius_corner",
+            "gradient",
+            "stroke",
+            "spacing"
+        ],
+        "min_height": 400,
+        "min_width": 600,
+        "background": "dark",
+        "icon_mark": "none",
+        "icon_label": "side",
+        "has_x_axis": "yes",
+        "has_y_axis": "no"
+    },
     "horizontal_group_dot_bar_chart_0": {
-        "chart_type": "Horizontal Group Dot Bar Chart",
+        "chart_type": "Group Dot Bar Chart",
         "chart_name": "horizontal_group_dot_bar_chart_0",
         "required_fields": [
             "x",
@@ -2681,6 +2740,63 @@
         "required_other_icons": [],
         "required_fields_colors": [],
         "required_other_colors": [],
+        "supported_effects": [
+            "gradient",
+            "opacity"
+        ],
+        "min_height": 600,
+        "min_width": 800,
+        "background": "light",
+        "icon_mark": "none",
+        "icon_label": "none",
+        "has_x_axis": "yes",
+        "has_y_axis": "yes"
+    },
+    "vertical_group_dot_bar_chart_0": {
+        "chart_type": "Group Dot Bar Chart",
+        "chart_name": "vertical_group_dot_bar_chart_0",
+        "required_fields": [
+            "x",
+            "y",
+            "group"
+        ],
+        "required_fields_type": [
+            [
+                "categorical"
+            ],
+            [
+                "numerical"
+            ],
+            [
+                "categorical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                3,
+                6
+            ],
+            [
+                0,
+                100
+            ],
+            [
+                3,
+                4
+            ]
+        ],
+        "required_fields_icons": [
+            "group"
+        ],
+        "required_other_icons": [],
+        "required_fields_colors": [
+            "group"
+        ],
+        "required_other_colors": [
+            "primary",
+            "secondary",
+            "background"
+        ],
         "supported_effects": [
             "gradient",
             "opacity"
@@ -4297,7 +4413,7 @@
         "has_y_axis": "no"
     },
     "horizontal_bar_chart_21": {
-        "chart_type": "Horizontal Bar Chart",
+        "chart_type": "Horizontal Bar Chart With Circle",
         "chart_name": "horizontal_bar_chart_21",
         "is_composite": true,
         "required_fields": [
@@ -4352,341 +4468,8 @@
         "has_x_axis": "no",
         "has_y_axis": "no"
     },
-    "horizontal_bar_chart_0": {
-        "chart_type": "Horizontal Bar Chart",
-        "chart_name": "horizontal_bar_chart_0",
-        "required_fields": [
-            "x",
-            "y"
-        ],
-        "required_fields_type": [
-            [
-                "categorical"
-            ],
-            [
-                "numerical"
-            ]
-        ],
-        "required_fields_range": [
-            [
-                3,
-                20
-            ],
-            [
-                0,
-                100000
-            ]
-        ],
-        "required_fields_icons": [
-            "x"
-        ],
-        "required_other_icons": [],
-        "required_fields_colors": [],
-        "required_other_colors": [],
-        "supported_effects": [
-            "gradient",
-            "opacity"
-        ],
-        "min_height": 300,
-        "min_width": 300,
-        "background": "light",
-        "icon_mark": "none",
-        "icon_label": "none",
-        "has_x_axis": "yes",
-        "has_y_axis": "yes"
-    },
-    "horizontal_bar_chart_4": {
-        "chart_type": "Horizontal Bar Chart",
-        "chart_name": "horizontal_bar_chart_4",
-        "is_composite": false,
-        "required_fields": [
-            "x",
-            "y"
-        ],
-        "required_fields_type": [
-            [
-                "categorical"
-            ],
-            [
-                "numerical"
-            ]
-        ],
-        "required_fields_range": [
-            [
-                2,
-                30
-            ],
-            [
-                0,
-                "inf"
-            ]
-        ],
-        "required_fields_icons": [
-            "x"
-        ],
-        "required_other_icons": [],
-        "required_fields_colors": [],
-        "required_other_colors": [
-            "primary"
-        ],
-        "supported_effects": [
-            "shadow",
-            "radius_corner",
-            "gradient",
-            "stroke",
-            "spacing"
-        ],
-        "min_height": 400,
-        "min_width": 400,
-        "background": "no",
-        "icon_mark": "none",
-        "icon_label": "side",
-        "has_x_axis": "no",
-        "has_y_axis": "no"
-    },
-    "horizontal_bar_chart_6": {
-        "chart_type": "Horizontal Bar Chart",
-        "chart_name": "horizontal_bar_chart_6",
-        "is_composite": false,
-        "required_fields": [
-            "x",
-            "y"
-        ],
-        "required_fields_type": [
-            [
-                "categorical"
-            ],
-            [
-                "numerical"
-            ]
-        ],
-        "required_fields_range": [
-            [
-                2,
-                30
-            ],
-            [
-                0,
-                "inf"
-            ]
-        ],
-        "required_fields_icons": [
-            "x"
-        ],
-        "required_other_icons": [],
-        "required_fields_colors": [],
-        "required_other_colors": [
-            "primary"
-        ],
-        "supported_effects": [
-            "shadow",
-            "radius_corner",
-            "gradient",
-            "stroke",
-            "spacing"
-        ],
-        "min_height": 400,
-        "min_width": 400,
-        "background": "styled",
-        "icon_mark": "none",
-        "icon_label": "side",
-        "has_x_axis": "no",
-        "has_y_axis": "no"
-    },
-    "horizontal_bar_chart_7": {
-        "chart_type": "Horizontal Bar Chart",
-        "chart_name": "horizontal_bar_chart_7",
-        "is_composite": false,
-        "required_fields": [
-            "x",
-            "y"
-        ],
-        "required_fields_type": [
-            [
-                "categorical"
-            ],
-            [
-                "numerical"
-            ]
-        ],
-        "required_fields_range": [
-            [
-                2,
-                30
-            ],
-            [
-                0,
-                "inf"
-            ]
-        ],
-        "required_fields_icons": [
-            "x"
-        ],
-        "required_other_icons": [],
-        "required_fields_colors": [],
-        "required_other_colors": [
-            "primary"
-        ],
-        "supported_effects": [
-            "shadow",
-            "radius_corner",
-            "gradient",
-            "stroke",
-            "spacing"
-        ],
-        "min_height": 400,
-        "min_width": 400,
-        "background": "no",
-        "icon_mark": "none",
-        "icon_label": "side",
-        "has_x_axis": "no",
-        "has_y_axis": "no"
-    },
-    "horizontal_bar_chart_8": {
-        "chart_type": "Horizontal Bar Chart",
-        "chart_name": "horizontal_bar_chart_8",
-        "is_composite": false,
-        "required_fields": [
-            "x",
-            "y"
-        ],
-        "required_fields_type": [
-            [
-                "categorical"
-            ],
-            [
-                "numerical"
-            ]
-        ],
-        "required_fields_range": [
-            [
-                2,
-                30
-            ],
-            [
-                "-inf",
-                "inf"
-            ]
-        ],
-        "required_fields_icons": [],
-        "required_other_icons": [],
-        "required_fields_colors": [],
-        "required_other_colors": [
-            "primary"
-        ],
-        "supported_effects": [
-            "shadow",
-            "radius_corner",
-            "gradient",
-            "stroke",
-            "spacing"
-        ],
-        "min_height": 400,
-        "min_width": 400,
-        "background": "no",
-        "icon_mark": "none",
-        "icon_label": "none",
-        "has_x_axis": "no",
-        "has_y_axis": "no"
-    },
-    "horizontal_bar_chart_29": {
-        "chart_type": "Horizontal Bar Chart",
-        "chart_name": "horizontal_bar_chart_29",
-        "is_composite": false,
-        "required_fields": [
-            "x",
-            "y"
-        ],
-        "required_fields_type": [
-            [
-                "categorical"
-            ],
-            [
-                "numerical"
-            ]
-        ],
-        "required_fields_range": [
-            [
-                2,
-                20
-            ],
-            [
-                0,
-                "inf"
-            ]
-        ],
-        "required_fields_icons": [
-            "x"
-        ],
-        "required_other_icons": [],
-        "required_fields_colors": [],
-        "required_other_colors": [
-            "primary"
-        ],
-        "supported_effects": [
-            "shadow",
-            "gradient",
-            "spacing"
-        ],
-        "min_height": 400,
-        "min_width": 400,
-        "background": "dark",
-        "icon_mark": "none",
-        "icon_label": "side",
-        "has_x_axis": "no",
-        "has_y_axis": "no"
-    },
-    "horizontal_bar_chart_9": {
-        "chart_type": "Horizontal Bar Chart",
-        "chart_name": "horizontal_bar_chart_9",
-        "is_composite": false,
-        "required_fields": [
-            "x",
-            "y"
-        ],
-        "required_fields_type": [
-            [
-                "categorical"
-            ],
-            [
-                "numerical"
-            ]
-        ],
-        "required_fields_range": [
-            [
-                2,
-                30
-            ],
-            [
-                0,
-                "inf"
-            ]
-        ],
-        "required_fields_icons": [],
-        "required_other_icons": [],
-        "required_fields_colors": [
-            "x"
-        ],
-        "required_other_colors": [
-            "primary"
-        ],
-        "supported_effects": [
-            "shadow",
-            "radius_corner",
-            "gradient",
-            "stroke",
-            "spacing"
-        ],
-        "min_height": 400,
-        "min_width": 400,
-        "background": "no",
-        "icon_mark": "none",
-        "icon_label": "none",
-        "has_x_axis": "no",
-        "has_y_axis": "no"
-    },
     "horizontal_bar_chart_23": {
-        "chart_type": "Horizontal Bar Chart",
+        "chart_type": "Horizontal Bar Chart With Circle",
         "chart_name": "horizontal_bar_chart_23",
         "is_composite": true,
         "required_fields": [
@@ -4741,68 +4524,8 @@
         "has_x_axis": "no",
         "has_y_axis": "no"
     },
-    "horizontal_bar_chart_16": {
-        "chart_type": "Horizontal Bar Chart",
-        "chart_name": "horizontal_bar_chart_16",
-        "is_composite": false,
-        "required_fields": [
-            "x",
-            "y",
-            "group"
-        ],
-        "required_fields_type": [
-            [
-                "categorical"
-            ],
-            [
-                "numerical"
-            ],
-            [
-                "categorical"
-            ]
-        ],
-        "required_fields_range": [
-            [
-                5,
-                20
-            ],
-            [
-                0,
-                "inf"
-            ],
-            [
-                2,
-                6
-            ]
-        ],
-        "required_fields_icons": [],
-        "required_other_icons": [],
-        "required_fields_colors": [
-            "group"
-        ],
-        "hierarchy": [
-            "group"
-        ],
-        "required_other_colors": [
-            "primary"
-        ],
-        "supported_effects": [
-            "shadow",
-            "radius_corner",
-            "gradient",
-            "stroke",
-            "spacing"
-        ],
-        "min_height": 400,
-        "min_width": 400,
-        "background": "no",
-        "icon_mark": "none",
-        "icon_label": "none",
-        "has_x_axis": "no",
-        "has_y_axis": "no"
-    },
     "horizontal_bar_chart_20": {
-        "chart_type": "Horizontal Bar Chart",
+        "chart_type": "Horizontal Bar Chart With Circle",
         "chart_name": "horizontal_bar_chart_20",
         "is_composite": true,
         "required_fields": [
@@ -4857,7 +4580,7 @@
         "has_y_axis": "no"
     },
     "horizontal_bar_chart_25": {
-        "chart_type": "Horizontal Bar Chart",
+        "chart_type": "Horizontal Bar Chart With Circle",
         "chart_name": "horizontal_bar_chart_25",
         "is_composite": true,
         "required_fields": [
@@ -4911,7 +4634,7 @@
         "has_y_axis": "no"
     },
     "horizontal_bar_chart_14": {
-        "chart_type": "Horizontal Bar Chart",
+        "chart_type": "Horizontal Bar Chart With Circle",
         "chart_name": "horizontal_bar_chart_14",
         "is_composite": true,
         "required_fields": [
@@ -4967,104 +4690,8 @@
         "has_x_axis": "no",
         "has_y_axis": "no"
     },
-    "horizontal_bar_chart_19": {
-        "chart_type": "Horizontal Bar Chart",
-        "chart_name": "horizontal_bar_chart_19",
-        "is_composite": false,
-        "required_fields": [
-            "x",
-            "y"
-        ],
-        "required_fields_type": [
-            [
-                "categorical"
-            ],
-            [
-                "numerical"
-            ]
-        ],
-        "required_fields_range": [
-            [
-                2,
-                30
-            ],
-            [
-                0,
-                "inf"
-            ]
-        ],
-        "required_fields_icons": [
-            "x"
-        ],
-        "required_other_icons": [],
-        "required_fields_colors": [
-            "x"
-        ],
-        "required_other_colors": [
-            "primary"
-        ],
-        "supported_effects": [
-            "shadow",
-            "radius_corner",
-            "gradient",
-            "stroke",
-            "spacing"
-        ],
-        "min_height": 400,
-        "min_width": 400,
-        "background": "no",
-        "icon_mark": "none",
-        "icon_label": "none",
-        "has_x_axis": "no",
-        "has_y_axis": "no"
-    },
-    "horizontal_bar_chart_18": {
-        "chart_type": "Horizontal Bar Chart",
-        "chart_name": "horizontal_bar_chart_18",
-        "is_composite": false,
-        "required_fields": [
-            "x",
-            "y"
-        ],
-        "required_fields_type": [
-            [
-                "categorical"
-            ],
-            [
-                "numerical"
-            ]
-        ],
-        "required_fields_range": [
-            [
-                2,
-                30
-            ],
-            [
-                0,
-                "inf"
-            ]
-        ],
-        "required_fields_icons": [
-            "x"
-        ],
-        "required_other_icons": [],
-        "required_fields_colors": [
-            "x"
-        ],
-        "required_other_colors": [
-            "primary"
-        ],
-        "supported_effects": [],
-        "min_height": 400,
-        "min_width": 400,
-        "background": "no",
-        "icon_mark": "none",
-        "icon_label": "side",
-        "has_x_axis": "no",
-        "has_y_axis": "no"
-    },
     "horizontal_bar_chart_24": {
-        "chart_type": "Horizontal Bar Chart",
+        "chart_type": "Horizontal Bar Chart With Circle",
         "chart_name": "horizontal_bar_chart_24",
         "is_composite": true,
         "required_fields": [
@@ -5118,260 +4745,8 @@
         "has_x_axis": "no",
         "has_y_axis": "no"
     },
-    "horizontal_bar_chart_11": {
-        "chart_type": "Horizontal Bar Chart",
-        "chart_name": "horizontal_bar_chart_11",
-        "is_composite": true,
-        "required_fields": [
-            "x",
-            "y",
-            "y2",
-            "group"
-        ],
-        "required_fields_type": [
-            [
-                "categorical"
-            ],
-            [
-                "numerical"
-            ],
-            [
-                "numerical"
-            ],
-            [
-                "categorical"
-            ]
-        ],
-        "required_fields_range": [
-            [
-                2,
-                20
-            ],
-            [
-                0,
-                100
-            ],
-            [
-                0,
-                1000
-            ],
-            [
-                2,
-                6
-            ]
-        ],
-        "required_fields_icons": [],
-        "hierarchy": [
-            "group"
-        ],
-        "required_other_icons": [],
-        "required_fields_colors": [],
-        "required_other_colors": [
-            "primary"
-        ],
-        "supported_effects": [
-            "shadow",
-            "radius_corner",
-            "gradient",
-            "stroke",
-            "spacing"
-        ],
-        "min_height": 400,
-        "min_width": 400,
-        "background": "styled",
-        "icon_mark": "none",
-        "icon_label": "side",
-        "has_x_axis": "no",
-        "has_y_axis": "no"
-    },
-    "horizontal_bar_chart_2": {
-        "chart_type": "Horizontal Bar Chart",
-        "chart_name": "horizontal_bar_chart_2",
-        "required_fields": [
-            "x",
-            "y"
-        ],
-        "required_fields_type": [
-            [
-                "categorical"
-            ],
-            [
-                "numerical"
-            ]
-        ],
-        "required_fields_range": [
-            [
-                3,
-                20
-            ],
-            [
-                0,
-                "inf"
-            ]
-        ],
-        "required_fields_icons": [],
-        "required_other_icons": [],
-        "required_fields_colors": [],
-        "required_other_colors": [
-            "primary",
-            "secondary",
-            "background"
-        ],
-        "supported_effects": [
-            "gradient",
-            "opacity"
-        ],
-        "min_height": 600,
-        "min_width": 800,
-        "background": "light",
-        "icon_mark": "none",
-        "icon_label": "none",
-        "has_x_axis": "yes",
-        "has_y_axis": "yes"
-    },
-    "horizontal_bar_chart_5_hand": {
-        "chart_type": "Horizontal Bar Chart",
-        "chart_name": "horizontal_bar_chart_5_hand",
-        "is_composite": false,
-        "required_fields": [
-            "x",
-            "y"
-        ],
-        "required_fields_type": [
-            [
-                "categorical"
-            ],
-            [
-                "numerical"
-            ]
-        ],
-        "required_fields_range": [
-            [
-                2,
-                30
-            ],
-            [
-                0,
-                "inf"
-            ]
-        ],
-        "required_fields_icons": [],
-        "required_other_icons": [],
-        "required_fields_colors": [],
-        "required_other_colors": [
-            "primary"
-        ],
-        "supported_effects": [
-            "shadow",
-            "radius_corner",
-            "gradient",
-            "stroke",
-            "spacing"
-        ],
-        "min_height": 400,
-        "min_width": 400,
-        "background": "no",
-        "icon_mark": "none",
-        "icon_label": "side",
-        "has_x_axis": "no",
-        "has_y_axis": "no"
-    },
-    "horizontal_bar_chart_3": {
-        "chart_type": "Horizontal Bar Chart",
-        "chart_name": "horizontal_bar_chart_3",
-        "required_fields": [
-            "x",
-            "y"
-        ],
-        "required_fields_type": [
-            [
-                "categorical"
-            ],
-            [
-                "numerical"
-            ]
-        ],
-        "required_fields_range": [
-            [
-                3,
-                20
-            ],
-            [
-                0,
-                100
-            ]
-        ],
-        "required_fields_icons": [
-            "x"
-        ],
-        "required_other_icons": [],
-        "required_fields_colors": [],
-        "required_other_colors": [
-            "primary",
-            "secondary",
-            "background"
-        ],
-        "supported_effects": [
-            "gradient",
-            "opacity"
-        ],
-        "min_height": 600,
-        "min_width": 800,
-        "background": "light",
-        "icon_mark": "none",
-        "icon_label": "none",
-        "has_x_axis": "yes",
-        "has_y_axis": "yes"
-    },
-    "horizontal_bar_chart_5": {
-        "chart_type": "Horizontal Bar Chart",
-        "chart_name": "horizontal_bar_chart_5",
-        "is_composite": false,
-        "required_fields": [
-            "x",
-            "y"
-        ],
-        "required_fields_type": [
-            [
-                "categorical"
-            ],
-            [
-                "numerical"
-            ]
-        ],
-        "required_fields_range": [
-            [
-                2,
-                30
-            ],
-            [
-                0,
-                "inf"
-            ]
-        ],
-        "required_fields_icons": [],
-        "required_other_icons": [],
-        "required_fields_colors": [],
-        "required_other_colors": [
-            "primary"
-        ],
-        "supported_effects": [
-            "shadow",
-            "radius_corner",
-            "gradient",
-            "stroke",
-            "spacing"
-        ],
-        "min_height": 400,
-        "min_width": 400,
-        "background": "no",
-        "icon_mark": "none",
-        "icon_label": "side",
-        "has_x_axis": "no",
-        "has_y_axis": "no"
-    },
     "horizontal_bar_chart_15_hand": {
-        "chart_type": "Horizontal Bar Chart",
+        "chart_type": "Horizontal Bar Chart With Circle",
         "chart_name": "horizontal_bar_chart_15_hand",
         "is_composite": true,
         "required_fields": [
@@ -5426,7 +4801,7 @@
         "has_y_axis": "no"
     },
     "horizontal_bar_chart_15": {
-        "chart_type": "Horizontal Bar Chart",
+        "chart_type": "Horizontal Bar Chart With Circle",
         "chart_name": "horizontal_bar_chart_15",
         "is_composite": true,
         "required_fields": [
@@ -5480,59 +4855,14 @@
         "has_x_axis": "no",
         "has_y_axis": "no"
     },
-    "horizontal_bar_chart_1": {
-        "chart_type": "Horizontal Bar Chart",
-        "chart_name": "horizontal_bar_chart_1",
-        "required_fields": [
-            "x",
-            "y"
-        ],
-        "required_fields_type": [
-            [
-                "categorical"
-            ],
-            [
-                "numerical"
-            ]
-        ],
-        "required_fields_range": [
-            [
-                3,
-                20
-            ],
-            [
-                0,
-                100
-            ]
-        ],
-        "required_fields_icons": [],
-        "required_other_icons": [],
-        "required_fields_colors": [],
-        "required_other_colors": [
-            "primary",
-            "secondary",
-            "background"
-        ],
-        "supported_effects": [
-            "gradient",
-            "opacity"
-        ],
-        "min_height": 600,
-        "min_width": 800,
-        "background": "light",
-        "icon_mark": "none",
-        "icon_label": "none",
-        "has_x_axis": "yes",
-        "has_y_axis": "yes"
-    },
-    "horizontal_bar_chart_17": {
-        "chart_type": "Horizontal Bar Chart",
-        "chart_name": "horizontal_bar_chart_17",
-        "is_composite": false,
+    "horizontal_bar_chart_26": {
+        "chart_type": "Horizontal Bar Chart With Circle",
+        "chart_name": "horizontal_bar_chart_26",
+        "is_composite": true,
         "required_fields": [
             "x",
             "y",
-            "group"
+            "y2"
         ],
         "required_fields_type": [
             [
@@ -5542,103 +4872,21 @@
                 "numerical"
             ],
             [
-                "categorical"
+                "numerical"
             ]
-        ],
-        "hierarchy": [
-            "group"
         ],
         "required_fields_range": [
             [
                 2,
-                20
+                30
             ],
             [
                 0,
                 "inf"
             ],
             [
-                2,
-                5
-            ]
-        ],
-        "required_fields_icons": [
-            "group"
-        ],
-        "required_other_icons": [],
-        "required_fields_colors": [
-            "group"
-        ],
-        "required_other_colors": [
-            "primary"
-        ],
-        "supported_effects": [
-            "shadow",
-            "radius_corner",
-            "gradient",
-            "stroke",
-            "spacing"
-        ],
-        "min_height": 400,
-        "min_width": 400,
-        "background": "no",
-        "icon_mark": "none",
-        "icon_label": "side",
-        "has_x_axis": "no",
-        "has_y_axis": "no"
-    },
-    "horizontal_bar_chart_26": {
-        "chart_type": "Horizontal Bar Chart",
-        "chart_name": "horizontal_bar_chart_26",
-        "is_composite": true,
-        "required_fields": [
-            [
-                "x",
-                "y"
-            ],
-            [
-                "x",
-                "y2"
-            ]
-        ],
-        "required_fields_type": [
-            [
-                [
-                    "categorical"
-                ],
-                [
-                    "numerical"
-                ]
-            ],
-            [
-                [
-                    "categorical"
-                ],
-                [
-                    "numerical"
-                ]
-            ]
-        ],
-        "required_fields_range": [
-            [
-                [
-                    2,
-                    30
-                ],
-                [
-                    0,
-                    "inf"
-                ]
-            ],
-            [
-                [
-                    2,
-                    30
-                ],
-                [
-                    0,
-                    "inf"
-                ]
+                0,
+                "inf"
             ]
         ],
         "required_fields_icons": [
@@ -5655,149 +4903,6 @@
         "supported_effects": [
             "gradient",
             "radius_corner"
-        ],
-        "min_height": 400,
-        "min_width": 400,
-        "background": "no",
-        "icon_mark": "none",
-        "icon_label": "side",
-        "has_x_axis": "no",
-        "has_y_axis": "no"
-    },
-    "horizontal_bar_chart_4_hand": {
-        "chart_type": "Horizontal Bar Chart",
-        "chart_name": "horizontal_bar_chart_4_hand",
-        "is_composite": false,
-        "required_fields": [
-            "x",
-            "y"
-        ],
-        "required_fields_type": [
-            [
-                "categorical"
-            ],
-            [
-                "numerical"
-            ]
-        ],
-        "required_fields_range": [
-            [
-                2,
-                30
-            ],
-            [
-                0,
-                "inf"
-            ]
-        ],
-        "required_fields_icons": [
-            "x"
-        ],
-        "required_other_icons": [],
-        "required_fields_colors": [],
-        "required_other_colors": [
-            "primary"
-        ],
-        "supported_effects": [
-            "shadow",
-            "radius_corner",
-            "gradient",
-            "stroke",
-            "spacing"
-        ],
-        "min_height": 400,
-        "min_width": 400,
-        "background": "no",
-        "icon_mark": "none",
-        "icon_label": "side",
-        "has_x_axis": "no",
-        "has_y_axis": "no"
-    },
-    "horizontal_bar_chart_28": {
-        "chart_type": "Horizontal Bar Chart",
-        "chart_name": "horizontal_bar_chart_28",
-        "is_composite": false,
-        "required_fields": [
-            "x",
-            "y"
-        ],
-        "required_fields_type": [
-            [
-                "categorical"
-            ],
-            [
-                "numerical"
-            ]
-        ],
-        "required_fields_range": [
-            [
-                2,
-                20
-            ],
-            [
-                0,
-                "inf"
-            ]
-        ],
-        "required_fields_icons": [
-            "x"
-        ],
-        "required_other_icons": [],
-        "required_fields_colors": [],
-        "required_other_colors": [
-            "primary"
-        ],
-        "supported_effects": [
-            "shadow",
-            "gradient",
-            "spacing"
-        ],
-        "min_height": 400,
-        "min_width": 400,
-        "background": "no",
-        "icon_mark": "none",
-        "icon_label": "side",
-        "has_x_axis": "no",
-        "has_y_axis": "no"
-    },
-    "horizontal_bar_chart_30": {
-        "chart_type": "Horizontal Bar Chart",
-        "chart_name": "horizontal_bar_chart_30",
-        "is_composite": false,
-        "required_fields": [
-            "x",
-            "y"
-        ],
-        "required_fields_type": [
-            [
-                "categorical"
-            ],
-            [
-                "numerical"
-            ]
-        ],
-        "required_fields_range": [
-            [
-                2,
-                20
-            ],
-            [
-                0,
-                "inf"
-            ]
-        ],
-        "required_fields_icons": [
-            "x"
-        ],
-        "required_other_icons": [],
-        "required_fields_colors": [],
-        "required_other_colors": [
-            "primary"
-        ],
-        "supported_effects": [
-            "shadow",
-            "gradient",
-            "spacing"
         ],
         "min_height": 400,
         "min_width": 400,
@@ -5808,57 +4913,37 @@
         "has_y_axis": "no"
     },
     "horizontal_bar_chart_27": {
-        "chart_type": "Horizontal Bar Chart",
+        "chart_type": "Horizontal Bar Chart With Circle",
         "chart_name": "horizontal_bar_chart_27",
         "is_composite": true,
         "required_fields": [
-            [
-                "x",
-                "y"
-            ],
-            [
-                "x",
-                "y2"
-            ]
+            "x",
+            "y",
+            "y2"
         ],
         "required_fields_type": [
             [
-                [
-                    "categorical"
-                ],
-                [
-                    "numerical"
-                ]
+                "categorical"
             ],
             [
-                [
-                    "categorical"
-                ],
-                [
-                    "numerical"
-                ]
+                "numerical"
+            ],
+            [
+                "numerical"
             ]
         ],
         "required_fields_range": [
             [
-                [
-                    2,
-                    30
-                ],
-                [
-                    0,
-                    "inf"
-                ]
+                2,
+                30
             ],
             [
-                [
-                    2,
-                    30
-                ],
-                [
-                    0,
-                    "inf"
-                ]
+                0,
+                "inf"
+            ],
+            [
+                0,
+                "inf"
             ]
         ],
         "required_fields_icons": [],
@@ -5882,57 +4967,8 @@
         "has_x_axis": "no",
         "has_y_axis": "no"
     },
-    "horizontal_bar_chart_12": {
-        "chart_type": "Horizontal Bar Chart",
-        "chart_name": "horizontal_bar_chart_12",
-        "is_composite": false,
-        "required_fields": [
-            "x",
-            "y"
-        ],
-        "required_fields_type": [
-            [
-                "categorical"
-            ],
-            [
-                "numerical"
-            ]
-        ],
-        "required_fields_range": [
-            [
-                2,
-                30
-            ],
-            [
-                0,
-                "inf"
-            ]
-        ],
-        "required_fields_icons": [
-            "x"
-        ],
-        "required_other_icons": [],
-        "required_fields_colors": [],
-        "required_other_colors": [
-            "primary"
-        ],
-        "supported_effects": [
-            "shadow",
-            "radius_corner",
-            "gradient",
-            "stroke",
-            "spacing"
-        ],
-        "min_height": 400,
-        "min_width": 600,
-        "background": "styled",
-        "icon_mark": "none",
-        "icon_label": "side",
-        "has_x_axis": "no",
-        "has_y_axis": "no"
-    },
     "horizontal_bar_chart_22": {
-        "chart_type": "Horizontal Bar Chart",
+        "chart_type": "Horizontal Bar Chart With Circle",
         "chart_name": "horizontal_bar_chart_22",
         "is_composite": true,
         "required_fields": [
@@ -5984,57 +5020,8 @@
         "has_x_axis": "no",
         "has_y_axis": "no"
     },
-    "horizontal_bar_chart_10": {
-        "chart_type": "Horizontal Bar Chart",
-        "chart_name": "horizontal_bar_chart_10",
-        "is_composite": false,
-        "required_fields": [
-            "x",
-            "y"
-        ],
-        "required_fields_type": [
-            [
-                "categorical"
-            ],
-            [
-                "numerical"
-            ]
-        ],
-        "required_fields_range": [
-            [
-                2,
-                30
-            ],
-            [
-                0,
-                "inf"
-            ]
-        ],
-        "required_fields_icons": [
-            "x"
-        ],
-        "required_other_icons": [],
-        "required_fields_colors": [],
-        "required_other_colors": [
-            "primary"
-        ],
-        "supported_effects": [
-            "shadow",
-            "radius_corner",
-            "gradient",
-            "stroke",
-            "spacing"
-        ],
-        "min_height": 400,
-        "min_width": 400,
-        "background": "no",
-        "icon_mark": "none",
-        "icon_label": "side",
-        "has_x_axis": "no",
-        "has_y_axis": "no"
-    },
     "horizontal_bar_chart_13": {
-        "chart_type": "Horizontal Bar Chart",
+        "chart_type": "Horizontal Bar Chart With Circle",
         "chart_name": "horizontal_bar_chart_13",
         "is_composite": true,
         "required_fields": [
@@ -6086,51 +5073,6 @@
         "icon_label": "side",
         "has_x_axis": "no",
         "has_y_axis": "no"
-    },
-    "horizontal_bar_chart_2_hand": {
-        "chart_type": "Horizontal Bar Chart",
-        "chart_name": "horizontal_bar_chart_2_hand",
-        "required_fields": [
-            "x",
-            "y"
-        ],
-        "required_fields_type": [
-            [
-                "categorical"
-            ],
-            [
-                "numerical"
-            ]
-        ],
-        "required_fields_range": [
-            [
-                3,
-                20
-            ],
-            [
-                0,
-                "inf"
-            ]
-        ],
-        "required_fields_icons": [],
-        "required_other_icons": [],
-        "required_fields_colors": [],
-        "required_other_colors": [
-            "primary",
-            "secondary",
-            "background"
-        ],
-        "supported_effects": [
-            "gradient",
-            "opacity"
-        ],
-        "min_height": 600,
-        "min_width": 800,
-        "background": "light",
-        "icon_mark": "none",
-        "icon_label": "none",
-        "has_x_axis": "yes",
-        "has_y_axis": "yes"
     },
     "horizontal_stacked_bar_chart_5": {
         "chart_type": "Horizontal Stacked Bar Chart",
@@ -6425,61 +5367,41 @@
         "chart_name": "horizontal_stacked_bar_chart_4",
         "is_composite": true,
         "required_fields": [
-            [
-                "x",
-                "y",
-                "group"
-            ],
-            [
-                "x",
-                "y2"
-            ]
+            "x",
+            "y",
+            "y2",
+            "group"
         ],
         "required_fields_type": [
             [
-                [
-                    "categorical"
-                ],
-                [
-                    "numerical"
-                ],
-                [
-                    "categorical"
-                ]
+                "categorical"
             ],
             [
-                [
-                    "categorical"
-                ],
-                [
-                    "numerical"
-                ]
+                "numerical"
+            ],
+            [
+                "numerical"
+            ],
+            [
+                "categorical"
             ]
         ],
         "required_fields_range": [
             [
-                [
-                    2,
-                    30
-                ],
-                [
-                    0,
-                    "inf"
-                ],
-                [
-                    2,
-                    30
-                ]
+                2,
+                30
             ],
             [
-                [
-                    2,
-                    30
-                ],
-                [
-                    0,
-                    "inf"
-                ]
+                0,
+                "inf"
+            ],
+            [
+                0,
+                "inf"
+            ],
+            [
+                2,
+                5
             ]
         ],
         "required_fields_icons": [
@@ -6915,6 +5837,1140 @@
         "background": "light",
         "icon_mark": "none",
         "icon_label": "side",
+        "has_x_axis": "yes",
+        "has_y_axis": "yes"
+    },
+    "horizontal_bar_chart_0": {
+        "chart_type": "Horizontal Bar Chart",
+        "chart_name": "horizontal_bar_chart_0",
+        "required_fields": [
+            "x",
+            "y"
+        ],
+        "required_fields_type": [
+            [
+                "categorical"
+            ],
+            [
+                "numerical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                3,
+                20
+            ],
+            [
+                0,
+                100000
+            ]
+        ],
+        "required_fields_icons": [
+            "x"
+        ],
+        "required_other_icons": [],
+        "required_fields_colors": [],
+        "required_other_colors": [],
+        "supported_effects": [
+            "gradient",
+            "opacity"
+        ],
+        "min_height": 300,
+        "min_width": 300,
+        "background": "light",
+        "icon_mark": "none",
+        "icon_label": "none",
+        "has_x_axis": "yes",
+        "has_y_axis": "yes"
+    },
+    "horizontal_bar_chart_4": {
+        "chart_type": "Horizontal Bar Chart",
+        "chart_name": "horizontal_bar_chart_4",
+        "is_composite": false,
+        "required_fields": [
+            "x",
+            "y"
+        ],
+        "required_fields_type": [
+            [
+                "categorical"
+            ],
+            [
+                "numerical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                2,
+                30
+            ],
+            [
+                0,
+                "inf"
+            ]
+        ],
+        "required_fields_icons": [
+            "x"
+        ],
+        "required_other_icons": [],
+        "required_fields_colors": [],
+        "required_other_colors": [
+            "primary"
+        ],
+        "supported_effects": [
+            "shadow",
+            "radius_corner",
+            "gradient",
+            "stroke",
+            "spacing"
+        ],
+        "min_height": 400,
+        "min_width": 400,
+        "background": "no",
+        "icon_mark": "none",
+        "icon_label": "side",
+        "has_x_axis": "no",
+        "has_y_axis": "no"
+    },
+    "horizontal_bar_chart_6": {
+        "chart_type": "Horizontal Bar Chart",
+        "chart_name": "horizontal_bar_chart_6",
+        "is_composite": false,
+        "required_fields": [
+            "x",
+            "y"
+        ],
+        "required_fields_type": [
+            [
+                "categorical"
+            ],
+            [
+                "numerical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                2,
+                30
+            ],
+            [
+                0,
+                "inf"
+            ]
+        ],
+        "required_fields_icons": [
+            "x"
+        ],
+        "required_other_icons": [],
+        "required_fields_colors": [],
+        "required_other_colors": [
+            "primary"
+        ],
+        "supported_effects": [
+            "shadow",
+            "radius_corner",
+            "gradient",
+            "stroke",
+            "spacing"
+        ],
+        "min_height": 400,
+        "min_width": 400,
+        "background": "styled",
+        "icon_mark": "none",
+        "icon_label": "side",
+        "has_x_axis": "no",
+        "has_y_axis": "no"
+    },
+    "horizontal_bar_chart_7": {
+        "chart_type": "Horizontal Bar Chart",
+        "chart_name": "horizontal_bar_chart_7",
+        "is_composite": false,
+        "required_fields": [
+            "x",
+            "y"
+        ],
+        "required_fields_type": [
+            [
+                "categorical"
+            ],
+            [
+                "numerical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                2,
+                30
+            ],
+            [
+                0,
+                "inf"
+            ]
+        ],
+        "required_fields_icons": [
+            "x"
+        ],
+        "required_other_icons": [],
+        "required_fields_colors": [],
+        "required_other_colors": [
+            "primary"
+        ],
+        "supported_effects": [
+            "shadow",
+            "radius_corner",
+            "gradient",
+            "stroke",
+            "spacing"
+        ],
+        "min_height": 400,
+        "min_width": 400,
+        "background": "no",
+        "icon_mark": "none",
+        "icon_label": "side",
+        "has_x_axis": "no",
+        "has_y_axis": "no"
+    },
+    "horizontal_bar_chart_8": {
+        "chart_type": "Horizontal Bar Chart",
+        "chart_name": "horizontal_bar_chart_8",
+        "is_composite": false,
+        "required_fields": [
+            "x",
+            "y"
+        ],
+        "required_fields_type": [
+            [
+                "categorical"
+            ],
+            [
+                "numerical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                2,
+                30
+            ],
+            [
+                "-inf",
+                "inf"
+            ]
+        ],
+        "required_fields_icons": [],
+        "required_other_icons": [],
+        "required_fields_colors": [],
+        "required_other_colors": [
+            "primary"
+        ],
+        "supported_effects": [
+            "shadow",
+            "radius_corner",
+            "gradient",
+            "stroke",
+            "spacing"
+        ],
+        "min_height": 400,
+        "min_width": 400,
+        "background": "no",
+        "icon_mark": "none",
+        "icon_label": "none",
+        "has_x_axis": "no",
+        "has_y_axis": "no"
+    },
+    "horizontal_bar_chart_29": {
+        "chart_type": "Horizontal Bar Chart",
+        "chart_name": "horizontal_bar_chart_29",
+        "is_composite": false,
+        "required_fields": [
+            "x",
+            "y"
+        ],
+        "required_fields_type": [
+            [
+                "categorical"
+            ],
+            [
+                "numerical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                2,
+                20
+            ],
+            [
+                0,
+                "inf"
+            ]
+        ],
+        "required_fields_icons": [
+            "x"
+        ],
+        "required_other_icons": [],
+        "required_fields_colors": [],
+        "required_other_colors": [
+            "primary"
+        ],
+        "supported_effects": [
+            "shadow",
+            "gradient",
+            "spacing"
+        ],
+        "min_height": 400,
+        "min_width": 400,
+        "background": "dark",
+        "icon_mark": "none",
+        "icon_label": "side",
+        "has_x_axis": "no",
+        "has_y_axis": "no"
+    },
+    "horizontal_bar_chart_9": {
+        "chart_type": "Horizontal Bar Chart",
+        "chart_name": "horizontal_bar_chart_9",
+        "is_composite": false,
+        "required_fields": [
+            "x",
+            "y"
+        ],
+        "required_fields_type": [
+            [
+                "categorical"
+            ],
+            [
+                "numerical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                2,
+                30
+            ],
+            [
+                0,
+                "inf"
+            ]
+        ],
+        "required_fields_icons": [],
+        "required_other_icons": [],
+        "required_fields_colors": [
+            "x"
+        ],
+        "required_other_colors": [
+            "primary"
+        ],
+        "supported_effects": [
+            "shadow",
+            "radius_corner",
+            "gradient",
+            "stroke",
+            "spacing"
+        ],
+        "min_height": 400,
+        "min_width": 400,
+        "background": "no",
+        "icon_mark": "none",
+        "icon_label": "none",
+        "has_x_axis": "no",
+        "has_y_axis": "no"
+    },
+    "horizontal_bar_chart_16": {
+        "chart_type": "Horizontal Bar Chart",
+        "chart_name": "horizontal_bar_chart_16",
+        "is_composite": false,
+        "required_fields": [
+            "x",
+            "y",
+            "group"
+        ],
+        "required_fields_type": [
+            [
+                "categorical"
+            ],
+            [
+                "numerical"
+            ],
+            [
+                "categorical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                5,
+                20
+            ],
+            [
+                0,
+                "inf"
+            ],
+            [
+                2,
+                6
+            ]
+        ],
+        "required_fields_icons": [],
+        "required_other_icons": [],
+        "required_fields_colors": [
+            "group"
+        ],
+        "hierarchy": [
+            "group"
+        ],
+        "required_other_colors": [
+            "primary"
+        ],
+        "supported_effects": [
+            "shadow",
+            "radius_corner",
+            "gradient",
+            "stroke",
+            "spacing"
+        ],
+        "min_height": 400,
+        "min_width": 400,
+        "background": "no",
+        "icon_mark": "none",
+        "icon_label": "none",
+        "has_x_axis": "no",
+        "has_y_axis": "no"
+    },
+    "horizontal_bar_chart_19": {
+        "chart_type": "Horizontal Bar Chart",
+        "chart_name": "horizontal_bar_chart_19",
+        "is_composite": false,
+        "required_fields": [
+            "x",
+            "y"
+        ],
+        "required_fields_type": [
+            [
+                "categorical"
+            ],
+            [
+                "numerical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                2,
+                30
+            ],
+            [
+                0,
+                "inf"
+            ]
+        ],
+        "required_fields_icons": [
+            "x"
+        ],
+        "required_other_icons": [],
+        "required_fields_colors": [
+            "x"
+        ],
+        "required_other_colors": [
+            "primary"
+        ],
+        "supported_effects": [
+            "shadow",
+            "radius_corner",
+            "gradient",
+            "stroke",
+            "spacing"
+        ],
+        "min_height": 400,
+        "min_width": 400,
+        "background": "no",
+        "icon_mark": "none",
+        "icon_label": "none",
+        "has_x_axis": "no",
+        "has_y_axis": "no"
+    },
+    "horizontal_bar_chart_18": {
+        "chart_type": "Horizontal Bar Chart",
+        "chart_name": "horizontal_bar_chart_18",
+        "is_composite": false,
+        "required_fields": [
+            "x",
+            "y"
+        ],
+        "required_fields_type": [
+            [
+                "categorical"
+            ],
+            [
+                "numerical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                2,
+                30
+            ],
+            [
+                0,
+                "inf"
+            ]
+        ],
+        "required_fields_icons": [
+            "x"
+        ],
+        "required_other_icons": [],
+        "required_fields_colors": [
+            "x"
+        ],
+        "required_other_colors": [
+            "primary"
+        ],
+        "supported_effects": [],
+        "min_height": 400,
+        "min_width": 400,
+        "background": "no",
+        "icon_mark": "none",
+        "icon_label": "side",
+        "has_x_axis": "no",
+        "has_y_axis": "no"
+    },
+    "horizontal_bar_chart_11": {
+        "chart_type": "Horizontal Bar Chart",
+        "chart_name": "horizontal_bar_chart_11",
+        "is_composite": true,
+        "required_fields": [
+            "x",
+            "y",
+            "y2",
+            "group"
+        ],
+        "required_fields_type": [
+            [
+                "categorical"
+            ],
+            [
+                "numerical"
+            ],
+            [
+                "numerical"
+            ],
+            [
+                "categorical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                2,
+                20
+            ],
+            [
+                0,
+                10000
+            ],
+            [
+                0,
+                10000
+            ],
+            [
+                2,
+                6
+            ]
+        ],
+        "required_fields_icons": [],
+        "hierarchy": [
+            "group"
+        ],
+        "required_other_icons": [],
+        "required_fields_colors": [],
+        "required_other_colors": [
+            "primary"
+        ],
+        "supported_effects": [
+            "shadow",
+            "radius_corner",
+            "gradient",
+            "stroke",
+            "spacing"
+        ],
+        "min_height": 400,
+        "min_width": 400,
+        "background": "styled",
+        "icon_mark": "none",
+        "icon_label": "side",
+        "has_x_axis": "no",
+        "has_y_axis": "no"
+    },
+    "horizontal_bar_chart_2": {
+        "chart_type": "Horizontal Bar Chart",
+        "chart_name": "horizontal_bar_chart_2",
+        "required_fields": [
+            "x",
+            "y"
+        ],
+        "required_fields_type": [
+            [
+                "categorical"
+            ],
+            [
+                "numerical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                3,
+                20
+            ],
+            [
+                0,
+                "inf"
+            ]
+        ],
+        "required_fields_icons": [],
+        "required_other_icons": [],
+        "required_fields_colors": [],
+        "required_other_colors": [
+            "primary",
+            "secondary",
+            "background"
+        ],
+        "supported_effects": [
+            "gradient",
+            "opacity"
+        ],
+        "min_height": 600,
+        "min_width": 800,
+        "background": "light",
+        "icon_mark": "none",
+        "icon_label": "none",
+        "has_x_axis": "yes",
+        "has_y_axis": "yes"
+    },
+    "horizontal_bar_chart_5_hand": {
+        "chart_type": "Horizontal Bar Chart",
+        "chart_name": "horizontal_bar_chart_5_hand",
+        "is_composite": false,
+        "required_fields": [
+            "x",
+            "y"
+        ],
+        "required_fields_type": [
+            [
+                "categorical"
+            ],
+            [
+                "numerical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                2,
+                30
+            ],
+            [
+                0,
+                "inf"
+            ]
+        ],
+        "required_fields_icons": [],
+        "required_other_icons": [],
+        "required_fields_colors": [],
+        "required_other_colors": [
+            "primary"
+        ],
+        "supported_effects": [
+            "shadow",
+            "radius_corner",
+            "gradient",
+            "stroke",
+            "spacing"
+        ],
+        "min_height": 400,
+        "min_width": 400,
+        "background": "no",
+        "icon_mark": "none",
+        "icon_label": "side",
+        "has_x_axis": "no",
+        "has_y_axis": "no"
+    },
+    "horizontal_bar_chart_3": {
+        "chart_type": "Horizontal Bar Chart",
+        "chart_name": "horizontal_bar_chart_3",
+        "required_fields": [
+            "x",
+            "y"
+        ],
+        "required_fields_type": [
+            [
+                "categorical"
+            ],
+            [
+                "numerical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                3,
+                20
+            ],
+            [
+                0,
+                100
+            ]
+        ],
+        "required_fields_icons": [
+            "x"
+        ],
+        "required_other_icons": [],
+        "required_fields_colors": [],
+        "required_other_colors": [
+            "primary",
+            "secondary",
+            "background"
+        ],
+        "supported_effects": [
+            "gradient",
+            "opacity"
+        ],
+        "min_height": 600,
+        "min_width": 800,
+        "background": "light",
+        "icon_mark": "none",
+        "icon_label": "none",
+        "has_x_axis": "yes",
+        "has_y_axis": "yes"
+    },
+    "horizontal_bar_chart_5": {
+        "chart_type": "Horizontal Bar Chart",
+        "chart_name": "horizontal_bar_chart_5",
+        "is_composite": false,
+        "required_fields": [
+            "x",
+            "y"
+        ],
+        "required_fields_type": [
+            [
+                "categorical"
+            ],
+            [
+                "numerical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                2,
+                30
+            ],
+            [
+                0,
+                "inf"
+            ]
+        ],
+        "required_fields_icons": [],
+        "required_other_icons": [],
+        "required_fields_colors": [],
+        "required_other_colors": [
+            "primary"
+        ],
+        "supported_effects": [
+            "shadow",
+            "radius_corner",
+            "gradient",
+            "stroke",
+            "spacing"
+        ],
+        "min_height": 400,
+        "min_width": 400,
+        "background": "no",
+        "icon_mark": "none",
+        "icon_label": "side",
+        "has_x_axis": "no",
+        "has_y_axis": "no"
+    },
+    "horizontal_bar_chart_1": {
+        "chart_type": "Horizontal Bar Chart",
+        "chart_name": "horizontal_bar_chart_1",
+        "required_fields": [
+            "x",
+            "y"
+        ],
+        "required_fields_type": [
+            [
+                "categorical"
+            ],
+            [
+                "numerical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                3,
+                20
+            ],
+            [
+                0,
+                100
+            ]
+        ],
+        "required_fields_icons": [],
+        "required_other_icons": [],
+        "required_fields_colors": [],
+        "required_other_colors": [
+            "primary",
+            "secondary",
+            "background"
+        ],
+        "supported_effects": [
+            "gradient",
+            "opacity"
+        ],
+        "min_height": 600,
+        "min_width": 800,
+        "background": "light",
+        "icon_mark": "none",
+        "icon_label": "none",
+        "has_x_axis": "yes",
+        "has_y_axis": "yes"
+    },
+    "horizontal_bar_chart_17": {
+        "chart_type": "Horizontal Bar Chart",
+        "chart_name": "horizontal_bar_chart_17",
+        "is_composite": false,
+        "required_fields": [
+            "x",
+            "y",
+            "group"
+        ],
+        "required_fields_type": [
+            [
+                "categorical"
+            ],
+            [
+                "numerical"
+            ],
+            [
+                "categorical"
+            ]
+        ],
+        "hierarchy": [
+            "group"
+        ],
+        "required_fields_range": [
+            [
+                2,
+                20
+            ],
+            [
+                0,
+                "inf"
+            ],
+            [
+                2,
+                5
+            ]
+        ],
+        "required_fields_icons": [
+            "group"
+        ],
+        "required_other_icons": [],
+        "required_fields_colors": [
+            "group"
+        ],
+        "required_other_colors": [
+            "primary"
+        ],
+        "supported_effects": [
+            "shadow",
+            "radius_corner",
+            "gradient",
+            "stroke",
+            "spacing"
+        ],
+        "min_height": 400,
+        "min_width": 400,
+        "background": "no",
+        "icon_mark": "none",
+        "icon_label": "side",
+        "has_x_axis": "no",
+        "has_y_axis": "no"
+    },
+    "horizontal_bar_chart_4_hand": {
+        "chart_type": "Horizontal Bar Chart",
+        "chart_name": "horizontal_bar_chart_4_hand",
+        "is_composite": false,
+        "required_fields": [
+            "x",
+            "y"
+        ],
+        "required_fields_type": [
+            [
+                "categorical"
+            ],
+            [
+                "numerical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                2,
+                30
+            ],
+            [
+                0,
+                "inf"
+            ]
+        ],
+        "required_fields_icons": [
+            "x"
+        ],
+        "required_other_icons": [],
+        "required_fields_colors": [],
+        "required_other_colors": [
+            "primary"
+        ],
+        "supported_effects": [
+            "shadow",
+            "radius_corner",
+            "gradient",
+            "stroke",
+            "spacing"
+        ],
+        "min_height": 400,
+        "min_width": 400,
+        "background": "no",
+        "icon_mark": "none",
+        "icon_label": "side",
+        "has_x_axis": "no",
+        "has_y_axis": "no"
+    },
+    "horizontal_bar_chart_28": {
+        "chart_type": "Horizontal Bar Chart",
+        "chart_name": "horizontal_bar_chart_28",
+        "is_composite": false,
+        "required_fields": [
+            "x",
+            "y"
+        ],
+        "required_fields_type": [
+            [
+                "categorical"
+            ],
+            [
+                "numerical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                2,
+                20
+            ],
+            [
+                0,
+                "inf"
+            ]
+        ],
+        "required_fields_icons": [
+            "x"
+        ],
+        "required_other_icons": [],
+        "required_fields_colors": [],
+        "required_other_colors": [
+            "primary"
+        ],
+        "supported_effects": [
+            "shadow",
+            "gradient",
+            "spacing"
+        ],
+        "min_height": 400,
+        "min_width": 400,
+        "background": "no",
+        "icon_mark": "none",
+        "icon_label": "side",
+        "has_x_axis": "no",
+        "has_y_axis": "no"
+    },
+    "horizontal_bar_chart_30": {
+        "chart_type": "Horizontal Bar Chart",
+        "chart_name": "horizontal_bar_chart_30",
+        "is_composite": false,
+        "required_fields": [
+            "x",
+            "y"
+        ],
+        "required_fields_type": [
+            [
+                "categorical"
+            ],
+            [
+                "numerical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                2,
+                20
+            ],
+            [
+                0,
+                "inf"
+            ]
+        ],
+        "required_fields_icons": [
+            "x"
+        ],
+        "required_other_icons": [],
+        "required_fields_colors": [],
+        "required_other_colors": [
+            "primary"
+        ],
+        "supported_effects": [
+            "shadow",
+            "gradient",
+            "spacing"
+        ],
+        "min_height": 400,
+        "min_width": 400,
+        "background": "no",
+        "icon_mark": "none",
+        "icon_label": "side",
+        "has_x_axis": "no",
+        "has_y_axis": "no"
+    },
+    "horizontal_bar_chart_12": {
+        "chart_type": "Horizontal Bar Chart",
+        "chart_name": "horizontal_bar_chart_12",
+        "is_composite": false,
+        "required_fields": [
+            "x",
+            "y"
+        ],
+        "required_fields_type": [
+            [
+                "categorical"
+            ],
+            [
+                "numerical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                2,
+                30
+            ],
+            [
+                0,
+                "inf"
+            ]
+        ],
+        "required_fields_icons": [
+            "x"
+        ],
+        "required_other_icons": [],
+        "required_fields_colors": [],
+        "required_other_colors": [
+            "primary"
+        ],
+        "supported_effects": [
+            "shadow",
+            "radius_corner",
+            "gradient",
+            "stroke",
+            "spacing"
+        ],
+        "min_height": 400,
+        "min_width": 600,
+        "background": "styled",
+        "icon_mark": "none",
+        "icon_label": "side",
+        "has_x_axis": "no",
+        "has_y_axis": "no"
+    },
+    "horizontal_bar_chart_10": {
+        "chart_type": "Horizontal Bar Chart",
+        "chart_name": "horizontal_bar_chart_10",
+        "is_composite": false,
+        "required_fields": [
+            "x",
+            "y"
+        ],
+        "required_fields_type": [
+            [
+                "categorical"
+            ],
+            [
+                "numerical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                2,
+                30
+            ],
+            [
+                0,
+                "inf"
+            ]
+        ],
+        "required_fields_icons": [
+            "x"
+        ],
+        "required_other_icons": [],
+        "required_fields_colors": [],
+        "required_other_colors": [
+            "primary"
+        ],
+        "supported_effects": [
+            "shadow",
+            "radius_corner",
+            "gradient",
+            "stroke",
+            "spacing"
+        ],
+        "min_height": 400,
+        "min_width": 400,
+        "background": "no",
+        "icon_mark": "none",
+        "icon_label": "side",
+        "has_x_axis": "no",
+        "has_y_axis": "no"
+    },
+    "horizontal_bar_chart_2_hand": {
+        "chart_type": "Horizontal Bar Chart",
+        "chart_name": "horizontal_bar_chart_2_hand",
+        "required_fields": [
+            "x",
+            "y"
+        ],
+        "required_fields_type": [
+            [
+                "categorical"
+            ],
+            [
+                "numerical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                3,
+                20
+            ],
+            [
+                0,
+                "inf"
+            ]
+        ],
+        "required_fields_icons": [],
+        "required_other_icons": [],
+        "required_fields_colors": [],
+        "required_other_colors": [
+            "primary",
+            "secondary",
+            "background"
+        ],
+        "supported_effects": [
+            "gradient",
+            "opacity"
+        ],
+        "min_height": 600,
+        "min_width": 800,
+        "background": "light",
+        "icon_mark": "none",
+        "icon_label": "none",
         "has_x_axis": "yes",
         "has_y_axis": "yes"
     },
@@ -7758,7 +7814,7 @@
         "has_y_axis": "yes"
     },
     "horizontal_lollipop_chart_01": {
-        "chart_type": "Horizontal Lollipop Chart",
+        "chart_type": "Lollipop Chart",
         "chart_name": "horizontal_lollipop_chart_01",
         "is_composite": false,
         "required_fields": [
@@ -7807,7 +7863,7 @@
         "has_y_axis": "no"
     },
     "horizontal_lollipop_chart_02": {
-        "chart_type": "Horizontal Lollipop Chart",
+        "chart_type": "Lollipop Chart",
         "chart_name": "horizontal_lollipop_chart_02",
         "is_composite": false,
         "required_fields": [
@@ -7833,6 +7889,55 @@
             ]
         ],
         "required_fields_icons": [],
+        "required_other_icons": [],
+        "required_fields_colors": [],
+        "required_other_colors": [
+            "primary"
+        ],
+        "supported_effects": [
+            "shadow",
+            "radius_corner",
+            "gradient",
+            "stroke",
+            "spacing"
+        ],
+        "min_height": 400,
+        "min_width": 400,
+        "background": "no",
+        "icon_mark": "overlay",
+        "icon_label": "side",
+        "has_x_axis": "no",
+        "has_y_axis": "no"
+    },
+    "vertical_lollipop_chart_01": {
+        "chart_type": "Lollipop Chart",
+        "chart_name": "vertical_lollipop_chart_01",
+        "is_composite": false,
+        "required_fields": [
+            "x",
+            "y"
+        ],
+        "required_fields_type": [
+            [
+                "categorical"
+            ],
+            [
+                "numerical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                2,
+                12
+            ],
+            [
+                0,
+                "inf"
+            ]
+        ],
+        "required_fields_icons": [
+            "x"
+        ],
         "required_other_icons": [],
         "required_fields_colors": [],
         "required_other_colors": [
@@ -7899,51 +8004,6 @@
         "icon_label": "none",
         "has_x_axis": "no",
         "has_y_axis": "no"
-    },
-    "horizontal_bullet_chart_01": {
-        "chart_type": "Horizontal Bullet Chart",
-        "chart_name": "horizontal_bullet_chart_01",
-        "required_fields": [
-            "x",
-            "y"
-        ],
-        "required_fields_type": [
-            [
-                "categorical"
-            ],
-            [
-                "numerical"
-            ]
-        ],
-        "required_fields_range": [
-            [
-                3,
-                20
-            ],
-            [
-                0,
-                100
-            ]
-        ],
-        "required_fields_icons": [],
-        "required_other_icons": [],
-        "required_fields_colors": [],
-        "required_other_colors": [
-            "primary",
-            "secondary",
-            "background"
-        ],
-        "supported_effects": [
-            "gradient",
-            "opacity"
-        ],
-        "min_height": 600,
-        "min_width": 800,
-        "background": "light",
-        "icon_mark": "none",
-        "icon_label": "none",
-        "has_x_axis": "yes",
-        "has_y_axis": "yes"
     },
     "horizontal_dot_bar_chart_02": {
         "chart_type": "Horizontal Dot Bar Chart",
@@ -8038,7 +8098,7 @@
         "has_y_axis": "no"
     },
     "horizontal_range_bar_chart_01": {
-        "chart_type": "Horizontal Range Chart",
+        "chart_type": "Range Chart",
         "chart_name": "horizontal_range_bar_chart_01",
         "chart_for": "comparison",
         "is_composite": false,
@@ -8062,6 +8122,64 @@
             [
                 2,
                 20
+            ],
+            [
+                0,
+                "inf"
+            ],
+            [
+                2,
+                2
+            ]
+        ],
+        "required_fields_icons": [],
+        "required_other_icons": [],
+        "required_fields_colors": [
+            "group"
+        ],
+        "required_other_colors": [
+            "primary"
+        ],
+        "supported_effects": [
+            "shadow",
+            "radius_corner",
+            "gradient",
+            "stroke",
+            "spacing"
+        ],
+        "min_height": 400,
+        "min_width": 400,
+        "background": "dark",
+        "icon_mark": "none",
+        "icon_label": "side",
+        "has_x_axis": "no",
+        "has_y_axis": "no"
+    },
+    "vertical_range_chart_01": {
+        "chart_type": "Range Chart",
+        "chart_name": "vertical_range_chart_01",
+        "chart_for": "comparison",
+        "is_composite": false,
+        "required_fields": [
+            "x",
+            "y",
+            "group"
+        ],
+        "required_fields_type": [
+            [
+                "categorical"
+            ],
+            [
+                "numerical"
+            ],
+            [
+                "categorical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                2,
+                12
             ],
             [
                 0,
@@ -9336,7 +9454,7 @@
         "has_y_axis": "no"
     },
     "semicircle_pie_chart_01_d3": {
-        "chart_type": "SemiCircle Pie Chart",
+        "chart_type": "Semicircle Pie Chart",
         "chart_name": "semicircle_pie_chart_01_d3",
         "is_composite": false,
         "required_fields": [
@@ -9383,7 +9501,7 @@
         "has_y_axis": "no"
     },
     "semicircle_pie_chart_03_d3": {
-        "chart_type": "SemiCircle Pie Chart",
+        "chart_type": "Semicircle Pie Chart",
         "chart_name": "semicircle_pie_chart_03_d3",
         "is_composite": false,
         "required_fields": [
@@ -9518,7 +9636,7 @@
         "has_y_axis": "no"
     },
     "semicircle_donut_chart_04_d3": {
-        "chart_type": "SemiCircle Donut Chart",
+        "chart_type": "Semicircle Donut Chart",
         "chart_name": "semicircle_donut_chart_04_d3",
         "is_composite": false,
         "required_fields": [
@@ -9565,7 +9683,7 @@
         "has_y_axis": "no"
     },
     "semicircle_donut_chart_06_d3": {
-        "chart_type": "SemiCircle Donut Chart",
+        "chart_type": "Semicircle Donut Chart",
         "chart_name": "semicircle_donut_chart_06_d3",
         "is_composite": false,
         "required_fields": [
@@ -9659,7 +9777,7 @@
         "has_y_axis": "no"
     },
     "semicircle_donut_chart_03_d3": {
-        "chart_type": "SemiCircle Donut Chart",
+        "chart_type": "Semicircle Donut Chart",
         "chart_name": "semicircle_donut_chart_03_d3",
         "is_composite": false,
         "required_fields": [
@@ -10854,6 +10972,326 @@
         "has_x_axis": "yes",
         "has_y_axis": "yes"
     },
+    "bump_chart_13": {
+        "chart_type": "Sorted Lines Chart",
+        "chart_name": "bump_chart_13",
+        "is_composite": false,
+        "chart_for": "comparison",
+        "required_fields": [
+            "x",
+            "y",
+            "group"
+        ],
+        "required_fields_type": [
+            [
+                "temporal"
+            ],
+            [
+                "numerical"
+            ],
+            [
+                "categorical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                2,
+                12
+            ],
+            [
+                0,
+                "inf"
+            ],
+            [
+                4,
+                10
+            ]
+        ],
+        "required_fields_icons": [],
+        "required_other_icons": [],
+        "required_fields_colors": [
+            "group"
+        ],
+        "required_other_colors": [],
+        "supported_effects": [
+            "spacing"
+        ],
+        "min_height": 400,
+        "min_width": 400,
+        "background": "no",
+        "icon_mark": "none",
+        "icon_label": "none",
+        "has_x_axis": "no",
+        "has_y_axis": "no"
+    },
+    "bump_chart_12": {
+        "chart_type": "Sorted Lines Chart",
+        "chart_name": "bump_chart_12",
+        "is_composite": false,
+        "chart_for": "comparison",
+        "required_fields": [
+            "x",
+            "y",
+            "group"
+        ],
+        "required_fields_type": [
+            [
+                "temporal"
+            ],
+            [
+                "numerical"
+            ],
+            [
+                "categorical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                2,
+                12
+            ],
+            [
+                0,
+                "inf"
+            ],
+            [
+                4,
+                10
+            ]
+        ],
+        "required_fields_icons": [
+            "group"
+        ],
+        "required_other_icons": [],
+        "required_fields_colors": [
+            "group"
+        ],
+        "required_other_colors": [],
+        "supported_effects": [
+            "spacing"
+        ],
+        "min_height": 400,
+        "min_width": 400,
+        "background": "no",
+        "icon_mark": "none",
+        "icon_label": "side",
+        "has_x_axis": "no",
+        "has_y_axis": "no"
+    },
+    "bump_chart_14": {
+        "chart_type": "Sorted Lines Chart",
+        "chart_name": "bump_chart_14",
+        "is_composite": false,
+        "chart_for": "comparison",
+        "required_fields": [
+            "x",
+            "y",
+            "group"
+        ],
+        "required_fields_type": [
+            [
+                "temporal"
+            ],
+            [
+                "numerical"
+            ],
+            [
+                "categorical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                2,
+                12
+            ],
+            [
+                0,
+                "inf"
+            ],
+            [
+                4,
+                10
+            ]
+        ],
+        "required_fields_icons": [
+            "group"
+        ],
+        "required_other_icons": [],
+        "required_fields_colors": [
+            "group"
+        ],
+        "required_other_colors": [],
+        "supported_effects": [
+            "spacing"
+        ],
+        "min_height": 400,
+        "min_width": 400,
+        "background": "no",
+        "icon_mark": "none",
+        "icon_label": "none",
+        "has_x_axis": "no",
+        "has_y_axis": "no"
+    },
+    "bump_chart_09": {
+        "chart_type": "Sorted Lines Chart",
+        "chart_name": "bump_chart_09",
+        "is_composite": false,
+        "chart_for": "comparison",
+        "required_fields": [
+            "x",
+            "y",
+            "group"
+        ],
+        "required_fields_type": [
+            [
+                "temporal"
+            ],
+            [
+                "numerical"
+            ],
+            [
+                "categorical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                2,
+                12
+            ],
+            [
+                0,
+                "inf"
+            ],
+            [
+                4,
+                10
+            ]
+        ],
+        "required_fields_icons": [
+            "group"
+        ],
+        "required_other_icons": [],
+        "required_fields_colors": [
+            "group"
+        ],
+        "required_other_colors": [],
+        "supported_effects": [
+            "spacing"
+        ],
+        "min_height": 400,
+        "min_width": 400,
+        "background": "no",
+        "icon_mark": "none",
+        "icon_label": "side",
+        "has_x_axis": "no",
+        "has_y_axis": "no"
+    },
+    "bump_chart_11": {
+        "chart_type": "Sorted Lines Chart",
+        "chart_name": "bump_chart_11",
+        "is_composite": false,
+        "chart_for": "comparison",
+        "required_fields": [
+            "x",
+            "y",
+            "group"
+        ],
+        "required_fields_type": [
+            [
+                "temporal"
+            ],
+            [
+                "numerical"
+            ],
+            [
+                "categorical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                2,
+                12
+            ],
+            [
+                0,
+                "inf"
+            ],
+            [
+                4,
+                10
+            ]
+        ],
+        "required_fields_icons": [],
+        "required_other_icons": [],
+        "required_fields_colors": [
+            "group"
+        ],
+        "required_other_colors": [],
+        "supported_effects": [
+            "spacing"
+        ],
+        "min_height": 400,
+        "min_width": 400,
+        "background": "no",
+        "icon_mark": "none",
+        "icon_label": "none",
+        "has_x_axis": "no",
+        "has_y_axis": "no"
+    },
+    "bump_chart_10": {
+        "chart_type": "Sorted Lines Chart",
+        "chart_name": "bump_chart_10",
+        "is_composite": false,
+        "chart_for": "comparison",
+        "required_fields": [
+            "x",
+            "y",
+            "group"
+        ],
+        "required_fields_type": [
+            [
+                "temporal"
+            ],
+            [
+                "numerical"
+            ],
+            [
+                "categorical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                2,
+                12
+            ],
+            [
+                0,
+                "inf"
+            ],
+            [
+                4,
+                10
+            ]
+        ],
+        "required_fields_icons": [
+            "group"
+        ],
+        "required_other_icons": [],
+        "required_fields_colors": [
+            "group"
+        ],
+        "required_other_colors": [],
+        "supported_effects": [
+            "spacing"
+        ],
+        "min_height": 400,
+        "min_width": 400,
+        "background": "no",
+        "icon_mark": "none",
+        "icon_label": "side",
+        "has_x_axis": "no",
+        "has_y_axis": "no"
+    },
     "small_multiple_step_line_graph_01": {
         "chart_type": "Small Multiple Step Line Graph",
         "chart_name": "small_multiple_step_line_graph_01",
@@ -10899,6 +11337,102 @@
         "background": "dark",
         "icon_mark": "side",
         "icon_label": "side",
+        "has_x_axis": "yes",
+        "has_y_axis": "yes"
+    },
+    "slope_chart_02": {
+        "chart_type": "Slope Chart",
+        "chart_name": "slope_chart_02",
+        "required_fields": [
+            "x",
+            "y",
+            "group"
+        ],
+        "required_fields_type": [
+            [
+                "temporal"
+            ],
+            [
+                "numerical"
+            ],
+            [
+                "categorical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                3,
+                30
+            ],
+            [
+                "-inf",
+                "inf"
+            ],
+            [
+                2,
+                6
+            ]
+        ],
+        "required_fields_icons": [],
+        "required_other_icons": [],
+        "required_fields_colors": [
+            "group"
+        ],
+        "required_other_colors": [],
+        "supported_effects": [],
+        "min_height": 400,
+        "min_width": 800,
+        "background": "dark",
+        "icon_mark": "none",
+        "icon_label": "none",
+        "has_x_axis": "yes",
+        "has_y_axis": "yes"
+    },
+    "slope_chart_01": {
+        "chart_type": "Slope Chart",
+        "chart_name": "slope_chart_01",
+        "required_fields": [
+            "x",
+            "y",
+            "group"
+        ],
+        "required_fields_type": [
+            [
+                "temporal"
+            ],
+            [
+                "numerical"
+            ],
+            [
+                "categorical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                3,
+                30
+            ],
+            [
+                "-inf",
+                "inf"
+            ],
+            [
+                2,
+                6
+            ]
+        ],
+        "required_fields_icons": [],
+        "required_other_icons": [],
+        "required_fields_colors": [
+            "group"
+        ],
+        "required_other_colors": [],
+        "supported_effects": [],
+        "min_height": 400,
+        "min_width": 800,
+        "background": "light",
+        "icon_mark": "none",
+        "icon_label": "none",
         "has_x_axis": "yes",
         "has_y_axis": "yes"
     },
@@ -10998,54 +11532,6 @@
         "has_x_axis": "yes",
         "has_y_axis": "yes"
     },
-    "slope_chart_01": {
-        "chart_type": "Slope Chart",
-        "chart_name": "slope_chart_01",
-        "required_fields": [
-            "x",
-            "y",
-            "group"
-        ],
-        "required_fields_type": [
-            [
-                "temporal"
-            ],
-            [
-                "numerical"
-            ],
-            [
-                "categorical"
-            ]
-        ],
-        "required_fields_range": [
-            [
-                3,
-                30
-            ],
-            [
-                "-inf",
-                "inf"
-            ],
-            [
-                2,
-                6
-            ]
-        ],
-        "required_fields_icons": [],
-        "required_other_icons": [],
-        "required_fields_colors": [
-            "group"
-        ],
-        "required_other_colors": [],
-        "supported_effects": [],
-        "min_height": 400,
-        "min_width": 800,
-        "background": "light",
-        "icon_mark": "none",
-        "icon_label": "none",
-        "has_x_axis": "yes",
-        "has_y_axis": "yes"
-    },
     "spline_graph_01": {
         "chart_type": "Spline Graph",
         "chart_name": "spline_graph_01",
@@ -11096,55 +11582,6 @@
         "has_y_axis": "yes",
         "chart_for": "comparison"
     },
-    "line_chart_01": {
-        "chart_type": "Line Graph",
-        "chart_name": "line_chart_01",
-        "is_composite": false,
-        "required_fields": [
-            "x",
-            "y"
-        ],
-        "required_fields_type": [
-            [
-                "categorical"
-            ],
-            [
-                "numerical"
-            ]
-        ],
-        "required_fields_range": [
-            [
-                2,
-                12
-            ],
-            [
-                0,
-                "inf"
-            ]
-        ],
-        "required_fields_icons": [
-            "x"
-        ],
-        "required_other_icons": [],
-        "required_fields_colors": [],
-        "required_other_colors": [
-            "primary"
-        ],
-        "supported_effects": [
-            "shadow",
-            "radius_corner",
-            "gradient",
-            "stroke",
-            "spacing"
-        ],
-        "min_height": 400,
-        "min_width": 400,
-        "background": "no",
-        "icon_mark": "overlay",
-        "icon_label": "side",
-        "has_x_axis": "no",
-        "has_y_axis": "no"
-    },
     "step_line_graph_01": {
         "chart_type": "Step Line Graph",
         "chart_name": "step_line_graph_01",
@@ -11187,7 +11624,7 @@
         "chart_for": "trend"
     },
     "horizontal_pictorial_percentage_bar_chart_01": {
-        "chart_type": "Horizontal Pictorial Percentage Bar Chart",
+        "chart_type": "Pictorial Percentage Bar Chart",
         "chart_name": "horizontal_pictorial_percentage_bar_chart_01",
         "is_composite": false,
         "required_fields": [
@@ -11228,7 +11665,7 @@
         "has_y_axis": "no"
     },
     "vertical_pictorial_percentage_bar_chart_01": {
-        "chart_type": "Vertical Pictorial Percentage Bar Chart",
+        "chart_type": "Pictorial Percentage Bar Chart",
         "chart_name": "vertical_pictorial_percentage_bar_chart_01",
         "is_composite": false,
         "required_fields": [
@@ -11267,6 +11704,193 @@
         "icon_label": "side",
         "has_x_axis": "no",
         "has_y_axis": "no"
+    },
+    "grouped_dot_chart_02": {
+        "chart_type": "Grouped Dot Chart",
+        "chart_name": "grouped_dot_chart_02",
+        "chart_for": "comparison",
+        "is_composite": false,
+        "required_fields": [
+            "x",
+            "y",
+            "group"
+        ],
+        "required_fields_type": [
+            [
+                "categorical"
+            ],
+            [
+                "numerical"
+            ],
+            [
+                "categorical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                2,
+                20
+            ],
+            [
+                0,
+                "inf"
+            ],
+            [
+                2,
+                5
+            ]
+        ],
+        "required_fields_icons": [
+            "x"
+        ],
+        "required_other_icons": [],
+        "required_fields_colors": [
+            "group"
+        ],
+        "hierarchy": [
+            "group"
+        ],
+        "required_other_colors": [
+            "primary"
+        ],
+        "supported_effects": [
+            "shadow",
+            "radius_corner",
+            "gradient",
+            "stroke",
+            "spacing"
+        ],
+        "min_height": 400,
+        "min_width": 400,
+        "background": "no",
+        "icon_mark": "none",
+        "icon_label": "side",
+        "has_x_axis": "yes",
+        "has_y_axis": "yes"
+    },
+    "grouped_scatterplot_02": {
+        "chart_type": "Grouped Dot Chart",
+        "chart_name": "grouped_scatterplot_02",
+        "chart_for": "comparison",
+        "is_composite": false,
+        "required_fields": [
+            "x",
+            "y",
+            "group"
+        ],
+        "required_fields_type": [
+            [
+                "categorical"
+            ],
+            [
+                "numerical"
+            ],
+            [
+                "categorical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                2,
+                20
+            ],
+            [
+                0,
+                "inf"
+            ],
+            [
+                2,
+                5
+            ]
+        ],
+        "required_fields_icons": [
+            "x"
+        ],
+        "required_other_icons": [],
+        "required_fields_colors": [
+            "group"
+        ],
+        "hierarchy": [
+            "group"
+        ],
+        "required_other_colors": [
+            "primary"
+        ],
+        "supported_effects": [
+            "shadow",
+            "radius_corner",
+            "gradient",
+            "stroke",
+            "spacing"
+        ],
+        "min_height": 400,
+        "min_width": 400,
+        "background": "no",
+        "icon_mark": "none",
+        "icon_label": "side",
+        "has_x_axis": "yes",
+        "has_y_axis": "yes"
+    },
+    "grouped_dot_chart_03": {
+        "chart_type": "Grouped Dot Chart",
+        "chart_name": "grouped_dot_chart_03",
+        "chart_for": "comparison",
+        "is_composite": false,
+        "required_fields": [
+            "x",
+            "y",
+            "group"
+        ],
+        "required_fields_type": [
+            [
+                "categorical"
+            ],
+            [
+                "numerical"
+            ],
+            [
+                "categorical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                2,
+                20
+            ],
+            [
+                0,
+                "inf"
+            ],
+            [
+                2,
+                5
+            ]
+        ],
+        "required_fields_icons": [
+            "group"
+        ],
+        "required_other_icons": [],
+        "required_fields_colors": [],
+        "hierarchy": [
+            "group"
+        ],
+        "required_other_colors": [
+            "primary"
+        ],
+        "supported_effects": [
+            "shadow",
+            "radius_corner",
+            "gradient",
+            "stroke",
+            "spacing"
+        ],
+        "min_height": 400,
+        "min_width": 400,
+        "background": "no",
+        "icon_mark": "none",
+        "icon_label": "side",
+        "has_x_axis": "yes",
+        "has_y_axis": "yes"
     },
     "scatterplot_03": {
         "chart_type": "Scatterplot",
@@ -11622,69 +12246,6 @@
         "background": "no",
         "icon_mark": "none",
         "icon_label": "none",
-        "has_x_axis": "yes",
-        "has_y_axis": "yes"
-    },
-    "grouped_scatterplot_02": {
-        "chart_type": "Grouped Scatterplot",
-        "chart_name": "grouped_scatterplot_02",
-        "chart_for": "comparison",
-        "is_composite": false,
-        "required_fields": [
-            "x",
-            "y",
-            "group"
-        ],
-        "required_fields_type": [
-            [
-                "categorical"
-            ],
-            [
-                "numerical"
-            ],
-            [
-                "categorical"
-            ]
-        ],
-        "required_fields_range": [
-            [
-                2,
-                20
-            ],
-            [
-                0,
-                "inf"
-            ],
-            [
-                2,
-                5
-            ]
-        ],
-        "required_fields_icons": [
-            "x"
-        ],
-        "required_other_icons": [],
-        "required_fields_colors": [
-            "group"
-        ],
-        "hierarchy": [
-            "group"
-        ],
-        "required_other_colors": [
-            "primary"
-        ],
-        "supported_effects": [
-            "shadow",
-            "radius_corner",
-            "gradient",
-            "stroke",
-            "spacing"
-        ],
-        "min_height": 400,
-        "min_width": 400,
-        "background": "no",
-        "icon_mark": "none",
-        "icon_label": "side",
         "has_x_axis": "yes",
         "has_y_axis": "yes"
     },
@@ -12208,6 +12769,119 @@
         "has_x_axis": "no",
         "has_y_axis": "no"
     },
+    "vertical_bar_chart_03": {
+        "chart_type": "Vertical Bar Chart With Circle",
+        "chart_name": "vertical_bar_chart_03",
+        "is_composite": true,
+        "required_fields": [
+            [
+                "x",
+                "y",
+                "y2"
+            ]
+        ],
+        "required_fields_type": [
+            [
+                "categorical"
+            ],
+            [
+                "numerical"
+            ],
+            [
+                "numerical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                2,
+                12
+            ],
+            [
+                "-inf",
+                "inf"
+            ],
+            [
+                0,
+                "inf"
+            ]
+        ],
+        "required_fields_icons": [
+            "x"
+        ],
+        "required_other_icons": [],
+        "required_fields_colors": [],
+        "required_other_colors": [
+            "primary",
+            "secondary"
+        ],
+        "supported_effects": [
+            "radius_corner",
+            "spacing"
+        ],
+        "min_height": 400,
+        "min_width": 400,
+        "background": "no",
+        "icon_mark": "none",
+        "icon_label": "side",
+        "has_x_axis": "no",
+        "has_y_axis": "no"
+    },
+    "vertical_bar_chart_02": {
+        "chart_type": "Vertical Bar Chart With Circle",
+        "chart_name": "vertical_bar_chart_02",
+        "is_composite": true,
+        "required_fields": [
+            "x",
+            "y",
+            "y2"
+        ],
+        "required_fields_type": [
+            [
+                "categorical"
+            ],
+            [
+                "numerical"
+            ],
+            [
+                "numerical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                2,
+                12
+            ],
+            [
+                0,
+                "inf"
+            ],
+            [
+                0,
+                "inf"
+            ]
+        ],
+        "required_fields_icons": [],
+        "required_other_icons": [],
+        "required_fields_colors": [],
+        "required_other_colors": [
+            "primary",
+            "secondary"
+        ],
+        "supported_effects": [
+            "radius_corner",
+            "spacing",
+            "shadow",
+            "gradient",
+            "stroke"
+        ],
+        "min_height": 400,
+        "min_width": 400,
+        "background": "no",
+        "icon_mark": "none",
+        "icon_label": "none",
+        "has_x_axis": "no",
+        "has_y_axis": "no"
+    },
     "vertical_waffle_chart_02": {
         "chart_type": "Vertical Waffle Chart",
         "chart_name": "vertical_waffle_chart_02",
@@ -12415,10 +13089,10 @@
         "required_fields_range": [
             [
                 2,
-                12
+                6
             ],
             [
-                0,
+                3,
                 20
             ]
         ],
@@ -12442,9 +13116,99 @@
         "has_x_axis": "no",
         "has_y_axis": "no"
     },
-    "vertical_group_dot_bar_chart_0": {
-        "chart_type": "Vertical Group Dot Bar Chart",
-        "chart_name": "vertical_group_dot_bar_chart_0",
+    "histogram_01": {
+        "chart_type": "Histogram",
+        "chart_name": "histogram_01",
+        "required_fields": [
+            "x",
+            "y"
+        ],
+        "required_fields_type": [
+            [
+                "temporal"
+            ],
+            [
+                "numerical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                15,
+                50
+            ],
+            [
+                0,
+                "inf"
+            ]
+        ],
+        "required_fields_icons": [],
+        "required_other_icons": [],
+        "required_fields_colors": [],
+        "required_other_colors": [
+            "primary",
+            "secondary",
+            "background"
+        ],
+        "supported_effects": [
+            "gradient",
+            "opacity"
+        ],
+        "min_height": 600,
+        "min_width": 800,
+        "background": "light",
+        "icon_mark": "none",
+        "icon_label": "none",
+        "has_x_axis": "yes",
+        "has_y_axis": "yes"
+    },
+    "histogram_02": {
+        "chart_type": "Histogram",
+        "chart_name": "histogram_02",
+        "required_fields": [
+            "x",
+            "y"
+        ],
+        "required_fields_type": [
+            [
+                "temporal"
+            ],
+            [
+                "numerical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                15,
+                50
+            ],
+            [
+                0,
+                "inf"
+            ]
+        ],
+        "required_fields_icons": [],
+        "required_other_icons": [],
+        "required_fields_colors": [],
+        "required_other_colors": [
+            "primary",
+            "secondary",
+            "background"
+        ],
+        "supported_effects": [
+            "gradient",
+            "opacity"
+        ],
+        "min_height": 600,
+        "min_width": 800,
+        "background": "dark",
+        "icon_mark": "none",
+        "icon_label": "none",
+        "has_x_axis": "yes",
+        "has_y_axis": "yes"
+    },
+    "histogram_05": {
+        "chart_type": "Histogram",
+        "chart_name": "histogram_05",
         "required_fields": [
             "x",
             "y",
@@ -12452,7 +13216,7 @@
         ],
         "required_fields_type": [
             [
-                "categorical"
+                "temporal"
             ],
             [
                 "numerical"
@@ -12463,21 +13227,229 @@
         ],
         "required_fields_range": [
             [
-                3,
-                6
+                10,
+                50
+            ],
+            [
+                0,
+                "inf"
+            ],
+            [
+                2,
+                2
+            ]
+        ],
+        "required_fields_icons": [],
+        "required_other_icons": [],
+        "required_fields_colors": [
+            "group"
+        ],
+        "required_other_colors": [
+            "primary",
+            "secondary",
+            "background"
+        ],
+        "supported_effects": [
+            "gradient",
+            "opacity"
+        ],
+        "min_height": 600,
+        "min_width": 800,
+        "background": "light",
+        "icon_mark": "none",
+        "icon_label": "none",
+        "has_x_axis": "yes",
+        "has_y_axis": "yes"
+    },
+    "histogram_06": {
+        "chart_type": "Histogram",
+        "chart_name": "histogram_06",
+        "required_fields": [
+            "x",
+            "y",
+            "group"
+        ],
+        "required_fields_type": [
+            [
+                "temporal"
+            ],
+            [
+                "numerical"
+            ],
+            [
+                "categorical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                10,
+                50
+            ],
+            [
+                0,
+                "inf"
+            ],
+            [
+                2,
+                2
+            ]
+        ],
+        "required_fields_icons": [],
+        "required_other_icons": [],
+        "required_fields_colors": [
+            "group"
+        ],
+        "required_other_colors": [
+            "primary",
+            "secondary",
+            "background"
+        ],
+        "supported_effects": [
+            "gradient",
+            "opacity"
+        ],
+        "min_height": 600,
+        "min_width": 800,
+        "background": "dark",
+        "icon_mark": "none",
+        "icon_label": "none",
+        "has_x_axis": "yes",
+        "has_y_axis": "yes"
+    },
+    "histogram_04": {
+        "chart_type": "Histogram",
+        "chart_name": "histogram_04",
+        "required_fields": [
+            "x",
+            "y",
+            "group"
+        ],
+        "required_fields_type": [
+            [
+                "temporal"
+            ],
+            [
+                "numerical"
+            ],
+            [
+                "categorical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                10,
+                50
+            ],
+            [
+                0,
+                "inf"
+            ],
+            [
+                2,
+                2
+            ]
+        ],
+        "required_fields_icons": [],
+        "required_other_icons": [],
+        "required_fields_colors": [
+            "group"
+        ],
+        "required_other_colors": [
+            "primary",
+            "secondary",
+            "background"
+        ],
+        "supported_effects": [
+            "gradient",
+            "opacity"
+        ],
+        "min_height": 600,
+        "min_width": 800,
+        "background": "dark",
+        "icon_mark": "none",
+        "icon_label": "none",
+        "has_x_axis": "yes",
+        "has_y_axis": "yes"
+    },
+    "vertical_bar_chart_11": {
+        "chart_type": "Histogram",
+        "chart_name": "vertical_bar_chart_11",
+        "required_fields": [
+            "x",
+            "y"
+        ],
+        "required_fields_type": [
+            [
+                "temporal"
+            ],
+            [
+                "numerical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                20,
+                40
             ],
             [
                 0,
                 100
-            ],
-            [
-                3,
-                4
             ]
         ],
-        "required_fields_icons": [
+        "required_fields_icons": [],
+        "required_other_icons": [],
+        "required_fields_colors": [],
+        "required_other_colors": [
+            "primary",
+            "secondary",
+            "background"
+        ],
+        "supported_effects": [
+            "gradient",
+            "opacity"
+        ],
+        "min_height": 600,
+        "min_width": 800,
+        "background": "light",
+        "icon_mark": "none",
+        "icon_label": "none",
+        "has_x_axis": "yes",
+        "has_y_axis": "yes"
+    },
+    "histogram_03": {
+        "chart_type": "Histogram",
+        "chart_name": "histogram_03",
+        "required_fields": [
+            "x",
+            "y",
             "group"
         ],
+        "required_fields_type": [
+            [
+                "temporal"
+            ],
+            [
+                "numerical"
+            ],
+            [
+                "categorical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                10,
+                50
+            ],
+            [
+                0,
+                "inf"
+            ],
+            [
+                2,
+                2
+            ]
+        ],
+        "required_fields_icons": [],
         "required_other_icons": [],
         "required_fields_colors": [
             "group"
@@ -12609,51 +13581,6 @@
         "has_x_axis": "yes",
         "has_y_axis": "yes"
     },
-    "vertical_bullet_chart_01": {
-        "chart_type": "Vertical Bullet Chart",
-        "chart_name": "vertical_bullet_chart_01",
-        "required_fields": [
-            "x",
-            "y"
-        ],
-        "required_fields_type": [
-            [
-                "categorical"
-            ],
-            [
-                "numerical"
-            ]
-        ],
-        "required_fields_range": [
-            [
-                3,
-                12
-            ],
-            [
-                0,
-                100
-            ]
-        ],
-        "required_fields_icons": [],
-        "required_other_icons": [],
-        "required_fields_colors": [],
-        "required_other_colors": [
-            "primary",
-            "secondary",
-            "background"
-        ],
-        "supported_effects": [
-            "gradient",
-            "opacity"
-        ],
-        "min_height": 600,
-        "min_width": 800,
-        "background": "light",
-        "icon_mark": "none",
-        "icon_label": "none",
-        "has_x_axis": "yes",
-        "has_y_axis": "yes"
-    },
     "vertical_group_bar_chart_8": {
         "chart_type": "Grouped Bar Chart",
         "chart_name": "vertical_group_bar_chart_8",
@@ -12756,115 +13683,8 @@
         "has_x_axis": "no",
         "has_y_axis": "no"
     },
-    "vertical_range_chart_01": {
-        "chart_type": "Vertical Range Chart",
-        "chart_name": "vertical_range_chart_01",
-        "chart_for": "comparison",
-        "is_composite": false,
-        "required_fields": [
-            "x",
-            "y",
-            "group"
-        ],
-        "required_fields_type": [
-            [
-                "categorical"
-            ],
-            [
-                "numerical"
-            ],
-            [
-                "categorical"
-            ]
-        ],
-        "required_fields_range": [
-            [
-                2,
-                12
-            ],
-            [
-                0,
-                "inf"
-            ],
-            [
-                2,
-                2
-            ]
-        ],
-        "required_fields_icons": [],
-        "required_other_icons": [],
-        "required_fields_colors": [
-            "group"
-        ],
-        "required_other_colors": [
-            "primary"
-        ],
-        "supported_effects": [
-            "shadow",
-            "radius_corner",
-            "gradient",
-            "stroke",
-            "spacing"
-        ],
-        "min_height": 400,
-        "min_width": 400,
-        "background": "dark",
-        "icon_mark": "none",
-        "icon_label": "side",
-        "has_x_axis": "no",
-        "has_y_axis": "no"
-    },
-    "vertical_lollipop_chart_01": {
-        "chart_type": "Vertical Lollipop Chart",
-        "chart_name": "vertical_lollipop_chart_01",
-        "is_composite": false,
-        "required_fields": [
-            "x",
-            "y"
-        ],
-        "required_fields_type": [
-            [
-                "categorical"
-            ],
-            [
-                "numerical"
-            ]
-        ],
-        "required_fields_range": [
-            [
-                2,
-                12
-            ],
-            [
-                0,
-                "inf"
-            ]
-        ],
-        "required_fields_icons": [
-            "x"
-        ],
-        "required_other_icons": [],
-        "required_fields_colors": [],
-        "required_other_colors": [
-            "primary"
-        ],
-        "supported_effects": [
-            "shadow",
-            "radius_corner",
-            "gradient",
-            "stroke",
-            "spacing"
-        ],
-        "min_height": 400,
-        "min_width": 400,
-        "background": "no",
-        "icon_mark": "overlay",
-        "icon_label": "side",
-        "has_x_axis": "no",
-        "has_y_axis": "no"
-    },
     "proportional_area_chart_circle_07": {
-        "chart_type": "Proportional Area Chart(circle)",
+        "chart_type": "Proportional Area Chart (Circle)",
         "chart_name": "proportional_area_chart_circle_07",
         "is_composite": false,
         "required_fields": [
@@ -12909,7 +13729,7 @@
         "has_y_axis": "no"
     },
     "proportional_area_chart_circle_02": {
-        "chart_type": "Proportional Area Chart(circle)",
+        "chart_type": "Proportional Area Chart (Circle)",
         "chart_name": "proportional_area_chart_circle_02",
         "is_composite": false,
         "required_fields": [
@@ -12954,7 +13774,7 @@
         "has_y_axis": "no"
     },
     "proportional_area_chart_circle_02_hand": {
-        "chart_type": "Proportional Area Chart(circle)",
+        "chart_type": "Proportional Area Chart (Circle)",
         "chart_name": "proportional_area_chart_circle_02_hand",
         "is_composite": false,
         "required_fields": [
@@ -12999,7 +13819,7 @@
         "has_y_axis": "no"
     },
     "proportional_area_chart_circle_05": {
-        "chart_type": "Proportional Area Chart(circle)",
+        "chart_type": "Proportional Area Chart (Circle)",
         "chart_name": "proportional_area_chart_circle_05",
         "is_composite": false,
         "required_fields": [
@@ -13055,7 +13875,7 @@
         "has_y_axis": "no"
     },
     "proportional_area_chart_circle_06": {
-        "chart_type": "Proportional Area Chart(circle)",
+        "chart_type": "Proportional Area Chart (Circle)",
         "chart_name": "proportional_area_chart_circle_06",
         "is_composite": false,
         "required_fields": [
@@ -13098,7 +13918,7 @@
         "has_y_axis": "no"
     },
     "proportional_area_chart_circle_01": {
-        "chart_type": "Proportional Area Chart(circle)",
+        "chart_type": "Proportional Area Chart (Circle)",
         "chart_name": "proportional_area_chart_circle_01",
         "is_composite": false,
         "required_fields": [
@@ -13141,7 +13961,7 @@
         "has_y_axis": "no"
     },
     "proportional_area_chart_circle_03": {
-        "chart_type": "Proportional Area Chart(circle)",
+        "chart_type": "Proportional Area Chart (Circle)",
         "chart_name": "proportional_area_chart_circle_03",
         "is_composite": false,
         "required_fields": [
@@ -13195,7 +14015,7 @@
         "has_y_axis": "no"
     },
     "proportional_area_chart_circle_3d_01": {
-        "chart_type": "Proportional Area Chart(circle)",
+        "chart_type": "Proportional Area Chart (Circle)",
         "chart_name": "proportional_area_chart_circle_3d_01",
         "is_composite": false,
         "required_fields": [
@@ -13238,7 +14058,7 @@
         "has_y_axis": "no"
     },
     "proportional_area_chart_circle_10": {
-        "chart_type": "Proportional Area Chart(circle)",
+        "chart_type": "Proportional Area Chart (Circle)",
         "chart_name": "proportional_area_chart_circle_10",
         "is_composite": false,
         "required_fields": [
@@ -13294,7 +14114,7 @@
         "has_y_axis": "no"
     },
     "proportional_area_chart_circle_08": {
-        "chart_type": "Proportional Area Chart(circle)",
+        "chart_type": "Proportional Area Chart (Circle)",
         "chart_name": "proportional_area_chart_circle_08",
         "is_composite": false,
         "required_fields": [
@@ -13348,7 +14168,7 @@
         "has_y_axis": "no"
     },
     "proportional_area_chart_circle_09": {
-        "chart_type": "Proportional Area Chart(circle)",
+        "chart_type": "Proportional Area Chart (Circle)",
         "chart_name": "proportional_area_chart_circle_09",
         "is_composite": false,
         "required_fields": [
@@ -13402,7 +14222,7 @@
         "has_y_axis": "no"
     },
     "proportional_area_chart_circle_04": {
-        "chart_type": "Proportional Area Chart(circle)",
+        "chart_type": "Proportional Area Chart (Circle)",
         "chart_name": "proportional_area_chart_circle_04",
         "is_composite": false,
         "required_fields": [
@@ -14827,6 +15647,98 @@
         "has_x_axis": "yes",
         "has_y_axis": "yes"
     },
+    "spline_area_chart_02": {
+        "chart_type": "Spline Area Chart",
+        "chart_name": "spline_area_chart_02",
+        "required_fields": [
+            "x",
+            "y"
+        ],
+        "required_fields_type": [
+            [
+                "temporal"
+            ],
+            [
+                "numerical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                5,
+                30
+            ],
+            [
+                0,
+                "inf"
+            ]
+        ],
+        "required_fields_icons": [],
+        "required_other_icons": [
+            "primary"
+        ],
+        "required_fields_colors": [],
+        "required_other_colors": [
+            "primary"
+        ],
+        "supported_effects": [
+            "gradient",
+            "opacity"
+        ],
+        "min_height": 400,
+        "min_width": 800,
+        "background": "light",
+        "icon_mark": "none",
+        "icon_label": "none",
+        "has_x_axis": "yes",
+        "has_y_axis": "no",
+        "chart_for": "trend"
+    },
+    "spline_area_chart_01": {
+        "chart_type": "Spline Area Chart",
+        "chart_name": "spline_area_chart_01",
+        "required_fields": [
+            "x",
+            "y"
+        ],
+        "required_fields_type": [
+            [
+                "temporal"
+            ],
+            [
+                "numerical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                5,
+                30
+            ],
+            [
+                0,
+                "inf"
+            ]
+        ],
+        "required_fields_icons": [],
+        "required_other_icons": [
+            "primary"
+        ],
+        "required_fields_colors": [],
+        "required_other_colors": [
+            "primary"
+        ],
+        "supported_effects": [
+            "gradient",
+            "opacity"
+        ],
+        "min_height": 400,
+        "min_width": 800,
+        "background": "dark",
+        "icon_mark": "none",
+        "icon_label": "none",
+        "has_x_axis": "yes",
+        "has_y_axis": "no",
+        "chart_for": "trend"
+    },
     "layered_area_chart_03": {
         "chart_type": "Layered Area Chart",
         "chart_name": "layered_area_chart_03",
@@ -14878,104 +15790,8 @@
         "has_x_axis": "yes",
         "has_y_axis": "yes"
     },
-    "spline_stacked_area_chart_01": {
-        "chart_type": "Spline Stacked Area Chart",
-        "chart_name": "spline_stacked_area_chart_01",
-        "required_fields": [
-            "x",
-            "y",
-            "group"
-        ],
-        "required_fields_type": [
-            [
-                "temporal"
-            ],
-            [
-                "numerical"
-            ],
-            [
-                "categorical"
-            ]
-        ],
-        "required_fields_range": [
-            [
-                5,
-                50
-            ],
-            [
-                0,
-                "inf"
-            ],
-            [
-                2,
-                6
-            ]
-        ],
-        "required_fields_icons": [
-            "group"
-        ],
-        "required_other_icons": [],
-        "required_fields_colors": [
-            "group"
-        ],
-        "required_other_colors": [],
-        "supported_effects": [],
-        "min_height": 600,
-        "min_width": 800,
-        "background": "dark",
-        "icon_mark": "overlay",
-        "icon_label": "side",
-        "has_x_axis": "yes",
-        "has_y_axis": "yes"
-    },
-    "spline_area_chart_01": {
-        "chart_type": "Spline Area Chart",
-        "chart_name": "spline_area_chart_01",
-        "required_fields": [
-            "x",
-            "y"
-        ],
-        "required_fields_type": [
-            [
-                "temporal"
-            ],
-            [
-                "numerical"
-            ]
-        ],
-        "required_fields_range": [
-            [
-                5,
-                30
-            ],
-            [
-                0,
-                "inf"
-            ]
-        ],
-        "required_fields_icons": [],
-        "required_other_icons": [
-            "primary"
-        ],
-        "required_fields_colors": [],
-        "required_other_colors": [
-            "primary"
-        ],
-        "supported_effects": [
-            "gradient",
-            "opacity"
-        ],
-        "min_height": 400,
-        "min_width": 800,
-        "background": "dark",
-        "icon_mark": "none",
-        "icon_label": "none",
-        "has_x_axis": "yes",
-        "has_y_axis": "no",
-        "chart_for": "trend"
-    },
     "spline_layered_area_chart_01": {
-        "chart_type": "Spline Layered Area Chart",
+        "chart_type": "Layered Area Chart",
         "chart_name": "spline_layered_area_chart_01",
         "required_fields": [
             "x",
@@ -15077,7 +15893,7 @@
         "chart_for": "comparison"
     },
     "spline_multiple_area_chart_01": {
-        "chart_type": "Spline Multiple Area Chart",
+        "chart_type": "Multiple Area Chart",
         "chart_name": "spline_multiple_area_chart_01",
         "required_fields": [
             "x",

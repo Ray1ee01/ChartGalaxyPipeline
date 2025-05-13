@@ -1,7 +1,7 @@
 /*
 REQUIREMENTS_BEGIN
 {
-    "chart_type": "Vertical Bar Chart",
+    "chart_type": "Vertical Bar Chart With Circle",
     "chart_name": "vertical_bar_chart_03",
     "is_composite": true,
     "required_fields": [["x", "y", "y2"]],

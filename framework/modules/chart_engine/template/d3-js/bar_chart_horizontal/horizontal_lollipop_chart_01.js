@@ -1,7 +1,7 @@
 /*
 REQUIREMENTS_BEGIN
 {
-    "chart_type": "Horizontal Lollipop Chart",
+    "chart_type": "Lollipop Chart",
     "chart_name": "horizontal_lollipop_chart_01",
     "is_composite": false,
     "required_fields": ["x", "y"],

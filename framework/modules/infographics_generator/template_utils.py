@@ -198,7 +198,6 @@ def check_template_compatibility(data: Dict, templates: Dict, specific_chart_nam
                                 continue
 
                             if not check_field_color_compatibility(req, data):
-                                print(f"template {template_key} failed color compatibility check")
                                 continue
                             
                             if not check_field_icon_compatibility(req, data):

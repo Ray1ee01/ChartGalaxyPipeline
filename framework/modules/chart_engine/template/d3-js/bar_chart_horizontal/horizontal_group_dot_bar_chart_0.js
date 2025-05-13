@@ -1,7 +1,7 @@
 /*
 REQUIREMENTS_BEGIN
 {
-    "chart_type": "Horizontal Group Dot Bar Chart",
+    "chart_type": "Group Dot Bar Chart",
     "chart_name": "horizontal_group_dot_bar_chart_0",
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],

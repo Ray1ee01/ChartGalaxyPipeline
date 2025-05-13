@@ -2,10 +2,10 @@
 REQUIREMENTS_BEGIN
 {
     "chart_type": "Histogram",
-    "chart_name": "vertical_bar_chart_11",
+    "chart_name": "histogram_01",
     "required_fields": ["x", "y"],
     "required_fields_type": [["temporal"], ["numerical"]],
-    "required_fields_range": [[20,40], [0, 100]],
+    "required_fields_range": [[15, 50], [0, "inf"]],
     "required_fields_icons": [],
     "required_other_icons": [],
     "required_fields_colors": [],
@@ -39,8 +39,8 @@ function makeChart(containerSelector, data) {
     const colors = jsonData.colors || { 
         text_color: "#333333",
         other: { 
-            primary: "#D32F2F",    // Red for "Still active"
-            secondary: "#AAAAAA",  // Gray for "Ended"
+            primary: "#D32F2F",    // 主要颜色
+            secondary: "#AAAAAA",  // 次要颜色
             background: "#F0F0F0" 
         }
     };  // 颜色设置
@@ -52,20 +52,6 @@ function makeChart(containerSelector, data) {
     
     // 清空容器
     d3.select(containerSelector).html("");
-    
-    // 数值单位规范
-    // 添加数值格式化函数
-    const formatValue = (value) => {
-        if (value >= 1000000000) {
-            return d3.format("~g")(value / 1000000000) + "B";
-        } else if (value >= 1000000) {
-            return d3.format("~g")(value / 1000000) + "M";
-        } else if (value >= 1000) {
-            return d3.format("~g")(value / 1000) + "K";
-        } else {
-            return d3.format("~g")(value);
-        }
-    }
     
     // ---------- 2. 尺寸和布局设置 ----------
     
@@ -94,7 +80,6 @@ function makeChart(containerSelector, data) {
     // 获取字段单位（如果存在）
     let xUnit = "";
     let yUnit = "";
-    let groupUnit = "";
     
     if (dataColumns.find(col => col.role === "x")?.unit !== "none") {
         xUnit = dataColumns.find(col => col.role === "x").unit;
@@ -104,52 +89,61 @@ function makeChart(containerSelector, data) {
         yUnit = dataColumns.find(col => col.role === "y").unit;
     }
 
+    // 数值单位规范
+    // 添加数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    }
     
     // ---------- 4. 数据处理 ----------
     
-    // 处理数据，确保数据格式正确
-    const processedData = chartData.map(d => ({
-        category: d[xField],
-        value: +d[yField] // 确保转换为数字
+    // 处理数据，确保数据格式正确，将时间字符串转换为日期对象
+    const processedData = chartData.map((d, i) => ({
+        time: new Date(d[xField]), // 确保转换为日期对象
+        value: +d[yField], // 确保转换为数字
+        order: i // 添加顺序索引
     }));
+    
+    // 排序数据（按时间升序）
+    processedData.sort((a, b) => a.time - b.time);
+    
+    // 重新分配顺序
+    processedData.forEach((d, i) => {
+        d.order = i;
+    });
+    
     // ---------- 5. 创建比例尺 ----------
     
-    // X轴比例尺 - 使用分类数据
-    const xScale = d3.scaleBand()
-        .domain(processedData.map(d => d.category))
-        .range([0, chartWidth])
-        .padding(0.05);
+    // 获取时间范围
+    const timeExtent = d3.extent(processedData, d => d.time);
+    
+    // X轴比例尺 - 使用序号比例尺
+    const xScale = d3.scaleLinear()
+        .domain([0, processedData.length - 1])
+        .range([0, chartWidth]);
+    
+    // 时间格式化函数 - 使用nice让范围更合理
+    const timeScale = d3.scaleTime()
+        .domain(timeExtent)
+        .range([0, processedData.length - 1])
+        .nice(); // 使用nice优化时间范围
+    
+    // 计算柱宽
+    const binWidth = Math.max(1, chartWidth / processedData.length);
     
     // Y轴比例尺 - 使用数值
     const yScale = d3.scaleLinear()
         .domain([0, d3.max(processedData, d => d.value)])
         .range([chartHeight, 0])
         .nice();
-
-    // 颜色比例尺
-    const colorScale = (d, i) => {
-        console.log(i)
-        if (i === 0) {
-            // 第一个柱子使用更深的颜色
-            return d3.rgb(colors.other.primary).darker(0.7);
-        }
-        // 其他柱子使用primary颜色
-        return colors.other.primary;
-    };
-
-
-    // 确定标签的最大长度：
-    let minXLabelRatio = 1.0
-    const maxXLabelWidth = xScale.bandwidth() * 1.03
-
-    chartData.forEach(d => {
-        // x label
-        const xLabelText = String(d[xField])
-        let currentWidth = getTextWidth(xLabelText)
-        if (currentWidth > maxXLabelWidth) {
-            minXLabelRatio = Math.min(minXLabelRatio, maxXLabelWidth / currentWidth)
-        }
-    })
 
     // ---------- 6. 创建SVG容器 ----------
     
@@ -167,11 +161,39 @@ function makeChart(containerSelector, data) {
         .attr("transform", `translate(${margin.left}, ${margin.top})`);
     
     // ---------- 7. 绘制图表元素 ----------
+    // 根据数据点数量计算合适的标签间距
+    const maxTicks = 8; // 最多显示的刻度数
+    const dataLength = processedData.length;
     
-    // 添加X轴
+    // 计算间距 - 向上取整以确保不会超过最大刻度数
+    const indexStep = Math.ceil(dataLength / maxTicks);
+    
+    // 生成标签索引
+    const tickIndices = [];
+    let currentIndex = 0;
+    const endIndex = dataLength - 1;
+    
+    // 添加起点
+    tickIndices.push(currentIndex);
+    
+    // 按计算出的间距添加中间点
+    while (currentIndex + indexStep < endIndex) {
+        currentIndex += indexStep;
+        tickIndices.push(currentIndex);
+    }
+    
+    // 添加终点(如果最后一个点不是终点)
+    if (tickIndices[tickIndices.length - 1] + indexStep / 2 < endIndex) {
+        tickIndices.push(endIndex);
+    }
+    
     const xAxis = d3.axisBottom(xScale)
-        .tickSize(0) // 移除刻度线
-        .tickValues(xScale.domain().filter((d, i) => i % 4 === 0)); // 每隔4个显示一个标签
+        .tickValues(tickIndices)
+        .tickFormat(i => {
+            const date = processedData[i].time;
+            return d3.timeFormat('%Y')(date); // 只显示年份
+        })
+        .tickSize(0); // 移除刻度线
     
     chartGroup.append("g")
         .attr("class", "x-axis")
@@ -179,9 +201,8 @@ function makeChart(containerSelector, data) {
         .call(xAxis)
         .selectAll("text")
         .style("font-family", typography.label.font_family)
-        .style("font-size", typography.label.font_size)
-        .style("text-anchor", minXLabelRatio < 1.0 ? "end" : "middle")
-        .attr("transform", minXLabelRatio < 1.0 ? "rotate(-45)" : "rotate(0)") 
+        .style("font-size", `calc(${typography.label.font_size} * 1.5)`)
+        .style("text-anchor", "middle")
         .style("fill", colors.text_color);
     
     // 添加Y轴
@@ -189,7 +210,7 @@ function makeChart(containerSelector, data) {
         .ticks(5)
         .tickFormat(d => formatValue(d) + (yUnit ? ` ${yUnit}` : ''))
         .tickSize(0)          // 移除刻度线
-        .tickPadding(10);     // 增加文字和轴的间距
+        .tickPadding(15);     // 增加文字和轴的间距
     
     chartGroup.append("g")
         .attr("class", "y-axis")
@@ -197,36 +218,25 @@ function makeChart(containerSelector, data) {
         .call(g => g.select(".domain").remove())  // 移除轴线
         .selectAll("text")
         .style("font-family", typography.label.font_family)
-        .style("font-size", typography.label.font_size)
+        .style("font-size", `calc(${typography.label.font_size} * 1.5)`) // 字体大小增大1.5倍
+        .style("text-anchor", "end") // 右对齐
+        .attr("dx", "-0.5em") // 向左微调
         .style("fill", colors.text_color);
     
-    // 添加条形
-    const circleRadius = xScale.bandwidth() / 2; // 每个圆形的半径
-    const circleSpacing = 2; // 圆形之间的间距
-    
-    // 为每个数据点创建圆形组
-    const barGroups = chartGroup.selectAll(".bar-group")
+    // 添加直方图柱子
+    const bars = chartGroup.selectAll(".bar")
         .data(processedData)
         .enter()
-        .append("g")
-        .attr("class", "bar-group")
-        .attr("transform", d => `translate(${xScale(d.category) + xScale.bandwidth()/2}, -10)`);
+        .append("rect")
+        .attr("class", "bar")
+        .attr("x", d => xScale(d.order) - binWidth/2)
+        .attr("y", d => yScale(d.value))
+        .attr("width", binWidth * 0.9) // 减小padding (使用90%的binWidth)
+        .attr("height", d => chartHeight - yScale(d.value))
+        .attr("fill", colors.other.primary) // 使用纯色
+        .attr("stroke", "none"); // 无边框
     
-    // 计算每个柱子需要多少个圆形
-    barGroups.each(function(d) {
-        const totalHeight = chartHeight - yScale(d.value);
-        const numCircles = Math.floor(totalHeight / (circleRadius * 2 + circleSpacing));
-        
-        // 为每个柱子创建多个圆形
-        for (let i = 0; i < numCircles; i++) {
-            d3.select(this)
-                .append("circle")
-                .attr("r", circleRadius)
-                .attr("cy", chartHeight - i * (circleRadius * 2 + circleSpacing))
-                .attr("fill", colorScale(d, i))
-                .attr("opacity", 1 - (i/numCircles/2)); // 添加透明度渐变效果
-        }
-    });
+    // 移除数值标签（不显示bar的label）
 
     return svg.node();
 }

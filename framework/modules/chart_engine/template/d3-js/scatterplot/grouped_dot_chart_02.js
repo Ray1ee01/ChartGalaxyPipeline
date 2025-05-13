@@ -2,7 +2,7 @@
 REQUIREMENTS_BEGIN
 {
     "chart_type": "Grouped Dot Chart",
-    "chart_name": "grouped_scatterplot_02",
+    "chart_name": "grouped_dot_chart_02",
     "chart_for": "comparison",
     "is_composite": false,
     "required_fields": ["x", "y", "group"],
@@ -197,8 +197,8 @@ function makeChart(containerSelector, data) {
     const yLabelsInfo = {}; // 存储标签相关信息
 
     dimensions.forEach(dim => {
-        const hasIcon = images.field && images.field[dim];
-        const iconSpace = hasIcon ? estIconWidth + iconPadding : 0;
+        // 移除图标相关代码
+        const iconSpace = 0; // 不再考虑图标空间
         const labelWidth = getTextWidthCanvas(dim, fontFamily, `${baseFontSize}px`, fontWeight);
         
         // 如果标签超长需要适配
@@ -260,7 +260,8 @@ function makeChart(containerSelector, data) {
     });
 
     const yAxisPadding = 20;
-    margin.left = Math.max(margin.left, maxYAxisLabelWidth + yAxisPadding);
+    // 减少左边距30像素
+    margin.left = Math.max(margin.left, maxYAxisLabelWidth + yAxisPadding) - 30;
 
     // --- 5c: 最终确定内部尺寸 ---
     const innerWidth = width - margin.left - margin.right;
@@ -367,25 +368,13 @@ function makeChart(containerSelector, data) {
 
     dimensions.forEach(dim => {
         const yPos = yScale(dim) + yScale.bandwidth() / 2; // 类别条带中心Y
-        const iconHeight = yScale.bandwidth() * 0.6;
-        const iconWidth = iconHeight * 1.33;
-        const hasIcon = images.field && images.field[dim];
         const labelInfo = yLabelsInfo[dim];
         const lineCount = labelInfo.lines.length;
         const lineHeight = parseFloat(labelInfo.fontSize) * 1.2; // 行高
         const totalTextHeight = lineHeight * lineCount;
         
-        // 标签X位置 (考虑图标)
-        const labelX = hasIcon ? -(iconWidth + iconPadding + 5) : -5; 
-
-        if (hasIcon) {
-            yAxisGroup.append("image")
-                .attr("xlink:href", images.field[dim])
-                .attr("x", -(iconWidth + 5))
-                .attr("y", yPos - iconHeight / 2) // 垂直居中
-                .attr("width", iconWidth)
-                .attr("height", iconHeight);
-        }
+        // 标签X位置 (不考虑图标)
+        const labelX = -5;
 
         // 处理多行文本或单行文本
         if (labelInfo.needsWrap && lineCount > 1) {
@@ -449,6 +438,9 @@ function makeChart(containerSelector, data) {
     const legendTitleFontWeight = "bold"; // 标题加粗
 
     if (groups.length > 0) {
+        // 增大图例图标尺寸：使用更大的基础尺寸
+        const legendIconRadiusBase = pointRadius * 1.8; // 增大图例图标基础尺寸
+        
         // 图例项的初始布局估算 (单行)
         let totalLegendWidth = 0;
         const legendItems = [];
@@ -456,7 +448,7 @@ function makeChart(containerSelector, data) {
         groups.forEach((cg) => {
             const textWidth = getTextWidthCanvas(cg, legendFontFamily, initialLegendFontSize, legendFontWeight);
             // 增加每个项目的空间，防止重叠
-            const itemWidth = (pointRadius * 2) + legendItemPadding + textWidth + 10; // 增加5px额外空间
+            const itemWidth = (legendIconRadiusBase * 2) + legendItemPadding + textWidth + 10; // 增加5px额外空间
             legendItems.push({
                 group: cg,
                 textWidth: textWidth,
@@ -472,7 +464,7 @@ function makeChart(containerSelector, data) {
             rowItems: [],
             rowWidths: [],
             fontSize: initialLegendFontSize,
-            markRadius: pointRadius
+            markRadius: legendIconRadiusBase // 使用更大的图标半径
         };
         
         const maxAllowedLegendWidth = innerWidth * 0.9; // 允许图例占用的最大宽度
@@ -518,7 +510,7 @@ function makeChart(containerSelector, data) {
                 // 尝试缩小字体，计算新的缩放比例
                 let scaleFactor = maxAllowedLegendWidth / totalLegendWidth * 0.95; // 95%以留出一些余量
                 let newFontSize = Math.max(legendMinimumFontSize, initialLegendFontSize * scaleFactor);
-                let newMarkRadius = Math.max(pointRadius * 0.6, pointRadius * scaleFactor);
+                let newMarkRadius = Math.max(legendIconRadiusBase * 0.6, legendIconRadiusBase * scaleFactor);
                 
                 // 如果字体缩放后仍然太小，则坚持使用较大字体，但使用两行布局
                 if (newFontSize < initialLegendFontSize * 0.8) {

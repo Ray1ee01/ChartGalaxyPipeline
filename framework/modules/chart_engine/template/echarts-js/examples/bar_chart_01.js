@@ -1,7 +1,7 @@
 /*
 REQUIREMENTS_BEGIN
 {
-    "chart_type": "Stacked Bar Chart",
+    "chart_type": "Vertical Stacked Bar Chart",
     "chart_name": "echarts_stacked_bar_chart_01",
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],

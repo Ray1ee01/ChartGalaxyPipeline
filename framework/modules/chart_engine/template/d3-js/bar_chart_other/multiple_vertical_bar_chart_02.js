@@ -2,7 +2,7 @@
 REQUIREMENTS_BEGIN
 {
     "chart_type": "Multiple Vertical Bar Chart",
-    "chart_name": "multiple_vertical_bar_chart_01",
+    "chart_name": "multiple_vertical_bar_chart_02",
     "chart_for": "comparison",
     "is_composite": true,
     "required_fields": ["x", "y", "y2"],
@@ -15,7 +15,7 @@ REQUIREMENTS_BEGIN
     "supported_effects": ["shadow", "radius_corner", "gradient", "stroke", "spacing"],
     "min_height": 400,
     "min_width": 600,
-    "background": "no",
+    "background": "dark",
     "icon_mark": "none",
     "icon_label": "side",
     "has_x_axis": "yes",
@@ -37,7 +37,7 @@ function makeChart(containerSelector, data) {
         description: { font_family: "Arial", font_size: "14px", font_weight: "normal" },
         annotation: { font_family: "Arial", font_size: "12px", font_weight: "normal" }
     };
-    const colors = jsonData.colors || { text_color: "#333333", other: { primary: "#4682B4", secondary: "#FF7F50" } };  // 修正: 添加默认other颜色
+    const colors = jsonData.colors_dark || { text_color: "#333333", other: { primary: "#4682B4", secondary: "#FF7F50" } };  // 修正: 添加默认other颜色
     const images = jsonData.images || { field: {}, other: {} };  // 图像(国旗等)
     const dataColumns = jsonData.data.columns || [];            // 使用data_columns
     
@@ -107,6 +107,7 @@ function makeChart(containerSelector, data) {
     if (xColumn && xColumn.unit && xColumn.unit !== "none") {
         xUnit = xColumn.unit;
     }
+    
     
     if (yColumn && yColumn.unit && yColumn.unit !== "none") {
         yUnit = yColumn.unit;

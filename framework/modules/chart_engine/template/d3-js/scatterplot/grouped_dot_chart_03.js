@@ -2,15 +2,15 @@
 REQUIREMENTS_BEGIN
 {
     "chart_type": "Grouped Dot Chart",
-    "chart_name": "grouped_scatterplot_02",
+    "chart_name": "grouped_dot_chart_03",
     "chart_for": "comparison",
     "is_composite": false,
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
     "required_fields_range": [[2, 20], [0, "inf"], [2, 5]],
-    "required_fields_icons": ["x"],
+    "required_fields_icons": ["group"],
     "required_other_icons": [],
-    "required_fields_colors": ["group"],
+    "required_fields_colors": [],
     "hierarchy": ["group"],
     "required_other_colors": ["primary"],
     "supported_effects": ["shadow", "radius_corner", "gradient", "stroke", "spacing"],
@@ -197,8 +197,8 @@ function makeChart(containerSelector, data) {
     const yLabelsInfo = {}; // 存储标签相关信息
 
     dimensions.forEach(dim => {
-        const hasIcon = images.field && images.field[dim];
-        const iconSpace = hasIcon ? estIconWidth + iconPadding : 0;
+        // const hasIcon = images.field && images.field[dim]; // 移除维度图标检查
+        const iconSpace = 0; // 移除维度图标空间
         const labelWidth = getTextWidthCanvas(dim, fontFamily, `${baseFontSize}px`, fontWeight);
         
         // 如果标签超长需要适配
@@ -280,8 +280,6 @@ function makeChart(containerSelector, data) {
         .domain(groups)
         .range(groups.map((group, i) => colors.field[group] || d3.schemeCategory10[i % 10])); // 分组颜色比例尺
 
-    // 点的半径，基于Y轴条带高度，有上下限
-    const pointRadius = Math.max(3, Math.min(yScale.bandwidth() * 0.25, 10));
 
     // ---------- 7. SVG 容器与主分组 ----------
     const svg = d3.select(containerSelector)
@@ -422,16 +420,36 @@ function makeChart(containerSelector, data) {
     });
 
     // ---------- 10. 绘制数据点 ----------
+    const plotMarkerSize = Math.max(24, yScale.bandwidth() * 0.6); // 新调整：基于行高，最小24px
+
     g.append("g")
         .attr("class", "scatter-points")
-        .selectAll("circle")
+        .selectAll("g.datapoint") // 使用 g 元素包裹标记
         .data(chartData)
         .enter()
-        .append("circle")
-        .attr("cx", d => xScale(+d[valueField]))
-        .attr("cy", d => yScale(d[dimensionField]) + yScale.bandwidth() / 2) // Y坐标在条带中心
-        .attr("r", pointRadius)
-        .attr("fill", d => colorScale(d[groupField]));
+        .append("g")
+        .attr("class", "datapoint")
+        .attr("transform", d => `translate(${xScale(+d[valueField])}, ${yScale(d[dimensionField]) + yScale.bandwidth() / 2})`)
+        .each(function(d) {
+            const group = d[groupField];
+            const iconUrl = images.field && images.field[group];
+            const selection = d3.select(this);
+
+            if (iconUrl) {
+                selection.append("image")
+                    .attr("xlink:href", iconUrl)
+                    .attr("x", -plotMarkerSize / 2)
+                    .attr("y", -plotMarkerSize / 2)
+                    .attr("width", plotMarkerSize)
+                    .attr("height", plotMarkerSize);
+            } else {
+                selection.append("circle")
+                    .attr("cx", 0)
+                    .attr("cy", 0)
+                    .attr("r", plotMarkerSize / 2) // 半径是尺寸的一半
+                    .attr("fill", 'lightgray');
+            }
+        });
 
     // ---------- 11. 绘制图例 ----------
     const initialLegendFontSize = parseFloat(typography.label?.font_size || 12);
@@ -442,7 +460,8 @@ function makeChart(containerSelector, data) {
     const legendColumnPadding = 20; // 图例项间距，增加了间距
     const legendMinimumFontSize = 9; // 最小图例字体大小
     const legendRowPadding = 15; // 图例行间距，增加以防止行间重叠
-    
+    const legendIconSize = 24; // 固定图例图标大小为24px
+
     // 图例标题设置
     const legendTitle = groupField; // 使用分组字段名作为图例标题
     const legendTitleFontSize = initialLegendFontSize;
@@ -456,7 +475,7 @@ function makeChart(containerSelector, data) {
         groups.forEach((cg) => {
             const textWidth = getTextWidthCanvas(cg, legendFontFamily, initialLegendFontSize, legendFontWeight);
             // 增加每个项目的空间，防止重叠
-            const itemWidth = (pointRadius * 2) + legendItemPadding + textWidth + 10; // 增加5px额外空间
+            const itemWidth = legendIconSize + legendItemPadding + textWidth + 10; // 使用图标大小计算
             legendItems.push({
                 group: cg,
                 textWidth: textWidth,
@@ -472,7 +491,7 @@ function makeChart(containerSelector, data) {
             rowItems: [],
             rowWidths: [],
             fontSize: initialLegendFontSize,
-            markRadius: pointRadius
+            markRadius: 24 // 固定图例图标大小为24px
         };
         
         const maxAllowedLegendWidth = innerWidth * 0.9; // 允许图例占用的最大宽度
@@ -518,7 +537,7 @@ function makeChart(containerSelector, data) {
                 // 尝试缩小字体，计算新的缩放比例
                 let scaleFactor = maxAllowedLegendWidth / totalLegendWidth * 0.95; // 95%以留出一些余量
                 let newFontSize = Math.max(legendMinimumFontSize, initialLegendFontSize * scaleFactor);
-                let newMarkRadius = Math.max(pointRadius * 0.6, pointRadius * scaleFactor);
+                let newIconSize = 24; // 固定图例图标大小为24px
                 
                 // 如果字体缩放后仍然太小，则坚持使用较大字体，但使用两行布局
                 if (newFontSize < initialLegendFontSize * 0.8) {
@@ -529,7 +548,7 @@ function makeChart(containerSelector, data) {
                 }
                 
                 legendLayout.fontSize = newFontSize;
-                legendLayout.markRadius = newMarkRadius;
+                legendLayout.markRadius = newIconSize; // 更新标记/图标尺寸
                 
                 // 重新计算调整后的项目宽度
                 const adjustedItems = legendItems.map(item => {
@@ -537,7 +556,7 @@ function makeChart(containerSelector, data) {
                     return {
                         group: item.group,
                         textWidth: newTextWidth,
-                        itemWidth: (newMarkRadius * 2) + legendItemPadding + newTextWidth + 5 // 增加5px额外空间
+                        itemWidth: newIconSize + legendItemPadding + newTextWidth + 5 // 使用新图标尺寸
                     };
                 });
                 
@@ -621,16 +640,28 @@ function makeChart(containerSelector, data) {
                 const legendItem = rowGroup.append("g")
                     .attr("transform", `translate(${currentX}, 0)`);
                 
-                // 图例标记 (圆)
-                legendItem.append("circle")
-                    .attr("cx", legendLayout.markRadius)
-                    .attr("cy", 0)
-                    .attr("r", legendLayout.markRadius)
-                    .attr("fill", colorScale(item.group));
-                
+                // 图例标记 (图标或圆)
+                const iconUrl = images.field && images.field[item.group];
+                const currentIconSize = legendLayout.markRadius; // 使用布局计算出的图标/标记大小
+
+                if (iconUrl) {
+                    legendItem.append("image")
+                        .attr("xlink:href", iconUrl)
+                        .attr("x", 0)
+                        .attr("y", -currentIconSize / 2) // 垂直居中
+                        .attr("width", currentIconSize)
+                        .attr("height", currentIconSize);
+                } else {
+                    legendItem.append("circle")
+                        .attr("cx", currentIconSize / 2) // 圆心X
+                        .attr("cy", 0) // 垂直居中
+                        .attr("r", currentIconSize / 2) // 半径
+                        .attr("fill", 'lightgray'); // 使用浅灰色填充
+                }
+
                 // 图例文本
                 legendItem.append("text")
-                    .attr("x", (legendLayout.markRadius * 2) + legendItemPadding)
+                    .attr("x", currentIconSize + legendItemPadding) // 新X位置
                     .attr("y", 0)
                     .attr("dominant-baseline", "middle") // 垂直居中
                     .attr("text-anchor", "start")
