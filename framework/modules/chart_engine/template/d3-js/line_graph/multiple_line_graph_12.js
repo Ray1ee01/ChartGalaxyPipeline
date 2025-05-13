@@ -403,7 +403,7 @@ function makeChart(containerSelector, data) {
             .text(`${ratio.ratio.toFixed(0)}%`);
     });
     
-    // 添加数据标注函数 - 使用圆角矩形和倒三角
+    // 添加数据标注函数 - 根据数据点的实际值决定标签位置
     function addDataLabel(point, isStart) {
         const x = xScale(parseDate(point[xField]));
         const y = yScale(point[yField]);
@@ -419,8 +419,18 @@ function makeChart(containerSelector, data) {
         const labelWidth = labelText.length * 8 + 16; // 根据文本长度计算宽度
         const labelHeight = 24;
         
-        // 计算标签位置 - 放在数据点上方
-        const labelY = y - 30;
+        // 获取另一组在同一时间点的值
+        const otherGroup = group === highestGroup ? lowestGroup : highestGroup;
+        const otherGroupData = groupedData.get(otherGroup);
+        
+        // 找到同一时间点的另一组数据
+        const otherPoint = otherGroupData.find(d => d[xField] === point[xField]);
+        
+        // 判断当前点的值是否大于另一组同时间点的值
+        const isHigherValue = otherPoint ? point[yField] > otherPoint[yField] : true;
+        
+        // 根据值的大小决定标签位置
+        const labelY = isHigherValue ? y - 30 : y + 30;
         
         // 添加圆角矩形背景
         g.append("rect")
@@ -432,11 +442,19 @@ function makeChart(containerSelector, data) {
             .attr("ry", 4)
             .attr("fill", color);
         
-        // 添加倒三角形
+        // 添加三角形 - 方向根据标签位置决定
         const triangleSize = 8;
-        g.append("path")
-            .attr("d", `M${x-triangleSize/2},${labelY+labelHeight/2} L${x+triangleSize/2},${labelY+labelHeight/2} L${x},${labelY+labelHeight/2+triangleSize} Z`)
-            .attr("fill", color);
+        if (isHigherValue) {
+            // 值较高：向下的三角形
+            g.append("path")
+                .attr("d", `M${x-triangleSize/2},${labelY+labelHeight/2} L${x+triangleSize/2},${labelY+labelHeight/2} L${x},${labelY+labelHeight/2+triangleSize} Z`)
+                .attr("fill", color);
+        } else {
+            // 值较低：向上的三角形
+            g.append("path")
+                .attr("d", `M${x-triangleSize/2},${labelY-labelHeight/2} L${x+triangleSize/2},${labelY-labelHeight/2} L${x},${labelY-labelHeight/2-triangleSize} Z`)
+                .attr("fill", color);
+        }
         
         // 添加文本 - 白色粗体
         g.append("text")

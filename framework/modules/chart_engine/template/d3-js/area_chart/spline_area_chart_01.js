@@ -190,7 +190,7 @@ function makeChart(containerSelector, data) {
         }
         
         // 添加标签背景
-        const labelValue = Math.round(d[yField]);
+        const labelValue = formatValue(d[yField]);
         const labelWidth = String(labelValue).length * 10 + 20;
         const labelHeight = 25;
         

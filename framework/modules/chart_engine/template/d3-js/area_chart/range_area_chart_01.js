@@ -120,10 +120,10 @@ function makeChart(containerSelector, data) {
     const { xScale, xTicks, xFormat, timeSpan } = createXAxisScaleAndTicks(chartData, xField, 0, chartWidth);
     
     // 创建y轴比例尺
-    const yMin = 0;
+    const yMin = Math.max(0, d3.min(chartData, d => d[yField]));
     const yMax = d3.max(chartData, d => d[yField]);
 
-    const yPadding = 0.3 * yMax;
+    const yPadding = 0.3 * (yMax - yMin);
     
     const yScale = d3.scaleLinear()
         .domain([yMin - yPadding, yMax + yPadding])

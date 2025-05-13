@@ -173,7 +173,7 @@ function makeChart(containerSelector, data) {
         .attr("fill", "white")
         .style("font-size", "12px")
         .style("font-weight", "bold")
-        .text(d => `${d[yField]}${yUnit}`);
+        .text(d => `${formatValue(d[yField])}`);
     
     // 添加图标，使用images对象中的base64数据
     // 放在柱状图底部，宽度与柱状图相同，减少空隙

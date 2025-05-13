@@ -226,40 +226,21 @@ function makeChart(containerSelector, data) {
         // });
     });
     
-    // 添加优化后的图例
-    const legendGroup = svg.append("g")
-        .attr("class", "legend")
-        .attr("transform", `translate(${width - margin.right - 100}, ${margin.top - 50})`);
+    // 添加图例
+    const legendGroup = svg.append("g");
     
-    // 添加图例项
-    groups.forEach((group, i) => {
-        const legendRow = legendGroup.append("g")
-            .attr("transform", `translate(0, ${i * 25 + 20})`);
-        
-        // 添加图例线条
-        legendRow.append("path")
-            .attr("d", "M0,7 L30,7")
-            .attr("stroke", colorScale(group))
-            .attr("stroke-width", 2)
-            .attr("fill", "none");
-        
-        // // 添加图例点
-        // legendRow.append("circle")
-        //     .attr("cx", 15)
-        //     .attr("cy", 7)
-        //     .attr("r", 4)
-        //     .attr("fill", colorScale(group))
-        //     .attr("stroke", "#fff")
-        //     .attr("stroke-width", 1);
-        
-        // 添加图例文本
-        legendRow.append("text")
-            .attr("x", 40)
-            .attr("y", 11)
-            .attr("font-size", "14px")
-            .attr("fill", "#333")
-            .text(group);
+    const legendSize = layoutLegend(legendGroup, groups, colors, {
+        x: 0,
+        y: 0,
+        fontSize: 14,
+        fontWeight: "bold",
+        align: "left",
+        maxWidth: chartWidth,
+        shape: "circle",
     });
+    
+    // 居中legend
+    legendGroup.attr("transform", `translate(${(chartWidth - legendSize.width) / 2}, ${-20 - legendSize.height/2})`);
     
     return svg.node();
 } 

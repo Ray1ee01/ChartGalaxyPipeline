@@ -343,7 +343,7 @@ function makeChart(containerSelector, data) {
     // 添加Y轴文本
     yTicks.forEach(tick => {
         g.append("text")
-            .attr("x", -10)
+            .attr("x", -20)
             .attr("y", yScale(tick))
             .attr("text-anchor", "end")
             .attr("dominant-baseline", "middle")
@@ -375,9 +375,10 @@ function makeChart(containerSelector, data) {
         
         // 添加文本 - 放在数据点上方，使用黑色
         g.append("text")
-            .attr("x", x)
-            .attr("y", y + 20) // 放在数据点上方
-            .attr("text-anchor", "middle")
+            .attr("x", x + (isStart ? -10 : 10))
+            .attr("y", y) // 放在数据点上方
+            .attr("text-anchor", isStart ? "end" : "start")
+            .attr("dominant-baseline", "middle")
             .attr("fill", "#000") // 黑色文本
             .attr("font-weight", "normal") // 移除加粗
             .style("font-size", "12px")
