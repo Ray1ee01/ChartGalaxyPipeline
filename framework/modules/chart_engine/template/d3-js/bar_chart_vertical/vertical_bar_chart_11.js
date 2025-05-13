@@ -1,7 +1,7 @@
 /*
 REQUIREMENTS_BEGIN
 {
-    "chart_type": "Vertical Bar Chart",
+    "chart_type": "Histogram",
     "chart_name": "vertical_bar_chart_11",
     "required_fields": ["x", "y"],
     "required_fields_type": [["temporal"], ["numerical"]],

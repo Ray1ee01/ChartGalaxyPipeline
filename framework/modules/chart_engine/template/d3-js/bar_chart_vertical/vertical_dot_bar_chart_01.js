@@ -6,7 +6,7 @@ REQUIREMENTS_BEGIN
     "is_composite": false,
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],
-    "required_fields_range": [[2, 12], [0, 20]],
+    "required_fields_range": [[2, 6], [3, 20]],
     "required_fields_icons": ["x"],
     "required_other_icons": [],
     "required_fields_colors": [],
@@ -361,13 +361,19 @@ function makeChart(containerSelector, data) {
             const lastBarY = (lastGroupIndex * (groupSize * (barHeight + barSpacing) + groupSpacing)) + 
                            (lastInGroupIndex * (barHeight + barSpacing));
             
+            // 提取原始字体大小的数字部分（去掉'px'）
+            const baseFontSize = parseInt(typography.annotation.font_size);
+            // 计算动态字体大小，并限制最大不超过原始字体大小的2倍
+            const calculatedSize = Math.min(barWidth * 0.8, baseFontSize * 2);
+            const limitedFontSize = `${calculatedSize}px`;
+            
             g.append("text")
                 .attr("x", xScale(dimension) + columnWidth / 2)
                 .attr("y", lastBarY + barHeight + 5)
                 .attr("dy", "0.35em")
                 .attr("text-anchor", "middle")
                 .style("font-family", typography.annotation.font_family)
-                .style("font-size", dynamicFontSize)
+                .style("font-size", limitedFontSize)
                 .style("font-weight", typography.annotation.font_weight)
                 .style("fill", colors.text_color || "#333333")
                 .text(formattedValue);

@@ -5,16 +5,16 @@ REQUIREMENTS_BEGIN
     "chart_name": "multiple_vertical_bar_chart_01",
     "chart_for": "comparison",
     "is_composite": true,
-    "required_fields": [["x", "y"], ["x","y2"]],
-    "required_fields_type": [[["categorical"], ["numerical"]],[["categorical"], ["numerical"]]],
-    "required_fields_range": [[[2, 20], [0, "inf"]],[[2, 20], [0, "inf"]]],
+    "required_fields": ["x", "y", "y2"],
+    "required_fields_type": [["categorical"], ["numerical"], ["numerical"]],
+    "required_fields_range": [[2, 20], [0, "inf"], [0, "inf"]],
     "required_fields_icons": ["x"],
     "required_other_icons": [],
     "required_fields_colors": [],
     "required_other_colors": ["primary", "secondary"],
     "supported_effects": ["shadow", "radius_corner", "gradient", "stroke", "spacing"],
     "min_height": 400,
-    "min_width": 400,
+    "min_width": 600,
     "background": "no",
     "icon_mark": "none",
     "icon_label": "side",
@@ -110,10 +110,22 @@ function makeChart(containerSelector, data) {
     
     if (yColumn && yColumn.unit && yColumn.unit !== "none") {
         yUnit = yColumn.unit;
+        if (yUnit === "none") {
+            yUnit = "";
+        }
+        if (yUnit.length > 5) {
+            yUnit = "";
+        }
     }
     
     if (y2Column && y2Column.unit && y2Column.unit !== "none") {
         y2Unit = y2Column.unit; 
+        if (y2Unit === "none") {
+            y2Unit = "";
+        }
+        if (y2Unit.length > 5) {
+            y2Unit = "";
+        }
     }
     
     // ---------- 4. 数据处理 ----------
@@ -421,7 +433,7 @@ function makeChart(containerSelector, data) {
         .attr("y1", d => rightYScale(d))
         .attr("x2", chartWidth)
         .attr("y2", d => rightYScale(d))
-        .attr("stroke", "#e0e0e0")
+        .attr("stroke", "#ffffff")
         .attr("stroke-width", 1);
     
     // 创建并添加右侧图表的X轴

@@ -4,7 +4,7 @@ REQUIREMENTS_BEGIN
     "chart_type": "Stacked Area Chart",
     "chart_name": "stacked_area_chart_02",
     "required_fields": ["x", "y", "group"],
-    "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
+    "required_fields_type": [["temporal"], ["numerical"], ["categorical"]],
     "required_fields_range": [[2, 10], [0, "inf"], [2, 6]],
     "required_fields_icons": [],
     "required_other_icons": [],

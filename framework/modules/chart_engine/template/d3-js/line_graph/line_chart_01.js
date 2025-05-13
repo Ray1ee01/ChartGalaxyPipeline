@@ -1,7 +1,7 @@
 /*
 REQUIREMENTS_BEGIN
 {
-    "chart_type": "Line Graph",
+    "chart_type": "Vertical Bar Chart",
     "chart_name": "line_chart_01",
     "is_composite": false,
     "required_fields": ["x", "y"],

@@ -1,7 +1,7 @@
 /*
 REQUIREMENTS_BEGIN
 {
-    "chart_type": "Grouped ScatterPlot",
+    "chart_type": "Grouped Dot Chart",
     "chart_name": "grouped_scatterplot_02",
     "chart_for": "comparison",
     "is_composite": false,

@@ -1,561 +1,585 @@
 {
   "alluvial diagram": {
-    "total_count": 9085,
-    "alluvial_diagram_01": 5237,
-    "alluvial_diagram_02": 3848
+    "total_count": 11118,
+    "alluvial_diagram_01": 7166,
+    "alluvial_diagram_02": 3952
   },
   "stacked bar chart": {
-    "total_count": 2345,
-    "echarts_stacked_bar_chart_01": 2345
+    "total_count": 2804,
+    "echarts_stacked_bar_chart_01": 2804
   },
   "multiple rose chart": {
-    "total_count": 4688,
-    "multiple_rose_chart_02": 2344,
-    "multiple_rose_chart_01": 2344
+    "total_count": 5587,
+    "multiple_rose_chart_02": 2794,
+    "multiple_rose_chart_01": 2793
   },
   "group radial bar chart": {
-    "total_count": 4214,
-    "group_radial_bar_chart_01": 4214
+    "total_count": 5023,
+    "group_radial_bar_chart_01": 5023
   },
   "circular bar chart": {
-    "total_count": 17155,
-    "circular_bar_chart_03": 2827,
+    "total_count": 17247,
+    "circular_bar_chart_03": 2919,
     "circular_bar_chart_04": 2766,
     "circular_bar_chart_01": 5781,
     "circular_bar_chart_02": 5781
   },
   "multiple vertical bar chart": {
-    "total_count": 18607,
-    "multiple_vertical_bar_chart_01": 18607
+    "total_count": 18799,
+    "multiple_vertical_bar_chart_01": 18793,
+    "multiple_vertical_bar_chart_02": 6
   },
   "stacked radial bar chart": {
-    "total_count": 4213,
-    "stacked_radial_bar_chart_01": 4213
+    "total_count": 5023,
+    "stacked_radial_bar_chart_01": 5023
   },
   "horizontal bar chart": {
-    "total_count": 217953,
-    "horizontal_bar_chart_25": 4002,
-    "horizontal_bar_chart_21": 18607,
-    "horizontal_bar_chart_14": 4002,
-    "horizontal_bar_chart_8": 6075,
+    "total_count": 227401,
+    "horizontal_bar_chart_25": 4322,
+    "horizontal_bar_chart_21": 18781,
+    "horizontal_bar_chart_14": 4322,
+    "horizontal_bar_chart_8": 6407,
     "horizontal_bar_chart_0": 5887,
-    "horizontal_bar_chart_23": 18607,
-    "horizontal_bar_chart_4": 2827,
-    "horizontal_bar_chart_27": 4002,
-    "horizontal_bar_chart_2": 6075,
-    "horizontal_bar_chart_5_hand": 6075,
-    "horizontal_bar_chart_5": 6075,
-    "horizontal_bar_chart_20": 18607,
-    "horizontal_bar_chart_6": 2827,
-    "horizontal_bar_chart_2_hand": 6075,
-    "horizontal_bar_chart_7": 2827,
+    "horizontal_bar_chart_23": 18781,
+    "horizontal_bar_chart_4": 2919,
+    "horizontal_bar_chart_27": 4321,
+    "horizontal_bar_chart_2": 6407,
+    "horizontal_bar_chart_5_hand": 6407,
+    "horizontal_bar_chart_5": 6407,
+    "horizontal_bar_chart_20": 18781,
+    "horizontal_bar_chart_6": 2919,
+    "horizontal_bar_chart_2_hand": 6407,
+    "horizontal_bar_chart_7": 2919,
     "horizontal_bar_chart_1": 5781,
-    "horizontal_bar_chart_29": 2827,
+    "horizontal_bar_chart_29": 2919,
     "horizontal_bar_chart_3": 2766,
-    "horizontal_bar_chart_4_hand": 2827,
-    "horizontal_bar_chart_24": 18607,
-    "horizontal_bar_chart_15_hand": 12074,
-    "horizontal_bar_chart_28": 2827,
-    "horizontal_bar_chart_30": 2827,
-    "horizontal_bar_chart_12": 2827,
-    "horizontal_bar_chart_9": 702,
-    "horizontal_bar_chart_19": 702,
-    "horizontal_bar_chart_16": 873,
-    "horizontal_bar_chart_10": 2826,
-    "horizontal_bar_chart_15": 18607,
-    "horizontal_bar_chart_18": 702,
-    "horizontal_bar_chart_13": 18607,
-    "horizontal_bar_chart_26": 3612,
-    "horizontal_bar_chart_22": 3611,
-    "horizontal_bar_chart_17": 873,
-    "horizontal_bar_chart_11": 905
+    "horizontal_bar_chart_4_hand": 2918,
+    "horizontal_bar_chart_24": 18781,
+    "horizontal_bar_chart_15_hand": 14748,
+    "horizontal_bar_chart_28": 2918,
+    "horizontal_bar_chart_30": 2918,
+    "horizontal_bar_chart_12": 2918,
+    "horizontal_bar_chart_9": 816,
+    "horizontal_bar_chart_19": 816,
+    "horizontal_bar_chart_16": 1130,
+    "horizontal_bar_chart_10": 2918,
+    "horizontal_bar_chart_15": 18780,
+    "horizontal_bar_chart_18": 816,
+    "horizontal_bar_chart_13": 18780,
+    "horizontal_bar_chart_26": 4321,
+    "horizontal_bar_chart_22": 4321,
+    "horizontal_bar_chart_17": 1130,
+    "horizontal_bar_chart_11": 919
   },
   "stacked circular bar chart": {
-    "total_count": 2345,
-    "stacked_circular_bar_chart_01": 2345
+    "total_count": 2821,
+    "stacked_circular_bar_chart_01": 2797,
+    "stacked_circular_bar_chart_02": 24
   },
   "horizontal group bar chart": {
-    "total_count": 36074,
-    "horizontal_group_bar_chart_06": 4213,
-    "horizontal_group_bar_chart_13": 4213,
-    "horizontal_group_bar_chart_03_hand": 4213,
-    "horizontal_group_bar_chart_03": 4213,
-    "horizontal_group_bar_chart_02": 468,
-    "horizontal_group_bar_chart_12": 2344,
-    "horizontal_group_bar_chart_11": 2345,
-    "horizontal_group_bar_chart_10": 2345,
-    "horizontal_group_bar_chart_01_hand": 2344,
-    "horizontal_group_bar_chart_01": 2344,
-    "horizontal_group_bar_chart_05_hand": 2344,
-    "horizontal_group_bar_chart_07": 2344,
-    "horizontal_group_bar_chart_05": 2344
+    "total_count": 43102,
+    "horizontal_group_bar_chart_06": 5022,
+    "horizontal_group_bar_chart_13": 5022,
+    "horizontal_group_bar_chart_03_hand": 5022,
+    "horizontal_group_bar_chart_03": 5022,
+    "horizontal_group_bar_chart_02": 670,
+    "horizontal_group_bar_chart_12": 2793,
+    "horizontal_group_bar_chart_11": 2793,
+    "horizontal_group_bar_chart_10": 2793,
+    "horizontal_group_bar_chart_01_hand": 2793,
+    "horizontal_group_bar_chart_01": 2793,
+    "horizontal_group_bar_chart_05_hand": 2793,
+    "horizontal_group_bar_chart_07": 2793,
+    "horizontal_group_bar_chart_05": 2793
   },
   "stacked area chart": {
-    "total_count": 12639,
-    "stacked_area_chart_02": 4213,
-    "stacked_area_chart_03": 4213,
-    "stacked_area_chart_01": 4213
+    "total_count": 15066,
+    "stacked_area_chart_02": 5022,
+    "stacked_area_chart_03": 5022,
+    "stacked_area_chart_01": 5022
   },
   "horizontal group dot bar chart": {
-    "total_count": 4213,
-    "horizontal_group_dot_bar_chart_0": 4213
+    "total_count": 5022,
+    "horizontal_group_dot_bar_chart_0": 5022
   },
   "multiple semi donut chart": {
-    "total_count": 2344,
-    "multiple_semidonut_chart_01": 2344
+    "total_count": 2793,
+    "multiple_semidonut_chart_01": 2793
   },
   "radial bar chart": {
-    "total_count": 11293,
-    "radial_bar_chart_02": 4214,
+    "total_count": 15357,
+    "radial_bar_chart_02": 5022,
     "radial_bar_chart_03": 5781,
-    "radial_bar_chart_04": 1298
+    "radial_bar_chart_04": 4554
   },
   "vertical group bar chart": {
-    "total_count": 46208,
-    "vertical_group_bar_chart_1": 4213,
+    "total_count": 53777,
+    "vertical_group_bar_chart_1": 5022,
     "vertical_group_bar_chart_2": 3464,
-    "vertical_group_bar_chart_15": 4213,
-    "vertical_group_bar_chart_9": 4213,
-    "vertical_group_bar_chart_0": 4213,
-    "vertical_group_bar_chart_5": 4213,
-    "vertical_group_bar_chart_13": 4213,
-    "vertical_group_bar_chart_10": 4213,
-    "vertical_group_bar_chart_6": 3851,
-    "vertical_group_bar_chart_3": 2344,
-    "vertical_group_bar_chart_12": 2344,
-    "vertical_group_bar_chart_11": 2344,
-    "vertical_group_bar_chart_14": 2343,
-    "vertical_group_bar_chart_4": 14,
-    "vertical_group_bar_chart_7": 13
+    "vertical_group_bar_chart_15": 5022,
+    "vertical_group_bar_chart_9": 5022,
+    "vertical_group_bar_chart_0": 5021,
+    "vertical_group_bar_chart_5": 5022,
+    "vertical_group_bar_chart_13": 5022,
+    "vertical_group_bar_chart_10": 5021,
+    "vertical_group_bar_chart_6": 3953,
+    "vertical_group_bar_chart_3": 2793,
+    "vertical_group_bar_chart_12": 2793,
+    "vertical_group_bar_chart_11": 2793,
+    "vertical_group_bar_chart_14": 2792,
+    "vertical_group_bar_chart_4": 19,
+    "vertical_group_bar_chart_7": 18
   },
   "gauge chart": {
-    "total_count": 2344,
-    "gauge_chart_01": 2344
+    "total_count": 2793,
+    "gauge_chart_01": 2793
   },
   "grouped circular bar chart": {
-    "total_count": 873,
-    "grouped_circular_bar_chart_01": 873
+    "total_count": 1130,
+    "grouped_circular_bar_chart_01": 1130
   },
   "bump chart": {
-    "total_count": 25276,
-    "bump_chart_02": 4213,
-    "bump_chart_07": 4213,
-    "bump_chart_06": 4213,
-    "bump_chart_05": 4213,
-    "bump_chart_04": 4212,
-    "bump_chart_03": 4212
+    "total_count": 30129,
+    "bump_chart_02": 5022,
+    "bump_chart_07": 5022,
+    "bump_chart_06": 5021,
+    "bump_chart_05": 5022,
+    "bump_chart_04": 5021,
+    "bump_chart_03": 5021
   },
   "horizontal stacked pictorial bar chart": {
     "total_count": 14,
     "horizontal_stacked_pictorial_bar_chart_0": 14
   },
   "horizontal diverging bar chart": {
-    "total_count": 35062,
-    "horizontal_diverging_bar_chart_11": 4213,
-    "horizontal_diverging_bar_chart_12": 4213,
-    "horizontal_diverging_bar_chart_07": 4213,
-    "horizontal_diverging_bar_chart_05": 4213,
-    "horizontal_diverging_bar_chart_04": 2344,
-    "horizontal_diverging_bar_chart_04_hand": 2344,
-    "horizontal_diverging_bar_chart_08": 2344,
-    "horizontal_diverging_bar_chart_01": 3121,
-    "horizontal_diverging_bar_chart_02": 1765,
-    "horizontal_diverging_bar_chart_03": 3120,
-    "horizontal_diverging_bar_chart_01_hand": 3120,
-    "horizontal_diverging_bar_chart_10": 44,
+    "total_count": 40519,
+    "horizontal_diverging_bar_chart_11": 5022,
+    "horizontal_diverging_bar_chart_12": 5022,
+    "horizontal_diverging_bar_chart_07": 5022,
+    "horizontal_diverging_bar_chart_05": 5022,
+    "horizontal_diverging_bar_chart_04": 2793,
+    "horizontal_diverging_bar_chart_04_hand": 2793,
+    "horizontal_diverging_bar_chart_08": 2793,
+    "horizontal_diverging_bar_chart_01": 3369,
+    "horizontal_diverging_bar_chart_02": 1867,
+    "horizontal_diverging_bar_chart_03": 3368,
+    "horizontal_diverging_bar_chart_01_hand": 3368,
+    "horizontal_diverging_bar_chart_10": 72,
     "horizontal_diverging_bar_chart_09": 8
   },
   "multiple line graph": {
-    "total_count": 43527,
-    "multiple_line_graph_08": 4213,
-    "multiple_line_graph_03": 4213,
-    "multiple_line_graph_07": 4213,
-    "multiple_line_graph_10": 4213,
-    "multiple_line_graph_01": 4213,
-    "multiple_line_graph_11": 4213,
-    "multiple_line_graph_09": 4213,
-    "multiple_line_graph_12": 4213,
-    "vertical_bar_chart_new_02": 2805,
-    "vertical_bar_chart_new_01": 2805,
-    "multiple_line_graph_06": 4213
+    "total_count": 50865,
+    "multiple_line_graph_08": 5022,
+    "multiple_line_graph_03": 5022,
+    "multiple_line_graph_07": 5022,
+    "multiple_line_graph_10": 5022,
+    "multiple_line_graph_01": 5022,
+    "multiple_line_graph_11": 5022,
+    "multiple_line_graph_09": 5021,
+    "multiple_line_graph_12": 5022,
+    "vertical_bar_chart_new_02": 2834,
+    "vertical_bar_chart_new_01": 2834,
+    "multiple_line_graph_06": 5022
   },
   "multiple pie chart": {
-    "total_count": 2344,
-    "multiple_pie_chart_01": 2344
+    "total_count": 2797,
+    "multiple_pie_chart_01": 2797
   },
   "multiple gauge chart": {
-    "total_count": 16837,
-    "multiple_gauge_chart_01": 2344,
-    "multiple_gauge_chart_02": 2344,
-    "multiple_gauge_chart_03": 6075,
-    "multiple_gauge_chart_03_hand": 6074
+    "total_count": 18400,
+    "multiple_gauge_chart_01": 2793,
+    "multiple_gauge_chart_02": 2793,
+    "multiple_gauge_chart_03": 6407,
+    "multiple_gauge_chart_03_hand": 6407
   },
   "multiple radar line chart": {
-    "total_count": 4214,
-    "multiple_radar_line_chart_03": 4214
+    "total_count": 5022,
+    "multiple_radar_line_chart_03": 5022
   },
   "multiple donut chart": {
-    "total_count": 4688,
-    "multiple_donut_chart_01": 2344,
-    "multiple_donut_chart_02": 2344
+    "total_count": 5586,
+    "multiple_donut_chart_01": 2793,
+    "multiple_donut_chart_02": 2793
   },
   "rose chart": {
-    "total_count": 3046,
-    "rose_chart_01": 2344,
-    "rose_chart_new_00": 702
+    "total_count": 3608,
+    "rose_chart_01": 2793,
+    "rose_chart_new_00": 815
   },
   "horizontal lollipop chart": {
-    "total_count": 7376,
-    "horizontal_lollipop_chart_02": 6075,
-    "horizontal_lollipop_chart_01": 1301
+    "total_count": 7719,
+    "horizontal_lollipop_chart_02": 6407,
+    "horizontal_lollipop_chart_01": 1312
   },
   "vertical bar chart": {
-    "total_count": 100359,
-    "vertical_bar_chart_13": 11220,
+    "total_count": 117342,
+    "vertical_bar_chart_13": 12747,
     "vertical_bar_chart_0": 5781,
-    "vertical_bar_chart_02": 11220,
+    "vertical_bar_chart_02": 12747,
     "vertical_bar_chart_05": 2765,
-    "vertical_bar_chart_03": 11218,
-    "vertical_bar_chart_01": 2804,
+    "vertical_bar_chart_03": 12746,
+    "vertical_bar_chart_01": 2833,
     "vertical_bar_chart_04": 5781,
-    "vertical_bar_chart_07": 2804,
+    "vertical_bar_chart_07": 2833,
     "vertical_bar_chart_06": 5780,
     "vertical_bar_chart_16": 5780,
-    "vertical_bar_chart_12": 3611,
+    "vertical_bar_chart_12": 4322,
     "vertical_bar_chart_15": 5780,
     "vertical_bar_chart_10": 5780,
     "vertical_bar_chart_09": 5780,
-    "vertical_bar_chart_08": 702,
-    "vertical_bar_chart_11": 6053,
+    "vertical_bar_chart_08": 815,
+    "vertical_bar_chart_11": 6069,
     "vertical_bar_chart_19": 1013,
-    "vertical_bar_chart_17": 1297,
-    "vertical_bar_chart_18": 1297,
-    "vertical_bar_chart_17_01": 1298,
-    "vertical_bar_chart_19_01": 1297,
-    "vertical_bar_chart_18_01": 1298
+    "vertical_bar_chart_17": 4554,
+    "vertical_bar_chart_18": 2164,
+    "vertical_bar_chart_17_01": 4555,
+    "vertical_bar_chart_19_01": 4553,
+    "vertical_bar_chart_18_01": 2164
   },
   "multiple radar spline chart": {
-    "total_count": 12639,
-    "multiple_radar_spline_chart_02": 4213,
-    "multiple_radar_spline_chart_01": 4213,
-    "multiple_radar_spline_chart_03": 4213
+    "total_count": 15063,
+    "multiple_radar_spline_chart_02": 5021,
+    "multiple_radar_spline_chart_01": 5021,
+    "multiple_radar_spline_chart_03": 5021
   },
   "horizontal dot bar chart": {
-    "total_count": 8841,
-    "horizontal_dot_bar_chart_01": 6075,
-    "horizontal_dot_bar_chart_02": 2766
+    "total_count": 9183,
+    "horizontal_dot_bar_chart_01": 6411,
+    "horizontal_dot_bar_chart_02": 2772
   },
   "bubble chart": {
-    "total_count": 3612,
-    "bubble_chart_02": 3612
+    "total_count": 4322,
+    "bubble_chart_02": 4322
   },
   "horizontal bullet chart": {
     "total_count": 5781,
     "horizontal_bullet_chart_01": 5781
   },
   "step line graph": {
-    "total_count": 6075,
-    "step_line_graph_01": 6075
+    "total_count": 6407,
+    "step_line_graph_01": 6407
   },
   "multiple spline graph": {
-    "total_count": 4213,
-    "multiple_spline_graph_01": 4213
+    "total_count": 5021,
+    "multiple_spline_graph_01": 5021
   },
   "multiple step line graph": {
-    "total_count": 4213,
-    "multiple_step_line_graph_01": 4213
+    "total_count": 5021,
+    "multiple_step_line_graph_01": 5021
   },
   "small multiple line graph": {
-    "total_count": 4213,
-    "small_multiple_line_graph_01": 4213
+    "total_count": 5021,
+    "small_multiple_line_graph_01": 5021
   },
   "horizontal range chart": {
-    "total_count": 4213,
-    "horizontal_range_bar_chart_01": 4213
+    "total_count": 5022,
+    "horizontal_range_bar_chart_01": 5022
   },
   "slope chart": {
-    "total_count": 4213,
-    "slope_chart_01": 4213
+    "total_count": 5053,
+    "slope_chart_01": 5029,
+    "slope_chart_02": 24
   },
   "multiple radar chart": {
-    "total_count": 8425,
-    "multiple_radar_chart_03": 4213,
-    "multiple_radar_chart_01": 4212
+    "total_count": 10042,
+    "multiple_radar_chart_03": 5021,
+    "multiple_radar_chart_01": 5021
   },
   "proportional area chart (triangle)": {
-    "total_count": 11642,
-    "proportional_area_chart_triangle_05": 6075,
-    "proportional_area_chart_triangle_04": 2826,
-    "proportional_area_chart_triangle_06": 872,
-    "proportional_area_chart_triangle_07": 467,
-    "proportional_area_chart_triangle_03": 701,
-    "proportional_area_chart_triangle_02": 701
+    "total_count": 12753,
+    "proportional_area_chart_triangle_05": 6407,
+    "proportional_area_chart_triangle_04": 2918,
+    "proportional_area_chart_triangle_06": 1129,
+    "proportional_area_chart_triangle_07": 669,
+    "proportional_area_chart_triangle_03": 815,
+    "proportional_area_chart_triangle_02": 815
   },
   "radar line chart": {
-    "total_count": 12148,
-    "radar_line_chart_01": 6074,
-    "radar_line_chart_03": 6074
+    "total_count": 12814,
+    "radar_line_chart_01": 6407,
+    "radar_line_chart_03": 6407
   },
   "spline graph": {
-    "total_count": 4214,
-    "spline_graph_01": 4214
+    "total_count": 5021,
+    "spline_graph_01": 5021
   },
   "vertical range chart": {
-    "total_count": 4213,
-    "vertical_range_chart_01": 4213
+    "total_count": 5021,
+    "vertical_range_chart_01": 5021
   },
   "small multiple step line graph": {
-    "total_count": 4213,
-    "small_multiple_step_line_graph_01": 4213
+    "total_count": 5021,
+    "small_multiple_step_line_graph_01": 5021
   },
   "vertical stacked bar chart": {
-    "total_count": 8426,
-    "vertical_stacked_bar_chart_0": 4213,
-    "vertical_stacked_bar_chart_1": 4213
+    "total_count": 10042,
+    "vertical_stacked_bar_chart_0": 5021,
+    "vertical_stacked_bar_chart_1": 5021
   },
   "horizontal stacked bar chart": {
-    "total_count": 25802,
-    "horizontal_stacked_bar_chart_5": 2344,
-    "horizontal_stacked_bar_chart_8_hand": 2344,
-    "horizontal_stacked_bar_chart_1": 2344,
-    "horizontal_stacked_bar_chart_6": 2344,
-    "horizontal_stacked_bar_chart_2": 2344,
-    "horizontal_stacked_bar_chart_5_hand": 2344,
-    "horizontal_stacked_bar_chart_9": 2344,
-    "horizontal_stacked_bar_chart_8": 2344,
-    "horizontal_stacked_bar_chart_7": 2344,
-    "horizontal_stacked_bar_chart_0": 2344,
-    "horizontal_stacked_bar_chart_2_hand": 2344,
-    "horizontal_stacked_bar_chart_4": 9,
-    "horizontal_stacked_bar_chart_3": 9
+    "total_count": 30747,
+    "horizontal_stacked_bar_chart_5": 2793,
+    "horizontal_stacked_bar_chart_8_hand": 2793,
+    "horizontal_stacked_bar_chart_1": 2793,
+    "horizontal_stacked_bar_chart_6": 2793,
+    "horizontal_stacked_bar_chart_2": 2793,
+    "horizontal_stacked_bar_chart_5_hand": 2793,
+    "horizontal_stacked_bar_chart_9": 2793,
+    "horizontal_stacked_bar_chart_8": 2793,
+    "horizontal_stacked_bar_chart_7": 2793,
+    "horizontal_stacked_bar_chart_0": 2793,
+    "horizontal_stacked_bar_chart_2_hand": 2793,
+    "horizontal_stacked_bar_chart_4": 12,
+    "horizontal_stacked_bar_chart_3": 12
   },
   "bottle_bar_chart": {
-    "total_count": 1382,
-    "bottle_bar_chart_02": 1382
+    "total_count": 1467,
+    "bottle_bar_chart_02": 1467
   },
   "vertical group dot bar chart": {
-    "total_count": 4212,
-    "vertical_group_dot_bar_chart_0": 4212
+    "total_count": 5021,
+    "vertical_group_dot_bar_chart_0": 5021
   },
   "small multiple area chart": {
-    "total_count": 4212,
-    "small_multiple_area_chart_01": 4212
+    "total_count": 5021,
+    "small_multiple_area_chart_01": 5021
   },
   "layered area chart": {
-    "total_count": 4212,
-    "layered_area_chart_03": 4212
+    "total_count": 5021,
+    "layered_area_chart_03": 5021
   },
   "spline layered area chart": {
-    "total_count": 4212,
-    "spline_layered_area_chart_01": 4212
+    "total_count": 5021,
+    "spline_layered_area_chart_01": 5021
   },
   "spline stacked area chart": {
-    "total_count": 4212,
-    "spline_stacked_area_chart_01": 4212
+    "total_count": 5021,
+    "spline_stacked_area_chart_01": 5021
   },
   "range area chart": {
-    "total_count": 4212,
-    "range_area_chart_01": 4212
+    "total_count": 5021,
+    "range_area_chart_01": 5021
   },
   "spline multiple area chart": {
-    "total_count": 4212,
-    "spline_multiple_area_chart_01": 4212
+    "total_count": 5021,
+    "spline_multiple_area_chart_01": 5021
   },
   "grouped bar chart": {
-    "total_count": 8424,
-    "vertical_group_bar_chart_8": 4212,
-    "triangle_group_bar_chart_01": 4212
+    "total_count": 10042,
+    "vertical_group_bar_chart_8": 5021,
+    "triangle_group_bar_chart_01": 5021
   },
   "scatterplot": {
-    "total_count": 38388,
-    "scatterplot_03": 18606,
-    "scatterplot_01": 18606,
-    "scatterplot_02": 1176
+    "total_count": 38822,
+    "scatterplot_03": 18780,
+    "scatterplot_01": 18780,
+    "scatterplot_02": 1262
   },
   "horizontal waffle chart": {
-    "total_count": 702,
-    "horizontal_waffle_chart_01": 702
+    "total_count": 816,
+    "horizontal_waffle_chart_01": 816
   },
   "proportional area chart(circle)": {
-    "total_count": 8637,
-    "proportional_area_chart_circle_05": 468,
-    "proportional_area_chart_circle_03": 873,
-    "proportional_area_chart_circle_08": 873,
-    "proportional_area_chart_circle_09": 872,
-    "proportional_area_chart_circle_04": 872,
-    "proportional_area_chart_circle_06": 702,
-    "proportional_area_chart_circle_01": 702,
-    "proportional_area_chart_circle_10": 467,
-    "proportional_area_chart_circle_3d_01": 702,
-    "proportional_area_chart_circle_07": 702,
-    "proportional_area_chart_circle_02": 702,
-    "proportional_area_chart_circle_02_hand": 702
+    "total_count": 10749,
+    "proportional_area_chart_circle_05": 670,
+    "proportional_area_chart_circle_03": 1130,
+    "proportional_area_chart_circle_08": 1130,
+    "proportional_area_chart_circle_09": 1130,
+    "proportional_area_chart_circle_04": 1130,
+    "proportional_area_chart_circle_06": 815,
+    "proportional_area_chart_circle_01": 815,
+    "proportional_area_chart_circle_10": 669,
+    "proportional_area_chart_circle_3d_01": 815,
+    "proportional_area_chart_circle_07": 815,
+    "proportional_area_chart_circle_02": 815,
+    "proportional_area_chart_circle_02_hand": 815
   },
   "line graph": {
-    "total_count": 2805,
-    "line_chart_01": 2805
+    "total_count": 2838,
+    "line_chart_01": 2838
   },
   "area chart": {
-    "total_count": 23982,
+    "total_count": 24664,
     "area_chart_01": 5781,
-    "area_chart_03": 6074,
-    "area_chart_04": 6074,
-    "area_chart_02": 6053
+    "area_chart_03": 6407,
+    "area_chart_04": 6407,
+    "area_chart_02": 6069
   },
   "radar spline chart": {
-    "total_count": 12148,
-    "radar_spline_chart_03": 6074,
-    "radar_spline_chart_01": 6074
+    "total_count": 12814,
+    "radar_spline_chart_03": 6407,
+    "radar_spline_chart_01": 6407
   },
   "treemap": {
-    "total_count": 3978,
-    "treemap_01": 702,
-    "treemap_06_hand": 702,
-    "treemap_05_hand": 702,
-    "treemap_02": 702,
-    "treemap_03": 702,
-    "treemap_04": 468
+    "total_count": 4739,
+    "treemap_01": 814,
+    "treemap_06_hand": 813,
+    "treemap_05_hand": 814,
+    "treemap_02": 814,
+    "treemap_03": 814,
+    "treemap_04": 670
   },
   "horizontal pictorial percentage bar chart": {
-    "total_count": 1297,
+    "total_count": 1993,
     "horizontal_pictorial_percentage_bar_chart_02": 1,
-    "horizontal_pictorial_percentage_bar_chart_01": 1296
+    "horizontal_pictorial_percentage_bar_chart_01": 1992
   },
   "vertical waffle chart": {
-    "total_count": 8180,
-    "vertical_waffle_chart_03": 6074,
-    "vertical_waffle_chart_02": 702,
-    "vertical_waffle_chart_01": 702,
-    "vertical_waffle_chart_04": 702
+    "total_count": 8852,
+    "vertical_waffle_chart_03": 6407,
+    "vertical_waffle_chart_02": 815,
+    "vertical_waffle_chart_01": 815,
+    "vertical_waffle_chart_04": 815
   },
   "vertical pictorial bar chart": {
     "total_count": 6,
     "vertical_pictorial_bar_chart_01": 6
   },
   "voronoi treemap(circle)": {
-    "total_count": 2108,
-    "voronoi_treemap_circle_03_hand": 706,
-    "voronoi_treemap_circle_02": 701,
-    "voronoi_treemap_circle_01": 701
+    "total_count": 2439,
+    "voronoi_treemap_circle_03_hand": 813,
+    "voronoi_treemap_circle_02": 813,
+    "voronoi_treemap_circle_01": 813
   },
   "vertical lollipop chart": {
-    "total_count": 2804,
-    "vertical_lollipop_chart_01": 2804
+    "total_count": 2833,
+    "vertical_lollipop_chart_01": 2833
   },
   "triangle bar chart": {
-    "total_count": 6774,
-    "triangle_bar_chart_01": 6073,
-    "triangle_bar_chart_02": 701
+    "total_count": 7219,
+    "triangle_bar_chart_01": 6406,
+    "triangle_bar_chart_02": 813
   },
   "vertical bullet chart": {
     "total_count": 5780,
     "vertical_bullet_chart_01": 5780
   },
   "proportional area chart (square)": {
-    "total_count": 10455,
+    "total_count": 11339,
     "proportional_area_chart_square_01": 5780,
-    "proportional_area_chart_square_05": 467,
-    "proportional_area_chart_square_03": 701,
-    "proportional_area_chart_square_3d_01": 701,
-    "proportional_area_chart_square_02": 701,
-    "proportional_area_chart_square_04": 702,
-    "proportional_area_chart_square_06": 701,
-    "proportional_area_chart_square_07": 702
+    "proportional_area_chart_square_05": 669,
+    "proportional_area_chart_square_03": 815,
+    "proportional_area_chart_square_3d_01": 815,
+    "proportional_area_chart_square_02": 815,
+    "proportional_area_chart_square_04": 815,
+    "proportional_area_chart_square_06": 815,
+    "proportional_area_chart_square_07": 815
   },
   "spline area chart": {
-    "total_count": 6074,
-    "spline_area_chart_01": 6074
+    "total_count": 6425,
+    "spline_area_chart_01": 6407,
+    "spline_area_chart_02": 18
   },
   "vertical dot bar chart": {
-    "total_count": 2765,
-    "vertical_dot_bar_chart_01": 2765
+    "total_count": 2880,
+    "vertical_dot_bar_chart_01": 2880
   },
   "voronoi treemap(rectangle)": {
-    "total_count": 717,
-    "voronoi_treemap_rectangle_01": 707,
-    "voronoi_treemap_rectangle_02": 10
+    "total_count": 1626,
+    "voronoi_treemap_rectangle_01": 813,
+    "voronoi_treemap_rectangle_02": 813
   },
   "donut_chart": {
-    "total_count": 6318,
-    "donut_chart_00": 702,
-    "donut_chart_04_hand": 702,
-    "donut_chart_00_hand": 702,
-    "donut_chart_05_d3": 702,
-    "donut_chart_03_d3_hand": 702,
-    "donut_chart_07_d3": 702,
-    "donut_chart_06_d3": 702,
-    "donut_chart_03_d3": 702,
-    "donut_chart_04_d3": 702
+    "total_count": 7344,
+    "donut_chart_00": 816,
+    "donut_chart_04_hand": 816,
+    "donut_chart_00_hand": 816,
+    "donut_chart_05_d3": 816,
+    "donut_chart_03_d3_hand": 816,
+    "donut_chart_07_d3": 816,
+    "donut_chart_06_d3": 816,
+    "donut_chart_03_d3": 816,
+    "donut_chart_04_d3": 816
   },
   "pie_chart": {
-    "total_count": 2106,
-    "pie_chart_00": 702,
-    "pie_chart_01_d3": 702,
-    "pie_chart_01_hand": 702
+    "total_count": 2448,
+    "pie_chart_00": 816,
+    "pie_chart_01_d3": 816,
+    "pie_chart_01_hand": 816
   },
   "semicircle_donut_chart": {
-    "total_count": 1404,
-    "semicircle_donut_chart_00": 702,
-    "semicircle_donut_chart_05_d3": 702
+    "total_count": 1630,
+    "semicircle_donut_chart_00": 815,
+    "semicircle_donut_chart_05_d3": 815
   },
   "grouped scatterplot": {
-    "total_count": 20760,
-    "grouped_scatterplot_02": 468,
-    "grouped_scatterplot_05": 5156,
-    "grouped_scatterplot_04": 5046,
-    "grouped_scatterplot_03": 5045,
-    "grouped_scatterplot_01": 5045
+    "total_count": 20969,
+    "grouped_scatterplot_02": 670,
+    "grouped_scatterplot_05": 5157,
+    "grouped_scatterplot_04": 5048,
+    "grouped_scatterplot_03": 5048,
+    "grouped_scatterplot_01": 5046
   },
   "donut chart": {
-    "total_count": 2808,
-    "donut_chart_02": 702,
-    "donut_chart_02_hand": 702,
-    "donut_chart_09": 702,
-    "donut_chart_08": 702
+    "total_count": 3264,
+    "donut_chart_02": 816,
+    "donut_chart_02_hand": 816,
+    "donut_chart_09": 816,
+    "donut_chart_08": 816
   },
   "semicircle pie chart": {
-    "total_count": 1404,
-    "semicircle_pie_chart_01_d3": 702,
-    "semicircle_pie_chart_03_d3": 702
+    "total_count": 1632,
+    "semicircle_pie_chart_01_d3": 816,
+    "semicircle_pie_chart_03_d3": 816
   },
   "semicircle donut chart": {
-    "total_count": 2106,
-    "semicircle_donut_chart_04_d3": 702,
-    "semicircle_donut_chart_06_d3": 702,
-    "semicircle_donut_chart_03_d3": 702
+    "total_count": 2446,
+    "semicircle_donut_chart_04_d3": 816,
+    "semicircle_donut_chart_06_d3": 815,
+    "semicircle_donut_chart_03_d3": 815
   },
   "pie chart": {
-    "total_count": 702,
-    "pie_chart_03_d3": 702
+    "total_count": 843,
+    "pie_chart_03_d3": 815,
+    "pie_chart_01_hand": 4,
+    "pie_chart_00": 8,
+    "pie_chart_01": 8,
+    "pie_chart_02": 4,
+    "pie_chart_03": 4
   },
   "proportional area chart (triangle) 3d": {
-    "total_count": 701,
-    "proportional_area_chart_triangle_3d_01": 701
+    "total_count": 815,
+    "proportional_area_chart_triangle_3d_01": 815
   },
   "pyramid diagram": {
-    "total_count": 3506,
-    "pyramid_diagram_01_3d": 701,
-    "pyramid_diagram_01": 701,
-    "pyramid_diagram_01_hand": 701,
-    "pyramid_diagram_02": 702,
-    "pyramid_diagram_02_hand": 701
+    "total_count": 4064,
+    "pyramid_diagram_01_3d": 813,
+    "pyramid_diagram_01": 813,
+    "pyramid_diagram_01_hand": 813,
+    "pyramid_diagram_02": 812,
+    "pyramid_diagram_02_hand": 813
   },
   "pyramid chart": {
-    "total_count": 1401,
-    "pyramid_chart_02": 701,
-    "pyramid_chart_01": 700
+    "total_count": 1624,
+    "pyramid_chart_02": 812,
+    "pyramid_chart_01": 812
   },
   "funnel chart": {
-    "total_count": 1400,
-    "funnel_chart_01": 700,
-    "funnel_chart_02": 700
+    "total_count": 1624,
+    "funnel_chart_01": 812,
+    "funnel_chart_02": 812
   },
   "multiple area chart": {
-    "total_count": 4212,
-    "multiple_area_chart_01": 4212
+    "total_count": 5021,
+    "multiple_area_chart_01": 5021
   },
   "vertical pictorial percentage bar chart": {
-    "total_count": 1296,
-    "vertical_pictorial_percentage_bar_chart_01": 1296
+    "total_count": 1992,
+    "vertical_pictorial_percentage_bar_chart_01": 1992
+  },
+  "histogram": {
+    "total_count": 199,
+    "histogram_01": 82,
+    "histogram_02": 23,
+    "histogram_03": 68,
+    "histogram_04": 6,
+    "histogram_05": 12,
+    "histogram_06": 8
+  },
+  "grouped dot chart": {
+    "total_count": 48,
+    "grouped_scatterplot_02": 14,
+    "grouped_dot_chart_02": 14,
+    "grouped_dot_chart_03": 20
   }
 }

@@ -199,8 +199,11 @@ def generate_distinct_palette(main_color, num_colors=5):
     main_color = main_color.lstrip('#')
     r, g, b = tuple(int(main_color[i:i+2], 16) for i in (0, 2, 4))
     
-    # 转换RGB为HSV
-    h, s, v = colorsys.rgb_to_hsv(r/255, g/255, b/255)
+    # 转换RGB为HSL
+    h, s, l = colorsys.rgb_to_hls(r/255, g/255, b/255)
+    h = h * 360  # 转换到0-360度
+    s = s * 100  # 转换到0-100%
+    l = l * 100  # 转换到0-100%
     
     palette = ["#" + main_color]  # 添加主颜色到调色板
     
@@ -212,59 +215,56 @@ def generate_distinct_palette(main_color, num_colors=5):
         # 互补色方案，最容易区分
         for i in range(1, num_colors):
             # 互补色基础上增加变化
-            new_h = (h + 0.5 + (i-1) * 0.2) % 1.0
+            new_h = (h + 180 + (i-1) * 30) % 360
             
-            # 变化饱和度和亮度以增加区分度
-            new_s = min(1.0, s * (0.7 + 0.3 * random.random()))
-            new_v = min(1.0, v * (0.7 + 0.3 * random.random()))
+            # 限制饱和度和亮度范围
+            new_s = max(30, min(90, s + random.uniform(-20, 20)))
+            new_l = max(35, min(75, l + random.uniform(-15, 15)))
             
             # 转回RGB并添加到调色板
-            r, g, b = colorsys.hsv_to_rgb(new_h, new_s, new_v)
+            r, g, b = colorsys.hls_to_rgb(new_h/360, new_l/100, new_s/100)
             hex_color = "#{:02x}{:02x}{:02x}".format(int(r*255), int(g*255), int(b*255))
             palette.append(hex_color)
     
     elif strategy == "analogous":
         # 类似色方案但确保足够区分
-        hue_step = 0.8 / (num_colors - 0.5)  # 确保色相足够分散
         for i in range(1, num_colors):
-            # 在主色左右分布
-            offset = (i % 2) * 2 - 1  # -1, 1, -1, 1...
-            new_h = (h + offset * (i+1)/2 * hue_step) % 1.0
+            # 在主色左右30-60度范围内分布
+            new_h = (h + (i % 2 * 2 - 1) * random.uniform(30, 60)) % 360
             
-            # 交替变化饱和度和亮度
-            new_s = min(1.0, s * (0.75 + 0.25 * ((i % 3) / 3)))
-            new_v = min(1.0, v * (0.75 + 0.25 * (((i+1) % 3) / 3)))
+            # 限制饱和度和亮度范围
+            new_s = max(30, min(90, s + random.uniform(-15, 15)))
+            new_l = max(35, min(75, l + random.uniform(-10, 10)))
             
-            r, g, b = colorsys.hsv_to_rgb(new_h, new_s, new_v)
+            r, g, b = colorsys.hls_to_rgb(new_h/360, new_l/100, new_s/100)
             hex_color = "#{:02x}{:02x}{:02x}".format(int(r*255), int(g*255), int(b*255))
             palette.append(hex_color)
     
     elif strategy == "triadic":
         # 三等分色环方案
         for i in range(1, num_colors):
-            # 在色环上等距离分布
-            new_h = (h + (i % 3) / 3) % 1.0
+            # 在色环上120度间隔分布
+            new_h = (h + (i % 3) * 120) % 360
             
-            # 微调饱和度和亮度
-            new_s = min(1.0, s * (0.8 + 0.2 * math.sin(i * 0.5)))
-            new_v = min(1.0, v * (0.8 + 0.2 * math.cos(i * 0.5)))
+            # 限制饱和度和亮度范围
+            new_s = max(30, min(90, s + random.uniform(-10, 10)))
+            new_l = max(35, min(75, l + random.uniform(-10, 10)))
             
-            r, g, b = colorsys.hsv_to_rgb(new_h, new_s, new_v)
+            r, g, b = colorsys.hls_to_rgb(new_h/360, new_l/100, new_s/100)
             hex_color = "#{:02x}{:02x}{:02x}".format(int(r*255), int(g*255), int(b*255))
             palette.append(hex_color)
     
     else:  # golden_ratio
-        # 黄金比例方法 - 确保最大的色彩区分度
-        golden_ratio = 0.618033988749895
+        # 黄金比例方法
+        golden_ratio = 0.618033988749895 * 360  # 转换到角度
         for i in range(1, num_colors):
-            new_h = (h + golden_ratio * i) % 1.0
+            new_h = (h + golden_ratio * i) % 360
             
-            # 确保饱和度足够高以增强区分度
-            new_s = min(1.0, 0.5 + 0.4 * random.random())
-            # 确保亮度适中
-            new_v = min(1.0, 0.6 + 0.3 * random.random())
+            # 限制饱和度和亮度范围
+            new_s = max(30, min(90, 60 + random.uniform(-20, 20)))  # 基准饱和度60%
+            new_l = max(35, min(75, 55 + random.uniform(-15, 15)))  # 基准亮度55%
             
-            r, g, b = colorsys.hsv_to_rgb(new_h, new_s, new_v)
+            r, g, b = colorsys.hls_to_rgb(new_h/360, new_l/100, new_s/100)
             hex_color = "#{:02x}{:02x}{:02x}".format(int(r*255), int(g*255), int(b*255))
             palette.append(hex_color)
     
@@ -285,21 +285,21 @@ def generate_distinct_palette(main_color, num_colors=5):
             final_palette.append(color)
         else:
             # 生成一个替代颜色
-            new_h = (h + random.random()) % 1.0
-            new_s = 0.6 + 0.4 * random.random()
-            new_v = 0.6 + 0.4 * random.random()
+            new_h = random.uniform(0, 360)
+            new_s = random.uniform(30, 90)  # 限制饱和度范围
+            new_l = random.uniform(35, 75)  # 限制亮度范围
             
-            r, g, b = colorsys.hsv_to_rgb(new_h, new_s, new_v)
+            r, g, b = colorsys.hls_to_rgb(new_h/360, new_l/100, new_s/100)
             hex_color = "#{:02x}{:02x}{:02x}".format(int(r*255), int(g*255), int(b*255))
             final_palette.append(hex_color)
     
     # 如果颜色不足，继续补充
     while len(final_palette) < num_colors:
-        new_h = (h + random.random()) % 1.0
-        new_s = 0.6 + 0.4 * random.random()
-        new_v = 0.6 + 0.4 * random.random()
+        new_h = random.uniform(0, 360)
+        new_s = random.uniform(30, 90)  # 限制饱和度范围
+        new_l = random.uniform(35, 75)  # 限制亮度范围
         
-        r, g, b = colorsys.hsv_to_rgb(new_h, new_s, new_v)
+        r, g, b = colorsys.hls_to_rgb(new_h/360, new_l/100, new_s/100)
         hex_color = "#{:02x}{:02x}{:02x}".format(int(r*255), int(g*255), int(b*255))
         
         # 检查与已有颜色的区分度

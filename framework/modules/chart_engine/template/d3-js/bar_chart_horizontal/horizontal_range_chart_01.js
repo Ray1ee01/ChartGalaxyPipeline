@@ -1,7 +1,7 @@
 /*
 REQUIREMENTS_BEGIN
 {
-    "chart_type": "Horizontal Range Chart",
+    "chart_type": "Range Chart",
     "chart_name": "horizontal_range_bar_chart_01",
     "chart_for": "comparison",
     "is_composite": false,

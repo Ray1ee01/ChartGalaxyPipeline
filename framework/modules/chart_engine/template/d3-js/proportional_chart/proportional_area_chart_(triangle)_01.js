@@ -1,7 +1,7 @@
 /*
 REQUIREMENTS_BEGIN
 {
-    "chart_type": "Proportional Area Chart (Triangle) 3D",
+    "chart_type": "Proportional Area Chart (Triangle)",
     "chart_name": "proportional_area_chart_triangle_3d_01",
     "is_composite": false,
     "required_fields": ["x", "y"],

@@ -1,7 +1,7 @@
 /*
 REQUIREMENTS_BEGIN
 {
-    "chart_type": "Spline Layered Area Chart",
+    "chart_type": "Layered Area Chart",
     "chart_name": "spline_layered_area_chart_01",
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["temporal"], ["numerical"], ["categorical"]],

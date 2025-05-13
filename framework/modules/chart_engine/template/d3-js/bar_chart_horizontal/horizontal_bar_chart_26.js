@@ -1,15 +1,11 @@
 /*
 REQUIREMENTS_BEGIN
 {
-    "chart_type": "Horizontal Bar Chart",
+    "chart_type": "Horizontal Bar Chart With Circle",
     "chart_name": "horizontal_bar_chart_26",
     "is_composite": true,
     "required_fields": ["x", "y", "y2"],
-    "required_fields_type": [
-        ["categorical"],
-        ["numerical"],
-        ["numerical"]
-    ],
+    "required_fields_type": [["categorical"], ["numerical"], ["numerical"]],
     "required_fields_range": [[2, 30], [0, "inf"], [0, "inf"]],
     "required_fields_icons": ["x"],
     "required_other_icons": [],

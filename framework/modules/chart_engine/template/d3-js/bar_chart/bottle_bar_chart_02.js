@@ -1,7 +1,7 @@
 /*
 REQUIREMENTS_BEGIN
 {
-    "chart_type": "bottle_bar_chart",
+    "chart_type": "Vertical Bar Chart",
     "chart_name": "bottle_bar_chart_02",
     "is_composite": false,
     "required_fields": ["x", "y"],

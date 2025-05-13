@@ -1,7 +1,7 @@
 /*
 REQUIREMENTS_BEGIN
 {
-    "chart_type": "Horizontal Bar Chart",
+    "chart_type": "Horizontal Bar Chart With Circle",
     "chart_name": "horizontal_bar_chart_21",
     "is_composite": true,
     "required_fields": ["x", "y", "y2"],

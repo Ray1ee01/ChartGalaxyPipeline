@@ -1,7 +1,7 @@
 /*
 REQUIREMENTS_BEGIN
 {
-    "chart_type": "SemiCircle Pie Chart",
+    "chart_type": "Semicircle Pie Chart",
     "chart_name": "semicircle_pie_chart_01_d3",
     "is_composite": false,
     "required_fields": ["x", "y"],

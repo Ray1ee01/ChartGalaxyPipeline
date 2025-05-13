@@ -1,7 +1,7 @@
 /*
 REQUIREMENTS_BEGIN
 {
-    "chart_type": "Vertical Range Chart",
+    "chart_type": "Range Chart",
     "chart_name": "vertical_range_chart_01",
     "chart_for": "comparison",
     "is_composite": false,

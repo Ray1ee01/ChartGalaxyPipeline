@@ -1,7 +1,7 @@
 /*
 REQUIREMENTS_BEGIN
 {
-    "chart_type": "Spline Stacked Area Chart",
+    "chart_type": "Stacked Area Chart",
     "chart_name": "spline_stacked_area_chart_01",
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["temporal"], ["numerical"], ["categorical"]],
