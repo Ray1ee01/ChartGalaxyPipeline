@@ -367,17 +367,13 @@
             ]
         ],
         "required_fields_icons": [
-            "category"
+            "x"
         ],
-        "required_other_icons": [
-            "primary"
-        ],
+        "required_other_icons": [],
         "required_fields_colors": [
-            "category"
+            "x"
         ],
-        "required_other_colors": [
-            "primary"
-        ],
+        "required_other_colors": [],
         "supported_effects": [
             "shadow",
             "radius_corner"
@@ -416,17 +412,13 @@
             ]
         ],
         "required_fields_icons": [
-            "category"
+            "x"
         ],
-        "required_other_icons": [
-            "primary"
-        ],
+        "required_other_icons": [],
         "required_fields_colors": [
-            "category"
+            "x"
         ],
-        "required_other_colors": [
-            "primary"
-        ],
+        "required_other_colors": [],
         "supported_effects": [
             "shadow",
             "radius_corner"
@@ -465,17 +457,13 @@
             ]
         ],
         "required_fields_icons": [
-            "category"
+            "x"
         ],
-        "required_other_icons": [
-            "primary"
-        ],
+        "required_other_icons": [],
         "required_fields_colors": [
-            "category"
+            "x"
         ],
-        "required_other_colors": [
-            "primary"
-        ],
+        "required_other_colors": [],
         "supported_effects": [
             "shadow",
             "radius_corner"
@@ -8674,6 +8662,222 @@
         "has_x_axis": "no",
         "has_y_axis": "no"
     },
+    "multiple_pie_chart_04": {
+        "chart_type": "Multiple Pie Chart",
+        "chart_name": "multiple_pie_chart_04",
+        "is_composite": false,
+        "required_fields": [
+            "x",
+            "y",
+            "group"
+        ],
+        "required_fields_type": [
+            [
+                "categorical"
+            ],
+            [
+                "numerical"
+            ],
+            [
+                "categorical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                2,
+                10
+            ],
+            [
+                0,
+                "inf"
+            ],
+            [
+                2,
+                10
+            ]
+        ],
+        "required_fields_icons": [],
+        "required_other_icons": [],
+        "required_fields_colors": [
+            "group"
+        ],
+        "required_other_colors": [
+            "primary"
+        ],
+        "supported_effects": [
+            "shadow",
+            "stroke"
+        ],
+        "min_height": 400,
+        "min_width": 600,
+        "background": "no",
+        "icon_mark": "none",
+        "icon_label": "none",
+        "has_x_axis": "no",
+        "has_y_axis": "no"
+    },
+    "multiple_pie_chart_02": {
+        "chart_type": "Multiple Pie Chart",
+        "chart_name": "multiple_pie_chart_02",
+        "is_composite": false,
+        "required_fields": [
+            "x",
+            "y",
+            "group"
+        ],
+        "required_fields_type": [
+            [
+                "categorical"
+            ],
+            [
+                "numerical"
+            ],
+            [
+                "categorical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                2,
+                10
+            ],
+            [
+                0,
+                "inf"
+            ],
+            [
+                2,
+                10
+            ]
+        ],
+        "required_fields_icons": [],
+        "required_other_icons": [],
+        "required_fields_colors": [
+            "group"
+        ],
+        "required_other_colors": [
+            "primary"
+        ],
+        "supported_effects": [
+            "shadow",
+            "stroke"
+        ],
+        "min_height": 400,
+        "min_width": 600,
+        "background": "no",
+        "icon_mark": "none",
+        "icon_label": "none",
+        "has_x_axis": "no",
+        "has_y_axis": "no"
+    },
+    "multiple_pie_chart_03": {
+        "chart_type": "Multiple Pie Chart",
+        "chart_name": "multiple_pie_chart_03",
+        "is_composite": false,
+        "required_fields": [
+            "x",
+            "y",
+            "group"
+        ],
+        "required_fields_type": [
+            [
+                "categorical"
+            ],
+            [
+                "numerical"
+            ],
+            [
+                "categorical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                2,
+                10
+            ],
+            [
+                0,
+                "inf"
+            ],
+            [
+                2,
+                10
+            ]
+        ],
+        "required_fields_icons": [],
+        "required_other_icons": [],
+        "required_fields_colors": [
+            "group"
+        ],
+        "required_other_colors": [
+            "primary"
+        ],
+        "supported_effects": [
+            "shadow",
+            "stroke"
+        ],
+        "min_height": 400,
+        "min_width": 600,
+        "background": "dark",
+        "icon_mark": "none",
+        "icon_label": "none",
+        "has_x_axis": "no",
+        "has_y_axis": "no"
+    },
+    "multiple_pie_chart_05": {
+        "chart_type": "Multiple Pie Chart",
+        "chart_name": "multiple_pie_chart_05",
+        "is_composite": false,
+        "required_fields": [
+            "x",
+            "y",
+            "group"
+        ],
+        "required_fields_type": [
+            [
+                "categorical"
+            ],
+            [
+                "numerical"
+            ],
+            [
+                "categorical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                2,
+                10
+            ],
+            [
+                0,
+                "inf"
+            ],
+            [
+                2,
+                10
+            ]
+        ],
+        "required_fields_icons": [],
+        "required_other_icons": [],
+        "required_fields_colors": [
+            "group"
+        ],
+        "required_other_colors": [
+            "primary"
+        ],
+        "supported_effects": [
+            "shadow",
+            "stroke"
+        ],
+        "min_height": 400,
+        "min_width": 600,
+        "background": "no",
+        "icon_mark": "none",
+        "icon_label": "none",
+        "has_x_axis": "no",
+        "has_y_axis": "no"
+    },
     "donut_chart_09": {
         "chart_type": "Donut Chart",
         "chart_name": "donut_chart_09",
@@ -9547,6 +9751,118 @@
         "has_x_axis": "no",
         "has_y_axis": "no"
     },
+    "multiple_donut_chart_03": {
+        "chart_type": "Multiple Donut Chart",
+        "chart_name": "multiple_donut_chart_03",
+        "is_composite": false,
+        "required_fields": [
+            "x",
+            "y",
+            "group"
+        ],
+        "required_fields_type": [
+            [
+                "categorical"
+            ],
+            [
+                "numerical"
+            ],
+            [
+                "categorical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                2,
+                10
+            ],
+            [
+                0,
+                "inf"
+            ],
+            [
+                2,
+                10
+            ]
+        ],
+        "required_fields_icons": [
+            "x"
+        ],
+        "required_other_icons": [],
+        "required_fields_colors": [
+            "group"
+        ],
+        "required_other_colors": [
+            "primary"
+        ],
+        "supported_effects": [
+            "shadow",
+            "stroke"
+        ],
+        "min_height": 400,
+        "min_width": 600,
+        "background": "no",
+        "icon_mark": "none",
+        "icon_label": "none",
+        "has_x_axis": "no",
+        "has_y_axis": "no"
+    },
+    "multiple_donut_chart_04": {
+        "chart_type": "Multiple Donut Chart",
+        "chart_name": "multiple_donut_chart_04",
+        "is_composite": false,
+        "required_fields": [
+            "x",
+            "y",
+            "group"
+        ],
+        "required_fields_type": [
+            [
+                "categorical"
+            ],
+            [
+                "numerical"
+            ],
+            [
+                "categorical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                2,
+                10
+            ],
+            [
+                0,
+                "inf"
+            ],
+            [
+                2,
+                10
+            ]
+        ],
+        "required_fields_icons": [
+            "x"
+        ],
+        "required_other_icons": [],
+        "required_fields_colors": [
+            "group"
+        ],
+        "required_other_colors": [
+            "primary"
+        ],
+        "supported_effects": [
+            "shadow",
+            "stroke"
+        ],
+        "min_height": 400,
+        "min_width": 600,
+        "background": "dark",
+        "icon_mark": "none",
+        "icon_label": "none",
+        "has_x_axis": "no",
+        "has_y_axis": "no"
+    },
     "multiple_gauge_chart_03": {
         "chart_type": "Multiple Gauge Chart",
         "chart_name": "multiple_gauge_chart_03",
@@ -9914,6 +10230,118 @@
         "min_height": 400,
         "min_width": 400,
         "background": "no",
+        "icon_mark": "none",
+        "icon_label": "none",
+        "has_x_axis": "no",
+        "has_y_axis": "no"
+    },
+    "multiple_semi_donut_chart_01": {
+        "chart_type": "Multiple Semi Donut Chart",
+        "chart_name": "multiple_semi_donut_chart_01",
+        "is_composite": false,
+        "required_fields": [
+            "x",
+            "y",
+            "group"
+        ],
+        "required_fields_type": [
+            [
+                "categorical"
+            ],
+            [
+                "numerical"
+            ],
+            [
+                "categorical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                2,
+                10
+            ],
+            [
+                0,
+                "inf"
+            ],
+            [
+                2,
+                10
+            ]
+        ],
+        "required_fields_icons": [
+            "x"
+        ],
+        "required_other_icons": [],
+        "required_fields_colors": [
+            "group"
+        ],
+        "required_other_colors": [
+            "primary"
+        ],
+        "supported_effects": [
+            "shadow",
+            "stroke"
+        ],
+        "min_height": 400,
+        "min_width": 600,
+        "background": "no",
+        "icon_mark": "none",
+        "icon_label": "none",
+        "has_x_axis": "no",
+        "has_y_axis": "no"
+    },
+    "multiple_semi_donut_chart_02": {
+        "chart_type": "Multiple Semi Donut Chart",
+        "chart_name": "multiple_semi_donut_chart_02",
+        "is_composite": false,
+        "required_fields": [
+            "x",
+            "y",
+            "group"
+        ],
+        "required_fields_type": [
+            [
+                "categorical"
+            ],
+            [
+                "numerical"
+            ],
+            [
+                "categorical"
+            ]
+        ],
+        "required_fields_range": [
+            [
+                2,
+                10
+            ],
+            [
+                0,
+                "inf"
+            ],
+            [
+                2,
+                10
+            ]
+        ],
+        "required_fields_icons": [
+            "x"
+        ],
+        "required_other_icons": [],
+        "required_fields_colors": [
+            "group"
+        ],
+        "required_other_colors": [
+            "primary"
+        ],
+        "supported_effects": [
+            "shadow",
+            "stroke"
+        ],
+        "min_height": 400,
+        "min_width": 600,
+        "background": "dark",
         "icon_mark": "none",
         "icon_label": "none",
         "has_x_axis": "no",

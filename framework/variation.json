@@ -103,8 +103,10 @@
     "horizontal_group_dot_bar_chart_0": 5022
   },
   "multiple semi donut chart": {
-    "total_count": 2793,
-    "multiple_semidonut_chart_01": 2793
+    "total_count": 2813,
+    "multiple_semidonut_chart_01": 2793,
+    "multiple_semi_donut_chart_02": 14,
+    "multiple_semi_donut_chart_01": 6
   },
   "radial bar chart": {
     "total_count": 15357,
@@ -182,8 +184,12 @@
     "multiple_line_graph_06": 5022
   },
   "multiple pie chart": {
-    "total_count": 2797,
-    "multiple_pie_chart_01": 2797
+    "total_count": 3347,
+    "multiple_pie_chart_01": 2797,
+    "multiple_pie_chart_02": 48,
+    "multiple_pie_chart_03": 22,
+    "multiple_pie_chart_04": 234,
+    "multiple_pie_chart_05": 246
   },
   "multiple gauge chart": {
     "total_count": 18400,
@@ -197,9 +203,11 @@
     "multiple_radar_line_chart_03": 5022
   },
   "multiple donut chart": {
-    "total_count": 5586,
+    "total_count": 5874,
     "multiple_donut_chart_01": 2793,
-    "multiple_donut_chart_02": 2793
+    "multiple_donut_chart_02": 2857,
+    "multiple_donut_chart_03": 122,
+    "multiple_donut_chart_04": 102
   },
   "rose chart": {
     "total_count": 3608,
@@ -376,8 +384,9 @@
     "scatterplot_02": 1262
   },
   "horizontal waffle chart": {
-    "total_count": 816,
-    "horizontal_waffle_chart_01": 816
+    "total_count": 834,
+    "horizontal_waffle_chart_01": 820,
+    "horizontal_waffle_chart_02": 14
   },
   "proportional area chart(circle)": {
     "total_count": 10749,

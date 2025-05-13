@@ -237,7 +237,8 @@ def make_infographic(
     # 初始化best_title默认值为None，用于后续检查
     best_title = None
     # print(f"mask_1_ratio: {mask_1_ratio}")
-    if mask_1_ratio > 0.20 and mask_1_ratio < 0.5 and ("donut" in data["chart_type"] or "Donut" in data["chart_type"]):
+    lower_chart_type = data["chart_type"].lower()
+    if mask_1_ratio > 0.20 and mask_1_ratio < 0.5 and ("donut" in lower_chart_type and "multiple" not in lower_chart_type):
         width = average_distance*2
         title_content = title_styler_process(
             input_data=data, max_width=int(width), text_align="center", show_embellishment=False, show_sub_title=False,
@@ -550,7 +551,7 @@ def make_infographic(
         if "base64," not in primary_image:
             primary_image = f"data:image/png;base64,{primary_image}"
 
-        side_mask = expand_mask(original_mask, 15)
+        side_mask = expand_mask(original_mask, 8)
         side_image_size, side_best_x, side_best_y = find_best_size_and_position(side_mask, primary_image, padding, mode="side")
         measure_side_size = min(side_image_size, 256)
 
