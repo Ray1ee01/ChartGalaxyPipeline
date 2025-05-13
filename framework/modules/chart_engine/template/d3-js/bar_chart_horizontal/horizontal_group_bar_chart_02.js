@@ -92,7 +92,15 @@ function makeChart(containerSelector, data) {
     
     // ---------- 4. 布局 ----------
     const width = variables.width || 600;
-    const height = variables.height || 600;
+    let height = variables.height || 600;
+    
+    // 动态调整高度：如果x维度数量超过15，每增加一个维度，高度增加3%
+    const dimensionCount = [...new Set(chartData.map(d => d[dimensionField]))].length;
+    if (dimensionCount > 15) {
+        const extraDimensions = dimensionCount - 15;
+        const heightIncreaseFactor = 1 + (extraDimensions * 0.03); // 增加比例因子
+        height = Math.round(height * heightIncreaseFactor); // 应用高度调整
+    }
     
     const margin = { 
         top: 50, 

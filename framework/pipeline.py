@@ -133,6 +133,11 @@ def run_pipeline(input_path, output_path=None, temp_dir=None, modules_to_run=Non
         chart_name (str, optional): 指定图表名称，仅对infographics_generator模块有效
     """
     # try:
+    if chart_name is not None:
+        output_path = os.path.join(output_path, chart_name)
+        import shutil
+        shutil.rmtree(output_path, ignore_errors=True)
+        os.makedirs(output_path, exist_ok=True)
     print("modules_to_run: ", modules_to_run)
     # 如果是create_index模块，单独处理
     if modules_to_run and 'create_index' in modules_to_run:
@@ -490,12 +495,13 @@ def should_skip_module(module_name: str, output_path: Path) -> bool:
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--input', type=str, help='Input json file path', default=None)
-    parser.add_argument('--output', type=str, help='Output json file path', default=None)
+    parser.add_argument('--input', type=str, help='Input json file path', default='/data1/lizhen/resources/result/data_pool_v2')
+    parser.add_argument('--output', type=str, help='Output json file path', default='output')
     parser.add_argument('--temp-dir', type=str, default='tmp')
-    parser.add_argument('--modules', type=str, nargs='+', help='Modules to run', required=True)
-    parser.add_argument('--threads', type=int, help='Number of threads for directory processing', default=None)
-    parser.add_argument('--chart-name', type=str, help='Specific chart name to use for infographics_generator', default=None)
+    parser.add_argument('--modules', type=str, nargs='+', help='Modules to run', default = 'infographics_generator')
+    parser.add_argument('--threads', type=int, help='Number of threads for directory processing', default=1)
+    parser.add_argument('--chart-name', type=str, help='Specific chart name to use for infographics_generator', default='voronoi_treemap_rectangle_01')
+    
     args = parser.parse_args()
     # 如果没有指定input，从data_resource_path随机选择
     if args.input is None and 'create_index' not in args.modules:
@@ -513,7 +519,7 @@ def main():
     args = parse_args()
     modules_to_run = None
     if args.modules:
-        modules_to_run = [m.strip() for m in args.modules]
+        modules_to_run = args.modules
     
     run_pipeline(
         input_path=args.input,

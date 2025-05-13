@@ -63,14 +63,6 @@ function makeChart(containerSelector, data) {
     const width = variables.width || 800;
     let height = variables.height || 600;
     
-    // 动态调整高度：如果x维度数量超过15，每增加一个维度，高度增加3%
-    if (dimensions.length > 15) {
-        const extraDimensions = dimensions.length - 15;
-        const heightIncreaseFactor = 1 + (extraDimensions * 0.03); // 增加比例因子
-        height = Math.round(height * heightIncreaseFactor); // 应用高度调整
-        console.log(`调整图表高度: ${dimensions.length}个维度, 高度增加${Math.round((heightIncreaseFactor-1)*100)}%`);
-    }
-    
     // 为标题和副标题预留空间，即使不显示它们
     const titleHeight = 70;  // 为标题预留至少70的高度
     
@@ -113,6 +105,14 @@ function makeChart(containerSelector, data) {
     // 获取维度（如Gen Z, Millennials等）和分组（如$50 or more, $1-49, Nothing）
     const dimensions = [...new Set(chartData.map(d => d[dimensionField]))];
     const groups = [...new Set(chartData.map(d => d[groupField]))];
+    
+    // 动态调整高度：如果x维度数量超过15，每增加一个维度，高度增加3%
+    if (dimensions.length > 15) {
+        const extraDimensions = dimensions.length - 15;
+        const heightIncreaseFactor = 1 + (extraDimensions * 0.03); // 增加比例因子
+        height = Math.round(height * heightIncreaseFactor); // 应用高度调整
+        console.log(`调整图表高度: ${dimensions.length}个维度, 高度增加${Math.round((heightIncreaseFactor-1)*100)}%`);
+    }
     
     // ---------- 5. 计算标签和图标空间 ----------
     

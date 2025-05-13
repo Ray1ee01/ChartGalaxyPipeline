@@ -65,7 +65,7 @@ function makeChart(containerSelector, data) {
     
     // 设置图表总尺寸
     const width = variables.width || 800;
-    const height = variables.height || 600;
+    let height = variables.height || 600;
     
     // 设置边距
     const margin = {
@@ -103,6 +103,13 @@ function makeChart(containerSelector, data) {
     // 获取唯一维度值和分组值
     const dimensions = [...new Set(chartData.map(d => d[dimensionField]))];
     const groups = [...new Set(chartData.map(d => d[groupField]))];
+    
+    // 动态调整高度：当x维度数量大于15时，每增加一个维度增加3%的高度
+    if (dimensions.length > 15) {
+        const extraDimensions = dimensions.length - 15;
+        const heightIncreasePercentage = extraDimensions * 0.03;
+        height = Math.round(height * (1 + heightIncreasePercentage));
+    }
     
     // 不对数据进行排序，使用原始顺序
     

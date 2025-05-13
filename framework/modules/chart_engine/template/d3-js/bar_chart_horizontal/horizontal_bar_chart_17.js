@@ -55,7 +55,14 @@ function makeChart(containerSelector, data) {
     
     // 设置图表总尺寸
     const width = variables.width || 800;
-    const height = variables.height || 600;
+    let height = variables.height || 600;
+    
+    // 动态调整高度：如果x维度数量超过15，每增加一个维度，高度增加3%
+    if (dimensions.length > 15) {
+        const extraDimensions = dimensions.length - 15;
+        const heightIncreaseFactor = 1 + (extraDimensions * 0.03); // 增加比例因子
+        height = Math.round(height * heightIncreaseFactor); // 应用高度调整
+    }
     
     // 设置边距
     const margin = {
