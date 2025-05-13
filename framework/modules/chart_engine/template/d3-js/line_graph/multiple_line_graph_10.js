@@ -196,7 +196,7 @@ function makeChart(containerSelector, data) {
                 startPoints.push({
                     x: xScale(parseDate(d[xField])),
                     y: yScale(d[yField]),
-                    value: Math.round(d[yField]),
+                    value: d[yField],
                     color: color,
                     group: group,
                     point: d
@@ -206,7 +206,7 @@ function makeChart(containerSelector, data) {
                 endPoints.push({
                     x: xScale(parseDate(d[xField])),
                     y: yScale(d[yField]),
-                    value: Math.round(d[yField]),
+                    value: d[yField],
                     color: color,
                     group: group,
                     point: d
@@ -216,7 +216,7 @@ function makeChart(containerSelector, data) {
                 middlePoints.push({
                     x: xScale(parseDate(d[xField])),
                     y: yScale(d[yField]),
-                    value: Math.round(d[yField]),
+                    value: d[yField],
                     color: color,
                     group: group,
                     point: d
@@ -237,7 +237,7 @@ function makeChart(containerSelector, data) {
             const labelY = placement.labelY;
             
             // 计算标签文本和宽度
-            const labelText = point.value;
+            const labelText = formatValue(point.value);
             const labelWidth = labelText.toString().length * 10 + 10;
             const labelHeight = 24;
             

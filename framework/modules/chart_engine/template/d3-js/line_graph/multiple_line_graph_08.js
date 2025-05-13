@@ -65,10 +65,15 @@ function makeChart(containerSelector, data) {
     
     const { xScale, xTicks, xFormat, timeSpan } = createXAxisScaleAndTicks(chartData, xField, 0, innerWidth);
     
-    const yMin = Math.min(0, d3.min(chartData, d => d[yField]) * 1.1);
-    const yMax = d3.max(chartData, d => d[yField]) * 1.1;
+    // const yMin = Math.min(0, d3.min(chartData, d => d[yField]) * 1.1);
+    // const yMax = d3.max(chartData, d => d[yField]) * 1.1;
+    const yMin = d3.min(chartData, d => d[yField]);
+    const yMax = d3.max(chartData, d => d[yField]);
+    const yRange = yMax - yMin;
+    const yMinScale = yMin - yRange * 0.2;
+    const yMaxScale = yMax + yRange * 0.2;
     const yScale = d3.scaleLinear()
-        .domain([yMin, yMax])
+        .domain([yMinScale, yMaxScale])
         .range([innerHeight, 0]);
     
     // 使用数据JSON中的颜色
@@ -151,9 +156,12 @@ function makeChart(containerSelector, data) {
         const lastPoint = gd.values[gd.values.length - 1];
         const x = xScale(parseDate(lastPoint[xField]));
         const y = yScale(lastPoint[yField]);
+
+        const valueText = lastPoint[yField].toFixed(1);
+        const valueTextWidth = getTextWidth(valueText, "12px");
         
         // 添加圆角矩形作为结束标记
-        const rectWidth = 40;
+        const rectWidth = valueTextWidth + 10;
         const rectHeight = 12;
         const rectX = x - 6;
         const rectY = y - rectHeight / 2;
@@ -179,23 +187,13 @@ function makeChart(containerSelector, data) {
             .style("font-weight", "bold")
             .style("fill", "white")
             .text(lastPoint[yField].toFixed(1));
-        
-        // 判断最后一个数据点相比前一个点的趋势
-        const lastIndex = gd.values.length - 1;
-        const lastValue = gd.values[lastIndex][yField];
-        const prevValue = gd.values[lastIndex - 1][yField];
-        const isIncreasing = lastValue > prevValue;
-
-        // 根据趋势决定标签位置
-        const labelY = isIncreasing ? 
-            rectY - 5 : // 上升时放在上面
-            rectY + rectHeight + 15; // 下降时放在下面
 
         // 添加国家名称
         g.append("text")
-            .attr("x", rectX + rectWidth / 2)
-            .attr("y", labelY)
-            .attr("text-anchor", "middle")
+            .attr("x", rectX + rectWidth + 10)
+            .attr("y", rectY + rectHeight / 2)
+            .attr("text-anchor", "start")
+            .attr("dominant-baseline", "middle")
             .style("font-family", "Arial")
             .style("font-size", "14px")
             .style("font-weight", "bold")
@@ -243,18 +241,17 @@ function makeChart(containerSelector, data) {
         const isIncreasing = lastValue > prevValue;
         
         // 根据趋势决定标签位置
-        const labelBaseY = isIncreasing ? 
-            highestEndRect.y + 5 : // 上升时放在上面
-            highestEndRect.y + highestEndRect.height + 15; // 下降时放在下面
+        const labelBaseY = highestEndRect.y - 20
         
         // Y轴encoding名称的位置
-        const encodingLabelY = labelBaseY + 25; // 在国家名称下方
+        const encodingLabelY = labelBaseY;
         
         // 添加Y轴encoding名称
         g.append("text")
             .attr("x", highestEndRect.x + highestEndRect.width / 2)
             .attr("y", encodingLabelY)
             .attr("text-anchor", "middle")
+            .attr("dominant-baseline", "middle")
             .style("font-family", "Arial")
             .style("font-size", "12px")
             .style("font-weight", "bold")
@@ -264,10 +261,10 @@ function makeChart(containerSelector, data) {
         // 添加指向三角形
         const triangleSize = 6;
         const triangleX = highestEndRect.x + highestEndRect.width / 2;
-        const triangleY = encodingLabelY - 15;
+        const triangleY = encodingLabelY + 15;
         
         g.append("path")
-            .attr("d", `M${triangleX},${triangleY} L${triangleX + triangleSize},${triangleY + triangleSize} L${triangleX - triangleSize},${triangleY + triangleSize} Z`)
+            .attr("d", `M${triangleX},${triangleY} L${triangleX + triangleSize},${triangleY - triangleSize} L${triangleX - triangleSize},${triangleY - triangleSize} Z`)
             .attr("fill", "white");
     }
     

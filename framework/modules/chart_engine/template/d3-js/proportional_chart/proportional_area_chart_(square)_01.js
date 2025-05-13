@@ -236,6 +236,20 @@ function makeChart(containerSelector, data) {
         const startY = squareSize/2 - totalHeight/2 + fontSize/2;
         
         lines.forEach((line, i) => {
+            // 先添加描边文本
+            squareGroup.append("text")
+                .attr("x", squareSize / 2)
+                .attr("y", startY + i * lineHeight)
+                .attr("text-anchor", "middle")
+                .attr("dominant-baseline", "middle")
+                .attr("fill", "none")
+                .attr("stroke", percentage > 50 ? primaryColor : secondaryColor)
+                .attr("stroke-width", 2)
+                .attr("font-weight", "bold")
+                .style("font-size", `${fontSize}px`)
+                .text(line);
+                
+            // 再添加填充文本
             squareGroup.append("text")
                 .attr("x", squareSize / 2)
                 .attr("y", startY + i * lineHeight)
@@ -250,7 +264,7 @@ function makeChart(containerSelector, data) {
         // 添加百分比标签和延伸线
         const isFirstSquare = i === 0;
         const isLastSquare = i === filteredData.length - 1;
-        const extensionLength = 40; // 延伸线的长度
+        const extensionLength = 50; // 延伸线的长度
         // 根据 dataColumns[1].name 的长度估算额外延伸长度
         const extraExtension = Math.max(60, (dataColumns[1].name || "").length * 8); // 每个字符大约需要8px宽度
         

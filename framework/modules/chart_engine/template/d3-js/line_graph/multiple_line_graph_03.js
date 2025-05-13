@@ -130,7 +130,7 @@ function makeChart(containerSelector, data) {
     const maxYPos = yScale(maxYTick);
 
     // 绘制水平网格线 - 向左延伸
-    const gridExtension = 5; // 网格线向左延伸的距离
+    const gridExtension = 20; // 网格线向左延伸的距离
 
     const horizontalGradient = defs.append("linearGradient")
         .attr("id", "horizontal-grid-gradient")
@@ -336,7 +336,7 @@ function makeChart(containerSelector, data) {
 
     // 计算Y轴标签位置 - 在最大刻度下方
     const yAxisLabelX = -margin.left / 2 + 5; // 在Y轴中间位置
-    const yAxisLabelY = yScale(yTicks[yTicks.length - 1]) + 30; // 最大刻度上方一点
+    const yAxisLabelY = yScale(yTicks[yTicks.length - 1]) - 30; // 最大刻度上方一点
 
     // 添加Y轴描述文本
     const words = yAxisLabel.split(' ');
@@ -561,7 +561,7 @@ function makeChart(containerSelector, data) {
         
         // 添加起点标签,向左偏移10px
         g.append("text")
-            .attr("x", point.x - 10)
+            .attr("x", point.x - 20)
             .attr("y", labelY)
             .attr("text-anchor", "middle") 
             .attr("dominant-baseline", "hanging")

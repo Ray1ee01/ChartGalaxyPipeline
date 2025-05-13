@@ -196,7 +196,7 @@ function makeChart(containerSelector, data) {
                 startPoints.push({
                     x: xScale(parseDate(d[xField])),
                     y: yScale(d[yField]),
-                    value: Math.round(d[yField]),
+                    value: d[yField],
                     color: color,
                     group: group,
                     point: d
@@ -206,7 +206,7 @@ function makeChart(containerSelector, data) {
                 endPoints.push({
                     x: xScale(parseDate(d[xField])),
                     y: yScale(d[yField]),
-                    value: Math.round(d[yField]),
+                    value: d[yField],
                     color: color,
                     group: group,
                     point: d
@@ -216,7 +216,7 @@ function makeChart(containerSelector, data) {
                 middlePoints.push({
                     x: xScale(parseDate(d[xField])),
                     y: yScale(d[yField]),
-                    value: Math.round(d[yField]),
+                    value: d[yField],
                     color: color,
                     group: group,
                     point: d
@@ -231,13 +231,13 @@ function makeChart(containerSelector, data) {
     const endLabelPositions = placeLabelsDP(endPoints, yTicks.map(tick => yScale(tick)), "终点", chartHeight, chartWidth, g);
     
     // 绘制标签函数 - 保持multiple_line_graph_10的样式
-    function drawLabels(labelPositions) {
+    function drawLabels(labelPositions) {   
         labelPositions.forEach(placement => {
             const point = placement.point;
             const labelY = placement.labelY;
             
             // 计算标签文本和宽度
-            const labelText = point.value;
+            const labelText = formatValue(point.value);
             const labelWidth = labelText.toString().length * 10 + 10;
             const labelHeight = 24;
             

@@ -369,4 +369,15 @@ const layoutLegend = (g, groups, colors, options = {}) => {
     };
 };
 
-
+const formatValue = (value) => {
+    if (value >= 1000000000) {
+        return d3.format("~g")(value / 1000000000) + "B";
+    } else if (value >= 1000000) {
+        return d3.format("~g")(value / 1000000) + "M";
+    } else if (value >= 1000) {
+        return d3.format("~g")(value / 1000) + "K";
+    } else {
+        console.log("formatValue", value, d3.format("~g")(value));
+        return d3.format("~g")(value);
+    }
+}

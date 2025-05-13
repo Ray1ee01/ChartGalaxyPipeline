@@ -79,7 +79,12 @@ function makeChart(containerSelector, data) {
     // ---------- 4. 数据处理 ----------
     
     // 获取所有唯一的组值
-    const groups = [...new Set(chartData.map(d => d[groupField]))];
+    let groups = [...new Set(chartData.map(d => d[groupField]))];
+    
+    // 如果组数超过6个,只保留前6个
+    if (groups.length > 6) {
+        groups = groups.slice(0, 6);
+    }
     
     // 将数据按组进行分组
     const groupedData = {};
@@ -347,31 +352,33 @@ function makeChart(containerSelector, data) {
                 .attr("stroke-width", 1);
             
             // 添加类别标签（较小字体）
-            chartGroup.selectAll(".category-label")
-                .data(allCategories)
-                .enter()
-                .append("text")
-                .attr("class", "category-label")
-                .attr("x", d => (radius + 10) * Math.cos(angleScale(d) - Math.PI/2))
-                .attr("y", d => (radius + 10) * Math.sin(angleScale(d) - Math.PI/2))
-                .attr("text-anchor", d => {
-                    const angle = angleScale(d);
-                    if (Math.abs(angle) < 0.1 || Math.abs(angle - Math.PI) < 0.1) {
-                        return "middle";
-                    }
-                    return angle > Math.PI ? "end" : "start";
-                })
-                .attr("dominant-baseline", d => {
-                    const angle = angleScale(d);
-                    if (Math.abs(angle) < 0.1 || Math.abs(angle - Math.PI) < 0.1) {
-                        return "middle";
-                    }
-                    return angle < Math.PI ? "hanging" : "auto";
-                })
-                .attr("fill", "#fff")
-                .attr("font-size", "10px")
-                .attr("font-weight", "normal")
-                .text(d => d);
+            if (row === 0 && col === 0) {
+                chartGroup.selectAll(".category-label")
+                    .data(allCategories)
+                    .enter()
+                    .append("text")
+                    .attr("class", "category-label")
+                    .attr("x", d => (radius + 10) * Math.cos(angleScale(d) - Math.PI/2))
+                    .attr("y", d => (radius + 10) * Math.sin(angleScale(d) - Math.PI/2))
+                    .attr("text-anchor", d => {
+                        const angle = angleScale(d);
+                        if (Math.abs(angle) < 0.1 || Math.abs(angle - Math.PI) < 0.1) {
+                            return "middle";
+                        }
+                        return angle > Math.PI ? "end" : "start";
+                    })
+                    .attr("dominant-baseline", d => {
+                        const angle = angleScale(d);
+                        if (Math.abs(angle) < 0.1 || Math.abs(angle - Math.PI) < 0.1) {
+                            return "middle";
+                        }
+                        return angle < Math.PI ? "hanging" : "auto";
+                    })
+                    .attr("fill", "#fff")
+                    .attr("font-size", "10px")
+                    .attr("font-weight", "normal")
+                    .text(d => d);
+            }
             
             // ---------- 10. 绘制雷达折线 ----------
             
