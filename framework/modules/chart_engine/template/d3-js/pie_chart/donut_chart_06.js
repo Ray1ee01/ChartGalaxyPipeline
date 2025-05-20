@@ -281,7 +281,7 @@ function makeChart(containerSelector, data) {
         }
         
         // 确定文本颜色
-        const textColor = "#000000";
+        const textColor = colors.text_color;
         
         // 添加文本标签
         // 添加类别文本
@@ -339,7 +339,7 @@ function makeChart(containerSelector, data) {
         .attr("x", 0)
         .attr("y", legendSize.height / 2)
         .attr("dominant-baseline", "middle")
-        .attr("fill", "#333")
+        .attr("fill", colors.text_color)
         .style("font-size", "16px")
         .style("font-weight", "bold")
         .text(xField);

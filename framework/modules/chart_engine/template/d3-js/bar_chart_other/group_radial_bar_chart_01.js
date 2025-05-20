@@ -1,4 +1,3 @@
-
 /*
 REQUIREMENTS_BEGIN
 {

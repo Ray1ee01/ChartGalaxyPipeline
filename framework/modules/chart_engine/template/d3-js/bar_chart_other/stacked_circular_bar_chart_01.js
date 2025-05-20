@@ -1,32 +1,44 @@
 /*
 REQUIREMENTS_BEGIN
 {
-    "chart_type": "Stacked Radial Bar Chart",
-    "chart_name": "stacked_radial_bar_chart_01",
+    "chart_type": "Stacked Circular Bar Chart",
+    "chart_name": "stacked_circular_bar_chart_01",
+    "is_composite": false,
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
-    "required_fields_range": [[3, 10], [0, 100], [2, 20]],
-    "required_fields_icons": [],
+    "required_fields_range": [[5, 20], [0, "inf"], [2, 10]],
+    "required_fields_icons": ["x", "group"],
     "required_other_icons": [],
-    "required_fields_colors": [],
-    "required_other_colors": ["primary", "secondary", "background"],
-    "supported_effects": ["gradient", "opacity"],
-    "min_height": 600,
-    "min_width": 800,
-    "background": "light",
+    "required_fields_colors": ["group"],
+    "required_other_colors": ["primary"],
+    "supported_effects": ["shadow", "radius_corner", "gradient", "stroke"],
+    "min_height": 500,
+    "min_width": 500,
+    "background": "no",
     "icon_mark": "none",
     "icon_label": "none",
-    "has_x_axis": "yes",
-    "has_y_axis": "yes"
+    "has_x_axis": "no",
+    "has_y_axis": "no"
 }
 REQUIREMENTS_END
 */
 
 function makeChart(containerSelector, data) {
+    // ---------- 1. 数据准备阶段 ----------
     const jsonData = data;
     const chartData = jsonData.data.data;
-    const variables = jsonData.variables;
-    const colors = jsonData.colors || {};
+    const variables = jsonData.variables || {};
+    const typography = jsonData.typography || {
+        title: { font_family: "Arial", font_size: "18px", font_weight: "bold" },
+        label: { font_family: "Arial", font_size: "12px", font_weight: "normal" },
+        description: { font_family: "Arial", font_size: "14px", font_weight: "normal" },
+        annotation: { font_family: "Arial", font_size: "12px", font_weight: "normal" }
+    };
+    const colors = jsonData.colors || {
+        text_color: "#333333",
+        other: { primary: "#084594" }
+    };
+    const images = jsonData.images || {};
     const dataColumns = jsonData.data.columns || [];
 
     // 数值单位规范
@@ -43,206 +55,231 @@ function makeChart(containerSelector, data) {
         }
     }
 
+    // 视觉效果默认值
+    variables.has_rounded_corners = variables.has_rounded_corners || false;
+    variables.has_shadow = variables.has_shadow || false;
+    variables.has_gradient = variables.has_gradient || false;
+    variables.has_stroke = variables.has_stroke || false;
+
+    // 清空容器
     d3.select(containerSelector).html("");
 
-    const xField = dataColumns[0].name;
-    const yField = dataColumns[1].name;
-    const groupField = dataColumns[2].name;
+    // ---------- 2. 尺寸和布局设置 ----------
+    const width = variables.width || 800;
+    const height = variables.height || 800;
+    const size = Math.min(width, height);
 
-    // 获取单位信息
+    const margin = {
+        top: 90,
+        right: 50,
+        bottom: 60,
+        left: 50
+    };
+
+    const innerWidth = size - margin.left - margin.right;
+    const innerHeight = size - margin.top - margin.bottom;
+
+    const centerX = margin.left + innerWidth / 2;
+    const centerY = margin.top + innerHeight / 2;
+    const radius = Math.min(innerWidth, innerHeight) / 2;
+
+    // ---------- 3. 提取字段名和单位 ----------
+    const dimensionField = dataColumns.find(col => col.role === "x")?.name || "category";
+    const valueField = dataColumns.find(col => col.role === "y")?.name || "value";
+    const groupField = dataColumns.find(col => col.role === "group")?.name || "group";
+
+    // 单位
     let valueUnit = "";
     const valueCol = dataColumns.find(col => col.role === "y");
     if (valueCol && valueCol.unit && valueCol.unit !== "none") {
-        valueUnit = valueCol.unit;
+        valueUnit = valueCol.unit === "B" ? " B" : valueCol.unit;
     }
 
-    // 准备堆叠数据
-    const stack = d3.stack()
-        .keys([...new Set(chartData.map(d => d[groupField]))])
-        .value((d, key) => d[key] || 0);
-
-    // 按xField分组数据
-    const groupedData = d3.group(chartData, d => d[xField]);
-    const stackedData = Array.from(groupedData, ([key, values]) => {
-        const obj = { [xField]: key };
-        values.forEach(d => {
-            obj[d[groupField]] = d[yField];
+    // ---------- 4. 数据处理 ----------
+    // 获取所有唯一的组
+    const groups = [...new Set(chartData.map(d => d[groupField]))];
+    
+    // 按类别分组并计算堆叠值
+    const groupedData = d3.group(chartData, d => d[dimensionField]);
+    const stackedData = Array.from(groupedData, ([category, values]) => {
+        const stack = {};
+        let total = 0;
+        groups.forEach(group => {
+            const groupValue = values.find(v => v[groupField] === group)?.[valueField] || 0;
+            stack[group] = {
+                start: total,
+                end: total + groupValue,
+                value: groupValue
+            };
+            total += groupValue;
         });
-        return obj;
+        return {
+            category,
+            stacks: stack,
+            total
+        };
     });
 
-    const stackedSeries = stack(stackedData);
+    // 按总值降序排序
+    stackedData.sort((a, b) => b.total - a.total);
 
-    // 尺寸
-    const width = variables.width;
-    const height = variables.height;
-    const margin = { top: 40, right: 40, bottom: 40, left: 40 };
-    const chartWidth = width - margin.left - margin.right;
-    const chartHeight = height - margin.top - margin.bottom;
+    const totalItems = stackedData.length;
+    if (totalItems === 0) return;
 
+    const anglePerItem = (2 * Math.PI) / totalItems;
+    const maxValue = d3.max(stackedData, d => d.total);
+
+    // ---------- 5. 创建SVG和效果定义 ----------
     const svg = d3.select(containerSelector)
         .append("svg")
         .attr("width", "100%")
-        .attr("height", height)
-        .attr("viewBox", `0 0 ${width} ${height}`)
+        .attr("height", size)
+        .attr("viewBox", `0 0 ${size} ${size}`)
         .attr("style", "max-width: 100%; height: auto;")
         .attr("xmlns", "http://www.w3.org/2000/svg")
         .attr("xmlns:xlink", "http://www.w3.org/1999/xlink");
 
-    const centerX = width / 2;
-    const centerY = height / 2 + 50; // 将图表中心点向下移动50px
-    const maxRadius = Math.min(chartWidth, chartHeight) / 2;
+    const defs = svg.append("defs");
 
-    const nBars = stackedData.length;
-    const minRadius = maxRadius * 0.2;
-    const maxBarRadius = maxRadius * 0.95;
-    const barWidth = (maxBarRadius - minRadius) / nBars * 0.7;
-    const barGap = (maxBarRadius - minRadius) / nBars * 0.3;
+    if (variables.has_shadow) {
+        const filter = defs.append("filter")
+            .attr("id", "shadow")
+            .attr("filterUnits", "userSpaceOnUse")
+            .attr("x", -innerWidth/2)
+            .attr("y", -innerHeight/2)
+            .attr("width", innerWidth*2)
+            .attr("height", innerHeight*2);
+        filter.append("feGaussianBlur").attr("in", "SourceAlpha").attr("stdDeviation", 4);
+        filter.append("feOffset").attr("dx", 3).attr("dy", 3).attr("result", "offsetblur");
+        filter.append("feFlood").attr("flood-color", "#000").attr("flood-opacity", 0.3);
+        filter.append("feComposite").attr("in2", "offsetblur").attr("operator", "in");
+        const feMerge = filter.append("feMerge");
+        feMerge.append("feMergeNode");
+        feMerge.append("feMergeNode").attr("in", "SourceGraphic");
+    }
 
-    // 角度比例尺（最大270°）
-    const maxValue = d3.max(stackedSeries, series => d3.max(series, d => d[1]));
-    const angleScale = d3.scaleLinear()
+    // ---------- 6. 创建比例尺 ----------
+    const centralCircleRadius = radius * 0.25;
+    const radiusScale = d3.scaleLinear()
         .domain([0, maxValue])
-        .range([0, 1.5 * Math.PI]);
+        .range([centralCircleRadius + 20, radius * 0.9]);
 
-    const g = svg.append("g")
-        .attr("transform", `translate(${centerX}, ${centerY})`);
-
-    // 辅助线
-    const numTicks = 5;
-    const ticks = d3.range(0, maxValue + 1, maxValue / numTicks);
-    ticks.forEach(tick => {
-        g.append("path")
-            .attr("d", d3.arc()
-                .innerRadius(minRadius)
-                .outerRadius(maxBarRadius + barWidth * 0.5)
-                .startAngle(angleScale(tick))
-                .endAngle(angleScale(tick))
-            )
-            .attr("stroke", "#e0e0e0")
-            .attr("stroke-width", 1)
-            .attr("fill", "none");
-        g.append("text")
-            .attr("x", Math.cos(angleScale(tick) - Math.PI / 2) * (maxBarRadius + barWidth * 0.7))
-            .attr("y", Math.sin(angleScale(tick) - Math.PI / 2) * (maxBarRadius + barWidth * 0.7))
-            .attr("text-anchor", "middle")
-            .attr("dominant-baseline", "middle")
-            .attr("fill", "#888")
-            .style("font-size", "12px")
-            .text(formatValue(tick) + valueUnit);
+    // 为每个组创建颜色
+    const groupColors = {};
+    groups.forEach((group, i) => {
+        const baseColor = colors.fields?.[group] || colors.other.primary;
+        groupColors[group] = colors.field[group]
     });
 
-    const labelPadding = 20;
-    // 移除默认的colorScale定义
-    // 使用传入的colors配置
-    const getColor = (groupValue) => {
-        return colors.field[groupValue] || "#cccccc"; // 如果没有对应的颜色配置，使用灰色作为后备
-    };
+    // ---------- 7. 创建中心圆和背景 ----------
+    svg.append("circle")
+        .attr("cx", centerX)
+        .attr("cy", centerY)
+        .attr("r", centralCircleRadius)
+        .attr("fill", "#ffffff")
+        .attr("stroke", "#aaaaaa")
+        .attr("stroke-width", 1.5);
 
-    // 绘制堆叠条形
-    stackedSeries.forEach((series, i) => {
-        series.forEach((d, j) => {
-            const innerR = minRadius + j * (barWidth + barGap);
-            const outerR = innerR + barWidth;
-            const startAngle = angleScale(d[0]);
-            const endAngle = angleScale(d[1]);
+    // ---------- 8. 创建堆叠扇形 ----------
+    const sectorsGroup = svg.append("g")
+        .attr("transform", `translate(${centerX}, ${centerY})`);
 
-            g.append("path")
-                .attr("d", d3.arc()
-                    .innerRadius(innerR)
-                    .outerRadius(outerR)
+    const labelsGroup = svg.append("g")
+        .attr("transform", `translate(${centerX}, ${centerY})`);
+
+    stackedData.forEach((d, i) => {
+        const startAngle = i * anglePerItem;
+        const endAngle = startAngle + anglePerItem;
+        const midAngle = startAngle + anglePerItem / 2;
+
+        // 为每个组创建堆叠的扇形
+        groups.forEach(group => {
+            const stack = d.stacks[group];
+            if (stack.value > 0) {
+                const innerRadius = radiusScale(stack.start);
+                const outerRadius = radiusScale(stack.end);
+
+                const arcGenerator = d3.arc()
+                    .innerRadius(innerRadius)
+                    .outerRadius(outerRadius)
                     .startAngle(startAngle)
                     .endAngle(endAngle)
-                )
-                .attr("fill", getColor(series.key))
-                .attr("opacity", 0.85);
+                    .padAngle(0.02);
 
-            // 类别标签
-            if (i === 0) {
-                g.append("text")
-                    .attr("x", Math.cos(-Math.PI / 2) * (innerR + barWidth / 2) - labelPadding)
-                    .attr("y", Math.sin(-Math.PI / 2) * (innerR + barWidth / 2))
-                    .attr("text-anchor", "end")
-                    .attr("dominant-baseline", "middle")
-                    .attr("fill", "#222b44")
-                    .style("font-size", "16px")
-                    .style("font-weight", "bold")
-                    .text(d.data[xField]);
-            }
-
-            // 数值标签
-            if (d[1] - d[0] > maxValue * 0.1) { // 只在数值足够大时显示标签
-                const value = d[1] - d[0];
-                const formattedValue = formatValue(value);
-                const valueRadius = innerR + barWidth / 2;
-                const valueAngle = (startAngle + endAngle) / 2;
-                
-                // 计算标签位置
-                const labelX = Math.cos(valueAngle - Math.PI / 2) * valueRadius;
-                const labelY = Math.sin(valueAngle - Math.PI / 2) * valueRadius;
-
-                g.append("text")
-                    .attr("x", labelX)
-                    .attr("y", labelY)
-                    .attr("text-anchor", "middle")
-                    .attr("dominant-baseline", "middle")
-                    .attr("fill", "white")
-                    .attr("font-size", "12px")
-                    .text(formattedValue);
+                sectorsGroup.append("path")
+                    .attr("d", arcGenerator)
+                    .attr("fill", groupColors[group])
+                    .attr("stroke", variables.has_stroke ? d3.rgb(groupColors[group]).darker(0.5) : "none")
+                    .attr("stroke-width", variables.has_stroke ? 1 : 0)
+                    .attr("style", variables.has_shadow ? "filter: url(#shadow)" : null)
             }
         });
+
+        // 添加末端圆圈和标签
+        const outerRadius = radiusScale(d.total);
+        const endCircleX = Math.sin(midAngle) * outerRadius;
+        const endCircleY = -Math.cos(midAngle) * outerRadius;
+        const endCircleRadius = Math.max(12, Math.min(30, radius * 0.1));
+
+        sectorsGroup.append("circle")
+            .attr("cx", endCircleX)
+            .attr("cy", endCircleY)
+            .attr("r", endCircleRadius)
+            .attr("fill", "#ffffff")
+            .attr("stroke", "#aaaaaa")
+            .attr("stroke-width", 1);
+
+        // 添加总值标签
+        const valueText = `${formatValue(d.total)}${valueUnit}`;
+        sectorsGroup.append("text")
+            .attr("x", endCircleX)
+            .attr("y", endCircleY)
+            .attr("text-anchor", "middle")
+            .attr("dominant-baseline", "middle")
+            .attr("font-family", typography.annotation.font_family)
+            .attr("font-size", `${endCircleRadius * 0.8}px`)
+            .attr("font-weight", "bold")
+            .attr("fill", "#333333")
+            .text(valueText);
+
+        // 添加类别标签
+        const iconSize = 30;
+        const labelPadding = 20;
+        const iconRadius = outerRadius + endCircleRadius + labelPadding;
+        const iconX = Math.sin(midAngle) * iconRadius;
+        const iconY = -Math.cos(midAngle) * iconRadius;
+
+        const iconUrl = images?.field?.[d.category];
+        if (iconUrl) {
+            labelsGroup.append("image")
+                .attr("xlink:href", iconUrl)
+                .attr("x", iconX - iconSize / 2)
+                .attr("y", iconY - iconSize / 2)
+                .attr("width", iconSize)
+                .attr("height", iconSize)
+                .attr("preserveAspectRatio", "xMidYMid meet");
+        }
     });
 
     // 添加图例
-    const legendItemHeight = 20; // 每个图例项的高度
-    const legendPadding = 10; // 图例内边距
-    const legendItems = stackedSeries.map(d => d.key);
-    
-    // 计算文本最大宽度
-    const tempText = svg.append("text")
-        .attr("visibility", "hidden");
-    const maxTextWidth = d3.max(legendItems, item => {
-        tempText.text(item);
-        return tempText.node().getComputedTextLength();
-    });
-    tempText.remove();
-    
-    const legendWidth = maxTextWidth + 40; // 文本宽度 + 色块宽度(15) + 间距(5) + 左右内边距
-    const legendHeight = legendItems.length * legendItemHeight + 2 * legendPadding;
-    
-    // 计算图例位置，确保不会与图表重叠
-    const chartRadius = maxBarRadius + barWidth * 0.5;
-    const legendX = width - legendWidth - margin.right - 20; // 额外20px右边距
-    const legendY = margin.top + 10; // 向上移动到顶部，留出10px边距
-    
     const legend = svg.append("g")
-        .attr("transform", `translate(${legendX}, ${legendY})`);
+        .attr("transform", `translate(${size - 150}, 50)`);
 
-    // 添加图例背景，使用计算出的精确宽度
-    legend.append("rect")
-        .attr("x", -legendPadding)
-        .attr("y", -legendPadding)
-        .attr("width", legendWidth + 2 * legendPadding)
-        .attr("height", legendHeight)
-        .attr("fill", "white")
-        .attr("fill-opacity", 0.9)
-        .attr("rx", 4)
-        .attr("ry", 4);
-
-    stackedSeries.forEach((series, i) => {
+    groups.forEach((group, i) => {
         const legendItem = legend.append("g")
-            .attr("transform", `translate(0, ${i * legendItemHeight + legendPadding})`);
+            .attr("transform", `translate(0, ${i * 25})`);
 
         legendItem.append("rect")
             .attr("width", 15)
             .attr("height", 15)
-            .attr("fill", getColor(series.key));
+            .attr("fill", groupColors[group]);
 
         legendItem.append("text")
-            .attr("x", 25)
+            .attr("x", 20)
             .attr("y", 12)
-            .attr("font-size", "12px")
-            .text(series.key);
+            .attr("font-family", typography.label.font_family)
+            .attr("font-size", typography.label.font_size)
+            .text(group);
     });
 
     return svg.node();
