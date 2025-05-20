@@ -1,7 +1,7 @@
 /*
 REQUIREMENTS_BEGIN
 {
-    "chart_type": "Grouped Bar Chart",
+    "chart_type": "Vertical Grouped Bar Chart",
     "chart_name": "triangle_group_bar_chart_01",
     "is_composite": false,
     "required_fields": ["x", "y", "group"],

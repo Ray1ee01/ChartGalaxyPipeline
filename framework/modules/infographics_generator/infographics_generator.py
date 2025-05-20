@@ -75,6 +75,7 @@ def make_infographic(
     padding: int,
     between_padding: int,
     dark: bool,
+    has_title: bool,
     html_path: str,
     mask_path: str,
     title_font_family: str
@@ -583,6 +584,17 @@ def make_infographic(
             overlay_image_size -= delta
         measure_overlay_size = overlay_image_size
 
+        if side_image_size > 320:
+            delta = side_image_size - 320
+            side_best_x += delta / 2
+            side_best_y += delta / 2
+            side_image_size -= delta
+        elif side_image_size > 256:
+            delta = 32
+            side_best_x += delta / 2
+            side_best_y += delta / 2
+            side_image_size -= delta
+
         min_acceptable_size = 48
         if measure_side_size > min_acceptable_size or measure_overlay_size > min_acceptable_size:
             if side_image_size >= overlay_image_size * 0.45:
@@ -696,6 +708,8 @@ def make_infographic(
         background_element = re.sub(r'height="[^"]+"', f'height="{total_height}"', background_element)
         background_layer = add_gradient_to_rect(f'<rect x="0" y="0" width="{total_width}" height="{total_height}" fill="{background_color}" />')
         background_element = background_layer + background_element
+    if has_title:
+        title_inner_content = ""
 
     if image_mode == "side" or image_mode == "overlay":
         final_svg = f"""<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="{total_width}" height="{total_height}" style="font-family: Arial, 'Liberation Sans', 'DejaVu Sans', sans-serif;">
@@ -716,7 +730,7 @@ def make_infographic(
     layout_info = {
         "text_color": text_color,
         "background_color": background_color,
-        "title_to_chart": best_title["title-to-chart"],
+        "title_to_chart": best_title["title-to-chart"] if not has_title else "R",
         "image_to_chart": image_to_chart,
         "text_align": best_title["text-align"],
         "title_width": best_title["width"],
@@ -972,6 +986,7 @@ def process(input: str, output: str, base_url: str, api_key: str, chart_name: st
             padding=padding,
             between_padding=between_padding,
             dark=requirements.get("background", "light") == "dark",
+            has_title='has_title' in requirements,
             html_path=html_path,
             mask_path=mask_path,
             title_font_family=title_font_family

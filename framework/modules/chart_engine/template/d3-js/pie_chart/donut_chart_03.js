@@ -451,11 +451,6 @@ function makeChart(containerSelector, data) {
             const rgb = fillColor.match(/\d+/g).map(Number);
             // 计算亮度 (使用相对亮度公式)
             const brightness = (rgb[0] * 299 + rgb[1] * 587 + rgb[2] * 114) / 1000;
-            if (brightness < 150) {
-                colors.text_color = '#FFFFFF';
-            } else {
-                colors.text_color = '#000000';
-            }
 
             const textCategory = g.append("text")
                 .attr("transform", `translate(${labelPosition})`)
@@ -612,7 +607,7 @@ function makeChart(containerSelector, data) {
         .attr("x", 0)
         .attr("y", legendSize.height / 2)
         .attr("dominant-baseline", "middle")
-        .attr("fill", "#333")
+        .attr("fill", colors.text_color)
         .style("font-size", "16px")
         .style("font-weight", "bold")
         .text(xField);

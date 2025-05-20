@@ -83,6 +83,14 @@ def make_options(json_data):
     # Get units for formatting
     y_unit = data_columns[1].get('unit', '%')
     z_unit = data_columns[2].get('unit', '%')
+    if y_unit == 'None':
+        y_unit = ''
+    if z_unit == 'None':
+        z_unit = ''
+    if len(y_unit) > 3:
+        y_unit = ''
+    if len(z_unit) > 3:
+        z_unit = ''
     
     # Get unique categories
     categories = sorted(list(set(item[x_field] for item in data)))

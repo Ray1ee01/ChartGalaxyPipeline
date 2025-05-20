@@ -2,7 +2,7 @@
 REQUIREMENTS_BEGIN
 {
     "chart_type": "Pictorial Percentage Bar Chart",
-    "chart_name": "vertical_pictorial_percentage_bar_chart_01",
+    "chart_name": "vertical_pictorial_percentage_bar_chart_02",
     "is_composite": false,
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],
@@ -14,7 +14,7 @@ REQUIREMENTS_BEGIN
     "supported_effects": [],
     "min_height": 400,
     "min_width": 400,
-    "background": "no",
+    "background": "dark",
     "icon_mark": "none",
     "icon_label": "side",
     "has_x_axis": "no",
@@ -36,7 +36,7 @@ function makeChart(containerSelector, data) {
         description: { font_family: "Arial", font_size: "16px", font_weight: 500 },
         annotation: { font_family: "Arial", font_size: "12px", font_weight: 400 }
     };
-    const colors = jsonData.colors || { 
+    const colors = jsonData.colors_dark || { 
         text_color: "#000000", 
         other: { primary: "#4682B4", secondary: "#FF7F50" } 
     }; 
@@ -145,17 +145,34 @@ function makeChart(containerSelector, data) {
     
     // 创建一个数组来存储所有的值标签元素引用
     const valueLabels = [];
-
     const bottleImageSVG = `<svg viewBox="0 0 200 500" xmlns="http://www.w3.org/2000/svg">
-  <path d="M60,280 L60,450 Q100,480 140,450 L140,280 Z" fill="#8BC34A"/>
+  <!-- 瓶身主体 -->
+  <path d="M60,280 L60,450 Q100,480 140,450 L140,280 Z" fill="#2196F3" filter="url(#glow)"/>
   
-  <path d="M60,230 L60,280 L140,280 L140,230 Z" fill="#FDD835"/>
-  <circle cx="100" cy="255" r="25" fill="#FDD835"/>
+  <!-- 瓶颈过渡部分 -->
+  <path d="M60,230 L60,280 L140,280 L140,230 Z" fill="#64B5F6"/>
+  <circle cx="100" cy="255" r="25" fill="#64B5F6"/>
   
-  <path d="M75,50 Q100,40 125,50 L125,70 Q100,80 75,70 Z" fill="#555555"/>
-  <path d="M80,70 L60,230 L140,230 L120,70 Z" fill="#555555"/>
+  <!-- 瓶口 -->
+  <path d="M75,50 Q100,40 125,50 L125,70 Q100,80 75,70 Z" fill="#90CAF9"/>
+  <path d="M80,70 L60,230 L140,230 L120,70 Z" fill="#90CAF9"/>
+  <path d="M80,70 Q100,60 120,70 L120,70 Q100,80 80,70 Z" fill="#90CAF9"/>
   
-  <path d="M80,70 Q100,60 120,70 L120,70 Q100,80 80,70 Z" fill="#555555"/>
+  <!-- 添加光泽效果 -->
+  <defs>
+    <linearGradient id="shine" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:rgba(255,255,255,0.1)"/>
+      <stop offset="50%" style="stop-color:rgba(255,255,255,0.3)"/>
+      <stop offset="100%" style="stop-color:rgba(255,255,255,0.1)"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+  
+  <!-- 添加光泽效果 -->
+  <path d="M70,280 L70,440 Q100,460 130,440 L130,280 Z" fill="url(#shine)" opacity="0.5"/>
 </svg>`;
 
     // 辅助函数：将字符串转换为 base64
@@ -229,19 +246,6 @@ function makeChart(containerSelector, data) {
             const squareX = (bottleWidth - squareSize) / 2;
             const squareY = bottleHeight * (2/3) - (squareSize / 2);
             
-            // 添加正方形背景
-            group.append("rect")
-                .attr("class", "value-bg")
-                .attr("x", squareX)
-                .attr("y", squareY)
-                .attr("width", squareSize)
-                .attr("height", squareSize)
-                .attr("fill", "#f5f5f5")
-                .attr("opacity", 0.8)
-                .attr("rx", 5)
-                .attr("ry", 5);
-                
-            // 格式化值
             
             const formattedValue = `${formatValue(d[yField])}${valueUnit}`;
             // 我们将在下面计算实际字体大小，先使用基础大小创建文本元素
@@ -255,7 +259,7 @@ function makeChart(containerSelector, data) {
                 .attr("text-anchor", "middle")
                 .style("font-family", typography.label.font_family)
                 .style("font-weight", "bold")
-                .style("fill", "#333")
+                .style("fill", "#fff")
                 .style("font-size", `${baseValueFontSize}px`) // 先设置基础字体大小
                 .text(formattedValue);
                 

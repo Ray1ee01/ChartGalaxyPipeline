@@ -135,15 +135,15 @@ def process(data_path, output_path="./output.jsonl", template_path=None,
         print(f"k: {k}")
         
         # 优先从composition understanding选择k个
-        selected_composition_count = min(k, len(composition_understanding_pairs))
+        selected_composition_count = num
         selected_composition = random.sample(composition_understanding_pairs, selected_composition_count) if selected_composition_count > 0 else []
         
         # 从visual understanding选择k个
-        selected_visual_count = min(k, len(visual_understanding_pairs))
+        selected_visual_count = 0#random.randint(1, 2)
         selected_visual = random.sample(visual_understanding_pairs, selected_visual_count) if selected_visual_count > 0 else []
         
         # 剩余的从data understanding中选择
-        remaining_count = num - selected_composition_count - selected_visual_count
+        remaining_count = 0#num - selected_composition_count - selected_visual_count
         selected_data_count = min(remaining_count, len(data_understanding_pairs))
         selected_data = random.sample(data_understanding_pairs, selected_data_count) if selected_data_count > 0 else []
 
@@ -381,33 +381,29 @@ def process_single_dir(subdir, output_path, template_path, image_output_dir,
     # 使用更简短的前缀ID
     prefix_id = f"c{dir_name[:3]}"
 
-    try:
-        # 处理当前目录的问答对
-        results = process(
-            data_path=subdir,
-            output_path=output_path,
-            template_path=template_path,
-            write2disk=True,
-            source=source,
-            image_output_dir=image_output_dir,
-            unanswerable=unanswerable,
-            prefix_id=prefix_id,
-            append_mode=True,
-            num=num_questions
-        )
+    # 处理当前目录的问答对
+    results = process(
+        data_path=subdir,
+        output_path=output_path,
+        template_path=template_path,
+        write2disk=True,
+        source=source,
+        image_output_dir=image_output_dir,
+        unanswerable=unanswerable,
+        prefix_id=prefix_id,
+        append_mode=True,
+        num=num_questions
+    )
 
-        # 更新进度
-        with progress_counter['lock']:
-            progress_counter['count'] += 1
-            current = progress_counter['count']
-            total = progress_counter['total']
-            logger.info(f"进度 [{current}/{total}] - 已为 {subdir} 生成 {len(results)} 个问答对")
+    # 更新进度
+    with progress_counter['lock']:
+        progress_counter['count'] += 1
+        current = progress_counter['count']
+        total = progress_counter['total']
+        logger.info(f"进度 [{current}/{total}] - 已为 {subdir} 生成 {len(results)} 个问答对")
 
-        return len(results)
+    return len(results)
 
-    except Exception as e:
-        logger.error(f"处理 {subdir} 时出错: {e}")
-        return 0
 
 def process_folder(folder_path, output_path="./train.jsonl", template_path=None,
                   image_output_dir="./images", # Removed custom_instruction_suffix
@@ -622,8 +618,8 @@ if __name__ == "__main__":
 
     if args.mode == 'train':
         process_folder(
-            folder_path="/data/lizhen/resources/data/instruction/realdata",
-            #folder_path="/data/lizhen/resources/data/instruction/syndata",
+            #folder_path="/data/lizhen/resources/data/instruction/realdata",
+            folder_path="/data/lizhen/resources/data/instruction/syndata",
             #folder_path="/data/lizhen/resources/generated/0428",  # 包含多个数据目录的父文件夹
             output_path="./train.jsonl",
             template_path=args.template_path if args.source == "template" else None,
@@ -640,7 +636,7 @@ if __name__ == "__main__":
             folder_path="/data/lizhen/resources/data/instruction/finaltest",  # 测试数据目录
             # 在36使用/data1/lizhen/resources/0428_test"
             #folder_path="./tmp",
-            output_path="./test.jsonl",
+            output_path="./test_supp.jsonl",
             template_path=args.template_path if args.source == "template" else None,
             image_output_dir="./test_images",
             include_multiple_choice=True,
