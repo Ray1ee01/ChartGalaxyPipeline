@@ -262,6 +262,7 @@ def html_to_svg(html_file, output_svg=None, width=1200, height=800):
         
         # Run the converter script
         subprocess.run(['node', js_file], check=True)
+        #print("generate via", js_file)
         
         # Clean up - delete the temporary script
         cleanup_temp_file(js_file)

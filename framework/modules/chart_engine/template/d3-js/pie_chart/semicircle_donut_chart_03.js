@@ -482,14 +482,10 @@ function makeChart(containerSelector, data) {
     const legendGroup = svg.append("g")
         .attr("transform", `translate(0, 0)`);
     
-    // 计算字段名宽度并添加间距
-    const titleWidth = xField.length * 10;
-    const titleMargin = 15;
-    
     let xs = [...new Set(chartData.map(d => d[xField]))];
 
     const legendSize = layoutLegend(legendGroup, xs, colors, {
-        x: titleWidth + titleMargin,
+        x: 0,
         y: 0,
         fontSize: 14,
         fontWeight: "bold",
@@ -497,19 +493,9 @@ function makeChart(containerSelector, data) {
         maxWidth: chartWidth,
         shape: "rect",
     });
-
-    // 添加字段名称
-    legendGroup.append("text")
-        .attr("x", 0)
-        .attr("y", legendSize.height / 2)
-        .attr("dominant-baseline", "middle")
-        .attr("fill", "#333")
-        .style("font-size", "16px")
-        .style("font-weight", "bold")
-        .text(xField);
     
-    // 将图例组向上移动 height/2, 并居中
-    legendGroup.attr("transform", `translate(${(chartWidth - legendSize.width - titleWidth - titleMargin) / 2}, ${-legendSize.height-20})`);
+    // 将图例组向上移动并居中
+    legendGroup.attr("transform", `translate(${(chartWidth - legendSize.width) / 2}, ${-legendSize.height-20})`);
     
     return svg.node();
 }

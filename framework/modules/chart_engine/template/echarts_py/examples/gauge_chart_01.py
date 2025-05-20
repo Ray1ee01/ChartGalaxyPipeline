@@ -92,6 +92,11 @@ def make_options(json_data):
     canvas_height = variables['height']
     title_height = 40
     legend_height = 40
+    unit = data_columns[1].get('unit', '')
+    if unit == 'None':
+        unit = ''
+    if len(unit) > 3:
+        unit = ''
     
     # Calculate grid layout
     num_charts = len(categories)
@@ -237,7 +242,7 @@ def make_options(json_data):
                     "fontFamily": typography['label']['font_family'],
                     "color": colors[j % len(colors)],
                     "offsetCenter": [0, max_radius - (j + 1) * 20],
-                    "formatter": "{value}" + data_columns[1].get('unit', '')
+                    "formatter": "{value}" + unit
                 },
                 "data": [{
                     "value": item["value"],

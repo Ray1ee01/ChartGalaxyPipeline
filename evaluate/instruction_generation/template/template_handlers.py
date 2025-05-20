@@ -397,6 +397,7 @@ class TemplateHandlers:
         
         # 确保只有3个混淆项
         confusion = confusion[:3]
+        confusion = [c.lower() for c in confusion]
         
         return f"{question}", answer, confusion, None
     
@@ -1277,8 +1278,7 @@ class TemplateHandlers:
     
     def handle_template_47(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[list]]:
         """ What types of charts are included in this infographic? """
-        info = self.generator.get_info()
-        chart_type = info["chart_type"]
+        chart_type = self.generator.chart_type
         return self._format_chart_type(template, chart_type)
     
     def handle_template_48(self, template: str) -> Tuple[Optional[str], Optional[str], Optional[list], Optional[list]]:
@@ -2880,6 +2880,7 @@ class TemplateHandlers:
             if len(confusion) > 3:
                 confusion = random.sample(confusion, 3)
             
+            print("confusion", confusion)
             return question, max_legend, confusion, image
         else:
             logger.warning(f"No legend with valid numeric Y values found in template 79")

@@ -82,6 +82,9 @@ function makeChart(containerSelector, data) {
     if (valueCol && valueCol.unit && valueCol.unit !== "none") {
         valueUnit = valueCol.unit;
     }
+    if (valueUnit.length > 6) {
+        valueUnit = ''
+    }
 
     // ---------- 4. 数据处理 ----------
     const totalItems = chartData.length;

@@ -67,7 +67,7 @@ function makeChart(containerSelector, data) {
     
     // Calculate center point and max radius
     const centerX = width / 2;
-    const centerY = height / 2;
+    const centerY = height / 2 + 100;
     const maxRadius = Math.min(chartWidth, chartHeight) / 2;
     
     // Create a root group
@@ -402,7 +402,7 @@ function makeChart(containerSelector, data) {
         .attr("x", 0)
         .attr("y", legendSize.height / 2)
         .attr("dominant-baseline", "middle")
-        .attr("fill", "#333")
+        .attr("fill", colors.text_color)
         .style("font-size", "16px")
         .style("font-weight", "bold")
         .text(xField);

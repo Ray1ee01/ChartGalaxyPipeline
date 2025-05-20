@@ -2,7 +2,7 @@
 REQUIREMENTS_BEGIN
 {
     "chart_type": "Group Radial Bar Chart",
-    "chart_name": "group_radial_bar_chart_01",
+    "chart_name": "group_radial_bar_chart_02",
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
     "required_fields_range": [[3, 6], [0, 100], [2, 4]],
@@ -13,7 +13,7 @@ REQUIREMENTS_BEGIN
     "supported_effects": ["gradient", "opacity"],
     "min_height": 600,
     "min_width": 800,
-    "background": "light",
+    "background": "dark",
     "icon_mark": "none",
     "icon_label": "none",
     "has_x_axis": "yes",
@@ -26,7 +26,7 @@ function makeChart(containerSelector, data) {
     const jsonData = data;
     const chartData = jsonData.data.data;
     const variables = jsonData.variables;
-    const colors = jsonData.colors || {};
+    const colors = jsonData.colors_dark || {};
     const dataColumns = jsonData.data.columns || [];
 
     // 数值单位规范
@@ -130,7 +130,7 @@ function makeChart(containerSelector, data) {
             .attr("y", Math.sin(angleScale(tick) - Math.PI / 2) * (maxBarRadius + barWidth * 0.7))
             .attr("text-anchor", "middle")
             .attr("dominant-baseline", "middle")
-            .attr("fill", "#888")
+            .attr("fill", "#fff")
             .style("font-size", "12px")
             .text(formatValue(Math.round(tick)) + valueUnit);
     });
@@ -160,8 +160,8 @@ function makeChart(containerSelector, data) {
                 .attr("y", Math.sin(-Math.PI / 2) * (innerR + barWidth / 2))
                 .attr("text-anchor", "end")
                 .attr("dominant-baseline", "middle")
-                .attr("fill", "#222b44")
-                .style("font-size", "12px")
+                .attr("fill", "#fff")
+                .style("font-size", "14px")
                 .style("font-weight", "bold")
                 .text(d[xField]);
         }
@@ -186,6 +186,7 @@ function makeChart(containerSelector, data) {
             .attr("x", 20)
             .attr("y", 12)
             .attr("font-size", "10px")
+            .attr("fill", "#fff")
             .text(group);
     });
 

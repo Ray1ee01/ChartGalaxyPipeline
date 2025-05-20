@@ -137,10 +137,13 @@ class QuestionAnswerGenerator:
                 if confusion:
                     pair_data["confusion"] = confusion
 
-                if confusion and len(confusion) >= 3:
+                if confusion:
                     try:
                          # 使用已有的混淆选项
-                         distractors = confusion[:3]  # 确保只取3个混淆项
+                         if len(confusion) >= 3:
+                              distractors = confusion[:3]  # 确保只取3个混淆项
+                         else:
+                             continue
                          # 格式化为多选题
                          full_question, options_dict, correct_letter = self.format_multiple_choice(question, str_answer, distractors)
 
@@ -178,14 +181,16 @@ class QuestionAnswerGenerator:
 
                 pair_data["question"] = pair_data["full_question"]
                 if image is not None:
-                    print('--------------------------------')
-                    print(pair_data["question"])
-                    print(pair_data["answer"])
-                    print(pair_data["answer_type"])
-                    print(pair_data["question_type"])
-                    print(pair_data["category"])
-                    print(pair_data["subcategory"])
-                    print('--------------------------------')
+                    if False:
+                        print('--------------------------------')
+                        print("confusion", confusion)
+                        print(pair_data["question"])
+                        print(pair_data["answer"])
+                        print(pair_data["answer_type"])
+                        print(pair_data["question_type"])
+                        print(pair_data["category"])
+                        print(pair_data["subcategory"])
+                        print('--------------------------------')
 
                 pairs.append(pair_data)
         

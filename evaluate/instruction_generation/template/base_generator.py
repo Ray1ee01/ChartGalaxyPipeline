@@ -9,6 +9,8 @@ import logging
 logger = logging.getLogger("InstructionGeneration.Template.BaseGenerator")
 variation_path = "./variation.json"
 variation_data = json.load(open(variation_path, 'r'))
+mapping_path = "./mapping.json"
+mapping_data = json.load(open(mapping_path, 'r'))
 
 class BaseGenerator:
     def __init__(self, data_path: str):
@@ -41,6 +43,8 @@ class BaseGenerator:
                     with open(info_file, 'r') as f:
                         self.info = json.load(f)
                 self.requirements = variation_data[self.info["chart_variation"]]
+                self.chart_type = mapping_data.get(self.info["chart_variation"], self.info["chart_type"])
+                #print("chart_type", self.chart_type)
                 
                 original_data_file = self.info["data_source"]
                 with open(original_data_file, 'r') as f:
