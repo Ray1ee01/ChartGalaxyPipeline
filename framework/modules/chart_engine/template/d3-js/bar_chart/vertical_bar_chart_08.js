@@ -188,26 +188,26 @@ function makeChart(containerSelector, data) {
     // *** END ADDITION ***
 
     // 如果需要创建阴影滤镜
-    if (variables.has_shadow) {
-        const filter = defs.append("filter")
-            .attr("id", "shadow")
-            .attr("filterUnits", "userSpaceOnUse")
-            .attr("width", "200%")
-            .attr("height", "200%");
+    // if (variables.has_shadow) {
+    //     const filter = defs.append("filter")
+    //         .attr("id", "shadow")
+    //         .attr("filterUnits", "userSpaceOnUse")
+    //         .attr("width", "200%")
+    //         .attr("height", "200%");
         
-        filter.append("feGaussianBlur")
-            .attr("in", "SourceAlpha")
-            .attr("stdDeviation", 3);
+    //     filter.append("feGaussianBlur")
+    //         .attr("in", "SourceAlpha")
+    //         .attr("stdDeviation", 3);
         
-        filter.append("feOffset")
-            .attr("dx", 2)
-            .attr("dy", 2)
-            .attr("result", "offsetblur");
+    //     filter.append("feOffset")
+    //         .attr("dx", 2)
+    //         .attr("dy", 2)
+    //         .attr("result", "offsetblur");
         
-        const feMerge = filter.append("feMerge");
-        feMerge.append("feMergeNode");
-        feMerge.append("feMergeNode").attr("in", "SourceGraphic");
-    }
+    //     const feMerge = filter.append("feMerge");
+    //     feMerge.append("feMergeNode");
+    //     feMerge.append("feMergeNode").attr("in", "SourceGraphic");
+    // }
     
     // ---------- 7. 创建图表 ----------
     

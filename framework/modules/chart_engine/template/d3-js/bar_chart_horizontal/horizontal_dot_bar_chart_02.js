@@ -103,15 +103,18 @@ function makeChart(containerSelector, data) {
     // 获取唯一维度值并按数值降序排列数据
     const dimensions = [...new Set(chartData.map(d => d[dimensionField]))];
     const maxValue_ = d3.max(chartData, d => Math.abs(+d[valueField]));
+    
+    // 计算每个棒子表示的单位数量
+    // 目标：最大值对应的棒子数量在20-50之间
+    const targetMaxBars = 35; // 选择目标范围(20-50)的中间值
+    const unitPerBar = Math.ceil(maxValue_ / targetMaxBars);
+    
+    // 为每个数据点计算应显示的棒子数量
     chartData.forEach(d => {
-        d[`${valueField}_`] = d[valueField];
+        // 原始数值保存在 valueField
+        // 转换后的棒子数量保存在 valueField_
+        d[`${valueField}_`] = Math.max(0.1, +d[valueField] / unitPerBar);
     });
-    if (maxValue_ > 100) {
-        // 确保所有数值在0-100范围内
-        chartData.forEach(d => {
-            d[`${valueField}_`] = Math.max(1, Math.floor(+d[valueField] / maxValue_ * 50));
-        });
-    }
     
     // 按数值降序排序数据
     const sortedData = [...chartData].sort((a, b) => b[valueField] - a[valueField]);
@@ -177,6 +180,10 @@ function makeChart(containerSelector, data) {
     // 计算内部绘图区域尺寸
     const innerWidth = width - margin.left - margin.right;
     const innerHeight = height - margin.top - margin.bottom;
+    
+    // 计算行高和棒子高度（提前定义供图例使用）
+    const rowHeight = innerHeight / sortedDimensions.length;
+    const barHeight = Math.min(rowHeight * 0.7, 30); // 棒子高度限制在30px以内
     
     // ---------- 6. 创建SVG容器 ----------
     
@@ -306,11 +313,11 @@ function makeChart(containerSelector, data) {
         
         if (dataPoint) {
             const rowHeight = yScale.bandwidth();
-            const barHeight = rowHeight;  // 竖条高度为行高的60%
+            const barHeight = rowHeight;  // 竖条高度为行高
             const barY = yScale(dimension) + (rowHeight - barHeight) / 2;  // 竖条垂直居中
             const barCount = Math.floor(dataPoint[`${valueField}_`]);  // 向下取整到整数
             const partialBar = dataPoint[`${valueField}_`] - barCount;  // 计算小数部分
-            
+
             // 绘制竖条组
             for (let i = 0; i < barCount; i++) {
                 // 计算当前棒子所在的组（每5个一组）
@@ -369,15 +376,15 @@ function makeChart(containerSelector, data) {
                     .attr("xlink:href", jsonData.images.field[dataPoint[dimensionField]]);
             }
             
-            // 添加维度标签
+            // 添加维度标签（类别名称）
             g.append("text")
                 .attr("x", -10)
-                .attr("y", yScale(dimension) + rowHeight / 2)
+                .attr("y", yScale(dimension) + rowHeight / 2) // 将类别名称与棒子图中心对齐
                 .attr("dy", "0.35em")
                 .attr("text-anchor", "end")
                 .style("font-family", typography.label.font_family)
                 .style("font-size", typography.label.font_size)
-                .style("font-weight", typography.label.font_weight)
+                .style("font-weight", typography.label.font_weight) // 恢复原有字体粗细
                 .style("fill", colors.text_color || "#333333")
                 .text(dimension);
                 

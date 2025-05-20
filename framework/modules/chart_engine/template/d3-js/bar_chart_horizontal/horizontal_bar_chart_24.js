@@ -53,7 +53,7 @@ function makeChart(containerSelector, data) {
     
     // 2. 尺寸和布局设置
     const width = variables.width || 800;
-    let height = variables.height || 600;
+    const height = variables.height || 600;
     
     // 设置边距
     const margin = {
@@ -85,13 +85,6 @@ function makeChart(containerSelector, data) {
     // 4. 数据处理
     const sortedData = [...chartData].sort((a, b) => b[valueField1] - a[valueField1]);
     const sortedDimensions = sortedData.map(d => d[dimensionField]);
-    
-    // 动态调整高度：如果x维度数量超过15，每增加一个维度，高度增加3%
-    if (sortedDimensions.length > 15) {
-        const extraDimensions = sortedDimensions.length - 15;
-        const heightIncreaseFactor = 1 + (extraDimensions * 0.03); // 增加比例因子
-        height = Math.round(height * heightIncreaseFactor); // 应用高度调整
-    }
     
     // 添加数值格式化函数
     const formatValue = (value) => {

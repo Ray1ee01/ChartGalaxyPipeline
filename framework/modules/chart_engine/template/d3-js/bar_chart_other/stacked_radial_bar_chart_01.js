@@ -5,7 +5,7 @@ REQUIREMENTS_BEGIN
     "chart_name": "stacked_radial_bar_chart_01",
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
-    "required_fields_range": [[3, 10], [0, 100], [2, 20]],
+    "required_fields_range": [[3, 20], [0, 100], [2, 20]],
     "required_fields_icons": [],
     "required_other_icons": [],
     "required_fields_colors": [],
@@ -90,7 +90,7 @@ function makeChart(containerSelector, data) {
         .attr("xmlns:xlink", "http://www.w3.org/1999/xlink");
 
     const centerX = width / 2;
-    const centerY = height / 2 + 50; // 将图表中心点向下移动50px
+    const centerY = height / 2;
     const maxRadius = Math.min(chartWidth, chartHeight) / 2;
 
     const nBars = stackedData.length;
@@ -133,11 +133,9 @@ function makeChart(containerSelector, data) {
     });
 
     const labelPadding = 20;
-    // 移除默认的colorScale定义
-    // 使用传入的colors配置
-    const getColor = (groupValue) => {
-        return colors.field[groupValue] || "#cccccc"; // 如果没有对应的颜色配置，使用灰色作为后备
-    };
+    const colorScale = d3.scaleOrdinal()
+        .domain(stackedSeries.map(d => d.key))
+        .range(d3.schemeCategory10);
 
     // 绘制堆叠条形
     stackedSeries.forEach((series, i) => {
@@ -154,7 +152,7 @@ function makeChart(containerSelector, data) {
                     .startAngle(startAngle)
                     .endAngle(endAngle)
                 )
-                .attr("fill", getColor(series.key))
+                .attr("fill", colorScale(series.key))
                 .attr("opacity", 0.85);
 
             // 类别标签
@@ -173,73 +171,50 @@ function makeChart(containerSelector, data) {
             // 数值标签
             if (d[1] - d[0] > maxValue * 0.1) { // 只在数值足够大时显示标签
                 const value = d[1] - d[0];
-                const formattedValue = formatValue(value);
+                const formattedValue = formatValue(value) + valueUnit;
                 const valueRadius = innerR + barWidth / 2;
                 const valueAngle = (startAngle + endAngle) / 2;
-                
-                // 计算标签位置
-                const labelX = Math.cos(valueAngle - Math.PI / 2) * valueRadius;
-                const labelY = Math.sin(valueAngle - Math.PI / 2) * valueRadius;
+                const valueTextPathId = `valueTextPath-${i}-${j}`;
+
+                g.append("path")
+                    .attr("id", valueTextPathId)
+                    .attr("d", d3.arc()({
+                        innerRadius: valueRadius,
+                        outerRadius: valueRadius,
+                        startAngle: valueAngle - 0.1,
+                        endAngle: valueAngle + 0.1
+                    }))
+                    .style("fill", "none")
+                    .style("stroke", "none");
 
                 g.append("text")
-                    .attr("x", labelX)
-                    .attr("y", labelY)
+                    .attr("font-size", "12px")
+                    .attr("fill", "#b71c1c")
+                    .append("textPath")
+                    .attr("xlink:href", `#${valueTextPathId}`)
+                    .attr("startOffset", "50%")
                     .attr("text-anchor", "middle")
                     .attr("dominant-baseline", "middle")
-                    .attr("fill", "white")
-                    .attr("font-size", "12px")
                     .text(formattedValue);
             }
         });
     });
 
     // 添加图例
-    const legendItemHeight = 20; // 每个图例项的高度
-    const legendPadding = 10; // 图例内边距
-    const legendItems = stackedSeries.map(d => d.key);
-    
-    // 计算文本最大宽度
-    const tempText = svg.append("text")
-        .attr("visibility", "hidden");
-    const maxTextWidth = d3.max(legendItems, item => {
-        tempText.text(item);
-        return tempText.node().getComputedTextLength();
-    });
-    tempText.remove();
-    
-    const legendWidth = maxTextWidth + 40; // 文本宽度 + 色块宽度(15) + 间距(5) + 左右内边距
-    const legendHeight = legendItems.length * legendItemHeight + 2 * legendPadding;
-    
-    // 计算图例位置，确保不会与图表重叠
-    const chartRadius = maxBarRadius + barWidth * 0.5;
-    const legendX = width - legendWidth - margin.right - 20; // 额外20px右边距
-    const legendY = margin.top + 10; // 向上移动到顶部，留出10px边距
-    
     const legend = svg.append("g")
-        .attr("transform", `translate(${legendX}, ${legendY})`);
-
-    // 添加图例背景，使用计算出的精确宽度
-    legend.append("rect")
-        .attr("x", -legendPadding)
-        .attr("y", -legendPadding)
-        .attr("width", legendWidth + 2 * legendPadding)
-        .attr("height", legendHeight)
-        .attr("fill", "white")
-        .attr("fill-opacity", 0.9)
-        .attr("rx", 4)
-        .attr("ry", 4);
+        .attr("transform", `translate(${width - 150}, 20)`);
 
     stackedSeries.forEach((series, i) => {
         const legendItem = legend.append("g")
-            .attr("transform", `translate(0, ${i * legendItemHeight + legendPadding})`);
+            .attr("transform", `translate(0, ${i * 20})`);
 
         legendItem.append("rect")
             .attr("width", 15)
             .attr("height", 15)
-            .attr("fill", getColor(series.key));
+            .attr("fill", colorScale(series.key));
 
         legendItem.append("text")
-            .attr("x", 25)
+            .attr("x", 20)
             .attr("y", 12)
             .attr("font-size", "12px")
             .text(series.key);

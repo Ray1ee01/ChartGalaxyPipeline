@@ -85,7 +85,6 @@ function makeChart(containerSelector, data) {
     if (valueUnit.length > 6) {
         valueUnit = ''
     }
-
     // ---------- 4. 数据处理 ----------
     const totalItems = chartData.length;
     if (totalItems === 0) return;
@@ -193,7 +192,7 @@ function makeChart(containerSelector, data) {
             .attr("dominant-baseline", "middle")
             .attr("font-family", typography.label.font_family)
             .attr("font-size", "14px")
-            .attr("fill", "#000000")
+            .attr("fill", "#ffffff")
             .text(d[dimensionField]);
 
         // 添加数值，位置在扇区中间
@@ -211,7 +210,7 @@ function makeChart(containerSelector, data) {
             .attr("font-family", typography.annotation.font_family)
             .attr("font-size", "16px")
             .attr("font-weight", "bold")
-            .attr("fill", "#000000")
+            .attr("fill", "#ffffff")
             .text(formattedValue);
     });
 

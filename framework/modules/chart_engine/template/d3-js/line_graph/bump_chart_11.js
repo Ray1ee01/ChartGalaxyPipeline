@@ -110,7 +110,18 @@ function makeChart(containerSelector, data) {
         return metrics;
     }
 
+    // ---------- 辅助函数：判断颜色是否为浅色 ----------
+    function isColorLight(hexColor) {
+        const color = d3.color(hexColor); // d3.color 可以解析多种颜色格式
+        if (!color) return false; // 如果颜色解析失败，默认为深色
 
+        // 计算亮度 (RGB 值范围 0-255)
+        // L = 0.299*R + 0.587*G + 0.114*B
+        const luminance = (0.299 * color.r + 0.587 * color.g + 0.114 * color.b);
+        
+        // 阈值，例如大于160的亮度认为是浅色
+        return luminance > 160; 
+    }
 
     // ---------- 2. 尺寸和布局设置 ----------
 
@@ -393,7 +404,7 @@ function makeChart(containerSelector, data) {
                     .style("font-family", typography.annotation.font_family)
                     .style("font-size", annotationFontSize + "px")
                     .style("font-weight", typography.annotation.font_weight)
-                    .style("fill", "white") // 统一使用白色作为六边形内部标签颜色
+                    .style("fill", isColorLight(finalHexColor) ? "#000000" : "#FFFFFF") // 根据背景亮度决定标签颜色
                     .text(formattedValue);
             } else {
                 // 六边形太小，将标签放在六边形下方

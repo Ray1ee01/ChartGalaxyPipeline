@@ -110,13 +110,6 @@ function makeChart(containerSelector, data) {
     const primaryGroups = [...new Set(chartData.map(d => d[primaryGroupField]))];
     const secondaryGroups = [...new Set(chartData.map(d => d[secondaryGroupField]))];
     
-    // 动态调整高度：当x维度数量大于15时，每增加一个维度增加3%的高度
-    if (dimensions.length > 15) {
-        const extraDimensions = dimensions.length - 15;
-        const heightIncrease = 1 + (extraDimensions * 0.03); // 增加3%/维度
-        height = Math.round(height * heightIncrease);
-    }
-    
     // 按主要分组和数值进行分组和排序
     const groupedData = {};
     primaryGroups.forEach(group => {

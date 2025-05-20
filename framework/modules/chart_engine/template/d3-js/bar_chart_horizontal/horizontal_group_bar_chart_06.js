@@ -104,13 +104,6 @@ function makeChart(containerSelector, data) {
     const dimensions = [...new Set(chartData.map(d => d[dimensionField]))];
     const groups = [...new Set(chartData.map(d => d[groupField]))];
     
-    // 动态调整高度：当x维度数量大于15时，每增加一个维度增加3%的高度
-    if (dimensions.length > 15) {
-        const extraDimensions = dimensions.length - 15;
-        const heightIncrease = 1 + (extraDimensions * 0.03); // 增加3%/维度
-        height = Math.round(height * heightIncrease);
-    }
-    
     // 不对数据进行排序，使用原始顺序
     
     // ---------- 5. 计算标签宽度 ----------

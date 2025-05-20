@@ -196,6 +196,7 @@ function makeChart(containerSelector, data) {
         .remove();
     
     // 添加X轴
+    /*
     const xAxis = d3.axisBottom(xScale)
         .ticks(5)
         .tickFormat(d => formatValue(d) + (xUnit ? ` ${xUnit}` : ''))
@@ -211,6 +212,7 @@ function makeChart(containerSelector, data) {
         .style("font-family", typography.label.font_family)
         .style("font-size", typography.label.font_size)
         .style("fill", colors.text_color);
+    */
 
     // 为每个分类创建条形组
     const barGroups = chartGroup.selectAll(".bar-group")
@@ -334,7 +336,7 @@ function makeChart(containerSelector, data) {
             // 添加数值标签
             d3.select(this)
                 .append("text")
-                .attr("x", lastBarX + 5)
+                .attr("x", lastBarX + 15)
                 .attr("y", barY + barHeight / 2)
                 .attr("dy", "0.35em")
                 .attr("text-anchor", "start")

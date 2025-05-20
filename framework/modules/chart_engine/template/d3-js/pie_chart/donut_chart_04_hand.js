@@ -67,7 +67,7 @@ function makeChart(containerSelector, data) {
     
     // Calculate center point and max radius
     const centerX = width / 2;
-    const centerY = height / 2 + 100; // 向下移动100像素
+    const centerY = height / 2;
     const maxRadius = Math.min(chartWidth, chartHeight) / 2;
     
     // Create a root group
