@@ -525,7 +525,7 @@ function makeChart(containerSelector, data) {
                 const textColor = getContrastColor(sectorColor);
                 
                 // 设置文本颜色
-                self.style("fill", textColor);
+                self.style("fill", colors.text_color);
                 
                 // 计算扇区所占角度（弧度）
                 const arcAngle = d.endAngle - d.startAngle;
