@@ -10,7 +10,7 @@ REQUIREMENTS_BEGIN
     "required_fields_icons": ["x"],
     "required_other_icons": [],
     "required_fields_colors": [],
-    "required_other_colors": ["primary","secondary"],
+    "required_other_colors": [],
     "supported_effects": ["radius_corner", "spacing"],
     "min_height": 400,
     "min_width": 400,

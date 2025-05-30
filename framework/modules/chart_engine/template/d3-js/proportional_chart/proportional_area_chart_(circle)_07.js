@@ -296,7 +296,7 @@ function makeChart(containerSelector, dataJSON) {
             node.append("text")
                 .attr("class", "value-label")
                 .attr("text-anchor", "middle")
-                .attr("y", d.r / 2 - 10) // 在圆内部底部放置
+                .attr("y", d.r / 2 +10) // 在圆内部底部放置
                 .attr("fill", textColor)
                 .style("font-family", valueFontFamily)
                 .style("font-size", `${textSize}px`)

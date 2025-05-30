@@ -190,6 +190,16 @@ function makeChart(containerSelector, data) {
 
     const barWidth = xScale.bandwidth();
 
+    // 设置延伸部分的参数
+    const extensionHeight = 100; // 斜向延伸的高度
+    const midIndex = Math.floor(processedData.length / 2); // 中间柱子的索引
+    const offsetStep = 50; // 左右柱子每相邻一列，向左右偏移的像素数
+
+    // 给每项数据增加偏移量
+    processedData.forEach((d, i) => {
+        d.offset = (i - midIndex) * offsetStep;
+    });
+
     // 添加主柱体
     bars.append("rect")
         .attr("class", "main-bar")
@@ -212,16 +222,6 @@ function makeChart(containerSelector, data) {
         .attr("stroke-dasharray", "3,3"); // Dashed line style
 
     // 添加斜向延伸部分
-    const extensionHeight = 100; // 斜向延伸的高度
-    const midIndex = Math.floor(processedData.length / 2); // 中间柱子的索引
-    const offsetStep = 50; // 左右柱子每相邻一列，向左右偏移的像素数
-
-    // 给每项数据增加偏移量
-    processedData.forEach((d, i) => {
-        d.offset = (i - midIndex) * offsetStep;
-    });
-
-    // 添加斜向延伸路径
     bars.append("path")
         .attr("class", "extended-path")
         .attr("d", d => {
@@ -278,73 +278,6 @@ function makeChart(containerSelector, data) {
         .attr("fill", (d, i) => colorScale(d, i))
         .attr("opacity", 0.9);
 
-    
-    // 添加底部矩形
-    bars.append("image")
-        .attr("class", "bottom-image")
-        .attr("x", d => {
-            const padding = xScale.padding();
-            const totalWidth = xScale.bandwidth() * (1 + padding);
-            const paddingWidth = totalWidth * padding;
-            const bottomWidth = totalWidth + offsetStep - paddingWidth;
-            return -((bottomWidth - barWidth) / 2) + d.offset;
-        })
-        .attr("y", d => {
-            const padding = xScale.padding();
-            const totalWidth = xScale.bandwidth() * (1 + padding);
-            const paddingWidth = totalWidth * padding;
-            return chartHeight + extensionHeight - (totalWidth + offsetStep - paddingWidth); 
-        })
-        .attr("width", d => {
-            const padding = xScale.padding();
-            const totalWidth = xScale.bandwidth() * (1 + padding);
-            const paddingWidth = totalWidth * padding;
-            return totalWidth + offsetStep - paddingWidth;
-        })
-        .attr("xlink:href", d => jsonData.images.field[d.category])
-    
-
-    // 在底部矩形中添加文本
-    bars.append("text")
-        .attr("class", "bottom-text")
-        .attr("x", d => {
-            const padding = xScale.padding();
-            const totalWidth = xScale.bandwidth() * (1 + padding);
-            const paddingWidth = totalWidth * padding;
-            const bottomWidth = totalWidth + offsetStep - paddingWidth;
-            return -((bottomWidth - barWidth) / 2) + d.offset + (bottomWidth / 2);
-        })
-        .attr("y", chartHeight + extensionHeight + 25)
-        .style("fill", "#fff")
-        .style("text-anchor", "middle")
-        .style("dominant-baseline", "middle")
-        .style("font-weight", "bold")
-        .each(function(d) {
-            const text = d3.select(this);
-            const textContent = d.category;
-            const maxWidth = d => {
-                const padding = xScale.padding();
-                const totalWidth = xScale.bandwidth() * (1 + padding);
-                const paddingWidth = totalWidth * padding;
-                return totalWidth + offsetStep - paddingWidth - 10; // 减去10px的边距
-            };
-
-            // 计算文本宽度
-            const availableWidth = maxWidth(d);
-            let fontSize = 12; // 初始字体大小
-            let textWidth = getTextWidth(textContent, `${fontSize}px Arial`);
-
-            // 如果文本宽度超过可用宽度，逐步减小字体大小
-            while (textWidth > availableWidth && fontSize > 8) {
-                fontSize -= 1;
-                textWidth = getTextWidth(textContent, `${fontSize}px Arial`);
-            }
-
-            // 设置最终的字体大小和文本内容
-            text.style("font-size", `${fontSize}px`)
-                .text(textContent);
-        });
-
     // 添加渐变线条
     bars.append("path")
         .attr("class", "gradient-line")
@@ -387,6 +320,89 @@ function makeChart(containerSelector, data) {
         .style("dominant-baseline", "middle")
         .style("font-weight", "bold")
         .text(d => `${d.value}${yUnit ? ` ${yUnit}` : ''}`);
+
+    // 在底部矩形中添加文本
+    bars.append("text")
+        .attr("class", "bottom-text")
+        .attr("x", d => {
+            const padding = xScale.padding();
+            const totalWidth = xScale.bandwidth() * (1 + padding);
+            const paddingWidth = totalWidth * padding;
+            const bottomWidth = totalWidth + offsetStep - paddingWidth;
+            return -((bottomWidth - barWidth) / 2) + d.offset + (bottomWidth / 2);
+        })
+        .attr("y", chartHeight + extensionHeight + 25)
+        .style("fill", "#fff")
+        .style("text-anchor", "middle")
+        .style("dominant-baseline", "middle")
+        .style("font-weight", "bold")
+        .each(function(d) {
+            const text = d3.select(this);
+            const textContent = d.category;
+            const maxWidth = d => {
+                const padding = xScale.padding();
+                const totalWidth = xScale.bandwidth() * (1 + padding);
+                const paddingWidth = totalWidth * padding;
+                return totalWidth + offsetStep - paddingWidth - 10; // 减去10px的边距
+            };
+
+            // 计算文本宽度
+            const availableWidth = maxWidth(d);
+            let fontSize = 12; // 初始字体大小
+            let textWidth = getTextWidth(textContent, `${fontSize}px Arial`);
+
+            // 如果文本宽度超过可用宽度，逐步减小字体大小
+            while (textWidth > availableWidth && fontSize > 8) {
+                fontSize -= 1;
+                textWidth = getTextWidth(textContent, `${fontSize}px Arial`);
+            }
+
+            // 设置最终的字体大小和文本内容
+            text.style("font-size", `${fontSize}px`)
+                .text(textContent);
+        });
+
+    // ---------- 8. 创建专门的图标组，确保图标在最顶层 ----------
+    
+    // 创建图标组，这个组会在所有其他元素之上
+    const iconsGroup = svg.append("g")
+        .attr("class", "icons")
+        .attr("transform", `translate(${margin.left}, ${margin.top})`);
+    
+    // 在图标组中添加所有图标
+    const iconElements = iconsGroup.selectAll(".bottom-icon")
+        .data(processedData)
+        .enter()
+        .append("image")
+        .attr("class", "bottom-icon")
+        .attr("x", d => {
+            const padding = xScale.padding();
+            const totalWidth = xScale.bandwidth() * (1 + padding);
+            const paddingWidth = totalWidth * padding;
+            const bottomWidth = totalWidth + offsetStep - paddingWidth;
+            return xScale(d.category) - ((bottomWidth - barWidth) / 2) + d.offset;
+        })
+        .attr("y", d => {
+            const padding = xScale.padding();
+            const totalWidth = xScale.bandwidth() * (1 + padding);
+            const paddingWidth = totalWidth * padding;
+            return chartHeight + extensionHeight - (totalWidth + offsetStep - paddingWidth); 
+        })
+        .attr("width", d => {
+            const padding = xScale.padding();
+            const totalWidth = xScale.bandwidth() * (1 + padding);
+            const paddingWidth = totalWidth * padding;
+            return totalWidth + offsetStep - paddingWidth;
+        })
+        .attr("height", d => {
+            const padding = xScale.padding();
+            const totalWidth = xScale.bandwidth() * (1 + padding);
+            const paddingWidth = totalWidth * padding;
+            return totalWidth + offsetStep - paddingWidth;
+        })
+        .attr("opacity", 1) // 设置为完全不透明
+        .attr("preserveAspectRatio", "xMidYMid meet") // 保持图标比例
+        .attr("xlink:href", d => jsonData.images.field[d.category]);
 
     return svg.node();
 }

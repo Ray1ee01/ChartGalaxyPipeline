@@ -206,7 +206,7 @@ function makeChart(containerSelector, data) {
     // ** 开始修改：预计算标签字体大小和最大行数 **
     // *******************************************************************
     const defaultLabelFontSize = parseFloat(typography.label.font_size || 12);
-    const minLabelFontSize = 8; // 最小字体大小
+    const minLabelFontSize = 10; // 最小字体大小
     const currentBarWidth = xScale.bandwidth(); // 使用实际的bar宽度
     let finalLabelFontSize = defaultLabelFontSize;
     let maxLinesNeeded = 1; // 记录所有标签所需的最大行数

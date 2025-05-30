@@ -522,7 +522,7 @@ function makeChart(containerSelector, data) {
                 const self = d3.select(this);
                 
                 // 设置文本颜色根据背景色自动调整
-                self.style("fill", getContrastColor(colors.field[d.data[groupField]] || colors.other.primary));
+                self.style("fill", colors.text_color || "#333333");
                 
                 // 计算扇区所占角度（弧度）
                 const arcAngle = d.endAngle - d.startAngle;

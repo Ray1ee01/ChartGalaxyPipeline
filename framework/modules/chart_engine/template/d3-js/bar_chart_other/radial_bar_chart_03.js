@@ -143,17 +143,15 @@ function makeChart(containerSelector, data) {
         const valueTextPathId = `valueTextPath-${i}`;
         
         // 根据数值大小动态计算文字路径长度
-        const valueTextLen = String(valueText).length * 8; // 减小每个字符的宽度估计
+        const valueTextLen = String(valueText).length * 12; // 调整字符宽度估计以避免重叠
         const minAngle = 0.1; // 减小最小角度
-        const maxAngle = 0.3; // 设置最大角度
-        const valueShiftAngle = Math.min(
-            Math.max(valueTextLen / valueRadius, minAngle),
-            maxAngle
-        );
+        // const maxAngle = 0.3; // 设置最大角度
+        const valueShiftAngle = Math.max(valueTextLen / valueRadius, minAngle)
+        
 
         // 计算文字路径的起始和结束角度
         const pathStartAngle = Math.max(0, valueAngle - valueShiftAngle);
-        const pathEndAngle = Math.min(1.5 * Math.PI, valueAngle + valueShiftAngle);
+        const pathEndAngle = Math.min(1.7 * Math.PI, valueAngle + valueShiftAngle);
 
         g.append("path")
             .attr("id", valueTextPathId)
@@ -171,9 +169,9 @@ function makeChart(containerSelector, data) {
             .attr("fill", "#b71c1c")
             .append("textPath")
             .attr("xlink:href", `#${valueTextPathId}`)
-            .attr("startOffset", "50%") // 将文字居中显示
-            .attr("text-anchor", "middle")
-            .attr("dominant-baseline", "middle")
+            .attr("startOffset", "30%") 
+            .attr("text-anchor", "start")
+            .attr("dominant-baseline", "start")
             .text(valueText);
     });
 

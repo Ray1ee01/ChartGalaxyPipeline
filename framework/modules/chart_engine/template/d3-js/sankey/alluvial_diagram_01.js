@@ -2,7 +2,7 @@
 REQUIREMENTS_BEGIN
 {
     "chart_type": "Alluvial Diagram",
-    "chart_name": "alluvial_diagram_01",
+    "chart_name": "alluvial_diagram_plain_chart_01",
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
     "required_fields_range": [[2, 10], [0, "inf"], [2, 10]],
@@ -78,8 +78,8 @@ function makeChart(containerSelector, data) {
     // 获取主色调
     // const primaryColor = colors.other && colors.other.primary ? colors.other.primary : "#1f77b4";
     // const secondaryColor = colors.other && colors.other.secondary ? colors.other.secondary : "#ff7f0e";
-    const primaryColor = "#902d1f";
-    const secondaryColor = "#2f6ae4";
+    const primaryColor = "#902d1f"; //"#7293EE"
+    const secondaryColor = "#2f6ae4"; //"#211CB7"
     
     // 创建渐变色系 - 从浅到深
     const createColorScale = (baseColor, count) => {

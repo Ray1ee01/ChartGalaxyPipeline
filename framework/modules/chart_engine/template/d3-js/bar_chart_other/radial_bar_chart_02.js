@@ -335,7 +335,7 @@ function makeChart(containerSelector, data) {
         
         text.append("textPath")
             .attr("xlink:href", `#${textPathId}`)
-            .attr("startOffset", "75%")  // 控制文本开始的位置，50%表示中间
+            .attr("startOffset", "75%")  
             .attr("text-anchor", "middle")
             .attr("dominant-baseline", "middle")
             .text(`${d[xField]} / ${formatValue(d[yField])}`);

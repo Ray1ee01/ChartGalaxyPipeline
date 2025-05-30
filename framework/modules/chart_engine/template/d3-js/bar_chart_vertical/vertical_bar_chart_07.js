@@ -206,7 +206,7 @@ function makeChart(containerSelector, data) {
     // ** 开始修改：预计算标签字体大小和最大行数 **
     // *******************************************************************
     const defaultLabelFontSize = parseFloat(typography.label.font_size || 12);
-    const minLabelFontSize = 8; // 最小字体大小
+    const minLabelFontSize = 10; // 最小字体大小
     const currentBarWidth = xScale.bandwidth(); // 使用实际的bar宽度
     let finalLabelFontSize = defaultLabelFontSize;
     let maxLinesNeeded = 1; // 记录所有标签所需的最大行数
@@ -383,14 +383,6 @@ function makeChart(containerSelector, data) {
                 .text(valueText);
         });
     
-    // 在维度标签上方添加水平线
-    chart.append("line")
-        .attr("x1", 0)
-        .attr("y1", innerHeight + 20) // 直接位于维度标签上方的位置
-        .attr("x2", innerWidth)
-        .attr("y2", innerHeight + 20)
-        .attr("stroke", "#e0e0e0")
-        .attr("stroke-width", 1);
     
     // *******************************************************************
     // ** 开始修改：添加维度标签 (统一字体大小，自动换行) **
@@ -404,7 +396,7 @@ function makeChart(containerSelector, data) {
         .style("font-family", labelFontFamily)
         .style("font-size", `${finalLabelFontSize}px`) // 应用预计算的字体大小
         .style("font-weight", labelFontWeight)
-        .style("fill", "#ffffff") // 使用默认文本颜色
+        .style("fill", colors.text_color) // 使用默认文本颜色
         .each(function(d) {
             const labelText = String(d.x);
             const textWidth = getTextWidthCanvas(labelText, labelFontFamily, finalLabelFontSize, labelFontWeight);
