@@ -2,10 +2,10 @@
 REQUIREMENTS_BEGIN
 {
     "chart_type": "Vertical Bar Chart",
-    "chart_name": "vertical_bar_plain_chart_01",
+    "chart_name": "vertical_bar_plain_chart_04",
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],
-    "required_fields_range": [[3, 20], [0, 100]],
+    "required_fields_range": [[3, 12], [0, 100]],
     "required_fields_icons": [],
     "required_other_icons": [],
     "required_fields_colors": [],
@@ -202,12 +202,23 @@ function makeChart(containerSelector, data) {
     const bars = chartGroup.selectAll(".bar")
         .data(processedData)
         .enter()
-        .append("rect")
+        .append("path")
         .attr("class", "bar")
-        .attr("x", d => xScale(d.category))
-        .attr("y", d => yScale(d.value))
-        .attr("width", xScale.bandwidth())
-        .attr("height", d => chartHeight - yScale(d.value))
+        .attr("d", d => {
+            const x = xScale(d.category);
+            const y = yScale(d.value);
+            const width = xScale.bandwidth();
+            const height = chartHeight - yScale(d.value);
+            const midX = x + width/2;
+            
+            // 按照参考路径的比例创建形状
+            // 原始参考路径: M0,10 L10,10 C5.5,10 5.5,5 5,0 C4.5,5 4.5,10 0,10 z
+            return `M ${x} ${chartHeight}
+                    L ${x + width} ${chartHeight}
+                    C ${x + width * 0.55} ${chartHeight}, ${midX + width * 0.05} ${y + height * 0.5}, ${midX} ${y}
+                    C ${midX - width * 0.05} ${y + height * 0.5}, ${x + width * 0.45} ${chartHeight}, ${x} ${chartHeight}
+                    Z`;
+        })
         .attr("fill", (d, i) => colorScale(d, i));
     
     // 添加数值标签

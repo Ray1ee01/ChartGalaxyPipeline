@@ -2,7 +2,7 @@
 REQUIREMENTS_BEGIN
 {
     "chart_type": "Range Area Chart",
-    "chart_name": "range_area_chart_01",
+    "chart_name": "range_area_chart_icons_01",
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["temporal"], ["numerical"], ["categorical"]],
     "required_fields_range": [[5, 50], [0, "inf"], [2, 2]],

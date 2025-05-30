@@ -2,7 +2,7 @@
 REQUIREMENTS_BEGIN
 {
     "chart_type": "Radial Bar Chart",
-    "chart_name": "radial_bar_plain_chart_01",
+    "chart_name": "radial_bar_plain_chart_02",
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],
     "required_fields_range": [[3, 20], [0, 100]],
@@ -22,7 +22,7 @@ REQUIREMENTS_BEGIN
 REQUIREMENTS_END
 */
 
-function makeChart(containerSelector, data) {
+function makeChart(containerSelector, data) { //type7:Radial Bar Chart  plain chart#2 圆角
     const jsonData = data;
     const chartData = jsonData.data.data;
     const variables = jsonData.variables;
@@ -42,6 +42,62 @@ function makeChart(containerSelector, data) {
             return d3.format("~g")(value);
         }
     }
+
+    // 生成圆角弧形路径的函数
+    const createRoundedArcPath = (innerRadius, outerRadius, startAngle, endAngle, cornerRadius) => {
+        const startAngleRad = startAngle - Math.PI / 2; // 调整起始角度，使0度在顶部
+        const endAngleRad = endAngle - Math.PI / 2;
+        
+        // 计算各个关键点的坐标
+        const innerStartX = innerRadius * Math.cos(startAngleRad);
+        const innerStartY = innerRadius * Math.sin(startAngleRad);
+        const innerEndX = innerRadius * Math.cos(endAngleRad);
+        const innerEndY = innerRadius * Math.sin(endAngleRad);
+        const outerStartX = outerRadius * Math.cos(startAngleRad);
+        const outerStartY = outerRadius * Math.sin(startAngleRad);
+        const outerEndX = outerRadius * Math.cos(endAngleRad);
+        const outerEndY = outerRadius * Math.sin(endAngleRad);
+        
+        // 计算圆角的控制点
+        const thickness = outerRadius - innerRadius;
+        const adjustedCornerRadius = Math.min(cornerRadius, thickness / 2, 
+            Math.abs(endAngle - startAngle) * innerRadius / 2);
+        
+        // 计算圆角在各个角的偏移
+        const startCornerOffset = adjustedCornerRadius / innerRadius;
+        const endCornerOffset = adjustedCornerRadius / innerRadius;
+        
+        // 内弧起始圆角点
+        const innerStartCornerAngle = startAngleRad + startCornerOffset;
+        const innerStartCornerX = innerRadius * Math.cos(innerStartCornerAngle);
+        const innerStartCornerY = innerRadius * Math.sin(innerStartCornerAngle);
+        
+        // 内弧结束圆角点
+        const innerEndCornerAngle = endAngleRad - endCornerOffset;
+        const innerEndCornerX = innerRadius * Math.cos(innerEndCornerAngle);
+        const innerEndCornerY = innerRadius * Math.sin(innerEndCornerAngle);
+        
+        // 外弧起始圆角点
+        const outerStartCornerAngle = startAngleRad + adjustedCornerRadius / outerRadius;
+        const outerStartCornerX = outerRadius * Math.cos(outerStartCornerAngle);
+        const outerStartCornerY = outerRadius * Math.sin(outerStartCornerAngle);
+        
+        // 外弧结束圆角点
+        const outerEndCornerAngle = endAngleRad - adjustedCornerRadius / outerRadius;
+        const outerEndCornerX = outerRadius * Math.cos(outerEndCornerAngle);
+        const outerEndCornerY = outerRadius * Math.sin(outerEndCornerAngle);
+        
+        const largeArcFlag = endAngle - startAngle > Math.PI ? 1 : 0;
+        
+        return `
+            M ${innerStartCornerX} ${innerStartCornerY}
+            A ${adjustedCornerRadius} ${adjustedCornerRadius} 0 0 1 ${outerStartCornerX} ${outerStartCornerY}
+            A ${outerRadius} ${outerRadius} 0 ${largeArcFlag} 1 ${outerEndCornerX} ${outerEndCornerY}
+            A ${adjustedCornerRadius} ${adjustedCornerRadius} 0 0 1 ${innerEndCornerX} ${innerEndCornerY}
+            A ${innerRadius} ${innerRadius} 0 ${largeArcFlag} 0 ${innerStartCornerX} ${innerStartCornerY}
+            Z
+        `;
+    };
 
     d3.select(containerSelector).html("");
 
@@ -114,14 +170,11 @@ function makeChart(containerSelector, data) {
         const innerR = minRadius + i * (barWidth + barGap);
         const outerR = innerR + barWidth;
         const endAngle = angleScale(d[yField]);
+        const cornerRadius = barWidth / 2; // 圆角半径为宽度的一半
 
+        // 使用圆角弧形路径
         g.append("path")
-            .attr("d", d3.arc()
-                .innerRadius(innerR)
-                .outerRadius(outerR)
-                .startAngle(0)
-                .endAngle(endAngle)
-            )
+            .attr("d", createRoundedArcPath(innerR, outerR, 0, endAngle, cornerRadius))
             .attr("fill", colors.primary || "#ff4d4f")
             .attr("opacity", 0.85);
 

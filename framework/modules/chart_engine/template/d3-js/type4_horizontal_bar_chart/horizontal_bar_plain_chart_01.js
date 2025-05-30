@@ -1,18 +1,18 @@
 /*
 REQUIREMENTS_BEGIN
 {
-    "chart_type": "Vertical Bar Chart",
-    "chart_name": "vertical_bar_plain_chart_01",
+    "chart_type": "Horizontal Bar Chart",
+    "chart_name": "horizontal_bar_plain_chart_01",
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],
-    "required_fields_range": [[3, 20], [0, 100]],
+    "required_fields_range": [[3, 20], [0, 100000]],
     "required_fields_icons": [],
     "required_other_icons": [],
     "required_fields_colors": [],
-    "required_other_colors": ["primary", "secondary", "background"],
+    "required_other_colors": [],
     "supported_effects": ["gradient", "opacity"],
-    "min_height": 600,
-    "min_width": 800,
+    "min_height": 300,
+    "min_width": 300,
     "background": "light",
     "icon_mark": "none",
     "icon_label": "none",
@@ -46,6 +46,20 @@ function makeChart(containerSelector, data) {
     };  // 颜色设置
     const dataColumns = jsonData.data.columns || []; // 数据列定义
     
+    // 数值单位规范
+    // 添加数值格式化函数
+    const formatValue = (value) => {
+        if (value >= 1000000000) {
+            return d3.format("~g")(value / 1000000000) + "B";
+        } else if (value >= 1000000) {
+            return d3.format("~g")(value / 1000000) + "M";
+        } else if (value >= 1000) {
+            return d3.format("~g")(value / 1000) + "K";
+        } else {
+            return d3.format("~g")(value);
+        }
+    }
+    
     // 设置视觉效果变量的默认值
     variables.has_shadow = variables.has_shadow || false;
     variables.has_stroke = variables.has_stroke || false;
@@ -56,7 +70,7 @@ function makeChart(containerSelector, data) {
     // ---------- 2. 尺寸和布局设置 ----------
     
     // 设置图表总尺寸
-    const width = variables.width || 600;
+    const width = variables.width || 300;
     const height = variables.height || 400;
     
     // 设置边距
@@ -90,19 +104,6 @@ function makeChart(containerSelector, data) {
         yUnit = dataColumns.find(col => col.role === "y").unit;
     }
 
-    // 数值单位规范
-    // 添加数值格式化函数
-    const formatValue = (value) => {
-        if (value >= 1000000000) {
-            return d3.format("~g")(value / 1000000000) + "B";
-        } else if (value >= 1000000) {
-            return d3.format("~g")(value / 1000000) + "M";
-        } else if (value >= 1000) {
-            return d3.format("~g")(value / 1000) + "K";
-        } else {
-            return d3.format("~g")(value);
-        }
-    }
     
     // ---------- 4. 数据处理 ----------
     
@@ -110,45 +111,26 @@ function makeChart(containerSelector, data) {
     const processedData = chartData.map(d => ({
         category: d[xField],
         value: +d[yField] // 确保转换为数字
-    }));
+    })).sort((a, b) => b.value - a.value); // 按值降序排序
+    
     // ---------- 5. 创建比例尺 ----------
     
-    // X轴比例尺 - 使用分类数据
-    const xScale = d3.scaleBand()
+    // Y轴比例尺 - 使用分类数据
+    const yScale = d3.scaleBand()
         .domain(processedData.map(d => d.category))
-        .range([0, chartWidth])
+        .range([0, chartHeight])
         .padding(0.3);
     
-    // Y轴比例尺 - 使用数值
-    const yScale = d3.scaleLinear()
+    // X轴比例尺 - 使用数值
+    const xScale = d3.scaleLinear()
         .domain([0, d3.max(processedData, d => d.value)])
-        .range([chartHeight, 0])
+        .range([0, chartWidth])
         .nice();
 
     // 颜色比例尺
-    const colorScale = (d, i) => {
-        console.log(i)
-        if (i === 0) {
-            // 第一个柱子使用更深的颜色
-            return d3.rgb(colors.other.primary).darker(0.7);
-        }
-        // 其他柱子使用primary颜色
-        return colors.other.primary;
-    };
-
-
-    // 确定标签的最大长度：
-    let minXLabelRatio = 1.0
-    const maxXLabelWidth = xScale.bandwidth() * 1.03
-
-    chartData.forEach(d => {
-        // x label
-        const xLabelText = String(d[xField])
-        let currentWidth = getTextWidth(xLabelText)
-        if (currentWidth > maxXLabelWidth) {
-            minXLabelRatio = Math.min(minXLabelRatio, maxXLabelWidth / currentWidth)
-        }
-    })
+    const colorScale = d3.scaleOrdinal()
+        .domain(processedData.map(d => d.category))
+        .range([colors.other.primary, colors.other.primary]);
 
     // ---------- 6. 创建SVG容器 ----------
     
@@ -167,27 +149,28 @@ function makeChart(containerSelector, data) {
     
     // ---------- 7. 绘制图表元素 ----------
     
-    // 添加X轴
+    // 添加X轴（隐藏）
     const xAxis = d3.axisBottom(xScale)
-        .tickSize(0); // 移除刻度线
+        .ticks(5)
+        .tickFormat(d => formatValue(d) + (yUnit ? ` ${yUnit}` : ''))
+        .tickSize(0)          // 移除刻度线
+        .tickPadding(10);     // 增加文字和轴的间距
+        
     
     chartGroup.append("g")
         .attr("class", "x-axis")
         .attr("transform", `translate(0, ${chartHeight})`)
         .call(xAxis)
+        .call(g => g.select(".domain").remove())  // 移除轴线
         .selectAll("text")
         .style("font-family", typography.label.font_family)
         .style("font-size", typography.label.font_size)
-        .style("text-anchor", minXLabelRatio < 1.0 ? "end" : "middle")
-        .attr("transform", minXLabelRatio < 1.0 ? "rotate(-45)" : "rotate(0)") 
-        .style("fill", colors.text_color);
+        .style("fill", colors.text_color)
+        .style("opacity", 0); // 隐藏X轴文本
     
-    // 添加Y轴
+    // 添加Y轴（不显示刻度线）
     const yAxis = d3.axisLeft(yScale)
-        .ticks(5)
-        .tickFormat(d => formatValue(d) + (yUnit ? ` ${yUnit}` : ''))
-        .tickSize(0)          // 移除刻度线
-        .tickPadding(10);     // 增加文字和轴的间距
+        .tickSize(0); // 移除刻度线
     
     chartGroup.append("g")
         .attr("class", "y-axis")
@@ -204,11 +187,11 @@ function makeChart(containerSelector, data) {
         .enter()
         .append("rect")
         .attr("class", "bar")
-        .attr("x", d => xScale(d.category))
-        .attr("y", d => yScale(d.value))
-        .attr("width", xScale.bandwidth())
-        .attr("height", d => chartHeight - yScale(d.value))
-        .attr("fill", (d, i) => colorScale(d, i));
+        .attr("y", d => yScale(d.category))
+        .attr("x", 0)
+        .attr("height", yScale.bandwidth())
+        .attr("width", d => xScale(d.value)) // 直接设置最终宽度
+        .attr("fill", d => colorScale(d.category));
     
     // 添加数值标签
     const labels = chartGroup.selectAll(".label")
@@ -216,9 +199,9 @@ function makeChart(containerSelector, data) {
         .enter()
         .append("text")
         .attr("class", "label")
-        .attr("x", d => xScale(d.category) + xScale.bandwidth() / 2)
-        .attr("y", d => yScale(d.value) - 5)
-        .attr("text-anchor", "middle")
+        .attr("y", d => yScale(d.category) + yScale.bandwidth() / 2)
+        .attr("x", d => xScale(d.value) + 5)
+        .attr("dy", ".35em")
         .style("font-family", typography.label.font_family)
         .style("font-size", typography.label.font_size)
         .style("fill", colors.text_color)

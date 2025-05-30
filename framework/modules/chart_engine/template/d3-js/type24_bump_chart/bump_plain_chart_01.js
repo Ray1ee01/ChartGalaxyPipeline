@@ -2,7 +2,7 @@
 REQUIREMENTS_BEGIN
 {
     "chart_type": "Bump Chart",
-    "chart_name": "bump_plain_chart_01",
+    "chart_name": "bump_chart_05",
     "is_composite": false,
     "chart_for": "comparison",
     "required_fields": ["x", "y", "group"],

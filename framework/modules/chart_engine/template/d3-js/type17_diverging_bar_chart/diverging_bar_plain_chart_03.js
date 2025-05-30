@@ -1,8 +1,8 @@
 /*
 REQUIREMENTS_BEGIN
 {
-    "chart_type": "Diverging Bar Chart",
-    "chart_name": "diverging_bar_plain_chart_03",
+    "chart_type": "Horizontal Diverging Bar Chart",
+    "chart_name": "horizontal_diverging_bar_chart_04",
     "chart_for": "comparison",
     "is_composite": false,
     "required_fields": ["x", "y", "group"],

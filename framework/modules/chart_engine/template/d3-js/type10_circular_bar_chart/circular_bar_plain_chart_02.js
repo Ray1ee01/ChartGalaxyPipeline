@@ -6,7 +6,7 @@ REQUIREMENTS_BEGIN
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],
     "required_fields_range": [[15, 30], [0, 100]],
-    "required_fields_icons": ["x"],
+    "required_fields_icons": [],
     "required_other_icons": [],
     "required_fields_colors": [],
     "required_other_colors": ["primary", "secondary", "background"],
@@ -31,25 +31,24 @@ function makeChart(containerSelector, data) {
     const colors = jsonData.colors || {};
     const dataColumns = jsonData.data.columns || [];
     
-    // Clear container
+    // 清空容器
     d3.select(containerSelector).html("");
     
-    // Get field names
+    // 获取字段名
     const xField = dataColumns[0].name;
     const yField = dataColumns[1].name;
     
     // 按yField降序排序数据
     chartData.sort((a, b) => b[yField] - a[yField]);
 
-    
-    // Set dimensions and margins
+    // 设置尺寸和边距
     const width = 1000;
     const height = 1200;
     const margin = { top: 0, right: 0, bottom: 0, left: 0 };
     const chartWidth = width - margin.left - margin.right;
     const chartHeight = height - margin.top - margin.bottom;
     
-    // Create SVG
+    // 创建SVG
     const svg = d3.select(containerSelector)
         .append("svg")
         .attr("width", "100%")
@@ -59,37 +58,14 @@ function makeChart(containerSelector, data) {
         .attr("xmlns", "http://www.w3.org/2000/svg")
         .attr("xmlns:xlink", "http://www.w3.org/1999/xlink");
 
-    // Create a root group to center everything
+    // 创建根组来居中所有内容
     const g = svg.append("g")
         .attr("transform", `translate(${margin.left}, ${margin.top})`);
     
     // 为每个柱子创建渐变
     const defs = svg.append("defs");
     
-    // 添加图标pattern定义
-    chartData.forEach((d, i) => {
-        const iconId = `icon${i}`;
-        const pattern = defs.append("pattern")
-            .attr("id", iconId)
-            .attr("width", 30)
-            .attr("height", 30)
-            .attr("patternUnits", "userSpaceOnUse");
-            
-        if (jsonData.images && jsonData.images[d[xField]]) {
-            pattern.append("image")
-                .attr("href", jsonData.images[d[xField]])
-                .attr("width", 30)
-                .attr("height", 30);
-        } else {
-            pattern.append("circle")
-                .attr("cx", 15)
-                .attr("cy", 15)
-                .attr("r", 12)
-                .attr("fill", "#008866");
-        }
-    });
-
-    // Define center point of the entire visualization
+    // 定义中心点
     const centerX = width / 2;
     const centerY = height / 2;
     
@@ -108,15 +84,15 @@ function makeChart(containerSelector, data) {
     const backgroundX = halfCircleX;
     const backgroundY = halfCircleY;
 
-    // Define angles for both background lines and bars
-    const startAngle = Math.PI/2;  // Start from top (90 degrees)
-    const endAngle = -Math.PI/2;   // End at bottom (-90 degrees)
+    // 定义角度
+    const startAngle = Math.PI/2;
+    const endAngle = -Math.PI/2;
     const angleStep = (startAngle - endAngle) / (chartData.length - 1);
     const barWidth = 30;
     const rankRadius = halfCircleRadius + 25;
     const innerRadius = rankRadius + 40;
 
-    // Create scale for bar lengths
+    // 创建条形长度比例尺
     const barScale = d3.scaleLinear()
         .domain([0, d3.max(chartData, d => d[yField])])
         .range([0, backgroundRadius - innerRadius]);
@@ -152,10 +128,11 @@ function makeChart(containerSelector, data) {
             .attr("stop-opacity", 0.3);
     });
 
-    // Add soft background grid lines aligned with the data points
+    // 添加背景网格线
     for (let i = 0; i < chartData.length; i++) {
         const angle = startAngle - i * angleStep;
         g.append("line")
+            .attr("class", "gridline")
             .attr("x1", halfCircleX)
             .attr("y1", halfCircleY)
             .attr("x2", halfCircleX - (backgroundRadius-20) * Math.cos(angle))
@@ -165,19 +142,21 @@ function makeChart(containerSelector, data) {
             .attr("opacity", 1)
             .attr("stroke-linecap", "round");
     }
+
     // 创建灰色背景面板
     g.append("path")
-    .attr("d", `
-        M ${backgroundX},${backgroundTop}
-        L ${backgroundX + backgroundRadius},${backgroundTop} 
-        L ${backgroundX + backgroundRadius},${backgroundBottom}
-        L ${backgroundX},${backgroundBottom}
-        A ${backgroundRadius},${backgroundRadius} 0 0,1 ${backgroundX},${backgroundTop}
-        Z
-    `)
-    .attr("fill", "#dddddd")
-    .attr("opacity", 0.25)
-    .attr("stroke", "none");
+        .attr("class", "background")
+        .attr("d", `
+            M ${backgroundX},${backgroundTop}
+            L ${backgroundX + backgroundRadius},${backgroundTop} 
+            L ${backgroundX + backgroundRadius},${backgroundBottom}
+            L ${backgroundX},${backgroundBottom}
+            A ${backgroundRadius},${backgroundRadius} 0 0,1 ${backgroundX},${backgroundTop}
+            Z
+        `)
+        .attr("fill", "#dddddd")
+        .attr("opacity", 0.25)
+        .attr("stroke", "none");
 
     // 创建面板渐变和效果
     const panelGradientId = "panelGradient";
@@ -190,10 +169,10 @@ function makeChart(containerSelector, data) {
         .attr("gradientUnits", "userSpaceOnUse")
         .selectAll("stop")
         .data([
-            {offset: "0%", color: "#00df8a", opacity: 1},    // 顶部更亮的绿色
-            {offset: "25%", color: "#00ca7d", opacity: 1},   // 过渡色
-            {offset: "65%", color: "#00995e", opacity: 1},   // 主色调
-            {offset: "100%", color: "#000000", opacity: 1}   // 底部更暗色
+            {offset: "0%", color: "#00df8a", opacity: 1},
+            {offset: "25%", color: "#00ca7d", opacity: 1},
+            {offset: "65%", color: "#00995e", opacity: 1},
+            {offset: "100%", color: "#000000", opacity: 1}
         ])
         .enter()
         .append("stop")
@@ -224,6 +203,7 @@ function makeChart(containerSelector, data) {
 
     // 创建绿色前景面板 - 基础填充
     g.append("path")
+        .attr("class", "background")
         .attr("d", `
             M ${halfCircleX},${halfCircleTop}
             L ${halfCircleX + rectWidth},${halfCircleTop}
@@ -237,6 +217,7 @@ function makeChart(containerSelector, data) {
     
     // 添加径向高光效果，模拟光泽
     g.append("path")
+        .attr("class", "background")
         .attr("d", `
             M ${halfCircleX},${halfCircleTop}
             L ${halfCircleX + rectWidth},${halfCircleTop}
@@ -248,14 +229,15 @@ function makeChart(containerSelector, data) {
         .attr("fill", `url(#${radialGradientId})`)
         .attr("stroke", "none");
 
-    // Add rank numbers outside the halfCircle
+    // 添加排名数字
     chartData.forEach((d, i) => {
         const angle = startAngle - i * angleStep;
         const rankX = halfCircleX - rankRadius * Math.cos(angle);
         const rankY = halfCircleY - rankRadius * Math.sin(angle);
         
-        // White circle background for rank numbers
+        // 排名数字的白色圆形背景
         g.append("circle")
+            .attr("class", "background")
             .attr("cx", rankX)
             .attr("cy", rankY)
             .attr("r", 18)
@@ -263,8 +245,9 @@ function makeChart(containerSelector, data) {
             .attr("stroke", "#075c66")
             .attr("stroke-width", 2);
             
-        // Rank number
+        // 排名数字
         g.append("text")
+            .attr("class", "value")
             .attr("x", rankX)
             .attr("y", rankY)
             .attr("font-family", "Arial, sans-serif")
@@ -276,28 +259,17 @@ function makeChart(containerSelector, data) {
     });
 
     // 添加环形刻度
-    const tickCount = 5; // 刻度数量
+    const tickCount = 5;
     const maxValue = d3.max(chartData, d => d[yField]);
     const tickStep = maxValue / tickCount;
     
     for(let i = 1; i <= tickCount; i++) {
         const tickRadius = innerRadius + barScale(tickStep * i);
-        
-        // // 绘制环形刻度线
-        // g.append("path")
-        //     .attr("d", d3.arc()
-        //         .innerRadius(tickRadius)
-        //         .outerRadius(tickRadius)
-        //         .startAngle(Math.PI)
-        //         .endAngle(2*Math.PI))
-        //     .attr("transform", `translate(${halfCircleX},${halfCircleY})`)
-        //     .attr("stroke", "#ddd")
-        //     .attr("stroke-width", 1)
-        //     .attr("fill", "none");
             
         // 添加刻度值
         g.append("text")
-            .attr("x", halfCircleX + 30)  // 将刻度值放在右侧
+            .attr("class", "value")
+            .attr("x", halfCircleX + 30)
             .attr("y", halfCircleY - tickRadius)
             .attr("font-family", "Arial, sans-serif")
             .attr("font-size", "25px")
@@ -307,11 +279,12 @@ function makeChart(containerSelector, data) {
             .text(Math.round(tickStep * i));
     }
 
-    // Add the CO2 emission bars with padding
+    // 添加条形
     g.selectAll(".bar")
         .data(chartData)
         .enter()
         .append("line")
+        .attr("class", "mark")
         .attr("x1", (d, i) => {
             const angle = startAngle - i * angleStep;
             return halfCircleX - innerRadius * Math.cos(angle);
@@ -334,11 +307,12 @@ function makeChart(containerSelector, data) {
         .attr("stroke-width", barWidth)
         .attr("stroke-linecap", "round");
 
-    // 添加柱子顶端的图标
-    g.selectAll(".bar-icon")
+    // 添加柱子顶端的圆形
+    g.selectAll(".bar-circle")
         .data(chartData)
         .enter()
         .append("circle")
+        .attr("class", "background")
         .attr("cx", (d, i) => {
             const angle = startAngle - i * angleStep;
             const barLength = barScale(d[yField]);
@@ -351,51 +325,48 @@ function makeChart(containerSelector, data) {
         })
         .attr("r", 18)
         .attr("fill", "#ffffff");
-        
 
-    
-    // 添加柱子顶端的图像
-    g.selectAll(".bar-image")
+    // 添加柱子顶端的文本标签
+    g.selectAll(".bar-text")
         .data(chartData)
         .enter()
-        .append("image")
+        .append("text")
+        .attr("class", "label")
         .attr("x", (d, i) => {
             const angle = startAngle - i * angleStep;
             const barLength = barScale(d[yField]);
-            return halfCircleX - (innerRadius + barLength) * Math.cos(angle) - 17.5;
+            return halfCircleX - (innerRadius + barLength) * Math.cos(angle);
         })
         .attr("y", (d, i) => {
             const angle = startAngle - i * angleStep;
             const barLength = barScale(d[yField]);
-            return halfCircleY - (innerRadius + barLength) * Math.sin(angle) - 17.5;
+            return halfCircleY - (innerRadius + barLength) * Math.sin(angle);
         })
-        .attr("width", 35)
-        .attr("height", 35)
-        .attr("clip-path", (d, i) => `url(#clip-circle-${i})`)
-        .attr("xlink:href", (d, i) => jsonData.images && jsonData.images.field[d[xField]] ? jsonData.images.field[d[xField]] : "");
+        .attr("font-family", "Arial, sans-serif")
+        .attr("font-size", "14px")
+        .attr("font-weight", "bold")
+        .attr("fill", "#333333")
+        .attr("text-anchor", "middle")
+        .attr("dominant-baseline", "middle")
+        .text(d => d[xField].length > 3 ? d[xField].substring(0, 3) : d[xField]);
 
-
-    // Add value labels
+    // 添加数值标签
     chartData.forEach((d, i) => {
         const angle = startAngle - i * angleStep;
-
         const barLength = barScale(d[yField]);
         let insideFlag = false;
         
-        // Position value label at the end of each bar
+        // 在每个条形末端位置添加数值标签
         const labelX = halfCircleX - (innerRadius + barLength + 20) * Math.cos(angle);
         const labelY = halfCircleY - (innerRadius + barLength + 20) * Math.sin(angle);
         
-        
-        // Add value label
         const labelText = `${d[xField]}: ${d[yField]}`;
-        const textWidth = labelText.length * 20; // 估算文字宽度
+        const textWidth = labelText.length * 20;
         
         const totalRadius = innerRadius + barLength + textWidth;
 
         let adjustedLabelX, adjustedLabelY;
         if (totalRadius > backgroundRadius) {
-            // 如果文字宽度超出bar长度,则显示在bar内部
             adjustedLabelX = textWidth > barLength ? 
                 labelX :
                 labelX + 40*Math.cos(angle);
@@ -411,6 +382,7 @@ function makeChart(containerSelector, data) {
         }
             
         g.append("text")
+            .attr("class", "text")
             .attr("x", adjustedLabelX)
             .attr("y", adjustedLabelY) 
             .attr("font-family", "Arial, sans-serif")
@@ -420,12 +392,12 @@ function makeChart(containerSelector, data) {
             .attr("text-anchor", insideFlag? "start" : "end")
             .attr("dominant-baseline", "middle")
             .attr("transform", () => {
-                // Rotate text based on angle
                 const rotation = (angle * 180 / Math.PI);
                 return `rotate(${rotation}, ${adjustedLabelX}, ${adjustedLabelY})`;
             })
             .text(labelText);
     });
+
     let titleText = jsonData.titles.main_title;
     let subtitleText = jsonData.titles.sub_title;
     
@@ -445,13 +417,14 @@ function makeChart(containerSelector, data) {
     }
 
     // 计算总高度以实现垂直居中
-    const titleLineHeight = 40; // 标题行高
-    const subtitleLineHeight = 30; // 副标题行高
+    const titleLineHeight = 40;
+    const subtitleLineHeight = 30;
     const totalHeight = (3 * titleLineHeight) + (6 * subtitleLineHeight);
     const startY = centerY - (totalHeight / 2) + 50;
 
     // 绘制标题
     g.append("text")
+        .attr("class", "text")
         .attr("x", halfCircleRight - 120)
         .attr("y", startY)
         .attr("font-family", "Arial, sans-serif")
@@ -462,6 +435,7 @@ function makeChart(containerSelector, data) {
         .text(titleLine1);
 
     g.append("text")
+        .attr("class", "text")
         .attr("x", halfCircleRight - 120)
         .attr("y", startY + titleLineHeight)
         .attr("font-family", "Arial, sans-serif")
@@ -472,6 +446,7 @@ function makeChart(containerSelector, data) {
         .text(titleLine2);
 
     g.append("text")
+        .attr("class", "text")
         .attr("x", halfCircleRight - 120)
         .attr("y", startY + (2 * titleLineHeight))
         .attr("font-family", "Arial, sans-serif")
@@ -485,6 +460,7 @@ function makeChart(containerSelector, data) {
     let subtitleStartY = startY + (3 * titleLineHeight);
     subtitleLines.forEach((line, i) => {
         g.append("text")
+            .attr("class", "text")
             .attr("x", halfCircleRight - 120)
             .attr("y", subtitleStartY + (i * subtitleLineHeight))
             .attr("font-family", "Arial, sans-serif")
@@ -493,5 +469,6 @@ function makeChart(containerSelector, data) {
             .attr("text-anchor", "start")
             .text(line);
     });
+
     return svg.node();
-}
+} 

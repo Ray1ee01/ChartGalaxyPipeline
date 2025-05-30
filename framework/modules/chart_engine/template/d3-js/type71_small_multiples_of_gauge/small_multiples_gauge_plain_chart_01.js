@@ -2,7 +2,7 @@
 REQUIREMENTS_BEGIN
 {
     "chart_type": "Small Multiples of Gauge Chart",
-    "chart_name": "small_multiple_gauge_plain_chart_01",
+    "chart_name": "small_multiples_gauge_plain_chart_01",
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
     "required_fields_range": [[2, 9], [0, "inf"], [2, 3]],

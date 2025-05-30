@@ -1,11 +1,11 @@
 /*
 REQUIREMENTS_BEGIN
 {
-    "chart_type": "Radial Bar Chart",
-    "chart_name": "radial_bar_plain_chart_01",
-    "required_fields": ["x", "y"],
-    "required_fields_type": [["categorical"], ["numerical"]],
-    "required_fields_range": [[3, 20], [0, 100]],
+    "chart_type": "Radial Grouped Bar Chart",
+    "chart_name": "radial_grouped_bar_plain_chart_01",
+    "required_fields": ["x", "y", "group"],
+    "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
+    "required_fields_range": [[3, 6], [0, 100], [2, 4]],
     "required_fields_icons": [],
     "required_other_icons": [],
     "required_fields_colors": [],
@@ -47,9 +47,35 @@ function makeChart(containerSelector, data) {
 
     const xField = dataColumns[0].name;
     const yField = dataColumns[1].name;
+    const groupField = dataColumns[2].name;
 
-    // 按yField降序排序
-    chartData.sort((a, b) => b[yField] - a[yField]);
+    // 获取单位信息
+    let valueUnit = "";
+    const valueCol = dataColumns.find(col => col.role === "y");
+    if (valueCol && valueCol.unit && valueCol.unit !== "none") {
+        valueUnit = valueCol.unit;
+    }
+
+    // 获取所有唯一的分组
+    const groups = [...new Set(chartData.map(d => d[groupField]))];
+    
+    // 创建颜色比例尺
+    const colorScale = d3.scaleOrdinal()
+        .domain(groups)
+        .range(groups.map(group => colors.field && colors.field[group] ? colors.field[group] : d3.schemeCategory10[groups.indexOf(group) % 10]));
+
+    // 获取唯一的x值
+    const uniqueXValues = [...new Set(chartData.map(d => d[xField]))];
+    
+    // 按xField和groupField排序
+    chartData.sort((a, b) => {
+        // 首先按照xValue排序
+        if (a[xField] !== b[xField]) {
+            return a[xField].localeCompare(b[xField]);
+        }
+        // xValue相同时按照group排序
+        return a[groupField].localeCompare(b[groupField]);
+    });
 
     // 尺寸
     const width = variables.width;
@@ -106,8 +132,9 @@ function makeChart(containerSelector, data) {
             .attr("dominant-baseline", "middle")
             .attr("fill", "#888")
             .style("font-size", "12px")
-            .text(formatValue(tick));
+            .text(formatValue(Math.round(tick)) + valueUnit);
     });
+
     const labelPadding = 20;
     // 条形
     chartData.forEach((d, i) => {
@@ -122,57 +149,44 @@ function makeChart(containerSelector, data) {
                 .startAngle(0)
                 .endAngle(endAngle)
             )
-            .attr("fill", colors.primary || "#ff4d4f")
+            .attr("fill", colorScale(d[groupField]))
             .attr("opacity", 0.85);
 
-        // 类别标签
-        g.append("text")
-            .attr("x", Math.cos(-Math.PI / 2) * (innerR + barWidth / 2) - labelPadding)
-            .attr("y", Math.sin(-Math.PI / 2) * (innerR + barWidth / 2))
-            .attr("text-anchor", "end")
-            .attr("dominant-baseline", "middle")
-            .attr("fill", "#222b44")
-            .style("font-size", "16px")
-            .style("font-weight", "bold")
-            .text(d[xField]);
+        // 只给同一个x值的第一个条形添加标签
+        const isFirstBarWithThisX = chartData.findIndex(item => item[xField] === d[xField]) === i;
+        if (isFirstBarWithThisX) {
+            g.append("text")
+                .attr("x", Math.cos(-Math.PI / 2) * (innerR + barWidth / 2) - labelPadding)
+                .attr("y", Math.sin(-Math.PI / 2) * (innerR + barWidth / 2))
+                .attr("text-anchor", "end")
+                .attr("dominant-baseline", "middle")
+                .attr("fill", "#222b44")
+                .style("font-size", "12px")
+                .style("font-weight", "bold")
+                .text(d[xField]);
+        }
+    });
 
-        // 数值标签（沿柱子末端弧线）
-        const valueText = formatValue(d[yField]);
-        const valueRadius = innerR + barWidth / 2;
-        const valueAngle = endAngle;
-        const valueTextPathId = `valueTextPath-${i}`;
-        
-        // 根据数值大小动态计算文字路径长度
-        const valueTextLen = String(valueText).length * 12; // 调整字符宽度估计以避免重叠
-        const minAngle = 0.1; // 减小最小角度
-        // const maxAngle = 0.3; // 设置最大角度
-        const valueShiftAngle = Math.max(valueTextLen / valueRadius, minAngle)
-        
+    // 添加图例
+    const legend = svg.append("g")
+        .attr("class", "legend")
+        .attr("transform", `translate(${width - 150}, 20)`);
 
-        // 计算文字路径的起始和结束角度
-        const pathStartAngle = Math.max(0, valueAngle - valueShiftAngle);
-        const pathEndAngle = Math.min(1.7 * Math.PI, valueAngle + valueShiftAngle);
+    groups.forEach((group, i) => {
+        const legendRow = legend.append("g")
+            .attr("transform", `translate(0, ${i * 20})`);
 
-        g.append("path")
-            .attr("id", valueTextPathId)
-            .attr("d", d3.arc()({
-                innerRadius: valueRadius,
-                outerRadius: valueRadius,
-                startAngle: pathStartAngle,
-                endAngle: pathEndAngle
-            }))
-            .style("fill", "none")
-            .style("stroke", "none");
+        legendRow.append("rect")
+            .attr("width", 15)
+            .attr("height", 15)
+            .attr("fill", colorScale(group))
+            .attr("opacity", 0.85);
 
-        g.append("text")
-            .attr("font-size", "12px")
-            .attr("fill", "#b71c1c")
-            .append("textPath")
-            .attr("xlink:href", `#${valueTextPathId}`)
-            .attr("startOffset", "30%") 
-            .attr("text-anchor", "start")
-            .attr("dominant-baseline", "start")
-            .text(valueText);
+        legendRow.append("text")
+            .attr("x", 20)
+            .attr("y", 12)
+            .attr("font-size", "10px")
+            .text(group);
     });
 
     return svg.node();

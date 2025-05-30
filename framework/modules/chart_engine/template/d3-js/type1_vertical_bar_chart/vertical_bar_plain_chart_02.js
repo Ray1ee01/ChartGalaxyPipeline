@@ -2,7 +2,7 @@
 REQUIREMENTS_BEGIN
 {
     "chart_type": "Vertical Bar Chart",
-    "chart_name": "vertical_bar_plain_chart_01",
+    "chart_name": "vertical_bar_plain_chart_02",
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],
     "required_fields_range": [[3, 20], [0, 100]],
@@ -182,21 +182,7 @@ function makeChart(containerSelector, data) {
         .attr("transform", minXLabelRatio < 1.0 ? "rotate(-45)" : "rotate(0)") 
         .style("fill", colors.text_color);
     
-    // 添加Y轴
-    const yAxis = d3.axisLeft(yScale)
-        .ticks(5)
-        .tickFormat(d => formatValue(d) + (yUnit ? ` ${yUnit}` : ''))
-        .tickSize(0)          // 移除刻度线
-        .tickPadding(10);     // 增加文字和轴的间距
     
-    chartGroup.append("g")
-        .attr("class", "y-axis")
-        .call(yAxis)
-        .call(g => g.select(".domain").remove())  // 移除轴线
-        .selectAll("text")
-        .style("font-family", typography.label.font_family)
-        .style("font-size", typography.label.font_size)
-        .style("fill", colors.text_color);
     
     // 添加条形
     const bars = chartGroup.selectAll(".bar")
@@ -207,6 +193,8 @@ function makeChart(containerSelector, data) {
         .attr("x", d => xScale(d.category))
         .attr("y", d => yScale(d.value))
         .attr("width", xScale.bandwidth())
+        .attr("rx", xScale.bandwidth() / 2)
+        .attr("ry", xScale.bandwidth() / 2)
         .attr("height", d => chartHeight - yScale(d.value))
         .attr("fill", (d, i) => colorScale(d, i));
     

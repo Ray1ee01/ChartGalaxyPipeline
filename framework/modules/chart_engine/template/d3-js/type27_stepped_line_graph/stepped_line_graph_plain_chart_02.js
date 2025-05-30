@@ -1,8 +1,8 @@
 /*
 REQUIREMENTS_BEGIN
 {
-    "chart_type": "Step Line Graph",
-    "chart_name": "step_line_graph_plain_chart_02",
+    "chart_type": "Stepped Line Graph",
+    "chart_name": "stepped_line_graph_plain_chart_02",
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["temporal"], ["numerical"], ["categorical"]],
     "required_fields_range": [[3, 30], ["-inf", "inf"], [2, 6]],
