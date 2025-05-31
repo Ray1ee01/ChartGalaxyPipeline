@@ -149,6 +149,7 @@ class RagTitleGenerator:
         column_text = "Columns: "
         if data_columns:
             column_names = [col.get("name", "") for col in data_columns]
+            # column_names = [f"{col.get('name', '')} ({col.get('description', '')})" for col in data_columns]
             column_text += ", ".join(column_names) + "\n"
         else:
             column_text = ""
@@ -397,9 +398,9 @@ def main():
     parser.add_argument('--embed_model_path', type=str, default='', help='Sentence transformer path')
     parser.add_argument('--api_key', type=str, default='', help='API key for LLM.')
     parser.add_argument('--base_url', type=str, default='', help='Base URL for LLM.')
-    
+
     args = parser.parse_args()
-    
+
     success = process(
         input=args.input,
         output=args.output,
@@ -410,7 +411,7 @@ def main():
         api_key=args.api_key,
         base_url=args.base_url
     )
-    
+
     if success:
         print("Title generation completed successfully.")
     else:

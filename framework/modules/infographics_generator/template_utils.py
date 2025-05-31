@@ -32,7 +32,7 @@ def get_unique_fields_and_types(
     """Extract unique fields and their corresponding types from nested structure"""
     field_types = {}
     field_ranges = {}
-    
+
     # Check if required_fields is a list of lists
     if required_fields and isinstance(required_fields[0], list):
         # Handle list of lists case
@@ -62,7 +62,7 @@ def get_unique_fields_and_types(
         except:
             pass
     ordered_ranges = [field_ranges[field] for field in ordered_fields]
-    
+
     return ordered_fields, field_types, ordered_ranges
 
 def analyze_templates(templates: Dict) -> Tuple[int, Dict[str, str], int]:
@@ -72,7 +72,7 @@ def analyze_templates(templates: Dict) -> Tuple[int, Dict[str, str], int]:
     template_list = []
     unique_colors = set()
     requirement_dump = {}
-    
+
     for engine, templates_dict in templates.items():
         for chart_type, chart_names_dict in templates_dict.items():
             for chart_name, template_info in chart_names_dict.items():
@@ -84,7 +84,7 @@ def analyze_templates(templates: Dict) -> Tuple[int, Dict[str, str], int]:
                 template_count += 1
                 if 'requirements' in template_info:
                     req = template_info['requirements']
-                    
+
                     # Count unique required colors
                     if 'required_other_colors' in req:
                         for color in req['required_other_colors']:
@@ -93,11 +93,11 @@ def analyze_templates(templates: Dict) -> Tuple[int, Dict[str, str], int]:
                     if 'required_fields_colors' in req:
                         for color in req['required_fields_colors']:
                             unique_colors.add(color)
-                        
+
                     if 'required_fields' in req and 'required_fields_type' in req:
                         template_requirements[f"{engine}/{chart_type}/{chart_name}"] = template_info['requirements']
                         requirement_dump[chart_name] = template_info['requirements']
-      
+
     # print("template_count", template_count)
     if not os.path.exists("template_list.txt"):
         f = open("template_list.txt", "w")
@@ -107,7 +107,7 @@ def analyze_templates(templates: Dict) -> Tuple[int, Dict[str, str], int]:
         f = open("requirement_dump.json", "w")
         f.write(json.dumps(requirement_dump, indent=4))
         f.close()
-    
+
     return template_count, template_requirements
 
 # block_list = ["multiple_line_graph_06", "layered_area_chart_02", "multiple_area_chart_01", "stacked_area_chart_01", "stacked_area_chart_03"]
@@ -153,8 +153,8 @@ def check_field_icon_compatibility(requirements: Dict, data: Dict) -> bool:
 def check_template_compatibility(data: Dict, templates: Dict, specific_chart_name: str = None) -> List[str]:
     """Check which templates are compatible with the given data"""
     compatible_templates = []
-    
-    
+
+
     # Get the combination type from the data
     combination_type = data.get("data", {}).get("type_combination", "")
     combination_types = [col["data_type"] for col in data["data"]["columns"]]
@@ -163,7 +163,7 @@ def check_template_compatibility(data: Dict, templates: Dict, specific_chart_nam
 
     if not combination_type:
         return compatible_templates
-    
+
     for engine, templates_dict in templates.items():
         for chart_type, chart_names_dict in templates_dict.items():
             for chart_name, template_info in chart_names_dict.items():
@@ -171,12 +171,12 @@ def check_template_compatibility(data: Dict, templates: Dict, specific_chart_nam
                     continue
                 if engine == 'vegalite_py':
                     continue
-                    
+
                 template_key = f"{engine}/{chart_type}/{chart_name}"
-                
+
                 if specific_chart_name and specific_chart_name != chart_name:
                     continue
-                
+
                 try:
                     if 'requirements' in template_info:
                         req = template_info['requirements']
@@ -189,19 +189,20 @@ def check_template_compatibility(data: Dict, templates: Dict, specific_chart_nam
                             )
                             data_types = [field_types[field] for field in ordered_fields]
                             data_type_str = ' + '.join(data_types)
-                            # if len(req.get('required_fields_colors', [])) > 0 and len(data.get("colors", {}).get("field", [])) == 0:
-                            #     # print(f"template {template_key} failed color compatibility check")
+                            if len(req.get('required_fields_colors', [])) > 0 and len(data.get("colors", {}).get("field", [])) == 0:
+                                # print(f"template {template_key} failed color compatibility check")
+                                continue
+
+                            # if len(req.get('required_fields_icons', [])) > 0 and len(data.get("images", {}).get("field", [])) == 0:
+                            #     print(f"template {template_key} failed icon compatibility check")
                             #     continue
 
-                            if len(req.get('required_fields_icons', [])) > 0 and len(data.get("images", {}).get("field", [])) == 0:
-                                # print(f"template {template_key} failed icon compatibility check")
+                            if not check_field_color_compatibility(req, data):
+                                print(f"template {template_key} failed color compatibility check")
                                 continue
 
-                            if not check_field_color_compatibility(req, data):
-                                continue
-                            
                             if not check_field_icon_compatibility(req, data):
-                                # print(f"template {template_key} failed icon compatibility check")
+                                print(f"template {template_key} failed icon compatibility check")
                                 continue
                             # print("data_types", data_types)
                             # print("combination_types", combination_types)
@@ -219,9 +220,10 @@ def check_template_compatibility(data: Dict, templates: Dict, specific_chart_nam
                                         check_flag = False
                                         break
                                 if not check_flag:
+                                    print(f"template {template_key} failed data type compatibility check")
                                     continue
                             else:
-                                # print(f"template {template_key} failed data type compatibility check")
+                                print(f"template {template_key} failed data type compatibility check")
                                 continue
 
                             flag = True
@@ -293,7 +295,7 @@ def check_template_compatibility(data: Dict, templates: Dict, specific_chart_nam
     #print("compatible_templates", compatible_templates)
     return compatible_templates
 
-    
+
 import fcntl  # 用于文件锁
 def select_template(compatible_templates: List[str]) -> Tuple[str, str, str]:
     """
@@ -314,27 +316,27 @@ def select_template(compatible_templates: List[str]) -> Tuple[str, str, str]:
                 fcntl.flock(f, fcntl.LOCK_UN)
     except:
         variation_stats = {}
-        
+
     # 获取所有模板的使用次数
     template_counts = []
     for template_info in compatible_templates:
         template_key = template_info[0]
         _, chart_type, chart_name = template_key.split('/')
-        
+
         # 如果variation_stats为空,所有模板使用次数都为0
         if not variation_stats:
             count = 0
         else:
             if chart_type not in variation_stats:
                 variation_stats[chart_type] = {"total_count": 0}
-                
+
             if chart_name not in variation_stats[chart_type]:
                 variation_stats[chart_type][chart_name] = 0
-                
+
             count = variation_stats[chart_type][chart_name]
-            
+
         template_counts.append((template_info, count))
-    
+
     # 按使用次数排序并分level
     template_counts.sort(key=lambda x: x[1])
     n = len(template_counts)
@@ -342,14 +344,14 @@ def select_template(compatible_templates: List[str]) -> Tuple[str, str, str]:
     # 找出使用次数最少的模板
     min_count = min(c for _, c in template_counts)
     min_level_templates = [(t, c) for t, c in template_counts if c == min_count]
-    
+
     # 固定选择第一个最少使用的模板
     selected_index = 0
-    
+
     selected_template, _ = min_level_templates[selected_index]
     [template_key, ordered_fields] = selected_template
     print("selected_template", selected_template)
-    
+
     # 更新variation.json，使用文件锁
     engine, chart_type, chart_name = template_key.split('/')
     try:
@@ -359,17 +361,17 @@ def select_template(compatible_templates: List[str]) -> Tuple[str, str, str]:
             try:
                 # 重新读取以确保获取最新数据
                 variation_stats = json.load(f)
-                
+
                 # 初始化如果不存在
                 if chart_type not in variation_stats:
                     variation_stats[chart_type] = {"total_count": 0}
                 if chart_name not in variation_stats[chart_type]:
                     variation_stats[chart_type][chart_name] = 0
-                    
+
                 # 更新计数
                 variation_stats[chart_type][chart_name] += 1
                 variation_stats[chart_type]["total_count"] += 1
-                
+
                 # 写入更新后的数据
                 f.seek(0)
                 json.dump(variation_stats, f, indent=2)
@@ -402,7 +404,7 @@ def process_template_requirements(requirements: Dict, data: Dict, engine: str, c
             # 更新颜色字典
             for i, field in enumerate(data["colors"]["field"].keys()):
                 data["colors"]["field"][field] = new_colors[i]
-                
+
     if len(data["colors_dark"]["field"]) > 1:
         # 检查颜色是否可区分
         field_colors = list(data["colors_dark"]["field"].values())
@@ -420,7 +422,7 @@ def process_template_requirements(requirements: Dict, data: Dict, engine: str, c
             if key == "positive" and "positive" not in data["colors"]["other"]:
                 data["colors"]["other"]["positive"] = data["colors"]["other"]["primary"]
             elif key == "negative" and "negative" not in data["colors"]["other"]:
-                data["colors"]["other"]["negative"] = get_contrast_color(data["colors"]["other"]["primary"]) 
+                data["colors"]["other"]["negative"] = get_contrast_color(data["colors"]["other"]["primary"])
 
     data["colors_dark"]["text_color"] = "#ffffff"
     # if ('donut' in chart_name or 'pie' in chart_name) and engine == 'vegalite_py':

@@ -5,9 +5,9 @@ REQUIREMENTS_BEGIN
     "chart_name": "line_chart_01",
     "is_composite": false,
     "required_fields": ["x", "y"],
-    "required_fields_type": [["categorical"], ["numerical"]],
+    "required_fields_type": [["temporal"], ["numerical"]],
     "required_fields_range": [[2, 12], [0, "inf"]],
-    "required_fields_icons": ["x"],
+    "required_fields_icons": [],
     "required_other_icons": [],
     "required_fields_colors": [],
     "required_other_colors": ["primary"],
@@ -35,75 +35,75 @@ function makeChart(containerSelector, data) {
         description: { font_family: "Arial", font_size: "14px", font_weight: "normal" },
         annotation: { font_family: "Arial", font_size: "12px", font_weight: "normal" }
     };
-    const colors = jsonData.colors || { 
-        text_color: "#333333", 
-        other: { primary: "#73D2C7", secondary: "#4682B4" } 
+    const colors = jsonData.colors || {
+        text_color: "#333333",
+        other: { primary: "#73D2C7", secondary: "#4682B4" }
     };
     const images = jsonData.images || { field: {}, other: {} };  // 图片(标志等)
     const dataColumns = jsonData.data.columns || [];            // 数据列
-    
+
     // 设置视觉效果变量
     variables.has_rounded_corners = variables.has_rounded_corners || false;
     variables.has_shadow = variables.has_shadow || false;
     variables.has_gradient = variables.has_gradient || false;
     variables.has_stroke = variables.has_stroke || false;
     variables.has_spacing = variables.has_spacing || false;
-    
+
     // 清空容器
     d3.select(containerSelector).html("");
-    
+
     // ---------- 2. 尺寸和布局设置 ----------
-    
+
     // 设置图表尺寸和边距
     const width = variables.width || 800;
     const height = variables.height || 600;
-    
+
     // 边距: 上, 右, 下, 左
-    const margin = { 
+    const margin = {
         top: 60,         // 柱子上方数值标签的空间
-        right: 30, 
+        right: 30,
         bottom: 150,     // x轴和图标的空间
         left: 60
     };
-    
+
     // 计算实际图表区域尺寸
     const innerWidth = width - margin.left - margin.right;
     const innerHeight = height - margin.top - margin.bottom;
-    
+
     // ---------- 3. 提取字段名称和单位 ----------
-    
+
     let xField, yField;
     let xUnit = "", yUnit = "";
-    
+
     // 安全提取字段名称
     const xColumn = dataColumns.find(col => col.role === "x");
     const yColumn = dataColumns.find(col => col.role === "y");
-    
+
     if (xColumn) xField = xColumn.name;
     if (yColumn) yField = yColumn.name;
-    
+
     // 获取字段单位(如果存在)
     if (xColumn && xColumn.unit && xColumn.unit !== "none") {
         xUnit = xColumn.unit;
     }
-    
+
     if (yColumn && yColumn.unit && yColumn.unit !== "none") {
         yUnit = yColumn.unit;
     }
-    
+
     // ---------- 4. 数据处理 ----------
-    
+
     // 获取唯一的x轴值
     const xValues = [...new Set(chartData.map(d => d[xField]))];
-    
+
     // 创建按y值降序排序的数据
     const sortedData = chartData.map(d => ({
         x: d[xField],
         y: +d[yField] // 确保y是数值类型
     })).sort((a, b) => b.y - a.y);
-    
+
     // ---------- 5. 创建SVG容器 ----------
-    
+
     const svg = d3.select(containerSelector)
         .append("svg")
         .attr("width", "100%")
@@ -112,16 +112,16 @@ function makeChart(containerSelector, data) {
         .attr("style", "max-width: 100%; height: auto;")
         .attr("xmlns", "http://www.w3.org/2000/svg")
         .attr("xmlns:xlink", "http://www.w3.org/1999/xlink");
-    
-    
-    
+
+
+
     // ---------- 6. 创建视觉效果 ----------
-    
+
     const defs = svg.append("defs");
-    
+
     // 获取颜色函数
     const getColor = () => colors.other.primary;
-    
+
     // 如果需要创建阴影滤镜
     if (variables.has_shadow) {
         const filter = defs.append("filter")
@@ -129,66 +129,66 @@ function makeChart(containerSelector, data) {
             .attr("filterUnits", "userSpaceOnUse")
             .attr("width", "200%")
             .attr("height", "200%");
-        
+
         filter.append("feGaussianBlur")
             .attr("in", "SourceAlpha")
             .attr("stdDeviation", 3);
-        
+
         filter.append("feOffset")
             .attr("dx", 2)
             .attr("dy", 2)
             .attr("result", "offsetblur");
-        
+
         const feMerge = filter.append("feMerge");
         feMerge.append("feMergeNode");
         feMerge.append("feMergeNode").attr("in", "SourceGraphic");
     }
-    
+
     // 如果需要创建渐变
     if (variables.has_gradient) {
         sortedData.forEach((item, idx) => {
             // 添加安全的ID处理
-            const safeCategory = typeof item.x === 'string' ? 
-                item.x.toString().replace(/[^a-zA-Z0-9]/g, '-').toLowerCase() : 
+            const safeCategory = typeof item.x === 'string' ?
+                item.x.toString().replace(/[^a-zA-Z0-9]/g, '-').toLowerCase() :
                 `category-${idx}`;
-            
+
             const baseColor = getColor();
             const gradientId = `gradient-${safeCategory}`;
-            
+
             const gradient = defs.append("linearGradient")
                 .attr("id", gradientId)
                 .attr("x1", "0%")
                 .attr("y1", "100%")
                 .attr("x2", "0%")
                 .attr("y2", "0%");
-            
+
             gradient.append("stop")
                 .attr("offset", "0%")
                 .attr("stop-color", d3.rgb(baseColor).darker(0.1));
-            
+
             gradient.append("stop")
                 .attr("offset", "100%")
                 .attr("stop-color", d3.rgb(baseColor).brighter(0.1));
         });
     }
-    
+
     // ---------- 7. 创建图表 ----------
-    
+
     // 创建图表组
     const chart = svg.append("g")
         .attr("transform", `translate(${margin.left}, ${margin.top})`);
-    
+
     // 创建比例尺
     const xScale = d3.scaleBand()
         .domain(sortedData.map(d => d.x))
         .range([0, innerWidth])
         .padding(variables.has_spacing ? 0.4 : 0.2);
-    
+
     const yMax = d3.max(sortedData, d => d.y);
     const yScale = d3.scaleLinear()
         .domain([0, yMax > 0 ? yMax * 1.1 : 1]) // 处理y都为0的情况，并添加10%的填充
         .range([innerHeight, 0]);
-    
+
     // *******************************************************************
     // ** 开始修改：预计算标签字体大小和最大行数 **
     // *******************************************************************
@@ -316,11 +316,11 @@ function makeChart(containerSelector, data) {
         .attr("height", d => Math.max(0, barBottomY - yScale(d.y)))
         .attr("fill", d => {
             if (variables.has_gradient) {
-                const safeCategory = typeof d.x === 'string' ? 
-                    d.x.toString().replace(/[^a-zA-Z0-9]/g, '-').toLowerCase() : 
+                const safeCategory = typeof d.x === 'string' ?
+                    d.x.toString().replace(/[^a-zA-Z0-9]/g, '-').toLowerCase() :
                     `category-${sortedData.findIndex(item => item.x === d.x)}`; // 修正: 使用 findIndex 确保唯一性
                 return `url(#gradient-${safeCategory})`;
-            } 
+            }
             return getColor();
         })
         .attr("rx", variables.has_rounded_corners ? 4 : 0)
@@ -334,7 +334,7 @@ function makeChart(containerSelector, data) {
         .on("mouseout", function() {
             d3.select(this).attr("opacity", 1);
         });
-    
+
     // 在柱子上方添加数值标签
     const defaultAnnotationFontSize = parseFloat(typography.annotation.font_size || 12);
     const minAnnotationFontSize = 6; // 数值标签最小字体
@@ -368,8 +368,8 @@ function makeChart(containerSelector, data) {
                 .style("font-size", `${finalValueFontSize}px`)
                 .text(valueText);
         });
-    
-    
+
+
     // *******************************************************************
     // ** 开始修改：添加维度标签 (统一字体大小，自动换行) **
     // *******************************************************************
@@ -462,7 +462,7 @@ function makeChart(containerSelector, data) {
                 .attr("fill", "none") // 无填充
                 .attr("stroke", "#2D3748") // 更深灰色的描边
                 .attr("stroke-width", 0.1);
-            
+
             // 如果有该类别的图像
             if (images && images.field && images.field[d.x]) {
                 d3.select(this)

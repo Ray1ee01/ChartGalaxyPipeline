@@ -8,20 +8,13 @@ import time
 import numpy as np
 import subprocess
 import re
-from numpy.lib.stride_tricks import as_strided
 from lxml import etree
-from modules.infographics_generator.svg_utils import svg_to_png, remove_image_element
-from PIL import Image as PILImage
-
-from config import api_key as API_KEY, base_url as API_PROVIDER
-
+from PIL import Image
 import base64
-import requests
-from io import BytesIO
+import io
 import tempfile
 import random
-import uuid
-import fcntl  # 添加fcntl模块用于文件锁
+import fcntl
 
 # 创建tmp目录（如果不存在）
 os.makedirs("tmp", exist_ok=True)
@@ -47,7 +40,7 @@ logger.addHandler(file_handler)
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from modules.chart_engine.chart_engine import load_data_from_json, get_template_for_chart_name, render_chart_to_svg
+from modules.chart_engine.chart_engine import get_template_for_chart_name, render_chart_to_svg
 from modules.chart_engine.template.template_registry import scan_templates
 from modules.title_styler.title_styler import process as title_styler_process
 from modules.infographics_generator.mask_utils import fill_columns_between_bounds, calculate_mask_v2, expand_mask, calculate_mask_v3
@@ -57,16 +50,13 @@ from modules.infographics_generator.template_utils import (
     analyze_templates,
     check_template_compatibility,
     select_template,
-    process_template_requirements,
-    get_unique_fields_and_types
+    process_template_requirements
 )
 from modules.infographics_generator.data_utils import process_temporal_data, process_numerical_data, deduplicate_combinations
 from modules.infographics_generator.color_utils import is_dark_color, lighten_color
 
 padding = 50
-outer_padding = 15
 between_padding = 35
-grid_size = 5
 
 
 def make_infographic(
@@ -92,9 +82,6 @@ def make_infographic(
     thin_chart_flag = False
     if chart_aspect_ratio < 0.9:
         thin_chart_flag = True
-    # print(f"chart_aspect_ratio: {chart_aspect_ratio}")
-    # print(f"thin_chart_flag: {thin_chart_flag}")
-    ## end
     
     chart_svg_content = f"<svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' width='{chart_width}' height='{chart_height}'>{chart_content}</svg>"
     mask = calculate_mask_v2(chart_svg_content, chart_width, chart_height, background_color)
@@ -106,11 +93,9 @@ def make_infographic(
     else:
         max_title_width = chart_width
     steps = np.ceil((max_title_width - min_title_width) / 100).astype(int)
+    
     # Visualize the mask for debugging
     import matplotlib.pyplot as plt
-    import io
-    import base64
-    from PIL import Image
     
     def visualize_mask(mask, title="Mask Visualization"):
         """
@@ -145,11 +130,8 @@ def make_infographic(
         img_str = base64.b64encode(buf.read()).decode('utf-8')
         return img_str
     
-    
     # 把mask保存为png
     mask_img = visualize_mask(mask, "Mask")
-    # with open("tmp/mask.png", "wb") as f:
-    #     f.write(base64.b64decode(mask_img))
 
     for i in range(steps + 1):
         width = min_title_width + i * (max_title_width - min_title_width) / steps
@@ -160,7 +142,7 @@ def make_infographic(
             show_embellishment=False,
             font_family=title_font_family
         )
-        title_svg_content = title_content  # Assuming title_content is the SVG content
+        title_svg_content = title_content
         svg_tree = etree.fromstring(title_svg_content.encode())
         width = int(float(svg_tree.get("width", 0)))
         height = int(float(svg_tree.get("height", 0)))
@@ -169,10 +151,10 @@ def make_infographic(
             "height": height,
         })
         
-    mask_top = np.argmax(mask, axis=0)  # 每一列第一个1的位置
-    mask_bottom = mask.shape[0] - 1 - np.argmax(np.flip(mask, axis=0), axis=0)  # 每一列最后一个1的位置
-    mask_left = np.argmax(mask, axis=1)  # 每一行第一个1的位置
-    mask_right = mask.shape[1] - 1 - np.argmax(np.flip(mask, axis=1), axis=1)  # 每一行最后一个1的位置
+    mask_top = np.argmax(mask, axis=0)
+    mask_bottom = mask.shape[0] - 1 - np.argmax(np.flip(mask, axis=0), axis=0)
+    mask_left = np.argmax(mask, axis=1)
+    mask_right = mask.shape[1] - 1 - np.argmax(np.flip(mask, axis=1), axis=1)
     
     # 从中间列开始,计算每行向左和向右第一个1的位置
     mid_col = mask.shape[1] // 2
@@ -228,7 +210,6 @@ def make_infographic(
     
     # 使用临时文件替代固定路径
     with tempfile.NamedTemporaryFile(suffix='.png', delete=False) as temp_file:
-        temp_file_path = temp_file.name
         temp_file.write(base64.b64decode(mask_img))
     
     mask_1_count = np.sum(mask)
@@ -237,7 +218,6 @@ def make_infographic(
     
     # 初始化best_title默认值为None，用于后续检查
     best_title = None
-    # print(f"mask_1_ratio: {mask_1_ratio}")
     lower_chart_type = data["chart_type"].lower()
     if mask_1_ratio > 0.20 and mask_1_ratio < 0.5 and ("donut" in lower_chart_type and "multiple" not in lower_chart_type):
         width = average_distance*2
@@ -245,7 +225,7 @@ def make_infographic(
             input_data=data, max_width=int(width), text_align="center", show_embellishment=False, show_sub_title=False,
             font_family=title_font_family
         )
-        title_svg_content = title_content  # Assuming title_content is the SVG content
+        title_svg_content = title_content
         svg_tree = etree.fromstring(title_svg_content.encode())
         width = int(float(svg_tree.get("width", 0)))
         height = int(float(svg_tree.get("height", 0)))
@@ -265,7 +245,7 @@ def make_infographic(
                     "show_sub_title": False
                 }
                 break
-    # print(f"best_title: {best_title}")
+    
     # 如果没有找到合适的best_title（width太大或其他原因），使用默认处理逻辑
     if best_title is None:
         default_title = {
@@ -282,8 +262,7 @@ def make_infographic(
         }
         area_threshold = 1.05
         default_area = default_title["area"] * area_threshold
-        other_title = {
-        }
+        other_title = {}
 
         for title in title_candidates:
             title_width = title["width"] + between_padding
@@ -312,13 +291,10 @@ def make_infographic(
             # for bottom
             range_start = max(0,chart_width // 2 - title_width // 2)
             range_end = min(chart_width, range_start + title_width)
-            # print(f"range_start: {range_start}, range_end: {range_end}")
             max_bottom = int(np.max(mask_bottom[range_start:range_end]))
-            # print(f"max_bottom: {max_bottom}")
             area = (max(title_height - (chart_height - max_bottom), 0) + chart_height) * chart_width
             best_area = other_title["bottom"]["area"] if "bottom" in other_title else default_area
             title_y = chart_height - title_height + max(title_height - (chart_height - max_bottom), 0) + between_padding
-            # print(f"title_y: {title_y}")
             if area < best_area:
                 other_title["bottom"] = {
                     "title": (range_start, title_y),
@@ -505,12 +481,11 @@ def make_infographic(
             best_title = default_title
         else:
             title_options = [default_title] + list(other_title.values())
-            # print("title_options", title_options)
             min_area = min(title_options, key=lambda x: x["area"])["area"]
             title_options = [t for t in title_options if t["area"] <= min_area * area_threshold]
             option_weights = [2 if t["title-to-chart"] == "TL" else 1 for t in title_options]
             best_title = random.choices(title_options, weights=option_weights, k=1)[0]
-            # print("best_title", best_title)
+    
     title_content = title_styler_process(input_data=data, \
                                          max_width=best_title["width"], \
                                          text_align=best_title["text-align"], \
@@ -775,7 +750,6 @@ def make_infographic(
     return final_svg, layout_info
 
 
-
 def process(input: str, output: str, base_url: str, api_key: str, chart_name: str = None) -> bool:
     """
     Pipeline入口函数，处理单个文件的信息图生成
@@ -794,25 +768,16 @@ def process(input: str, output: str, base_url: str, api_key: str, chart_name: st
         start_time = time.time()
         
         # 读取输入文件
-        file_read_start = time.time()
         with open(input, "r", encoding="utf-8") as f:
             data = json.load(f)
         data["name"] = input
-        file_read_time = time.time() - file_read_start
-        # logger.info(f"Reading input file took: {file_read_time:.4f} seconds")
         
         # 扫描并获取所有可用的模板
-        scan_templates_start = time.time()
         templates = scan_templates()
-        scan_templates_time = time.time() - scan_templates_start
-        # logger.info(f"Scanning templates took: {scan_templates_time:.4f} seconds")
         
         # 分析模板并获取要求
-        analyze_templates_start = time.time()
         template_count, template_requirements = analyze_templates(templates)
         compatible_templates = check_template_compatibility(data, templates, chart_name)
-        analyze_templates_time = time.time() - analyze_templates_start
-        # logger.info(f"Analyzing templates took: {analyze_templates_time:.4f} seconds")
             
         # 如果指定了chart_name，尝试使用它
         if chart_name:
@@ -830,18 +795,13 @@ def process(input: str, output: str, base_url: str, api_key: str, chart_name: st
                     return False
             
             # 选择模板
-            select_template_start = time.time()
             engine, chart_type, chart_name, ordered_fields = select_template(compatible_templates)
-            select_template_time = time.time() - select_template_start
-            # logger.info(f"Selecting template took: {select_template_time:.4f} seconds")
             
             # 打印选择的模板信息
             logger.info(f"\nSelected template: {engine}/{chart_type}/{chart_name}")
             logger.info(f"Engine: {engine}")
             logger.info(f"Chart type: {chart_type}")
             logger.info(f"Chart name: {chart_name}\n")
-
-            # print("requirements", template_requirements)
 
             # 处理模板要求
             process_req_start = time.time()
@@ -878,17 +838,13 @@ def process(input: str, output: str, base_url: str, api_key: str, chart_name: st
                 return False
         
         # 选择模板
-        select_template_start = time.time()
         engine, chart_type, chart_name, ordered_fields = select_template(compatible_templates)
-        select_template_time = time.time() - select_template_start
-        # logger.info(f"Selecting template took: {select_template_time:.4f} seconds")
         
         # 打印选择的模板信息
         logger.info(f"\nSelected template: {engine}/{chart_type}/{chart_name}")
         logger.info(f"Engine: {engine}")
         logger.info(f"Chart type: {chart_type}")
         logger.info(f"Chart name: {chart_name}\n")
-
 
         # 处理模板要求
         process_req_start = time.time()
@@ -927,7 +883,7 @@ def process(input: str, output: str, base_url: str, api_key: str, chart_name: st
         
         # 生成图表SVG，使用安全的文件名
         chart_svg_path = os.path.join(tmp_dir, f"{os.path.splitext(safe_output_name)[0]}.chart.tmp")
-        # try:
+        
         if '-' in engine:
             framework, framework_type = engine.split('-')
         elif '_' in engine:
@@ -960,24 +916,24 @@ def process(input: str, output: str, base_url: str, api_key: str, chart_name: st
         mask_path = os.path.join(subfolder_path, mask_filename)
         datatable_name = "data.json"
         datatable_path = os.path.join(subfolder_path, datatable_name)
-        #try:
+        
         render_chart_to_svg(
             json_data=data,
             output_svg_path=chart_svg_path,
             js_file=template,
-            framework=framework, # Extract framework name (echarts/d3)
+            framework=framework,
             framework_type=framework_type,
             html_output_path=html_path
         )
         render_chart_time = time.time() - render_chart_start
         logger.info(f"Rendering chart took: {render_chart_time:.4f} seconds")
-        # print("chart_svg_path: ", chart_svg_path)
+        
         with open(chart_svg_path, "r", encoding="utf-8") as f:
             chart_svg_content = f.read()
             if "This is a fallback SVG using a PNG screenshot" in chart_svg_content:
                 return False
             chart_inner_content = extract_svg_content(chart_svg_content)
-        # print("chart_inner_content: ", chart_inner_content)
+        
         assemble_start = time.time()
         data["chart_type"] = chart_type
         final_svg, layout_info = make_infographic(
@@ -991,19 +947,18 @@ def process(input: str, output: str, base_url: str, api_key: str, chart_name: st
             mask_path=mask_path,
             title_font_family=title_font_family
         )
-        # print("final_svg: ", final_svg)
+        
         layout_info["chart_variation"] = chart_name
         layout_info["chart_type"] = chart_type
         layout_info["data_source"] = input
 
         assemble_time = time.time() - assemble_start
         logger.info(f"Assembling infographic took: {assemble_time:.4f} seconds")
-        # 读取生成的SVG内容
-        read_svg_start = time.time()
         
         if final_svg is None:
             logger.error("Failed to assemble infographic: SVG content extraction failed")
             return False
+        
         # 使用文件锁保护写入操作,最多重试3次
         max_retries = 3
         retry_count = 0
@@ -1013,28 +968,28 @@ def process(input: str, output: str, base_url: str, api_key: str, chart_name: st
                 # 写入SVG文件
                 with open(output_path, "w", encoding="utf-8") as f:
                     try:
-                        fcntl.flock(f, fcntl.LOCK_EX)  # 获取独占锁
+                        fcntl.flock(f, fcntl.LOCK_EX)
                         f.write(final_svg)
                     finally:
-                        fcntl.flock(f, fcntl.LOCK_UN)  # 释放锁
+                        fcntl.flock(f, fcntl.LOCK_UN)
 
                 # 写入info文件
                 with open(info_path, "w", encoding="utf-8") as f:
                     try:
-                        fcntl.flock(f, fcntl.LOCK_EX)  # 获取独占锁
+                        fcntl.flock(f, fcntl.LOCK_EX)
                         layout_info_str = json.dumps(layout_info, indent=4)
                         f.write(layout_info_str)
                     finally:
-                        fcntl.flock(f, fcntl.LOCK_UN)  # 释放锁
+                        fcntl.flock(f, fcntl.LOCK_UN)
 
                 # 写入datatable文件
                 with open(datatable_path, "w", encoding="utf-8") as f:
                     try:
-                        fcntl.flock(f, fcntl.LOCK_EX)  # 获取独占锁
+                        fcntl.flock(f, fcntl.LOCK_EX)
                         datatable_str = json.dumps(data["data"], indent=4)
                         f.write(datatable_str)
                     finally:
-                        fcntl.flock(f, fcntl.LOCK_UN)  # 释放锁
+                        fcntl.flock(f, fcntl.LOCK_UN)
 
                 # 转换为PNG
                 subprocess.run([
@@ -1054,12 +1009,7 @@ def process(input: str, output: str, base_url: str, api_key: str, chart_name: st
                 retry_count += 1
                 if retry_count >= max_retries:
                     raise Exception(f"重试{max_retries}次后仍然失败")
-                time.sleep(1)  # 等待1秒后重试
-
-        # except Exception as e:
-        #     logger.error(f"Error processing infographics: {e}")
-        #     return False
-        # rsvg-convert -f png -o /tmp/tmpt4t964we.png --dpi-x 300 --dpi-y 300 --background-color '#F2EDEE' /tmp/tmp4uztshh2.svg
+                time.sleep(1)
         
         # 获取当前时间戳
         timestamp = int(time.time())
@@ -1069,14 +1019,13 @@ def process(input: str, output: str, base_url: str, api_key: str, chart_name: st
         output_path = os.path.join(output_dir, new_filename)
         
         # 保存最终的SVG
-        save_start = time.time()
         with open(output_path, "w", encoding="utf-8") as f:
             try:
-                fcntl.flock(f, fcntl.LOCK_EX)  # 获取独占锁
+                fcntl.flock(f, fcntl.LOCK_EX)
                 f.write(final_svg)
             finally:
-                fcntl.flock(f, fcntl.LOCK_UN)  # 释放锁
-        save_time = time.time() - save_start
+                fcntl.flock(f, fcntl.LOCK_UN)
+                
     except Exception as e:
         logger.error(f"Error processing infographics: {e}")
         return False
@@ -1090,7 +1039,7 @@ def main():
     parser.add_argument("--output", type=str, required=True, help="Output SVG file path")
     args = parser.parse_args()
 
-    success = process(input=args.input, output=args.output)
+    success = process(input=args.input, output=args.output, base_url="", api_key="")
     if success:
         print("Processing json successed.")
     else:

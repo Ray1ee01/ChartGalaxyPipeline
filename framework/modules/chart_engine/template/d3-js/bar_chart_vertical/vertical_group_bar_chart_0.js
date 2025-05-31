@@ -5,7 +5,7 @@ REQUIREMENTS_BEGIN
     "chart_name": "vertical_group_bar_chart_0",
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
-    "required_fields_range": [[3, 6], [0, 100], [3, 4]],
+    "required_fields_range": [[3, 6], [0, 100], [2, 4]],
     "required_fields_icons": [],
     "required_other_icons": [],
     "required_fields_colors": ["group"],
@@ -25,10 +25,10 @@ REQUIREMENTS_END
 
 function makeChart(containerSelector, data) {
     // ---------- 1. 数据准备阶段 ----------
-    
+
     // 提取数据和配置
     const jsonData = data;                       // 完整的JSON数据对象
-    const chartData = jsonData.data.data;        // 实际数据点数组  
+    const chartData = jsonData.data.data;        // 实际数据点数组
     const variables = jsonData.variables || {};  // 图表配置
     const typography = jsonData.typography || {  // 字体设置，如果不存在则使用默认值
         title: { font_family: "Arial", font_size: "18px", font_weight: "bold" },
@@ -36,23 +36,23 @@ function makeChart(containerSelector, data) {
         description: { font_family: "Arial", font_size: "14px", font_weight: "normal" },
         annotation: { font_family: "Arial", font_size: "12px", font_weight: "normal" }
     };
-    const colors = jsonData.colors || { 
+    const colors = jsonData.colors || {
         text_color: "#333333",
-        other: { 
+        other: {
             primary: "#D32F2F",    // Red for "Still active"
             secondary: "#AAAAAA",  // Gray for "Ended"
-            background: "#F0F0F0" 
+            background: "#F0F0F0"
         }
     };  // 颜色设置
     const dataColumns = jsonData.data.columns || []; // 数据列定义
-    
+
     // 设置视觉效果变量的默认值
     variables.has_shadow = variables.has_shadow || false;
     variables.has_stroke = variables.has_stroke || false;
-    
+
     // 清空容器
     d3.select(containerSelector).html("");
-    
+
     // 数值单位规范
     // 添加数值格式化函数
     const formatValue = (value) => {
@@ -66,13 +66,13 @@ function makeChart(containerSelector, data) {
             return d3.format("~g")(value);
         }
     }
-    
+
     // ---------- 2. 尺寸和布局设置 ----------
-    
+
     // 设置图表总尺寸
     const width = variables.width || 600;
     const height = variables.height || 400;
-    
+
     // 设置边距
     const margin = {
         top: 50,
@@ -80,27 +80,27 @@ function makeChart(containerSelector, data) {
         bottom: 80,
         left: 40
     };
-    
+
     // 计算实际绘图区域大小
     const chartWidth = width - margin.left - margin.right;
     const chartHeight = height - margin.top - margin.bottom;
-    
+
     // ---------- 3. 提取字段名和单位 ----------
-    
+
     // 根据数据列获取字段名
     const xField = dataColumns.find(col => col.role === "x")?.name || "period";
     const yField = dataColumns.find(col => col.role === "y")?.name || "value";
     const groupField = dataColumns.find(col => col.role === "group")?.name || "group";
-    
+
     // 获取字段单位（如果存在）
     let xUnit = "";
     let yUnit = "";
     let groupUnit = "";
-    
+
     if (dataColumns.find(col => col.role === "x")?.unit !== "none") {
         xUnit = dataColumns.find(col => col.role === "x").unit;
     }
-    
+
     if (dataColumns.find(col => col.role === "y")?.unit !== "none") {
         yUnit = dataColumns.find(col => col.role === "y").unit;
     }
@@ -108,18 +108,18 @@ function makeChart(containerSelector, data) {
     if (dataColumns.find(col => col.role === "group")?.unit !== "none") {
         groupUnit = dataColumns.find(col => col.role === "group").unit;
     }
-    
+
     // ---------- 4. 数据处理 ----------
-    
+
     // 获取所有唯一的分组值
     const groups = Array.from(new Set(chartData.map(d => d[groupField])));
-    
+
     // 处理数据，按照分组组织
     const processedData = chartData.reduce((acc, d) => {
         const category = d[xField];
         const group = d[groupField];
         const value = +d[yField];
-        
+
         const existingCategory = acc.find(item => item.category === category);
         if (existingCategory) {
             existingCategory.groups[group] = value;
@@ -135,7 +135,7 @@ function makeChart(containerSelector, data) {
     }, []);
 
     // ---------- 5. 创建比例尺 ----------
-    
+
     // X轴比例尺 - 使用分类数据
     const xScale = d3.scaleBand()
         .domain(processedData.map(d => d.category))
@@ -174,15 +174,15 @@ function makeChart(containerSelector, data) {
     };
 
     function wrapText(textElement, str, width, lineHeight = 1.1, alignment = 'middle') {
-        const words = str.split(/\s+/).reverse(); 
+        const words = str.split(/\s+/).reverse();
         let word;
         let line = [];
         let lineNumber = 0;
         const initialY = parseFloat(textElement.attr("data-initial-y")); // 从data属性获取初始Y
         // const initialX = parseFloat(textElement.attr("x")); // 这一行应该被注释掉或移除
 
-        textElement.text(null); 
-        let tspans = []; 
+        textElement.text(null);
+        let tspans = [];
 
         if (words.length > 1) {
             let currentLine = [];
@@ -190,31 +190,31 @@ function makeChart(containerSelector, data) {
                 currentLine.push(word);
                 const tempTspan = textElement.append("tspan").text(currentLine.join(" "));
                 const isOverflow = tempTspan.node().getComputedTextLength() > width;
-                tempTspan.remove(); 
+                tempTspan.remove();
                 if (isOverflow && currentLine.length > 1) {
-                    currentLine.pop(); 
-                    tspans.push(currentLine.join(" ")); 
-                    currentLine = [word]; 
+                    currentLine.pop();
+                    tspans.push(currentLine.join(" "));
+                    currentLine = [word];
                     lineNumber++;
                 }
             }
             if (currentLine.length > 0) {
                 tspans.push(currentLine.join(" "));
             }
-        } else { 
+        } else {
             const chars = str.split('');
             let currentLine = '';
             for (let i = 0; i < chars.length; i++) {
                 const nextLine = currentLine + chars[i];
-                const tempTspan = textElement.append("tspan").text(nextLine); 
+                const tempTspan = textElement.append("tspan").text(nextLine);
                 const isOverflow = tempTspan.node().getComputedTextLength() > width;
                 tempTspan.remove();
-                if (isOverflow && currentLine.length > 0) { 
-                    tspans.push(currentLine); 
-                    currentLine = chars[i]; 
+                if (isOverflow && currentLine.length > 0) {
+                    tspans.push(currentLine);
+                    currentLine = chars[i];
                     lineNumber++;
                 } else {
-                    currentLine = nextLine; 
+                    currentLine = nextLine;
                 }
             }
             if (currentLine.length > 0) {
@@ -225,18 +225,18 @@ function makeChart(containerSelector, data) {
         const totalLines = tspans.length;
         let startDy = 0;
         textElement.attr("y", initialY); // 重置Y到初始值
-        
+
         if (alignment === 'middle') {
             startDy = -( (totalLines - 1) * lineHeight / 2);
         } else if (alignment === 'bottom') {
             const totalHeightEm = totalLines * lineHeight;
-            startDy = -(totalHeightEm - lineHeight); 
+            startDy = -(totalHeightEm - lineHeight);
         }
 
         tspans.forEach((lineText, i) => {
             textElement.append("tspan")
                 // .attr("x", initialX) // 关键：确保这一行被注释掉或移除
-                .attr("dy", (i === 0 ? startDy : lineHeight) + "em") 
+                .attr("dy", (i === 0 ? startDy : lineHeight) + "em")
                 .text(lineText);
         });
         textElement.attr("data-lines", totalLines);
@@ -244,7 +244,7 @@ function makeChart(containerSelector, data) {
     // +++ 辅助函数区结束 +++
 
     // ---------- 6. 创建SVG容器 ----------
-    
+
     const svg = d3.select(containerSelector)
         .append("svg")
         .attr("width", "100%")
@@ -253,17 +253,17 @@ function makeChart(containerSelector, data) {
         .attr("style", "max-width: 100%; height: auto;")
         .attr("xmlns", "http://www.w3.org/2000/svg")
         .attr("xmlns:xlink", "http://www.w3.org/1999/xlink");
-    
+
     // 添加图表主体容器
     const chartGroup = svg.append("g")
         .attr("transform", `translate(${margin.left}, ${margin.top})`);
-    
+
     // ---------- 7. 绘制图表元素 ----------
-    
+
     // 添加X轴
     const xCategories = processedData.map(d => d.category);
     const baseLabelFontSize = parseFloat(typography.label.font_size) || 14;
-    const xLabelMaxWidth = xScale.bandwidth() * 0.95; 
+    const xLabelMaxWidth = xScale.bandwidth() * 0.95;
     const longestXLabel = xCategories.reduce((a, b) => String(a).length > String(b).length ? a : b, "").toString();
     const uniformXLabelFontSize = calculateFontSize(longestXLabel, xLabelMaxWidth, baseLabelFontSize);
 
@@ -286,13 +286,13 @@ function makeChart(containerSelector, data) {
     const xAxis = d3.axisBottom(xScale)
         .tickSize(0) // 移除刻度线
         .tickPadding(10); // 增加标签和轴线的间距
-    
+
     chartGroup.append("g")
         .attr("class", "x-axis")
         .attr("transform", `translate(0, ${chartHeight})`)
         .call(xAxis)
         .selectAll(".tick text") // 选择刻度文本
-        .attr("data-initial-y", typography.label.font_size) 
+        .attr("data-initial-y", typography.label.font_size)
         .style("font-family", typography.label.font_family)
         .style("font-size", `${uniformXLabelFontSize}px`)
         .style("text-anchor", "middle")
@@ -301,14 +301,14 @@ function makeChart(containerSelector, data) {
             const textElement = d3.select(this);
             wrapText(textElement, String(d), xLabelMaxWidth, 1.1, 'top');
         });
-    
+
     // 添加Y轴
     const yAxis = d3.axisLeft(yScale)
         .ticks(5)
         .tickFormat(d => formatValue(d) + (yUnit ? ` ${yUnit}` : ''))
         .tickSize(0)          // 移除刻度线
         .tickPadding(10);     // 增加文字和轴的间距
-    
+
     chartGroup.append("g")
         .attr("class", "y-axis")
         .call(yAxis)
@@ -318,7 +318,7 @@ function makeChart(containerSelector, data) {
         // .style("font-family", typography.label.font_family)
         // .style("font-size", typography.label.font_size)
         // .style("fill", colors.text_color)
-    
+
     // 修改条形图绘制部分
     const barGroups = chartGroup.selectAll(".bar-group")
         .data(processedData)
@@ -355,7 +355,7 @@ function makeChart(containerSelector, data) {
     // 添加图例 - 放在图表上方
     const legendGroup = svg.append("g")
         .attr("transform", `translate(0, -50)`);
-    
+
     // 计算字段名宽度并添加间距
     const titleWidth = groupField.length * 10;
     const titleMargin = 15;

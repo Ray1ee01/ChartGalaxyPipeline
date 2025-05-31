@@ -123,7 +123,7 @@ MODULES = [
 def run_pipeline(input_path, output_path=None, temp_dir=None, modules_to_run=None, threads=None, chart_name=None):
     """
     执行完整的图表生成管道
-    
+
     Args:
         input_path (str): 输入数据文件路径(可以是文件或目录)
         output_path (str, optional): 输出文件路径(可以是文件或目录)，如果为None则原地修改
@@ -143,7 +143,7 @@ def run_pipeline(input_path, output_path=None, temp_dir=None, modules_to_run=Non
             modules_to_run=modules_to_run,
             chart_name=chart_name
         )
-        
+
     input_path = Path(input_path)
     output_path = Path(output_path) if output_path else input_path
     temp_dir = Path(temp_dir) if temp_dir else Path("./tmp")
@@ -152,11 +152,11 @@ def run_pipeline(input_path, output_path=None, temp_dir=None, modules_to_run=Non
         # 如果指定了输出目录且不同于输入目录，创建输出目录
         if output_path != input_path:
             output_path.mkdir(parents=True, exist_ok=True)
-        
+
         # 获取输入目录下所有JSON文件
         input_files = list(input_path.glob('*.json'))
         random.shuffle(input_files)  # 随机打乱文件顺序
-        
+
         if threads and threads > 1:
             # 使用线程池并行处理文件
             with ProcessPoolExecutor(max_workers=threads) as executor:
@@ -168,7 +168,7 @@ def run_pipeline(input_path, output_path=None, temp_dir=None, modules_to_run=Non
                     else:
                         # 确保输出文件保持相同的文件名
                         output_file = output_path / input_file.name
-                        
+
                     future = executor.submit(
                         run_single_file,
                         input_path=input_file,
@@ -178,7 +178,7 @@ def run_pipeline(input_path, output_path=None, temp_dir=None, modules_to_run=Non
                         chart_name=chart_name
                     )
                     futures.append(future)
-                
+
                 # 等待所有任务完成并检查结果
                 results = [future.result() for future in futures]
                 return all(results)
@@ -190,7 +190,7 @@ def run_pipeline(input_path, output_path=None, temp_dir=None, modules_to_run=Non
                     output_file = input_file
                 else:
                     output_file = output_path / input_file.name
-                
+
                 success &= run_single_file(
                     input_path=input_file,
                     output_path=output_file,
@@ -215,15 +215,15 @@ def run_pipeline(input_path, output_path=None, temp_dir=None, modules_to_run=Non
             modules_to_run=modules_to_run,
             chart_name=chart_name
         )
-            
+
     # except Exception as e:
     #     logger.error(f"管道执行失败: {str(e)}")
     #     return False
-    
+
 def run_single_file(input_path, output_path, temp_dir=None, modules_to_run=None, chart_name=None):
     """
     处理单个文件的管道逻辑
-    
+
     Args:
         input_path (Path): 输入JSON文件路径
         output_path (Path): 输出路径
@@ -273,20 +273,20 @@ def run_single_file(input_path, output_path, temp_dir=None, modules_to_run=None,
     if temp_dir is None:
         temp_dir = Path("./tmp")
     temp_dir.mkdir(parents=True, exist_ok=True)
-    
+
     # 确保输出目录存在
     output_path.parent.mkdir(parents=True, exist_ok=True)
-    
+
     # 当前输入文件
     current_input = input_path
-    
+
     # 确定要运行的模块
     if not modules_to_run:
         modules_to_run = [m["name"] for m in MODULES]
-    
+
     # 获取最后一个模块的配置
     last_module = [m for m in MODULES if m["name"] in modules_to_run][-1]
-    
+
     # 根据最后一个模块的输出类型决定最终输出文件的扩展名
     if last_module["name"] in ["chart_engine", "title_styler"]:
         final_output = output_path.with_suffix('.svg')
@@ -294,7 +294,7 @@ def run_single_file(input_path, output_path, temp_dir=None, modules_to_run=None,
         final_output = output_path.parent / f"{output_path.stem}_final.svg"
     else:
         final_output = output_path.with_suffix('.json')
-    
+
     # 记录执行过程
     processing_log = []
     # 依次执行各模块
@@ -302,7 +302,7 @@ def run_single_file(input_path, output_path, temp_dir=None, modules_to_run=None,
         module_name = module_config["name"]
         module_desc = module_config["description"]
         # logger.info(f"执行模块 {i+1}/{len(modules_to_run)}: {module_name} - {module_desc}")
-        
+
         # 特殊处理all模块，依次执行datafact_generator、title_generator、color_recommender和image_recommender
         if module_name == "all":
             # 数据洞察模块
@@ -315,12 +315,12 @@ def run_single_file(input_path, output_path, temp_dir=None, modules_to_run=None,
             if not should_skip_module("datafact_generator", output_path):
                 datafact_module.process(input=str(current_input), output=str(output_path))
                 current_input = output_path
-            
+
             # 标题生成模块
             title_module = import_module("modules.title_generator.title_generator")
             if not should_skip_module("title_generator", output_path):
                 title_module.process(
-                    input=str(current_input), 
+                    input=str(current_input),
                     output=str(output_path),
                     base_url=base_url,
                     api_key=api_key,
@@ -330,12 +330,12 @@ def run_single_file(input_path, output_path, temp_dir=None, modules_to_run=None,
                     index_path=text_index_path
                 )
                 current_input = output_path
-            
+
             # 色彩推荐模块
             color_module = import_module("modules.color_recommender.color_recommender")
             if not should_skip_module("color_recommender", output_path):
                 color_module.process(
-                    input=str(current_input), 
+                    input=str(current_input),
                     output=str(output_path),
                     base_url=base_url,
                     api_key=api_key,
@@ -344,12 +344,12 @@ def run_single_file(input_path, output_path, temp_dir=None, modules_to_run=None,
                     index_path=color_index_path
                 )
                 current_input = output_path
-            
+
             # 图像推荐模块
             image_module = import_module("modules.image_recommender.image_recommender")
             if not should_skip_module("image_recommender", output_path):
                 image_module.process(
-                    input=str(current_input), 
+                    input=str(current_input),
                     output=str(output_path),
                     base_url=base_url,
                     api_key=api_key,
@@ -359,13 +359,13 @@ def run_single_file(input_path, output_path, temp_dir=None, modules_to_run=None,
                     resource_path=image_resource_path
                 )
                 current_input = output_path
-        
+
         # 特殊处理title_generator模块，传入配置参数
         elif module_name == "title_generator":
             module = import_module(f"modules.{module_name}.{module_name}")
             if not should_skip_module(module_name, output_path):
                 module.process(
-                    input=str(current_input), 
+                    input=str(current_input),
                     output=str(output_path),
                     base_url=base_url,
                     api_key=api_key,
@@ -379,7 +379,7 @@ def run_single_file(input_path, output_path, temp_dir=None, modules_to_run=None,
             module = import_module(f"modules.{module_name}.{module_name}")
             if not should_skip_module(module_name, output_path):
                 module.process(
-                    input=str(current_input), 
+                    input=str(current_input),
                     output=str(output_path),
                     base_url=base_url,
                     api_key=api_key,
@@ -394,7 +394,7 @@ def run_single_file(input_path, output_path, temp_dir=None, modules_to_run=None,
             if not should_skip_module(module_name, output_path):
                 print("process")
                 module.process(
-                    input=str(current_input), 
+                    input=str(current_input),
                     output=str(output_path),
                     base_url=base_url,
                     api_key=api_key,
@@ -408,7 +408,7 @@ def run_single_file(input_path, output_path, temp_dir=None, modules_to_run=None,
             module = import_module(f"modules.{module_name}.{module_name}")
             if not should_skip_module(module_name, output_path):
                 module.process(
-                    input=str(current_input), 
+                    input=str(current_input),
                     output=str(output_path),
                     base_url=base_url,
                     api_key=api_key,
@@ -419,10 +419,10 @@ def run_single_file(input_path, output_path, temp_dir=None, modules_to_run=None,
             # 输入是JSON，输出是SVG
             module = import_module(f"modules.{module_name}.{module_name}")
             svg_output = output_path.with_suffix('.svg')
-            if not svg_output.exists():
+            if True: # not svg_output.exists():
                 module.process(input=str(current_input), output=str(svg_output))
             current_input = svg_output  # 更新为SVG文件作为下一个模块的输入
-            
+
         elif module_name == "title_styler":
             # 输入是JSON，输出是SVG
             module = import_module(f"modules.{module_name}.{module_name}")
@@ -430,7 +430,7 @@ def run_single_file(input_path, output_path, temp_dir=None, modules_to_run=None,
             if not title_svg.exists():
                 module.process(input=str(current_input), output=str(title_svg))
             current_input = title_svg  # 更新为标题SVG作为下一个模块的输入
-            
+
         elif module_name == "layout_optimizer":
             # 输入包括JSON和同名SVG，输出是最终SVG
             module = import_module(f"modules.{module_name}.{module_name}")
@@ -445,16 +445,16 @@ def run_single_file(input_path, output_path, temp_dir=None, modules_to_run=None,
                     output=str(final_svg)
                 )
             current_input = final_svg  # 更新为最终SVG作为下一个模块的输入
-            
+
         else:
             # 普通模块：输入JSON，输出JSON
             module = import_module(f"modules.{module_name}.{module_name}")
             if not should_skip_module(module_name, output_path):
                 module.process(input=str(current_input), output=str(output_path))
                 current_input = output_path
-        
+
     return True
-        
+
     # except Exception as e:
     #     logger.error(f"文件处理失败 {input_path}: {str(e)}")
     #     return False
@@ -464,11 +464,11 @@ def should_skip_module(module_name: str, output_path: Path) -> bool:
     try:
         if not output_path.exists():
             return False
-            
+
         # 检查JSON文件中的特定字段
         with open(output_path) as f:
             data = json.load(f)
-            
+
         skip_conditions = {
             "preprocess": lambda d: "metadata" in d and "data" in d and "variables" in d and "processed" in d,
             "chart_type_recommender": lambda d: "chart_type" in d,
@@ -478,12 +478,12 @@ def should_skip_module(module_name: str, output_path: Path) -> bool:
             "color_recommender": lambda d: "colors" in d,
             "image_recommender": lambda d: "images" in d
         }
-        
+
         if module_name in skip_conditions:
             return skip_conditions[module_name](data)
-            
+
         return False
-        
+
     except Exception as e:
         logger.warning(f"检查跳过条件时出错: {str(e)}")
         return False
@@ -506,7 +506,7 @@ def parse_args():
         print(f"随机选择输入文件: {args.input}")
         args.output = "tmp.json"
         print(f"使用默认输出文件: {args.output}")
-    
+
     return args
 
 def main():
@@ -514,7 +514,7 @@ def main():
     modules_to_run = None
     if args.modules:
         modules_to_run = [m.strip() for m in args.modules]
-    
+
     run_pipeline(
         input_path=args.input,
         output_path=args.output,
@@ -525,4 +525,4 @@ def main():
     )
 
 if __name__ == "__main__":
-    main() 
+    main()
