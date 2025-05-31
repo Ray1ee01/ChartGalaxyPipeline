@@ -1,0 +1,3 @@
+"""
+Layout Recommender package initialization.
+"""

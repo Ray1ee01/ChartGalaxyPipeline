@@ -1,0 +1,8 @@
+data
+output
+output_info
+crops
+*.png
+*.jpg
+*.json
+clip_model/

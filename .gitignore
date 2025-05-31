@@ -30,3 +30,9 @@ testset2
 tmp
 /debug/
 /src/output_*/
+output3
+weilai/
+template_list.txt
+variation.json
+requirement_dump.json
+evaluate/
