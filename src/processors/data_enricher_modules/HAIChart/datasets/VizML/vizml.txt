@@ -1,1 +1,0 @@
-You can download the origin dataset from https://github.com/mitmedialab/vizml. 
