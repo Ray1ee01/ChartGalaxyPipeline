@@ -247,28 +247,28 @@ function makeChart(containerSelector, data) {
             const squareY = bottleHeight * (2/3) - (squareSize / 2);
             
             
-            const formattedValue = `${formatValue(d[yField])}${valueUnit}`;
-            // 我们将在下面计算实际字体大小，先使用基础大小创建文本元素
-            const baseValueFontSize = 16;
+            // const formattedValue = `${formatValue(d[yField])}${valueUnit}`;
+            // // 我们将在下面计算实际字体大小，先使用基础大小创建文本元素
+            // const baseValueFontSize = 16;
             
-            // 添加数值文本但先不设置字体大小
-            const valueText = group.append("text")
-                .attr("class", "value-label")
-                .attr("x", bottleWidth / 2)
-                .attr("y", squareY + (squareSize * 0.6)) // 先设置一个位置，稍后会调整
-                .attr("text-anchor", "middle")
-                .style("font-family", typography.label.font_family)
-                .style("font-weight", "bold")
-                .style("fill", "#fff")
-                .style("font-size", `${baseValueFontSize}px`) // 先设置基础字体大小
-                .text(formattedValue);
+            // // 添加数值文本但先不设置字体大小
+            // const valueText = group.append("text")
+            //     .attr("class", "value-label")
+            //     .attr("x", bottleWidth / 2)
+            //     .attr("y", squareY + (squareSize * 0.6)) // 先设置一个位置，稍后会调整
+            //     .attr("text-anchor", "middle")
+            //     .style("font-family", typography.label.font_family)
+            //     .style("font-weight", "bold")
+            //     .style("fill", "#fff")
+            //     .style("font-size", `${baseValueFontSize}px`) // 先设置基础字体大小
+            //     .text(formattedValue);
                 
-            // 将值标签添加到数组中，以便后续统一调整
-            valueLabels.push({
-                element: valueText,
-                value: formattedValue,
-                squareSize: squareSize
-            });
+            // // 将值标签添加到数组中，以便后续统一调整
+            // valueLabels.push({
+            //     element: valueText,
+            //     value: formattedValue,
+            //     squareSize: squareSize
+            // });
         });
     
         // ---------- 8. 添加国旗和国家名称 (修改后) ----------

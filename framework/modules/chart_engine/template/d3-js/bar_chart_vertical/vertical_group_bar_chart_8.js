@@ -75,7 +75,7 @@ function makeChart(containerSelector, dataJSON) {
     // 高度比例尺
     const yScale = d3.scaleLinear()
         .domain([0, maxValue])
-        .range([H, 0]);
+        .range([H, 50]);
     
     /* ============ 3. 绘图 ============ */
     d3.select(containerSelector).html(""); // 清空容器
@@ -141,7 +141,7 @@ function makeChart(containerSelector, dataJSON) {
         return ctx.measureText(text).width;
     }
 
-    // 文本分行辅助函数
+    // 文本分行辅助函数 (针对X轴标签)
     function splitTextIntoLines(text, fontFamily, fontSize, maxWidth, fontWeight) {
         if (!text) return [""];
         
@@ -190,6 +190,36 @@ function makeChart(containerSelector, dataJSON) {
         return lines;
     }
     
+    // 新的文本分行辅助函数 (针对数值标签，允许字符级换行)
+    function splitValueTextIntoLines(text, fontFamily, fontSize, fontWeight, maxWidthForSplit) {
+        if (!text) return [""];
+        const lines = [];
+        if (maxWidthForSplit <= 0) return [text]; // 防止条形宽度过小导致问题
+
+        let currentLine = "";
+        for (let i = 0; i < text.length; i++) {
+            const char = text[i];
+            const testLine = currentLine + char;
+            if (getTextWidth(testLine, fontFamily, fontSize, fontWeight) <= maxWidthForSplit) {
+                currentLine = testLine;
+            } else {
+                if (currentLine === "") { // 当前字符本身就超出宽度
+                    lines.push(char);
+                    // currentLine 保持为空，因为这个字符自成一行
+                } else {
+                    lines.push(currentLine);
+                    currentLine = char; // 新行以当前字符开始
+                }
+            }
+        }
+        if (currentLine) {
+            lines.push(currentLine);
+        }
+        // 如果没有产生任何行 (例如，文本为空，或maxWidthForSplit非常小且文本也很短)
+        // 确保如果原始文本非空，则至少返回包含原始文本的一行（可能溢出）
+        return lines.length > 0 ? lines : (text ? [text] : [""]);
+    }
+
     // 创建轴线（基准线）
     g.append("line")
         .attr("x1", 0)
@@ -275,60 +305,64 @@ function makeChart(containerSelector, dataJSON) {
                 .attr("fill-opacity", 0.7) // 设置透明度
                 .attr("filter", "url(#bar-shadow)");
                 
-            // 添加数值标签
+            // --- 新的数值标签逻辑 ---
             const valText = `${formatValue(value)}${yUnit}`;
-            const textWidth = getTextWidth(valText, valueFontFamily, valueFontSize, valueFontWeight);
+            const lines = splitValueTextIntoLines(valText, valueFontFamily, valueFontSize, valueFontWeight, barWidth);
             
-            // 根据条形宽度决定文本位置
-            if (textWidth > barWidth - 4) {
-                // 如果文本比条形宽，显示在条形上方
-                // 添加标签背景
+            const actualLineHeight = valueFontSize * 1.2; // 每行文本的估计高度 (包括行间距)
+            const wrappedLabelHeight = lines.length * actualLineHeight;
+            
+            let labelFillColor;
+            let startYForFirstLineCenter;
+
+            
+            // 标签放在条形上方，最低行贴近条形上边缘
+            labelFillColor = color; // 上方标签用条形颜色
+            const labelAboveBarBottomMargin = 4; // 标签底部与条形顶部的间距
+            // 计算第一行文本中心点的Y坐标
+            // 目标：最后一行文本的中心 + actualLineHeight / 2 = barY - labelAboveBarBottomMargin
+            // 最后一行文本的中心 = barY - labelAboveBarBottomMargin - actualLineHeight / 2
+            // 第一行文本的中心 = (最后一行文本的中心) - (lines.length - 1) * actualLineHeight
+            startYForFirstLineCenter = (barY - labelAboveBarBottomMargin - actualLineHeight / 2) - (lines.length - 1) * actualLineHeight;
+
+            // 为上方的标签添加背景矩形以提高可读性
+            const maxWrappedTextWidth = d3.max(lines, l => getTextWidth(l, valueFontFamily, valueFontSize, valueFontWeight)) || 0;
+            if (maxWrappedTextWidth > 0) {
+                const rectPadding = 2; // 内边距，主要影响高度和文本与边缘的距离
+                const bgRectWidth = barWidth; // 背景矩形宽度固定为条形宽度
+                const bgRectHeight = wrappedLabelHeight + rectPadding; // 背景矩形高度基于换行后的文本高度和一点内边距
+                
+                // 背景矩形的Y坐标 (矩形顶部)
+                const bgRectY = startYForFirstLineCenter - (actualLineHeight / 2) - rectPadding / 2;
+                
                 g.append("rect")
-                    .attr("x", barX + barWidth/2 - textWidth/2 - 2)
-                    .attr("y", barY - valueFontSize - 4)
-                    .attr("width", textWidth + 4)
-                    .attr("height", valueFontSize + 2)
+                    .attr("x", barX) // 背景矩形X坐标与条形X坐标对齐
+                    .attr("y", bgRectY)
+                    .attr("width", bgRectWidth)
+                    .attr("height", bgRectHeight)
                     .attr("rx", 2)
                     .attr("ry", 2)
-                    .attr("fill", "#fff");
-                
+                    .attr("fill", "#fff")
+                    .attr("fill-opacity", 0.8); // 背景稍微透明
+            }
+            
+
+            // 绘制每一行文本
+            lines.forEach((line, i) => {
+                const textY = startYForFirstLineCenter + (i * actualLineHeight);
                 g.append("text")
                     .attr("class", "value-label")
                     .attr("text-anchor", "middle")
-                    .attr("x", barX + barWidth/2)
-                    .attr("y", barY - 4)
+                    .attr("x", barX + barWidth / 2)
+                    .attr("y", textY)
+                    .attr("dominant-baseline", "middle")
                     .style("font-family", valueFontFamily)
                     .style("font-size", `${valueFontSize}px`)
                     .style("font-weight", valueFontWeight)
-                    .style("fill", color)
-                    .text(valText);
-            } else {
-                // 如果条形足够宽且足够高，显示在条形内部
-                if (barHeight > valueFontSize * 1.5) {
-                    g.append("text")
-                        .attr("class", "value-label")
-                        .attr("text-anchor", "middle")
-                        .attr("x", barX + barWidth/2)
-                        .attr("y", barY + barHeight/2 + valueFontSize/3)
-                        .style("font-family", valueFontFamily)
-                        .style("font-size", `${valueFontSize}px`)
-                        .style("font-weight", valueFontWeight)
-                        .style("fill", "#fff")
-                        .text(valText);
-                } else {
-                    // 条形太短，显示在上方
-                    g.append("text")
-                        .attr("class", "value-label")
-                        .attr("text-anchor", "middle")
-                        .attr("x", barX + barWidth/2)
-                        .attr("y", barY - 4)
-                        .style("font-family", valueFontFamily)
-                        .style("font-size", `${valueFontSize}px`)
-                        .style("font-weight", valueFontWeight)
-                        .style("fill", color)
-                        .text(valText);
-                }
-            }
+                    .style("fill", labelFillColor)
+                    .text(line);
+            });
+            // --- 结束新的数值标签逻辑 ---
         });
     });
     

@@ -2,7 +2,7 @@
 REQUIREMENTS_BEGIN
 {
     "chart_type": "Circular Bar Chart",
-    "chart_name": "circular_bar_chart_02",
+    "chart_name": "circular_bar_plain_chart_02",
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],
     "required_fields_range": [[15, 30], [0, 100]],

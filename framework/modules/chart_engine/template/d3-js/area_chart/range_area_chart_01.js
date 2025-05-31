@@ -272,7 +272,7 @@ function makeChart(containerSelector, data) {
     // 绘制面积
     g.append("path")
         .datum(areaData)
-        .attr("fill", "#ebbc48")
+        .attr("fill", colors.available_colors?.[0] || "#ebbc48")
         .attr("d", area);
     
     // 绘制线条1 - 先添加描边

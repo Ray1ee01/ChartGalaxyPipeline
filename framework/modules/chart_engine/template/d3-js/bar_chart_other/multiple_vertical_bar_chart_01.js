@@ -365,28 +365,37 @@ function makeChart(containerSelector, data) {
             .append("g")
             .attr("class", "flag-icon")
             .attr("transform", d => `translate(${leftXScale(d) + leftXScale.bandwidth() / 2}, ${innerHeight + 20})`)
-            .each(function(d) {
+            .each(function(d) { // `this` 是 <g> 元素。 `d` 是来自 topLeftItems 的类别。
                 if (images.field[d]) {
-                    // 计算圆的半径，不超过柱状图宽度的45%
-                    const radius = leftXScale.bandwidth() * 0.50;
-                    // 图像尺寸略小于圆直径
-                    const imageSize = radius * 2;
+                    const imagePath = images.field[d];
+                    const barBandwidth = leftXScale.bandwidth();
+                    const iconDiameter = barBandwidth; // 图标直径与条形宽度一致
+                    const iconRadius = iconDiameter / 2; // 用于圆形剪切和图像居中的半径
+
+                    // 1. 正确的 clipId 生成
+                    // 清理类别键值，确保其作为ID是安全的
+                    const safeCategoryKey = String(d).replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
+                    const clipId = `clip-path-left-${safeCategoryKey}`;
+
+                    // 2. 使用全局 defs (已在文件顶部定义 const defs = svg.append("defs");)
+                    // 检查 clipPath 是否已存在于全局 defs 中，以避免重复定义
+                    let clipPath = defs.select(`#${clipId}`);
+                    if (clipPath.empty()) { 
+                        clipPath = defs.append("clipPath")
+                            .attr("id", clipId);
+                        
+                        clipPath.append("circle")
+                            .attr("r", iconRadius); // cx, cy 默认为0,0，适用于 clipPath
+                    }
                     
-                    d3.select(this)
-                        .append("circle")
-                        .attr("r", radius)
-                        .attr("fill", "white")
-                        .attr("stroke", "#ccc")
-                        .attr("stroke-width", 1);
-                    
-                    d3.select(this)
-                        .append("image")
-                        .attr("xlink:href", images.field[d])
-                        .attr("x", -imageSize / 2)
-                        .attr("y", -imageSize / 2)
-                        .attr("width", imageSize)
-                        .attr("height", imageSize)
-                        .attr("preserveAspectRatio","xMidYMid meet");
+                    // 3. 正确的图像附加：附加到 `this` (<g> 元素)
+                    d3.select(this).append("image")
+                        .attr("xlink:href", imagePath)
+                        .attr("clip-path", `url(#${clipId})`) // 应用圆形剪切
+                        .attr("x", -iconRadius) // 居中图像: x 从 -iconRadius 到 +iconRadius
+                        .attr("y", -iconRadius) // 居中图像: y 从 -iconRadius 到 +iconRadius
+                        .attr("width", iconDiameter)
+                        .attr("height", iconDiameter);
                 }
             });
     }
@@ -498,28 +507,36 @@ function makeChart(containerSelector, data) {
             .append("g")
             .attr("class", "flag-icon")
             .attr("transform", d => `translate(${rightXScale(d) + rightXScale.bandwidth() / 2}, ${innerHeight + 20})`)
-            .each(function(d) {
+            .each(function(d) { // `this` 是 <g> 元素。 `d` 是来自 topRightItems 的类别。
                 if (images.field[d]) {
-                    // 计算圆的半径，不超过柱状图宽度的50%
-                    const radius = rightXScale.bandwidth() * 0.50;
-                    // 图像尺寸略小于圆直径
-                    const imageSize = radius * 2;
+                    const imagePath = images.field[d];
+                    const barBandwidth = rightXScale.bandwidth();
+                    const iconDiameter = barBandwidth; // 图标直径与条形宽度一致
+                    const iconRadius = iconDiameter / 2; // 用于圆形剪切和图像居中的半径
+
+                    // 1. 正确的 clipId 生成
+                    // 清理类别键值，确保其作为ID是安全的
+                    const safeCategoryKey = String(d).replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
+                    const clipId = `clip-path-right-${safeCategoryKey}`; // 与左侧图表ID区分
+
+                    // 2. 使用全局 defs
+                    let clipPath = defs.select(`#${clipId}`);
+                    if (clipPath.empty()) {
+                        clipPath = defs.append("clipPath")
+                            .attr("id", clipId);
+                        
+                        clipPath.append("circle")
+                            .attr("r", iconRadius);
+                    }
                     
-                    d3.select(this)
-                        .append("circle")
-                        .attr("r", radius)
-                        .attr("fill", "white")
-                        .attr("stroke", "#ccc")
-                        .attr("stroke-width", 1);
-                    
-                    d3.select(this)
-                        .append("image")
-                        .attr("xlink:href", images.field[d])
-                        .attr("x", -imageSize / 2)
-                        .attr("y", -imageSize / 2)
-                        .attr("width", imageSize)
-                        .attr("height", imageSize)
-                        .attr("preserveAspectRatio","xMidYMid meet");
+                    // 3. 正确的图像附加：附加到 `this` (<g> 元素)
+                    d3.select(this).append("image")
+                        .attr("xlink:href", imagePath)
+                        .attr("clip-path", `url(#${clipId})`) // 应用圆形剪切
+                        .attr("x", -iconRadius)
+                        .attr("y", -iconRadius)
+                        .attr("width", iconDiameter)
+                        .attr("height", iconDiameter);
                 }
             });
     }

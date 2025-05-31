@@ -94,8 +94,8 @@ function makeChart(containerSelector, data) {
     // 创建颜色映射
     const colorMap = colors.x || {};
     const defaultColors = [
-        "#e74c3c", "#f39c12", "#f1c40f", "#2ecc71", "#3498db", 
-        "#9b59b6", "#1abc9c", "#95a5a6", "#e67e22", "#34495e"
+        "#7293EE", "#211CB7", "#7293EE", "#211CB7", "#7293EE", 
+        "#211CB7", "#7293EE", "#211CB7", "#7293EE", "#211CB7"
     ];
     
     const getColor = (category, index) => {

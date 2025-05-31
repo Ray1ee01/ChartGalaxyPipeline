@@ -2,7 +2,7 @@
 REQUIREMENTS_BEGIN
 {
     "chart_type": "Vertical Group Bar Chart",
-    "chart_name": "vertical_group_bar_chart_0",
+    "chart_name": "vertical_group_bar_plain_chart_01",
     "required_fields": ["x", "y", "group"],
     "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
     "required_fields_range": [[3, 6], [0, 100], [2, 4]],

@@ -170,25 +170,49 @@ function makeChart(containerSelector, data) {
                     .text(d.data[xField]);
             }
 
-            // 数值标签
-            if (d[1] - d[0] > maxValue * 0.1) { // 只在数值足够大时显示标签
+            // 数值标签（沿弧线方向显示）
+            if (d[1] - d[0] > maxValue * 0.08) { // 提高阈值，只显示较大的数值
                 const value = d[1] - d[0];
                 const formattedValue = formatValue(value);
                 const valueRadius = innerR + barWidth / 2;
-                const valueAngle = (startAngle + endAngle) / 2;
+                const midAngle = (startAngle + endAngle) / 2;
+                const valueTextPathId = `valueTextPath-${i}-${j}`;
                 
-                // 计算标签位置
-                const labelX = Math.cos(valueAngle - Math.PI / 2) * valueRadius;
-                const labelY = Math.sin(valueAngle - Math.PI / 2) * valueRadius;
+                // 根据数值大小和弧长动态计算文字路径长度
+                const valueTextLen = String(formattedValue).length * 6; // 减小字符宽度估计
+                const arcLength = Math.abs(endAngle - startAngle) * valueRadius;
+                const minAngle = 0.03; // 减小最小角度
+                const maxAngle = Math.abs(endAngle - startAngle) * 0.7; // 减小最大角度为弧长的70%
+                const valueShiftAngle = Math.min(Math.max(valueTextLen / valueRadius, minAngle), maxAngle);
+                
+                // 计算文字路径的起始和结束角度
+                const pathStartAngle = Math.max(startAngle, midAngle - valueShiftAngle);
+                const pathEndAngle = Math.min(endAngle, midAngle + valueShiftAngle);
+                
+                // 只有当弧长足够显示文字时才添加标签
+                if (arcLength > valueTextLen) { // 增加间距要求
+                    g.append("path")
+                        .attr("id", valueTextPathId)
+                        .attr("d", d3.arc()({
+                            innerRadius: valueRadius,
+                            outerRadius: valueRadius,
+                            startAngle: pathStartAngle,
+                            endAngle: pathEndAngle
+                        }))
+                        .style("fill", "none")
+                        .style("stroke", "none");
 
-                g.append("text")
-                    .attr("x", labelX)
-                    .attr("y", labelY)
-                    .attr("text-anchor", "middle")
-                    .attr("dominant-baseline", "middle")
-                    .attr("fill", "white")
-                    .attr("font-size", "12px")
-                    .text(formattedValue);
+                    g.append("text")
+                        .attr("font-size", "8px")
+                        .attr("fill", "white")
+                        .attr("font-weight", "normal")
+                        .append("textPath")
+                        .attr("xlink:href", `#${valueTextPathId}`)
+                        .attr("startOffset", "30%") 
+                        .attr("text-anchor", "left")
+                        .attr("dominant-baseline", "left")
+                        .text(formattedValue);
+                }
             }
         });
     });

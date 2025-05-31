@@ -2,7 +2,7 @@
 REQUIREMENTS_BEGIN
 {
     "chart_type": "Vertical Bar Chart",
-    "chart_name": "vertical_bar_chart_0",
+    "chart_name": "vertical_bar_plain_chart_01",
     "required_fields": ["x", "y"],
     "required_fields_type": [["categorical"], ["numerical"]],
     "required_fields_range": [[3, 20], [0, 10000000]],

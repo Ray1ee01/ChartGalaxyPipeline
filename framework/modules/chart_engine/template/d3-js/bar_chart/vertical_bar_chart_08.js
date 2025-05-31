@@ -188,26 +188,26 @@ function makeChart(containerSelector, data) {
     // *** END ADDITION ***
 
     // 如果需要创建阴影滤镜
-    if (variables.has_shadow) {
-        const filter = defs.append("filter")
-            .attr("id", "shadow")
-            .attr("filterUnits", "userSpaceOnUse")
-            .attr("width", "200%")
-            .attr("height", "200%");
+    // if (variables.has_shadow) {
+    //     const filter = defs.append("filter")
+    //         .attr("id", "shadow")
+    //         .attr("filterUnits", "userSpaceOnUse")
+    //         .attr("width", "200%")
+    //         .attr("height", "200%");
         
-        filter.append("feGaussianBlur")
-            .attr("in", "SourceAlpha")
-            .attr("stdDeviation", 3);
+    //     filter.append("feGaussianBlur")
+    //         .attr("in", "SourceAlpha")
+    //         .attr("stdDeviation", 3);
         
-        filter.append("feOffset")
-            .attr("dx", 2)
-            .attr("dy", 2)
-            .attr("result", "offsetblur");
+    //     filter.append("feOffset")
+    //         .attr("dx", 2)
+    //         .attr("dy", 2)
+    //         .attr("result", "offsetblur");
         
-        const feMerge = filter.append("feMerge");
-        feMerge.append("feMergeNode");
-        feMerge.append("feMergeNode").attr("in", "SourceGraphic");
-    }
+    //     const feMerge = filter.append("feMerge");
+    //     feMerge.append("feMergeNode");
+    //     feMerge.append("feMergeNode").attr("in", "SourceGraphic");
+    // }
     
     // ---------- 7. 创建图表 ----------
     
@@ -230,7 +230,7 @@ function makeChart(containerSelector, data) {
     // ** 开始修改：预计算标签字体大小和最大行数 **
     // *******************************************************************
     const defaultLabelFontSize = parseFloat(typography.label.font_size || 12);
-    const minLabelFontSize = 8; // 最小字体大小
+    const minLabelFontSize = 10; // 最小字体大小
     const currentBarWidth = xScale.bandwidth(); // 使用实际的bar宽度
     let finalLabelFontSize = defaultLabelFontSize;
     let maxLinesNeeded = 1; // 记录所有标签所需的最大行数

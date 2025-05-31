@@ -53,6 +53,29 @@ function makeChart(containerSelector, data) {
     // 清空容器
     d3.select(containerSelector).html("");
     
+    // ---------- 3. 提取字段名和单位 ----------
+    
+    // 根据数据列顺序提取字段名
+    const dimensionField = dataColumns.find(col => col.role === "x").name;
+    const valueField = dataColumns.find(col => col.role === "y").name;
+    
+    // 获取字段单位（如果存在）
+    let dimensionUnit = "";
+    let valueUnit = ""; 
+    
+    if (dataColumns.find(col => col.role === "x").unit !== "none") {
+        dimensionUnit = dataColumns.find(col => col.role === "x").unit;
+    }
+    
+    if (dataColumns.find(col => col.role === "y").unit !== "none") {
+        valueUnit = dataColumns.find(col => col.role === "y").unit;
+    }
+    
+    // ---------- 4. 数据处理 ----------
+    
+    // 获取唯一维度值并按数值降序排列数据
+    const dimensions = [...new Set(chartData.map(d => d[dimensionField]))];
+    
     // ---------- 2. 尺寸和布局设置 ----------
     
     // 设置图表总尺寸
@@ -71,30 +94,6 @@ function makeChart(containerSelector, data) {
         bottom: 60,   // 底部边距
         left: 10     // 左侧边距，留足空间放置无法放入条内的数值标签
     };
-    
-    // ---------- 3. 提取字段名和单位 ----------
-    
-    // 根据数据列顺序提取字段名
-    const dimensionField = dataColumns.find(col => col.role === "x").name;
-    const valueField = dataColumns.find(col => col.role === "y").name;
-    
-    // 获取字段单位（如果存在）
-    let dimensionUnit = "";
-    let valueUnit = ""; 
-    
-    if (dataColumns.find(col => col.role === "x").unit !== "none") {
-        dimensionUnit = dataColumns.find(col => col.role === "x").unit;
-    }
-    
-    if (dataColumns.find(col => col.role === "y").unit !== "none") {
-        valueUnit = dataColumns.find(col => col.role === "y").unit;
-    }
-    // ---------- 4. 数据处理 ----------
-    
-    // 获取唯一维度值并按数值降序排列数据
-    const dimensions = [...new Set(chartData.map(d => d[dimensionField]))];
-    
-    // 如果x维度数量超过15，每增加一个x，整个图像的高度增加3%
     
     // 按数值降序排序数据
     const sortedData = [...chartData].sort((a, b) => b[valueField] - a[valueField]);
@@ -307,7 +306,7 @@ function makeChart(containerSelector, data) {
     g.append("rect")
         .attr("x", innerWidth - axisNameTextWidth - 5) // 右对齐
         .attr("y", titleBarY)
-        .attr("width", axisNameTextWidth + 5)
+        .attr("width", axisNameTextWidth + 15)
         .attr("height", titleBarHeight)
         .attr("fill", getBarColor())
         .attr("rx", variables.has_rounded_corners ? 3 : 0)
@@ -315,7 +314,7 @@ function makeChart(containerSelector, data) {
     
     // 添加Y轴名称文本 - 右对齐
     g.append("text")
-        .attr("x", innerWidth - 5) // 右边缘减去一点padding
+        .attr("x", innerWidth + 5) // 右边缘减去一点padding
         .attr("y", titleBarY + titleBarHeight/2)
         .attr("dy", "0.35em") // 垂直居中
         .attr("text-anchor", "end") // 右对齐

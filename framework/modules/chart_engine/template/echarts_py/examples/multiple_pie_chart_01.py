@@ -21,7 +21,7 @@ REQUIREMENTS_BEGIN
 }
 REQUIREMENTS_END
 '''
-
+# 修复一些左边和右边数值不显示的问题
 def get_grid_layout(num_items):
     """
     Calculate the optimal grid layout (rows and columns) for a given number of items
@@ -94,7 +94,10 @@ def make_options(json_data):
     rows, cols = get_grid_layout(num_charts)
     
     # Adjust margin based on number of columns
-    chart_margin = 10 if cols == 2 else 20  # Smaller margin for 2 columns
+    chart_margin = 10 if cols == 2 else 20  # 饼图之间的间距，恢复到原始值
+    
+    # 为整个图表区域的左右两侧定义专门的外部填充
+    outer_horizontal_padding = 40 # 您可以调整此值以获得期望的外部边距
     
     
     options = {
@@ -123,14 +126,18 @@ def make_options(json_data):
     content_top = title_height + legend_height
     content_height = canvas_height - content_top
     
-    # For 2 columns, use more of the available width
-    if cols == 2:
-        effective_width = canvas_width - (chart_margin * 3)  # Only 3 margins for 2 columns
-        chart_width = effective_width / 2
-    else:
-        chart_width = (canvas_width - (chart_margin * (cols + 1))) / cols
+    # Calculate chart_width considering outer_horizontal_padding and inter-chart_margin (chart_margin)
+    if cols == 1:
+        # 如果只有一列，它占据外部填充后的全部可用宽度
+        chart_width = canvas_width - (2 * outer_horizontal_padding)
+    else: # cols > 1
+        # 计算所有图表间总间距
+        total_inter_chart_spacing = (cols - 1) * chart_margin
+        # 计算图表可用的总宽度（减去外部填充和图表间间距）
+        available_width_for_charts = canvas_width - (2 * outer_horizontal_padding) - total_inter_chart_spacing
+        chart_width = available_width_for_charts / cols
         
-    chart_height = (content_height - (chart_margin * (rows + 1))) / rows
+    chart_height = (content_height - (chart_margin * (rows + 1))) / rows # 垂直间距逻辑保持不变
     
     # Calculate donut radius based on available space
     min_dimension = min(chart_width, chart_height)
@@ -168,7 +175,9 @@ def make_options(json_data):
         col = i % cols
         
         # Calculate center positions in pixels with fixed vertical spacing
-        center_x = chart_margin + (col * (chart_width + chart_margin)) + (chart_width / 2)
+        # 第一个图表的左边缘从 outer_horizontal_padding 之后开始
+        # 后续图表根据 chart_width 和 chart_margin (图表间距)进行偏移
+        center_x = outer_horizontal_padding + (col * (chart_width + chart_margin)) + (chart_width / 2)
         
         # Use fixed vertical spacing instead of dynamic calculation
         if rows == 1:
@@ -205,6 +214,7 @@ def make_options(json_data):
                 "fontSize": int(typography['label']['font_size'].replace('px', '')),
                 "fontFamily": typography['label']['font_family'],
                 "color": colors_data['text_color'],
+                "overflow": "breakAll"
             },
             "emphasis": {
                 "label": {
