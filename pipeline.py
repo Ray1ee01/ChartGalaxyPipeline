@@ -70,12 +70,6 @@ MODULES = [
         "output_type": "json"
     },
     {
-        "name": "layout_recommender",
-        "description": "布局/变体推荐模块",
-        "input_type": "json",
-        "output_type": "json"
-    },
-    {
         "name": "color_recommender",
         "description": "色彩推荐模块",
         "input_type": "json",
@@ -109,12 +103,6 @@ MODULES = [
         "name": "title_styler",
         "description": "标题元素生成模块",
         "input_type": "json",
-        "output_type": "svg"
-    },
-    {
-        "name": "layout_optimizer",
-        "description": "布局优化模块",
-        "input_type": "svg+svg",
         "output_type": "svg"
     }
 ]
@@ -295,7 +283,7 @@ def run_single_file(input_path, output_path, temp_dir=None, modules_to_run=None,
     # 根据最后一个模块的输出类型决定最终输出文件的扩展名
     if last_module["name"] in ["chart_engine", "title_styler"]:
         final_output = output_path.with_suffix('.svg')
-    elif last_module["name"] == "layout_optimizer" or last_module["name"] == "infographics_generator":
+    elif last_module["name"] == "infographics_generator":
         final_output = output_path.parent / f"{output_path.stem}_final.svg"
     else:
         final_output = output_path.with_suffix('.json')
@@ -436,21 +424,6 @@ def run_single_file(input_path, output_path, temp_dir=None, modules_to_run=None,
                 module.process(input=str(current_input), output=str(title_svg))
             current_input = title_svg  # 更新为标题SVG作为下一个模块的输入
 
-        elif module_name == "layout_optimizer":
-            # 输入包括JSON和同名SVG，输出是最终SVG
-            module = import_module(f"modules.{module_name}.{module_name}")
-            final_svg = output_path.parent / f"{output_path.stem}_final.svg"
-            if not final_svg.exists():
-                chart_svg = output_path.with_suffix('.svg')
-                title_svg = output_path.parent / f"{output_path.stem}_title.svg"
-                module.process(
-                    input_json=str(current_input),
-                    input_chart=str(chart_svg),
-                    input_title=str(title_svg),
-                    output=str(final_svg)
-                )
-            current_input = final_svg  # 更新为最终SVG作为下一个模块的输入
-
         else:
             # 普通模块：输入JSON，输出JSON
             module = import_module(f"modules.{module_name}.{module_name}")
@@ -479,7 +452,6 @@ def should_skip_module(module_name: str, output_path: Path) -> bool:
             "chart_type_recommender": lambda d: "chart_type" in d,
             "datafact_generator": lambda d: "datafacts" in d,
             "title_generator": lambda d: False,#"titles" in d,
-            "layout_recommender": lambda d: "variation" in d,
             "color_recommender": lambda d: "colors" in d,
             "image_recommender": lambda d: "images" in d
         }
@@ -519,13 +491,8 @@ def main():
     args = parse_args()
     modules_to_run = None
     if args.modules:
-<<<<<<< HEAD
         modules_to_run = [m.strip() for m in args.modules]
 
-=======
-        modules_to_run = args.modules
-    
->>>>>>> origin/develop-bowen-barchart
     run_pipeline(
         input_path=args.input,
         output_path=args.output,
