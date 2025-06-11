@@ -292,8 +292,7 @@ python -m modules.chart_engine.chart_generation --input /path/to/data.json --out
 
 ## 扩展
 
-- [如何编写图表模板](docs/how_to_write_a_template.md)
-- [如何编写图表变体](docs/how_to_write_a_variation.md)  
+- [如何编写Chart variation](docs/how_to_write_a_variation.md)  
 - [图表类型文档](docs/chart_types_documentation.md)
 
 ## 示例
