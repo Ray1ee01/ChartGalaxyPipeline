@@ -28,7 +28,7 @@ from config import (
     image_resource_path
 )
 import random
-from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
+from concurrent.futures import ProcessPoolExecutor
 
 # 配置日志
 logging.basicConfig(
@@ -472,7 +472,7 @@ def parse_args():
     parser.add_argument('--temp-dir', type=str, default='tmp')
     parser.add_argument('--modules', type=str, nargs='+', help='Modules to run', default = 'infographics_generator')
     parser.add_argument('--threads', type=int, help='Number of threads for directory processing', default=1)
-    parser.add_argument('--chart-name', type=str, help='Specific chart name to use for infographics_generator', default='voronoi_treemap_rectangle_01')
+    parser.add_argument('--chart-name', type=str, help='Specific chart name to use for infographics_generator')
     
     args = parser.parse_args()
     # 如果没有指定input，从data_resource_path随机选择

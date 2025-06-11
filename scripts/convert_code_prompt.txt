@@ -1,0 +1,165 @@
+You are refactoring a single JavaScript (typically D3.js) function for data visualization. Your goal is to improve its organization, enforce strict configuration adherence, standardize practices, streamline code, and meet specific output constraints, while **preserving the core visual output and functionality of the original chart when provided with valid data**. Apply directives meticulously.
+
+**I. Input Code Assumptions:**
+*   Input: a single JavaScript function, typically named `makeChart(containerSelector, data)`.
+*   The `data` argument is an object usually structured as:
+    *   `jsonData = data;` (or simply use `data` directly)
+    *   `chartData = data.data.data;` (array of data points)
+    *   `variables = data.variables || {};` (chart-specific settings)
+    *   `typography = data.typography || {};` The `typography` object is expected to have the following structure if present:
+        ```json
+        {
+            "title": { "font_family": "Arial, sans-serif", "font_size": "16px", "font_weight": "bold" },
+            "label": { "font_family": "Arial, sans-serif", "font_size": "12px", "font_weight": "normal" },
+            "annotation": { "font_family": "Arial, sans-serif", "font_size": "10px", "font_weight": "normal" }
+        }
+        ```
+        If `data.typography` is not provided or is missing keys, the chart should use sensible hardcoded defaults for font properties.
+    *   `colors = data.colors || {};` (or `data.colors_dark || {}` for dark themes). The `colors` object is expected to have the following structure if present:
+        ```json
+        {
+            "field": { "Category1": "#1f77b4", "Category2": "#ff7f0e" },
+            "other": { "primary": "#1f77b4", "secondary": "#ff7f0e" },
+            "available_colors": ["#1f77b4", "#ff7f0e", "#2ca02c"],
+            "background_color": "#FFFFFF",
+            "text_color": "#0f223b"
+        }
+        ```
+        If `data.colors` (or `data.colors_dark`) is not provided or is missing keys, the chart should use sensible hardcoded default colors (e.g., a default `text_color`, a default `primary` color, or a categorical color scheme like `d3.schemeCategory10` if `available_colors` or `field` mappings are missing).
+    *   `images = data.images || {};` The `images` object is expected to have the following structure if present (URLs can be data URIs):
+        ```json
+        {
+            "field": { "France": "data:image/svg+xml;base64,...", "Germany": "data:image/svg+xml;base64,..." },
+            "other": { "primary": "data:image/svg+xml;base64,..." }
+        }
+        ```
+        If `data.images` is not provided or is missing keys, image elements should not be rendered or should use a placeholder if absolutely critical and a default placeholder makes sense.
+    *   `dataColumns = data.data.columns || [];` (definitions for data fields, roles, and units)
+*   The `/* REQUIREMENTS_BEGIN ... REQUIREMENTS_END */` block (detailed in Section XII) **MUST** be placed immediately before the JavaScript function. It should not be part of the function\'s internal comments.
+
+**II. Code Reorganization (Internal Structure):**
+1.  **Mandatory Logical Blocks:** Restructure into these sequential, commented blocks. If not applicable, note with a comment.
+    *   `// Block 0: Metadata & Other Function-Level Comments (The /* REQUIREMENTS_BEGIN... */ block is now external to the function)`
+    *   `// Block 1: Configuration Parsing & Validation`
+        *   Extract `chartData`, `variables`, `typography`, `colors`, `images`, `dataColumns` from the input `data` object as described in Section I.
+        *   Determine critical field names (e.g., `xField`, `yField`, `groupField`) and their units from `dataColumns` based on roles (e.g., `col.role === "x"`).
+        *   Perform critical identifier validation (see Section VI.3).
+        *   Clear the `containerSelector` (e.g., `d3.select(containerSelector).html("");`).
+    *   `// Block 2: Style Configuration & Helper Definitions`
+    *   `// Block 3: Initial SVG Setup & Global Utilities Definition`
+    *   `// Block 4: Core Chart Dimensions & Layout Calculation`
+    *   `// Block 5: Data Preprocessing & Transformation`
+    *   `// Block 6: Scale Definition & Configuration`
+    *   `// Block 7: Chart Component Rendering (e.g., Axes, Gridlines, Legend - NO Main Titles/Subtitles)`
+    *   `// Block 8: Main Data Visualization Rendering (e.g., Bars, Lines, Points, Areas)`
+    *   `// Block 9: Optional Enhancements & Post-Processing (e.g., Annotations, Icons, Interactive Elements)`
+    *   `// Block 10: Cleanup & SVG Node Return`
+2.  **Helper Function Placement:** Group internal helpers (text measurement, color math, path generation) in `// Block 2`, or just before first dominant use if highly block-specific.
+
+**III. SVG Element & Utility Setup (Primarily Block 2 & 3):**
+1.  **SVG Root (Block 3):**
+    *   **Fixed Dimensions:**
+        *   The main SVG element **MUST** be appended to `containerSelector`.
+        *   The `width` and `height` attributes of the main SVG element **MUST** be set to absolute pixel values derived from `variables.width` and `variables.height` (e.g., `svg.attr(\'width\', variables.width || 800).attr(\'height\', variables.height || 600)`).
+        *   The main SVG element **MUST NOT** have a `viewBox` attribute.
+        *   Responsive attributes such as `width="100%"` or `height="auto"` **MUST NOT** be used. The chart dimensions must be precise and fixed.
+2.  **In-Memory Text Measurement (Helper in Block 2):**
+    *   The `estimateTextWidth` utility (or similar) **MUST** use an in-memory SVG structure.
+    *   This temporary SVG **MUST NOT** be appended to the document DOM.
+    *   *Example:* `document.createElementNS('http://www.w3.org/2000/svg', 'svg')`, append text, style, measure with `getBBox().width`, then discard.
+
+**IV. Centralized Style Configuration (Block 2):**
+1.  **Style Token Object:**
+    *   Populate a `fillStyle` object (or similar) by mapping semantic tokens (e.g., `barPrimary`, `gridSubtle`, `axisLine`) to actual color values.
+    *   Color values **MUST** be sourced primarily from the `colors` object (extracted from `data.colors` or `data.colors_dark`, structured as per Section I). For example:
+        *   `fillStyle.barCategoryColor = colors.field && colors.field[categoryName] ? colors.field[categoryName] : (colors.available_colors ? colors.available_colors[i % colors.available_colors.length] : '#defaultCategoryColor');`
+        *   `fillStyle.primaryAccent = colors.other && colors.other.primary ? colors.other.primary : '#defaultPrimaryAccent';`
+        *   `fillStyle.chartBackground = colors.background_color || '#FFFFFF';`
+    *   Image URLs for use with `xlink:href` (e.g., for icons or image fills) **MUST** be sourced from the `images` object (extracted from `data.images`, structured as per Section I). These can also be organized within `fillStyle` if appropriate (e.g., `fillStyle.iconUrl = images.field && images.field[itemName] ? images.field[itemName] : (images.other && images.other.primary ? images.other.primary : null);`). If an image is not found for a specific key, the corresponding image element should typically not be rendered, or a non-image fallback (e.g., text) should be used.
+    *   Avoid hardcoded style values outside `fillStyle` definitions in `// Block 2` unless they are true, unconfigurable defaults as last resort.
+2.  **Typography Tokens:**
+    *   Define `fillStyle.typography` by sourcing values from the `typography` object (extracted from `data.typography`, structured as per Section I). Example:
+        *   `fillStyle.typography.titleFontFamily = typography.title && typography.title.font_family ? typography.title.font_family : 'Arial, sans-serif';`
+        *   `fillStyle.typography.labelFontSize = typography.label && typography.label.font_size ? typography.label.font_size : '12px';`
+        *   `fillStyle.typography.annotationFontWeight = typography.annotation && typography.annotation.font_weight ? typography.annotation.font_weight : 'normal';`
+    *   All text elements **MUST** use these tokens for font properties (family, size, weight). Text color **MUST** be sourced from `colors.text_color` (via `fillStyle.textColor = colors.text_color || '#defaultTextColor';`) or a more specific semantic color from `fillStyle` if appropriate (e.g., an axis label might use a general text color, while a data value label inside a bar might use a contrasting color).
+    *   No inline numeric font sizes or hardcoded font families/weights outside `fillStyle.typography` definitions, unless they are true, unconfigurable defaults as a last resort.
+3.  **Usage:** Access via `fillStyle.tokenName` or `fillStyle.typography.tokenName`. Omit unused optional tokens.
+
+**V. Chart Content Restrictions:**
+1.  **No Main Titles/Subtitles:** Code **MUST NOT** render main chart titles/subtitles. Remove existing logic for this (affects `// Block 7` and `// Block 8` primarily).
+2.  **No Complex Visual Effects:** Remove all gradients, patterns, shadows, and other complex visual effects. Keep the chart styling clean and simple with solid colors only.
+3.  **Configuration Simplification:**
+    *   Remove conditional logic for optional visual effects and minor, non-standard configurations (e.g., `variables.has_rounded_corners`).
+    *   Retain only essential, unconditionally applied styling. The goal is to standardize and streamline, not to support every possible variation via `variables`.
+
+**VI. Error Handling & Configuration Dependency:**
+1.  **Error Traps:** Remove `try...catch` for individual data points in loops.
+2.  **Data Value Checks:** Avoid explicit `isNaN()` or `typeof value !== 'number'` before D3 scale/attribute usage.
+3.  **Configured Identifiers & Labels:**
+    *   Data accessor keys (field names) **MUST** be derived from `data.data.columns` (e.g., `const valueField = dataColumns.find(col => col.role === "y").name;`).
+    *   **No Hardcoded Fallbacks** for data accessor keys or essential labels/titles expected from `variables` or `dataColumns`.
+    *   **Critical Identifier Validation (Block 1 - Early Exit):** If critical fields derived field names from `data.data.columns` for data access/scales are `undefined` or missing:
+        1. `console.error("Critical chart config missing: [specific missing field names]. Cannot render.");`
+        2. If `containerSelector`, update DOM: `d3.select(containerSelector).html("<div style='color:red;'>...Error...</div>");`
+        3. `return null;`
+    *   **Non-Critical Text:** If optional `config` text (e.g., `columnTitleText`) is `undefined`/empty, skip rendering that element. Utilities handle `undefined`/empty `textContent` gracefully (no "undefined" text).
+
+**VII. Standardized Class Attributes:**
+*   On SVG element creation, **MUST** add `class` with a standard role: `value`, `label`, `text`, `icon`, `image`, `mark`, `axis` (e.g. `axis x-axis`), `other`.
+*   Apply to main group for complex components (e.g., `xAxisGroup.attr("class", "axis x-axis")`).
+
+**VIII. Variable Naming Standardization (Examples):**
+`config`, `chartDataArray`, `svgRoot`, `mainChartGroup`, `barElements`, `xAxisGroup`, `xScale`, `yScale`, `colorScale`, `chartMargins = { top: ..., ... }`, `containerWidth`, `containerHeight`, `innerWidth`, `innerHeight`, `categoryFieldName`, `category = d[categoryFieldName]`. Iterators: `d`, `i`. Helpers: `calculateScales()`.
+
+**IX. Commenting Style:**
+*   Use mandated block comments (Section II.1).
+*   Preserve essential comments for complex/non-obvious logic. Focus on "why," not "what," if clear. Avoid over-commenting.
+
+**X. Visual/Behavioral Defaults:**
+*   May retain sensible visual (e.g., `defaultBarColor`) or behavioral defaults if not masking data issues.
+
+**XI. Code Simplification & Conciseness:**
+1.  Reduce line count if functionality and readability are preserved.
+2.  Consolidate redundant code/utilities.
+3.  Employ concise, efficient coding style.
+
+**XII. Metadata Requirements Block (JSON in `/* REQUIREMENTS_BEGIN ... */`):**
+This entire block, starting with `/* REQUIREMENTS_BEGIN` and ending with `REQUIREMENTS_END */`, **MUST** be placed as a comment block *immediately before* the JavaScript function that is being refactored. It **MUST NOT** be inside the function body.
+
+1.  The block **MUST** contain the exact JSON structure and keys provided below.
+2.  Populate each of the enumerated properties (e.g., `elementAlignment`, `xAxis`) with **one** value that best describes the final rendered chart. Values **MUST** come from their respective option lists (shown as comments in the template below) exactly as spelled (case-sensitive). Use `"none"` or the most appropriate default if a feature is not explicitly implemented.
+3.  Do **NOT** insert additional keys or comments *within* the JSON object itself, beyond the example values. The surrounding `/* REQUIREMENTS_BEGIN` and `REQUIREMENTS_END */` delimiters must remain unchanged.
+
+    ```json
+    {
+      "chart_type": "Grouped Circular Bar Chart",
+      "chart_name": "grouped_circular_bar_chart_01",
+      "is_composite": false,
+      "required_fields": ["x", "y", "group"],
+      "hierarchy": ["group"],
+      "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
+      "required_fields_range": [[2, 20], [0, "inf"], [2, 5]],
+      "required_fields_icons": ["group"],
+      "required_other_icons": [],
+      "required_fields_colors": ["group"],
+      "required_other_colors": ["primary"],
+      "min_height": 400,
+      "min_width": 400,
+      "background": "no",
+
+      "elementAlignment": "none",            // One of: left | center | right | top | bottom
+      "xAxis": "none",                        // One of: visible | minimal | none
+      "yAxis": "none",                        // One of: visible | minimal | none
+      "gridLineType": "none",                // One of: subtle | prominent | none
+      "legend": "none",                       // One of: normal | compact | detailed | none
+      "dataLabelPosition": "none",            // One of: outside | inside | center_element | auto | none
+      "artisticStyle": "clean",               // One of: clean | hand_drawn | gradient_gloss | shadow
+      "valueSortDirection": "none",           // One of: ascending | descending | none
+      "iconographyUsage": "none"              // One of: none | categorical_markers_overlay_internal | categorical_markers_overlay_edge | element_replacement | background_contextual | adjacent_indicator
+    }
+    ```
+
+**XIII. Output:**
+*   The refactored single JavaScript function, named `makeChart`.
+*   The function **MUST** remain functional with valid and complete configuration provided via the `data` object (structured as per Section I), preserving the original chart's core visual output.
