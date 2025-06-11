@@ -60,12 +60,10 @@ HTML模式的优势:
   - [1. 图表类型推荐模块](#1-图表类型推荐模块-chart_type_recommender)
   - [2. 数据洞察模块](#2-数据洞察模块-datafact_generator)
   - [3. 标题生成模块](#3-标题生成模块-title_generator)
-  - [4. 布局/变体推荐模块](#4-布局变体推荐模块-layout_recommender)
   - [5. 色彩推荐模块](#5-色彩推荐模块-color_recommender)
   - [6. 图像推荐模块](#6-图像推荐模块-image_recommender)
   - [7. 图表模板实现引擎](#7-图表模板实现引擎-chart_engine)
   - [8. 标题元素生成模块](#8-标题元素生成模块-title_styler)
-  - [9. 布局优化模块](#9-布局优化模块-layout_optimizer)
 - [安装与使用](#安装与使用)
   - [安装依赖](#安装依赖)
   - [模块执行示例](#模块执行示例)
@@ -295,40 +293,6 @@ ChartPipeline 中的数据流遵循以下规则:
 - 生成补充主标题并提供额外上下文的副标题
 - 确保标题简洁明了并传达核心信息
 
-### 4. 布局/变体推荐模块 (layout_recommender)
-
-**功能**: 推荐最佳的图表布局和视觉变体选项。
-
-**输入字段**: 包含chart_type、datafacts和titles的数据对象
-
-**输出字段**:
-```json
-{
-  "layout": {
-    "title_to_chart": "T",
-    "image_to_chart": "BL",
-    "title_to_image": "L",
-    "chart_contains_title": false,
-    "chart_contains_image": false
-  },
-  "variation": {
-    "background": "no",
-    "image_chart": "side",
-    "image_title": "side",
-    "icon_mark": "none",
-    "axis_label": "none",
-    "axes": {
-      "x_axis": "yes",
-      "y_axis": "yes"
-    }
-  }
-}
-```
-
-**核心功能**:
-- 推荐各元素（标题、图表、图像）的相对位置
-- 提供图表变体选项，如背景、标签和轴配置
-- 设计符合最佳可视化实践的整体布局结构
 
 ### 5. 色彩推荐模块 (color_recommender)
 
@@ -440,24 +404,6 @@ success = process(input='input_data.json', output='chart.svg')
 - 为标题和副标题创建样式化的SVG元素
 - 应用推荐的颜色和字体样式
 - 确保标题元素与整体视觉主题一致
-
-### 9. 布局优化模块 (layout_optimizer)
-
-**功能**: 组合并优化图表和标题SVG元素，生成最终的可视化作品。
-
-**输入**: chart_svg和title_svg
-
-**输出**:
-```json
-{
-  "final_svg": "<svg width=\"1000\" height=\"650\" xmlns=\"http://www.w3.org/2000/svg\">...</svg>"
-}
-```
-
-**核心功能**:
-- 根据布局推荐组合图表和标题元素
-- 优化元素间距和整体尺寸
-- 确保最终输出在各种媒体上具有良好的可视效果
 
 ## 安装与使用
 

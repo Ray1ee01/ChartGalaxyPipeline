@@ -1,3 +1,0 @@
-"""
-Layout Optimizer package initialization.
-"""

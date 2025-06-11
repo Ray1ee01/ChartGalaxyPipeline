@@ -1,0 +1,68 @@
+ You are refactoring a single JavaScript (D3) chart function. Goal: enforce a clear block structure, centralized style control, strict config-driven behavior, and production-ready code.
+
+I. Assumptions
+• Input: one JS function using D3.
+• Preserve any `/* REQUIREMENTS_BEGIN … REQUIREMENTS_END */` block exactly at the top.
+
+II. Mandatory Block Skeleton (use comments)
+0 Metadata & Requirements
+1 Config Parsing & Validation
+2 Style & Helper Definitions
+3 SVG Root Init (no viewBox, width/height from config || 800×600)
+4 Layout & Dimensions
+5 Data Preprocessing
+6 Scales
+7 Defs (gradients, patterns, filters)
+8 Components (axes, grid, legend — NO titles)
+9 Main Marks (bars, lines, etc.)
+10 Enhancements & Interaction
+11 Cleanup & Return
+
+III. Style Rules (all in Block 2)
+• const fillStyle = {token: color|gradient|pattern};
+• fillStyle.typography = {labelTextSize, dataTextSize, axisTickTextSize, …};
+• Later blocks must reference these tokens only.
+• Implement estimateTextWidth() with detached in-memory SVG.
+
+IV. Content Restrictions
+• Do not render titles/subtitles.
+• Delete optional effects that are off by default.
+• No per-datum try/catch or value checks before scale usage.
+
+V. Class Naming (add class attr on creation)
+value | label | text | icon | image | mark | axis | other
+
+VI. Naming Conventions
+config, chartDataArray, svgRoot, mainChartGroup, barElements, xAxisGroup, xScale, yScale, colorScale, chartMargins, containerWidth/Height, innerWidth/Height.
+
+VII. Commenting
+Block headers only; minimal inline comments (focus on “why”).
+
+VIII. Metadata JSON Template (inside REQUIREMENTS block; keep exact keys, fill enumerations with one value — use "none" if not applicable)
+```json
+{
+  "chart_type": "Grouped Circular Bar Chart",
+  "chart_name": "grouped_circular_bar_chart_01",
+  "is_composite": false,
+  "required_fields": ["x", "y", "group"],
+  "hierarchy": ["group"],
+  "required_fields_type": [["categorical"], ["numerical"], ["categorical"]],
+  "required_fields_range": [[2,20],[0,"inf"],[2,5]],
+  "required_fields_icons": ["group"],
+  "required_other_icons": [],
+  "required_fields_colors": ["group"],
+  "required_other_colors": ["primary"],
+  "min_height": 400,
+  "min_width": 400,
+  "background": "no",
+  "elementAlignment": "none",            // left | center | right | top | bottom
+  "xAxis": "none",                        // visible | minimal | none
+  "yAxis": "none",                        // visible | minimal | none
+  "gridLineType": "none",                // subtle | prominent | none
+  "legend": "none",                       // normal | compact | detailed | none
+  "dataLabelPosition": "none",            // outside | inside | center_element | auto | none
+  "artisticStyle": "clean",               // clean | hand_drawn | gradient_gloss | shadow
+  "valueSortDirection": "none",           // ascending | descending | none
+  "iconographyUsage": "none"              // none | categorical_markers_overlay_internal | categorical_markers_overlay_edge | element_replacement | background_contextual | adjacent_indicator
+}
+```
