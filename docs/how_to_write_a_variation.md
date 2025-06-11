@@ -1,18 +1,18 @@
-# How to Write a Chart Template
+# How to Write a Chart Variation
 
-This guide explains how to create new chart templates for the ECharts SVG Rendering Framework. The framework supports multiple template types (ECharts Python, ECharts JavaScript, and D3.js), and uses a template system to render various chart types.
+This guide explains how to create new chart variations for the ECharts SVG Rendering Framework. The framework supports multiple variation types (ECharts Python, ECharts JavaScript, and D3.js), and uses a variation system to render various chart types.
 
-## Template Types
+## Variation Types
 
-The framework supports three types of templates:
+The framework supports three types of variations:
 
-1. **ECharts Python Templates** (`echarts_py/`): Python modules that generate ECharts options
-2. **ECharts JavaScript Templates** (`echarts-js/`): JavaScript files that create ECharts instances
-3. **D3.js Templates** (`d3-js/`): JavaScript files that create D3.js charts
+1. **ECharts Python Variations** (`echarts_py/`): Python modules that generate ECharts options
+2. **ECharts JavaScript Variations** (`echarts-js/`): JavaScript files that create ECharts instances
+3. **D3.js Variations** (`d3-js/`): JavaScript files that create D3.js charts
 
-## Template Requirements
+## Variation Requirements
 
-All templates must include a requirements section at the beginning of the file. This section defines metadata for the template and specifies the data requirements.
+All variations must include a requirements section at the beginning of the file. This section defines metadata for the variation and specifies the data requirements.
 
 ### Requirements Format
 
@@ -45,7 +45,7 @@ REQUIREMENTS_END
 
 ### Key Requirements Fields
 
-注意：requirement字段仅为描述用途，所有的信息都是关于你的template的描述信息。你不需要根据里面的值决定你的绘制。
+注意：requirement字段仅为描述用途，所有的信息都是关于你的variation的描述信息。你不需要根据里面的值决定你的绘制。
 
 | Field | Description | Example |
 |-------|-------------|---------|
@@ -88,7 +88,7 @@ REQUIREMENTS_END
    const manIcon = dataJson.images.other["man"];
    ```
 
-在template的requirements中指定了`required_fields_icons`和`required_other_icons`后，框架会保证这些图标在input data中可用，无需进行错误处理或提供默认值。
+在variation的requirements中指定了`required_fields_icons`和`required_other_icons`后，框架会保证这些图标在input data中可用，无需进行错误处理或提供默认值。
 
 ### 颜色使用说明
 
@@ -124,7 +124,7 @@ REQUIREMENTS_END
    const textColor = dataJson.colors.text_color;
    ```
 
-在template的requirements中指定了`required_fields_colors`和`required_other_colors`后，框架会保证这些颜色在input data中可用，无需进行错误处理或提供默认值。
+在variation的requirements中指定了`required_fields_colors`和`required_other_colors`后，框架会保证这些颜色在input data中可用，无需进行错误处理或提供默认值。
 
 ### 复合图表说明
 
@@ -151,25 +151,25 @@ REQUIREMENTS_END
 }
 ```
 
-## Template Directory Structure
+## variation Directory Structure
 
-Templates should be placed in the appropriate directory based on their type:
+variations should be placed in the appropriate directory based on their type:
 
 ```
-template/
-├── d3-js/              # D3.js templates
-│   └── examples/       # Example templates
-├── echarts-js/         # ECharts JavaScript templates
-│   └── examples/       # Example templates
-└── echarts_py/         # Python templates
-    └── examples/       # Example templates
+variation/
+├── d3-js/              # D3.js variations
+│   └── examples/       # Example variations
+├── echarts-js/         # ECharts JavaScript variations
+│   └── examples/       # Example variations
+└── echarts_py/         # Python variations
+    └── examples/       # Example variations
 ```
 
-You can organize templates in subdirectories if needed - the system will recursively scan for templates.
+You can organize variations in subdirectories if needed - the system will recursively scan for variations.
 
-## Creating a D3.js Template
+## Creating a D3.js variation
 
-Here's a step-by-step guide to creating a simple D3.js bar chart template:
+Here's a step-by-step guide to creating a simple D3.js bar chart variation:
 
 1. Create a new JavaScript file in the `template/d3-js/` directory (or subdirectory)
 2. Add the requirements section at the top of the file
@@ -326,18 +326,18 @@ function makeChart(containerSelector, data) {
 }
 ```
 
-## Template Registration
+## Variation Registration
 
-Templates are automatically registered when the framework starts up. The system scans the template directories and builds a registry based on the requirements sections.
+Variations are automatically registered when the framework starts up. The system scans the variation directories and builds a registry based on the requirements sections.
 
-The template registry matches chart types to the appropriate template based on:
+The variation registry matches chart types to the appropriate variation based on:
 1. Exact chart type match
 2. Partial matches if no exact match is found
 3. Engine preference order (default: Python -> JavaScript -> D3.js)
 
 ## Expected Input Format
 
-Templates receive a JSON object with the following structure:
+Variations receive a JSON object with the following structure:
 
 ```json
 {
@@ -455,9 +455,9 @@ const getColor = (category) => {
 };
 ```
 
-## D3.js Template Example (Updated)
+## D3.js Variation Example (Updated)
 
-Here's an updated D3.js bar chart template using the new format:
+Here's an updated D3.js bar chart variation using the new format:
 
 ```javascript
 /*
@@ -625,9 +625,9 @@ function makeChart(containerSelector, data) {
 }
 ```
 
-## ECharts Python Template Example (Updated)
+## ECharts Python Variation Example (Updated)
 
-Here's an updated ECharts Python template using the new format:
+Here's an updated ECharts Python variation using the new format:
 
 ```python
 '''
@@ -765,14 +765,14 @@ def make_options(json_data):
 
 ## Best Practices
 
-1. **Keep templates focused**: 每个模板应只处理一种特定图表类型
+1. **Keep variations focused**: 每个模板应只处理一种特定图表类型
 2. **Support visual variations**: 实现常见的视觉效果（阴影、渐变等）
 3. **Handle edge cases**: 处理边缘情况，如空数据、数据点不足等
 4. **Use appropriate defaults**: 为所有视觉属性提供合理的默认值
 5. **Document requirements clearly**: 确保需求部分完整准确
 6. **Test with various data**: 使用不同形状和大小的数据验证模板
 
-## Testing Your Template
+## Testing Your Variation
 
 1. 将模板放入相应目录
 2. 创建测试JSON输入文件
