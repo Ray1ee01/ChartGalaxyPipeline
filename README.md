@@ -1,6 +1,5 @@
 # ChartPipeline Framework
 
-![ChartPipeline Logo](./assets/logo.png)
 
 ## 简介
 

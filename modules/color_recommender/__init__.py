@@ -1,3 +1,0 @@
-"""
-Color Recommender package initialization.
-"""

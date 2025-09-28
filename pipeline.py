@@ -12,21 +12,6 @@ import logging
 from datetime import datetime
 from importlib import import_module
 from pathlib import Path
-from config import (
-    base_url,
-    api_key,
-    embed_model_path,
-    data_resource_path,
-    topk,
-    text_data_path,
-    text_index_path,
-    color_data_path,
-    color_index_path,
-    image_data_path,
-    image_index_path,
-    image_list_path,
-    image_resource_path
-)
 import random
 from concurrent.futures import ProcessPoolExecutor
 
@@ -127,15 +112,6 @@ def run_pipeline(input_path, output_path=None, temp_dir=None, modules_to_run=Non
         shutil.rmtree(output_path, ignore_errors=True)
         os.makedirs(output_path, exist_ok=True)
     print("modules_to_run: ", modules_to_run)
-    # 如果是create_index模块，单独处理
-    if modules_to_run and 'create_index' in modules_to_run:
-        return run_single_file(
-            input_path=input_path,
-            output_path=output_path,
-            temp_dir=temp_dir,
-            modules_to_run=modules_to_run,
-            chart_name=chart_name
-        )
 
     input_path = Path(input_path)
     output_path = Path(output_path) if output_path else input_path
@@ -224,43 +200,6 @@ def run_single_file(input_path, output_path, temp_dir=None, modules_to_run=None,
         modules_to_run (list): 要运行的模块列表
         chart_name (str, optional): 指定图表名称，仅对infographics_generator模块有效
     """
-    # try:
-    # 如果要运行create_index，单独处理并直接返回
-    if 'create_index' in modules_to_run:
-        logger.info("执行create_index模块")
-        # 依次调用三个模块的create_index
-        for module_type in ['title', 'color', 'image']:
-            if module_type == 'title':
-                print("Running modules.title_generator.create_index")
-                module = import_module('modules.title_generator.create_index')
-                if not Path(text_index_path).exists():
-                    module.process(
-                        data=text_data_path,
-                        index_path=text_index_path,
-                        data_path=text_data_path,
-                        embed_model_path=embed_model_path
-                    )
-            elif module_type == 'color':
-                print("Running modules.color_recommender.create_index")
-                module = import_module('modules.color_recommender.create_index')
-                if not Path(color_index_path).exists():
-                    module.main(
-                        input=color_data_path,
-                        output=color_index_path,
-                        embed_model_path=embed_model_path
-                    )
-            else:  # image
-                print("Running modules.image_recommender.create_index")
-                module = import_module('modules.image_recommender.create_index')
-                if not Path(image_index_path).exists():
-                    module.main(
-                        image_list_path=image_list_path,
-                        image_resource_path=image_resource_path,
-                        index_path=image_index_path,
-                        data_path=image_data_path,
-                        embed_model_path=embed_model_path
-                    )
-        return True
 
     # 创建临时目录
     if temp_dir is None:
@@ -281,12 +220,10 @@ def run_single_file(input_path, output_path, temp_dir=None, modules_to_run=None,
     last_module = [m for m in MODULES if m["name"] in modules_to_run][-1]
 
     # 根据最后一个模块的输出类型决定最终输出文件的扩展名
-    if last_module["name"] in ["chart_engine", "title_styler"]:
+    if last_module["name"] in ["chart_engine"]:
         final_output = output_path.with_suffix('.svg')
-    elif last_module["name"] == "infographics_generator":
-        final_output = output_path.parent / f"{output_path.stem}_final.svg"
     else:
-        final_output = output_path.with_suffix('.json')
+        raise ValueError(f"Unknown module: {last_module['name']}")
 
     # 记录执行过程
     processing_log = []
@@ -295,142 +232,18 @@ def run_single_file(input_path, output_path, temp_dir=None, modules_to_run=None,
         module_name = module_config["name"]
         module_desc = module_config["description"]
         # logger.info(f"执行模块 {i+1}/{len(modules_to_run)}: {module_name} - {module_desc}")
-
-        # 特殊处理all模块，依次执行datafact_generator、title_generator、color_recommender和image_recommender
-        if module_name == "all":
-            # 数据洞察模块
-            preprocess_module = import_module(f"modules.preprocess.preprocess")
-            if not should_skip_module(module_name, output_path):
-                preprocess_module.process(input=str(current_input), output=str(output_path))
-                current_input = output_path
-
-            datafact_module = import_module("modules.datafact_generator.datafact_generator")
-            if not should_skip_module("datafact_generator", output_path):
-                datafact_module.process(input=str(current_input), output=str(output_path))
-                current_input = output_path
-
-            # 标题生成模块
-            title_module = import_module("modules.title_generator.title_generator")
-            if not should_skip_module("title_generator", output_path):
-                title_module.process(
-                    input=str(current_input),
-                    output=str(output_path),
-                    base_url=base_url,
-                    api_key=api_key,
-                    embed_model_path=embed_model_path,
-                    topk=topk,
-                    data_path=text_data_path,
-                    index_path=text_index_path
-                )
-                current_input = output_path
-
-            # 色彩推荐模块
-            color_module = import_module("modules.color_recommender.color_recommender")
-            if not should_skip_module("color_recommender", output_path):
-                color_module.process(
-                    input=str(current_input),
-                    output=str(output_path),
-                    base_url=base_url,
-                    api_key=api_key,
-                    embed_model_path=embed_model_path,
-                    data_path=color_data_path,
-                    index_path=color_index_path
-                )
-                current_input = output_path
-
-            # 图像推荐模块
-            image_module = import_module("modules.image_recommender.image_recommender")
-            if not should_skip_module("image_recommender", output_path):
-                image_module.process(
-                    input=str(current_input),
-                    output=str(output_path),
-                    base_url=base_url,
-                    api_key=api_key,
-                    embed_model_path=embed_model_path,
-                    data_path=image_data_path,
-                    index_path=image_index_path,
-                    resource_path=image_resource_path
-                )
-                current_input = output_path
-
-        # 特殊处理title_generator模块，传入配置参数
-        elif module_name == "title_generator":
-            module = import_module(f"modules.{module_name}.{module_name}")
-            if not should_skip_module(module_name, output_path):
-                module.process(
-                    input=str(current_input),
-                    output=str(output_path),
-                    base_url=base_url,
-                    api_key=api_key,
-                    embed_model_path=embed_model_path,
-                    topk=topk,
-                    data_path=text_data_path,
-                    index_path=text_index_path
-                )
-                current_input = output_path
-        elif module_name == "color_recommender":
-            module = import_module(f"modules.{module_name}.{module_name}")
-            if not should_skip_module(module_name, output_path):
-                module.process(
-                    input=str(current_input),
-                    output=str(output_path),
-                    base_url=base_url,
-                    api_key=api_key,
-                    embed_model_path=embed_model_path,
-                    data_path=color_data_path,
-                    index_path=color_index_path
-                )
-                current_input = output_path
-        elif module_name == "image_recommender":
-            module = import_module(f"modules.{module_name}.{module_name}")
-            print("image_recommender")
-            if not should_skip_module(module_name, output_path):
-                print("process")
-                module.process(
-                    input=str(current_input),
-                    output=str(output_path),
-                    base_url=base_url,
-                    api_key=api_key,
-                    embed_model_path=embed_model_path,
-                    data_path=image_data_path,
-                    index_path=image_index_path,
-                    resource_path=image_resource_path
-                )
-                current_input = output_path
-        elif module_name == "infographics_generator":
-            module = import_module(f"modules.{module_name}.{module_name}")
-            if not should_skip_module(module_name, output_path):
-                module.process(
-                    input=str(current_input),
-                    output=str(output_path),
-                    base_url=base_url,
-                    api_key=api_key,
-                    chart_name=chart_name
-                )
-                current_input = output_path
-        elif module_name == "chart_engine":
+        
+        if module_name == "chart_engine":
             # 输入是JSON，输出是SVG
             module = import_module(f"modules.{module_name}.{module_name}")
             svg_output = output_path.with_suffix('.svg')
-            if True: # not svg_output.exists():
-                module.process(input=str(current_input), output=str(svg_output))
+            html_output = output_path.with_suffix('.html')
+            if not svg_output.exists():
+                module.process(input=str(current_input), output=str(svg_output), chart_name=chart_name, html_output=str(html_output))
             current_input = svg_output  # 更新为SVG文件作为下一个模块的输入
-
-        elif module_name == "title_styler":
-            # 输入是JSON，输出是SVG
-            module = import_module(f"modules.{module_name}.{module_name}")
-            title_svg = output_path.parent / f"{output_path.stem}_title.svg"
-            if not title_svg.exists():
-                module.process(input=str(current_input), output=str(title_svg))
-            current_input = title_svg  # 更新为标题SVG作为下一个模块的输入
-
-        else:
-            # 普通模块：输入JSON，输出JSON
-            module = import_module(f"modules.{module_name}.{module_name}")
-            if not should_skip_module(module_name, output_path):
-                module.process(input=str(current_input), output=str(output_path))
-                current_input = output_path
-
+        else: 
+            raise ValueError(f"Unknown module: {module_name}")
+        
     return True
 
     # except Exception as e:
@@ -467,20 +280,20 @@ def should_skip_module(module_name: str, output_path: Path) -> bool:
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--input', type=str, help='Input json file path', default='/data1/lizhen/resources/result/data_pool_v2')
+    parser.add_argument('--input', type=str, help='Input json file path', default='./example_data')
     parser.add_argument('--output', type=str, help='Output json file path', default='output')
     parser.add_argument('--temp-dir', type=str, default='tmp')
-    parser.add_argument('--modules', type=str, nargs='+', help='Modules to run', default = 'infographics_generator')
+    parser.add_argument('--modules', type=str, help='Modules to run', default = 'chart_engine')
     parser.add_argument('--threads', type=int, help='Number of threads for directory processing', default=1)
-    parser.add_argument('--chart-name', type=str, help='Specific chart name to use for infographics_generator')
+    parser.add_argument('--chart-name', type=str, help='Specific chart name to use for chart_engine')
     
     args = parser.parse_args()
     # 如果没有指定input，从data_resource_path随机选择
-    if args.input is None and 'create_index' not in args.modules:
-        json_files = [f for f in os.listdir(data_resource_path) if f.endswith('.json')]
+    if args.input is None and 'chart_engine' not in args.modules:
+        json_files = [f for f in os.listdir(args.input) if f.endswith('.json')]
         if not json_files:
-            raise ValueError(f"在 {data_resource_path} 目录下没有找到json文件")
-        args.input = os.path.join(data_resource_path, random.choice(json_files))
+            raise ValueError(f"在 {args.input} 目录下没有找到json文件")
+        args.input = os.path.join(args.input, random.choice(json_files))
         print(f"随机选择输入文件: {args.input}")
         args.output = "tmp.json"
         print(f"使用默认输出文件: {args.output}")
@@ -491,7 +304,7 @@ def main():
     args = parse_args()
     modules_to_run = None
     if args.modules:
-        modules_to_run = [m.strip() for m in args.modules]
+        modules_to_run = args.modules
 
     run_pipeline(
         input_path=args.input,

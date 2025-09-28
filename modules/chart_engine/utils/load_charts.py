@@ -335,61 +335,12 @@ def render_chart_to_svg(json_data, output_svg_path, \
         width = width or w
         height = height or h
     
-    if framework.lower() == "vegalite":
-        # Use vegalite_py template
-        template = js_file
-        template_root = "modules.chart_engine.template.vegalite_py"
-        general_chart_type = template.split('/')[-2]
-        module_name = template.split('/')[-1].split('.')[0]
-        # print("template_root: ", template_root)
-        # print("general_chart_type: ", general_chart_type)
-        # print("module_name: ", module_name)
-        module_path = f"{template_root}.{general_chart_type}.{module_name}"
-        # print(f"module_path: {module_path}")
-        module = importlib.import_module(module_path)
-        
-        chart_words = module_name.split('_')
-        chart_words = [word.capitalize() for word in chart_words]
-        chart_type = ''.join(chart_words)
-        
-        template_class = getattr(module, chart_type)
-        template_object = template_class(json_data)
-        vega_spec = template_object.make_specification(json_data)
-        
-        vega_spec_file = create_temp_file(prefix="vega_spec_", suffix=".json", 
-                                        content=json.dumps(vega_spec, indent=2))
-        
-        # try:
-        svg_file, svg_content = template_object.specification_to_svg(vega_spec, output_svg_path)
-        if svg_file is None:
-            raise ValueError("SVG chart generation failed (returned None)")
-        
-        element_tree = template_object.svg_to_element_tree(svg_content)
-        template_object.apply_variation(json_data)
-        svg_file = output_svg_path
-        svg_content = template_object.element_tree_to_svg(template_object.elements_tree)
-        with open(output_svg_path, 'w', encoding='utf-8') as f:
-            f.write(svg_content)
-        logger.info(f"VegaLite SVG chart generated successfully")
-        return output_svg_path
-        # except Exception as e:
-        #     print(f"Error: {e}")
-        #     return None
-    
     # 为引擎创建临时目录，用于生成HTML文件
     temp_dir = create_temp_dir(prefix=f"{framework}_svg_")
     html_file = os.path.join(temp_dir, 'chart.html')
 
     try:
-        # 根据框架类型生成HTML文件
-        if framework.lower() == "echarts" and framework_type == 'js':
-            load_js_echarts(json_data=json_data, output_file=html_file, js_file=js_file, width=width, height=height)
-        elif framework.lower() == "echarts" and framework_type == 'py':
-            template = js_file
-            options = template.make_options(json_data)
-            option_data = json.dumps(options)
-            load_js_echarts(json_data=option_data, output_file=html_file, width=width, height=height)
-        elif framework.lower() == "d3":
+        if framework.lower() == "d3":
             load_d3js(json_data=json_data, output_file=html_file, js_file=js_file, width=width, height=height)
         else:
             raise ValueError(f"Unsupported framework: {framework}")
@@ -401,37 +352,31 @@ def render_chart_to_svg(json_data, output_svg_path, \
             with open(html_file, 'r', encoding='utf-8') as f:
                 html_content = f.read()
                 
-            if framework.lower().startswith('echarts'):
-                lib_file = 'echarts.min.js'
-                file_pattern = r'file://.*?/' + lib_file
-                cdn_url = "https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"
-                html_content = re.sub(file_pattern, cdn_url, html_content)
-            else:  # D3.js
-                # For D3.js, we need to replace three different URLs
-                # Replace d3.min.js
-                d3_file_pattern = r'file://.*?/d3\.min\.js'
-                cdn_url = "https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"
-                html_content = re.sub(d3_file_pattern, cdn_url, html_content)
-                
-                # Replace d3-voronoi-map.min.js
-                voronoi_file_pattern = r'file://.*?/d3-voronoi-map\.min\.js'
-                cdn_url_voronoi = "https://cdn.jsdelivr.net/npm/d3-voronoi-map@2.1.1/build/d3-voronoi-map.min.js"
-                html_content = re.sub(voronoi_file_pattern, cdn_url_voronoi, html_content)
-                
-                # Replace d3-weighted-voronoi.min.js
-                weighted_voronoi_file_pattern = r'file://.*?/d3-weighted-voronoi\.min\.js'
-                cdn_url_weighted_voronoi = "https://cdn.jsdelivr.net/npm/d3-weighted-voronoi@1.1.3/build/d3-weighted-voronoi.min.js"
-                html_content = re.sub(weighted_voronoi_file_pattern, cdn_url_weighted_voronoi, html_content)
-                
-                # Replace d3-sankey.min.js
-                sankey_file_pattern = r'file://.*?/d3-sankey\.min\.js'
-                cdn_url_sankey = "https://cdn.jsdelivr.net/npm/d3-sankey@0.12.3/dist/d3-sankey.min.js"
-                html_content = re.sub(sankey_file_pattern, cdn_url_sankey, html_content)
-                
-                # Replace svg2roughjs.umd.min.js
-                rough_file_pattern = r'file://.*?/svg2roughjs\.umd\.min\.js'
-                cdn_url_rough = "https://unpkg.com/svg2roughjs@3.2.1/dist/svg2roughjs.umd.min.js"
-                html_content = re.sub(rough_file_pattern, cdn_url_rough, html_content)
+            # D3.js
+            # Replace d3.min.js
+            d3_file_pattern = r'file://.*?/d3\.min\.js'
+            cdn_url = "https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"
+            html_content = re.sub(d3_file_pattern, cdn_url, html_content)
+            
+            # Replace d3-voronoi-map.min.js
+            voronoi_file_pattern = r'file://.*?/d3-voronoi-map\.min\.js'
+            cdn_url_voronoi = "https://cdn.jsdelivr.net/npm/d3-voronoi-map@2.1.1/build/d3-voronoi-map.min.js"
+            html_content = re.sub(voronoi_file_pattern, cdn_url_voronoi, html_content)
+            
+            # Replace d3-weighted-voronoi.min.js
+            weighted_voronoi_file_pattern = r'file://.*?/d3-weighted-voronoi\.min\.js'
+            cdn_url_weighted_voronoi = "https://cdn.jsdelivr.net/npm/d3-weighted-voronoi@1.1.3/build/d3-weighted-voronoi.min.js"
+            html_content = re.sub(weighted_voronoi_file_pattern, cdn_url_weighted_voronoi, html_content)
+            
+            # Replace d3-sankey.min.js
+            sankey_file_pattern = r'file://.*?/d3-sankey\.min\.js'
+            cdn_url_sankey = "https://cdn.jsdelivr.net/npm/d3-sankey@0.12.3/dist/d3-sankey.min.js"
+            html_content = re.sub(sankey_file_pattern, cdn_url_sankey, html_content)
+            
+            # Replace svg2roughjs.umd.min.js
+            rough_file_pattern = r'file://.*?/svg2roughjs\.umd\.min\.js'
+            cdn_url_rough = "https://unpkg.com/svg2roughjs@3.2.1/dist/svg2roughjs.umd.min.js"
+            html_content = re.sub(rough_file_pattern, cdn_url_rough, html_content)
             
             with open(html_output_path, 'w', encoding='utf-8') as f:
                 f.write(html_content)

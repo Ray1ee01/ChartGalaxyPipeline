@@ -1,3 +1,0 @@
-"""
-Title Styler package initialization.
-"""

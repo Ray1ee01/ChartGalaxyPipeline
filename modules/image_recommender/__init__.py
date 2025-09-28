@@ -1,3 +1,0 @@
-"""
-Image Recommender package initialization.
-"""

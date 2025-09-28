@@ -6,7 +6,7 @@ import argparse
 from logging import getLogger
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from modules.chart_engine.template.template_registry import get_template_for_chart_type, get_template_for_chart_name
+from modules.chart_engine.variation.template_registry import get_variation_for_chart_type, get_variation_for_chart_name
 from modules.chart_engine.utils.load_charts import render_chart_to_svg
 from modules.chart_engine.utils.file_utils import create_temp_file, cleanup_temp_file, ensure_temp_dir, create_fallback_svg
 import importlib
@@ -60,7 +60,7 @@ def process(input: str, output: str, chart_name: str = None, html_output: str = 
         
         # Get the appropriate template for this chart type
         engine_preference = None
-        engine, template = get_template_for_chart_name(chart_name, engine_preference=engine_preference)
+        engine, template = get_variation_for_chart_name(chart_name, engine_preference=engine_preference)
         
         if engine is None:
             logger.error(f"No template found for chart name '{chart_name}'")
@@ -84,71 +84,7 @@ def process(input: str, output: str, chart_name: str = None, html_output: str = 
         error_message = None
         
         try:
-            if engine == 'echarts_py':
-                # Use Python template
-                options = template.make_options(json_data)
-                
-                # Save options to temporary file
-                echarts_options_file = create_temp_file(prefix="echarts_options_", suffix=".json", 
-                                                    content=json.dumps(options, indent=2))
-                
-                # Use same renderer as echarts-js
-                logger.info(f"Using ECharts renderer for Python-generated options")
-                
-                # Create JS wrapper function
-                js_wrapper_content = f"""
-                function make_option(jsonData) {{
-                    return {json.dumps(options)};
-                }}
-                """
-                
-                js_wrapper_file = create_temp_file(prefix="echarts_wrapper_", suffix=".js", 
-                                                content=js_wrapper_content)
-                
-                try:
-                    # Render SVG
-                    svg_file = render_chart_to_svg(
-                        json_data=json_data,
-                        output_svg_path=output_svg_path,
-                        js_file=js_wrapper_file,
-                        width=width,
-                        height=height,
-                        framework="echarts"
-                    )
-                    
-                    if svg_file is None:
-                        raise ValueError("SVG chart generation failed (returned None)")
-                    
-                    logger.info(f"ECharts SVG chart generated successfully")
-                    
-                finally:
-                    # Clean up temporary files
-                    cleanup_temp_file(js_wrapper_file)
-                    cleanup_temp_file(echarts_options_file)
-                
-            elif engine == 'echarts-js':
-                # Use unified render_chart_to_svg function
-                try:
-                    svg_file = render_chart_to_svg(
-                        json_data=json_data,
-                        output_svg_path=output_svg_path,
-                        js_file=template,
-                        width=width,
-                        height=height,
-                        framework="echarts",
-                        html_output_path=html_output,
-                    )
-                    
-                    if svg_file is None:
-                        raise ValueError("SVG chart generation failed (returned None)")
-                    
-                    logger.info(f"ECharts SVG chart generated successfully")
-                    
-                except Exception as e:
-                    error_message = str(e)
-                    raise Exception(f"Failed to generate ECharts JavaScript chart: {error_message}")
-            
-            elif engine == 'd3-js':
+            if engine == 'd3-js':
                 # Use unified render_chart_to_svg function
                 try:
                     svg_file = render_chart_to_svg(
@@ -170,40 +106,6 @@ def process(input: str, output: str, chart_name: str = None, html_output: str = 
                     error_message = str(e)
                     raise Exception(f"Failed to generate D3.js chart: {error_message}")
                     
-            elif engine == 'vegalite_py':
-                # Use vegalite_py template
-                template_root = "template.vegalite_py"
-                general_chart_type = template.split('/')[-2]
-                module_name = template.split('/')[-1].split('.')[0]
-                module_path = f"{template_root}.{general_chart_type}.{module_name}"
-                module = importlib.import_module(module_path)
-                
-                chart_words = module_name.split('_')
-                chart_words = [word.capitalize() for word in chart_words]
-                chart_type = ''.join(chart_words)
-                
-                template_class = getattr(module, chart_type)
-                template_object = template_class(json_data)
-                vega_spec = template_object.make_specification(json_data)
-                
-                vega_spec_file = create_temp_file(prefix="vega_spec_", suffix=".json", 
-                                                content=json.dumps(vega_spec, indent=2))
-                
-                try:
-                    svg_file, svg_content = template_object.specification_to_svg(vega_spec, output_svg_path)
-                    if svg_file is None:
-                        raise ValueError("SVG chart generation failed (returned None)")
-                    
-                    element_tree = template_object.svg_to_element_tree(svg_content)
-                    template_object.apply_variation(json_data)
-                    svg_file = output_svg_path
-                    svg_content = template_object.element_tree_to_svg(template_object.elements_tree)
-                    with open(output_svg_path, 'w', encoding='utf-8') as f:
-                        f.write(svg_content)
-                    logger.info(f"VegaLite SVG chart generated successfully")
-                    
-                finally:
-                    cleanup_temp_file(vega_spec_file)
             else:
                 error_message = f"Unknown engine type: {engine}"
                 logger.error(error_message)
